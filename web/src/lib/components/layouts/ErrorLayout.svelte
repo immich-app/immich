@@ -25,7 +25,7 @@
   <section class="bg-immich-bg dark:bg-immich-dark-bg">
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
       <a class="flex place-items-center gap-2 hover:cursor-pointer" href="/photos">
-        <ImmichLogo width="55%" />
+        <ImmichLogo class="h-[50px]" />
       </a>
     </div>
   </section>

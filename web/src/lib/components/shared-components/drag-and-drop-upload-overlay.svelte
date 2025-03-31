@@ -165,7 +165,7 @@
     transition:fade={{ duration: 250 }}
     ondragover={onDragOver}
   >
-    <ImmichLogo noText class="m-16 w-48 animate-bounce" />
+    <ImmichLogo noText class="m-16 h-48 animate-bounce" />
     <div class="text-2xl">{$t('drop_files_to_upload')}</div>
   </div>
 {/if}

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnJob } from 'src/decorators';
+import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -241,6 +241,7 @@ export class PersonService extends BaseService {
     return results;
   }
 
+  @Chunked()
   private async delete(people: PersonEntity[]) {
     await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
     await this.personRepository.delete(people);
@@ -451,11 +452,11 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const face = await this.personRepository.getFaceByIdWithAssets(
-      id,
-      { person: true, asset: true, faceSearch: true },
-      ['id', 'personId', 'sourceType'],
-    );
+    const face = await this.personRepository.getFaceByIdWithAssets(id, { faceSearch: true }, [
+      'id',
+      'personId',
+      'sourceType',
+    ]);
     if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return JobStatus.FAILED;

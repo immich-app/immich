@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
-import { Kysely, sql, Transaction } from 'kysely';
+import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import { mkdir, readdir } from 'node:fs/promises';
+import { join } from 'node:path';
 import semver from 'semver';
 import { EXTENSION_NAMES, POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { DB } from 'src/db';
@@ -200,9 +202,49 @@ export class DatabaseRepository {
 
     this.logger.log('Running migrations, this may take a while');
 
+    this.logger.debug('Running typeorm migrations');
+
     await dataSource.initialize();
     await dataSource.runMigrations(options);
     await dataSource.destroy();
+
+    this.logger.debug('Finished running typeorm migrations');
+
+    // eslint-disable-next-line unicorn/prefer-module
+    const migrationFolder = join(__dirname, '..', 'schema/migrations');
+    // TODO remove after we have at least one kysely migration
+    await mkdir(migrationFolder, { recursive: true });
+
+    this.logger.debug('Running kysely migrations');
+    const migrator = new Migrator({
+      db: this.db,
+      migrationLockTableName: 'kysely_migrations_lock',
+      migrationTableName: 'kysely_migrations',
+      provider: new FileMigrationProvider({
+        fs: { readdir },
+        path: { join },
+        migrationFolder,
+      }),
+    });
+
+    const { error, results } = await migrator.migrateToLatest();
+
+    for (const result of results ?? []) {
+      if (result.status === 'Success') {
+        this.logger.log(`Migration "${result.migrationName}" succeeded`);
+      }
+
+      if (result.status === 'Error') {
+        this.logger.warn(`Migration "${result.migrationName}" failed`);
+      }
+    }
+
+    if (error) {
+      this.logger.error(`Kysely migrations failed: ${error}`);
+      throw error;
+    }
+
+    this.logger.debug('Finished running kysely migrations');
   }
 
   async withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R> {

@@ -265,7 +265,7 @@ describe(NotificationService.name, () => {
       await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).resolves.not.toThrow();
       expect(mocks.notification.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'http://localhost:2283', displayName: userStub.admin.name },
+        data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
       });
       expect(mocks.notification.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -306,7 +306,7 @@ describe(NotificationService.name, () => {
       ).resolves.not.toThrow();
       expect(mocks.notification.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'http://localhost:2283', displayName: userStub.admin.name },
+        data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
       });
       expect(mocks.notification.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({

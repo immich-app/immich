@@ -12,6 +12,7 @@ export interface AlbumAssetCount {
   assetCount: number;
   startDate: Date | null;
   endDate: Date | null;
+  lastModifiedAssetTimestamp: Date | null;
 }
 
 export interface AlbumInfoOptions {
@@ -68,7 +69,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
       eb
         .selectFrom('assets')
         .selectAll('assets')
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .leftJoin('exif', 'assets.id', 'exif.assetId')
         .select((eb) => eb.table('exif').as('exifInfo'))
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
@@ -132,18 +133,21 @@ export class AlbumRepository {
       return [];
     }
 
-    return this.db
-      .selectFrom('albums')
-      .innerJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
-      .innerJoin('assets', 'assets.id', 'album_assets.assetsId')
-      .select('albums.id as albumId')
-      .select((eb) => eb.fn.min('assets.localDateTime').as('startDate'))
-      .select((eb) => eb.fn.max('assets.localDateTime').as('endDate'))
-      .select((eb) => sql<number>`${eb.fn.count('assets.id')}::int`.as('assetCount'))
-      .where('albums.id', 'in', ids)
-      .where('assets.deletedAt', 'is', null)
-      .groupBy('albums.id')
-      .execute();
+    return (
+      this.db
+        .selectFrom('assets')
+        .innerJoin('albums_assets_assets as album_assets', 'album_assets.assetsId', 'assets.id')
+        .select('album_assets.albumsId as albumId')
+        .select((eb) => eb.fn.min(sql<Date>`("assets"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
+        .select((eb) => eb.fn.max(sql<Date>`("assets"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('endDate'))
+        // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
+        .select((eb) => eb.fn.max('assets.updatedAt').as('lastModifiedAssetTimestamp'))
+        .select((eb) => sql<number>`${eb.fn.count('assets.id')}::int`.as('assetCount'))
+        .where('album_assets.albumsId', 'in', ids)
+        .where('assets.deletedAt', 'is', null)
+        .groupBy('album_assets.albumsId')
+        .execute()
+    );
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

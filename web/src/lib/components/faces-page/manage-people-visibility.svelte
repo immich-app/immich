@@ -136,7 +136,7 @@
 
 <div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
   <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
-    {#snippet children({ person, index })}
+    {#snippet children({ person })}
       {@const hidden = personIsHidden[person.id]}
       <button
         type="button"
@@ -146,7 +146,6 @@
         aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
       >
         <ImageThumbnail
-          preload={index < 20}
           {hidden}
           shadow
           url={getPeopleThumbnailUrl(person)}

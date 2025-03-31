@@ -201,6 +201,16 @@ export class AssetRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING }] })
+  @Chunked()
+  async updateAllExif(ids: string[], options: Updateable<Exif>): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.db.updateTable('exif').set(options).where('assetId', 'in', ids).execute();
+  }
+
   async upsertJobStatus(...jobStatus: Insertable<AssetJobStatus>[]): Promise<void> {
     if (jobStatus.length === 0) {
       return;
@@ -718,17 +728,6 @@ export class AssetRepository {
     return paginationHelper(items as any as AssetEntity[], pagination.take);
   }
 
-  getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | undefined> {
-    return this.db
-      .selectFrom('assets')
-      .selectAll('assets')
-      .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
-      .where('albums_assets_assets.albumsId', '=', asUuid(albumId))
-      .orderBy('updatedAt', 'desc')
-      .limit(1)
-      .executeTakeFirst() as Promise<AssetEntity | undefined>;
-  }
-
   getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
     return this.db
       .selectFrom('assets')
@@ -968,6 +967,9 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
       .where('assets.isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
@@ -996,6 +998,9 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
       .where('assets.isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute() as any as Promise<AssetEntity[]>;
@@ -1063,7 +1068,10 @@ export class AssetRepository {
       .where('isExternal', '=', true)
       .where('libraryId', '=', asUuid(libraryId))
       .where((eb) =>
-        eb.or([eb('originalPath', 'not like', paths.join('|')), eb('originalPath', 'like', exclusions.join('|'))]),
+        eb.or([
+          eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
+          eb.or(exclusions.map((path) => eb('originalPath', 'like', path))),
+        ]),
       )
       .executeTakeFirstOrThrow();
   }

@@ -16,10 +16,7 @@
 
   // Updating `value` directly causes the date input to reset itself or
   // interfere with user changes.
-  let updatedValue = $state<string>();
-  $effect(() => {
-    updatedValue = value;
-  });
+  let updatedValue = $derived(value);
 </script>
 
 <input

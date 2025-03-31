@@ -45,7 +45,7 @@ Some search examples:
 </TabItem>
   <TabItem value="Mobile" label="Mobile">
 
-<img src={require('./img/moblie-smart-serach.webp').default} width="30%" title='Smart search on mobile' />
+<img src={require('./img/mobile-smart-search.webp').default} width="30%" title='Smart search on mobile' />
 
 </TabItem>
 </Tabs>
@@ -56,7 +56,20 @@ Navigating to `Administration > Settings > Machine Learning Settings > Smart Sea
 
 ### CLIP models
 
-More powerful models can be used for more accurate search results, but are slower and can require more server resources. Check the dropdowns below to see how they compare in memory usage, speed and quality by language.
+The default search model is fast, but there are many other options that can provide better search results. The tradeoff of using these models is that they're slower and/or use more memory (both when indexing images with background Smart Search jobs and when searching).
+
+The first step of choosing the right model for you is to know which languages your users will search in.
+
+If your users will only search in English, then the [CLIP][huggingface-clip] section is the first place to look. This is a curated list of the models that generally perform the best for their size class. The models here are ordered from higher to lower quality. This means that the top models will generally rank the most relevant results higher and have a higher capacity to understand descriptive, detailed, and/or niche queries. The models are also generally ordered from larger to smaller, so consider the impact on memory usage, job processing and search speed when deciding on one. The smaller models in this list are not too different in quality and many times faster.
+
+[Multilingual models][huggingface-multilingual-clip] are also available so users can search in their native language. Use these models if you expect non-English searches to be common. They can be separated into three search patterns:
+
+- `nllb` models expect the search query to be in the language specified in the user settings
+- `xlm` and `siglip2` models understand search text regardless of the current language setting
+
+`nllb` models tend to perform the best and are recommended when users primarily searches in their native, non-English language. `xlm` and `siglip2` models are more flexible and are recommended for mixed language search, where the same user might search in different languages at different times.
+
+For more details, check the tables below to see how they compare in memory usage, speed and quality by language.
 
 Once you've chosen a model, follow these steps:
 
@@ -81,7 +94,7 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 
 **Memory (MiB)**: The peak RSS usage of the process afer performing the above timing benchmark. Does not include image decoding, concurrent processing, the web server, etc., which are relatively constant factors.
 
-**Recall (%)**: Evaluated on Crossmodal-3600, the average of the recall@1, recall@5 and recall@10 results for zeroshot image retrieval.
+**Recall (%)**: Evaluated on Crossmodal-3600, the average of the recall@1, recall@5 and recall@10 results for zeroshot image retrieval. Chinese (Simplified), English, French, German, Italian, Japanese, Korean, Polish, Russian, Spanish and Turkish are additionally tested on XTD-10. Chinese (Simplified) and English are additionally tested on Flickr30k. The recall metrics are the average across all tested datasets.
 
 **Pareto Optimal**: Whether the model is not completely outclassed by another model. Try to use models that are optimal for the languages relevant to you. Specifically, for a given model and language, if there's another model that's better for that language in at least one respect (memory usage, execution time, recall) while being at least as good for that language in every other way, then the model is not optimal for that language.
 
@@ -93,59 +106,59 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 <summary>English</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 75.73      | ✅             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 75.44      | ✅             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 75.19      | ✅             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 75.09      | ❌             |
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 75.07      | ❌             |
-| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 75.01      | ❌             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 74.92      | ❌             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 74.9       | ❌             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 74.87      | ❌             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 74.87      | ❌             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 74.77      | ❌             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 74.28      | ❌             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 74.26      | ✅             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 73.15      | ✅             |
-| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 72.78      | ✅             |
-| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 72.58      | ❌             |
-| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 72.57      | ❌             |
-| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 72.47      | ✅             |
-| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 72.45      | ✅             |
-| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 72.44      | ❌             |
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 72.37      | ❌             |
-| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 71.64      | ✅             |
-| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 71.63      | ❌             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 71.45      | ❌             |
-| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 71.33      | ❌             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 71.19      | ❌             |
-| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 69.86      | ❌             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 69.66      | ❌             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 69.38      | ❌             |
-| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 68.78      | ✅             |
-| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 68.53      | ❌             |
-| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 68.53      | ❌             |
-| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 68.53      | ❌             |
-| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 68.51      | ❌             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 68.41      | ❌             |
-| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 68.41      | ❌             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 68.33      | ❌             |
-| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 66.96      | ✅             |
-| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 66.95      | ✅             |
-| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 65.65      | ✅             |
-| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 65.49      | ❌             |
-| ViT-L-14__openai                                     | 2212         | 19.91               | 60.12      | ❌             |
-| ViT-B-32__openai                                     | 1004         | 2.26                | 59.37      | ✅             |
-| RN50x64__openai                                      | 5079         | 48.79               | 59.36      | ❌             |
-| RN50x16__openai                                      | 2221         | 15.87               | 59.17      | ❌             |
-| ViT-L-14-336__openai                                 | 2616         | 43.45               | 59.09      | ❌             |
-| RN50__openai                                         | 913          | 2.39                | 58.32      | ✅             |
-| ViT-B-16__openai                                     | 985          | 5.03                | 58.27      | ❌             |
-| RN50x4__openai                                       | 1416         | 5.85                | 57.88      | ❌             |
-| RN50__cc12m                                          | 914          | 2.37                | 57.75      | ✅             |
-| RN101__openai                                        | 1111         | 3.21                | 57.7       | ❌             |
-| RN101__yfcc15m                                       | 1111         | 3.22                | 50.11      | ❌             |
-| RN50__yfcc15m                                        | 908          | 2.34                | 48.28      | ✅             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 85.99      | ✅             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 85.96      | ❌             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 85.96      | ❌             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 85.93      | ❌             |
+| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 85.78      | ❌             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 85.75      | ✅             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 85.62      | ✅             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 85.53      | ✅             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 85.48      | ❌             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 85.47      | ✅             |
+| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 85.09      | ❌             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 85.03      | ✅             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 84.86      | ✅             |
+| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 84.61      | ❌             |
+| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 84.17      | ❌             |
+| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 83.51      | ❌             |
+| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 83.28      | ✅             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 83.24      | ❌             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 83.23      | ❌             |
+| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 83.19      | ✅             |
+| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 82.54      | ❌             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 82.43      | ❌             |
+| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 82.36      | ❌             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 82.28      | ✅             |
+| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 81.9       | ✅             |
+| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 81.9       | ❌             |
+| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 80.82      | ❌             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 80.65      | ❌             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 80.16      | ❌             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 79.78      | ❌             |
+| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 78.64      | ❌             |
+| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 78.6       | ❌             |
+| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 78.06      | ❌             |
+| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 78.06      | ❌             |
+| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 77.62      | ✅             |
+| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 77.47      | ❌             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 76.91      | ❌             |
+| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 76.43      | ✅             |
+| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 76.35      | ❌             |
+| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 73.83      | ✅             |
+| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 73.62      | ❌             |
+| RN50x64__openai                                      | 5079         | 48.79               | 73.34      | ❌             |
+| ViT-L-14__openai                                     | 2212         | 19.91               | 72.99      | ❌             |
+| ViT-L-14-336__openai                                 | 2616         | 43.45               | 72.76      | ❌             |
+| RN50x16__openai                                      | 2221         | 15.87               | 72.59      | ❌             |
+| RN50x4__openai                                       | 1416         | 5.85                | 70.8       | ❌             |
+| ViT-B-16__openai                                     | 985          | 5.03                | 70.01      | ❌             |
+| ViT-B-32__openai                                     | 1004         | 2.26                | 69.9       | ✅             |
+| RN101__openai                                        | 1111         | 3.21                | 69.3       | ❌             |
+| RN50__openai                                         | 913          | 2.39                | 69.02      | ✅             |
+| RN50__cc12m                                          | 914          | 2.37                | 64.59      | ✅             |
+| RN101__yfcc15m                                       | 1111         | 3.22                | 55.21      | ❌             |
+| RN50__yfcc15m                                        | 908          | 2.34                | 53.63      | ✅             |
 </details>
 <details>
 <summary>Arabic</summary>
@@ -156,8 +169,8 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 | nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 74.03      | ✅             |
 | nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 73.19      | ✅             |
 | ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 69.31      | ✅             |
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 69.29      | ❌             |
 | ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 69.29      | ❌             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 69.29      | ❌             |
 | ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 68.64      | ✅             |
 | ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 68.35      | ✅             |
 | ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 68.25      | ✅             |
@@ -195,25 +208,25 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 <summary>Chinese (Simplified)</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 77.49      | ✅             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 77.19      | ✅             |
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 76.98      | ❌             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 72.89      | ✅             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 72.65      | ✅             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 72.52      | ✅             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 67.83      | ❌             |
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 67.81      | ❌             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 67.51      | ❌             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 67.39      | ❌             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 67.33      | ❌             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 67.23      | ❌             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 67.05      | ❌             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 66.87      | ✅             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 66.24      | ❌             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 66.1       | ✅             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 65.56      | ❌             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 64.39      | ❌             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 62.56      | ❌             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 79.7       | ✅             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 78.94      | ❌             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 75.22      | ✅             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 74.8       | ✅             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 73.91      | ❌             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 72.8       | ❌             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 72.77      | ❌             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 72.41      | ✅             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 72.36      | ✅             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 71.59      | ❌             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 71.37      | ✅             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 71.3       | ✅             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 71.11      | ✅             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 70.95      | ✅             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 70.51      | ✅             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 67.48      | ✅             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 66.84      | ✅             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 65.7       | ✅             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 63.38      | ❌             |
 </details>
 <details>
 <summary>Croatian</summary>
@@ -324,8 +337,8 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
 | ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 80.05      | ✅             |
 | ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 79.81      | ❌             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 79.72      | ❌             |
 | ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 79.72      | ✅             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 79.72      | ❌             |
 | ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 79.64      | ✅             |
 | ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 79.49      | ✅             |
 | nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 79.41      | ❌             |
@@ -357,8 +370,8 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 | ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 29.56      | ❌             |
 | ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 29.54      | ✅             |
 | ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 29.36      | ❌             |
-| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 27.76      | ❌             |
 | ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 27.76      | ❌             |
+| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 27.76      | ❌             |
 | ViT-B-16__laion400m_e32                              | 975          | 4.98                | 25.67      | ✅             |
 | ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 25.59      | ❌             |
 | ViT-B-16__laion400m_e31                              | 991          | 5.04                | 25.53      | ❌             |
@@ -384,8 +397,8 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 | ViT-SO400M-16-SigLIP2-384__webli | 3854         | 56.57               | 34.27      | ❌             |
 | ViT-SO400M-14-SigLIP2__webli     | 3622         | 27.63               | 34.14      | ❌             |
 | ViT-SO400M-16-SigLIP2-256__webli | 3611         | 27.84               | 33.98      | ❌             |
-| ViT-L-16-SigLIP2-512__webli      | 3358         | 92.59               | 30.57      | ❌             |
 | ViT-L-16-SigLIP2-384__webli      | 3057         | 51.7                | 30.57      | ❌             |
+| ViT-L-16-SigLIP2-512__webli      | 3358         | 92.59               | 30.57      | ❌             |
 | ViT-L-16-SigLIP2-256__webli      | 2830         | 23.77               | 30.05      | ✅             |
 | ViT-L-16-SigLIP-384__webli       | 3396         | 47.6                | 24.92      | ❌             |
 | ViT-L-16-SigLIP-256__webli       | 3160         | 23.84               | 24.02      | ❌             |
@@ -422,110 +435,111 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 <summary>French</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 88.01      | ✅             |
-| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 87.74      | ❌             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 87.69      | ✅             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 87.6       | ✅             |
-| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 87.58      | ✅             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 87.51      | ✅             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 87.23      | ❌             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 86.9       | ✅             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 86.9       | ✅             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 86.44      | ✅             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 86.44      | ❌             |
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 86.28      | ❌             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 86.11      | ❌             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 86.08      | ✅             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 84.49      | ❌             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 84.3       | ✅             |
-| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 83.03      | ✅             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 82.93      | ❌             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 82.27      | ✅             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 82.14      | ❌             |
-| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 80.96      | ❌             |
-| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 80.64      | ❌             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 80.28      | ✅             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 79.65      | ✅             |
-| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 77.4       | ✅             |
-| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 76.88      | ✅             |
-| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 76.3       | ✅             |
-| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 75.68      | ❌             |
-| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 69.59      | ❌             |
-| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 68.36      | ❌             |
-| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 61.78      | ❌             |
-| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 58.4       | ❌             |
-| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 58.35      | ❌             |
-| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 57.17      | ❌             |
-| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 57.17      | ❌             |
-| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 57.05      | ✅             |
-| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 56.08      | ✅             |
-| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 52.96      | ✅             |
-| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 52.83      | ✅             |
-| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 51.88      | ❌             |
-| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 51.82      | ✅             |
-| RN50x64__openai                                      | 5079         | 48.79               | 42.86      | ❌             |
-| ViT-L-14-336__openai                                 | 2616         | 43.45               | 42.81      | ❌             |
-| ViT-L-14__openai                                     | 2212         | 19.91               | 42.54      | ❌             |
-| RN50x16__openai                                      | 2221         | 15.87               | 41.72      | ❌             |
-| RN50x4__openai                                       | 1416         | 5.85                | 38.85      | ❌             |
-| RN101__openai                                        | 1111         | 3.21                | 36.79      | ❌             |
-| ViT-B-16__openai                                     | 985          | 5.03                | 36.47      | ❌             |
-| ViT-B-32__openai                                     | 1004         | 2.26                | 35.17      | ✅             |
-| RN50__openai                                         | 913          | 2.39                | 34.44      | ✅             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 86.5       | ✅             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 86.5       | ❌             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 86.39      | ❌             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 86.15      | ❌             |
+| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 86.1       | ❌             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 86.07      | ❌             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 86.06      | ❌             |
+| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 85.89      | ✅             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 85.67      | ✅             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 85.67      | ✅             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 85.63      | ❌             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 85.39      | ✅             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 85.35      | ✅             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 84.97      | ✅             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 83.8       | ✅             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 82.96      | ❌             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 82.91      | ✅             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 82.52      | ❌             |
+| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 81.21      | ✅             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 80.23      | ✅             |
+| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 79.85      | ❌             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 79.47      | ✅             |
+| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 79.3       | ❌             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 77.49      | ✅             |
+| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 76.82      | ✅             |
+| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 75.94      | ✅             |
+| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 75.3       | ✅             |
+| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 75.24      | ❌             |
+| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 69.33      | ❌             |
+| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 64.41      | ❌             |
+| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 62.86      | ❌             |
+| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 59.27      | ❌             |
+| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 59.09      | ❌             |
+| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 58.25      | ❌             |
+| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 58.25      | ❌             |
+| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 56.97      | ✅             |
+| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 56.21      | ✅             |
+| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 53.36      | ✅             |
+| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 53.33      | ✅             |
+| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 53.26      | ❌             |
+| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 53.22      | ❌             |
+| ViT-L-14__openai                                     | 2212         | 19.91               | 46.34      | ❌             |
+| RN50x64__openai                                      | 5079         | 48.79               | 46.3       | ❌             |
+| ViT-L-14-336__openai                                 | 2616         | 43.45               | 45.95      | ❌             |
+| RN50x16__openai                                      | 2221         | 15.87               | 45.69      | ❌             |
+| RN50x4__openai                                       | 1416         | 5.85                | 42.48      | ❌             |
+| RN101__openai                                        | 1111         | 3.21                | 40.16      | ❌             |
+| ViT-B-16__openai                                     | 985          | 5.03                | 40.1       | ❌             |
+| ViT-B-32__openai                                     | 1004         | 2.26                | 38.27      | ✅             |
+| RN50__openai                                         | 913          | 2.39                | 37.8       | ✅             |
 </details>
 <details>
 <summary>German</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 90.04      | ✅             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 89.97      | ✅             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 89.85      | ❌             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 89.81      | ✅             |
-| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 89.77      | ❌             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 89.69      | ✅             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 89.45      | ✅             |
-| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 89.44      | ❌             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 89.39      | ✅             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 89.35      | ✅             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 89.03      | ❌             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 88.82      | ✅             |
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 88.55      | ❌             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 88.42      | ❌             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 87.19      | ❌             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 86.44      | ✅             |
-| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 84.81      | ✅             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 84.81      | ❌             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 84.58      | ❌             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 84.44      | ✅             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 83.33      | ✅             |
-| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 82.75      | ❌             |
-| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 82.32      | ❌             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 81.63      | ✅             |
-| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 76.76      | ✅             |
-| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 76.33      | ✅             |
-| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 75.19      | ✅             |
-| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 75.07      | ❌             |
-| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 64.61      | ❌             |
-| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 52.81      | ❌             |
-| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 42.88      | ❌             |
-| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 38.65      | ❌             |
-| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 38.37      | ❌             |
-| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 37.65      | ✅             |
-| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 36.6       | ✅             |
-| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 35.44      | ❌             |
-| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 35.44      | ❌             |
-| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 32.46      | ✅             |
-| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 32.31      | ✅             |
-| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 31.85      | ✅             |
-| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 31.81      | ❌             |
-| RN50x64__openai                                      | 5079         | 48.79               | 28.41      | ❌             |
-| ViT-L-14__openai                                     | 2212         | 19.91               | 27.63      | ❌             |
-| ViT-L-14-336__openai                                 | 2616         | 43.45               | 27.09      | ❌             |
-| RN50x16__openai                                      | 2221         | 15.87               | 24.48      | ❌             |
-| RN50x4__openai                                       | 1416         | 5.85                | 23.49      | ❌             |
-| RN50__openai                                         | 913          | 2.39                | 20.91      | ✅             |
-| ViT-B-16__openai                                     | 985          | 5.03                | 20.83      | ❌             |
-| RN101__openai                                        | 1111         | 3.21                | 20.39      | ❌             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 87.32      | ✅             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 87.29      | ❌             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 87.29      | ❌             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 87.21      | ✅             |
+| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 87.18      | ❌             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 87.14      | ❌             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 87.07      | ❌             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 86.83      | ❌             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 86.81      | ✅             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 86.75      | ✅             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 86.74      | ✅             |
+| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 86.68      | ❌             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 86.56      | ✅             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 86.16      | ✅             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 84.54      | ❌             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 84.41      | ✅             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 84.25      | ✅             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 83.8       | ❌             |
+| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 82.59      | ✅             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 81.53      | ✅             |
+| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 81.34      | ❌             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 81.15      | ✅             |
+| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 81.05      | ❌             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 78.35      | ✅             |
+| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 76.56      | ✅             |
+| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 76.0       | ✅             |
+| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 75.21      | ✅             |
+| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 75.14      | ❌             |
+| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 65.86      | ❌             |
+| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 56.87      | ❌             |
+| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 47.19      | ❌             |
+| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 43.36      | ❌             |
+| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 43.0       | ❌             |
+| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 41.81      | ✅             |
+| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 40.43      | ✅             |
+| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 40.41      | ❌             |
+| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 40.41      | ❌             |
+| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 37.71      | ✅             |
+| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 37.64      | ✅             |
+| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 36.04      | ✅             |
+| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 35.9       | ❌             |
+| RN50x64__openai                                      | 5079         | 48.79               | 34.19      | ❌             |
+| ViT-L-14__openai                                     | 2212         | 19.91               | 33.1       | ❌             |
+| ViT-L-14-336__openai                                 | 2616         | 43.45               | 32.25      | ❌             |
+| RN50x16__openai                                      | 2221         | 15.87               | 30.56      | ❌             |
+| RN50x4__openai                                       | 1416         | 5.85                | 29.2       | ❌             |
+| ViT-B-16__openai                                     | 985          | 5.03                | 25.77      | ❌             |
+| RN101__openai                                        | 1111         | 3.21                | 25.46      | ❌             |
+| RN50__openai                                         | 913          | 2.39                | 24.92      | ✅             |
+| ViT-B-32__openai                                     | 1004         | 2.26                | 24.13      | ✅             |
 </details>
 <details>
 <summary>Greek</summary>
@@ -542,10 +556,10 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 | ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 60.63      | ❌             |
 | ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 60.41      | ❌             |
 | ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 60.1       | ❌             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 60.06      | ❌             |
 | ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 60.06      | ❌             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 59.44      | ❌             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 60.06      | ❌             |
 | ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 59.44      | ❌             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 59.44      | ❌             |
 | ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 59.43      | ✅             |
 | ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 58.78      | ✅             |
 | ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 53.42      | ❌             |
@@ -670,99 +684,104 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 <summary>Italian</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 88.6       | ✅             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 88.25      | ✅             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 88.12      | ✅             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 88.04      | ✅             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 87.97      | ❌             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 87.69      | ❌             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 87.29      | ✅             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 87.06      | ❌             |
-| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 86.91      | ❌             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 86.88      | ✅             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 86.68      | ✅             |
-| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 86.61      | ❌             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 85.55      | ❌             |
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 85.37      | ❌             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 83.78      | ✅             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 83.0       | ❌             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 81.81      | ✅             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 81.77      | ❌             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 81.32      | ❌             |
-| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 80.97      | ❌             |
-| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 80.53      | ✅             |
-| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 80.1       | ❌             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 79.71      | ✅             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 77.31      | ✅             |
-| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 75.19      | ✅             |
-| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 74.49      | ✅             |
-| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 74.04      | ❌             |
-| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 73.68      | ✅             |
-| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 73.57      | ✅             |
-| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 51.04      | ❌             |
-| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 41.73      | ❌             |
-| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 36.87      | ❌             |
-| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 36.84      | ❌             |
-| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 34.68      | ❌             |
-| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 34.68      | ❌             |
-| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 34.64      | ✅             |
-| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 33.8       | ✅             |
-| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 30.11      | ✅             |
-| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 30.04      | ❌             |
-| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 29.89      | ❌             |
-| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 29.88      | ✅             |
-| RN50x64__openai                                      | 5079         | 48.79               | 26.67      | ❌             |
-| ViT-L-14__openai                                     | 2212         | 19.91               | 25.51      | ❌             |
-| ViT-L-14-336__openai                                 | 2616         | 43.45               | 25.3       | ❌             |
-| RN50x16__openai                                      | 2221         | 15.87               | 21.37      | ❌             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 87.17      | ✅             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 86.91      | ✅             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 86.83      | ❌             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 86.77      | ✅             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 86.67      | ✅             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 86.42      | ❌             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 86.35      | ✅             |
+| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 86.34      | ❌             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 86.18      | ✅             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 86.17      | ❌             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 85.84      | ✅             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 85.8       | ❌             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 85.7       | ✅             |
+| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 85.67      | ❌             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 83.32      | ✅             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 82.95      | ❌             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 82.73      | ❌             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 82.72      | ❌             |
+| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 81.07      | ❌             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 80.8       | ✅             |
+| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 80.6       | ✅             |
+| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 80.35      | ❌             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 78.79      | ✅             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 76.62      | ✅             |
+| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 76.51      | ✅             |
+| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 76.08      | ✅             |
+| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 75.29      | ✅             |
+| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 75.29      | ❌             |
+| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 74.84      | ❌             |
+| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 56.32      | ❌             |
+| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 47.25      | ❌             |
+| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 43.09      | ❌             |
+| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 42.99      | ❌             |
+| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 40.29      | ❌             |
+| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 40.29      | ❌             |
+| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 39.67      | ✅             |
+| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 39.03      | ✅             |
+| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 36.14      | ✅             |
+| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 35.89      | ❌             |
+| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 35.59      | ❌             |
+| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 35.56      | ✅             |
+| RN50x64__openai                                      | 5079         | 48.79               | 33.53      | ❌             |
+| ViT-L-14__openai                                     | 2212         | 19.91               | 32.19      | ❌             |
+| ViT-L-14-336__openai                                 | 2616         | 43.45               | 30.95      | ❌             |
+| RN50x16__openai                                      | 2221         | 15.87               | 28.85      | ❌             |
+| RN50x4__openai                                       | 1416         | 5.85                | 25.75      | ❌             |
+| ViT-B-16__openai                                     | 985          | 5.03                | 25.18      | ❌             |
+| RN101__openai                                        | 1111         | 3.21                | 24.48      | ❌             |
+| RN50__openai                                         | 913          | 2.39                | 23.89      | ✅             |
+| ViT-B-32__openai                                     | 1004         | 2.26                | 23.39      | ✅             |
 </details>
 <details>
 <summary>Japanese</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 86.97      | ✅             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 85.15      | ❌             |
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 84.69      | ❌             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 81.77      | ✅             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 81.26      | ❌             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 81.19      | ✅             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 69.99      | ❌             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 68.58      | ❌             |
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 68.35      | ❌             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 68.29      | ❌             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 67.99      | ❌             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 67.68      | ❌             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 67.67      | ❌             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 66.85      | ✅             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 66.54      | ❌             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 65.77      | ❌             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 61.48      | ✅             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 58.1       | ❌             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 55.31      | ❌             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 83.95      | ✅             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 82.21      | ❌             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 81.55      | ❌             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 78.72      | ✅             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 78.53      | ❌             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 75.93      | ✅             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 66.86      | ❌             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 65.59      | ❌             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 65.48      | ❌             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 65.36      | ❌             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 64.47      | ❌             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 64.17      | ❌             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 64.08      | ❌             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 63.69      | ✅             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 63.33      | ❌             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 63.02      | ❌             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 58.39      | ✅             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 56.38      | ❌             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 53.16      | ❌             |
 </details>
 <details>
 <summary>Korean</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 77.21      | ✅             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 76.89      | ✅             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 75.72      | ✅             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 75.06      | ✅             |
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 74.94      | ❌             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 74.36      | ✅             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 74.09      | ✅             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 73.61      | ❌             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 73.55      | ✅             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 73.41      | ✅             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 73.18      | ✅             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 72.79      | ✅             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 72.27      | ❌             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 71.73      | ✅             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 71.12      | ❌             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 70.25      | ✅             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 67.54      | ✅             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 67.37      | ✅             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 65.44      | ✅             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 80.56      | ✅             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 80.53      | ✅             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 77.09      | ✅             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 77.08      | ✅             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 76.97      | ❌             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 76.92      | ✅             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 76.58      | ✅             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 76.2       | ✅             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 75.95      | ✅             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 75.86      | ✅             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 75.67      | ✅             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 75.49      | ❌             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 74.6       | ❌             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 74.52      | ✅             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 73.88      | ❌             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 71.09      | ✅             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 68.87      | ✅             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 67.94      | ✅             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 66.39      | ✅             |
 </details>
 <details>
 <summary>Maori</summary>
@@ -834,34 +853,34 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 <summary>Polish</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 80.6       | ✅             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 80.17      | ✅             |
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 80.06      | ❌             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 80.04      | ✅             |
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 79.98      | ❌             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 79.8       | ✅             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 79.72      | ✅             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 79.66      | ❌             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 79.45      | ✅             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 79.26      | ❌             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 79.21      | ❌             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 79.14      | ✅             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 78.23      | ✅             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 75.33      | ✅             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 74.7       | ✅             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 74.63      | ❌             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 73.69      | ✅             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 73.44      | ❌             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 70.34      | ❌             |
-| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 59.4       | ❌             |
-| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 59.14      | ❌             |
-| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 48.74      | ❌             |
-| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 48.35      | ❌             |
-| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 40.76      | ✅             |
-| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 39.13      | ✅             |
-| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 39.09      | ❌             |
-| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 38.55      | ❌             |
-| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 38.46      | ❌             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 83.49      | ✅             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 83.45      | ❌             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 83.11      | ✅             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 82.99      | ✅             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 82.96      | ❌             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 82.93      | ❌             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 82.61      | ❌             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 82.26      | ✅             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 82.24      | ✅             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 82.03      | ✅             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 82.03      | ❌             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 81.92      | ✅             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 81.27      | ✅             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 80.0       | ✅             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 79.65      | ✅             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 76.75      | ✅             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 76.52      | ✅             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 75.1       | ✅             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 73.9       | ❌             |
+| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 65.03      | ❌             |
+| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 64.89      | ❌             |
+| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 51.6       | ❌             |
+| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 51.29      | ❌             |
+| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 46.15      | ✅             |
+| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 41.55      | ✅             |
+| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 41.17      | ✅             |
+| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 40.9       | ✅             |
+| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 40.76      | ✅             |
 </details>
 <details>
 <summary>Portuguese</summary>
@@ -955,84 +974,87 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 <summary>Russian</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 87.65      | ✅             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 87.62      | ❌             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 87.4       | ✅             |
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 87.39      | ❌             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 86.88      | ❌             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 86.87      | ✅             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 86.74      | ✅             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 86.26      | ✅             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 85.98      | ✅             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 85.66      | ❌             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 85.54      | ❌             |
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 84.69      | ❌             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 84.29      | ✅             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 84.24      | ❌             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 82.86      | ✅             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 81.59      | ✅             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 80.56      | ✅             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 80.44      | ❌             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 79.99      | ❌             |
-| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 39.51      | ❌             |
-| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 39.16      | ❌             |
-| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 23.33      | ❌             |
-| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 22.4       | ❌             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 84.54      | ✅             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 84.41      | ❌             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 84.36      | ❌             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 84.31      | ❌             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 84.22      | ✅             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 83.9       | ✅             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 83.69      | ✅             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 83.5       | ✅             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 83.31      | ❌             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 83.21      | ❌             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 83.11      | ✅             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 82.7       | ❌             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 82.69      | ❌             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 80.91      | ✅             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 79.75      | ❌             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 79.35      | ✅             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 78.91      | ❌             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 78.06      | ✅             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 76.44      | ✅             |
+| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 42.81      | ❌             |
+| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 42.1       | ❌             |
+| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 24.95      | ❌             |
+| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 24.25      | ❌             |
+| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 20.85      | ✅             |
+| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 20.44      | ✅             |
+| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 20.41      | ❌             |
 </details>
 <details>
 <summary>Spanish</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 84.24      | ✅             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 83.94      | ✅             |
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 83.91      | ❌             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 83.78      | ✅             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 83.71      | ✅             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 83.59      | ❌             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 83.2       | ✅             |
-| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 83.0       | ❌             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 82.91      | ✅             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 82.58      | ❌             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 82.5       | ✅             |
-| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 82.48      | ❌             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 82.22      | ✅             |
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 81.34      | ❌             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 80.18      | ❌             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 80.14      | ❌             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 78.99      | ✅             |
-| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 78.19      | ✅             |
-| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 78.15      | ❌             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 77.93      | ✅             |
-| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 77.64      | ❌             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 77.21      | ❌             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 76.36      | ❌             |
-| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 75.73      | ✅             |
-| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 75.56      | ✅             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 75.01      | ✅             |
-| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 74.62      | ✅             |
-| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 74.6       | ✅             |
-| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 70.31      | ❌             |
-| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 58.31      | ❌             |
-| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 49.56      | ❌             |
-| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 46.69      | ❌             |
-| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 46.53      | ❌             |
-| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 44.05      | ❌             |
-| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 44.05      | ❌             |
-| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 43.67      | ✅             |
-| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 42.5       | ✅             |
-| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 41.03      | ✅             |
-| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 40.91      | ❌             |
-| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 40.3       | ✅             |
-| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 40.3       | ❌             |
-| RN50x64__openai                                      | 5079         | 48.79               | 37.92      | ❌             |
-| ViT-L-14-336__openai                                 | 2616         | 43.45               | 37.7       | ❌             |
-| ViT-L-14__openai                                     | 2212         | 19.91               | 37.59      | ❌             |
-| RN50x16__openai                                      | 2221         | 15.87               | 34.75      | ❌             |
-| ViT-B-16__openai                                     | 985          | 5.03                | 32.1       | ❌             |
-| RN50x4__openai                                       | 1416         | 5.85                | 32.08      | ❌             |
-| RN101__openai                                        | 1111         | 3.21                | 30.77      | ❌             |
-| RN50__openai                                         | 913          | 2.39                | 30.2       | ✅             |
-| ViT-B-32__openai                                     | 1004         | 2.26                | 29.84      | ✅             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 85.47      | ✅             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 85.44      | ✅             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 85.32      | ✅             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 85.22      | ❌             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 85.15      | ❌             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 84.81      | ✅             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 84.68      | ❌             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 84.6       | ✅             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 84.55      | ✅             |
+| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 84.27      | ❌             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 84.15      | ✅             |
+| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 83.87      | ❌             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 83.74      | ❌             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 83.61      | ✅             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 83.15      | ❌             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 81.7       | ❌             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 80.91      | ❌             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 80.73      | ✅             |
+| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 80.69      | ❌             |
+| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 80.3       | ❌             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 79.8       | ❌             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 79.71      | ✅             |
+| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 79.64      | ✅             |
+| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 78.0       | ✅             |
+| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 77.83      | ❌             |
+| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 76.87      | ✅             |
+| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 76.66      | ❌             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 75.99      | ✅             |
+| ViT-SO400M-14-SigLIP-384__webli                      | 4417         | 72.19               | 71.96      | ❌             |
+| ViT-H-14__laion2b-s32b-b79k                          | 4676         | 39.06               | 62.06      | ❌             |
+| ViT-L-14__laion2b-s32b-b82k                          | 2233         | 20.56               | 53.78      | ❌             |
+| ViT-L-14__laion400m_e32                              | 2218         | 19.73               | 50.13      | ❌             |
+| ViT-L-14__laion400m_e31                              | 2183         | 19.87               | 50.0       | ❌             |
+| ViT-B-16-plus-240__laion400m_e32                     | 1246         | 6.95                | 47.39      | ❌             |
+| ViT-B-16-plus-240__laion400m_e31                     | 1263         | 6.94                | 47.39      | ❌             |
+| ViT-B-32__laion2b_e16                                | 1004         | 2.38                | 46.47      | ✅             |
+| ViT-B-32__laion2b-s34b-b79k                          | 1001         | 2.29                | 45.68      | ✅             |
+| ViT-B-16__laion400m_e31                              | 991          | 5.04                | 44.0       | ✅             |
+| ViT-B-16__laion400m_e32                              | 975          | 4.98                | 43.98      | ✅             |
+| ViT-B-32__laion400m_e32                              | 1003         | 2.35                | 43.8       | ❌             |
+| ViT-B-32__laion400m_e31                              | 999          | 2.28                | 43.73      | ✅             |
+| RN50x64__openai                                      | 5079         | 48.79               | 43.01      | ❌             |
+| ViT-L-14__openai                                     | 2212         | 19.91               | 42.96      | ❌             |
+| ViT-L-14-336__openai                                 | 2616         | 43.45               | 41.67      | ❌             |
+| RN50x16__openai                                      | 2221         | 15.87               | 40.21      | ❌             |
+| RN50x4__openai                                       | 1416         | 5.85                | 36.06      | ❌             |
+| ViT-B-16__openai                                     | 985          | 5.03                | 35.67      | ❌             |
+| RN101__openai                                        | 1111         | 3.21                | 34.62      | ❌             |
+| ViT-B-32__openai                                     | 1004         | 2.26                | 32.6       | ✅             |
+| RN50__openai                                         | 913          | 2.39                | 31.79      | ✅             |
 </details>
 <details>
 <summary>Swahili</summary>
@@ -1057,8 +1079,8 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 | ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 72.1       | ✅             |
 | ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 72.06      | ✅             |
 | ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 71.84      | ✅             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 71.7       | ✅             |
 | ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 71.7       | ✅             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 71.7       | ✅             |
 | ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 71.61      | ❌             |
 | nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 71.51      | ✅             |
 | ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 71.45      | ✅             |
@@ -1115,31 +1137,34 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 <summary>Turkish</summary>
 | Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |
 |------------------------------------------------------|--------------|---------------------|------------|----------------|
-| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 81.15      | ✅             |
-| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 80.89      | ✅             |
-| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 78.11      | ✅             |
-| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 77.51      | ✅             |
-| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 77.36      | ✅             |
-| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 77.28      | ❌             |
-| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 77.24      | ✅             |
-| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 77.01      | ✅             |
-| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 76.37      | ❌             |
-| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 75.92      | ✅             |
-| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 75.69      | ✅             |
-| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 75.68      | ❌             |
-| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 75.54      | ✅             |
-| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 75.16      | ✅             |
-| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 73.83      | ✅             |
-| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 70.15      | ✅             |
-| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 69.19      | ✅             |
-| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 66.72      | ❌             |
-| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 64.76      | ❌             |
-| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 38.8       | ❌             |
-| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 38.48      | ❌             |
-| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 30.83      | ❌             |
-| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 30.28      | ❌             |
-| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 21.31      | ✅             |
-| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 20.08      | ✅             |
+| nllb-clip-large-siglip__mrl                          | 4248         | 75.44               | 83.91      | ✅             |
+| nllb-clip-large-siglip__v1                           | 4226         | 75.05               | 83.74      | ✅             |
+| nllb-clip-base-siglip__mrl                           | 4696         | 16.95               | 81.26      | ✅             |
+| nllb-clip-base-siglip__v1                            | 4675         | 15.17               | 80.21      | ✅             |
+| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 79.34      | ✅             |
+| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 79.22      | ✅             |
+| XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k | 4014         | 39.14               | 78.9       | ✅             |
+| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 78.85      | ✅             |
+| ViT-SO400M-16-SigLIP2-256__webli                     | 3611         | 27.84               | 78.29      | ✅             |
+| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 78.27      | ❌             |
+| ViT-gopt-16-SigLIP2-256__webli                       | 6475         | 64.51               | 78.0       | ❌             |
+| ViT-SO400M-14-SigLIP2__webli                         | 3622         | 27.63               | 77.81      | ✅             |
+| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 77.67      | ✅             |
+| ViT-L-16-SigLIP2-384__webli                          | 3057         | 51.7                | 77.33      | ✅             |
+| ViT-L-16-SigLIP2-256__webli                          | 2830         | 23.77               | 76.42      | ✅             |
+| ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 72.44      | ✅             |
+| XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k         | 3030         | 3.2                 | 69.84      | ✅             |
+| ViT-B-16-SigLIP2__webli                              | 3038         | 5.81                | 69.83      | ❌             |
+| ViT-B-32-SigLIP2-256__webli                          | 3061         | 3.31                | 67.13      | ❌             |
+| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 44.43      | ❌             |
+| ViT-H-14-quickgelu__dfn5b                            | 4701         | 38.74               | 43.87      | ❌             |
+| ViT-L-16-SigLIP-384__webli                           | 3396         | 47.6                | 35.1       | ❌             |
+| ViT-L-16-SigLIP-256__webli                           | 3160         | 23.84               | 34.92      | ❌             |
+| ViT-L-14-quickgelu__dfn2b                            | 2212         | 20.49               | 25.2       | ✅             |
+| ViT-B-16-SigLIP-512__webli                           | 1828         | 26.17               | 24.55      | ✅             |
+| ViT-B-16-SigLIP__webli                               | 1081         | 5.77                | 24.13      | ✅             |
+| ViT-B-16-SigLIP-384__webli                           | 1128         | 13.53               | 24.08      | ❌             |
+| ViT-B-16-SigLIP-256__webli                           | 1102         | 7.11                | 23.95      | ❌             |
 </details>
 <details>
 <summary>Ukrainian</summary>

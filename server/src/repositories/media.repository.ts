@@ -45,18 +45,22 @@ export class MediaRepository {
   async extract(input: string, output: string): Promise<boolean> {
     try {
       // remove existing output file if it exists
-      // as exiftool-vendord does not support overwriting via "-w!" flag
+      // as exiftool-vendored does not support overwriting via "-w!" flag
       // and throws "1 files could not be read" error when the output file exists
       await fs.unlink(output).catch(() => null);
-      this.logger.debug('Extracting JPEG from RAW image:', input);
-      await exiftool.extractJpgFromRaw(input, output);
-    } catch (error: any) {
-      this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
+      await exiftool.extractBinaryTag('JpgFromRaw2', input, output);
+    } catch {
       try {
-        await exiftool.extractPreview(input, output);
+        this.logger.debug('Extracting JPEG from RAW image:', input);
+        await exiftool.extractJpgFromRaw(input, output);
       } catch (error: any) {
-        this.logger.debug('Could not extract preview from image', error.message);
-        return false;
+        this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
+        try {
+          await exiftool.extractPreview(input, output);
+        } catch (error: any) {
+          this.logger.debug('Could not extract preview from image', error.message);
+          return false;
+        }
       }
     }
     return true;

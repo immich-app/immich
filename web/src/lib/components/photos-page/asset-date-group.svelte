@@ -136,7 +136,12 @@
     </div>
 
     <!-- Image grid -->
-    <div class="relative overflow-clip" style:height={dateGroup.height + 'px'} style:width={dateGroup.width + 'px'}>
+    <div
+      data-image-grid
+      class="relative overflow-clip"
+      style:height={dateGroup.height + 'px'}
+      style:width={dateGroup.width + 'px'}
+    >
       {#each filterIntersecting(dateGroup.intersetingAssets) as intersectingAsset (intersectingAsset.id)}
         {@const position = intersectingAsset.position!}
         {@const asset = intersectingAsset.asset!}
@@ -179,5 +184,8 @@
 <style>
   section {
     contain: layout paint style;
+  }
+  [data-image-grid] {
+    user-select: none;
   }
 </style>
