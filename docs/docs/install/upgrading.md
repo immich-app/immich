@@ -10,9 +10,9 @@ Immich is currently under heavy development, which means you can expect [breakin
 You can see versions that had breaking changes [here][breaking].
 :::
 
-If `IMMICH_VERSION` is set, it will need to be updated to the latest or desired version.
-
-When a new version of Immich is [released][releases], the application can be upgraded and restarted with the following commands, run in the directory with the `docker-compose.yml` file:
+When a new version of Immich is [released][releases], you should read the release notes and account for any breaking changes noted (as mentioned above).
+If you use `IMMICH_VERSION` in your `.env` file, it will need to be updated to the latest or desired version.
+After that, the application can be upgraded and restarted with the following commands, run in the directory with the `docker-compose.yml` file:
 
 ```bash title="Upgrade and restart Immich"
 docker compose pull && docker compose up -d
