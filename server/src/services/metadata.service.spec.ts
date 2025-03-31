@@ -1224,10 +1224,16 @@ describe(MetadataService.name, () => {
     });
 
     it.each([
+      { exif: {}, expected: null },
       { exif: { LensID: '1', LensSpec: '2', LensType: '3', LensModel: '4' }, expected: '1' },
       { exif: { LensSpec: '2', LensType: '3', LensModel: '4' }, expected: '3' },
       { exif: { LensSpec: '2', LensModel: '4' }, expected: '2' },
       { exif: { LensModel: '4' }, expected: '4' },
+      { exif: { LensID: '----' }, expected: null },
+      { exif: { LensID: 'Unknown (0 ff ff)' }, expected: null },
+      { exif: { LensID: 'Unknown (E1 40 19 36 2C 35 DF 0E) Tamron 10-24mm f/3.5-4.5 Di II VC HLD (B023) ?' }, expected: null },
+      { exif: { LensID: ' Unknown 6-30mm' }, expected: null },
+      { exif: { LensID: '' }, expected: null },
     ])('should read camera lens information $exif -> $expected', async ({ exif, expected }) => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags(exif);
