@@ -247,6 +247,10 @@ Some examples are: `IMMICH_VERSION`, `UPLOAD_LOCATION`, `DB_DATA_LOCATION`, `TZ`
 
 ## Updating the App
 
+:::danger
+Make sure to read the general [upgrade instructions](/docs/install/upgrading.md).
+:::
+
 When updates become available, SCALE alerts and provides easy updates.
 To update the app to the latest version:
 
