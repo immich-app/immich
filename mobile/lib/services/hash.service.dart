@@ -17,67 +17,60 @@ class HashService {
   HashService({
     required IDeviceAssetRepository deviceAssetRepository,
     required BackgroundService backgroundService,
+    this.batchSizeLimit = kBatchHashSizeLimit,
+    this.batchFileLimit = kBatchHashFileLimit,
   })  : _deviceAssetRepository = deviceAssetRepository,
         _backgroundService = backgroundService;
 
   final IDeviceAssetRepository _deviceAssetRepository;
   final BackgroundService _backgroundService;
+  final int batchSizeLimit;
+  final int batchFileLimit;
   final _log = Logger('HashService');
 
   /// Processes a list of local [Asset]s, storing their hash and returning only those
   /// that were successfully hashed. Hashes are looked up in a DB table
   /// [DeviceAsset] by local id. Only missing entries are newly hashed and added to the DB table.
   Future<List<Asset>> hashAssets(List<Asset> assets) async {
-    assets.sort(Asset.compareByLocalId);
+    // Get all DB entries - guaranteed to be a subset of assets
     final hashesInDB = await _deviceAssetRepository
         .getForIds(assets.map((a) => a.localId!).toList());
-    hashesInDB.sort((a, b) => a.assetId.compareTo(b.assetId));
+
+    // Create a lookup map - since every DB entry has a matching asset,
+    // this map will be no larger than assets.length
+    final Map<String, DeviceAsset> deviceAssetMap = {
+      for (final asset in hashesInDB) asset.assetId: asset,
+    };
 
     int bytesProcessed = 0;
     final hashedAssets = <Asset>[];
     final toBeHashed = <_AssetPath>[];
     final toBeDeleted = <String>[];
 
-    for (final (index, asset) in assets.indexed) {
-      if (hashesInDB.elementAtOrNull(index) != null &&
-          hashesInDB[index].assetId == assets[index].localId &&
-          hashesInDB[index].hash.isNotEmpty &&
-          hashesInDB[index]
-              .modifiedTime
-              .isAtSameMomentAs(assets[index].fileModifiedAt)) {
-        // localID is matching and the asset is not modified, reuse the hash
+    for (final asset in assets) {
+      final deviceAsset = deviceAssetMap[asset.localId];
+
+      if (deviceAsset != null &&
+          deviceAsset.modifiedTime.isAtSameMomentAs(asset.fileModifiedAt)) {
+        // We have a valid hash that matches the file timestamp - reuse it
         hashedAssets.add(
-          asset.copyWith(checksum: base64.encode(hashesInDB[index].hash)),
+          asset.copyWith(checksum: base64.encode(deviceAsset.hash)),
         );
         continue;
       }
 
-      File? file;
-      try {
-        file = await assets[index].local!.originFile;
-      } catch (error, stackTrace) {
-        _log.warning(
-          "Error getting file to hash for asset ${assets[index].localId ?? '<N/A>'}, name: ${assets[index].fileName}, created on: ${assets[index].fileCreatedAt}, skipping",
-          error,
-          stackTrace,
-        );
-      }
-
+      final file = await _tryGetAssetFile(asset);
       if (file == null) {
-        final fileName = assets[index].fileName;
-        _log.warning(
-          "Failed to get file for asset ${assets[index].localId ?? '<N/A>'}, name: $fileName, created on: ${assets[index].fileCreatedAt}, skipping",
-        );
-        // We do not have a matching meta in DeviceAsset and we cannot get the file. Skip this asset.
-        toBeDeleted.add(assets[index].localId!);
+        // We don't have the file, skip and delete the DB entry
+        if (deviceAsset != null) {
+          toBeDeleted.add(deviceAsset.assetId);
+        }
         continue;
       }
 
       bytesProcessed += await file.length();
       toBeHashed.add(_AssetPath(asset: asset, path: file.path));
-
-      if (toBeHashed.length == kBatchHashAssetsLimit ||
-          bytesProcessed >= kBatchHashSizeLimit) {
+      if (_shouldProcessBatch(toBeHashed.length, bytesProcessed)) {
         hashedAssets.addAll(await _processBatch(toBeHashed, toBeDeleted));
         toBeHashed.clear();
         toBeDeleted.clear();
@@ -85,17 +78,40 @@ class HashService {
       }
     }
 
+    // Process any remaining files
     if (toBeHashed.isNotEmpty) {
       hashedAssets.addAll(await _processBatch(toBeHashed, toBeDeleted));
-      toBeHashed.clear();
-      toBeDeleted.clear();
     }
 
+    // Clean up deleted references
     if (toBeDeleted.isNotEmpty) {
       await _deviceAssetRepository.deleteIds(toBeDeleted);
     }
 
     return hashedAssets;
+  }
+
+  bool _shouldProcessBatch(int assetCount, int bytesProcessed) =>
+      assetCount >= batchFileLimit || bytesProcessed >= batchSizeLimit;
+
+  Future<File?> _tryGetAssetFile(Asset asset) async {
+    try {
+      final file = await asset.local!.originFile;
+      if (file == null) {
+        _log.warning(
+          "Failed to get file for asset ${asset.localId ?? '<N/A>'}, name: ${asset.fileName}, created on: ${asset.fileCreatedAt}, skipping",
+        );
+        return null;
+      }
+      return file;
+    } catch (error, stackTrace) {
+      _log.warning(
+        "Error getting file to hash for asset ${asset.localId ?? '<N/A>'}, name: ${asset.fileName}, created on: ${asset.fileCreatedAt}, skipping",
+        error,
+        stackTrace,
+      );
+      return null;
+    }
   }
 
   /// Processes a batch of files and returns a list of successfully hashed assets after saving
@@ -153,7 +169,7 @@ class HashService {
       }
       _log.severe("Hashing ${paths.length} files failed");
     } catch (e, s) {
-      _log.severe("Error occured while hashing assets", e, s);
+      _log.severe("Error occurred while hashing assets", e, s);
     }
     return List.filled(paths.length, null);
   }

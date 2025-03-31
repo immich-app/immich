@@ -731,7 +731,7 @@ class SyncService {
     List<Asset> existing, [
     Set<String>? excludedAssets,
   ]) async {
-    _log.info("Syncing a new local album to DB: ${album.name}");
+    _log.info("Adding a new local album to DB: ${album.name}");
     final assets = await _getHashedAssets(
       album,
       excludedAssets: excludedAssets,
