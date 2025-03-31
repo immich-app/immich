@@ -799,6 +799,7 @@ export type SearchExploreResponseDto = {
     items: SearchExploreItem[];
 };
 export type MetadataSearchDto = {
+    albumIds?: string[];
     checksum?: string;
     city?: string | null;
     country?: string | null;
@@ -877,6 +878,7 @@ export type PlacesResponseDto = {
     name: string;
 };
 export type RandomSearchDto = {
+    albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
@@ -912,6 +914,7 @@ export type RandomSearchDto = {
     withStacked?: boolean;
 };
 export type SmartSearchDto = {
+    albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;

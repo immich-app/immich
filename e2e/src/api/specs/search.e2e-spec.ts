@@ -187,6 +187,21 @@ describe('/search', () => {
         dto: { [value]: 'immich' },
         expected: [`${value} must be a boolean value`],
       })),
+      {
+        should: 'should reject albumIds null',
+        dto: { size: 1, albumIds: null },
+        expected: [
+          "each value in albumIds must be a UUID",
+          "albumIds must be an array"
+        ],
+      },
+      {
+        should: 'should reject albumIds invalid format',
+        dto: { size: 1, albumIds: ['invalid_uuid'] },
+        expected: [
+          "each value in albumIds must be a UUID"
+        ],
+      },
     ];
 
     for (const { should, dto, expected } of badTests) {
@@ -433,6 +448,14 @@ describe('/search', () => {
           dto: { libraryId: null, size: 1 },
           assets: [assetLast],
         }),
+      },
+      {
+        should: 'should get my assets with empty albumIds',
+        deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: [] }),
+      },
+      {
+        should: 'should get my assets with a valued albumIds',
+        deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: ['84010428-5106-42e1-be4d-e66d88fb59c2'] }),
       },
     ];
 

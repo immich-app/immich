@@ -66,6 +66,7 @@ export interface SearchStatusOptions {
   isOffline?: boolean;
   isVisible?: boolean;
   isNotInAlbum?: boolean;
+  albumIds?: string[];
   type?: AssetType;
   status?: AssetStatus;
   withArchived?: boolean;
