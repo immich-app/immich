@@ -48,7 +48,7 @@
     <button
       type="button"
       onclick={() => toggleAlbumGroupCollapsing(group.id)}
-      class="w-fit mt-2 pt-2 pr-2 mb-2 dark:text-immich-dark-fg"
+      class="w-full text-left mt-2 pt-2 pr-2 pb-2 rounded-md transition-colors cursor-pointer dark:text-immich-dark-fg hover:text-immich-primary dark:hover:text-immich-dark-primary hover:bg-immich-gray dark:hover:bg-immich-dark-gray"
       aria-expanded={!isCollapsed}
     >
       <Icon
