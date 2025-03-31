@@ -142,7 +142,6 @@ ENV TRANSFORMERS_CACHE=/cache \
     PYTHONPATH=/usr/src \
     DEVICE=${DEVICE} \
     VIRTUAL_ENV=/opt/venv \
-    LD_BIND_NOW=1 \
     MACHINE_LEARNING_CACHE_FOLDER=/cache
 
 # prevent core dumps
