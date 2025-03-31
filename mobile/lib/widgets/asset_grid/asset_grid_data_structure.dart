@@ -151,7 +151,6 @@ class RenderList {
       final dateLoader = query != null
           ? DateBatchLoader(
               query: query,
-              totalCount: total,
               batchSize: 1000 * sectionSize,
             )
           : null;
@@ -333,7 +332,6 @@ class RenderList {
 
 class DateBatchLoader {
   final QueryBuilder<Asset, Asset, QAfterSortBy> query;
-  final int totalCount;
   final int batchSize;
 
   List<DateTime> _buffer = [];
@@ -341,7 +339,6 @@ class DateBatchLoader {
 
   DateBatchLoader({
     required this.query,
-    required this.totalCount,
     required this.batchSize,
   });
 
@@ -360,7 +357,7 @@ class DateBatchLoader {
   Future<void> _loadBatch(int targetIndex) async {
     final batchStart = (targetIndex ~/ batchSize) * batchSize;
 
-    _buffer = await query!
+    _buffer = await query
         .offset(batchStart)
         .limit(batchSize)
         .fileCreatedAtProperty()
