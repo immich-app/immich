@@ -149,7 +149,8 @@
   async function handleConfirmChangeDate(dateTimeOriginal: string) {
     isShowChangeDate = false;
     try {
-      await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
+      console.log('datatimeOriginal', dateTimeOriginal);
+      asset = await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_date'));
     }

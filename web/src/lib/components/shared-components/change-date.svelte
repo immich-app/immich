@@ -120,6 +120,7 @@
   const handleConfirm = () => {
     const value = date.toISO();
     if (value) {
+      console.log('handle confirm', value);
       onConfirm(value);
     }
   };
