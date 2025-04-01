@@ -122,39 +122,11 @@ export class StackRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
-    const stack = await this.getById(id);
-    if (!stack) {
-      return;
-    }
-
-    const assetIds = stack.assets.map(({ id }) => id);
-
     await this.db.deleteFrom('asset_stack').where('id', '=', asUuid(id)).execute();
-    await this.db
-      .updateTable('assets')
-      .set({ stackId: null, updatedAt: new Date() })
-      .where('id', 'in', assetIds)
-      .execute();
   }
 
   async deleteAll(ids: string[]): Promise<void> {
-    const assetIds = [];
-    for (const id of ids) {
-      const stack = await this.getById(id);
-      if (!stack) {
-        continue;
-      }
-
-      assetIds.push(...stack.assets.map(({ id }) => id));
-    }
-
     await this.db.deleteFrom('asset_stack').where('id', 'in', ids).execute();
-    await this.db
-      .updateTable('assets')
-      .set({ updatedAt: new Date(), stackId: null })
-      .where('id', 'in', assetIds)
-      .where('stackId', 'in', ids)
-      .execute();
   }
 
   update(id: string, entity: Updateable<StackEntity>): Promise<StackEntity> {
