@@ -82,6 +82,7 @@
     "pg": "^8.11.3",
     "picomatch": "^4.0.2",
     "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-email": "^3.0.4",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
