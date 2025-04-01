@@ -134,15 +134,14 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.MIGRATE_ASSET, queue: QueueName.MIGRATION })
   async handleAssetMigration({ id }: JobOf<JobName.MIGRATE_ASSET>): Promise<JobStatus> {
-    const { image } = await this.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id], { files: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
 
-    await this.storageCore.moveAssetImage(asset, AssetPathType.FULLSIZE, image.fullsize.format);
-    await this.storageCore.moveAssetImage(asset, AssetPathType.PREVIEW, image.preview.format);
-    await this.storageCore.moveAssetImage(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
+    await this.storageCore.moveAssetImage(asset, AssetPathType.FULLSIZE);
+    await this.storageCore.moveAssetImage(asset, AssetPathType.PREVIEW);
+    await this.storageCore.moveAssetImage(asset, AssetPathType.THUMBNAIL);
     await this.storageCore.moveAssetVideo(asset);
 
     return JobStatus.SUCCESS;

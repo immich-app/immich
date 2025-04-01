@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { dirname, join, resolve } from 'node:path';
+import path, { dirname, join, resolve } from 'node:path';
 import { APP_MEDIA_LOCATION } from 'src/constants';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -115,18 +115,21 @@ export class StorageCore {
     return normalizedPath.startsWith(normalizedAppMediaLocation);
   }
 
-  async moveAssetImage(asset: AssetEntity, pathType: GeneratedImageType, format: ImageFormat) {
-    const { id: entityId, files } = asset;
-    const oldFile = getAssetFile(files, pathType);
+  moveAssetImage(asset: AssetEntity, pathType: GeneratedImageType) {
+    const oldFile = getAssetFile(asset.files, pathType);
+    if (!oldFile?.path) {
+      return;
+    }
+
     return this.moveFile({
-      entityId,
+      entityId: asset.id,
       pathType,
-      oldPath: oldFile?.path || null,
-      newPath: StorageCore.getImagePath(asset, pathType, format),
+      oldPath: oldFile.path,
+      newPath: StorageCore.getImagePath(asset, pathType, path.extname(oldFile.path).slice(1) as ImageFormat),
     });
   }
 
-  async moveAssetVideo(asset: AssetEntity) {
+  moveAssetVideo(asset: AssetEntity) {
     return this.moveFile({
       entityId: asset.id,
       pathType: AssetPathType.ENCODED_VIDEO,

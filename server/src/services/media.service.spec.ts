@@ -238,19 +238,19 @@ describe(MediaService.name, () => {
         entityId: assetStub.image.id,
         pathType: AssetPathType.FULLSIZE,
         oldPath: '/uploads/user-id/fullsize/path.webp',
-        newPath: 'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-fullsize.webp',
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
         pathType: AssetPathType.PREVIEW,
         oldPath: '/uploads/user-id/thumbs/path.jpg',
-        newPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpg',
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
         pathType: AssetPathType.THUMBNAIL,
         oldPath: '/uploads/user-id/webp/path.ext',
-        newPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.ext',
       });
       expect(mocks.move.create).toHaveBeenCalledTimes(3);
     });
