@@ -79,8 +79,6 @@
     });
   });
 
-  setContext('onSearchQueryUpdate', { onSearchQueryUpdate });
-
   const onEscape = () => {
     if ($showAssetViewer) {
       return;

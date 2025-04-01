@@ -6,21 +6,12 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiImageSearchOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { getContext } from 'svelte';
 
   interface Props {
     asset: AssetResponseDto;
   }
 
   let { asset }: Props = $props();
-
-  // Consider moving this somewhere..
-  // target: web/src/routes/(user)/search/[[photos=photos]]/[[assetId=id]]/+page.svelte
-  type ParentContext = Partial<{
-    onSearchQueryUpdate: () => Promise<void>;
-  }>;
-
-  const notifyParent = getContext<ParentContext>('onSearchQueryUpdate')?.onSearchQueryUpdate;
 
   function getSearchSimilarUrl() {
     const params = getMetadataSearchQuery({
@@ -33,10 +24,6 @@
     e.stopPropagation();
 
     await goto(getSearchSimilarUrl());
-
-    // consider if we're already on the search page, goto will not (and probably should not) reload the page
-    // this triggers a new search
-    notifyParent && (await notifyParent());
   }
 </script>
 
