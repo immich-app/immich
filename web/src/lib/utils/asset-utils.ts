@@ -486,6 +486,10 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: 
         break; // Cancelled
       }
       assetInteraction.selectAssets(assetsSnapshot(bucket.getAssets()));
+    
+      for (const dateGroup of bucket.dateGroups) {
+        assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);
+      }
     }
   } catch (error) {
     const $t = get(t);
