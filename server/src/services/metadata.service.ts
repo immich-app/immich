@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vendored';
+import { ContainerDirectoryItem, Maybe, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { Insertable } from 'kysely';
 import _ from 'lodash';
