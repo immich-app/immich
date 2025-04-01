@@ -267,7 +267,8 @@ export class AssetBucket {
 
     const year = utcDate.get('year');
     const month = utcDate.get('month');
-    const bucketDateFormatted = utcDate.toJSDate().toLocaleString(get(locale), {
+
+    const bucketDateFormatted = utcDate.toJSDate().toLocaleString(get(locale) || 'en-US', {
       month: 'short',
       year: 'numeric',
       timeZone: 'UTC',
