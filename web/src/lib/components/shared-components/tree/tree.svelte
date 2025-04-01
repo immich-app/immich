@@ -16,14 +16,11 @@
 
   let { tree, parent, value, active = '', icons, getLink, getColor }: Props = $props();
 
-  let path = $derived(normalizeTreePath(`${parent}/${value}`));
-  let isActive = $derived(active === path || active.startsWith(`${path}/`));
-  let isOpen = $state(false);
-  $effect(() => {
-    isOpen = isActive;
-  });
-  let isTarget = $derived(active === path);
-  let color = $derived(getColor(path));
+  const path = $derived(normalizeTreePath(`${parent}/${value}`));
+  const isActive = $derived(active === path || active.startsWith(`${path}/`));
+  const isTarget = $derived(active === path);
+  const color = $derived(getColor(path));
+  let isOpen = $derived(isActive);
 
   const onclick = (event: MouseEvent) => {
     event.preventDefault();

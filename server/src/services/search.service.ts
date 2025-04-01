@@ -78,12 +78,10 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
-
-    const embedding = await this.machineLearningRepository.encodeText(
-      machineLearning.urls,
-      dto.query,
-      machineLearning.clip,
-    );
+    const embedding = await this.machineLearningRepository.encodeText(machineLearning.urls, dto.query, {
+      modelName: machineLearning.clip.modelName,
+      language: dto.language,
+    });
     const page = dto.page ?? 1;
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(

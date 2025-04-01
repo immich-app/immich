@@ -7656,7 +7656,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.130.3",
+    "version": "1.131.3",
     "contact": {}
   },
   "tags": [],
@@ -8660,6 +8660,7 @@
       },
       "AssetMediaSize": {
         "enum": [
+          "fullsize",
           "preview",
           "thumbnail"
         ],
@@ -10442,6 +10443,7 @@
       "PathType": {
         "enum": [
           "original",
+          "fullsize",
           "preview",
           "thumbnail",
           "encoded_video",
@@ -11853,6 +11855,9 @@
           "isVisible": {
             "type": "boolean"
           },
+          "language": {
+            "type": "string"
+          },
           "lensModel": {
             "nullable": true,
             "type": "string"
@@ -12612,6 +12617,31 @@
         ],
         "type": "object"
       },
+      "SystemConfigGeneratedFullsizeImageDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "format": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageFormat"
+              }
+            ]
+          },
+          "quality": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "format",
+          "quality"
+        ],
+        "type": "object"
+      },
       "SystemConfigGeneratedImageDto": {
         "properties": {
           "format": {
@@ -12650,6 +12680,9 @@
           "extractEmbedded": {
             "type": "boolean"
           },
+          "fullsize": {
+            "$ref": "#/components/schemas/SystemConfigGeneratedFullsizeImageDto"
+          },
           "preview": {
             "$ref": "#/components/schemas/SystemConfigGeneratedImageDto"
           },
@@ -12660,6 +12693,7 @@
         "required": [
           "colorspace",
           "extractEmbedded",
+          "fullsize",
           "preview",
           "thumbnail"
         ],
