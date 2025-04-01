@@ -140,7 +140,7 @@ export class MediaService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    await this.storageCore.moveAssetImage(asset, AssetPathType.FULLSIZE, ImageFormat.JPEG);
+    await this.storageCore.moveAssetImage(asset, AssetPathType.FULLSIZE, image.fullsize.format);
     await this.storageCore.moveAssetImage(asset, AssetPathType.PREVIEW, image.preview.format);
     await this.storageCore.moveAssetImage(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     await this.storageCore.moveAssetVideo(asset);

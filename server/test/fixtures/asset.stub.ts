@@ -26,7 +26,16 @@ const thumbnailFile: AssetFileEntity = {
   updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const files: AssetFileEntity[] = [previewFile, thumbnailFile];
+const fullsizeFile: AssetFileEntity = {
+  id: 'file-3',
+  assetId: 'asset-id',
+  type: AssetFileType.FULLSIZE,
+  path: '/uploads/user-id/fullsize/path.webp',
+  createdAt: new Date('2023-02-23T05:06:29.716Z'),
+  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+};
+
+const files: AssetFileEntity[] = [fullsizeFile, previewFile, thumbnailFile];
 
 export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity => {
   return {
@@ -553,6 +562,7 @@ export const assetStub = {
       fileSizeInByte: 25_000,
       timeZone: `America/New_York`,
     },
+    files,
   } as AssetEntity),
 
   livePhotoWithOriginalFileName: Object.freeze({
