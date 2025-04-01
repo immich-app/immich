@@ -148,6 +148,7 @@ export class StackRepository {
       assetIds.push(...stack.assets.map(({ id }) => id));
     }
 
+    await this.db.deleteFrom('asset_stack').where('id', 'in', ids).execute();
     await this.db
       .updateTable('assets')
       .set({ updatedAt: new Date(), stackId: null })
