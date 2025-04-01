@@ -1,6 +1,12 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { type AssetStore, type AssetBucket, assetSnapshot, assetsSnapshot, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import {
+    type AssetStore,
+    type AssetBucket,
+    assetSnapshot,
+    assetsSnapshot,
+    isSelectingAllAssets,
+  } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { getDateLocaleString } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
@@ -58,7 +64,12 @@
 
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => onSelect({ title, assets });
 
-  const assetSelectHandler = (assetStore: AssetStore, asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
+  const assetSelectHandler = (
+    assetStore: AssetStore,
+    asset: AssetResponseDto,
+    assetsInDateGroup: AssetResponseDto[],
+    groupTitle: string,
+  ) => {
     onSelectAssets(asset);
 
     // Check if all assets are selected in a group to toggle the group selection's icon
