@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql, Updateable } from 'kysely';
+import { Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, DB } from 'src/db';
@@ -153,8 +153,15 @@ export class AssetFileRepository {
     return result.map((row) => row.path);
   }
 
-  async remove(assetFile: { id: string }): Promise<void> {
-    await this.db.deleteFrom('asset_files').where('id', '=', asUuid(assetFile.id)).execute();
+  async delete(files: Pick<Selectable<AssetFiles>, 'id'>[]): Promise<void> {
+    if (files.length === 0) {
+      return;
+    }
+
+    await this.db
+      .deleteFrom('asset_files')
+      .where('id', '=', anyUuid(files.map((file) => file.id)))
+      .execute();
   }
 
   streamSidecarIds() {

@@ -71,7 +71,7 @@
    * Keeps track of whether the combobox is actively being used.
    */
   let isActive = $state(false);
-  let searchQuery = $state(selectedOption?.label || '');
+  let searchQuery = $derived(selectedOption?.label || '');
   let selectedIndex: number | undefined = $state();
   let optionRefs: HTMLElement[] = $state([]);
   let input = $state<HTMLInputElement>();
@@ -227,10 +227,6 @@
   };
 
   const getInputPosition = () => input?.getBoundingClientRect();
-
-  $effect(() => {
-    searchQuery = selectedOption ? selectedOption.label : '';
-  });
 
   let filteredOptions = $derived.by(() => {
     const _options = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));

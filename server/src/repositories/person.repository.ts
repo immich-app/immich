@@ -9,7 +9,6 @@ import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
 import { removeUndefinedKeys } from 'src/utils/database';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
-import { FindOptionsRelations } from 'typeorm';
 
 export interface PersonSearchOptions {
   minimumFaceCount: number;
@@ -85,7 +84,7 @@ export class PersonRepository {
       .$if(!!faceIds, (qb) => qb.where('asset_faces.id', 'in', faceIds!))
       .executeTakeFirst();
 
-    return Number(result.numChangedRows) ?? 0;
+    return Number(result.numChangedRows ?? 0);
   }
 
   @GenerateSql({ params: [{ sourceType: SourceType.EXIF }] })
@@ -247,7 +246,7 @@ export class PersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getFaceByIdWithAssets(
     id: string,
-    relations?: FindOptionsRelations<AssetFaceEntity>,
+    relations?: { faceSearch?: boolean },
     select?: SelectFaceOptions,
   ): Promise<AssetFaceEntity | undefined> {
     return this.db
@@ -270,7 +269,7 @@ export class PersonRepository {
       .where('asset_faces.id', '=', assetFaceId)
       .executeTakeFirst();
 
-    return Number(result.numChangedRows) ?? 0;
+    return Number(result.numChangedRows ?? 0);
   }
 
   getById(personId: string): Promise<PersonEntity | null> {

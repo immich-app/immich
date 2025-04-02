@@ -1,12 +1,45 @@
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { StackEntity } from 'src/entities/stack.entity';
-import { AssetStatus, AssetType } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { assetFileStub } from 'test/fixtures/asset-file.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
+
+const previewFile: AssetFileEntity = {
+  id: 'file-1',
+  assetId: 'asset-id',
+  type: AssetFileType.PREVIEW,
+  path: '/uploads/user-id/thumbs/path.jpg',
+  createdAt: new Date('2023-02-23T05:06:29.716Z'),
+  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+  fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+};
+
+const thumbnailFile: AssetFileEntity = {
+  id: 'file-2',
+  assetId: 'asset-id',
+  type: AssetFileType.THUMBNAIL,
+  path: '/uploads/user-id/webp/path.ext',
+  createdAt: new Date('2023-02-23T05:06:29.716Z'),
+  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+  fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+};
+
+const fullsizeFile: AssetFileEntity = {
+  id: 'file-3',
+  assetId: 'asset-id',
+  type: AssetFileType.FULLSIZE,
+  path: '/uploads/user-id/fullsize/path.webp',
+  createdAt: new Date('2023-02-23T05:06:29.716Z'),
+  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+  fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+};
+
+const files: AssetFileEntity[] = [fullsizeFile, previewFile, thumbnailFile];
 
 export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity => {
   return {
@@ -522,6 +555,7 @@ export const assetStub = {
       fileSizeInByte: 25_000,
       timeZone: `America/New_York`,
     },
+    files,
   } as AssetEntity),
 
   livePhotoWithOriginalFileName: Object.freeze({
@@ -685,7 +719,46 @@ export const assetStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
-    originalFileName: 'asset-id.jpg',
+    originalFileName: 'asset-id.dng',
+    faces: [],
+    deletedAt: null,
+    exifInfo: {
+      fileSizeInByte: 5000,
+      profileDescription: 'Adobe RGB',
+      bitsPerSample: 14,
+    } as ExifEntity,
+    duplicateId: null,
+    isOffline: false,
+  }),
+
+  imageHif: Object.freeze<AssetEntity>({
+    id: 'asset-id',
+    status: AssetStatus.ACTIVE,
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    owner: userStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/original/path.hif',
+    checksum: Buffer.from('file hash', 'utf8'),
+    type: AssetType.IMAGE,
+    files,
+    thumbhash: Buffer.from('blablabla', 'base64'),
+    encodedVideoPath: null,
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    localDateTime: new Date('2023-02-23T05:06:29.716Z'),
+    isFavorite: true,
+    isArchived: false,
+    duration: null,
+    isVisible: true,
+    isExternal: false,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    tags: [],
+    sharedLinks: [],
+    originalFileName: 'asset-id.hif',
     faces: [],
     deletedAt: null,
     exifInfo: {

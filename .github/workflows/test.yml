@@ -384,7 +384,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Install uv
-        uses: astral-sh/setup-uv@22695119d769bdb6f7032ad67b9bca0ef8c4a174 # v5
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
       - uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
         # with:
@@ -525,7 +525,7 @@ jobs:
 
       - name: Generate new migrations
         continue-on-error: true
-        run: npm run typeorm:migrations:generate ./src/migrations/TestMigration
+        run: npm run migrations:generate TestMigration
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
@@ -538,7 +538,7 @@ jobs:
         run: |
           echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
-          cat ./src/migrations/*-TestMigration.ts
+          cat ./src/*-TestMigration.ts
           exit 1
 
       - name: Run SQL generation

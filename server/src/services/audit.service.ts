@@ -136,8 +136,14 @@ export class AuditService extends BaseService {
     for await (const assets of pagination) {
       assetCount += assets.length;
       for (const { id, files, originalPath, encodedVideoPath, isExternal, checksum } of assets) {
-        const { previewFile, thumbnailFile } = getAssetFiles(files);
-        for (const file of [originalPath, previewFile?.path, encodedVideoPath, thumbnailFile?.path]) {
+        const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(files);
+        for (const file of [
+          originalPath,
+          fullsizeFile?.path,
+          previewFile?.path,
+          encodedVideoPath,
+          thumbnailFile?.path,
+        ]) {
           track(file);
         }
 

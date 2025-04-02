@@ -4,10 +4,10 @@ import semver, { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
 import { DatabaseLock, ImmichEnvironment, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
+import { VersionCheckMetadata } from 'src/types';
 
 const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
   return {

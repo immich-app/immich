@@ -13,11 +13,7 @@
 
   let { id, albumName = $bindable(), isOwned, onUpdate }: Props = $props();
 
-  let newAlbumName = $state(albumName);
-
-  $effect(() => {
-    newAlbumName = albumName;
-  });
+  let newAlbumName = $derived(albumName);
 
   const handleUpdateName = async () => {
     if (newAlbumName === albumName) {

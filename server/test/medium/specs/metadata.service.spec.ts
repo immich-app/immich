@@ -12,6 +12,7 @@ import { assetFileStub } from 'test/fixtures/asset-file.stub';
 import { automock, newRandomImage, newTestService, ServiceMocks } from 'test/utils';
 
 const metadataRepository = new MetadataRepository(
+  // eslint-disable-next-line no-sparse-arrays
   automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }),
 );
 
@@ -47,7 +48,12 @@ describe(MetadataService.name, () => {
   beforeEach(() => {
     ({ sut, mocks } = newTestService(MetadataService, { metadata: metadataRepository }));
 
-    mocks.storage.stat.mockResolvedValue({ size: 123_456, ctime: new Date(), mtime: new Date() } as Stats);
+    mocks.storage.stat.mockResolvedValue({
+      size: 123_456,
+      mtime: new Date(654_321),
+      mtimeMs: 654_321,
+      birthtimeMs: 654_322,
+    } as Stats);
 
     delete process.env.TZ;
   });
@@ -62,8 +68,6 @@ describe(MetadataService.name, () => {
         description: 'should handle no time zone information',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00',
-          FileCreateDate: '2022:01:01 00:00:00',
-          FileModifyDate: '2022:01:01 00:00:00',
         },
         expected: {
           localDateTime: '2022-01-01T00:00:00.000Z',
@@ -76,8 +80,6 @@ describe(MetadataService.name, () => {
         serverTimeZone: 'America/Los_Angeles',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00',
-          FileCreateDate: '2022:01:01 00:00:00',
-          FileModifyDate: '2022:01:01 00:00:00',
         },
         expected: {
           localDateTime: '2022-01-01T00:00:00.000Z',
@@ -90,8 +92,6 @@ describe(MetadataService.name, () => {
         serverTimeZone: 'Europe/Brussels',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00',
-          FileCreateDate: '2022:01:01 00:00:00',
-          FileModifyDate: '2022:01:01 00:00:00',
         },
         expected: {
           localDateTime: '2022-01-01T00:00:00.000Z',
@@ -104,8 +104,6 @@ describe(MetadataService.name, () => {
         serverTimeZone: 'Europe/Brussels',
         exifData: {
           DateTimeOriginal: '2022:06:01 00:00:00',
-          FileCreateDate: '2022:06:01 00:00:00',
-          FileModifyDate: '2022:06:01 00:00:00',
         },
         expected: {
           localDateTime: '2022-06-01T00:00:00.000Z',
@@ -117,8 +115,6 @@ describe(MetadataService.name, () => {
         description: 'should handle a +13:00 time zone',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00+13:00',
-          FileCreateDate: '2022:01:01 00:00:00+13:00',
-          FileModifyDate: '2022:01:01 00:00:00+13:00',
         },
         expected: {
           localDateTime: '2022-01-01T00:00:00.000Z',
@@ -165,7 +161,7 @@ describe(MetadataService.name, () => {
 
       await expect(sut.handleMetadataExtraction({ id: 'asset-1' })).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.assetFile.remove).toHaveBeenCalledWith(sidecarStub);
+      expect(mocks.assetFile.delete).toHaveBeenCalledWith([sidecarStub]);
     });
   });
 });

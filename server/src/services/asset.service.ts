@@ -233,8 +233,8 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { thumbnailFile, previewFile, sidecarFile } = getAssetFiles(asset.files);
-    const files = [thumbnailFile?.path, previewFile?.path, asset.encodedVideoPath];
+    const { fullsizeFile, previewFile, thumbnailFile, sidecarFile } = getAssetFiles(asset.files);
+    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
 
     if (deleteOnDisk) {
       files.push(sidecarFile?.path, asset.originalPath);

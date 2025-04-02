@@ -173,7 +173,9 @@ export const newTestService = <T extends BaseService>(
 
   const mocks: ServiceMocks = {
     access: newAccessRepositoryMock(),
+    // eslint-disable-next-line no-sparse-arrays
     logger: automock(LoggingRepository, { args: [, configMock], strict: false }),
+    // eslint-disable-next-line no-sparse-arrays
     cron: automock(CronRepository, { args: [, loggerMock] }),
     crypto: newCryptoRepositoryMock(),
     activity: automock(ActivityRepository),
@@ -185,6 +187,7 @@ export const newTestService = <T extends BaseService>(
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),
+    // eslint-disable-next-line no-sparse-arrays
     event: automock(EventRepository, { args: [, , loggerMock], strict: false }),
     job: newJobRepositoryMock(),
     apiKey: automock(ApiKeyRepository),
@@ -201,6 +204,7 @@ export const newTestService = <T extends BaseService>(
     person: automock(PersonRepository, { strict: false }),
     process: automock(ProcessRepository, { args: [loggerMock] }),
     search: automock(SearchRepository, { args: [loggerMock], strict: false }),
+    // eslint-disable-next-line no-sparse-arrays
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),
     session: automock(SessionRepository),
     sharedLink: automock(SharedLinkRepository),
@@ -209,6 +213,7 @@ export const newTestService = <T extends BaseService>(
     sync: automock(SyncRepository),
     systemMetadata: newSystemMetadataRepositoryMock(),
     // systemMetadata: automock(SystemMetadataRepository, { strict: false }),
+    // eslint-disable-next-line no-sparse-arrays
     tag: automock(TagRepository, { args: [, loggerMock], strict: false }),
     telemetry: newTelemetryRepositoryMock(),
     trash: automock(TrashRepository),

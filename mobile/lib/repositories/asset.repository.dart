@@ -71,8 +71,13 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   Future<List<Asset>> getAllByRemoteId(
     Iterable<String> ids, {
     AssetState? state,
-  }) =>
-      _getAllByRemoteIdImpl(ids, state).findAll();
+  }) async {
+    if (ids.isEmpty) {
+      return [];
+    }
+
+    return _getAllByRemoteIdImpl(ids, state).findAll();
+  }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> _getAllByRemoteIdImpl(
     Iterable<String> ids,
