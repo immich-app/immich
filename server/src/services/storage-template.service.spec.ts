@@ -199,6 +199,9 @@ describe(StorageTemplateService.name, () => {
         {
           startDate: asset.fileCreatedAt,
           endDate: asset.fileCreatedAt,
+          albumId: album.id,
+          assetCount: 1,
+          lastModifiedAssetTimestamp: null,
         },
       ]);
 
