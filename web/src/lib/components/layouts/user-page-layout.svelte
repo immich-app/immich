@@ -76,7 +76,7 @@
       </div>
     {/if}
 
-    <div class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
+    <div class="{scrollbarClass} pl-4 absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
       {@render children?.()}
     </div>
   </section>
