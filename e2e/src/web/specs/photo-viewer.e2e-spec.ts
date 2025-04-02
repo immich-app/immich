@@ -49,7 +49,7 @@ test.describe('Photo Viewer', () => {
     await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('original');
   });
 
-  test('loads full-size photo when zoomed and original is web-incompatible', async ({ page }) => {
+  test('loads redirected preview when zoomed and original is web-incompatible', async ({ page }) => {
     await page.goto(`/photos/${rawAsset.id}`);
     await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('thumbnail');
     const box = await imageLocator(page).boundingBox();
@@ -57,7 +57,8 @@ test.describe('Photo Viewer', () => {
     const { x, y, width, height } = box!;
     await page.mouse.move(x + width / 2, y + height / 2);
     await page.mouse.wheel(0, -1);
-    await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('fullsize');
+    // TODO: not sure how to test that it was redirected from fullsize to preview
+    await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('preview');
   });
 
   test('reloads photo when checksum changes', async ({ page }) => {
