@@ -51,7 +51,7 @@
 </header>
 <main
   tabindex="-1"
-  class="relative grid h-screen grid-cols-[theme(spacing.18)_auto] overflow-hidden bg-immich-bg max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
+  class="relative grid h-screen grid-cols-[theme(spacing.0)_auto] overflow-hidden bg-immich-bg max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
 >
   {#if sidebar}{@render sidebar()}{:else if admin}
     <AdminSideBar />
@@ -66,7 +66,7 @@
       >
         <div class="flex gap-2 items-center">
           {#if title}
-            <div class="font-medium" tabindex="-1" id={headerId}>{title}</div>
+            <div class="font-medium outline-none" tabindex="-1" id={headerId}>{title}</div>
           {/if}
           {#if description}
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
