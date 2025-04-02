@@ -62,7 +62,7 @@
   <section class="relative">
     {#if title || buttons}
       <div
-        class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div class="flex gap-2 items-center">
           {#if title}
@@ -76,7 +76,7 @@
       </div>
     {/if}
 
-    <div class="{scrollbarClass} pl-4 absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
       {@render children?.()}
     </div>
   </section>
