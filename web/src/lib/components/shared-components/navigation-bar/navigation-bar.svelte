@@ -71,7 +71,7 @@
           shape="round"
           color="secondary"
           variant="ghost"
-          size="large"
+          size="medium"
           aria-label={$t('main_menu')}
           icon={mdiMenu}
           onclick={() => {
