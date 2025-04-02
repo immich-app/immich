@@ -65,9 +65,10 @@
 
 <div class="mt-4">
   {#if !isCollapsed}
-    <div class="grid grid-auto-fill-56 gap-y-4" transition:slide={{ duration: 300 }}>
+    <div class="flex flex-wrap" transition:slide={{ duration: 300 }}>
       {#each albums as album, index (album.id)}
         <a
+          class="w-[250px]"
           data-sveltekit-preload-data="hover"
           href="{AppRoute.ALBUMS}/{album.id}"
           animate:flip={{ duration: 400 }}
