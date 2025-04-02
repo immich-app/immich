@@ -84,7 +84,7 @@
 
     return targetSize === 'original'
       ? getAssetOriginalUrl({ id, cacheKey })
-      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
+      : getAssetThumbnailUrl({ id, size: targetSize, cacheKey });
   };
 
   copyImage = async () => {
