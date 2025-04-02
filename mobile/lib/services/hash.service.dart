@@ -40,15 +40,13 @@ class HashService {
     );
     hashesInDB.sort((a, b) => a.assetId.compareTo(b.assetId));
 
-    int assetIndex = 0;
     int dbIndex = 0;
-
     int bytesProcessed = 0;
     final hashedAssets = <Asset>[];
     final toBeHashed = <_AssetPath>[];
     final toBeDeleted = <String>[];
 
-    while (assetIndex < assets.length) {
+    for (int assetIndex = 0; assetIndex < assets.length; assetIndex++) {
       final asset = assets[assetIndex];
       DeviceAsset? matchingDbEntry;
 
@@ -67,7 +65,6 @@ class HashService {
         hashedAssets.add(
           asset.copyWith(checksum: base64.encode(matchingDbEntry.hash)),
         );
-        assetIndex++;
         continue;
       }
 
@@ -77,19 +74,18 @@ class HashService {
         if (matchingDbEntry != null) {
           toBeDeleted.add(matchingDbEntry.assetId);
         }
-      } else {
-        bytesProcessed += await file.length();
-        toBeHashed.add(_AssetPath(asset: asset, path: file.path));
-
-        if (_shouldProcessBatch(toBeHashed.length, bytesProcessed)) {
-          hashedAssets.addAll(await _processBatch(toBeHashed, toBeDeleted));
-          toBeHashed.clear();
-          toBeDeleted.clear();
-          bytesProcessed = 0;
-        }
+        continue;
       }
 
-      assetIndex++;
+      bytesProcessed += await file.length();
+      toBeHashed.add(_AssetPath(asset: asset, path: file.path));
+
+      if (_shouldProcessBatch(toBeHashed.length, bytesProcessed)) {
+        hashedAssets.addAll(await _processBatch(toBeHashed, toBeDeleted));
+        toBeHashed.clear();
+        toBeDeleted.clear();
+        bytesProcessed = 0;
+      }
     }
     assert(dbIndex == hashesInDB.length, "All hashes should've been processed");
 

@@ -151,7 +151,6 @@ dart_code_metrics:
     - avoid-unnecessary-continue
     - avoid-unnecessary-nullable-return-type: false
     - binary-expression-operand-order
-    - move-variable-outside-iteration
     - pattern-fields-ordering
     - prefer-abstract-final-static-class
     - prefer-commenting-future-delayed
