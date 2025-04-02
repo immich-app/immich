@@ -78,9 +78,8 @@
   };
 
   const getAssetUrl = (id: string, targetSize: AssetMediaSize | 'original', cacheKey: string | null) => {
-    let finalAssetMediaSize = targetSize;
     if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-      finalAssetMediaSize = AssetMediaSize.Preview;
+      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
     }
 
     return targetSize === 'original'
@@ -172,7 +171,7 @@
     };
   });
 
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.checksum));
+  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.thumbhash));
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
