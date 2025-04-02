@@ -53,7 +53,7 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
         var tm: Array<TrustManager>? = null
         if (args[0] as Boolean) {
-          tm = arrayOf(AllowSelfSignedTrustManager(args[1] as String))
+          tm = arrayOf(AllowSelfSignedTrustManager(args[1] as? String))
         }
 
         var km: Array<KeyManager>? = null
@@ -72,7 +72,7 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         sslContext.init(km, tm, null)
         HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
 
-        HttpsURLConnection.setDefaultHostnameVerifier(AllowSelfSignedHostnameVerifier(args[1] as String))
+        HttpsURLConnection.setDefaultHostnameVerifier(AllowSelfSignedHostnameVerifier(args[1] as? String))
 
         result.success(true)
       }
