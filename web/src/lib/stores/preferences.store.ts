@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import { Theme, defaultLang } from '$lib/constants';
 import { getPreferredLocale } from '$lib/utils/i18n';
-import { persisted } from 'svelte-local-storage-store';
+import { persisted } from 'svelte-persisted-store';
 import { get } from 'svelte/store';
 
 export interface ThemeSetting {
@@ -38,7 +38,7 @@ export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
 // Locale to use for formatting dates, numbers, etc.
 export const locale = persisted<string | undefined>('locale', undefined, {
   serializer: {
-    parse: (text) => text,
+    parse: (text) => (text == '' ? 'en-US' : text),
     stringify: (object) => object ?? '',
   },
 });

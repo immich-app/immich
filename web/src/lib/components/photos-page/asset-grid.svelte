@@ -4,7 +4,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetBucket, assetsSnapshot, AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetBucket, assetsSnapshot, AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -462,7 +462,7 @@
     lastAssetMouseEvent = asset;
   };
 
-  const handleGroupSelect = (group: string, assets: AssetResponseDto[]) => {
+  const handleGroupSelect = (assetStore: AssetStore, group: string, assets: AssetResponseDto[]) => {
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
@@ -473,6 +473,12 @@
       for (const asset of assets) {
         handleSelectAsset(asset);
       }
+    }
+
+    if (assetStore.getAssets().length == assetInteraction.selectedAssets.length) {
+      isSelectingAllAssets.set(true);
+    } else {
+      isSelectingAllAssets.set(false);
     }
   };
 
@@ -726,7 +732,7 @@
   class={[
     'scrollbar-hidden h-full overflow-y-auto outline-none',
     { 'm-0': isEmpty },
-    { 'ml-4 tall:ml-0': !isEmpty },
+    { 'ml-0': !isEmpty },
     { 'mr-[60px]': !isEmpty && !usingMobileDevice },
   ]}
   tabindex="-1"
@@ -780,10 +786,11 @@
             {withStacked}
             {showArchiveIcon}
             {assetInteraction}
+            {assetStore}
             {isSelectionMode}
             {singleSelect}
             {bucket}
-            onSelect={({ title, assets }) => handleGroupSelect(title, assets)}
+            onSelect={({ title, assets }) => handleGroupSelect(assetStore, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
           />

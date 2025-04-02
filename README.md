@@ -104,7 +104,7 @@ For the mobile app, you can use `https://demo.immich.app` for the `Server Endpoi
 | Read-only gallery                            | Yes    | Yes |
 | Stacked Photos                               | Yes    | Yes |
 | Tags                                         | No     | Yes |
-| Folder View                                  | No     | Yes |
+| Folder View                                  | Yes    | Yes |
 
 ## Translations
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
+import { Insertable, Kysely, Selectable, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
@@ -728,17 +728,6 @@ export class AssetRepository {
     return paginationHelper(items as any as AssetEntity[], pagination.take);
   }
 
-  getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | undefined> {
-    return this.db
-      .selectFrom('assets')
-      .selectAll('assets')
-      .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
-      .where('albums_assets_assets.albumsId', '=', asUuid(albumId))
-      .orderBy('updatedAt', 'desc')
-      .limit(1)
-      .executeTakeFirst() as Promise<AssetEntity | undefined>;
-  }
-
   getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
     return this.db
       .selectFrom('assets')
@@ -978,6 +967,9 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
       .where('assets.isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
@@ -1006,6 +998,9 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
       .where('assets.isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute() as any as Promise<AssetEntity[]>;
@@ -1041,6 +1036,17 @@ export class AssetRepository {
       .execute();
   }
 
+  async deleteFiles(files: Pick<Selectable<AssetFiles>, 'id'>[]): Promise<void> {
+    if (files.length === 0) {
+      return;
+    }
+
+    await this.db
+      .deleteFrom('asset_files')
+      .where('id', '=', anyUuid(files.map((file) => file.id)))
+      .execute();
+  }
+
   @GenerateSql({
     params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
   })
@@ -1064,7 +1070,7 @@ export class AssetRepository {
       .where((eb) =>
         eb.or([
           eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
-          eb('originalPath', 'like', exclusions.join('|')),
+          eb.or(exclusions.map((path) => eb('originalPath', 'like', path))),
         ]),
       )
       .executeTakeFirstOrThrow();

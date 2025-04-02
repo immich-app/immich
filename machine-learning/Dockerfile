@@ -54,7 +54,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN apt-get update && apt-get install -y --no-install-recommends g++
 
-COPY --from=ghcr.io/astral-sh/uv:latest@sha256:57da96c4557243fc0a732817854084e81af9393f64dc7d172f39c16465b5e2ba /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:fb91e82e8643382d5bce074ba0d167677d678faff4bd518dac670476d19b159c /uv /uvx /bin/
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
@@ -67,7 +67,7 @@ FROM python:3.11-slim-bookworm@sha256:7029b00486ac40bed03e36775b864d3f3d39dcbdf1
 
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
-FROM prod-cpu AS prod-openvino
+FROM python:3.11-slim-bookworm@sha256:7029b00486ac40bed03e36775b864d3f3d39dcbdf19cd45e6a52d541e6c178f0 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
@@ -81,6 +81,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
+
+ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq libcudnn9-cuda-12 && \
@@ -140,7 +142,6 @@ ENV TRANSFORMERS_CACHE=/cache \
     PYTHONPATH=/usr/src \
     DEVICE=${DEVICE} \
     VIRTUAL_ENV=/opt/venv \
-    LD_BIND_NOW=1 \
     MACHINE_LEARNING_CACHE_FOLDER=/cache
 
 # prevent core dumps
@@ -149,6 +150,7 @@ RUN echo "hard core 0" >> /etc/security/limits.conf && \
     echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
 
 COPY --from=builder /opt/venv /opt/venv
+COPY scripts/healthcheck.py .
 COPY immich_ml immich_ml
 
 ARG BUILD_ID

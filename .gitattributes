@@ -6,6 +6,9 @@ mobile/openapi/**/*.dart linguist-generated=true
 mobile/lib/**/*.g.dart -diff -merge
 mobile/lib/**/*.g.dart linguist-generated=true
 
+mobile/lib/**/*.drift.dart -diff -merge
+mobile/lib/**/*.drift.dart linguist-generated=true
+
 open-api/typescript-sdk/fetch-client.ts -diff -merge
 open-api/typescript-sdk/fetch-client.ts linguist-generated=true
 

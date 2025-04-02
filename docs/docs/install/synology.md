@@ -67,10 +67,4 @@ Click "**Edit Rules**" and add the following firewall rules:
 
 ## Next Steps
 
-Read the [Post Installation](/docs/install/post-install.mdx) steps or setup optional features below.
-
-### Setting up optional features
-
-- [External Libraries](/docs/features/libraries.md): Adding your existing photo library to Immich
-- [Hardware Transcoding](/docs/features/hardware-transcoding.md): Speeding up video transcoding
-- [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md): Speeding up various machine learning tasks in Immich
+Read the [Post Installation](/docs/install/post-install.mdx) steps and [upgrade instructions](/docs/install/upgrading.md).

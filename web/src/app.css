@@ -128,7 +128,7 @@ input:focus-visible {
 
 @layer utilities {
   .immich-form-input {
-    @apply rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-400 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800 dark:disabled:text-gray-200;
+    @apply rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-100 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800 dark:disabled:text-gray-200;
   }
 
   .immich-form-label {

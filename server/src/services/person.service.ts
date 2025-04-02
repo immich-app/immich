@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnJob } from 'src/decorators';
+import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -26,6 +26,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import {
+  AssetFileType,
   AssetType,
   CacheControl,
   ImageFormat,
@@ -42,7 +43,7 @@ import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
 import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { getAssetFile } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -241,6 +242,7 @@ export class PersonService extends BaseService {
     return results;
   }
 
+  @Chunked()
   private async delete(people: PersonEntity[]) {
     await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
     await this.personRepository.delete(people);
@@ -299,7 +301,7 @@ export class PersonService extends BaseService {
 
     const relations = { exifInfo: true, faces: { person: false, withDeleted: true }, files: true };
     const [asset] = await this.assetRepository.getByIds([id], relations);
-    const { previewFile } = getAssetFiles(asset.files);
+    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
     if (!asset || !previewFile) {
       return JobStatus.FAILED;
     }
@@ -451,11 +453,11 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const face = await this.personRepository.getFaceByIdWithAssets(
-      id,
-      { person: true, asset: true, faceSearch: true },
-      ['id', 'personId', 'sourceType'],
-    );
+    const face = await this.personRepository.getFaceByIdWithAssets(id, { faceSearch: true }, [
+      'id',
+      'personId',
+      'sourceType',
+    ]);
     if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return JobStatus.FAILED;
@@ -673,7 +675,7 @@ export class PersonService extends BaseService {
       throw new Error(`Asset ${asset.id} dimensions are unknown`);
     }
 
-    const { previewFile } = getAssetFiles(asset.files);
+    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
     if (!previewFile) {
       throw new Error(`Asset ${asset.id} has no preview path`);
     }

@@ -1,9 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { ApiKey, Asset, AuthApiKey, AuthUser, Library, Partner, User, UserAdmin } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { OnThisDayData } from 'src/entities/memory.entity';
 import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
-import { ActivityItem, MemoryItem } from 'src/types';
+import { ActivityItem, MemoryItem, OnThisDayData } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
 export const newUuids = () =>

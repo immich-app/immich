@@ -60,6 +60,7 @@ class SearchService {
         response = await _apiService.searchApi.searchSmart(
           SmartSearchDto(
             query: filter.context!,
+            language: filter.language,
             country: filter.location.country,
             state: filter.location.state,
             city: filter.location.city,

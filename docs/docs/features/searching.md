@@ -45,7 +45,7 @@ Some search examples:
 </TabItem>
   <TabItem value="Mobile" label="Mobile">
 
-<img src={require('./img/moblie-smart-serach.webp').default} width="30%" title='Smart search on mobile' />
+<img src={require('./img/mobile-smart-search.webp').default} width="30%" title='Smart search on mobile' />
 
 </TabItem>
 </Tabs>
@@ -56,7 +56,20 @@ Navigating to `Administration > Settings > Machine Learning Settings > Smart Sea
 
 ### CLIP models
 
-More powerful models can be used for more accurate search results, but are slower and can require more server resources. Check the dropdowns below to see how they compare in memory usage, speed and quality by language.
+The default search model is fast, but there are many other options that can provide better search results. The tradeoff of using these models is that they're slower and/or use more memory (both when indexing images with background Smart Search jobs and when searching).
+
+The first step of choosing the right model for you is to know which languages your users will search in.
+
+If your users will only search in English, then the [CLIP][huggingface-clip] section is the first place to look. This is a curated list of the models that generally perform the best for their size class. The models here are ordered from higher to lower quality. This means that the top models will generally rank the most relevant results higher and have a higher capacity to understand descriptive, detailed, and/or niche queries. The models are also generally ordered from larger to smaller, so consider the impact on memory usage, job processing and search speed when deciding on one. The smaller models in this list are not too different in quality and many times faster.
+
+[Multilingual models][huggingface-multilingual-clip] are also available so users can search in their native language. Use these models if you expect non-English searches to be common. They can be separated into two search patterns:
+
+- `nllb` models expect the search query to be in the language specified in the user settings
+- `xlm` and `siglip2` models understand search text regardless of the current language setting
+
+`nllb` models tend to perform the best and are recommended when users primarily searches in their native, non-English language. `xlm` and `siglip2` models are more flexible and are recommended for mixed language search, where the same user might search in different languages at different times.
+
+For more details, check the tables below to see how they compare in memory usage, speed and quality by language.
 
 Once you've chosen a model, follow these steps:
 

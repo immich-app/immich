@@ -33,6 +33,10 @@ export enum AssetType {
 }
 
 export enum AssetFileType {
+  /**
+   * An full/large-size image extracted/converted from RAW photos
+   */
+  FULLSIZE = 'fullsize',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
 }
@@ -242,6 +246,7 @@ export enum ManualJobName {
 
 export enum AssetPathType {
   ORIGINAL = 'original',
+  FULLSIZE = 'fullsize',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded_video',
