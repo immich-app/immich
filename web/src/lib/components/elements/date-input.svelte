@@ -22,7 +22,7 @@
 <input
   {...rest}
   {type}
-  {value}
+  bind:value
   max={max || fallbackMax}
   oninput={(e) => (updatedValue = e.currentTarget.value)}
   onblur={() => (value = updatedValue)}

@@ -234,6 +234,24 @@ describe(MediaService.name, () => {
       });
 
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.FULLSIZE,
+        oldPath: '/uploads/user-id/fullsize/path.webp',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+      });
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.PREVIEW,
+        oldPath: '/uploads/user-id/thumbs/path.jpg',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      });
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.THUMBNAIL,
+        oldPath: '/uploads/user-id/webp/path.ext',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      });
       expect(mocks.move.create).toHaveBeenCalledTimes(3);
     });
   });

@@ -5,12 +5,12 @@ import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetFileType, JobName, JobStatus, QueueName } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { getAssetFile } from 'src/utils/asset.util';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -69,7 +69,7 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { previewFile } = getAssetFiles(asset.files);
+    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
     if (!previewFile) {
       this.logger.warn(`Asset ${id} is missing preview image`);
       return JobStatus.FAILED;
