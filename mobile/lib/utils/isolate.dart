@@ -50,14 +50,13 @@ Future<T?> runInIsolate<T>(
       await Future.delayed(Durations.short2);
       return result;
     } catch (error, stack) {
-      // Log the error and stack trace
       log.severe(
         "Error in runInIsolate${debugLabel == null ? '' : ' for $debugLabel'}",
         error,
         stack,
       );
     } finally {
-      // Always close the new database connection on Isolate end
+      // Always close the new db connection on Isolate end
       ref.read(driftProvider).close();
       ref.read(dbProvider).close();
       ref.read(isarProvider).close();

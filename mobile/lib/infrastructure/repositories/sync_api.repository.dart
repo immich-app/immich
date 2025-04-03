@@ -60,7 +60,6 @@ class SyncApiRepository implements ISyncApiRepository {
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {
         previousChunk += chunk;
-        // ignore: move-variable-outside-iteration
         final parts = previousChunk.toString().split('\n');
         previousChunk = parts.removeLast();
         lines.addAll(parts);

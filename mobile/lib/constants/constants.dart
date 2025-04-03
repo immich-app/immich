@@ -5,7 +5,9 @@ const double downloadFailed = -2;
 // Number of log entries to retain on app start
 const int kLogTruncateLimit = 250;
 
-// Duration for backgroun sync
+// Duration for background sync
 const Duration kBackgroundSyncDuration = Duration(minutes: 1);
+
+// Hash batch limits
 const int kBatchHashFileLimit = 128;
 const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
