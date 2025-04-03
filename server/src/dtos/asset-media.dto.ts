@@ -4,6 +4,11 @@ import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsString, ValidateNested } 
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export enum AssetMediaSize {
+  /**
+   * An full-sized image extracted/converted from non-web-friendly formats like RAW/HIF.
+   * or otherwise the original image itself.
+   */
+  FULLSIZE = 'fullsize',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
 }

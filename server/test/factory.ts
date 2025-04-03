@@ -1,9 +1,9 @@
 import { Insertable, Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
-import { Assets, DB, Partners, Sessions } from 'src/db';
+import { AssetFaces, Assets, DB, Person as DbPerson, FaceSearch, Partners, Sessions } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetType } from 'src/enum';
+import { AssetType, SourceType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
@@ -37,7 +37,7 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { ViewRepository } from 'src/repositories/view-repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
-import { newUuid } from 'test/small.factory';
+import { newDate, newEmbedding, newUuid } from 'test/small.factory';
 import { automock } from 'test/utils';
 
 class CustomWritable extends Writable {
@@ -61,12 +61,18 @@ type Asset = Partial<Insertable<Assets>>;
 type User = Partial<Insertable<UserTable>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
 type Partner = Insertable<Partners>;
+type AssetFace = Partial<Insertable<AssetFaces>>;
+type Person = Partial<Insertable<DbPerson>>;
+type Face = Partial<Insertable<FaceSearch>>;
 
 export class TestFactory {
   private assets: Asset[] = [];
   private sessions: Session[] = [];
   private users: User[] = [];
   private partners: Partner[] = [];
+  private assetFaces: AssetFace[] = [];
+  private persons: Person[] = [];
+  private faces: Face[] = [];
 
   private constructor(private context: TestContext) {}
 
@@ -141,6 +147,53 @@ export class TestFactory {
     };
   }
 
+  static assetFace(assetFace: AssetFace) {
+    const defaults = {
+      assetId: assetFace.assetId || newUuid(),
+      boundingBoxX1: assetFace.boundingBoxX1 || 0,
+      boundingBoxX2: assetFace.boundingBoxX2 || 1,
+      boundingBoxY1: assetFace.boundingBoxY1 || 0,
+      boundingBoxY2: assetFace.boundingBoxY2 || 1,
+      deletedAt: assetFace.deletedAt || null,
+      id: assetFace.id || newUuid(),
+      imageHeight: assetFace.imageHeight || 10,
+      imageWidth: assetFace.imageWidth || 10,
+      personId: assetFace.personId || null,
+      sourceType: assetFace.sourceType || SourceType.MACHINE_LEARNING,
+    };
+
+    return { ...defaults, ...assetFace };
+  }
+
+  static person(person: Person) {
+    const defaults = {
+      birthDate: person.birthDate || null,
+      color: person.color || null,
+      createdAt: person.createdAt || newDate(),
+      faceAssetId: person.faceAssetId || null,
+      id: person.id || newUuid(),
+      isFavorite: person.isFavorite || false,
+      isHidden: person.isHidden || false,
+      name: person.name || 'Test Name',
+      ownerId: person.ownerId || newUuid(),
+      thumbnailPath: person.thumbnailPath || '/path/to/thumbnail.jpg',
+      updatedAt: person.updatedAt || newDate(),
+      updateId: person.updateId || newUuid(),
+    };
+    return { ...defaults, ...person };
+  }
+
+  static face(face: Face) {
+    const defaults = {
+      faceId: face.faceId || newUuid(),
+      embedding: face.embedding || newEmbedding(),
+    };
+    return {
+      ...defaults,
+      ...face,
+    };
+  }
+
   withAsset(asset: Asset) {
     this.assets.push(asset);
     return this;
@@ -161,6 +214,21 @@ export class TestFactory {
     return this;
   }
 
+  withAssetFace(assetFace: AssetFace) {
+    this.assetFaces.push(assetFace);
+    return this;
+  }
+
+  withPerson(person: Person) {
+    this.persons.push(person);
+    return this;
+  }
+
+  withFaces(face: Face) {
+    this.faces.push(face);
+    return this;
+  }
+
   async create() {
     for (const user of this.users) {
       await this.context.createUser(user);
@@ -177,6 +245,16 @@ export class TestFactory {
     for (const asset of this.assets) {
       await this.context.createAsset(asset);
     }
+
+    for (const person of this.persons) {
+      await this.context.createPerson(person);
+    }
+
+    await this.context.refreshFaces(
+      this.assetFaces,
+      [],
+      this.faces.map((f) => TestFactory.face(f)),
+    );
 
     return this.context;
   }
@@ -216,6 +294,7 @@ export class TestContext {
   view: ViewRepository;
 
   private constructor(public db: Kysely<DB>) {
+    // eslint-disable-next-line no-sparse-arrays
     const logger = automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false });
     const config = new ConfigRepository();
 
@@ -274,5 +353,17 @@ export class TestContext {
 
   createSession(session: Session) {
     return this.session.create(TestFactory.session(session));
+  }
+
+  createPerson(person: Person) {
+    return this.person.create(TestFactory.person(person));
+  }
+
+  refreshFaces(facesToAdd: AssetFace[], faceIdsToRemove: string[], embeddingsToAdd?: Insertable<FaceSearch>[]) {
+    return this.person.refreshFaces(
+      facesToAdd.map((f) => TestFactory.assetFace(f)),
+      faceIdsToRemove,
+      embeddingsToAdd,
+    );
   }
 }

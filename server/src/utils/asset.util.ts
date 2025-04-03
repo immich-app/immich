@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { StorageCore } from 'src/cores/storage.core';
+import { GeneratedImageType, StorageCore } from 'src/cores/storage.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -13,13 +13,14 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile } from 'src/types';
 import { checkAccess } from 'src/utils/access';
 
-const getFileByType = (files: AssetFileEntity[] | undefined, type: AssetFileType) => {
+export const getAssetFile = (files: AssetFileEntity[], type: AssetFileType | GeneratedImageType) => {
   return (files || []).find((file) => file.type === type);
 };
 
-export const getAssetFiles = (files?: AssetFileEntity[]) => ({
-  previewFile: getFileByType(files, AssetFileType.PREVIEW),
-  thumbnailFile: getFileByType(files, AssetFileType.THUMBNAIL),
+export const getAssetFiles = (files: AssetFileEntity[]) => ({
+  fullsizeFile: getAssetFile(files, AssetFileType.FULLSIZE),
+  previewFile: getAssetFile(files, AssetFileType.PREVIEW),
+  thumbnailFile: getAssetFile(files, AssetFileType.THUMBNAIL),
 });
 
 export const addAssets = async (

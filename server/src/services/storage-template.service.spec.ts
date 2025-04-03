@@ -548,4 +548,102 @@ describe(StorageTemplateService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
   });
+
+  describe('file rename correctness', () => {
+    it('should not create double extensions when filename has lower extension', async () => {
+      const asset = assetStub.storageAsset({
+        originalPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.heic',
+        originalFileName: 'IMG_7065.HEIC',
+      });
+      mocks.asset.streamStorageTemplateAssets.mockReturnValue(makeStream([asset]));
+      mocks.user.getList.mockResolvedValue([userStub.storageLabel]);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.heic',
+        newPath: 'upload/library/user-id/2023/2023-02-23/IMG_7065.heic',
+      });
+
+      await sut.handleMigration();
+
+      expect(mocks.asset.streamStorageTemplateAssets).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalledWith(
+        'upload/library/user-id/2022/2022-06-19/IMG_7065.heic',
+        'upload/library/label-1/2022/2022-06-19/IMG_7065.heic',
+      );
+    });
+
+    it('should not create double extensions when filename has uppercase extension', async () => {
+      const asset = assetStub.storageAsset({
+        originalPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.HEIC',
+        originalFileName: 'IMG_7065.HEIC',
+      });
+      mocks.asset.streamStorageTemplateAssets.mockReturnValue(makeStream([asset]));
+      mocks.user.getList.mockResolvedValue([userStub.storageLabel]);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.HEIC',
+        newPath: 'upload/library/user-id/2023/2023-02-23/IMG_7065.heic',
+      });
+
+      await sut.handleMigration();
+
+      expect(mocks.asset.streamStorageTemplateAssets).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalledWith(
+        'upload/library/user-id/2022/2022-06-19/IMG_7065.HEIC',
+        'upload/library/label-1/2022/2022-06-19/IMG_7065.heic',
+      );
+    });
+
+    it('should normalize the filename to lowercase (JPEG > jpg)', async () => {
+      const asset = assetStub.storageAsset({
+        originalPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.JPEG',
+        originalFileName: 'IMG_7065.JPEG',
+      });
+      mocks.asset.streamStorageTemplateAssets.mockReturnValue(makeStream([asset]));
+      mocks.user.getList.mockResolvedValue([userStub.storageLabel]);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.JPEG',
+        newPath: 'upload/library/user-id/2023/2023-02-23/IMG_7065.jpg',
+      });
+
+      await sut.handleMigration();
+
+      expect(mocks.asset.streamStorageTemplateAssets).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalledWith(
+        'upload/library/user-id/2022/2022-06-19/IMG_7065.JPEG',
+        'upload/library/label-1/2022/2022-06-19/IMG_7065.jpg',
+      );
+    });
+
+    it('should normalize the filename to lowercase (JPG > jpg)', async () => {
+      const asset = assetStub.storageAsset({
+        originalPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.JPG',
+        originalFileName: 'IMG_7065.JPG',
+      });
+      mocks.asset.streamStorageTemplateAssets.mockReturnValue(makeStream([asset]));
+      mocks.user.getList.mockResolvedValue([userStub.storageLabel]);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.JPG',
+        newPath: 'upload/library/user-id/2023/2023-02-23/IMG_7065.jpg',
+      });
+
+      await sut.handleMigration();
+
+      expect(mocks.asset.streamStorageTemplateAssets).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalledWith(
+        'upload/library/user-id/2022/2022-06-19/IMG_7065.JPG',
+        'upload/library/label-1/2022/2022-06-19/IMG_7065.jpg',
+      );
+    });
+  });
 });

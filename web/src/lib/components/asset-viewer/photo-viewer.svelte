@@ -7,7 +7,7 @@
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { isWebCompatibleImage, canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
+  import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
@@ -50,6 +50,7 @@
 
   let assetFileUrl: string = $state('');
   let imageLoaded: boolean = $state(false);
+  let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
 
   let loader = $state<HTMLImageElement>();
@@ -67,23 +68,23 @@
     $boundingBoxesArray = [];
   });
 
-  const preload = (useOriginal: boolean, preloadAssets?: AssetResponseDto[]) => {
+  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: AssetResponseDto[]) => {
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
         let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.thumbhash);
+        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
       }
     }
   };
 
-  const getAssetUrl = (id: string, useOriginal: boolean, cacheKey: string | null) => {
+  const getAssetUrl = (id: string, targetSize: AssetMediaSize | 'original', cacheKey: string | null) => {
     if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
       return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
     }
 
-    return useOriginal
+    return targetSize === 'original'
       ? getAssetOriginalUrl({ id, cacheKey })
-      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
+      : getAssetThumbnailUrl({ id, size: targetSize, cacheKey });
   };
 
   copyImage = async () => {
@@ -133,14 +134,32 @@
     }
   };
 
+  // when true, will force loading of the original image
+  let forceUseOriginal: boolean = $derived(asset.originalMimeType === 'image/gif' || $photoZoomState.currentZoom > 1);
+
+  const targetImageSize = $derived.by(() => {
+    if ($alwaysLoadOriginalFile || forceUseOriginal || originalImageLoaded) {
+      return isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
+    }
+
+    return AssetMediaSize.Preview;
+  });
+
+  const onload = () => {
+    imageLoaded = true;
+    assetFileUrl = imageLoaderUrl;
+    originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
+  };
+
+  const onerror = () => {
+    imageError = imageLoaded = true;
+  };
+
+  $effect(() => {
+    preload(targetImageSize, preloadAssets);
+  });
+
   onMount(() => {
-    const onload = () => {
-      imageLoaded = true;
-      assetFileUrl = imageLoaderUrl;
-    };
-    const onerror = () => {
-      imageError = imageLoaded = true;
-    };
     if (loader?.complete) {
       onload();
     }
@@ -151,21 +170,8 @@
       loader?.removeEventListener('error', onerror);
     };
   });
-  let isWebCompatible = $derived(isWebCompatibleImage(asset));
-  let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
-  // when true, will force loading of the original image
 
-  let forceUseOriginal: boolean = $derived(
-    asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible),
-  );
-
-  let useOriginalImage = $derived(useOriginalByDefault || forceUseOriginal);
-
-  $effect(() => {
-    preload(useOriginalImage, preloadAssets);
-  });
-
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.thumbhash));
+  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.thumbhash));
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
@@ -188,13 +194,7 @@
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  <img
-    style="display:none"
-    src={imageLoaderUrl}
-    alt={$getAltText(asset)}
-    onload={() => ((imageLoaded = true), (assetFileUrl = imageLoaderUrl))}
-    onerror={() => (imageError = imageLoaded = true)}
-  />
+  <img style="display:none" src={imageLoaderUrl} alt={$getAltText(asset)} {onload} {onerror} />
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
       <LoadingSpinner />

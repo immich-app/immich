@@ -32,47 +32,7 @@ where
   "asset_stack"."ownerId" = $1
 
 -- StackRepository.delete
-select
-  *,
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "assets".*,
-          (
-            select
-              coalesce(json_agg(agg), '[]')
-            from
-              (
-                select
-                  "tags".*
-                from
-                  "tags"
-                  inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
-                where
-                  "tag_asset"."assetsId" = "assets"."id"
-              ) as agg
-          ) as "tags",
-          to_json("exifInfo") as "exifInfo"
-        from
-          "assets"
-          inner join lateral (
-            select
-              "exif".*
-            from
-              "exif"
-            where
-              "exif"."assetId" = "assets"."id"
-          ) as "exifInfo" on true
-        where
-          "assets"."deletedAt" is null
-          and "assets"."stackId" = "asset_stack"."id"
-      ) as agg
-  ) as "assets"
-from
-  "asset_stack"
+delete from "asset_stack"
 where
   "id" = $1::uuid
 
