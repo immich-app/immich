@@ -12,8 +12,8 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/pages/common/download_panel.dart';
-import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
 import 'package:immich_mobile/pages/common/gallery_stacked_children.dart';
+import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
@@ -225,8 +225,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     PhotoViewGalleryPageOptions buildVideo(BuildContext context, Asset asset) {
-      // This key is to prevent the video player from being re-initialized during the hero animation
-      final key = GlobalKey();
       return PhotoViewGalleryPageOptions.customChild(
         onDragStart: (_, details, __) =>
             localPosition.value = details.localPosition,
@@ -241,7 +239,8 @@ class GalleryViewerPage extends HookConsumerWidget {
           width: context.width,
           height: context.height,
           child: NativeVideoViewerPage(
-            key: key,
+            // This key is to prevent the video player from being re-initialized during the hero animation
+            key: const ValueKey('video-player'),
             asset: asset,
             image: Image(
               key: ValueKey(asset),
