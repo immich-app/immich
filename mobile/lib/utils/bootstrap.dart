@@ -43,7 +43,7 @@ abstract final class Bootstrap {
         DeviceAssetEntitySchema,
       ],
       directory: dir.path,
-      maxSizeMiB: 1024,
+      maxSizeMiB: 2048,
       inspector: kDebugMode,
     );
   }
