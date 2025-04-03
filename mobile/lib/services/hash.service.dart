@@ -35,7 +35,7 @@ class HashService {
     assets.sort(Asset.compareByLocalId);
 
     // Get and sort DB entries - guaranteed to be a subset of assets
-    final hashesInDB = await _deviceAssetRepository.getForIds(
+    final hashesInDB = await _deviceAssetRepository.getByIds(
       assets.map((a) => a.localId!).toList(),
     );
     hashesInDB.sort((a, b) => a.assetId.compareTo(b.assetId));

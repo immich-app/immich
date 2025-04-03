@@ -18,7 +18,7 @@ class IsarDeviceAssetRepository extends IsarDatabaseRepository
   }
 
   @override
-  Future<List<DeviceAsset>> getForIds(List<String> localIds) {
+  Future<List<DeviceAsset>> getByIds(List<String> localIds) {
     return _db.deviceAssetEntitys
         .where()
         .anyOf(localIds, (query, id) => query.assetIdEqualTo(id))

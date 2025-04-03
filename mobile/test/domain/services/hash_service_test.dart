@@ -59,7 +59,7 @@ void main() {
           .thenAnswer((_) async => [hash]);
       // No DB entries for this asset
       when(
-        () => mockDeviceAssetRepository.getForIds([AssetStub.image1.localId!]),
+        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
       ).thenAnswer((_) async => []);
 
       final result = await sut.hashAssets([mockAsset]);
@@ -92,7 +92,7 @@ void main() {
       final hash = utf8.encode("image1-hash");
 
       when(
-        () => mockDeviceAssetRepository.getForIds([AssetStub.image1.localId!]),
+        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
       ).thenAnswer(
         (_) async => [
           DeviceAsset(
@@ -121,7 +121,7 @@ void main() {
       when(() => mockBackgroundService.digestFiles([file.path]))
           .thenAnswer((_) async => [hash]);
       when(
-        () => mockDeviceAssetRepository.getForIds([AssetStub.image1.localId!]),
+        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
       ).thenAnswer((_) async => [deviceAsset]);
 
       final result = await sut.hashAssets([mockAsset]);
@@ -163,7 +163,7 @@ void main() {
       when(() => mockBackgroundService.digestFiles([file.path]))
           .thenAnswer((_) async => [hash]);
       when(
-        () => mockDeviceAssetRepository.getForIds([AssetStub.image1.localId!]),
+        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
       ).thenAnswer((_) async => [deviceAsset]);
     });
 
@@ -240,7 +240,7 @@ void main() {
       final (asset2, file2, deviceAsset2, hash2) = mock2;
       final (asset3, file3, deviceAsset3, hash3) = mock3;
 
-      when(() => mockDeviceAssetRepository.getForIds(any()))
+      when(() => mockDeviceAssetRepository.getByIds(any()))
           .thenAnswer((_) async => []);
 
       // Setup for multiple batch processing calls
@@ -285,7 +285,7 @@ void main() {
       final (asset2, file2, deviceAsset2, hash2) = mock2;
       final (asset3, file3, deviceAsset3, hash3) = mock3;
 
-      when(() => mockDeviceAssetRepository.getForIds(any()))
+      when(() => mockDeviceAssetRepository.getByIds(any()))
           .thenAnswer((_) async => []);
 
       when(() => mockBackgroundService.digestFiles([file1.path]))
@@ -331,7 +331,7 @@ void main() {
           .thenAnswer((_) async => [hash1, hash3]);
       // DB entries are not sorted and a dummy entry added
       when(
-        () => mockDeviceAssetRepository.getForIds([
+        () => mockDeviceAssetRepository.getByIds([
           AssetStub.image1.localId!,
           AssetStub.image2.localId!,
           AssetStub.image3.localId!,
@@ -361,7 +361,7 @@ void main() {
 
     group("HashService: Edge cases", () {
       test("handles empty list of assets", () async {
-        when(() => mockDeviceAssetRepository.getForIds(any()))
+        when(() => mockDeviceAssetRepository.getByIds(any()))
             .thenAnswer((_) async => []);
 
         final result = await sut.hashAssets([]);
@@ -376,7 +376,7 @@ void main() {
       test("handles all file access failures", () async {
         // No DB entries
         when(
-          () => mockDeviceAssetRepository.getForIds(
+          () => mockDeviceAssetRepository.getByIds(
             [AssetStub.image1.localId!, AssetStub.image2.localId!],
           ),
         ).thenAnswer((_) async => []);
