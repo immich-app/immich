@@ -283,6 +283,12 @@ jobs:
             # Tag with git tag on release
             type=ref,event=tag
             type=raw,value=release,enable=${{ github.event_name == 'release' }}
+          labels:
+            org.opencontainers.image.source="https://github.com/immich-app/immich"
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.created_at }}
+            org.opencontainers.image.url="https://immich.app"
+            org.opencontainers.image.licenses="AGPL-3.0-only"
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
