@@ -96,6 +96,14 @@ class OrtSession:
                         "precision": "FP32",
                         "cache_dir": (self.model_path.parent / "openvino").as_posix(),
                     }
+                case "CoreMLExecutionProvider":
+                    options = {
+                        "ModelFormat": "MLProgram",
+                        "MLComputeUnits": "ALL",
+                        "SpecializationStrategy": "FastPrediction",
+                        "AllowLowPrecisionAccumulationOnGPU": "1",
+                        "ModelCacheDirectory": (self.model_path.parent / "coreml").as_posix(),
+                    }
                 case _:
                     options = {}
             provider_options.append(options)
