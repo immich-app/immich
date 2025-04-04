@@ -3,7 +3,9 @@ import { isString } from 'class-validator';
 import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
+import { join } from 'node:path';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
+import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
 import { OnEvent } from 'src/decorators';
 import {
@@ -18,12 +20,12 @@ import {
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission, StorageFolder } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
-
+import { mimeTypes } from 'src/utils/mime-types';
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
@@ -239,7 +241,34 @@ export class AuthService extends BaseService {
       });
     }
 
+    if (!user.profileImagePath && profile.picture) {
+      await this.syncProfilePicture(user, profile.picture);
+    }
+
     return this.createLoginResponse(user, loginDetails);
+  }
+
+  private async syncProfilePicture(user: UserAdmin, url: string) {
+    try {
+      const oldPath = user.profileImagePath;
+
+      const { contentType, data } = await this.oauthRepository.getProfilePicture(url);
+      const extension = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
+      const profileImagePath = join(
+        StorageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
+        `${this.cryptoRepository.randomUUID()}.${extension}`,
+      );
+
+      this.storageCore.ensureFolders(profileImagePath);
+      await this.storageRepository.createFile(profileImagePath, Buffer.from(data));
+      await this.userRepository.update(user.id, { profileImagePath, profileChangedAt: new Date() });
+
+      if (oldPath) {
+        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldPath] } });
+      }
+    } catch (error: Error | any) {
+      this.logger.warn(`Unable to sync oauth profile picture: ${error}`, error?.stack);
+    }
   }
 
   async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserAdminResponseDto> {
