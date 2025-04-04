@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:logging/logging.dart';
 
 class HttpSSLOptions {
   static const MethodChannel _channel = MethodChannel('immich/httpSSLOptions');
@@ -29,7 +30,10 @@ class HttpSSLOptions {
         serverHost,
         clientCert?.data,
         clientCert?.password,
-      ]);
+      ]).onError<PlatformException>((e, _) {
+        final log = Logger("HttpSSLOptions");
+        log.severe('Failed to set SSL options', e.message);
+      });
     }
   }
 }

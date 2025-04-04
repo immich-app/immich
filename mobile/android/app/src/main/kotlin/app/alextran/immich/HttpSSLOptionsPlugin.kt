@@ -47,37 +47,41 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
   }
 
   override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-    when (call.method) {
-      "apply" -> {
-        val args = call.arguments<ArrayList<*>>()!!
+    try {
+      when (call.method) {
+        "apply" -> {
+          val args = call.arguments<ArrayList<*>>()!!
 
-        var tm: Array<TrustManager>? = null
-        if (args[0] as Boolean) {
-          tm = arrayOf(AllowSelfSignedTrustManager(args[1] as? String))
+          var tm: Array<TrustManager>? = null
+          if (args[0] as Boolean) {
+            tm = arrayOf(AllowSelfSignedTrustManager(args[1] as? String))
+          }
+
+          var km: Array<KeyManager>? = null
+          if (args[2] != null) {
+            val cert = ByteArrayInputStream(args[2] as ByteArray)
+            val password = (args[3] as String).toCharArray()
+            val keyStore = KeyStore.getInstance("PKCS12")
+            keyStore.load(cert, password)
+            val keyManagerFactory =
+              KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+            keyManagerFactory.init(keyStore, null)
+            km = keyManagerFactory.keyManagers
+          }
+
+          val sslContext = SSLContext.getInstance("TLS")
+          sslContext.init(km, tm, null)
+          HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
+
+          HttpsURLConnection.setDefaultHostnameVerifier(AllowSelfSignedHostnameVerifier(args[1] as? String))
+
+          result.success(true)
         }
 
-        var km: Array<KeyManager>? = null
-        if (args[2] != null) {
-          val cert = ByteArrayInputStream(args[2] as ByteArray)
-          val password = (args[3] as String).toCharArray()
-          val keyStore = KeyStore.getInstance("PKCS12")
-          keyStore.load(cert, password)
-          val keyManagerFactory =
-            KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-          keyManagerFactory.init(keyStore, null)
-          km = keyManagerFactory.keyManagers
-        }
-
-        val sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(km, tm, null)
-        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
-
-        HttpsURLConnection.setDefaultHostnameVerifier(AllowSelfSignedHostnameVerifier(args[1] as? String))
-
-        result.success(true)
+        else -> result.notImplemented()
       }
-
-      else -> result.notImplemented()
+    } catch (e: Throwable) {
+      result.error("error", e.message, null)
     }
   }
 
