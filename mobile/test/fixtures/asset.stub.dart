@@ -8,8 +8,8 @@ final class AssetStub {
     localId: "image1",
     remoteId: 'image1-remote',
     ownerId: 1,
-    fileCreatedAt: DateTime.now(),
-    fileModifiedAt: DateTime.now(),
+    fileCreatedAt: DateTime(2019),
+    fileModifiedAt: DateTime(2020),
     updatedAt: DateTime.now(),
     durationInSeconds: 0,
     type: AssetType.image,
@@ -31,6 +31,21 @@ final class AssetStub {
     type: AssetType.video,
     fileName: "image2.jpg",
     isFavorite: false,
+    isArchived: false,
+    isTrashed: false,
+  );
+
+  static final image3 = Asset(
+    checksum: "image3-checksum",
+    localId: "image3",
+    ownerId: 1,
+    fileCreatedAt: DateTime(2025),
+    fileModifiedAt: DateTime(2025),
+    updatedAt: DateTime.now(),
+    durationInSeconds: 60,
+    type: AssetType.image,
+    fileName: "image3.jpg",
+    isFavorite: true,
     isArchived: false,
     isTrashed: false,
   );

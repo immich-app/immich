@@ -605,15 +605,18 @@ class SyncService {
     Set<String>? excludedAssets,
     bool forceRefresh = false,
   ]) async {
+    _log.info("Syncing a local album to DB: ${deviceAlbum.name}");
     if (!forceRefresh && !await _hasAlbumChangeOnDevice(deviceAlbum, dbAlbum)) {
-      _log.fine(
+      _log.info(
         "Local album ${deviceAlbum.name} has not changed. Skipping sync.",
       );
       return false;
     }
+    _log.info("Local album ${deviceAlbum.name} has changed. Syncing...");
     if (!forceRefresh &&
         excludedAssets == null &&
         await _syncDeviceAlbumFast(deviceAlbum, dbAlbum)) {
+      _log.info("Fast synced local album ${deviceAlbum.name} to DB");
       return true;
     }
     // general case, e.g. some assets have been deleted or there are excluded albums on iOS
@@ -626,7 +629,7 @@ class SyncService {
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
     final int assetCountOnDevice =
         await _albumMediaRepository.getAssetCount(deviceAlbum.localId!);
-    final List<Asset> onDevice = await _hashService.getHashedAssets(
+    final List<Asset> onDevice = await _getHashedAssets(
       deviceAlbum,
       excludedAssets: excludedAssets,
     );
@@ -639,7 +642,7 @@ class SyncService {
         dbAlbum.name == deviceAlbum.name &&
         dbAlbum.modifiedAt.isAtSameMomentAs(deviceAlbum.modifiedAt)) {
       // changes only affeted excluded albums
-      _log.fine(
+      _log.info(
         "Only excluded assets in local album ${deviceAlbum.name} changed. Stopping sync.",
       );
       if (assetCountOnDevice !=
@@ -654,11 +657,11 @@ class SyncService {
       }
       return false;
     }
-    _log.fine(
+    _log.info(
       "Syncing local album ${deviceAlbum.name}. ${toAdd.length} assets to add, ${toUpdate.length} to update, ${toDelete.length} to delete",
     );
     final (existingInDb, updated) = await _linkWithExistingFromDb(toAdd);
-    _log.fine(
+    _log.info(
       "Linking assets to add with existing from db. ${existingInDb.length} existing, ${updated.length} to update",
     );
     deleteCandidates.addAll(toDelete);
@@ -695,6 +698,9 @@ class SyncService {
   /// returns `true` if successful, else `false`
   Future<bool> _syncDeviceAlbumFast(Album deviceAlbum, Album dbAlbum) async {
     if (!deviceAlbum.modifiedAt.isAfter(dbAlbum.modifiedAt)) {
+      _log.info(
+        "Local album ${deviceAlbum.name} has not changed. Skipping sync.",
+      );
       return false;
     }
     final int totalOnDevice =
@@ -704,15 +710,21 @@ class SyncService {
                 ?.assetCount ??
             0;
     if (totalOnDevice <= lastKnownTotal) {
+      _log.info(
+        "Local album ${deviceAlbum.name} totalOnDevice is less than lastKnownTotal. Skipping sync.",
+      );
       return false;
     }
-    final List<Asset> newAssets = await _hashService.getHashedAssets(
+    final List<Asset> newAssets = await _getHashedAssets(
       deviceAlbum,
       modifiedFrom: dbAlbum.modifiedAt.add(const Duration(seconds: 1)),
       modifiedUntil: deviceAlbum.modifiedAt,
     );
 
     if (totalOnDevice != lastKnownTotal + newAssets.length) {
+      _log.info(
+        "Local album ${deviceAlbum.name} totalOnDevice is not equal to lastKnownTotal + newAssets.length. Skipping sync.",
+      );
       return false;
     }
     dbAlbum.modifiedAt = deviceAlbum.modifiedAt;
@@ -747,8 +759,8 @@ class SyncService {
     List<Asset> existing, [
     Set<String>? excludedAssets,
   ]) async {
-    _log.info("Syncing a new local album to DB: ${album.name}");
-    final assets = await _hashService.getHashedAssets(
+    _log.info("Adding a new local album to DB: ${album.name}");
+    final assets = await _getHashedAssets(
       album,
       excludedAssets: excludedAssets,
     );
@@ -868,6 +880,28 @@ class SyncService {
         }
       }
     }
+  }
+
+  /// Returns all assets that were successfully hashed
+  Future<List<Asset>> _getHashedAssets(
+    Album album, {
+    int start = 0,
+    int end = 0x7fffffffffffffff,
+    DateTime? modifiedFrom,
+    DateTime? modifiedUntil,
+    Set<String>? excludedAssets,
+  }) async {
+    final entities = await _albumMediaRepository.getAssets(
+      album.localId!,
+      start: start,
+      end: end,
+      modifiedFrom: modifiedFrom,
+      modifiedUntil: modifiedUntil,
+    );
+    final filtered = excludedAssets == null
+        ? entities
+        : entities.where((e) => !excludedAssets.contains(e.localId!)).toList();
+    return _hashService.hashAssets(filtered);
   }
 
   List<Asset> _removeDuplicates(List<Asset> assets) {

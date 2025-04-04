@@ -1,6 +1,11 @@
-import { Column, PrimaryColumn, Table } from 'src/sql-tools';
+import { Column, Index, PrimaryColumn, Table } from 'src/sql-tools';
 
-@Table({ name: 'geodata_places', synchronize: false })
+@Index({ name: 'idx_geodata_places_alternate_names', expression: 'f_unaccent("alternateNames") gin_trgm_ops' })
+@Index({ name: 'idx_geodata_places_admin1_name', expression: 'f_unaccent("admin1Name") gin_trgm_ops' })
+@Index({ name: 'idx_geodata_places_admin2_name', expression: 'f_unaccent("admin2Name") gin_trgm_ops' })
+@Index({ name: 'idx_geodata_places_name', expression: 'f_unaccent("name") gin_trgm_ops' })
+@Index({ name: 'idx_geodata_places_gist_earthcoord', expression: 'll_to_earth_public(latitude, longitude)' })
+@Table({ name: 'idx_geodata_places', synchronize: false })
 export class GeodataPlacesTable {
   @PrimaryColumn({ type: 'integer' })
   id!: number;

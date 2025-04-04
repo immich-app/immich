@@ -61,6 +61,7 @@ custom_lint:
         # refactor to make the providers and services testable
         - lib/providers/backup/{backup,manual_upload}.provider.dart # uses only PMProgressHandler
         - lib/services/{background,backup}.service.dart # uses only PMProgressHandler
+        - test/**.dart
     - import_rule_isar:
       message: isar must only be used in entities and repositories
       restrict: package:isar
@@ -150,7 +151,6 @@ dart_code_metrics:
     - avoid-unnecessary-continue
     - avoid-unnecessary-nullable-return-type: false
     - binary-expression-operand-order
-    - move-variable-outside-iteration
     - pattern-fields-ordering
     - prefer-abstract-final-static-class
     - prefer-commenting-future-delayed
