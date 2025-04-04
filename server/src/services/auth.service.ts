@@ -174,13 +174,13 @@ export class AuthService extends BaseService {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
   }
 
-  async setPicture(profile: OAuthProfile) {
+  async setPicture(profile: OAuthProfile, userId: string) {
     let picturePath = '';
     if (profile.picture) {
       const picBuffer = this.oauthRepository.fetchPictureURL(profile);
       if (picBuffer) {
-        const fileName = `profile-${profile.sub}-${Date.now()}.jpg`;
-        picturePath = `upload/${fileName}`;
+        const fileName = `${profile.sub}.jpg`;
+        picturePath = `upload/profile/${userId}/${fileName}`;
         const buffer = Buffer.from(await picBuffer);
         //This next line needs to by synchronous or else the login might finish BEFORE the file is written
         //This leads to a missing file and failure on OIDC login
@@ -208,7 +208,6 @@ export class AuthService extends BaseService {
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user = await this.userRepository.getByOAuthId(profile.sub);
-    const picturePath = await this.setPicture(profile);
 
     // link by email
     if (!user && profile.email) {
@@ -252,12 +251,12 @@ export class AuthService extends BaseService {
         name: userName,
         email: profile.email,
         oauthId: profile.sub,
-        profileImagePath: picturePath,
-        profileChangedAt: new Date(),
         quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
         storageLabel: storageLabel || null,
       });
     }
+
+    const picturePath = await this.setPicture(profile, user.id);
 
     if (user.profileImagePath == undefined || user.profileImagePath == '') {
       await this.userRepository.update(user.id, {
