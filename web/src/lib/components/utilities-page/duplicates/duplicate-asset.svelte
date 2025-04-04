@@ -1,8 +1,10 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
   import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -10,14 +12,22 @@
   interface Props {
     asset: AssetResponseDto;
     isSelected: boolean;
+    showDate: boolean;
     onSelectAsset: (asset: AssetResponseDto) => void;
     onViewAsset: (asset: AssetResponseDto) => void;
   }
 
-  let { asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
+  let { asset, isSelected, showDate, onSelectAsset, onViewAsset }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
+
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime = $derived(
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromLocalDateTime(asset.localDateTime),
+  );
 </script>
 
 <div
@@ -93,6 +103,20 @@
   >
     <span class="break-all text-center">{asset.originalFileName}</span>
     <span>{getAssetResolution(asset)} - {getFileSize(asset)}</span>
+    <span>
+      {#if showDate}
+        {dateTime.toLocaleString(
+          {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+          },
+          { locale: $locale },
+        )}
+      {/if}
+    </span>
     <span>
       {#await getAllAlbums({ assetId: asset.id })}
         {$t('scanning_for_album')}
