@@ -177,13 +177,14 @@ export class AuthService extends BaseService {
   async setPicture(profile: OAuthProfile, userId: string) {
     let picturePath = '';
     if (profile.picture) {
-      const picBuffer = this.oauthRepository.fetchPictureURL(profile);
+      const picBuffer = await this.oauthRepository.fetchPictureURL(profile);
       if (picBuffer) {
         const fileName = `${profile.sub}.jpg`;
         picturePath = `upload/profile/${userId}/${fileName}`;
-        const buffer = Buffer.from(await picBuffer);
+        const buffer = Buffer.from(picBuffer);
         //This next line needs to by synchronous or else the login might finish BEFORE the file is written
         //This leads to a missing file and failure on OIDC login
+        fs.mkdirSync(`upload/profile/${userId}`, { recursive: true });
         fs.writeFileSync(picturePath, buffer);
       }
       return picturePath;
