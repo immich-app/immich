@@ -4,6 +4,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
+  import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -19,6 +20,7 @@
     hidden?: boolean;
     border?: boolean;
     hiddenIconClass?: string;
+    class?: ClassValue;
     onComplete?: (() => void) | undefined;
   }
 
@@ -36,6 +38,7 @@
     border = false,
     hiddenIconClass = 'text-white',
     onComplete = undefined,
+    class: imageClass = '',
   }: Props = $props();
 
   let {
@@ -88,7 +91,7 @@
     src={url}
     alt={loaded || errored ? altText : ''}
     {title}
-    class="object-cover {optionalClasses}"
+    class={['object-cover', optionalClasses, imageClass]}
     class:opacity-0={!thumbhash && !loaded}
     draggable="false"
   />

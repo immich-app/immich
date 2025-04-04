@@ -16,19 +16,8 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
-import { SidecarAssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import {
-  AssetFileType,
-  AssetStatus,
-  AssetType,
-  CrawlType,
-  DatabaseLock,
-  ImmichWorker,
-  JobName,
-  JobStatus,
-  QueueName,
-} from 'src/enum';
+import { AssetStatus, AssetType, CrawlType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AssetSyncResult } from 'src/repositories/library.repository';
 import { BaseService } from 'src/services/base.service';
@@ -709,7 +698,7 @@ export class LibraryService extends BaseService {
       `Checking ${totalAssetCount} sidecar(s) against import paths and exclusion patterns in library ${library.id}...`,
     );
 
-    const deletedSidecars = await this.assetRepository.deleteExternalSidecars(
+    const deletedSidecars = this.assetRepository.deleteExternalSidecars(
       library.id,
       library.importPaths,
       library.exclusionPatterns,

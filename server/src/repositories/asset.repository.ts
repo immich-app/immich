@@ -1069,7 +1069,7 @@ export class AssetRepository {
   @GenerateSql({
     params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
   })
-  async deleteExternalSidecars(libraryId: string, importPaths: string[], exclusionPatterns: string[]) {
+  deleteExternalSidecars(libraryId: string, importPaths: string[], exclusionPatterns: string[]) {
     const paths = importPaths.map((importPath) => `${importPath}%`);
     const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
 

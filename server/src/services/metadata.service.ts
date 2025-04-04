@@ -121,6 +121,7 @@ export class MetadataService extends BaseService {
       this.logger.log(`Initialized local reverse geocoder`);
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
+      throw new Error(`Metadata service init failed`);
     }
   }
 
@@ -619,10 +620,10 @@ export class MetadataService extends BaseService {
       this.assetFileRepository.getAll(options, { assetId: asset.id, type: AssetFileType.SIDECAR }),
     );
 
-    let sidecars: SidecarAssetFileEntity[] = [];
+    const sidecars: SidecarAssetFileEntity[] = [];
 
     for await (const sidecar of sidecarPagination) {
-      sidecars.concat(...(sidecar as SidecarAssetFileEntity[]));
+      sidecars.push(...(sidecar as SidecarAssetFileEntity[]));
     }
 
     if (sidecars.length > 1) {
@@ -716,7 +717,7 @@ export class MetadataService extends BaseService {
         this.logger.debug(
           `Updating sidecar fileModifiedAt for sidecar ${sidecar.path}: ${sidecar.fileModifiedAt} becomes ${sidecarStat.mtime}`,
         );
-        this.assetFileRepository.update({ ...sidecar, fileModifiedAt: sidecarStat.mtime });
+        await this.assetFileRepository.update({ ...sidecar, fileModifiedAt: sidecarStat.mtime });
       }
 
       if (sidecarTags) {

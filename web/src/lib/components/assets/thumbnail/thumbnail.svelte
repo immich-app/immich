@@ -1,12 +1,11 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
-  import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { timeToSeconds } from '$lib/utils/date-time';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { timeToSeconds } from '$lib/utils/date-time';
+  import { getAltText } from '$lib/utils/thumbnail-util';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -17,13 +16,14 @@
     mdiRotate360,
   } from '@mdi/js';
 
+  import { thumbhash } from '$lib/actions/thumbhash';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
+  import { TUNABLES } from '$lib/utils/tunables';
+  import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { TUNABLES } from '$lib/utils/tunables';
-  import { thumbhash } from '$lib/actions/thumbhash';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -35,16 +35,16 @@
     focussed?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
+    disableLinkMouseOver?: boolean;
     readonly?: boolean;
     showArchiveIcon?: boolean;
     showStackedIcon?: boolean;
-    disableMouseOver?: boolean;
-
+    imageClass?: ClassValue;
+    dimmed?: boolean;
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
     handleFocus?: (() => void) | undefined;
-    class?: string;
   }
 
   let {
@@ -57,15 +57,16 @@
     focussed = false,
     selectionCandidate = false,
     disabled = false,
+    disableLinkMouseOver = false,
     readonly = false,
     showArchiveIcon = false,
     showStackedIcon = true,
-    disableMouseOver = false,
     onClick = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
     handleFocus = undefined,
-    class: className = '',
+    imageClass = '',
+    dimmed = false,
   }: Props = $props();
 
   let {
@@ -145,11 +146,12 @@
 
 <div
   data-asset={asset.id}
+  class={[
+    'focus-visible:outline-none flex overflow-hidden',
+    disabled ? 'bg-gray-300' : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20',
+  ]}
   style:width="{width}px"
   style:height="{height}px"
-  class="focus-visible:outline-none flex overflow-hidden {disabled
-    ? 'bg-gray-300'
-    : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
 >
   {#if !loaded && asset.thumbhash}
     <canvas
@@ -168,11 +170,9 @@
       slow: ??ms
       -->
   <div
-    class="group"
-    style:width="{width}px"
-    style:height="{height}px"
-    class:cursor-not-allowed={disabled}
-    class:cursor-pointer={!disabled}
+    class={['group absolute  top-[0px] bottom-[0px]', { 'curstor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    style:width="inherit"
+    style:height="inherit"
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
     use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
@@ -184,20 +184,19 @@
         onSelect?.(asset);
       }
     }}
-    tabindex={0}
     onclick={handleClick}
-    role="link"
     bind:this={focussableElement}
     onfocus={handleFocus}
     data-testid="container-with-tabindex"
+    tabindex={0}
+    role="link"
   >
-    {#if !usingMobileDevice && mouseOver && !disableMouseOver}
+    <!-- Select asset button  -->
+    {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
       <!-- lazy show the url on mouse over-->
       <a
-        class="absolute z-30 {className} top-[41px]"
+        class={['absolute  z-10 w-full top-0 bottom-0']}
         style:cursor="unset"
-        style:width="{width}px"
-        style:height="{height}px"
         href={currentUrlReplaceAssetId(asset.id)}
         onclick={(evt) => evt.preventDefault()}
         tabindex={-1}
@@ -205,87 +204,98 @@
       >
       </a>
     {/if}
-    <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
-      <!-- Select asset button  -->
-      {#if !readonly && (mouseOver || selected || selectionCandidate)}
-        <button
-          type="button"
-          onclick={onIconClickedHandler}
-          class="absolute p-2 focus:outline-none"
-          class:cursor-not-allowed={disabled}
-          role="checkbox"
-          tabindex={-1}
-          onfocus={handleFocus}
-          aria-checked={selected}
-          {disabled}
-        >
-          {#if disabled}
-            <Icon path={mdiCheckCircle} size="24" class="text-zinc-800" />
-          {:else if selected}
-            <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-              <Icon path={mdiCheckCircle} size="24" class="text-immich-primary" />
-            </div>
-          {:else}
-            <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
-          {/if}
-        </button>
-      {/if}
-    </div>
+    {#if !readonly && (mouseOver || selected || selectionCandidate)}
+      <button
+        type="button"
+        onclick={onIconClickedHandler}
+        class={['absolute z-20 p-2 focus:outline-none', { 'cursor-not-allowed': disabled }]}
+        role="checkbox"
+        tabindex={-1}
+        onfocus={handleFocus}
+        aria-checked={selected}
+        {disabled}
+      >
+        {#if disabled}
+          <Icon path={mdiCheckCircle} size="24" class="text-zinc-800" />
+        {:else if selected}
+          <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
+            <Icon path={mdiCheckCircle} size="24" class="text-immich-primary" />
+          </div>
+        {:else}
+          <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+        {/if}
+      </button>
+    {/if}
 
     <div
-      class="absolute h-full w-full select-none bg-transparent transition-transform"
-      class:scale-[0.85]={selected}
-      class:rounded-xl={selected}
+      class={[
+        'absolute h-full w-full select-none bg-transparent transition-transform',
+        { 'scale-[0.85]': selected },
+        { 'rounded-xl': selected },
+      ]}
     >
-      <!-- Gradient overlay on hover -->
-      {#if !usingMobileDevice}
+      <!-- icon overlay -->
+      <div>
+        <!-- Gradient overlay on hover -->
+        {#if !usingMobileDevice && !disabled}
+          <div
+            class={[
+              'absolute h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100',
+              { 'rounded-xl': selected },
+            ]}
+          ></div>
+        {/if}
+        <!-- Dimmed support -->
+
+        {#if dimmed && !mouseOver}
+          <div id="a" class={['absolute h-full w-full z-30  bg-gray-700/40', { 'rounded-xl': selected }]}></div>
+        {/if}
+        <!-- Outline on focus -->
         <div
-          class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
-          class:rounded-xl={selected}
+          class={[
+            'absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary',
+            { 'rounded-xl': selected },
+          ]}
         ></div>
-      {/if}
-      <!-- Outline on focus -->
-      <div
-        class="absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary"
-      ></div>
 
-      <!-- Favorite asset star -->
-      {#if !isSharedLink() && asset.isFavorite}
-        <div class="absolute bottom-2 left-2 z-10">
-          <Icon path={mdiHeart} size="24" class="text-white" />
-        </div>
-      {/if}
+        <!-- Favorite asset star -->
+        {#if !isSharedLink() && asset.isFavorite}
+          <div class="absolute bottom-2 left-2 z-10">
+            <Icon path={mdiHeart} size="24" class="text-white" />
+          </div>
+        {/if}
 
-      {#if !isSharedLink() && showArchiveIcon && asset.isArchived}
-        <div class="absolute {asset.isFavorite ? 'bottom-10' : 'bottom-2'} left-2 z-10">
-          <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
-        </div>
-      {/if}
+        {#if !isSharedLink() && showArchiveIcon && asset.isArchived}
+          <div class={['absolute left-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+            <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+          </div>
+        {/if}
 
-      {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
-        <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
-          <span class="pr-2 pt-2">
-            <Icon path={mdiRotate360} size="24" />
-          </span>
-        </div>
-      {/if}
+        {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
+          <div class="absolute right-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pr-2 pt-2">
+              <Icon path={mdiRotate360} size="24" />
+            </span>
+          </div>
+        {/if}
 
-      <!-- Stacked asset -->
-
-      {#if asset.stack && showStackedIcon}
-        <div
-          class="absolute {asset.type == AssetTypeEnum.Image && asset.livePhotoVideoId == undefined
-            ? 'top-0 right-0'
-            : 'top-7 right-1'} z-20 flex place-items-center gap-1 text-xs font-medium text-white"
-        >
-          <span class="pr-2 pt-2 flex place-items-center gap-1">
-            <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
-            <Icon path={mdiCameraBurst} size="24" />
-          </span>
-        </div>
-      {/if}
-
+        <!-- Stacked asset -->
+        {#if asset.stack && showStackedIcon}
+          <div
+            class={[
+              'absolute z-10 flex place-items-center gap-1 text-xs font-medium text-white',
+              asset.type == AssetTypeEnum.Image && !asset.livePhotoVideoId ? 'top-0 right-0' : 'top-7 right-1',
+            ]}
+          >
+            <span class="pr-2 pt-2 flex place-items-center gap-1">
+              <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
+              <Icon path={mdiCameraBurst} size="24" />
+            </span>
+          </div>
+        {/if}
+      </div>
       <ImageThumbnail
+        class={imageClass}
         url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
@@ -293,7 +303,6 @@
         curve={selected}
         onComplete={() => (loaded = true)}
       />
-
       {#if asset.type === AssetTypeEnum.Video}
         <div class="absolute top-0 h-full w-full">
           <VideoThumbnail
@@ -304,9 +313,7 @@
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
-      {/if}
-
-      {#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
+      {:else if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
         <div class="absolute top-0 h-full w-full">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}

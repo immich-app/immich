@@ -171,6 +171,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
   numResults: number;
   maxDistance: number;
+  minBirthDate?: Date;
 }
 
 export interface AssetDuplicateSearch {
@@ -346,7 +347,7 @@ export class SearchRepository {
       },
     ],
   })
-  searchFaces({ userIds, embedding, numResults, maxDistance, hasPerson }: FaceEmbeddingSearch) {
+  searchFaces({ userIds, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
     if (!isValidInteger(numResults, { min: 1, max: 1000 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -362,9 +363,13 @@ export class SearchRepository {
           ])
           .innerJoin('assets', 'assets.id', 'asset_faces.assetId')
           .innerJoin('face_search', 'face_search.faceId', 'asset_faces.id')
+          .leftJoin('person', 'person.id', 'asset_faces.personId')
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.deletedAt', 'is', null)
           .$if(!!hasPerson, (qb) => qb.where('asset_faces.personId', 'is not', null))
+          .$if(!!minBirthDate, (qb) =>
+            qb.where((eb) => eb.or([eb('person.birthDate', 'is', null), eb('person.birthDate', '<=', minBirthDate!)])),
+          )
           .orderBy(sql`face_search.embedding <=> ${embedding}`)
           .limit(numResults),
       )

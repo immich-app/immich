@@ -12,6 +12,7 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
@@ -52,6 +53,7 @@ abstract final class TestUtils {
         ETagSchema,
         AndroidDeviceAssetSchema,
         IOSDeviceAssetSchema,
+        DeviceAssetEntitySchema,
       ],
       directory: "test/",
       maxSizeMiB: 1024,
