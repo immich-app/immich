@@ -17,7 +17,7 @@ import {
   TimeBucketSize,
   type AssetResponseDto,
 } from '@immich/sdk';
-import { debounce, isEqual, throttle } from 'lodash-es';
+import { clamp, debounce, isEqual, throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 
@@ -83,7 +83,7 @@ class IntersectingAsset {
     }
 
     const store = this.#group.bucket.store;
-    const topWindow = store.visibleWindow.top + HEADER - INTERSECTION_EXPAND_TOP;
+    const topWindow = store.visibleWindow.top - HEADER - INTERSECTION_EXPAND_TOP;
     const bottomWindow = store.visibleWindow.bottom + HEADER + INTERSECTION_EXPAND_BOTTOM;
     const positionTop = this.#group.absoluteDateGroupTop + this.position.top;
     const positionBottom = positionTop + this.position.height;
@@ -230,6 +230,7 @@ export type ViewportXY = Viewport & {
 export class AssetBucket {
   // --- public ---
   #intersecting: boolean = $state(false);
+  actuallyIntersecting: boolean = $state(false);
   isLoaded: boolean = $state(false);
   dateGroups: AssetDateGroup[] = $state([]);
   readonly store: AssetStore;
@@ -245,6 +246,7 @@ export class AssetBucket {
   #top: number = $state(0);
   #initialCount: number = 0;
   #sortOrder: AssetOrder = AssetOrder.Desc;
+  percent: number = $state(0);
   // --- should be private, but is used by AssetStore ---
 
   bucketCount: number = $derived(
@@ -401,8 +403,12 @@ export class AssetBucket {
         }
         if (dateGroup) {
           const intersectingAsset = new IntersectingAsset(dateGroup, asset);
-          dateGroup.intersetingAssets.push(intersectingAsset);
-          changedDateGroups.add(dateGroup);
+          if (dateGroup.intersetingAssets.some((a) => a.id === asset.id)) {
+            console.error(`Ignoring attempt to add duplicate asset ${asset.id} to ${dateGroup.groupTitle}`);
+          } else {
+            dateGroup.intersetingAssets.push(intersectingAsset);
+            changedDateGroups.add(dateGroup);
+          }
         } else {
           dateGroup = new AssetDateGroup(this, this.dateGroups.length, date, day);
           dateGroup.intersetingAssets.push(new IntersectingAsset(dateGroup, asset));
@@ -440,7 +446,7 @@ export class AssetBucket {
   }
 
   set bucketHeight(height: number) {
-    const { store } = this;
+    const { store, percent } = this;
     const index = store.buckets.indexOf(this);
     const bucketHeightDelta = height - this.#bucketHeight;
     const prevBucket = store.buckets[index - 1];
@@ -461,8 +467,14 @@ export class AssetBucket {
       // if the bucket is 'before' the last intersecting bucket in the sliding window
       // then adjust the scroll position by the delta, to compensate for the bucket
       // size adjustment
-      if (currentIndex > 0 && index <= currentIndex) {
-        store.compensateScrollCallback?.(bucketHeightDelta);
+      if (currentIndex > 0) {
+        if (index < currentIndex) {
+          store.compensateScrollCallback?.({ delta: bucketHeightDelta });
+        } else if (currentIndex == currentIndex) {
+          this.store.updateIntersections();
+          const top = this.#top + height * percent;
+          store.compensateScrollCallback?.({ top });
+        }
       }
     }
   }
@@ -556,7 +568,7 @@ export class AssetStore {
   scrubberTimelineHeight: number = $state(0);
 
   // -- should be private, but used by AssetBucket
-  compensateScrollCallback: ((delta: number) => void) | undefined;
+  compensateScrollCallback: (({ delta, top }: { delta?: number; top?: number }) => void) | undefined;
   topIntersectingBucket: AssetBucket | undefined = $state();
 
   visibleWindow = $derived.by(() => ({
@@ -724,29 +736,51 @@ export class AssetStore {
     let topIntersectingBucket = undefined;
     for (const bucket of this.buckets) {
       this.#updateIntersection(bucket);
-      if (!topIntersectingBucket && bucket.intersecting) {
+      if (!topIntersectingBucket && bucket.actuallyIntersecting) {
         topIntersectingBucket = bucket;
       }
     }
     if (this.topIntersectingBucket !== topIntersectingBucket) {
       this.topIntersectingBucket = topIntersectingBucket;
     }
+    for (const bucket of this.buckets) {
+      if (bucket === this.topIntersectingBucket) {
+        this.topIntersectingBucket.percent = clamp(
+          (this.visibleWindow.top - this.topIntersectingBucket.top) / this.topIntersectingBucket.bucketHeight,
+          0,
+          1,
+        );
+      } else {
+        bucket.percent = 0;
+      }
+    }
   }
 
-  #updateIntersection(bucket: AssetBucket) {
+  #calculateIntersecting(bucket: AssetBucket, expandTop: number, expandBottom: number) {
     const bucketTop = bucket.top;
     const bucketBottom = bucketTop + bucket.bucketHeight;
-    const topWindow = this.visibleWindow.top - INTERSECTION_EXPAND_TOP;
-    const bottomWindow = this.visibleWindow.bottom + INTERSECTION_EXPAND_BOTTOM;
+    const topWindow = this.visibleWindow.top - expandTop;
+    const bottomWindow = this.visibleWindow.bottom + expandBottom;
 
     // a bucket intersections if
     // 1) bucket's bottom is in the visible range -or-
     // 2) bucket's bottom is in the visible range -or-
     // 3) bucket's top is above visible range and bottom is below visible range
-    bucket.intersecting =
+    return (
       (bucketTop >= topWindow && bucketTop < bottomWindow) ||
       (bucketBottom >= topWindow && bucketBottom < bottomWindow) ||
-      (bucketTop < topWindow && bucketBottom >= bottomWindow);
+      (bucketTop < topWindow && bucketBottom >= bottomWindow)
+    );
+  }
+
+  #updateIntersection(bucket: AssetBucket) {
+    const actuallyIntersecting = this.#calculateIntersecting(bucket, 0, 0);
+    let preIntersecting = false;
+    if (!actuallyIntersecting) {
+      preIntersecting = this.#calculateIntersecting(bucket, INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM);
+    }
+    bucket.intersecting = actuallyIntersecting || preIntersecting;
+    bucket.actuallyIntersecting = actuallyIntersecting;
   }
 
   #processPendingChanges = throttle(() => {
@@ -763,7 +797,7 @@ export class AssetStore {
     this.#pendingChanges = [];
   }, 2500);
 
-  setCompensateScrollCallback(compensateScrollCallback?: (delta: number) => void) {
+  setCompensateScrollCallback(compensateScrollCallback?: ({ delta, top }: { delta?: number; top?: number }) => void) {
     this.compensateScrollCallback = compensateScrollCallback;
   }
 
@@ -974,6 +1008,11 @@ export class AssetStore {
     }
 
     const result = await bucket.loader?.execute(async (signal: AbortSignal) => {
+      if (bucket.getFirstAsset()) {
+        // this happens when a bucket was created by an event instead of via a loadBucket call
+        // so no need to load the bucket, it already has assets
+        return;
+      }
       const assets = await getTimeBucket(
         {
           ...this.#options,

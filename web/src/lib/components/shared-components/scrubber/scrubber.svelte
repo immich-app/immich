@@ -268,6 +268,7 @@
     };
   });
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  const width = $derived(isDragging ? '100vw' : usingMobileDevice ? '20px' : '60px');
 </script>
 
 <svelte:window
@@ -292,7 +293,7 @@
   class="absolute right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
   style:padding-top={HOVER_DATE_HEIGHT + 'px'}
   style:padding-bottom={HOVER_DATE_HEIGHT + 'px'}
-  style:width={isDragging ? '100vw' : '60px'}
+  style:width
   style:height={height + 'px'}
   style:background-color={isDragging ? 'transparent' : 'transparent'}
   bind:this={scrollBar}
