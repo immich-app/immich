@@ -28,7 +28,7 @@
     onEditSuccess,
   }: Props = $props();
 
-  let quotaSize = $state(user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null);
+  let quotaSize = $state(user.quotaSizeInBytes != null ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null);
 
   const previousQutoa = user.quotaSizeInBytes;
 
@@ -48,7 +48,7 @@
           email,
           name,
           storageLabel: storageLabel || '',
-          quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), ByteUnit.GiB) : null,
+          quotaSizeInBytes: quotaSize != null ? convertToBytes(Number(quotaSize), ByteUnit.GiB) : null,
         },
       });
 
@@ -126,8 +126,7 @@
           <p class="text-red-400 text-sm">{$t('errors.quota_higher_than_disk_size')}</p>
         {/if}</label
       >
-      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
-      <p>{$t('admin.note_unlimited_quota')}</p>
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" placeholder={$t('unlimited')} type="number" min="0" bind:value={quotaSize} />
     </div>
 
     <div class="my-4 flex flex-col gap-2">

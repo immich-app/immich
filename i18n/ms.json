@@ -159,7 +159,6 @@
     "no_pattern_added": "Tiada corak ditambah",
     "note_apply_storage_label_previous_assets": "Nota: Untuk menggunakan Label Storan pada aset yang dimuat naik sebelum ini, jalankan",
     "note_cannot_be_changed_later": "NOTA: Ini tidak boleh diubah kemudian!",
-    "note_unlimited_quota": "Nota: Masukkan 0 untuk kuota tanpa had",
     "notification_email_from_address": "Dari alamat",
     "notification_email_from_address_description": "Alamat e-mel penghantar, sebagai contoh: \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "Hos e-mel pelayan (cth. smtp.immich.app)",
