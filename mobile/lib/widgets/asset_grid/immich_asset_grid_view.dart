@@ -546,8 +546,14 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
         if (didPop) {
           return;
         } else {
+          /// `preselectedAssets` is only present when opening the asset grid from the
+          /// "add to album" button.
+          ///
+          /// `_selectedAssets` includes `preselectedAssets` on initialization.
           if (_selectedAssets.length >
               (widget.preselectedAssets?.length ?? 0)) {
+            /// `_deselectAll` only deselects the selected assets,
+            /// doesn't affect the preselected ones.
             _deselectAll();
             return;
           } else {
