@@ -132,7 +132,7 @@
     "machine_learning_smart_search_description": "Fotoğrafları CLIP kullanarak semantik olarak ara",
     "machine_learning_smart_search_enabled": "Akıllı aramayı etkinleştir",
     "machine_learning_smart_search_enabled_description": "Eğer devre dışı bırakılırsa fotoğraflar akıllı arama için işlenmeyecek.",
-    "machine_learning_url_description": "Makine öğrenimi sunucusunun URL'si. Birden fazla URL sağlanırsa, ilkinden sonuna doğru, biri başarılı bir şekilde yanıt verene kadar her sunucu tek tek denenir.",
+    "machine_learning_url_description": "Makine öğrenimi sunucusunun URL’si. Birden fazla URL sağlanırsa, her sunucu sırayla tek tek denenir ve biri başarılı yanıt verene kadar devam edilir. Yanıt vermeyen sunucular, çevrimiçi duruma gelene kadar geçici olarak yok sayılır.",
     "manage_concurrency": "Aynı anda çalışmayı yönet",
     "manage_log_settings": "Günlük ayarlarını yönet",
     "map_dark_style": "Koyu mod",
