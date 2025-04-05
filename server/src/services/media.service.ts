@@ -191,7 +191,7 @@ export class MediaService extends BaseService {
     }
 
     if (toUpsert.length > 0) {
-      await this.assetRepository.upsertFiles(toUpsert);
+      await this.assetFileRepository.upsertAll(toUpsert);
     }
 
     const pathsToDelete: string[] = [];
@@ -210,7 +210,7 @@ export class MediaService extends BaseService {
       pathsToDelete.push(fullsizeFile.path);
       if (!generated.fullsizePath) {
         // did not generate a new fullsize image, delete the existing record
-        await this.assetRepository.deleteFiles([fullsizeFile]);
+        await this.assetFileRepository.delete([fullsizeFile]);
       }
     }
 

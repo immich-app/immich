@@ -580,7 +580,6 @@ describe(AssetService.name, () => {
                 '/uploads/user-id/thumbs/path.jpg',
                 '/uploads/user-id/fullsize/path.webp',
                 assetWithFace.encodedVideoPath,
-                assetWithFace.sidecarPath,
                 assetWithFace.originalPath,
               ],
             },

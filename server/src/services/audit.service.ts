@@ -57,12 +57,12 @@ export class AuditService extends BaseService {
         }
 
         case AssetPathType.PREVIEW: {
-          await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.PREVIEW, path: pathValue });
+          await this.assetFileRepository.upsert({ assetId: id, type: AssetFileType.PREVIEW, path: pathValue });
           break;
         }
 
         case AssetPathType.THUMBNAIL: {
-          await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.THUMBNAIL, path: pathValue });
+          await this.assetFileRepository.upsert({ assetId: id, type: AssetFileType.THUMBNAIL, path: pathValue });
           break;
         }
 
@@ -72,7 +72,7 @@ export class AuditService extends BaseService {
         }
 
         case AssetPathType.SIDECAR: {
-          await this.assetRepository.update({ id, sidecarPath: pathValue });
+          await this.assetFileRepository.update({ id, path: pathValue });
           break;
         }
 

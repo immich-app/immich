@@ -244,7 +244,6 @@ export const sharedLinkStub = {
           tags: [],
           sharedLinks: [],
           faces: [],
-          sidecarPath: null,
           deletedAt: null,
           duplicateId: null,
         },

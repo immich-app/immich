@@ -39,6 +39,7 @@ export enum AssetFileType {
   FULLSIZE = 'fullsize',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
+  SIDECAR = 'sidecar',
 }
 
 export enum AlbumUserRole {
@@ -60,6 +61,11 @@ export enum DatabaseAction {
 export enum EntityType {
   ASSET = 'ASSET',
   ALBUM = 'ALBUM',
+}
+
+export enum CrawlType {
+  ASSETS = 'ASSETS',
+  SIDECARS = 'SIDECARS',
 }
 
 export enum MemoryType {
@@ -502,9 +508,13 @@ export enum JobName {
   DUPLICATE_DETECTION = 'duplicate-detection',
 
   // XMP sidecars
-  QUEUE_SIDECAR = 'queue-sidecar',
-  SIDECAR_DISCOVERY = 'sidecar-discovery',
-  SIDECAR_SYNC = 'sidecar-sync',
+  SIDECAR_QUEUE_SCAN = 'sidecar-queue-scan',
+  SIDECAR_QUEUE_SYNC_FILES = 'sidecar-queue-sync-files',
+  SIDECAR_QUEUE_SYNC_EXISTING = 'sidecar-queue-sync-assets',
+  SIDECAR_SYNC_FILES = 'sidecar-sync-files',
+  SIDECAR_SYNC_EXISTING = 'sidecar-sync-assets',
+  SIDECAR_MAPPING = 'sidecar-mapping',
+  SIDECAR_ASSET_MAPPING = 'sidecar-asset-mapping',
   SIDECAR_WRITE = 'sidecar-write',
 
   // Notification
