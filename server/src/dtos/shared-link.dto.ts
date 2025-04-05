@@ -104,9 +104,6 @@ export class SharedLinkResponseDto {
 
 export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
   const linkAssets = sharedLink.assets || [];
-  const albumAssets = (sharedLink?.album?.assets || []).map((asset) => asset);
-
-  const assets = _.uniqBy([...linkAssets, ...albumAssets], (asset) => asset.id);
 
   return {
     id: sharedLink.id,
@@ -117,7 +114,7 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: assets.map((asset) => mapAsset(asset)),
+    assets: linkAssets.map((asset) => mapAsset(asset)),
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
