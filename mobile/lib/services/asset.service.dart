@@ -256,7 +256,7 @@ class AssetService {
 
       for (var element in assets) {
         element.fileCreatedAt = DateTime.parse(updatedDt);
-        element.exifInfo ??= element.exifInfo
+        element.exifInfo = element.exifInfo
             ?.copyWith(dateTimeOriginal: DateTime.parse(updatedDt));
       }
 
@@ -283,7 +283,7 @@ class AssetService {
       );
 
       for (var element in assets) {
-        element.exifInfo ??= element.exifInfo?.copyWith(
+        element.exifInfo = element.exifInfo?.copyWith(
           latitude: location.latitude,
           longitude: location.longitude,
         );
