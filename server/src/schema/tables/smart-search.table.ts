@@ -1,7 +1,14 @@
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { Column, ColumnIndex, ForeignKeyColumn, Table } from 'src/sql-tools';
+import { Column, ForeignKeyColumn, Index, Table } from 'src/sql-tools';
 
 @Table({ name: 'smart_search', primaryConstraintName: 'smart_search_pkey' })
+@Index({
+  name: 'clip_index',
+  using: 'hnsw',
+  expression: `embedding vector_cosine_ops`,
+  with: `ef_construction = 300, m = 16`,
+  synchronize: false,
+})
 export class SmartSearchTable {
   @ForeignKeyColumn(() => AssetTable, {
     onDelete: 'CASCADE',
@@ -10,7 +17,6 @@ export class SmartSearchTable {
   })
   assetId!: string;
 
-  @ColumnIndex({ name: 'clip_index', synchronize: false })
-  @Column({ type: 'vector', array: true, length: 512, synchronize: false })
+  @Column({ type: 'vector', length: 512, storage: 'external', synchronize: false })
   embedding!: string;
 }

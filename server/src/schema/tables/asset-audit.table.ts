@@ -1,8 +1,9 @@
-import { Column, ColumnIndex, CreateDateColumn, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
+import { Column, ColumnIndex, CreateDateColumn, Table } from 'src/sql-tools';
 
 @Table('assets_audit')
 export class AssetAuditTable {
-  @PrimaryGeneratedColumn({ type: 'v7' })
+  @PrimaryGeneratedUuidV7Column()
   id!: string;
 
   @ColumnIndex('IDX_assets_audit_asset_id')

@@ -1,19 +1,19 @@
 import { Column, DatabaseSchema, Table } from 'src/sql-tools';
 
-enum Test {
-  Foo = 'foo',
-  Bar = 'bar',
-}
-
 @Table()
 export class Table1 {
-  @Column({ enum: Test })
+  @Column({ length: 2 })
   column1!: string;
 }
 
-export const description = 'should use a default enum naming convention';
+export const description = 'should use create a string column with a fixed length';
 export const schema: DatabaseSchema = {
-  name: 'public',
+  name: 'postgres',
+  schemaName: 'public',
+  functions: [],
+  enums: [],
+  extensions: [],
+  parameters: [],
   tables: [
     {
       name: 'table1',
@@ -21,9 +21,8 @@ export const schema: DatabaseSchema = {
         {
           name: 'column1',
           tableName: 'table1',
-          type: 'enum',
-          enumName: 'table1_column1_enum',
-          enumValues: ['foo', 'bar'],
+          type: 'character varying',
+          length: 2,
           nullable: false,
           isArray: false,
           primary: false,
@@ -31,6 +30,7 @@ export const schema: DatabaseSchema = {
         },
       ],
       indexes: [],
+      triggers: [],
       constraints: [],
       synchronize: true,
     },

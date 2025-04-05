@@ -1,7 +1,14 @@
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { Column, ColumnIndex, ForeignKeyColumn, Table } from 'src/sql-tools';
+import { Column, ForeignKeyColumn, Index, Table } from 'src/sql-tools';
 
 @Table({ name: 'face_search', primaryConstraintName: 'face_search_pkey' })
+@Index({
+  name: 'face_index',
+  using: 'hnsw',
+  expression: `embedding vector_cosine_ops`,
+  with: 'ef_construction = 300, m = 16',
+  synchronize: false,
+})
 export class FaceSearchTable {
   @ForeignKeyColumn(() => AssetFaceTable, {
     onDelete: 'CASCADE',
@@ -10,7 +17,6 @@ export class FaceSearchTable {
   })
   faceId!: string;
 
-  @ColumnIndex({ name: 'face_index', synchronize: false })
-  @Column({ type: 'vector', array: true, length: 512, synchronize: false })
+  @Column({ type: 'vector', length: 512, synchronize: false })
   embedding!: string;
 }

@@ -2,6 +2,51 @@ import { DatabaseConstraintType, schemaDiffToSql } from 'src/sql-tools';
 import { describe, expect, it } from 'vitest';
 
 describe('diffToSql', () => {
+  describe('extension.drop', () => {
+    it('should work', () => {
+      expect(
+        schemaDiffToSql([
+          {
+            type: 'extension.drop',
+            extensionName: 'cube',
+            reason: 'unknown',
+          },
+        ]),
+      ).toEqual([`DROP EXTENSION "cube";`]);
+    });
+  });
+
+  describe('extension.create', () => {
+    it('should work', () => {
+      expect(
+        schemaDiffToSql([
+          {
+            type: 'extension.create',
+            extension: {
+              name: 'cube',
+              synchronize: true,
+            },
+            reason: 'unknown',
+          },
+        ]),
+      ).toEqual([`CREATE EXTENSION IF NOT EXISTS "cube";`]);
+    });
+  });
+
+  describe('function.drop', () => {
+    it('should work', () => {
+      expect(
+        schemaDiffToSql([
+          {
+            type: 'function.drop',
+            functionName: 'test_func',
+            reason: 'unknown',
+          },
+        ]),
+      ).toEqual([`DROP FUNCTION test_func;`]);
+    });
+  });
+
   describe('table.drop', () => {
     it('should work', () => {
       expect(
@@ -82,6 +127,29 @@ describe('diffToSql', () => {
           },
         ]),
       ).toEqual([`CREATE TABLE "table1" ("column1" character varying DEFAULT uuid_generate_v4());`]);
+    });
+
+    it('should handle a string with a fixed length', () => {
+      expect(
+        schemaDiffToSql([
+          {
+            type: 'table.create',
+            tableName: 'table1',
+            columns: [
+              {
+                tableName: 'table1',
+                name: 'column1',
+                type: 'character varying',
+                length: 2,
+                isArray: false,
+                nullable: true,
+                synchronize: true,
+              },
+            ],
+            reason: 'unknown',
+          },
+        ]),
+      ).toEqual([`CREATE TABLE "table1" ("column1" character varying(2));`]);
     });
 
     it('should handle an array type', () => {
@@ -451,6 +519,101 @@ describe('diffToSql', () => {
           },
         ]),
       ).toEqual([`DROP INDEX "IDX_test";`]);
+    });
+  });
+
+  describe('trigger.create', () => {
+    it('should work', () => {
+      expect(
+        schemaDiffToSql([
+          {
+            type: 'trigger.create',
+            trigger: {
+              name: 'trigger1',
+              tableName: 'table1',
+              timing: 'before',
+              actions: ['update'],
+              scope: 'row',
+              functionName: 'function1',
+              synchronize: true,
+            },
+            reason: 'unknown',
+          },
+        ]),
+      ).toEqual([
+        `CREATE OR REPLACE TRIGGER "trigger1"
+  BEFORE UPDATE ON "table1"
+  FOR EACH ROW
+  EXECUTE FUNCTION function1();`,
+      ]);
+    });
+
+    it('should work with multiple actions', () => {
+      expect(
+        schemaDiffToSql([
+          {
+            type: 'trigger.create',
+            trigger: {
+              name: 'trigger1',
+              tableName: 'table1',
+              timing: 'before',
+              actions: ['update', 'delete'],
+              scope: 'row',
+              functionName: 'function1',
+              synchronize: true,
+            },
+            reason: 'unknown',
+          },
+        ]),
+      ).toEqual([
+        `CREATE OR REPLACE TRIGGER "trigger1"
+  BEFORE UPDATE OR DELETE ON "table1"
+  FOR EACH ROW
+  EXECUTE FUNCTION function1();`,
+      ]);
+    });
+
+    it('should work with old/new reference table aliases', () => {
+      expect(
+        schemaDiffToSql([
+          {
+            type: 'trigger.create',
+            trigger: {
+              name: 'trigger1',
+              tableName: 'table1',
+              timing: 'before',
+              actions: ['update'],
+              referencingNewTableAs: 'new',
+              referencingOldTableAs: 'old',
+              scope: 'row',
+              functionName: 'function1',
+              synchronize: true,
+            },
+            reason: 'unknown',
+          },
+        ]),
+      ).toEqual([
+        `CREATE OR REPLACE TRIGGER "trigger1"
+  BEFORE UPDATE ON "table1"
+  REFERENCING OLD TABLE AS "old" NEW TABLE AS "new"
+  FOR EACH ROW
+  EXECUTE FUNCTION function1();`,
+      ]);
+    });
+  });
+
+  describe('trigger.drop', () => {
+    it('should work', () => {
+      expect(
+        schemaDiffToSql([
+          {
+            type: 'trigger.drop',
+            tableName: 'table1',
+            triggerName: 'trigger1',
+            reason: 'unknown',
+          },
+        ]),
+      ).toEqual([`DROP TRIGGER "trigger1" ON "table1";`]);
     });
   });
 
