@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { isString } from 'class-validator';
 import { parse } from 'cookie';
 import { DateTime } from 'luxon';
+import fs from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { OnEvent } from 'src/decorators';
@@ -23,7 +24,6 @@ import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
-
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
@@ -174,6 +174,24 @@ export class AuthService extends BaseService {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
   }
 
+  async setPicture(profile: OAuthProfile, userId: string) {
+    let picturePath = '';
+    if (profile.picture) {
+      const picBuffer = await this.oauthRepository.fetchPictureURL(profile);
+      if (picBuffer) {
+        const fileName = `${profile.sub}.jpg`;
+        picturePath = `upload/profile/${userId}/${fileName}`;
+        const buffer = Buffer.from(picBuffer);
+        //This next line needs to by synchronous or else the login might finish BEFORE the file is written
+        //This leads to a missing file and failure on OIDC login
+        fs.mkdirSync(`upload/profile/${userId}`, { recursive: true });
+        fs.writeFileSync(picturePath, buffer);
+      }
+      return picturePath;
+    }
+    this.logger.warn(`No picture found in OAuth profile for ${profile.sub}`);
+  }
+
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
     const { oauth } = await this.getConfig({ withCache: false });
 
@@ -236,6 +254,15 @@ export class AuthService extends BaseService {
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
         storageLabel: storageLabel || null,
+      });
+    }
+
+    const picturePath = await this.setPicture(profile, user.id);
+
+    if (user.profileImagePath == undefined || user.profileImagePath == '') {
+      await this.userRepository.update(user.id, {
+        profileImagePath: picturePath,
+        profileChangedAt: new Date(),
       });
     }
 
