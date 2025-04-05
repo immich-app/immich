@@ -78,16 +78,30 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
-    const embedding = await this.machineLearningRepository.encodeText(machineLearning.urls, dto.query, {
-      modelName: machineLearning.clip.modelName,
-      language: dto.language,
-    });
+
     const page = dto.page ?? 1;
     const size = dto.size || 100;
-    const { hasNextPage, items } = await this.searchRepository.searchSmart(
-      { page, size },
-      { ...dto, userIds, embedding },
-    );
+
+    let items: AssetEntity[] = [];
+    let hasNextPage = false;
+
+    if (dto.query.trim().startsWith('similarTo:')) {
+      const searchAssetId = dto.query.trim().substring('similarTo:'.length);
+      if (!searchAssetId) {
+        throw new BadRequestException('similarTo: must provide an assetId after colon');
+      }
+      const res = await this.searchRepository.searchSimilar({ page, size }, { ...dto, userIds, searchAssetId });
+      items = res.items;
+      hasNextPage = res.hasNextPage;
+    } else {
+      const embedding = await this.machineLearningRepository.encodeText(machineLearning.urls, dto.query, {
+        modelName: machineLearning.clip.modelName,
+        language: dto.language,
+      });
+      const res = await this.searchRepository.searchSmart({ page, size }, { ...dto, userIds, embedding });
+      items = res.items;
+      hasNextPage = res.hasNextPage;
+    }
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
   }
