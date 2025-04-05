@@ -110,6 +110,11 @@ class MemoryStoreSvelte {
     await this.loadAllMemories();
   }
 
+  clearCache() {
+    this.initialized = false;
+    this.memories = [];
+  }
+
   private async loadAllMemories() {
     const memories = await searchMemories({ $for: asLocalTimeISO(DateTime.now()) });
     this.memories = memories.filter((memory) => memory.assets.length > 0);

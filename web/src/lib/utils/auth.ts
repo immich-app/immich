@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { foldersStore } from '$lib/stores/folders.svelte';
+import { memoryStore } from '$lib/stores/memory.store.svelte';
 import { purchaseStore } from '$lib/stores/purchase.store';
 import { preferences as preferences$, resetSavedUser, user as user$ } from '$lib/stores/user.store';
 import { resetUserInteraction, userInteraction } from '$lib/stores/user.svelte';
@@ -101,5 +102,6 @@ export const handleLogout = async (redirectUri: string) => {
     resetSavedUser();
     resetUserInteraction();
     foldersStore.clearCache();
+    memoryStore.clearCache();
   }
 };
