@@ -65,7 +65,9 @@ enum StoreKey<T> {
 
   // Video settings
   loadOriginalVideo<bool>._(136),
-  ;
+
+  // Experimental stuff
+  photoManagerCustomFilter<bool>._(1000);
 
   const StoreKey._(this.id);
   final int id;

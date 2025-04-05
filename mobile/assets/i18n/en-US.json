@@ -17,6 +17,8 @@
   "advanced_settings_proxy_headers_title": "Proxy Headers",
   "advanced_settings_self_signed_ssl_subtitle": "Skips SSL certificate verification for the server endpoint. Required for self-signed certificates.",
   "advanced_settings_self_signed_ssl_title": "Allow self-signed SSL certificates",
+  "advanced_settings_enable_alternate_media_filter_title": "[EXPERIMENTAL] Use alternate device album sync filter",
+  "advanced_settings_enable_alternate_media_filter_subtitle": "Use this option to filter media during sync based on alternate criteria. Only try this if you have issues with the app detecting all albums.",
   "advanced_settings_tile_subtitle": "Advanced user's settings",
   "advanced_settings_tile_title": "Advanced",
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
