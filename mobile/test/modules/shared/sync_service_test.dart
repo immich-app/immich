@@ -16,6 +16,7 @@ import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../domain/service.mock.dart';
+import '../../fixtures/asset.stub.dart';
 import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
 import '../../service.mocks.dart';
@@ -257,6 +258,19 @@ void main() {
       );
       expect(c, isTrue);
       verify(() => assetRepository.updateAll(expected));
+    });
+
+    group("upsertAssetsWithExif", () {
+      test('test upsert with EXIF data', () async {
+        final assets = [AssetStub.image1, AssetStub.image2];
+
+        expect(
+          assets.map((a) => a.exifInfo?.assetId),
+          List.filled(assets.length, null),
+        );
+        await s.upsertAssetsWithExif(assets);
+        expect(assets.map((a) => a.exifInfo?.assetId), assets.map((a) => a.id));
+      });
     });
   });
 }
