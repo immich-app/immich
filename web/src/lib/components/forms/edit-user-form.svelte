@@ -28,7 +28,7 @@
     onEditSuccess,
   }: Props = $props();
 
-  let quotaSize = $state(user.quotaSizeInBytes === null ?  null : convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB));
+  let quotaSize = $state(user.quotaSizeInBytes === null ? null : convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB));
 
   const previousQutoa = user.quotaSizeInBytes;
 
