@@ -61,6 +61,7 @@
     preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
     reactions?: ActivityResponseDto[];
+    showCloseButton?: boolean;
     onClose: (dto: { asset: AssetResponseDto }) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
@@ -79,6 +80,7 @@
     preAction = undefined,
     onAction = undefined,
     reactions = $bindable([]),
+    showCloseButton,
     onClose,
     onNext,
     onPrevious,
@@ -431,6 +433,7 @@
         {album}
         {person}
         {stack}
+        {showCloseButton}
         showDetailButton={enableDetailPanel}
         showSlideshow={true}
         onZoomImage={zoomToggle}
