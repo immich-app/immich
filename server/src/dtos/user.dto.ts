@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, Min, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 import { User, UserAdmin } from 'src/database';
 import { UserMetadataEntity, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';

@@ -1,1 +1,0 @@
-{"client":{"name":"basic","version":0,"file-system":"device-agnostic","perform-ownership-analysis":"no"},"targets":{"":["<all>"]},"commands":{"<all>":{"tool":"phony","inputs":["<WorkspaceHeaderMapVFSFilesWritten>"],"outputs":["<all>"]},"P0:::Gate WorkspaceHeaderMapVFSFilesWritten":{"tool":"phony","inputs":[],"outputs":["<WorkspaceHeaderMapVFSFilesWritten>"]}}}
