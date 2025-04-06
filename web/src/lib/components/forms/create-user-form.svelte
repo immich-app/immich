@@ -30,7 +30,7 @@
   let quotaSize: string | undefined = $state();
   let isCreatingUser = $state(false);
 
-  let quotaSizeInBytes = $derived(quotaSize !== null ? convertToBytes(Number(quotaSize), ByteUnit.GiB) : null);
+  let quotaSizeInBytes = $derived(quotaSize === null ? null : convertToBytes(Number(quotaSize), ByteUnit.GiB));
   let quotaSizeWarning = $derived(
     quotaSizeInBytes && userInteraction.serverInfo && quotaSizeInBytes > userInteraction.serverInfo.diskSizeRaw,
   );

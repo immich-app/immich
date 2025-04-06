@@ -28,7 +28,7 @@
     onEditSuccess,
   }: Props = $props();
 
-  let quotaSize = $state(user.quotaSizeInBytes !== null ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null);
+  let quotaSize = $state(user.quotaSizeInBytes === null ?  null : convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB));
 
   const previousQutoa = user.quotaSizeInBytes;
 
@@ -48,7 +48,7 @@
           email,
           name,
           storageLabel: storageLabel || '',
-          quotaSizeInBytes: quotaSize !== null ? convertToBytes(Number(quotaSize), ByteUnit.GiB) : null,
+          quotaSizeInBytes: quotaSize === null ? null : convertToBytes(Number(quotaSize), ByteUnit.GiB),
         },
       });
 
