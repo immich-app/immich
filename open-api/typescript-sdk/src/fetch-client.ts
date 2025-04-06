@@ -297,6 +297,7 @@ export type AlbumResponseDto = {
     id: string;
     isActivityEnabled: boolean;
     lastModifiedAssetTimestamp?: string;
+    isPublicInInstance: boolean;
     order?: AssetOrder;
     owner: UserResponseDto;
     ownerId: string;
@@ -325,6 +326,7 @@ export type UpdateAlbumDto = {
     description?: string;
     isActivityEnabled?: boolean;
     order?: AssetOrder;
+    isPublicInInstance?: boolean;
 };
 export type BulkIdsDto = {
     ids: string[];

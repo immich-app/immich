@@ -138,6 +138,7 @@ export class AlbumService extends BaseService {
       albumThumbnailAssetId: dto.albumThumbnailAssetId,
       isActivityEnabled: dto.isActivityEnabled,
       order: dto.order,
+      isPublicInInstance: dto.isPublicInInstance,
     });
 
     return mapAlbumWithoutAssets({ ...updatedAlbum, assets: album.assets });

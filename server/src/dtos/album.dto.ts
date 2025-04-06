@@ -54,6 +54,9 @@ export class CreateAlbumDto {
 
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];
+
+  @ValidateBoolean({ optional: true })
+  isPublicInInstance?: boolean;
 }
 
 export class UpdateAlbumDto {
@@ -75,6 +78,9 @@ export class UpdateAlbumDto {
   @Optional()
   @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
   order?: AssetOrder;
+
+  @ValidateBoolean({ optional: true })
+  isPublicInInstance?: boolean;
 }
 
 export class GetAlbumsDto {
@@ -140,6 +146,7 @@ export class AlbumResponseDto {
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order?: AssetOrder;
+  isPublicInInstance!: boolean;
 }
 
 export type MapAlbumDto = {
@@ -156,6 +163,7 @@ export type MapAlbumDto = {
   owner: User;
   isActivityEnabled: boolean;
   order: AssetOrder;
+  isPublicInInstance: boolean;
 };
 
 export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
@@ -203,6 +211,7 @@ export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDt
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
+    isPublicInInstance: entity.isPublicInInstance,
   };
 };
 
