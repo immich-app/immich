@@ -14,6 +14,14 @@ class HttpSSLOptions {
     AppSettingsEnum setting = AppSettingsEnum.allowSelfSignedSSLCert;
     bool allowSelfSignedSSLCert =
         Store.get(setting.storeKey as StoreKey<bool>, setting.defaultValue);
+    _apply(allowSelfSignedSSLCert);
+  }
+
+  static void applyFromSettings(bool newValue) {
+    _apply(newValue);
+  }
+
+  static void _apply(bool allowSelfSignedSSLCert) {
     String? serverHost;
     if (allowSelfSignedSSLCert && Store.tryGet(StoreKey.currentUser) != null) {
       serverHost = Uri.parse(Store.tryGet(StoreKey.serverEndpoint) ?? "").host;
