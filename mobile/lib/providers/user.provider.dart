@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
@@ -36,10 +37,13 @@ final currentUserProvider =
 
 class TimelineUserIdsProvider extends StateNotifier<List<String>> {
   TimelineUserIdsProvider(this._timelineService) : super([]) {
+    final listEquality = const ListEquality();
     _timelineService.getTimelineUserIds().then((users) => state = users);
-    streamSub = _timelineService
-        .watchTimelineUserIds()
-        .listen((users) => state = users);
+    streamSub = _timelineService.watchTimelineUserIds().listen((users) {
+      if (!listEquality.equals(state, users)) {
+        state = users;
+      }
+    });
   }
 
   late final StreamSubscription<List<String>> streamSub;
