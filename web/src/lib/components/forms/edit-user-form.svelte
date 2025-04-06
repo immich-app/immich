@@ -126,7 +126,15 @@
           <p class="text-red-400 text-sm">{$t('errors.quota_higher_than_disk_size')}</p>
         {/if}</label
       >
-      <input class="immich-form-input" id="quotaSize" name="quotaSize" placeholder={$t('unlimited')} type="number" min="0" bind:value={quotaSize} />
+      <input
+        class="immich-form-input"
+        id="quotaSize"
+        name="quotaSize"
+        placeholder={$t('unlimited')}
+        type="number"
+        min="0"
+        bind:value={quotaSize}
+      />
     </div>
 
     <div class="my-4 flex flex-col gap-2">
