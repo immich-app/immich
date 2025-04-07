@@ -44,11 +44,7 @@
   $effect(() => void assetStore.updateOptions({ deferInit: !tag, tagId }));
   onDestroy(() => assetStore.destroy());
 
-  let tags = $state<TagResponseDto[]>([]);
-  $effect(() => {
-    tags = data.tags;
-  });
-
+  let tags = $derived<TagResponseDto[]>(data.tags);
   let tagsMap = $derived(buildMap(tags));
   let tag = $derived(currentPath ? tagsMap[currentPath] : null);
   let tagId = $derived(tag?.id);
