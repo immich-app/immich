@@ -34,21 +34,21 @@ class DescriptionInput extends HookConsumerWidget {
     final owner = ref.watch(currentUserProvider);
     final hasError = useState(false);
     final assetWithExif = ref.watch(assetDetailProvider(asset));
-    final assetHasDescription = useState(false);
-    final isAssetOwnedByUser = fastHash(owner?.id ?? '') == asset.ownerId;
+    final hasDescription = useState(false);
+    final isOwner = fastHash(owner?.id ?? '') == asset.ownerId;
 
     useEffect(
       () {
         assetService.getDescription(asset).then((value) {
           controller.text = value;
-          assetHasDescription.value = value.isNotEmpty;
+          hasDescription.value = value.isNotEmpty;
         });
         return null;
       },
       [assetWithExif.value],
     );
 
-    if (!isAssetOwnedByUser && !assetHasDescription.value) {
+    if (!isOwner && !hasDescription.value) {
       return const SizedBox.shrink();
     }
 
@@ -89,7 +89,7 @@ class DescriptionInput extends HookConsumerWidget {
     }
 
     return TextField(
-      enabled: isAssetOwnedByUser,
+      enabled: isOwner,
       focusNode: focusNode,
       onTap: () => isFocus.value = true,
       onChanged: (value) {
