@@ -844,7 +844,7 @@ class SyncService {
       await _assetRepository.transaction(() async {
         await _assetRepository.updateAll(assets);
         for (final Asset added in assets) {
-          added.exifInfo ??= added.exifInfo?.copyWith(assetId: added.id);
+          added.exifInfo = added.exifInfo?.copyWith(assetId: added.id);
         }
         await _exifInfoRepository.updateAll(exifInfos);
       });

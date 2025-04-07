@@ -33,6 +33,8 @@ class AdvancedSettings extends HookConsumerWidget {
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
     final allowSelfSignedSSLCert =
         useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
+    final useAlternatePMFilter =
+        useAppSettingsState(AppSettingsEnum.photoManagerCustomFilter);
 
     final logLevel = Level.LEVELS[levelId.value].name;
 
@@ -105,6 +107,12 @@ class AdvancedSettings extends HookConsumerWidget {
       ),
       const CustomeProxyHeaderSettings(),
       SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
+      SettingsSwitchListTile(
+        valueNotifier: useAlternatePMFilter,
+        title: "advanced_settings_enable_alternate_media_filter_title".tr(),
+        subtitle:
+            "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
+      ),
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);
