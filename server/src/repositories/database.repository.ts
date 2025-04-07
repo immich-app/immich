@@ -59,7 +59,7 @@ export async function getVectorExtension(runner: Kysely<DB> | QueryRunner): Prom
   cachedVectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
   if (!cachedVectorExtension) {
     let availableExtensions: { name: VectorExtension }[];
-    const query = `SELECT name FROM pg_available_extensions WHERE name IN (${VECTOR_EXTENSIONS})`;
+    const query = `SELECT name FROM pg_available_extensions WHERE name IN (${VECTOR_EXTENSIONS.map((ext) => `'${ext}'`).join(', ')})`;
     if (runner instanceof Kysely) {
       const { rows } = await sql.raw<{ name: VectorExtension }>(query).execute(runner);
       availableExtensions = rows;
@@ -151,10 +151,10 @@ export class DatabaseRepository {
       await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(tx);
 
       const diff = semver.diff(installedVersion, targetVersion);
-      if (isVectors && diff && ['minor', 'major'].includes(diff)) {
+      if (isVectors && (diff === 'major' || diff === 'minor')) {
         await sql`SELECT pgvectors_upgrade()`.execute(tx);
         restartRequired = true;
-      } else {
+      } else if (diff) {
         await Promise.all([this.reindex(VectorIndex.CLIP), this.reindex(VectorIndex.FACE)]);
       }
     });
@@ -165,14 +165,28 @@ export class DatabaseRepository {
   async reindex(index: VectorIndex): Promise<void> {
     this.logger.log(`Reindexing ${index}`);
     const vectorExtension = await getVectorExtension(this.db);
-    const table = await this.getIndexTable(index);
-    if (!table) {
-      this.logger.warn(`Could not find table for index ${index}`);
+    const tables = {
+      [VectorIndex.CLIP]: 'smart_search',
+      [VectorIndex.FACE]: 'face_search',
+    };
+    const table = tables[index];
+    const { rows } = await sql<{
+      columnName: string;
+    }>`SELECT column_name as "columnName" FROM information_schema.columns WHERE table_name = ${table}`.execute(this.db);
+    if (rows.length === 0) {
+      this.logger.warn(
+        `Table ${table} does not exist, skipping reindexing. This is only normal if this is a new Immich instance.`,
+      );
       return;
     }
     const dimSize = await this.getDimSize(table);
     await this.db.transaction().execute(async (tx) => {
       await sql`DROP INDEX IF EXISTS ${sql.raw(index)}`.execute(this.db);
+      if (!rows.some((row) => row.columnName === 'embedding')) {
+        this.logger.warn(`Column 'embedding' does not exist in table '${table}', truncating and adding column.`);
+        await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(tx);
+        await sql`ALTER TABLE ${sql.raw(table)} ADD COLUMN embedding real[] NOT NULL`.execute(tx);
+      }
       await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE real[]`.execute(tx);
       const schema = vectorExtension === DatabaseExtension.VECTORS ? 'vectors.' : '';
       await sql`
@@ -188,7 +202,7 @@ export class DatabaseRepository {
     const { rows } = await sql<{
       indexdef: string;
       indexname: string;
-    }>`SELECT indexdef, indexname FROM pg_indexes WHERE indexname = ANY(ARRAY[${names}])`.execute(this.db);
+    }>`SELECT indexdef, indexname FROM pg_indexes WHERE indexname = ANY(ARRAY[${sql.join(names)}])`.execute(this.db);
 
     let keyword: string;
     switch (await getVectorExtension(this.db)) {
@@ -216,13 +230,6 @@ export class DatabaseRepository {
     await sql`SET search_path TO "$user", public, vectors`.execute(tx);
   }
 
-  private async getIndexTable(index: VectorIndex): Promise<string | null> {
-    const { rows } = await sql<{
-      relname: string | null;
-    }>`SELECT relname FROM pg_stat_all_indexes WHERE indexrelname = ${index}`.execute(this.db);
-    return rows[0]?.relname;
-  }
-
   private async getDimSize(table: string, column = 'embedding'): Promise<number> {
     const { rows } = await sql<{ dimsize: number }>`
       SELECT atttypmod as dimsize
@@ -236,7 +243,8 @@ export class DatabaseRepository {
 
     const dimSize = rows[0]?.dimsize;
     if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
-      throw new Error(`Could not retrieve dimension size`);
+      this.logger.warn(`Could not retrieve dimension size of column '${column}' in table '${table}', assuming 512`);
+      return 512;
     }
     return dimSize;
   }
