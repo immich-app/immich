@@ -12,7 +12,7 @@ import { MoveRepository } from 'src/repositories/move.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { getAssetFile } from 'src/utils/asset.util';
 import { getConfig } from 'src/utils/config';
 
 export interface MoveRequest {
@@ -117,8 +117,7 @@ export class StorageCore {
 
   async moveAssetImage(asset: AssetEntity, pathType: GeneratedImageType, format: ImageFormat) {
     const { id: entityId, files } = asset;
-    const { thumbnailFile, previewFile } = getAssetFiles(files);
-    const oldFile = pathType === AssetPathType.PREVIEW ? previewFile : thumbnailFile;
+    const oldFile = getAssetFile(files, pathType);
     return this.moveFile({
       entityId,
       pathType,

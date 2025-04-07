@@ -6,8 +6,8 @@
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
+  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
@@ -68,7 +68,7 @@
     $boundingBoxesArray = [];
   });
 
-  const preload = (targetSize: AssetMediaSize, preloadAssets?: AssetResponseDto[]) => {
+  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: AssetResponseDto[]) => {
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
         let img = new Image();
@@ -77,13 +77,14 @@
     }
   };
 
-  const getAssetUrl = (id: string, targetSize: AssetMediaSize, cacheKey: string | null) => {
-    let finalAssetMediaSize = targetSize;
+  const getAssetUrl = (id: string, targetSize: AssetMediaSize | 'original', cacheKey: string | null) => {
     if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-      finalAssetMediaSize = AssetMediaSize.Preview;
+      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
     }
 
-    return getAssetThumbnailUrl({ id, size: finalAssetMediaSize, cacheKey });
+    return targetSize === 'original'
+      ? getAssetOriginalUrl({ id, cacheKey })
+      : getAssetThumbnailUrl({ id, size: targetSize, cacheKey });
   };
 
   copyImage = async () => {
@@ -136,16 +137,18 @@
   // when true, will force loading of the original image
   let forceUseOriginal: boolean = $derived(asset.originalMimeType === 'image/gif' || $photoZoomState.currentZoom > 1);
 
-  const targetImageSize = $derived(
-    $alwaysLoadOriginalFile || forceUseOriginal || originalImageLoaded
-      ? AssetMediaSize.Fullsize
-      : AssetMediaSize.Preview,
-  );
+  const targetImageSize = $derived.by(() => {
+    if ($alwaysLoadOriginalFile || forceUseOriginal || originalImageLoaded) {
+      return isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
+    }
+
+    return AssetMediaSize.Preview;
+  });
 
   const onload = () => {
     imageLoaded = true;
     assetFileUrl = imageLoaderUrl;
-    originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize;
+    originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
   };
 
   const onerror = () => {
@@ -168,7 +171,7 @@
     };
   });
 
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.checksum));
+  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.thumbhash));
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);

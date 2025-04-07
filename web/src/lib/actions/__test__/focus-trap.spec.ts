@@ -12,6 +12,12 @@ describe('focusTrap action', () => {
     expect(document.activeElement).toEqual(screen.getByTestId('one'));
   });
 
+  it('should not set focus if inactive', async () => {
+    render(FocusTrapTest, { show: true, active: false });
+    await tick();
+    expect(document.activeElement).toBe(document.body);
+  });
+
   it('supports backward focus wrapping', async () => {
     render(FocusTrapTest, { show: true });
     await tick();

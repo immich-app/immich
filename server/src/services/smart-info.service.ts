@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
-import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetFileType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { getAssetFile } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -116,7 +116,7 @@ export class SmartInfoService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { previewFile } = getAssetFiles(asset.files);
+    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
     if (!previewFile) {
       return JobStatus.FAILED;
     }

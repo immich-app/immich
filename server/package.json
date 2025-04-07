@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.131.0",
+  "version": "1.131.3",
   "description": "",
   "author": "",
   "private": true,
@@ -33,7 +33,7 @@
     "sync:open-api": "node ./dist/bin/sync-open-api.js",
     "sync:sql": "node ./dist/bin/sync-sql.js",
     "email:dev": "email dev -p 3050 --dir src/emails",
-    "postinstall": "[[ \"$npm_config_global\" != \"true\" ]] && patch-package || true"
+    "postinstall": "[ \"$npm_config_global\" != \"true\" ] && patch-package || true"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.1",
@@ -82,6 +82,7 @@
     "pg": "^8.11.3",
     "picomatch": "^4.0.2",
     "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-email": "^3.0.4",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
@@ -115,7 +116,7 @@
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
-    "@types/node": "^22.13.10",
+    "@types/node": "^22.13.14",
     "@types/nodemailer": "^6.4.14",
     "@types/picomatch": "^3.0.0",
     "@types/pngjs": "^6.0.5",

@@ -26,6 +26,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import {
+  AssetFileType,
   AssetType,
   CacheControl,
   ImageFormat,
@@ -42,7 +43,7 @@ import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
 import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { getAssetFile } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -300,7 +301,7 @@ export class PersonService extends BaseService {
 
     const relations = { exifInfo: true, faces: { person: false, withDeleted: true }, files: true };
     const [asset] = await this.assetRepository.getByIds([id], relations);
-    const { previewFile } = getAssetFiles(asset.files);
+    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
     if (!asset || !previewFile) {
       return JobStatus.FAILED;
     }
@@ -482,6 +483,7 @@ export class PersonService extends BaseService {
       embedding: face.faceSearch.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
+      minBirthDate: face.asset.fileCreatedAt,
     });
 
     // `matches` also includes the face itself
@@ -507,6 +509,7 @@ export class PersonService extends BaseService {
         maxDistance: machineLearning.facialRecognition.maxDistance,
         numResults: 1,
         hasPerson: true,
+        minBirthDate: face.asset.fileCreatedAt,
       });
 
       if (matchWithPerson.length > 0) {
@@ -674,7 +677,7 @@ export class PersonService extends BaseService {
       throw new Error(`Asset ${asset.id} dimensions are unknown`);
     }
 
-    const { previewFile } = getAssetFiles(asset.files);
+    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
     if (!previewFile) {
       throw new Error(`Asset ${asset.id} has no preview path`);
     }

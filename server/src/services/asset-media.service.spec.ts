@@ -584,7 +584,7 @@ describe(AssetMediaService.name, () => {
         sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.PREVIEW }),
       ).resolves.toEqual(
         new ImmichFileResponse({
-          path: assetStub.image.files[0].path,
+          path: '/uploads/user-id/thumbs/path.jpg',
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'image/jpeg',
           fileName: 'asset-id_preview.jpg',
@@ -599,7 +599,7 @@ describe(AssetMediaService.name, () => {
         sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.THUMBNAIL }),
       ).resolves.toEqual(
         new ImmichFileResponse({
-          path: assetStub.image.files[1].path,
+          path: '/uploads/user-id/webp/path.ext',
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'application/octet-stream',
           fileName: 'asset-id_thumbnail.ext',

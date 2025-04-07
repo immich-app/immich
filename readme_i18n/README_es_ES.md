@@ -59,18 +59,12 @@ Puedes encontrar la documentación oficial, incluidas las guías de instalación
 
 ## Demo
 
-Puedes acceder a la demostración web en <https://demo.immich.app>
-
-Para la aplicación móvil, puedes usar `https://demo.immich.app` en la `URL del servidor`.
+Puedes acceder a la demostración web en <https://demo.immich.app>. Para la aplicación móvil, puedes usar `https://demo.immich.app` en la `URL del servidor`.
 
 ```bash title="Credenciales de la demo"
 Credenciales
 correo: demo@immich.app
 contraseña: demo
-```
-
-```bash
-Especificaciones: Una VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de cuatro núcleos a 2.4 GHz, 24 GB de RAM
 ```
 
 ## Funciones

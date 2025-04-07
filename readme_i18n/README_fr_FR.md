@@ -59,18 +59,12 @@ Vous pouvez trouver la documentation principale ainsi que les guides d'installat
 
 ## Démo
 
-Vous pouvez accéder à la démo en ligne sur https://demo.immich.app
-
-Pour l'application mobile, vous pouvez utiliser `https://demo.immich.app` dans le champ `URL du point d'accès au serveur`
+Vous pouvez accéder à la démo en ligne sur https://demo.immich.app. Pour l'application mobile, vous pouvez utiliser `https://demo.immich.app` dans le champ `URL du point d'accès au serveur`
 
 ```bash title="Identifiants pour la démo"
 Les identifiants
 email: demo@immich.app
 mot de passe: demo
-```
-
-```
-Caractéristiques : Plan gratuit Oracle VM - Amsterdam - 2.4Ghz quatre-cœurs ARM64 CPU, 24GB RAM
 ```
 
 ## Activités
