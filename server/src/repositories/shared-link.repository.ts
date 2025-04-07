@@ -3,10 +3,9 @@ import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
+import { Album, Asset, columns, SharedLink } from 'src/database';
 import { DB, SharedLinks } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SharedLinkType } from 'src/enum';
 
 export type SharedLinkSearchOptions = {
@@ -19,7 +18,7 @@ export class SharedLinkRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  get(userId: string, id: string): Promise<SharedLinkEntity | undefined> {
+  get(userId: string, id: string) {
     return this.db
       .selectFrom('shared_links')
       .selectAll('shared_links')
@@ -87,18 +86,23 @@ export class SharedLinkRepository {
             .as('album'),
         (join) => join.onTrue(),
       )
-      .select((eb) => eb.fn.coalesce(eb.fn.jsonAgg('a').filterWhere('a.id', 'is not', null), sql`'[]'`).as('assets'))
+      .select((eb) =>
+        eb.fn
+          .coalesce(eb.fn.jsonAgg('a').filterWhere('a.id', 'is not', null), sql`'[]'`)
+          .$castTo<Asset[]>()
+          .as('assets'),
+      )
       .groupBy(['shared_links.id', sql`"album".*`])
-      .select((eb) => eb.fn.toJson('album').as('album'))
+      .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
       .where('shared_links.id', '=', id)
       .where('shared_links.userId', '=', userId)
       .where((eb) => eb.or([eb('shared_links.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
       .orderBy('shared_links.createdAt', 'desc')
-      .executeTakeFirst() as Promise<SharedLinkEntity | undefined>;
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] })
-  getAll({ userId, albumId }: SharedLinkSearchOptions): Promise<SharedLinkEntity[]> {
+  getAll({ userId, albumId }: SharedLinkSearchOptions) {
     return this.db
       .selectFrom('shared_links')
       .selectAll('shared_links')
@@ -108,19 +112,18 @@ export class SharedLinkRepository {
         (eb) =>
           eb
             .selectFrom('assets')
-            .select((eb) => eb.fn.jsonAgg('assets').as('assets'))
+            .selectAll('assets')
             .whereRef('assets.id', '=', 'shared_link__asset.assetsId')
             .where('assets.deletedAt', 'is', null)
             .as('assets'),
         (join) => join.onTrue(),
       )
-      .select((eb) => eb.fn.toJson('assets').as('assets'))
+      .select((eb) => eb.fn.jsonAgg('assets').$castTo<Asset[]>().as('assets'))
       .leftJoinLateral(
         (eb) =>
           eb
             .selectFrom('albums')
             .selectAll('albums')
-            .whereRef('albums.id', '=', 'shared_links.albumId')
             .innerJoinLateral(
               (eb) =>
                 eb
@@ -142,22 +145,21 @@ export class SharedLinkRepository {
                     'users.status',
                     'users.profileChangedAt',
                   ])
-                  .whereRef('users.id', '=', 'albums.ownerId')
                   .where('users.deletedAt', 'is', null)
                   .as('owner'),
-              (join) => join.onTrue(),
+              (join) => join.onRef('owner.id', '=', 'albums.ownerId'),
             )
             .select((eb) => eb.fn.toJson('owner').as('owner'))
             .where('albums.deletedAt', 'is', null)
             .as('album'),
-        (join) => join.onTrue(),
+        (join) => join.onRef('album.id', '=', 'shared_links.albumId'),
       )
-      .select((eb) => eb.fn.toJson('album').as('album'))
+      .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
       .where((eb) => eb.or([eb('shared_links.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
       .$if(!!albumId, (eb) => eb.where('shared_links.albumId', '=', albumId!))
       .orderBy('shared_links.createdAt', 'desc')
       .distinctOn(['shared_links.createdAt'])
-      .execute() as unknown as Promise<SharedLinkEntity[]>;
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.BUFFER] })
@@ -177,7 +179,7 @@ export class SharedLinkRepository {
       .executeTakeFirst();
   }
 
-  async create(entity: Insertable<SharedLinks> & { assetIds?: string[] }): Promise<SharedLinkEntity> {
+  async create(entity: Insertable<SharedLinks> & { assetIds?: string[] }) {
     const { id } = await this.db
       .insertInto('shared_links')
       .values(_.omit(entity, 'assetIds'))
@@ -194,7 +196,7 @@ export class SharedLinkRepository {
     return this.getSharedLinks(id);
   }
 
-  async update(entity: Updateable<SharedLinks> & { id: string; assetIds?: string[] }): Promise<SharedLinkEntity> {
+  async update(entity: Updateable<SharedLinks> & { id: string; assetIds?: string[] }) {
     const { id } = await this.db
       .updateTable('shared_links')
       .set(_.omit(entity, 'assets', 'album', 'assetIds'))
@@ -212,7 +214,7 @@ export class SharedLinkRepository {
     return this.getSharedLinks(id);
   }
 
-  async remove(entity: SharedLinkEntity): Promise<void> {
+  async remove(entity: SharedLink): Promise<void> {
     await this.db.deleteFrom('shared_links').where('shared_links.id', '=', entity.id).execute();
   }
 
@@ -236,9 +238,12 @@ export class SharedLinkRepository {
         (join) => join.onTrue(),
       )
       .select((eb) =>
-        eb.fn.coalesce(eb.fn.jsonAgg('assets').filterWhere('assets.id', 'is not', null), sql`'[]'`).as('assets'),
+        eb.fn
+          .coalesce(eb.fn.jsonAgg('assets').filterWhere('assets.id', 'is not', null), sql`'[]'`)
+          .$castTo<Asset[]>()
+          .as('assets'),
       )
       .groupBy('shared_links.id')
-      .executeTakeFirstOrThrow() as Promise<SharedLinkEntity>;
+      .executeTakeFirstOrThrow();
   }
 }

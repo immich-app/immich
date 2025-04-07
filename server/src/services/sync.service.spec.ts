@@ -1,5 +1,4 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { SyncService } from 'src/services/sync.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -63,7 +62,7 @@ describe(SyncService.name, () => {
     it('should return a response requiring a full sync when there are too many changes', async () => {
       mocks.partner.getAll.mockResolvedValue([]);
       mocks.asset.getChangedDeltaSync.mockResolvedValue(
-        Array.from<AssetEntity>({ length: 10_000 }).fill(assetStub.image),
+        Array.from<typeof assetStub.image>({ length: 10_000 }).fill(assetStub.image),
       );
       await expect(
         sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),

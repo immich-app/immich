@@ -17,7 +17,42 @@ where
 -- ViewRepository.getAssetsByOriginalPath
 select
   "assets".*,
-  to_json("exif") as "exifInfo"
+  to_json(
+    (
+      select
+        "exif"."assetId",
+        "exif"."autoStackId",
+        "exif"."bitsPerSample",
+        "exif"."city",
+        "exif"."colorspace",
+        "exif"."country",
+        "exif"."dateTimeOriginal",
+        "exif"."description",
+        "exif"."exifImageHeight",
+        "exif"."exifImageWidth",
+        "exif"."exposureTime",
+        "exif"."fileSizeInByte",
+        "exif"."fNumber",
+        "exif"."focalLength",
+        "exif"."fps",
+        "exif"."iso",
+        "exif"."latitude",
+        "exif"."lensModel",
+        "exif"."livePhotoCID",
+        "exif"."longitude",
+        "exif"."make",
+        "exif"."model",
+        "exif"."modifyDate",
+        "exif"."orientation",
+        "exif"."profileDescription",
+        "exif"."projectionType",
+        "exif"."rating",
+        "exif"."state",
+        "exif"."timeZone"
+      from
+        "exif"
+    )
+  ) as "exifInfo"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"

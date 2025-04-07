@@ -100,14 +100,14 @@ order by
 -- SharedLinkRepository.getAll
 select distinct
   on ("shared_links"."createdAt") "shared_links".*,
-  to_json("assets") as "assets",
+  json_agg("assets") as "assets",
   to_json("album") as "album"
 from
   "shared_links"
   left join "shared_link__asset" on "shared_link__asset"."sharedLinksId" = "shared_links"."id"
   left join lateral (
     select
-      json_agg("assets") as "assets"
+      "assets".*
     from
       "assets"
     where
@@ -140,13 +140,11 @@ from
         from
           "users"
         where
-          "users"."id" = "albums"."ownerId"
-          and "users"."deletedAt" is null
-      ) as "owner" on true
+          "users"."deletedAt" is null
+      ) as "owner" on "owner"."id" = "albums"."ownerId"
     where
-      "albums"."id" = "shared_links"."albumId"
-      and "albums"."deletedAt" is null
-  ) as "album" on true
+      "albums"."deletedAt" is null
+  ) as "album" on "album"."id" = "shared_links"."albumId"
 where
   "shared_links"."userId" = $1
   and (

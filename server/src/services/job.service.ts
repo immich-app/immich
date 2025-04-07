@@ -254,7 +254,7 @@ export class JobService extends BaseService {
 
       case JobName.METADATA_EXTRACTION: {
         if (item.data.source === 'sidecar-write') {
-          const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
+          const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([item.data.id]);
           if (asset) {
             this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
           }
@@ -284,7 +284,7 @@ export class JobService extends BaseService {
           break;
         }
 
-        const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
+        const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([item.data.id]);
         if (!asset) {
           this.logger.warn(`Could not find asset ${item.data.id} after generating thumbnails`);
           break;

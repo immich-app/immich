@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { Asset } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import {
   AssetFileType,
   AssetPathType,
@@ -65,7 +65,12 @@ export class MediaService extends BaseService {
       const jobs: JobItem[] = [];
 
       for (const asset of assets) {
-        const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
+        if (!(asset as Asset).files) {
+          jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
+          continue;
+        }
+
+        const { previewFile, thumbnailFile } = getAssetFiles((asset as Asset).files!);
 
         if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
           jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
@@ -176,7 +181,7 @@ export class MediaService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files);
+    const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files!);
     const toUpsert: UpsertFileOptions[] = [];
     if (previewFile?.path !== generated.previewPath) {
       toUpsert.push({ assetId: asset.id, path: generated.previewPath, type: AssetFileType.PREVIEW });
@@ -227,7 +232,7 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private async generateImageThumbnails(asset: AssetEntity) {
+  private async generateImageThumbnails(asset: Asset) {
     const { image } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
@@ -300,7 +305,7 @@ export class MediaService extends BaseService {
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 
-  private async generateVideoThumbnails(asset: AssetEntity) {
+  private async generateVideoThumbnails(asset: Asset) {
     const { image, ffmpeg } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
@@ -529,7 +534,7 @@ export class MediaService extends BaseService {
     return name !== VideoContainer.MP4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 
-  isSRGB(asset: AssetEntity): boolean {
+  isSRGB(asset: Asset): boolean {
     const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo ?? {};
     if (colorspace || profileDescription) {
       return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));

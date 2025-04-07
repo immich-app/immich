@@ -2,12 +2,12 @@
 
 -- TagRepository.get
 select
-  "id",
-  "value",
-  "createdAt",
-  "updatedAt",
-  "color",
-  "parentId"
+  "tags"."id",
+  "tags"."value",
+  "tags"."createdAt",
+  "tags"."updatedAt",
+  "tags"."color",
+  "tags"."parentId"
 from
   "tags"
 where
@@ -15,12 +15,12 @@ where
 
 -- TagRepository.getByValue
 select
-  "id",
-  "value",
-  "createdAt",
-  "updatedAt",
-  "color",
-  "parentId"
+  "tags"."id",
+  "tags"."value",
+  "tags"."createdAt",
+  "tags"."updatedAt",
+  "tags"."color",
+  "tags"."parentId"
 from
   "tags"
 where
@@ -37,17 +37,22 @@ on conflict ("userId", "value") do update
 set
   "parentId" = $4
 returning
-  *
+  "tags"."id",
+  "tags"."value",
+  "tags"."createdAt",
+  "tags"."updatedAt",
+  "tags"."color",
+  "tags"."parentId"
 rollback
 
 -- TagRepository.getAll
 select
-  "id",
-  "value",
-  "createdAt",
-  "updatedAt",
-  "color",
-  "parentId"
+  "tags"."id",
+  "tags"."value",
+  "tags"."createdAt",
+  "tags"."updatedAt",
+  "tags"."color",
+  "tags"."parentId"
 from
   "tags"
 where

@@ -7,7 +7,7 @@ export class SharedLinkEntity {
   description!: string | null;
   password!: string | null;
   userId!: string;
-  key!: Buffer; // use to access the inidividual asset
+  key!: Buffer; // use to access the individual asset
   type!: SharedLinkType;
   createdAt!: Date;
   expiresAt!: Date | null;

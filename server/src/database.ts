@@ -1,5 +1,5 @@
 import { Selectable } from 'kysely';
-import { Exif as DatabaseExif } from 'src/db';
+import { Albums, Exif as DatabaseExif } from 'src/db';
 import {
   AlbumUserRole,
   AssetFileType,
@@ -7,6 +7,7 @@ import {
   AssetType,
   MemoryType,
   Permission,
+  SharedLinkType,
   SourceType,
   UserStatus,
 } from 'src/enum';
@@ -133,8 +134,11 @@ export type Asset = {
   duplicateId: string | null;
   duration: string | null;
   encodedVideoPath: string | null;
+  exifInfo?: Selectable<Exif>;
+  faces?: AssetFace[];
   fileCreatedAt: Date | null;
   fileModifiedAt: Date | null;
+  files?: AssetFile[];
   isArchived: boolean;
   isExternal: boolean;
   isFavorite: boolean;
@@ -145,9 +149,12 @@ export type Asset = {
   localDateTime: Date | null;
   originalFileName: string;
   originalPath: string;
+  owner?: User | null;
   ownerId: string;
   sidecarPath: string | null;
+  stack?: Stack | null;
   stackId: string | null;
+  tags?: Tag[];
   thumbhash: Buffer<ArrayBufferLike> | null;
   type: AssetType;
 };
@@ -159,6 +166,15 @@ export type SidecarWriteAsset = {
   tags: Array<{ value: string }>;
 };
 
+export type Stack = {
+  id: string;
+  primaryAssetId: string;
+  owner?: User;
+  ownerId: string;
+  assets: Asset[];
+  assetCount?: number;
+};
+
 export type AuthSharedLink = {
   id: string;
   expiresAt: Date | null;
@@ -167,6 +183,22 @@ export type AuthSharedLink = {
   allowUpload: boolean;
   allowDownload: boolean;
   password: string | null;
+};
+
+export type SharedLink = AuthSharedLink & {
+  id: string;
+  assets: Asset[];
+  album?: Album | null;
+  albumId: string | null;
+  description: string | null;
+  key: Buffer;
+  type: SharedLinkType;
+  createdAt: Date;
+};
+
+export type Album = Selectable<Albums> & {
+  owner: User;
+  assets: Asset[];
 };
 
 export type AuthSession = {
@@ -241,6 +273,7 @@ export type AssetFace = {
 const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
 
 export const columns = {
+  assetFiles: ['asset_files.id', 'asset_files.path', 'asset_files.type'],
   authUser: [
     'users.id',
     'users.name',
@@ -276,7 +309,7 @@ export const columns = {
     'quotaSizeInBytes',
     'quotaUsageInBytes',
   ],
-  tagDto: ['id', 'value', 'createdAt', 'updatedAt', 'color', 'parentId'],
+  tag: ['tags.id', 'tags.value', 'tags.createdAt', 'tags.updatedAt', 'tags.color', 'tags.parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
   syncAsset: [
     'id',
@@ -292,6 +325,7 @@ export const columns = {
     'isVisible',
     'updateId',
   ],
+  stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [
     'exif.assetId',
     'exif.description',
@@ -319,5 +353,36 @@ export const columns = {
     'exif.rating',
     'exif.fps',
     'exif.updateId',
+  ],
+  exif: [
+    'exif.assetId',
+    'exif.autoStackId',
+    'exif.bitsPerSample',
+    'exif.city',
+    'exif.colorspace',
+    'exif.country',
+    'exif.dateTimeOriginal',
+    'exif.description',
+    'exif.exifImageHeight',
+    'exif.exifImageWidth',
+    'exif.exposureTime',
+    'exif.fileSizeInByte',
+    'exif.fNumber',
+    'exif.focalLength',
+    'exif.fps',
+    'exif.iso',
+    'exif.latitude',
+    'exif.lensModel',
+    'exif.livePhotoCID',
+    'exif.longitude',
+    'exif.make',
+    'exif.model',
+    'exif.modifyDate',
+    'exif.orientation',
+    'exif.profileDescription',
+    'exif.projectionType',
+    'exif.rating',
+    'exif.state',
+    'exif.timeZone',
   ],
 } as const;

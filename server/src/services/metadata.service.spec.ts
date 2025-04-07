@@ -3,8 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { defaults } from 'src/config';
-import { Exif } from 'src/database';
-import { AssetEntity } from 'src/entities/asset.entity';
+import { Asset, Exif } from 'src/database';
 import { AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
@@ -478,7 +477,7 @@ describe(MetadataService.name, () => {
     });
 
     it('should not apply motion photos if asset is video', async () => {
-      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.livePhotoMotionAsset, isVisible: true }]);
+      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.livePhotoMotionAsset, isVisible: true } as any]);
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id });
@@ -517,7 +516,9 @@ describe(MetadataService.name, () => {
     });
 
     it('should extract the MotionPhotoVideo tag from Samsung HEIC motion photos', async () => {
-      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
+      mocks.asset.getByIds.mockResolvedValue([
+        { ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null } as any,
+      ]);
       mocks.storage.stat.mockResolvedValue({
         size: 123_456,
         mtime: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
@@ -578,7 +579,9 @@ describe(MetadataService.name, () => {
         mtimeMs: assetStub.livePhotoWithOriginalFileName.fileModifiedAt.valueOf(),
         birthtimeMs: assetStub.livePhotoWithOriginalFileName.fileCreatedAt.valueOf(),
       } as Stats);
-      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
+      mocks.asset.getByIds.mockResolvedValue([
+        { ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null } as any,
+      ]);
       mockReadTags({
         Directory: 'foo/bar/',
         EmbeddedVideoFile: new BinaryField(0, ''),
@@ -624,7 +627,9 @@ describe(MetadataService.name, () => {
     });
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
-      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
+      mocks.asset.getByIds.mockResolvedValue([
+        { ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null } as any,
+      ]);
       mocks.storage.stat.mockResolvedValue({
         size: 123_456,
         mtime: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
@@ -676,7 +681,7 @@ describe(MetadataService.name, () => {
     });
 
     it('should delete old motion photo video assets if they do not match what is extracted', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoWithOriginalFileName]);
+      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoWithOriginalFileName as any]);
       mockReadTags({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
@@ -685,7 +690,7 @@ describe(MetadataService.name, () => {
       });
       mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
       mocks.asset.create.mockImplementation(
-        (asset) => Promise.resolve({ ...assetStub.livePhotoMotionAsset, ...asset }) as Promise<AssetEntity>,
+        (asset) => Promise.resolve({ ...assetStub.livePhotoMotionAsset, ...asset }) as Promise<Asset>,
       );
       const video = randomBytes(512);
       mocks.storage.readFile.mockResolvedValue(video);
@@ -698,7 +703,7 @@ describe(MetadataService.name, () => {
     });
 
     it('should not create a new motion photo video asset if the hash of the extracted video matches an existing asset', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
+      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset as any]);
       mockReadTags({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
@@ -720,7 +725,7 @@ describe(MetadataService.name, () => {
     });
 
     it('should link and hide motion video asset to still asset if the hash of the extracted video matches an existing asset', async () => {
-      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null }]);
+      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null } as any]);
       mockReadTags({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
@@ -747,7 +752,7 @@ describe(MetadataService.name, () => {
     it('should not update storage usage if motion photo is external', async () => {
       mocks.asset.getByIds.mockResolvedValue([
         { ...assetStub.livePhotoStillAsset, livePhotoVideoId: null, isExternal: true },
-      ]);
+      ] as any);
       mockReadTags({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
@@ -1162,7 +1167,7 @@ describe(MetadataService.name, () => {
 
     it('should handle not finding a match', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
-      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset as any]);
       mockReadTags({ ContentIdentifier: 'CID' });
 
       await expect(sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id })).resolves.toBe(
@@ -1183,7 +1188,7 @@ describe(MetadataService.name, () => {
     });
 
     it('should link photo and video', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
+      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset as any]);
       mocks.asset.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
       mockReadTags({ ContentIdentifier: 'CID' });
 
@@ -1233,7 +1238,7 @@ describe(MetadataService.name, () => {
         {
           ...assetStub.livePhotoStillAsset,
           libraryId: 'library-id',
-        },
+        } as any,
       ]);
       mockReadTags({ ContentIdentifier: 'CID' });
 
@@ -1362,7 +1367,7 @@ describe(MetadataService.name, () => {
     });
 
     it('should set sidecar path if exists (sidecar named photo.xmp)', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecarWithoutExt]);
+      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecarWithoutExt as any]);
       mocks.storage.checkFileExists.mockResolvedValueOnce(false);
       mocks.storage.checkFileExists.mockResolvedValueOnce(true);
 
@@ -1414,7 +1419,7 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarDiscovery', () => {
     it('should skip hidden assets', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset as any]);
       await sut.handleSidecarDiscovery({ id: assetStub.livePhotoMotionAsset.id });
       expect(mocks.storage.checkFileExists).not.toHaveBeenCalled();
     });

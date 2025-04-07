@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
-import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFileType, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { EmailTemplate } from 'src/repositories/notification.repository';
@@ -392,7 +391,9 @@ export class NotificationService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private async getAlbumThumbnailAttachment(album: AlbumEntity): Promise<EmailImageAttachment | undefined> {
+  private async getAlbumThumbnailAttachment(album: {
+    albumThumbnailAssetId: string | null;
+  }): Promise<EmailImageAttachment | undefined> {
     if (!album.albumThumbnailAssetId) {
       return;
     }
@@ -402,7 +403,7 @@ export class NotificationService extends BaseService {
       return;
     }
 
-    const thumbnailFile = getAssetFile(albumThumbnail.files, AssetFileType.THUMBNAIL);
+    const thumbnailFile = getAssetFile(albumThumbnail.files!, AssetFileType.THUMBNAIL);
     if (!thumbnailFile) {
       return;
     }
