@@ -1,16 +1,22 @@
-import { Kysely, sql } from 'kysely';
+import { Kysely, QueryResult, sql } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { Sql } from 'postgres';
+import { parseTriggerType } from 'src/sql-tools/helpers';
 import {
+  ColumnType,
   DatabaseActionType,
   DatabaseClient,
   DatabaseColumn,
-  DatabaseColumnType,
   DatabaseConstraintType,
+  DatabaseEnum,
+  DatabaseExtension,
+  DatabaseFunction,
+  DatabaseParameter,
   DatabaseSchema,
   DatabaseTable,
   LoadSchemaOptions,
+  ParameterScope,
   PostgresDB,
 } from 'src/sql-tools/types';
 
@@ -28,15 +34,65 @@ export const schemaFromDatabase = async (postgres: Sql, options: LoadSchemaOptio
   const schemaName = options.schemaName || 'public';
   const tablesMap: Record<string, DatabaseTable> = {};
 
-  const [tables, columns, indexes, constraints, enums] = await Promise.all([
+  const [
+    databaseName,
+    tables,
+    columns,
+    indexes,
+    constraints,
+    enums,
+    routines,
+    extensions,
+    triggers,
+    parameters,
+    comments,
+  ] = await Promise.all([
+    getDatabaseName(db),
     getTables(db, schemaName),
     getTableColumns(db, schemaName),
     getTableIndexes(db, schemaName),
     getTableConstraints(db, schemaName),
     getUserDefinedEnums(db, schemaName),
+    getRoutines(db, schemaName),
+    getExtensions(db),
+    getTriggers(db, schemaName),
+    getParameters(db),
+    getObjectComments(db),
   ]);
 
+  const schemaEnums: DatabaseEnum[] = [];
+  const schemaFunctions: DatabaseFunction[] = [];
+  const schemaExtensions: DatabaseExtension[] = [];
+  const schemaParameters: DatabaseParameter[] = [];
+
   const enumMap = Object.fromEntries(enums.map((e) => [e.name, e.values]));
+
+  for (const { name } of extensions) {
+    schemaExtensions.push({ name, synchronize: true });
+  }
+
+  for (const { name, values } of enums) {
+    schemaEnums.push({ name, values, synchronize: true });
+  }
+
+  for (const parameter of parameters) {
+    schemaParameters.push({
+      name: parameter.name,
+      value: parameter.value,
+      databaseName,
+      scope: parameter.scope as ParameterScope,
+      synchronize: true,
+    });
+  }
+
+  for (const { name, expression } of routines) {
+    schemaFunctions.push({
+      name,
+      // TODO read expression from the overrides table
+      expression,
+      synchronize: true,
+    });
+  }
 
   // add tables
   for (const table of tables) {
@@ -49,6 +105,7 @@ export const schemaFromDatabase = async (postgres: Sql, options: LoadSchemaOptio
       name: table.table_name,
       columns: [],
       indexes: [],
+      triggers: [],
       constraints: [],
       synchronize: true,
     };
@@ -64,13 +121,14 @@ export const schemaFromDatabase = async (postgres: Sql, options: LoadSchemaOptio
     const columnName = column.column_name;
 
     const item: DatabaseColumn = {
-      type: column.data_type as DatabaseColumnType,
+      type: column.data_type as ColumnType,
       name: columnName,
       tableName: column.table_name,
       nullable: column.is_nullable === 'YES',
       isArray: column.array_type !== null,
       numericPrecision: column.numeric_precision ?? undefined,
       numericScale: column.numeric_scale ?? undefined,
+      length: column.character_maximum_length ?? undefined,
       default: column.column_default ?? undefined,
       synchronize: true,
     };
@@ -84,7 +142,7 @@ export const schemaFromDatabase = async (postgres: Sql, options: LoadSchemaOptio
           warn(`Unable to find type for ${columnLabel} (ARRAY)`);
           continue;
         }
-        item.type = column.array_type as DatabaseColumnType;
+        item.type = column.array_type as ColumnType;
         break;
       }
 
@@ -97,7 +155,6 @@ export const schemaFromDatabase = async (postgres: Sql, options: LoadSchemaOptio
 
         item.type = 'enum';
         item.enumName = column.udt_name;
-        item.enumValues = enumMap[column.udt_name];
         break;
       }
     }
@@ -201,10 +258,50 @@ export const schemaFromDatabase = async (postgres: Sql, options: LoadSchemaOptio
     }
   }
 
+  // add triggers to tables
+  for (const trigger of triggers) {
+    const table = tablesMap[trigger.table_name];
+    if (!table) {
+      continue;
+    }
+
+    table.triggers.push({
+      name: trigger.name,
+      tableName: trigger.table_name,
+      functionName: trigger.function_name,
+      referencingNewTableAs: trigger.referencing_new_table_as ?? undefined,
+      referencingOldTableAs: trigger.referencing_old_table_as ?? undefined,
+      when: trigger.when_expression,
+      synchronize: true,
+      ...parseTriggerType(trigger.type),
+    });
+  }
+
+  for (const comment of comments) {
+    if (comment.object_type === 'r') {
+      const table = tablesMap[comment.object_name];
+      if (!table) {
+        continue;
+      }
+
+      if (comment.column_name) {
+        const column = table.columns.find(({ name }) => name === comment.column_name);
+        if (column) {
+          column.comment = comment.value;
+        }
+      }
+    }
+  }
+
   await db.destroy();
 
   return {
-    name: schemaName,
+    name: databaseName,
+    schemaName,
+    parameters: schemaParameters,
+    functions: schemaFunctions,
+    enums: schemaEnums,
+    extensions: schemaExtensions,
     tables: Object.values(tablesMap),
     warnings,
   };
@@ -237,6 +334,11 @@ const asDatabaseAction = (action: string) => {
   }
 };
 
+const getDatabaseName = async (db: DatabaseClient) => {
+  const result = (await sql`SELECT current_database() as name`.execute(db)) as QueryResult<{ name: string }>;
+  return result.rows[0].name;
+};
+
 const getTables = (db: DatabaseClient, schemaName: string) => {
   return db
     .selectFrom('information_schema.tables')
@@ -244,27 +346,6 @@ const getTables = (db: DatabaseClient, schemaName: string) => {
     .where('table_type', '=', sql.lit('BASE TABLE'))
     .selectAll()
     .execute();
-};
-
-const getUserDefinedEnums = async (db: DatabaseClient, schemaName: string) => {
-  const items = await db
-    .selectFrom('pg_type')
-    .innerJoin('pg_namespace', (join) =>
-      join.onRef('pg_namespace.oid', '=', 'pg_type.typnamespace').on('pg_namespace.nspname', '=', schemaName),
-    )
-    .where('typtype', '=', sql.lit('e'))
-    .select((eb) => [
-      'pg_type.typname as name',
-      jsonArrayFrom(
-        eb.selectFrom('pg_enum as e').select(['e.enumlabel as value']).whereRef('e.enumtypid', '=', 'pg_type.oid'),
-      ).as('values'),
-    ])
-    .execute();
-
-  return items.map((item) => ({
-    name: item.name,
-    values: item.values.map(({ value }) => value),
-  }));
 };
 
 const getTableColumns = (db: DatabaseClient, schemaName: string) => {
@@ -290,6 +371,7 @@ const getTableColumns = (db: DatabaseClient, schemaName: string) => {
       'c.data_type',
       'c.column_default',
       'c.is_nullable',
+      'c.character_maximum_length',
 
       // number types
       'c.numeric_precision',
@@ -390,5 +472,105 @@ const getTableConstraints = (db: DatabaseClient, schemaName: string) => {
       eb.fn<string>('pg_get_constraintdef', ['pg_constraint.oid']).as('expression'),
     ])
     .where('pg_namespace.nspname', '=', schemaName)
+    .execute();
+};
+
+const getUserDefinedEnums = async (db: DatabaseClient, schemaName: string) => {
+  const items = await db
+    .selectFrom('pg_type')
+    .innerJoin('pg_namespace', (join) =>
+      join.onRef('pg_namespace.oid', '=', 'pg_type.typnamespace').on('pg_namespace.nspname', '=', schemaName),
+    )
+    .where('typtype', '=', sql.lit('e'))
+    .select((eb) => [
+      'pg_type.typname as name',
+      jsonArrayFrom(
+        eb.selectFrom('pg_enum as e').select(['e.enumlabel as value']).whereRef('e.enumtypid', '=', 'pg_type.oid'),
+      ).as('values'),
+    ])
+    .execute();
+
+  return items.map((item) => ({
+    name: item.name,
+    values: item.values.map(({ value }) => value),
+  }));
+};
+
+const getRoutines = async (db: DatabaseClient, schemaName: string) => {
+  return db
+    .selectFrom('pg_proc as p')
+    .innerJoin('pg_namespace', 'pg_namespace.oid', 'p.pronamespace')
+    .leftJoin('pg_depend as d', (join) => join.onRef('d.objid', '=', 'p.oid').on('d.deptype', '=', sql.lit('e')))
+    .where('d.objid', 'is', sql.lit(null))
+    .where('p.prokind', '=', sql.lit('f'))
+    .where('pg_namespace.nspname', '=', schemaName)
+    .select((eb) => [
+      'p.proname as name',
+      eb.fn<string>('pg_get_function_identity_arguments', ['p.oid']).as('arguments'),
+      eb.fn<string>('pg_get_functiondef', ['p.oid']).as('expression'),
+    ])
+    .execute();
+};
+
+const getExtensions = async (db: DatabaseClient) => {
+  return (
+    db
+      .selectFrom('pg_catalog.pg_extension')
+      // .innerJoin('pg_namespace', 'pg_namespace.oid', 'pg_catalog.pg_extension.extnamespace')
+      // .where('pg_namespace.nspname', '=', schemaName)
+      .select(['extname as name', 'extversion as version'])
+      .execute()
+  );
+};
+
+const getTriggers = async (db: Kysely<PostgresDB>, schemaName: string) => {
+  return db
+    .selectFrom('pg_trigger as t')
+    .innerJoin('pg_proc as p', 't.tgfoid', 'p.oid')
+    .innerJoin('pg_namespace as n', 'p.pronamespace', 'n.oid')
+    .innerJoin('pg_class as c', 't.tgrelid', 'c.oid')
+    .select((eb) => [
+      't.tgname as name',
+      't.tgenabled as enabled',
+      't.tgtype as type',
+      't.tgconstraint as _constraint',
+      't.tgdeferrable as is_deferrable',
+      't.tginitdeferred as is_initially_deferred',
+      't.tgargs as arguments',
+      't.tgoldtable as referencing_old_table_as',
+      't.tgnewtable as referencing_new_table_as',
+      eb.fn<string>('pg_get_expr', ['t.tgqual', 't.tgrelid']).as('when_expression'),
+      'p.proname as function_name',
+      'c.relname as table_name',
+    ])
+    .where('t.tgisinternal', '=', false) // Exclude internal system triggers
+    .where('n.nspname', '=', schemaName)
+    .execute();
+};
+
+const getParameters = async (db: Kysely<PostgresDB>) => {
+  return db
+    .selectFrom('pg_settings')
+    .where('source', 'in', [sql.lit('database'), sql.lit('user')])
+    .select(['name', 'setting as value', 'source as scope'])
+    .execute();
+};
+
+const getObjectComments = async (db: Kysely<PostgresDB>) => {
+  return db
+    .selectFrom('pg_description as d')
+    .innerJoin('pg_class as c', 'd.objoid', 'c.oid')
+    .leftJoin('pg_attribute as a', (join) =>
+      join.onRef('a.attrelid', '=', 'c.oid').onRef('a.attnum', '=', 'd.objsubid'),
+    )
+    .select([
+      'c.relname as object_name',
+      'c.relkind as object_type',
+      'd.description as value',
+      'a.attname as column_name',
+    ])
+    .where('d.description', 'is not', null)
+    .orderBy('object_type')
+    .orderBy('object_name')
     .execute();
 };

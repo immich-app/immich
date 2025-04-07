@@ -12,13 +12,13 @@ export default defineConfig({
     include: ['src/**/*.spec.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/cores/**', 'src/interfaces/**', 'src/services/**', 'src/utils/**', 'src/sql-tools/**'],
+      include: ['src/cores/**', 'src/services/**', 'src/utils/**', 'src/sql-tools/**'],
       exclude: [
         'src/services/*.spec.ts',
         'src/services/api.service.ts',
         'src/services/microservices.service.ts',
         'src/services/index.ts',
-        'src/sql-tools/schema-from-database.ts',
+        'src/sql-tools/from-database/index.ts',
       ],
       thresholds: {
         lines: 85,
