@@ -1,16 +1,21 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { reset, schemaFromDecorators } from 'src/sql-tools/schema-from-decorators';
+import { reset, schemaFromCode } from 'src/sql-tools/from-code';
 import { describe, expect, it } from 'vitest';
 
-describe('schemaDiff', () => {
+describe(schemaFromCode.name, () => {
   beforeEach(() => {
     reset();
   });
 
   it('should work', () => {
-    expect(schemaFromDecorators()).toEqual({
-      name: 'public',
+    expect(schemaFromCode()).toEqual({
+      name: 'postgres',
+      schemaName: 'public',
+      functions: [],
+      enums: [],
+      extensions: [],
+      parameters: [],
       tables: [],
       warnings: [],
     });
@@ -24,7 +29,7 @@ describe('schemaDiff', () => {
         const module = await import(filePath);
         expect(module.description).toBeDefined();
         expect(module.schema).toBeDefined();
-        expect(schemaFromDecorators(), module.description).toEqual(module.schema);
+        expect(schemaFromCode(), module.description).toEqual(module.schema);
       });
     }
   });
