@@ -8,6 +8,7 @@ import { Stats } from 'node:fs';
 import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType, AssetStatus, AssetType, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
@@ -173,7 +174,7 @@ const assetEntity = Object.freeze({
   },
   livePhotoVideoId: null,
   sidecarPath: null,
-}) as AssetEntity;
+} as MapAsset);
 
 const existingAsset = Object.freeze({
   ...assetEntity,
@@ -182,18 +183,18 @@ const existingAsset = Object.freeze({
   checksum: Buffer.from('_getExistingAsset', 'utf8'),
   libraryId: 'libraryId',
   originalFileName: 'existing-filename.jpeg',
-}) as AssetEntity;
+}) as MapAsset;
 
 const sidecarAsset = Object.freeze({
   ...existingAsset,
   sidecarPath: 'sidecar-path',
   checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
-}) as AssetEntity;
+}) as MapAsset;
 
 const copiedAsset = Object.freeze({
   id: 'copied-asset',
   originalPath: 'copied-path',
-}) as AssetEntity;
+}) as MapAsset;
 
 describe(AssetMediaService.name, () => {
   let sut: AssetMediaService;

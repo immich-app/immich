@@ -5,6 +5,7 @@ import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import {
   AssetResponseDto,
+  MapAsset,
   MemoryLaneResponseDto,
   SanitizedAssetResponseDto,
   mapAsset,
@@ -20,7 +21,6 @@ import {
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
@@ -43,7 +43,7 @@ export class AssetService extends BaseService {
         yearsAgo,
         // TODO move this to clients
         title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-        assets: assets.map((asset) => mapAsset(asset as unknown as AssetEntity, { auth })),
+        assets: assets.map((asset) => mapAsset(asset, { auth })),
       };
     });
   }
@@ -105,7 +105,7 @@ export class AssetService extends BaseService {
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
 
-    let previousMotion: AssetEntity | null = null;
+    let previousMotion: MapAsset | null = null;
     if (rest.livePhotoVideoId) {
       await onBeforeLink(repos, { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId });
     } else if (rest.livePhotoVideoId === null) {
@@ -233,7 +233,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files);
+    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files ?? []);
     const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
 
     if (deleteOnDisk) {

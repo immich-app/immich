@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto';
 import {
   Activity,
   ApiKey,
-  Asset,
   AuthApiKey,
   AuthSharedLink,
   AuthUser,
@@ -14,6 +13,7 @@ import {
   User,
   UserAdmin,
 } from 'src/database';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
 import { OnThisDayData } from 'src/types';
@@ -184,7 +184,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
   };
 };
 
-const assetFactory = (asset: Partial<Asset> = {}) => ({
+const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),

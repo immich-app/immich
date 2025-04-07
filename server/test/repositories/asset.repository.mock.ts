@@ -11,7 +11,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     upsertJobStatus: vitest.fn(),
     getByDayOfYear: vitest.fn(),
     getByIds: vitest.fn().mockResolvedValue([]),
-    getByIdsWithAllRelations: vitest.fn().mockResolvedValue([]),
+    getByIdsWithAllRelationsButStacks: vitest.fn().mockResolvedValue([]),
     getByDeviceIds: vitest.fn(),
     getByUserId: vitest.fn(),
     getById: vitest.fn(),

@@ -8,7 +8,7 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { withExifInner, withFaces, withFiles } from 'src/entities/asset.entity';
 import { AssetFileType } from 'src/enum';
 import { StorageAsset } from 'src/types';
-import { asUuid } from 'src/utils/database';
+import { anyUuid, asUuid } from 'src/utils/database';
 
 @Injectable()
 export class AssetJobRepository {
@@ -147,6 +147,21 @@ export class AssetJobRepository {
       .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
       .where('assets.id', '=', id)
       .executeTakeFirst();
+  }
+
+  getForSyncAssets(ids: string[]) {
+    return this.db
+      .selectFrom('assets')
+      .select([
+        'assets.id',
+        'assets.isOffline',
+        'assets.libraryId',
+        'assets.originalPath',
+        'assets.status',
+        'assets.fileModifiedAt',
+      ])
+      .where('assets.id', '=', anyUuid(ids))
+      .execute();
   }
 
   private storageTemplateAssetQuery() {
