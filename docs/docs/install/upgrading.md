@@ -24,9 +24,6 @@ To clean up disk space, the old version's obsolete container images can be delet
 docker image prune
 ```
 
-[compose-file]: https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
-[env-file]: https://github.com/immich-app/immich/releases/latest/download/example.env
 [watchtower]: https://containrrr.dev/watchtower/
 [breaking]: https://github.com/immich-app/immich/discussions?discussions_q=label%3Achangelog%3Abreaking-change+sort%3Adate_created
-[container-auth]: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
 [releases]: https://github.com/immich-app/immich/releases
