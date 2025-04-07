@@ -20,15 +20,8 @@ export class SharedLinkTable {
   @Column({ type: 'character varying', nullable: true })
   description!: string | null;
 
-  @Column({ type: 'character varying', nullable: true })
-  password!: string | null;
-
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   userId!: string;
-
-  @ColumnIndex('IDX_sharedlink_albumId')
-  @ForeignKeyColumn(() => AlbumTable, { nullable: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  albumId!: string;
 
   @ColumnIndex('IDX_sharedlink_key')
   @Column({ type: 'bytea' })
@@ -46,9 +39,16 @@ export class SharedLinkTable {
   @Column({ type: 'boolean', default: false })
   allowUpload!: boolean;
 
+  @ColumnIndex('IDX_sharedlink_albumId')
+  @ForeignKeyColumn(() => AlbumTable, { nullable: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  albumId!: string;
+
   @Column({ type: 'boolean', default: true })
   allowDownload!: boolean;
 
   @Column({ type: 'boolean', default: true })
   showExif!: boolean;
+
+  @Column({ type: 'character varying', nullable: true })
+  password!: string | null;
 }

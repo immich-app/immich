@@ -1,8 +1,8 @@
-import { schemaDiff } from 'src/sql-tools/schema-diff';
+import { schemaDiff } from 'src/sql-tools/diff';
 import {
+  ColumnType,
   DatabaseActionType,
   DatabaseColumn,
-  DatabaseColumnType,
   DatabaseConstraint,
   DatabaseConstraintType,
   DatabaseIndex,
@@ -15,7 +15,12 @@ const fromColumn = (column: Partial<Omit<DatabaseColumn, 'tableName'>>): Databas
   const tableName = 'table1';
 
   return {
-    name: 'public',
+    name: 'postgres',
+    schemaName: 'public',
+    functions: [],
+    enums: [],
+    extensions: [],
+    parameters: [],
     tables: [
       {
         name: tableName,
@@ -31,6 +36,7 @@ const fromColumn = (column: Partial<Omit<DatabaseColumn, 'tableName'>>): Databas
           },
         ],
         indexes: [],
+        triggers: [],
         constraints: [],
         synchronize: true,
       },
@@ -43,7 +49,12 @@ const fromConstraint = (constraint?: DatabaseConstraint): DatabaseSchema => {
   const tableName = constraint?.tableName || 'table1';
 
   return {
-    name: 'public',
+    name: 'postgres',
+    schemaName: 'public',
+    functions: [],
+    enums: [],
+    extensions: [],
+    parameters: [],
     tables: [
       {
         name: tableName,
@@ -58,6 +69,7 @@ const fromConstraint = (constraint?: DatabaseConstraint): DatabaseSchema => {
           },
         ],
         indexes: [],
+        triggers: [],
         constraints: constraint ? [constraint] : [],
         synchronize: true,
       },
@@ -70,7 +82,12 @@ const fromIndex = (index?: DatabaseIndex): DatabaseSchema => {
   const tableName = index?.tableName || 'table1';
 
   return {
-    name: 'public',
+    name: 'postgres',
+    schemaName: 'public',
+    functions: [],
+    enums: [],
+    extensions: [],
+    parameters: [],
     tables: [
       {
         name: tableName,
@@ -86,6 +103,7 @@ const fromIndex = (index?: DatabaseIndex): DatabaseSchema => {
         ],
         indexes: index ? [index] : [],
         constraints: [],
+        triggers: [],
         synchronize: true,
       },
     ],
@@ -99,7 +117,7 @@ const newSchema = (schema: {
     name: string;
     columns?: Array<{
       name: string;
-      type?: DatabaseColumnType;
+      type?: ColumnType;
       nullable?: boolean;
       isArray?: boolean;
     }>;
@@ -131,12 +149,18 @@ const newSchema = (schema: {
       columns,
       indexes: table.indexes ?? [],
       constraints: table.constraints ?? [],
+      triggers: [],
       synchronize: true,
     });
   }
 
   return {
-    name: schema?.name || 'public',
+    name: 'immich',
+    schemaName: schema?.name || 'public',
+    functions: [],
+    enums: [],
+    extensions: [],
+    parameters: [],
     tables,
     warnings: [],
   };
@@ -167,8 +191,14 @@ describe('schemaDiff', () => {
         expect(diff.items).toHaveLength(1);
         expect(diff.items[0]).toEqual({
           type: 'table.create',
-          tableName: 'table1',
-          columns: [column],
+          table: {
+            name: 'table1',
+            columns: [column],
+            constraints: [],
+            indexes: [],
+            triggers: [],
+            synchronize: true,
+          },
           reason: 'missing in target',
         });
       });
@@ -181,7 +211,7 @@ describe('schemaDiff', () => {
           newSchema({
             tables: [{ name: 'table1', columns: [{ name: 'column1' }] }],
           }),
-          { ignoreExtraTables: false },
+          { tables: { ignoreExtra: false } },
         );
 
         expect(diff.items).toHaveLength(1);

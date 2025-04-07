@@ -197,58 +197,62 @@ export class DatabaseRepository {
     return dimSize;
   }
 
-  async runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void> {
+  async runMigrations(options?: { transaction?: 'all' | 'none' | 'each'; only?: 'kysely' | 'typeorm' }): Promise<void> {
     const { database } = this.configRepository.getEnv();
-    const dataSource = new DataSource(database.config.typeorm);
+    if (options?.only !== 'kysely') {
+      const dataSource = new DataSource(database.config.typeorm);
 
-    this.logger.log('Running migrations, this may take a while');
+      this.logger.log('Running migrations, this may take a while');
 
-    this.logger.debug('Running typeorm migrations');
+      this.logger.debug('Running typeorm migrations');
 
-    await dataSource.initialize();
-    await dataSource.runMigrations(options);
-    await dataSource.destroy();
+      await dataSource.initialize();
+      await dataSource.runMigrations(options);
+      await dataSource.destroy();
 
-    this.logger.debug('Finished running typeorm migrations');
-
-    // eslint-disable-next-line unicorn/prefer-module
-    const migrationFolder = join(__dirname, '..', 'schema/migrations');
-
-    // TODO remove after we have at least one kysely migration
-    if (!existsSync(migrationFolder)) {
-      return;
+      this.logger.debug('Finished running typeorm migrations');
     }
 
-    this.logger.debug('Running kysely migrations');
-    const migrator = new Migrator({
-      db: this.db,
-      migrationLockTableName: 'kysely_migrations_lock',
-      migrationTableName: 'kysely_migrations',
-      provider: new FileMigrationProvider({
-        fs: { readdir },
-        path: { join },
-        migrationFolder,
-      }),
-    });
+    if (options?.only !== 'typeorm') {
+      // eslint-disable-next-line unicorn/prefer-module
+      const migrationFolder = join(__dirname, '..', 'schema/migrations');
 
-    const { error, results } = await migrator.migrateToLatest();
-
-    for (const result of results ?? []) {
-      if (result.status === 'Success') {
-        this.logger.log(`Migration "${result.migrationName}" succeeded`);
+      // TODO remove after we have at least one kysely migration
+      if (!existsSync(migrationFolder)) {
+        return;
       }
 
-      if (result.status === 'Error') {
-        this.logger.warn(`Migration "${result.migrationName}" failed`);
+      this.logger.debug('Running kysely migrations');
+      const migrator = new Migrator({
+        db: this.db,
+        migrationLockTableName: 'kysely_migrations_lock',
+        migrationTableName: 'kysely_migrations',
+        provider: new FileMigrationProvider({
+          fs: { readdir },
+          path: { join },
+          migrationFolder,
+        }),
+      });
+
+      const { error, results } = await migrator.migrateToLatest();
+
+      for (const result of results ?? []) {
+        if (result.status === 'Success') {
+          this.logger.log(`Migration "${result.migrationName}" succeeded`);
+        }
+
+        if (result.status === 'Error') {
+          this.logger.warn(`Migration "${result.migrationName}" failed`);
+        }
       }
-    }
 
-    if (error) {
-      this.logger.error(`Kysely migrations failed: ${error}`);
-      throw error;
-    }
+      if (error) {
+        this.logger.error(`Kysely migrations failed: ${error}`);
+        throw error;
+      }
 
-    this.logger.debug('Finished running kysely migrations');
+      this.logger.debug('Finished running kysely migrations');
+    }
   }
 
   async withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R> {
