@@ -4,7 +4,18 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { AssetFileType, AssetStatus, AssetType, MemoryType, Permission, SourceType, SyncEntityType } from 'src/enum';
+import {
+  AlbumUserRole,
+  AssetFileType,
+  AssetOrder,
+  AssetStatus,
+  AssetType,
+  MemoryType,
+  Permission,
+  SharedLinkType,
+  SourceType,
+  SyncEntityType,
+} from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import { OnThisDayData } from 'src/types';
 
@@ -54,7 +65,7 @@ export interface Albums {
   description: Generated<string>;
   id: Generated<string>;
   isActivityEnabled: Generated<boolean>;
-  order: Generated<string>;
+  order: Generated<AssetOrder>;
   ownerId: string;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
@@ -68,7 +79,7 @@ export interface AlbumsAssetsAssets {
 
 export interface AlbumsSharedUsersUsers {
   albumsId: string;
-  role: Generated<string>;
+  role: Generated<AlbumUserRole>;
   usersId: string;
 }
 
@@ -346,7 +357,7 @@ export interface SharedLinks {
   key: Buffer;
   password: string | null;
   showExif: Generated<boolean>;
-  type: string;
+  type: SharedLinkType;
   userId: string;
 }
 
