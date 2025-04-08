@@ -3,6 +3,36 @@
 -- ActivityRepository.search
 select
   "activity".*,
+  to_json("user") as "user"
+from
+  "activity"
+  inner join "users" on "users"."id" = "activity"."userId"
+  and "users"."deletedAt" is null
+  inner join lateral (
+    select
+      "id",
+      "name",
+      "email",
+      "profileImagePath",
+      "profileChangedAt"
+    from
+    select
+      1 as "dummy"
+  ) as "user" on true
+  left join "assets" on "assets"."id" = "activity"."assetId"
+  and "assets"."deletedAt" is null
+where
+  "activity"."albumId" = $1
+order by
+  "activity"."createdAt" asc
+
+-- ActivityRepository.create
+insert into
+  "activity" ("albumId", "userId")
+values
+  ($1, $2)
+returning
+  *,
   (
     select
       to_json(obj)
@@ -18,17 +48,13 @@ select
           "users"
         where
           "users"."id" = "activity"."userId"
-          and "users"."deletedAt" is null
       ) as obj
   ) as "user"
-from
-  "activity"
-  left join "assets" on "assets"."id" = "activity"."assetId"
-  and "assets"."deletedAt" is null
+
+-- ActivityRepository.delete
+delete from "activity"
 where
-  "activity"."albumId" = $1
-order by
-  "activity"."createdAt" asc
+  "id" = $1::uuid
 
 -- ActivityRepository.getStatistics
 select

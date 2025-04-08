@@ -13,7 +13,6 @@ import {
   TranscodeTarget,
   VideoCodec,
 } from 'src/enum';
-import { ActivityRepository } from 'src/repositories/activity.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 
@@ -21,13 +20,8 @@ export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
-type IActivityRepository = RepositoryInterface<ActivityRepository>;
 type ISearchRepository = RepositoryInterface<SearchRepository>;
 type ISessionRepository = RepositoryInterface<SessionRepository>;
-
-export type ActivityItem =
-  | Awaited<ReturnType<IActivityRepository['create']>>
-  | Awaited<ReturnType<IActivityRepository['search']>>[0];
 
 export type SearchPlacesItem = Awaited<ReturnType<ISearchRepository['searchPlaces']>>[0];
 

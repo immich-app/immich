@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely } from 'kysely';
+import { Insertable, Kysely, NotNull, sql } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
@@ -14,16 +14,6 @@ export interface ActivitySearch {
   isLiked?: boolean;
 }
 
-const withUser = (eb: ExpressionBuilder<DB, 'activity'>) => {
-  return jsonObjectFrom(
-    eb
-      .selectFrom('users')
-      .select(columns.user)
-      .whereRef('users.id', '=', 'activity.userId')
-      .where('users.deletedAt', 'is', null),
-  ).as('user');
-};
-
 @Injectable()
 export class ActivityRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -35,7 +25,16 @@ export class ActivityRepository {
     return this.db
       .selectFrom('activity')
       .selectAll('activity')
-      .select(withUser)
+      .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
+      .innerJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom(sql`select 1`.as('dummy'))
+            .select(columns.user)
+            .as('user'),
+        (join) => join.onTrue(),
+      )
+      .select((eb) => eb.fn.toJson('user').as('user'))
       .leftJoin('assets', (join) => join.onRef('assets.id', '=', 'activity.assetId').on('assets.deletedAt', 'is', null))
       .$if(!!userId, (qb) => qb.where('activity.userId', '=', userId!))
       .$if(assetId === null, (qb) => qb.where('assetId', 'is', null))
@@ -46,10 +45,22 @@ export class ActivityRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [{ albumId: DummyValue.UUID, userId: DummyValue.UUID }] })
   async create(activity: Insertable<Activity>) {
-    return this.save(activity);
+    return this.db
+      .insertInto('activity')
+      .values(activity)
+      .returningAll()
+      .returning((eb) =>
+        jsonObjectFrom(eb.selectFrom('users').whereRef('users.id', '=', 'activity.userId').select(columns.user)).as(
+          'user',
+        ),
+      )
+      .$narrowType<{ user: NotNull }>()
+      .executeTakeFirstOrThrow();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string) {
     await this.db.deleteFrom('activity').where('id', '=', asUuid(id)).execute();
   }
@@ -71,16 +82,5 @@ export class ActivityRepository {
       .executeTakeFirstOrThrow();
 
     return count as number;
-  }
-
-  private async save(entity: Insertable<Activity>) {
-    const { id } = await this.db.insertInto('activity').values(entity).returning('id').executeTakeFirstOrThrow();
-
-    return this.db
-      .selectFrom('activity')
-      .selectAll('activity')
-      .select(withUser)
-      .where('activity.id', '=', asUuid(id))
-      .executeTakeFirstOrThrow();
   }
 }
