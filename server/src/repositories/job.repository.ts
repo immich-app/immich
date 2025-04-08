@@ -212,10 +212,12 @@ export class JobRepository {
         return { jobId: item.data.id };
       }
       case JobName.GENERATE_PERSON_THUMBNAIL: {
-        return { priority: 1 };
+        // JOB DELAY BY JOOB
+        return { priority: 1, delay: 500 };
       }
       case JobName.QUEUE_FACIAL_RECOGNITION: {
-        return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
+        // JOB DELAY BY JOOB
+        return { jobId: JobName.QUEUE_FACIAL_RECOGNITION, delay: 500 };
       }
       default: {
         return null;
