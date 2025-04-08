@@ -7,7 +7,6 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
@@ -50,7 +49,6 @@ export class AssetEntity {
   originalFileName!: string;
   sidecarPath!: string | null;
   exifInfo?: ExifEntity;
-  smartSearch?: SmartSearchEntity;
   tags!: TagEntity[];
   sharedLinks!: SharedLinkEntity[];
   albums?: AlbumEntity[];
@@ -97,9 +95,9 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   return jsonArrayFrom(
     eb
       .selectFrom('asset_files')
-      .selectAll()
+      .selectAll('asset_files')
       .whereRef('asset_files.assetId', '=', 'assets.id')
-      .$if(!!type, (qb) => qb.where('type', '=', type!)),
+      .$if(!!type, (qb) => qb.where('asset_files.type', '=', type!)),
   ).as('files');
 }
 

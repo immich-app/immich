@@ -4,7 +4,7 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { AssetType, MemoryType, Permission, SyncEntityType } from 'src/enum';
+import { AssetFileType, AssetType, MemoryType, Permission, SyncEntityType } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import { OnThisDayData } from 'src/types';
 
@@ -106,7 +106,7 @@ export interface AssetFiles {
   createdAt: Generated<Timestamp>;
   id: Generated<string>;
   path: string;
-  type: string;
+  type: AssetFileType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }
