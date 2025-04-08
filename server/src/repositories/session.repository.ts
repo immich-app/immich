@@ -1,14 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB, Sessions } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { withUser } from 'src/entities/session.entity';
 import { asUuid } from 'src/utils/database';
 
 export type SessionSearchOptions = { updatedBefore: Date };
+
+export const withUser = (eb: ExpressionBuilder<DB, 'sessions'>) => {
+  return eb
+    .selectFrom('users')
+    .select(columns.userAdmin)
+    .select((eb) =>
+      eb
+        .selectFrom('user_metadata')
+        .whereRef('users.id', '=', 'user_metadata.userId')
+        .select((eb) => eb.fn('array_agg', [eb.table('user_metadata')]).as('metadata'))
+        .as('metadata'),
+    )
+    .whereRef('users.id', '=', 'sessions.userId')
+    .where('users.deletedAt', 'is', null)
+    .as('user');
+};
 
 @Injectable()
 export class SessionRepository {
