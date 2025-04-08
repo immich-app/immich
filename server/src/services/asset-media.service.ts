@@ -435,7 +435,7 @@ export class AssetMediaService extends BaseService {
   }
 
   private requireQuota(auth: AuthDto, size: number) {
-    if (auth.user.quotaSizeInBytes && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
+    if (auth.user.quotaSizeInBytes !== null && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
       throw new BadRequestException('Quota has been exceeded!');
     }
   }

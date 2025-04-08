@@ -1,8 +1,19 @@
 import { randomUUID } from 'node:crypto';
-import { ApiKey, Asset, AuthApiKey, AuthUser, Library, Partner, User, UserAdmin } from 'src/database';
+import {
+  ApiKey,
+  Asset,
+  AuthApiKey,
+  AuthUser,
+  Library,
+  Memory,
+  Partner,
+  SidecarWriteAsset,
+  User,
+  UserAdmin,
+} from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
-import { ActivityItem, MemoryItem, OnThisDayData } from 'src/types';
+import { ActivityItem, OnThisDayData } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
 export const newUuids = () =>
@@ -186,7 +197,7 @@ const libraryFactory = (library: Partial<Library> = {}) => ({
   ...library,
 });
 
-const memoryFactory = (memory: Partial<MemoryItem> = {}) => ({
+const memoryFactory = (memory: Partial<Memory> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
@@ -210,6 +221,14 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
+const assetSidecarWriteFactory = (asset: Partial<SidecarWriteAsset> = {}) => ({
+  id: newUuid(),
+  sidecarPath: '/path/to/original-path.jpg.xmp',
+  originalPath: '/path/to/original-path.jpg.xmp',
+  tags: [],
+  ...asset,
+});
+
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
@@ -225,4 +244,7 @@ export const factory = {
   user: userFactory,
   userAdmin: userAdminFactory,
   versionHistory: versionHistoryFactory,
+  jobAssets: {
+    sidecarWrite: assetSidecarWriteFactory,
+  },
 };

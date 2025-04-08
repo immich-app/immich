@@ -8,16 +8,23 @@ import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
-final albumMediaRepositoryProvider = Provider((ref) => AlbumMediaRepository());
+final albumMediaRepositoryProvider =
+    Provider((ref) => const AlbumMediaRepository());
 
 class AlbumMediaRepository implements IAlbumMediaRepository {
+  const AlbumMediaRepository();
+
+  bool get useCustomFilter =>
+      Store.get(StoreKey.photoManagerCustomFilter, false);
+
   @override
   Future<List<Album>> getAll() async {
+    final filter = useCustomFilter
+        ? CustomFilter.sql(where: '${CustomColumns.base.width} > 0')
+        : FilterOptionGroup(containsPathModified: true);
+
     final List<AssetPathEntity> assetPathEntities =
-        await PhotoManager.getAssetPathList(
-      hasAll: true,
-      filterOption: FilterOptionGroup(containsPathModified: true),
-    );
+        await PhotoManager.getAssetPathList(hasAll: true, filterOption: filter);
     return assetPathEntities.map(_toAlbum).toList();
   }
 
@@ -47,18 +54,18 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     final onDevice = await AssetPathEntity.fromId(
       albumId,
       filterOption: FilterOptionGroup(
-        containsPathModified: true,
-        orders: orderByModificationDate
-            ? [const OrderOption(type: OrderOptionType.updateDate)]
-            : [],
         imageOption: const FilterOption(needTitle: true),
         videoOption: const FilterOption(needTitle: true),
+        containsPathModified: true,
         updateTimeCond: modifiedFrom == null && modifiedUntil == null
             ? null
             : DateTimeCond(
                 min: modifiedFrom ?? DateTime.utc(-271820),
                 max: modifiedUntil ?? DateTime.utc(275760),
               ),
+        orders: orderByModificationDate
+            ? [const OrderOption(type: OrderOptionType.updateDate)]
+            : [],
       ),
     );
 

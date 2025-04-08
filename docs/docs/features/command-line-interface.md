@@ -112,7 +112,7 @@ You begin by authenticating to your Immich server. For instance:
 immich login http://192.168.1.216:2283/api HFEJ38DNSDUEG
 ```
 
-This will store your credentials in a `auth.yml` file in the configuration directory which defaults to `~/.config/`. The directory can be set with the `-d` option or the environment variable `IMMICH_CONFIG_DIR`. Please keep the file secure, either by performing the logout command after you are done, or deleting it manually.
+This will store your credentials in a `auth.yml` file in the configuration directory which defaults to `~/.config/immich/`. The directory can be set with the `-d` option or the environment variable `IMMICH_CONFIG_DIR`. Please keep the file secure, either by performing the logout command after you are done, or deleting it manually.
 
 Once you are authenticated, you can upload assets to your Immich server.
 

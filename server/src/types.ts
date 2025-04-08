@@ -14,8 +14,7 @@ import {
   VideoCodec,
 } from 'src/enum';
 import { ActivityRepository } from 'src/repositories/activity.repository';
-import { ApiKeyRepository } from 'src/repositories/api-key.repository';
-import { MemoryRepository } from 'src/repositories/memory.repository';
+import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
@@ -23,33 +22,16 @@ export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
 type IActivityRepository = RepositoryInterface<ActivityRepository>;
-type IApiKeyRepository = RepositoryInterface<ApiKeyRepository>;
-type IMemoryRepository = RepositoryInterface<MemoryRepository>;
+type ISearchRepository = RepositoryInterface<SearchRepository>;
 type ISessionRepository = RepositoryInterface<SessionRepository>;
 
 export type ActivityItem =
   | Awaited<ReturnType<IActivityRepository['create']>>
   | Awaited<ReturnType<IActivityRepository['search']>>[0];
 
-export type ApiKeyItem =
-  | Awaited<ReturnType<IApiKeyRepository['create']>>
-  | NonNullable<Awaited<ReturnType<IApiKeyRepository['getById']>>>
-  | Awaited<ReturnType<IApiKeyRepository['getByUserId']>>[0];
-
-export type MemoryItem =
-  | Awaited<ReturnType<IMemoryRepository['create']>>
-  | Awaited<ReturnType<IMemoryRepository['search']>>[0];
+export type SearchPlacesItem = Awaited<ReturnType<ISearchRepository['searchPlaces']>>[0];
 
 export type SessionItem = Awaited<ReturnType<ISessionRepository['getByUserId']>>[0];
-
-export type TagItem = {
-  id: string;
-  value: string;
-  createdAt: Date;
-  updatedAt: Date;
-  color: string | null;
-  parentId: string | null;
-};
 
 export interface CropOptions {
   top: number;

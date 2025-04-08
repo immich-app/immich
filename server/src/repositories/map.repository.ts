@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { getName } from 'i18n-iso-countries';
-import { Expression, Kysely, sql, SqlBool } from 'kysely';
+import { Expression, Insertable, Kysely, sql, SqlBool } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -8,7 +8,6 @@ import readLine from 'node:readline';
 import { citiesFile } from 'src/constants';
 import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
 import { SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -182,11 +181,11 @@ export class MapRepository {
       return;
     }
 
-    const entities: Omit<NaturalEarthCountriesTempEntity, 'id'>[] = [];
+    const entities: Insertable<NaturalearthCountries>[] = [];
     for (const feature of geoJSONData.features) {
       for (const entry of feature.geometry.coordinates) {
         const coordinates: number[][][] = feature.geometry.type === 'MultiPolygon' ? entry[0] : entry;
-        const featureRecord: Omit<NaturalEarthCountriesTempEntity, 'id'> = {
+        const featureRecord: Insertable<NaturalearthCountries> = {
           admin: feature.properties.ADMIN,
           admin_a3: feature.properties.ADM0_A3,
           type: feature.properties.TYPE,

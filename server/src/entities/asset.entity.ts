@@ -1,5 +1,6 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { Tag } from 'src/database';
 import { DB } from 'src/db';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -7,9 +8,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { StackEntity } from 'src/entities/stack.entity';
-import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
@@ -49,8 +48,7 @@ export class AssetEntity {
   livePhotoVideoId!: string | null;
   originalFileName!: string;
   exifInfo?: ExifEntity;
-  smartSearch?: SmartSearchEntity;
-  tags!: TagEntity[];
+  tags?: Tag[];
   sharedLinks!: SharedLinkEntity[];
   albums?: AlbumEntity[];
   faces!: AssetFaceEntity[];
@@ -96,9 +94,9 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   return jsonArrayFrom(
     eb
       .selectFrom('asset_files')
-      .selectAll()
+      .selectAll('asset_files')
       .whereRef('asset_files.assetId', '=', 'assets.id')
-      .$if(!!type, (qb) => qb.where('type', '=', type!)),
+      .$if(!!type, (qb) => qb.where('asset_files.type', '=', type!)),
   ).as('files');
 }
 

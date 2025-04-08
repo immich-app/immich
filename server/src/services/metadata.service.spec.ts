@@ -3,11 +3,10 @@ import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { defaults } from 'src/config';
-import { AssetFileEntity, SidecarAssetFileEntity } from 'src/entities/asset-files.entity';
+import { SidecarAssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetFileType, AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
-import { AssetFileRepository } from 'src/repositories/asset-file.repository';
+import { AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
@@ -18,7 +17,8 @@ import { probeStub } from 'test/fixtures/media.stub';
 import { metadataStub } from 'test/fixtures/metadata.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
-import { ServiceMocks, newTestService } from 'test/utils';
+import { factory } from 'test/small.factory';
+import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(MetadataService.name, () => {
   let sut: MetadataService;
@@ -549,7 +549,7 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
-      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
     });
 
     it('should extract the EmbeddedVideo tag from Samsung JPEG motion photos', async () => {
@@ -601,7 +601,7 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
-      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
     });
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
@@ -653,7 +653,7 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
-      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
     });
 
     it('should delete old motion photo video assets if they do not match what is extracted', async () => {
@@ -675,10 +675,6 @@ describe(MetadataService.name, () => {
       expect(mocks.job.queue).toHaveBeenNthCalledWith(1, {
         name: JobName.ASSET_DELETION,
         data: { id: assetStub.livePhotoWithOriginalFileName.livePhotoVideoId, deleteOnDisk: true },
-      });
-      expect(mocks.job.queue).toHaveBeenNthCalledWith(2, {
-        name: JobName.METADATA_EXTRACTION,
-        data: { id: 'random-uuid' },
       });
     });
 
@@ -726,7 +722,7 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
-      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(4);
     });
 
     it('should not update storage usage if motion photo is external', async () => {
@@ -1503,20 +1499,20 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarWrite', () => {
     it('should skip assets that do not exist anymore', async () => {
-      mocks.asset.getByIds.mockResolvedValue([]);
+      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(void 0);
       await expect(sut.handleSidecarWrite({ id: 'asset-123' })).resolves.toBe(JobStatus.FAILED);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
     });
 
-    it('should skip jobs without metadata', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.noResizePath]);
-      mocks.assetFile.getAll.mockResolvedValue({ items: [assetFileStub.sidecarWithExtension], hasNextPage: false });
-
-      await expect(sut.handleSidecarWrite({ id: assetStub.noResizePath.id })).resolves.toBe(JobStatus.SKIPPED);
+    it('should skip jobs with no metadata', async () => {
+      const asset = factory.jobAssets.sidecarWrite();
+      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(asset);
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.SKIPPED);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
     });
 
     it('should write tags', async () => {
+      const asset = factory.jobAssets.sidecarWrite();
       const description = 'this is a description';
       const gps = 12;
       const date = '2023-11-22T04:56:12.196Z';

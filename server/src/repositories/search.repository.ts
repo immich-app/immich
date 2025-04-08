@@ -5,7 +5,6 @@ import { randomUUID } from 'node:crypto';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity, searchAssetBuilder } from 'src/entities/asset.entity';
-import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
@@ -380,7 +379,7 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]> {
+  searchPlaces(placeName: string) {
     return this.db
       .selectFrom('geodata_places')
       .selectAll()
@@ -403,7 +402,7 @@ export class SearchRepository {
         `,
       )
       .limit(20)
-      .execute() as Promise<GeodataPlacesEntity[]>;
+      .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })

@@ -241,7 +241,6 @@ export const sharedLinkStub = {
             autoStackId: null,
             rating: 3,
           },
-          tags: [],
           sharedLinks: [],
           faces: [],
           deletedAt: null,

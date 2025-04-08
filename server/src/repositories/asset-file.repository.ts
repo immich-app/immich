@@ -119,12 +119,9 @@ export class AssetFileRepository {
       .insertInto('asset_files')
       .values(values)
       .onConflict((oc) =>
-        oc
-          .columns(['assetId', 'type'])
-          .where('type', '<>', 'sidecar')
-          .doUpdateSet((eb) => ({
-            path: eb.ref('excluded.path'),
-          })),
+        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+          path: eb.ref('excluded.path'),
+        })),
       )
       .returningAll()
       .execute()) as any as Promise<AssetFileEntity[]>;
