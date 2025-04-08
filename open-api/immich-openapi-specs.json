@@ -7906,6 +7906,9 @@
           "isActivityEnabled": {
             "type": "boolean"
           },
+          "isPublicInInstance": {
+            "type": "boolean"
+          },
           "lastModifiedAssetTimestamp": {
             "format": "date-time",
             "type": "string"
@@ -7946,6 +7949,7 @@
           "hasSharedLink",
           "id",
           "isActivityEnabled",
+          "isPublicInInstance",
           "owner",
           "ownerId",
           "shared",
@@ -9051,6 +9055,9 @@
           },
           "description": {
             "type": "string"
+          },
+          "isPublicInInstance": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -13468,6 +13475,9 @@
             "type": "string"
           },
           "isActivityEnabled": {
+            "type": "boolean"
+          },
+          "isPublicInInstance": {
             "type": "boolean"
           },
           "order": {

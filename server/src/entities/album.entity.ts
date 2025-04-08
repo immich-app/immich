@@ -21,4 +21,5 @@ export class AlbumEntity {
   sharedLinks!: SharedLinkEntity[];
   isActivityEnabled!: boolean;
   order!: AssetOrder;
+  isPublicInInstance!: boolean;
 }

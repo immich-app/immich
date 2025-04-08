@@ -8,6 +8,7 @@
     AlbumUserRole,
     getAllSharedLinks,
     searchUsers,
+    updateAlbumInfo,
     type AlbumResponseDto,
     type AlbumUserAddDto,
     type SharedLinkResponseDto,
@@ -18,6 +19,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   interface Props {
     album: AlbumResponseDto;
@@ -65,6 +67,15 @@
     } else {
       selectedUsers[user.id].role = role;
     }
+  };
+
+  const handleTogglePublicInInstance = () => {
+    updateAlbumInfo({
+      id: album.id,
+      updateAlbumDto: {
+        isPublicInInstance: !album.isPublicInInstance,
+      },
+    });
   };
 </script>
 
@@ -150,6 +161,17 @@
       >
     </div>
   {/if}
+
+  <hr class="my-4" />
+
+  <Stack gap={6}>
+    <SettingSwitch
+      title={$t('is_album_public_in_instance')}
+      subtitle={$t('is_album_public_in_instance_description')}
+      bind:checked={album.isPublicInInstance}
+      onToggle={handleTogglePublicInInstance}
+    />
+  </Stack>
 
   <hr class="my-4" />
 

@@ -13,7 +13,7 @@
   import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
-  import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
+  import AlbumShareModal from '$lib/components/album-page/album-share-modal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
@@ -429,7 +429,7 @@
         onCreated={() => albumToShare && handleSharedLinkCreated(albumToShare)}
       />
     {:else}
-      <UserSelectionModal
+      <AlbumShareModal
         album={albumToShare}
         onSelect={handleAddUsers}
         onShare={() => (showShareByURLModal = true)}

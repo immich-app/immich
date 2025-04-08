@@ -99,8 +99,12 @@ class AlbumAccess {
       .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
       .where('albums.id', 'in', [...albumIds])
       .where('albums.deletedAt', 'is', null)
-      .where('users.id', '=', userId)
-      .where('albumUsers.role', 'in', [...accessRole])
+      .where((eb) =>
+        eb.or([
+          eb.and([eb('users.id', '=', userId), eb('albumUsers.role', 'in', [...accessRole])]),
+          eb('albums.isPublicInInstance', '=', true),
+        ]),
+      )
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
@@ -148,7 +152,13 @@ class AssetAccess {
         '&&',
         sql`array[${sql.join([...assetIds])}]::uuid[] `,
       )
-      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('users.id', '=', userId)]))
+      .where((eb) =>
+        eb.or([
+          eb('albums.ownerId', '=', userId),
+          eb('users.id', '=', userId),
+          eb('albums.isPublicInInstance', '=', true),
+        ]),
+      )
       .where('albums.deletedAt', 'is', null)
       .execute()
       .then((assets) => {

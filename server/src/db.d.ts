@@ -54,6 +54,7 @@ export interface Albums {
   description: Generated<string>;
   id: Generated<string>;
   isActivityEnabled: Generated<boolean>;
+  isPublicInInstance: Generated<boolean>;
   order: Generated<string>;
   ownerId: string;
   updatedAt: Generated<Timestamp>;

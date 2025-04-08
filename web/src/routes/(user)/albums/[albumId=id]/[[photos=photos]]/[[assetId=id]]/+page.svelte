@@ -6,7 +6,7 @@
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
-  import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
+  import AlbumShareModal from '$lib/components/album-page/album-share-modal.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -745,7 +745,7 @@
   {/if}
 </div>
 {#if viewMode === AlbumPageViewMode.SELECT_USERS}
-  <UserSelectionModal
+  <AlbumShareModal
     {album}
     onSelect={handleAddUsers}
     onShare={() => (viewMode = AlbumPageViewMode.LINK_SHARING)}
