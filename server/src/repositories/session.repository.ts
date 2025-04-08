@@ -9,7 +9,7 @@ import { asUuid } from 'src/utils/database';
 
 export type SessionSearchOptions = { updatedBefore: Date };
 
-export const withUser = (eb: ExpressionBuilder<DB, 'sessions'>) => {
+const withUser = (eb: ExpressionBuilder<DB, 'sessions'>) => {
   return eb
     .selectFrom('users')
     .select(columns.userAdmin)
