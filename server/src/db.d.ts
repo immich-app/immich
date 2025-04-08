@@ -4,15 +4,13 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { AssetFileType, AssetType, MemoryType, Permission, SyncEntityType } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, MemoryType, Permission, SourceType, SyncEntityType } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import { OnThisDayData } from 'src/types';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
 export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S[], I[], U[]> : T[];
-
-export type AssetsStatusEnum = 'active' | 'deleted' | 'trashed';
 
 export type Generated<T> =
   T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
@@ -30,8 +28,6 @@ export type JsonObject = {
 export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
-
-export type Sourcetype = 'exif' | 'machine-learning' | 'manual';
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
@@ -98,7 +94,7 @@ export interface AssetFaces {
   imageHeight: Generated<number>;
   imageWidth: Generated<number>;
   personId: string | null;
-  sourceType: Generated<Sourcetype>;
+  sourceType: Generated<SourceType>;
 }
 
 export interface AssetFiles {
@@ -152,7 +148,7 @@ export interface Assets {
   ownerId: string;
   sidecarPath: string | null;
   stackId: string | null;
-  status: Generated<AssetsStatusEnum>;
+  status: Generated<AssetStatus>;
   thumbhash: Buffer | null;
   type: AssetType;
   updatedAt: Generated<Timestamp>;
