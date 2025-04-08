@@ -92,6 +92,13 @@ export type Asset = {
   type: AssetType;
 };
 
+export type SidecarWriteAsset = {
+  id: string;
+  sidecarPath: string | null;
+  originalPath: string;
+  tags: Array<{ value: string }>;
+};
+
 export type AuthSharedLink = {
   id: string;
   expiresAt: Date | null;

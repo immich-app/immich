@@ -210,6 +210,32 @@ where
 limit
   $3
 
+-- AssetRepository.getAssetForSidecarWriteJob
+select
+  "id",
+  "sidecarPath",
+  "originalPath",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "tags"."value"
+        from
+          "tags"
+          inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
+        where
+          "assets"."id" = "tag_asset"."assetsId"
+      ) as agg
+  ) as "tags"
+from
+  "assets"
+where
+  "assets"."id" = $1::uuid
+limit
+  $2
+
 -- AssetRepository.getById
 select
   "assets".*

@@ -8,11 +8,11 @@ import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { StackEntity } from 'src/entities/stack.entity';
-import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
+import { TagItem } from 'src/types';
 import { anyUuid, asUuid } from 'src/utils/database';
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
@@ -49,7 +49,7 @@ export class AssetEntity {
   originalFileName!: string;
   sidecarPath!: string | null;
   exifInfo?: ExifEntity;
-  tags!: TagEntity[];
+  tags?: TagItem[];
   sharedLinks!: SharedLinkEntity[];
   albums?: AlbumEntity[];
   faces!: AssetFaceEntity[];
