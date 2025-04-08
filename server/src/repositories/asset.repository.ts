@@ -476,6 +476,26 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  getAssetForSearchDuplicatesJob(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .where('assets.id', '=', asUuid(id))
+      .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
+      .select((eb) => [
+        'id',
+        'type',
+        'ownerId',
+        'duplicateId',
+        'stackId',
+        'isVisible',
+        'smart_search.embedding',
+        withFiles(eb, AssetFileType.PREVIEW),
+      ])
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
   getById(
     id: string,
     { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {},
