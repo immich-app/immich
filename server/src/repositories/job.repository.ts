@@ -212,15 +212,17 @@ export class JobRepository {
         return { jobId: item.data.id };
       }
       case JobName.GENERATE_PERSON_THUMBNAIL: {
-        // JOB DELAY BY JOOB
         return { priority: 1 };
       }
       case JobName.GENERATE_THUMBNAILS: {
         // JOB DELAY BY JOOB
         return { delay: 1000 };
       }
-      case JobName.QUEUE_FACIAL_RECOGNITION: {
+      case JobName.METADATA_EXTRACTION: {
         // JOB DELAY BY JOOB
+        return { delay: 1000 };
+      }
+      case JobName.QUEUE_FACIAL_RECOGNITION: {
         return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
       }
       default: {
