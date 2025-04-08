@@ -268,7 +268,7 @@ export class MetadataService extends BaseService {
     }
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() });
-    console.log(`Metadata extraction completed for asset ${asset.id}: ${asset.originalPath}`);
+
     return JobStatus.SUCCESS;
   }
 
