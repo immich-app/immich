@@ -123,7 +123,7 @@ export class SmartInfoService extends BaseService {
 
     const embedding = await this.machineLearningRepository.encodeImage(
       machineLearning.urls,
-      previewFile.path,
+      asset.originalPath, // TODO: change this back
       machineLearning.clip,
     );
 
