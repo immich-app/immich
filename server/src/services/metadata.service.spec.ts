@@ -546,7 +546,7 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
-      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
     });
 
     it('should extract the EmbeddedVideo tag from Samsung JPEG motion photos', async () => {
@@ -598,7 +598,7 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
-      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
     });
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
@@ -650,7 +650,7 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
-      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
     });
 
     it('should delete old motion photo video assets if they do not match what is extracted', async () => {
@@ -672,10 +672,6 @@ describe(MetadataService.name, () => {
       expect(mocks.job.queue).toHaveBeenNthCalledWith(1, {
         name: JobName.ASSET_DELETION,
         data: { id: assetStub.livePhotoWithOriginalFileName.livePhotoVideoId, deleteOnDisk: true },
-      });
-      expect(mocks.job.queue).toHaveBeenNthCalledWith(2, {
-        name: JobName.METADATA_EXTRACTION,
-        data: { id: 'random-uuid' },
       });
     });
 
@@ -723,7 +719,7 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
-      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(4);
     });
 
     it('should not update storage usage if motion photo is external', async () => {

@@ -523,8 +523,6 @@ export class MetadataService extends BaseService {
           deviceId: 'NONE',
         });
 
-        await this.assetRepository.upsertExif({ assetId: motionAsset.id });
-
         if (!asset.isExternal) {
           await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
         }
@@ -552,7 +550,8 @@ export class MetadataService extends BaseService {
         this.storageCore.ensureFolders(motionAsset.originalPath);
         await this.storageRepository.createFile(motionAsset.originalPath, video);
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
+
+        await this.handleMetadataExtraction({ id: motionAsset.id });
       }
 
       this.logger.debug(`Finished motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
