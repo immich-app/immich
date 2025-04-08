@@ -316,7 +316,7 @@ export class MetadataService extends BaseService {
   @OnJob({ name: JobName.SIDECAR_WRITE, queue: QueueName.SIDECAR })
   async handleSidecarWrite(job: JobOf<JobName.SIDECAR_WRITE>): Promise<JobStatus> {
     const { id, description, dateTimeOriginal, latitude, longitude, rating, tags } = job;
-    const [asset] = await this.assetRepository.getByIds([id], { tags: true });
+    const asset = await this.assetRepository.getAssetForSidecarWriteJob(id);
     if (!asset) {
       return JobStatus.FAILED;
     }

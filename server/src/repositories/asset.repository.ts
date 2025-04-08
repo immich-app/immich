@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Selectable, UpdateResult, Updateable, sql } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
@@ -490,6 +491,27 @@ export class AssetRepository {
         'isVisible',
         'smart_search.embedding',
         withFiles(eb, AssetFileType.PREVIEW),
+      ])
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getAssetForSidecarWriteJob(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .where('assets.id', '=', asUuid(id))
+      .select((eb) => [
+        'id',
+        'sidecarPath',
+        'originalPath',
+        jsonArrayFrom(
+          eb
+            .selectFrom('tags')
+            .select(['tags.value'])
+            .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
+            .whereRef('assets.id', '=', 'tag_asset.assetsId'),
+        ).as('tags'),
       ])
       .limit(1)
       .executeTakeFirst();

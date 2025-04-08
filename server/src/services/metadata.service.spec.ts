@@ -15,6 +15,7 @@ import { probeStub } from 'test/fixtures/media.stub';
 import { metadataStub } from 'test/fixtures/metadata.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
+import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(MetadataService.name, () => {
@@ -1405,33 +1406,35 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarWrite', () => {
     it('should skip assets that do not exist anymore', async () => {
-      mocks.asset.getByIds.mockResolvedValue([]);
+      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(void 0);
       await expect(sut.handleSidecarWrite({ id: 'asset-123' })).resolves.toBe(JobStatus.FAILED);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
     });
 
-    it('should skip jobs with not metadata', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecar]);
-      await expect(sut.handleSidecarWrite({ id: assetStub.sidecar.id })).resolves.toBe(JobStatus.SKIPPED);
+    it('should skip jobs with no metadata', async () => {
+      const asset = factory.jobAssets.sidecarWrite();
+      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(asset);
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.SKIPPED);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
     });
 
     it('should write tags', async () => {
+      const asset = factory.jobAssets.sidecarWrite();
       const description = 'this is a description';
       const gps = 12;
       const date = '2023-11-22T04:56:12.196Z';
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecar]);
+      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(asset);
       await expect(
         sut.handleSidecarWrite({
-          id: assetStub.sidecar.id,
+          id: asset.id,
           description,
           latitude: gps,
           longitude: gps,
           dateTimeOriginal: date,
         }),
       ).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(assetStub.sidecar.sidecarPath, {
+      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.sidecarPath, {
         Description: description,
         ImageDescription: description,
         DateTimeOriginal: date,
