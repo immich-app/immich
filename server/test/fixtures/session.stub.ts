@@ -1,8 +1,8 @@
-import { SessionEntity } from 'src/entities/session.entity';
+import { SessionItem } from 'src/types';
 import { userStub } from 'test/fixtures/user.stub';
 
 export const sessionStub = {
-  valid: Object.freeze<SessionEntity>({
+  valid: Object.freeze<SessionItem>({
     id: 'token-id',
     token: 'auth_token',
     userId: userStub.user1.id,
@@ -13,7 +13,7 @@ export const sessionStub = {
     deviceOS: '',
     updateId: 'uuid-v7',
   }),
-  inactive: Object.freeze<SessionEntity>({
+  inactive: Object.freeze<SessionItem>({
     id: 'not_active',
     token: 'auth_token',
     userId: userStub.user1.id,

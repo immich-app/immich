@@ -45,20 +45,21 @@ from
   inner join lateral (
     select
       "id",
-      "email",
-      "createdAt",
-      "profileImagePath",
-      "isAdmin",
-      "shouldChangePassword",
-      "deletedAt",
-      "oauthId",
-      "updatedAt",
-      "storageLabel",
       "name",
+      "email",
+      "profileImagePath",
+      "profileChangedAt",
+      "createdAt",
+      "updatedAt",
+      "deletedAt",
+      "isAdmin",
+      "status",
+      "oauthId",
+      "profileImagePath",
+      "shouldChangePassword",
+      "storageLabel",
       "quotaSizeInBytes",
       "quotaUsageInBytes",
-      "status",
-      "profileChangedAt",
       (
         select
           array_agg("user_metadata") as "metadata"
