@@ -48,6 +48,8 @@ class SearchPage extends HookConsumerWidget {
               isFavorite: false,
             ),
         mediaType: prefilter?.mediaType ?? AssetType.other,
+        language:
+            "${context.locale.languageCode}-${context.locale.countryCode}",
       ),
     );
 

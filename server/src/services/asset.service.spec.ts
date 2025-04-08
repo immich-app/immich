@@ -578,6 +578,7 @@ describe(AssetService.name, () => {
               files: [
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
+                '/uploads/user-id/fullsize/path.webp',
                 assetWithFace.encodedVideoPath,
                 assetWithFace.sidecarPath,
                 assetWithFace.originalPath,
@@ -637,7 +638,14 @@ describe(AssetService.name, () => {
           {
             name: JobName.DELETE_FILES,
             data: {
-              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.jpeg'],
+              files: [
+                '/uploads/user-id/webp/path.ext',
+                '/uploads/user-id/thumbs/path.jpg',
+                '/uploads/user-id/fullsize/path.webp',
+                undefined,
+                undefined,
+                'fake_path/asset_1.jpeg',
+              ],
             },
           },
         ],
@@ -658,7 +666,14 @@ describe(AssetService.name, () => {
           {
             name: JobName.DELETE_FILES,
             data: {
-              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.jpeg'],
+              files: [
+                '/uploads/user-id/webp/path.ext',
+                '/uploads/user-id/thumbs/path.jpg',
+                '/uploads/user-id/fullsize/path.webp',
+                undefined,
+                undefined,
+                'fake_path/asset_1.jpeg',
+              ],
             },
           },
         ],

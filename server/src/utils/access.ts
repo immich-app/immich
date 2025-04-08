@@ -250,10 +250,6 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.memory.checkOwnerAccess(auth.user.id, ids);
     }
 
-    case Permission.MEMORY_DELETE: {
-      return access.memory.checkOwnerAccess(auth.user.id, ids);
-    }
-
     case Permission.PERSON_READ: {
       return await access.person.checkOwnerAccess(auth.user.id, ids);
     }

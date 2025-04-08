@@ -4,8 +4,8 @@ process.env.DB_URL = 'postgres://postgres:postgres@localhost:5432/immich';
 import { writeFileSync } from 'node:fs';
 import postgres from 'postgres';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import 'src/schema/tables';
 import { DatabaseTable, schemaDiff, schemaFromDatabase, schemaFromDecorators } from 'src/sql-tools';
-import 'src/tables';
 
 const main = async () => {
   const command = process.argv[2];
@@ -54,9 +54,10 @@ const generate = async (name: string) => {
 };
 
 const create = (name: string, up: string[], down: string[]) => {
-  const { filename, code } = asMigration(name, up, down);
+  const timestamp = Date.now();
+  const filename = `${timestamp}-${name}.ts`;
   const fullPath = `./src/${filename}`;
-  writeFileSync(fullPath, code);
+  writeFileSync(fullPath, asMigration('kysely', { name, timestamp, up, down }));
   console.log(`Wrote ${fullPath}`);
 };
 
@@ -79,14 +80,21 @@ const compare = async () => {
   return { up, down };
 };
 
-const asMigration = (name: string, up: string[], down: string[]) => {
-  const timestamp = Date.now();
+type MigrationProps = {
+  name: string;
+  timestamp: number;
+  up: string[];
+  down: string[];
+};
 
+const asMigration = (type: 'kysely' | 'typeorm', options: MigrationProps) =>
+  type === 'typeorm' ? asTypeOrmMigration(options) : asKyselyMigration(options);
+
+const asTypeOrmMigration = ({ timestamp, name, up, down }: MigrationProps) => {
   const upSql = up.map((sql) => `    await queryRunner.query(\`${sql}\`);`).join('\n');
   const downSql = down.map((sql) => `    await queryRunner.query(\`${sql}\`);`).join('\n');
-  return {
-    filename: `${timestamp}-${name}.ts`,
-    code: `import { MigrationInterface, QueryRunner } from 'typeorm';
+
+  return `import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class ${name}${timestamp} implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -97,8 +105,23 @@ ${upSql}
 ${downSql}
   }
 }
-`,
-  };
+`;
+};
+
+const asKyselyMigration = ({ up, down }: MigrationProps) => {
+  const upSql = up.map((sql) => `  await sql\`${sql}\`.execute(db);`).join('\n');
+  const downSql = down.map((sql) => `  await sql\`${sql}\`.execute(db);`).join('\n');
+
+  return `import { Kysely, sql } from 'kysely';
+
+export async function up(db: Kysely<any>): Promise<void> {
+${upSql}
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+${downSql}
+}
+`;
 };
 
 main()
