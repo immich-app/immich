@@ -1,5 +1,6 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { Tag } from 'src/database';
 import { DB } from 'src/db';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -12,7 +13,6 @@ import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
-import { TagItem } from 'src/types';
 import { anyUuid, asUuid } from 'src/utils/database';
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
@@ -49,7 +49,7 @@ export class AssetEntity {
   originalFileName!: string;
   sidecarPath!: string | null;
   exifInfo?: ExifEntity;
-  tags?: TagItem[];
+  tags?: Tag[];
   sharedLinks!: SharedLinkEntity[];
   albums?: AlbumEntity[];
   faces!: AssetFaceEntity[];

@@ -1,15 +1,15 @@
+import { Tag } from 'src/database';
 import { TagRepository } from 'src/repositories/tag.repository';
-import { TagItem } from 'src/types';
 
 type UpsertRequest = { userId: string; tags: string[] };
 export const upsertTags = async (repository: TagRepository, { userId, tags }: UpsertRequest) => {
   tags = [...new Set(tags)];
 
-  const results: TagItem[] = [];
+  const results: Tag[] = [];
 
   for (const tag of tags) {
     const parts = tag.split('/').filter(Boolean);
-    let parent: TagItem | undefined;
+    let parent: Tag | undefined;
 
     for (const part of parts) {
       const value = parent ? `${parent.value}/${part}` : part;

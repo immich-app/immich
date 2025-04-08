@@ -1,5 +1,6 @@
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
-import { AssetStatus, AssetType, Permission, UserStatus } from 'src/enum';
+import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import { OnThisDayData } from 'src/types';
 
 export type AuthUser = {
   id: string;
@@ -36,6 +37,31 @@ export type ApiKey = {
   createdAt: Date;
   updatedAt: Date;
   permissions: Permission[];
+};
+
+export type Tag = {
+  id: string;
+  value: string;
+  createdAt: Date;
+  updatedAt: Date;
+  color: string | null;
+  parentId: string | null;
+};
+
+export type Memory = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  memoryAt: Date;
+  seenAt: Date | null;
+  showAt: Date | null;
+  hideAt: Date | null;
+  type: MemoryType;
+  data: OnThisDayData;
+  ownerId: string;
+  isSaved: boolean;
+  assets: Asset[];
 };
 
 export type User = {
