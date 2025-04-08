@@ -5,6 +5,7 @@ import {
   AuthApiKey,
   AuthUser,
   Library,
+  Memory,
   Partner,
   SidecarWriteAsset,
   User,
@@ -12,7 +13,7 @@ import {
 } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
-import { ActivityItem, MemoryItem, OnThisDayData } from 'src/types';
+import { ActivityItem, OnThisDayData } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
 export const newUuids = () =>
@@ -196,7 +197,7 @@ const libraryFactory = (library: Partial<Library> = {}) => ({
   ...library,
 });
 
-const memoryFactory = (memory: Partial<MemoryItem> = {}) => ({
+const memoryFactory = (memory: Partial<Memory> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
