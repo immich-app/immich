@@ -1,6 +1,5 @@
-import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
-import { OnThisDayData } from 'src/types';
+import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
   id: string;
@@ -96,7 +95,7 @@ export type UserAdmin = User & {
   quotaSizeInBytes: number | null;
   quotaUsageInBytes: number;
   status: UserStatus;
-  metadata: UserMetadataEntity[];
+  metadata: UserMetadataItem[];
 };
 
 export type Asset = {

@@ -1,7 +1,7 @@
-import { UserMetadata, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserMetadataKey } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import { Column, ForeignKeyColumn, PrimaryColumn, Table } from 'src/sql-tools';
+import { UserMetadata, UserMetadataItem } from 'src/types';
 
 @Table('user_metadata')
 export class UserMetadataTable<T extends keyof UserMetadata = UserMetadataKey> implements UserMetadataItem<T> {

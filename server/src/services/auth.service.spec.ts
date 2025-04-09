@@ -1,10 +1,10 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
-import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, Permission } from 'src/enum';
 import { AuthService } from 'src/services/auth.service';
+import { UserMetadataItem } from 'src/types';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -230,7 +230,7 @@ describe('AuthService', () => {
         ...dto,
         id: 'admin',
         createdAt: new Date('2021-01-01'),
-        metadata: [] as UserMetadataEntity[],
+        metadata: [] as UserMetadataItem[],
       } as UserEntity);
 
       await expect(sut.adminSignUp(dto)).resolves.toMatchObject({
