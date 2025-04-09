@@ -8,6 +8,7 @@ import {
   Library,
   Memory,
   Partner,
+  Session,
   SidecarWriteAsset,
   User,
   UserAdmin,
@@ -31,13 +32,21 @@ export const newEmbedding = () => {
   return '[' + embedding + ']';
 };
 
-const authFactory = ({ apiKey, ...user }: Partial<AuthUser> & { apiKey?: Partial<AuthApiKey> } = {}) => {
+const authFactory = ({
+  apiKey,
+  session,
+  ...user
+}: Partial<AuthUser> & { apiKey?: Partial<AuthApiKey>; session?: { id: string } } = {}) => {
   const auth: AuthDto = {
     user: authUserFactory(user),
   };
 
   if (apiKey) {
     auth.apiKey = authApiKeyFactory(apiKey);
+  }
+
+  if (session) {
+    auth.session = { id: session.id };
   }
 
   return auth;
@@ -76,7 +85,7 @@ const partnerFactory = (partner: Partial<Partner> = {}) => {
   };
 };
 
-const sessionFactory = () => ({
+const sessionFactory = (session: Partial<Session> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
@@ -85,6 +94,7 @@ const sessionFactory = () => ({
   deviceType: 'mobile',
   token: 'abc123',
   userId: newUuid(),
+  ...session,
 });
 
 const stackFactory = () => ({

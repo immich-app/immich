@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
+import { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
@@ -8,22 +8,6 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { asUuid } from 'src/utils/database';
 
 export type SessionSearchOptions = { updatedBefore: Date };
-
-const withUser = (eb: ExpressionBuilder<DB, 'sessions'>) => {
-  return eb
-    .selectFrom('users')
-    .select(columns.userAdmin)
-    .select((eb) =>
-      eb
-        .selectFrom('user_metadata')
-        .whereRef('users.id', '=', 'user_metadata.userId')
-        .select((eb) => eb.fn('array_agg', [eb.table('user_metadata')]).as('metadata'))
-        .as('metadata'),
-    )
-    .whereRef('users.id', '=', 'sessions.userId')
-    .where('users.deletedAt', 'is', null)
-    .as('user');
-};
 
 @Injectable()
 export class SessionRepository {
@@ -60,9 +44,8 @@ export class SessionRepository {
   getByUserId(userId: string) {
     return this.db
       .selectFrom('sessions')
-      .innerJoinLateral(withUser, (join) => join.onTrue())
+      .innerJoin('users', (join) => join.onRef('users.id', '=', 'sessions.userId').on('users.deletedAt', 'is', null))
       .selectAll('sessions')
-      .select((eb) => eb.fn.toJson('user').as('user'))
       .where('sessions.userId', '=', userId)
       .orderBy('sessions.updatedAt', 'desc')
       .orderBy('sessions.createdAt', 'desc')

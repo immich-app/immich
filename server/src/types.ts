@@ -13,19 +13,10 @@ import {
   TranscodeTarget,
   VideoCodec,
 } from 'src/enum';
-import { SearchRepository } from 'src/repositories/search.repository';
-import { SessionRepository } from 'src/repositories/session.repository';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
-
-type ISearchRepository = RepositoryInterface<SearchRepository>;
-type ISessionRepository = RepositoryInterface<SessionRepository>;
-
-export type SearchPlacesItem = Awaited<ReturnType<ISearchRepository['searchPlaces']>>[0];
-
-export type SessionItem = Awaited<ReturnType<ISessionRepository['getByUserId']>>[0];
 
 export interface CropOptions {
   top: number;
