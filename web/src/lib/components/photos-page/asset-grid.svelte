@@ -115,10 +115,7 @@
   };
   beforeNavigate(() => (assetStore.suspendTransitions = true));
   afterNavigate((nav) => {
-    const { complete, type } = nav;
-    if (type === 'enter') {
-      return;
-    }
+    const { complete } = nav;
     complete.then(completeNav, completeNav);
   });
 
