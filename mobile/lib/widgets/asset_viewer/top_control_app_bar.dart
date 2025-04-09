@@ -7,6 +7,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/motion_photo_button.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
@@ -174,7 +175,9 @@ class TopControlAppBar extends HookConsumerWidget {
       shape: const Border(),
       actions: [
         if (asset.isRemote && isOwner) buildFavoriteButton(a),
-        if (isOwner && ref.read(tabProvider.notifier).state != TabEnum.home)
+        if (isOwner &&
+            ref.read(tabProvider.notifier).state != TabEnum.home &&
+            !(ref.read(currentAssetProvider)?.isTrashed ?? false))
           buildLocateButton(),
         if (asset.livePhotoVideoId != null) const MotionPhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
