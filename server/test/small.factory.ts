@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import {
+  Activity,
   ApiKey,
   Asset,
   AuthApiKey,
@@ -13,7 +14,7 @@ import {
 } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
-import { ActivityItem, OnThisDayData } from 'src/types';
+import { OnThisDayData } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
 export const newUuids = () =>
@@ -154,7 +155,7 @@ const assetFactory = (asset: Partial<Asset> = {}) => ({
   ...asset,
 });
 
-const activityFactory = (activity: Partial<ActivityItem> = {}) => {
+const activityFactory = (activity: Partial<Activity> = {}) => {
   const userId = activity.userId || newUuid();
   return {
     id: newUuid(),

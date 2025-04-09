@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { Activity } from 'src/database';
 import { mapUser, UserResponseDto } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { ActivityItem } from 'src/types';
 import { Optional, ValidateUUID } from 'src/validation';
 
 export enum ReactionType {
@@ -68,7 +68,7 @@ export class ActivityCreateDto extends ActivityDto {
   comment?: string;
 }
 
-export const mapActivity = (activity: ActivityItem): ActivityResponseDto => {
+export const mapActivity = (activity: Activity): ActivityResponseDto => {
   return {
     id: activity.id,
     assetId: activity.assetId,

@@ -30,6 +30,19 @@ export type AuthApiKey = {
   permissions: Permission[];
 };
 
+export type Activity = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  albumId: string;
+  userId: string;
+  user: User;
+  assetId: string | null;
+  comment: string | null;
+  isLiked: boolean;
+  updateId: string;
+};
+
 export type ApiKey = {
   id: string;
   name: string;
@@ -173,6 +186,7 @@ export const columns = {
     'shared_links.password',
   ],
   user: userColumns,
+  userWithPrefix: ['users.id', 'users.name', 'users.email', 'users.profileImagePath', 'users.profileChangedAt'],
   userAdmin: [
     ...userColumns,
     'createdAt',
