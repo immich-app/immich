@@ -95,40 +95,104 @@ where
   "asset_faces"."id" = $1
   and "asset_faces"."deletedAt" is null
 
--- PersonRepository.getFaceByIdWithAssets
+-- PersonRepository.getFaceForFacialRecognitionJob
 select
-  "asset_faces".*,
+  "asset_faces"."id",
+  "asset_faces"."personId",
+  "asset_faces"."sourceType",
   (
     select
       to_json(obj)
     from
       (
         select
-          "person".*
-        from
-          "person"
-        where
-          "person"."id" = "asset_faces"."personId"
-      ) as obj
-  ) as "person",
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
-          "assets".*
+          "assets"."ownerId",
+          "assets"."isArchived",
+          "assets"."fileCreatedAt"
         from
           "assets"
         where
           "assets"."id" = "asset_faces"."assetId"
       ) as obj
-  ) as "asset"
+  ) as "asset",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "face_search".*
+        from
+          "face_search"
+        where
+          "face_search"."faceId" = "asset_faces"."id"
+      ) as obj
+  ) as "faceSearch"
 from
   "asset_faces"
 where
   "asset_faces"."id" = $1
   and "asset_faces"."deletedAt" is null
+
+-- PersonRepository.getPersonForThumbnailGenerationJob
+select
+  "person"."id",
+  "person"."ownerId",
+  "person"."faceAssetId",
+  to_json("face") as "face"
+from
+  "person"
+  left join lateral (
+    select
+      "asset_faces"."boundingBoxX1",
+      "asset_faces"."boundingBoxY1",
+      "asset_faces"."boundingBoxX2",
+      "asset_faces"."boundingBoxY2",
+      "asset_faces"."imageWidth",
+      "asset_faces"."imageHeight",
+      to_json("asset") as "asset"
+    from
+      "asset_faces"
+      left join lateral (
+        select
+          "assets"."originalPath",
+          "assets"."type",
+          json_build_object(
+            'exifImageWidth',
+            "exif"."exifImageWidth",
+            'exifImageHeight',
+            "exif"."exifImageHeight"
+          ) as "exifInfo",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "asset_files"."path",
+                  "asset_files"."type"
+                from
+                  "asset_files"
+                where
+                  "assets"."id" = "asset_files"."assetId"
+                  and "asset_files"."type" = $1
+                limit
+                  $2
+              ) as agg
+          ) as "files"
+        from
+          "assets"
+          inner join "exif" on "exif"."assetId" = "assets"."id"
+        where
+          "assets"."id" = "asset_faces"."assetId"
+      ) as "asset" on true
+    where
+      "asset_faces"."id" = "person"."faceAssetId"
+      and "asset_faces"."deletedAt" is null
+  ) as "face" on true
+where
+  "person"."id" = $3
+  and "person"."faceAssetId" is not null
 
 -- PersonRepository.reassignFace
 update "asset_faces"

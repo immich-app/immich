@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Insertable, Updateable } from 'kysely';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { AssetFaces, FaceSearch, Person } from 'src/db';
 import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -21,10 +23,6 @@ import {
   PersonStatisticsResponseDto,
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { FaceSearchEntity } from 'src/entities/face-search.entity';
-import { PersonEntity } from 'src/entities/person.entity';
 import {
   AssetFileType,
   AssetType,
@@ -243,9 +241,9 @@ export class PersonService extends BaseService {
   }
 
   @Chunked()
-  private async delete(people: PersonEntity[]) {
+  private async delete(people: { id: string; thumbnailPath: string }[]) {
     await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
-    await this.personRepository.delete(people);
+    await this.personRepository.delete(people.map((person) => person.id));
     this.logger.debug(`Deleted ${people.length} people`);
   }
 
@@ -317,8 +315,8 @@ export class PersonService extends BaseService {
     );
     this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
 
-    const facesToAdd: (Partial<AssetFaceEntity> & { id: string; assetId: string })[] = [];
-    const embeddings: FaceSearchEntity[] = [];
+    const facesToAdd: (Insertable<AssetFaces> & { id: string })[] = [];
+    const embeddings: FaceSearch[] = [];
     const mlFaceIds = new Set<string>();
     for (const face of asset.faces) {
       if (face.sourceType === SourceType.MACHINE_LEARNING) {
@@ -377,7 +375,10 @@ export class PersonService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private iou(face: AssetFaceEntity, newBox: BoundingBox): number {
+  private iou(
+    face: { boundingBoxX1: number; boundingBoxY1: number; boundingBoxX2: number; boundingBoxY2: number },
+    newBox: BoundingBox,
+  ): number {
     const x1 = Math.max(face.boundingBoxX1, newBox.x1);
     const y1 = Math.max(face.boundingBoxY1, newBox.y1);
     const x2 = Math.min(face.boundingBoxX2, newBox.x2);
@@ -453,11 +454,7 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const face = await this.personRepository.getFaceByIdWithAssets(id, { faceSearch: true }, [
-      'id',
-      'personId',
-      'sourceType',
-    ]);
+    const face = await this.personRepository.getFaceForFacialRecognitionJob(id);
     if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return JobStatus.FAILED;
@@ -551,34 +548,24 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const person = await this.personRepository.getById(data.id);
-    if (!person?.faceAssetId) {
-      this.logger.error(`Could not generate person thumbnail: person ${person?.id} has no face asset`);
-      return JobStatus.FAILED;
-    }
-
-    const face = await this.personRepository.getFaceByIdWithAssets(person.faceAssetId);
-    if (!face) {
-      this.logger.error(`Could not generate person thumbnail: face ${person.faceAssetId} not found`);
+    const person = await this.personRepository.getPersonForThumbnailGenerationJob(data.id);
+    if (!person?.face?.asset) {
+      this.logger.error(`Could not generate person thumbnail: person ${person} has no face asset`);
       return JobStatus.FAILED;
     }
 
     const {
-      assetId,
+      asset,
       boundingBoxX1: x1,
       boundingBoxX2: x2,
       boundingBoxY1: y1,
       boundingBoxY2: y2,
       imageWidth: oldWidth,
       imageHeight: oldHeight,
-    } = face;
+    } = person.face;
 
-    const asset = await this.assetRepository.getById(assetId, {
-      exifInfo: true,
-      files: true,
-    });
-    if (!asset) {
-      this.logger.error(`Could not generate person thumbnail: asset ${assetId} does not exist`);
+    if (asset.files.length === 0) {
+      this.logger.error(`Could not generate person thumbnail: asset ${asset.originalPath} has no preview`);
       return JobStatus.FAILED;
     }
 
@@ -634,7 +621,7 @@ export class PersonService extends BaseService {
           continue;
         }
 
-        const update: Partial<PersonEntity> = {};
+        const update: Updateable<Person> & { id: string } = { id: primaryPerson.id };
         if (!primaryPerson.name && mergePerson.name) {
           update.name = mergePerson.name;
         }
@@ -644,7 +631,7 @@ export class PersonService extends BaseService {
         }
 
         if (Object.keys(update).length > 0) {
-          primaryPerson = await this.personRepository.update({ id: primaryPerson.id, ...update });
+          primaryPerson = await this.personRepository.update(update);
         }
 
         const mergeName = mergePerson.name || mergePerson.id;
@@ -672,14 +659,17 @@ export class PersonService extends BaseService {
     return person;
   }
 
-  private async getInputDimensions(asset: AssetEntity, oldDims: ImageDimensions): Promise<InputDimensions> {
-    if (!asset.exifInfo?.exifImageHeight || !asset.exifInfo.exifImageWidth) {
-      throw new Error(`Asset ${asset.id} dimensions are unknown`);
-    }
-
-    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
-    if (!previewFile) {
-      throw new Error(`Asset ${asset.id} has no preview path`);
+  private async getInputDimensions(
+    asset: {
+      type: AssetType;
+      exifInfo: { exifImageWidth: number | null; exifImageHeight: number | null };
+      originalPath: string;
+      files: { path: string; type: AssetFileType }[];
+    },
+    oldDims: ImageDimensions,
+  ): Promise<InputDimensions> {
+    if (!asset.exifInfo.exifImageHeight || !asset.exifInfo.exifImageWidth) {
+      throw new Error(`Asset ${asset.originalPath} dimensions are unknown`);
     }
 
     if (asset.type === AssetType.IMAGE) {
@@ -689,6 +679,11 @@ export class PersonService extends BaseService {
       }
 
       return { width, height, inputPath: asset.originalPath };
+    }
+
+    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
+    if (!previewFile) {
+      throw new Error(`Asset ${asset.originalPath} has no preview path`);
     }
 
     const { width, height } = await this.mediaRepository.getImageDimensions(previewFile.path);
