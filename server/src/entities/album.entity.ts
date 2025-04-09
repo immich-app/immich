@@ -1,12 +1,12 @@
+import { User } from 'src/database';
 import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { AssetOrder } from 'src/enum';
 
 export class AlbumEntity {
   id!: string;
-  owner!: UserEntity;
+  owner!: User;
   ownerId!: string;
   albumName!: string;
   description!: string;

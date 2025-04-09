@@ -1,13 +1,12 @@
-import { UserEntity } from 'src/entities/user.entity';
+import { UserAdmin } from 'src/database';
 import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { authStub } from 'test/fixtures/auth.stub';
 
 export const userStub = {
-  admin: Object.freeze<UserEntity>({
+  admin: <UserAdmin>{
     ...authStub.admin.user,
     status: UserStatus.ACTIVE,
     profileChangedAt: new Date('2021-01-01'),
-    password: 'admin_password',
     name: 'admin_name',
     id: 'admin_id',
     storageLabel: 'admin',
@@ -17,16 +16,14 @@ export const userStub = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    assets: [],
     metadata: [],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-  }),
-  user1: Object.freeze<UserEntity>({
+  },
+  user1: <UserAdmin>{
     ...authStub.user1.user,
     status: UserStatus.ACTIVE,
     profileChangedAt: new Date('2021-01-01'),
-    password: 'immich_password',
     name: 'immich_name',
     storageLabel: null,
     oauthId: '',
@@ -35,7 +32,6 @@ export const userStub = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    assets: [],
     metadata: [
       {
         key: UserMetadataKey.PREFERENCES,
@@ -44,13 +40,12 @@ export const userStub = {
     ],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-  }),
-  user2: Object.freeze<UserEntity>({
+  },
+  user2: <UserAdmin>{
     ...authStub.user2.user,
     status: UserStatus.ACTIVE,
     profileChangedAt: new Date('2021-01-01'),
     metadata: [],
-    password: 'immich_password',
     name: 'immich_name',
     storageLabel: null,
     oauthId: '',
@@ -59,16 +54,14 @@ export const userStub = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    assets: [],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-  }),
-  storageLabel: Object.freeze<UserEntity>({
+  },
+  storageLabel: <UserAdmin>{
     ...authStub.user1.user,
     status: UserStatus.ACTIVE,
     profileChangedAt: new Date('2021-01-01'),
     metadata: [],
-    password: 'immich_password',
     name: 'immich_name',
     storageLabel: 'label-1',
     oauthId: '',
@@ -77,16 +70,14 @@ export const userStub = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    assets: [],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-  }),
-  profilePath: Object.freeze<UserEntity>({
+  },
+  profilePath: <UserAdmin>{
     ...authStub.user1.user,
     status: UserStatus.ACTIVE,
     profileChangedAt: new Date('2021-01-01'),
     metadata: [],
-    password: 'immich_password',
     name: 'immich_name',
     storageLabel: 'label-1',
     oauthId: '',
@@ -95,8 +86,7 @@ export const userStub = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    assets: [],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-  }),
+  },
 };

@@ -17,7 +17,7 @@ import {
   SyncEntityType,
 } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
-import { OnThisDayData } from 'src/types';
+import {OnThisDayData, UserMetadataItem} from 'src/types';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
@@ -412,10 +412,8 @@ export interface TypeormMetadata {
   value: string | null;
 }
 
-export interface UserMetadata {
-  key: string;
+export interface UserMetadata extends UserMetadataItem {
   userId: string;
-  value: Json;
 }
 
 export interface UsersAudit {

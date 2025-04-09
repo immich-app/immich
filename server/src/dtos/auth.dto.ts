@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser } from 'src/database';
-import { UserEntity } from 'src/entities/user.entity';
+import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import { ImmichCookie } from 'src/enum';
 import { toEmail } from 'src/validation';
 
@@ -42,7 +41,7 @@ export class LoginResponseDto {
   shouldChangePassword!: boolean;
 }
 
-export function mapLoginResponse(entity: UserEntity, accessToken: string): LoginResponseDto {
+export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginResponseDto {
   return {
     accessToken,
     userId: entity.id,

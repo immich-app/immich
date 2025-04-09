@@ -1,5 +1,5 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { UserEntity } from 'src/entities/user.entity';
+import { UserAdmin } from 'src/database';
 import { CacheControl, JobName, UserMetadataKey } from 'src/enum';
 import { UserService } from 'src/services/user.service';
 import { ImmichFileResponse } from 'src/utils/file';
@@ -214,7 +214,7 @@ describe(UserService.name, () => {
 
   describe('handleUserDelete', () => {
     it('should skip users not ready for deletion', async () => {
-      const user = { id: 'user-1', deletedAt: makeDeletedAt(5) } as UserEntity;
+      const user = { id: 'user-1', deletedAt: makeDeletedAt(5) } as UserAdmin;
 
       mocks.user.get.mockResolvedValue(user);
 
@@ -225,7 +225,7 @@ describe(UserService.name, () => {
     });
 
     it('should delete the user and associated assets', async () => {
-      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) } as UserEntity;
+      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) } as UserAdmin;
       const options = { force: true, recursive: true };
 
       mocks.user.get.mockResolvedValue(user);
@@ -242,7 +242,7 @@ describe(UserService.name, () => {
     });
 
     it('should delete the library path for a storage label', async () => {
-      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10), storageLabel: 'admin' } as UserEntity;
+      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10), storageLabel: 'admin' } as UserAdmin;
 
       mocks.user.get.mockResolvedValue(user);
 
