@@ -40,10 +40,6 @@ class DownloadStore {
     }
     this.#update(key, download);
   }
-
-  getAssets() {
-    return this.assets;
-  }
 }
 
 export const downloadStore = new DownloadStore();
