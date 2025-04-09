@@ -357,8 +357,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: false, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -374,8 +372,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: false } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -391,8 +387,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -414,8 +408,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -443,8 +435,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -476,8 +466,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -536,8 +524,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: false, albumUpdate: true } },
-            user: userStub.user1,
-            userId: userStub.user1.id,
           },
         ],
       });
@@ -559,8 +545,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumUpdate: false } },
-            user: userStub.user1,
-            userId: userStub.user1.id,
           },
         ],
       });

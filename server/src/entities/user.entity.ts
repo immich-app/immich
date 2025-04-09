@@ -2,8 +2,8 @@ import { ExpressionBuilder } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DB } from 'src/db';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserStatus } from 'src/enum';
+import { UserMetadataItem } from 'src/types';
 
 export class UserEntity {
   id!: string;
@@ -23,7 +23,7 @@ export class UserEntity {
   assets!: AssetEntity[];
   quotaSizeInBytes!: number | null;
   quotaUsageInBytes!: number;
-  metadata!: UserMetadataEntity[];
+  metadata!: UserMetadataItem[];
   profileChangedAt!: Date;
 }
 

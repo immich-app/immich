@@ -38,7 +38,6 @@ export const userStub = {
     assets: [],
     metadata: [
       {
-        userId: authStub.user1.user.id,
         key: UserMetadataKey.PREFERENCES,
         value: { avatar: { color: UserAvatarColor.PRIMARY } },
       },

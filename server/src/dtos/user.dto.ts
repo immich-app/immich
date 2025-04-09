@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 import { User, UserAdmin } from 'src/database';
-import { UserMetadataEntity, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
+import { UserMetadataItem } from 'src/types';
 import { getPreferences } from 'src/utils/preferences';
 import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
 
@@ -143,8 +143,9 @@ export class UserAdminResponseDto extends UserResponseDto {
 }
 
 export function mapUserAdmin(entity: UserEntity | UserAdmin): UserAdminResponseDto {
-  const license = (entity.metadata as UserMetadataItem[])?.find(
-    (item): item is UserMetadataEntity<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
+  const metadata = entity.metadata || [];
+  const license = metadata.find(
+    (item): item is UserMetadataItem<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
   )?.value;
   return {
     ...mapUser(entity),
