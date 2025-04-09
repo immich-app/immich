@@ -163,6 +163,28 @@ export type Partner = {
   inTimeline: boolean;
 };
 
+export type Place = {
+  admin1Code: string | null;
+  admin1Name: string | null;
+  admin2Code: string | null;
+  admin2Name: string | null;
+  alternateNames: string | null;
+  countryCode: string;
+  id: number;
+  latitude: number;
+  longitude: number;
+  modificationDate: Date;
+  name: string;
+};
+
+export type Session = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deviceOS: string;
+  deviceType: string;
+};
+
 const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
 
 export const columns = {
