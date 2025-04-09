@@ -30,7 +30,7 @@ export class ActivityRepository {
         (eb) =>
           eb
             .selectFrom(sql`(select 1)`.as('dummy'))
-            .select(columns.user)
+            .select(columns.userWithPrefix)
             .as('user'),
         (join) => join.onTrue(),
       )

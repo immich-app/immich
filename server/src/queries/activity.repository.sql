@@ -10,11 +10,11 @@ from
   and "users"."deletedAt" is null
   inner join lateral (
     select
-      "id",
-      "name",
-      "email",
-      "profileImagePath",
-      "profileChangedAt"
+      "users"."id",
+      "users"."name",
+      "users"."email",
+      "users"."profileImagePath",
+      "users"."profileChangedAt"
     from
       (
         select

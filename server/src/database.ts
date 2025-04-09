@@ -186,7 +186,7 @@ export const columns = {
     'shared_links.password',
   ],
   user: userColumns,
-  userWithoutPrefix: ['users.id', 'users.name', 'users.email', 'users.profileImagePath', 'users.profileChangedAt'],
+  userWithPrefix: ['users.id', 'users.name', 'users.email', 'users.profileImagePath', 'users.profileChangedAt'],
   userAdmin: [
     ...userColumns,
     'createdAt',
