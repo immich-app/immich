@@ -29,7 +29,7 @@ export class ActivityRepository {
       .innerJoinLateral(
         (eb) =>
           eb
-            .selectFrom(sql`select 1`.as('dummy'))
+            .selectFrom(sql`(select 1)`.as('dummy'))
             .select(columns.user)
             .as('user'),
         (join) => join.onTrue(),

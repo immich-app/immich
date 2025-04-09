@@ -16,8 +16,10 @@ from
       "profileImagePath",
       "profileChangedAt"
     from
-    select
-      1 as "dummy"
+      (
+        select
+          1
+      ) as "dummy"
   ) as "user" on true
   left join "assets" on "assets"."id" = "activity"."assetId"
   and "assets"."deletedAt" is null
