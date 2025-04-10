@@ -17,7 +17,7 @@ import {
   SyncEntityType,
 } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
-import {OnThisDayData, UserMetadataItem} from 'src/types';
+import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 

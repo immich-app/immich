@@ -277,15 +277,15 @@ select
   count(*) filter (
     where
       (
-        "assets"."type" = $1
-        and "assets"."isVisible" = $2
+        "assets"."type" = 'IMAGE'
+        and "assets"."isVisible" = true
       )
   ) as "photos",
   count(*) filter (
     where
       (
-        "assets"."type" = $3
-        and "assets"."isVisible" = $4
+        "assets"."type" = 'VIDEO'
+        and "assets"."isVisible" = true
       )
   ) as "videos",
   coalesce(
@@ -300,7 +300,7 @@ select
       where
         (
           "assets"."libraryId" is null
-          and "assets"."type" = $5
+          and "assets"."type" = 'IMAGE'
         )
     ),
     0
@@ -310,7 +310,7 @@ select
       where
         (
           "assets"."libraryId" is null
-          and "assets"."type" = $6
+          and "assets"."type" = 'VIDEO'
         )
     ),
     0
