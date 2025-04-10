@@ -1,5 +1,4 @@
-import { Exif } from 'src/database';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFile, Exif } from 'src/database';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
@@ -8,34 +7,25 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
-const previewFile: AssetFileEntity = {
+const previewFile: AssetFile = {
   id: 'file-1',
-  assetId: 'asset-id',
   type: AssetFileType.PREVIEW,
   path: '/uploads/user-id/thumbs/path.jpg',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const thumbnailFile: AssetFileEntity = {
+const thumbnailFile: AssetFile = {
   id: 'file-2',
-  assetId: 'asset-id',
   type: AssetFileType.THUMBNAIL,
   path: '/uploads/user-id/webp/path.ext',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const fullsizeFile: AssetFileEntity = {
+const fullsizeFile: AssetFile = {
   id: 'file-3',
-  assetId: 'asset-id',
   type: AssetFileType.FULLSIZE,
   path: '/uploads/user-id/fullsize/path.webp',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const files: AssetFileEntity[] = [fullsizeFile, previewFile, thumbnailFile];
+const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];
 
 export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity => {
   return {

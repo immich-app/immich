@@ -1,10 +1,9 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import { Exif, Tag, User } from 'src/database';
+import { AssetFile, Exif, Tag, User } from 'src/database';
 import { DB } from 'src/db';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { StackEntity } from 'src/entities/stack.entity';
@@ -25,7 +24,7 @@ export class AssetEntity {
   type!: AssetType;
   status!: AssetStatus;
   originalPath!: string;
-  files!: AssetFileEntity[];
+  files!: AssetFile[];
   thumbhash!: Buffer | null;
   encodedVideoPath!: string | null;
   createdAt!: Date;

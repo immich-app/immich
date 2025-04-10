@@ -2,7 +2,6 @@ import { plainToInstance } from 'class-transformer';
 import { defaults, SystemConfig } from 'src/config';
 import { AlbumUser } from 'src/database';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
 import { EmailTemplate } from 'src/repositories/notification.repository';
 import { NotificationService } from 'src/services/notification.service';
@@ -442,7 +441,7 @@ describe(NotificationService.name, () => {
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.asset.getById.mockResolvedValue({
         ...assetStub.image,
-        files: [{ assetId: 'asset-id', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' } as AssetFileEntity],
+        files: [{ id: '1', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' }],
       });
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);

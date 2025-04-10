@@ -1,6 +1,6 @@
 import { Selectable } from 'kysely';
 import { Exif as DatabaseExif } from 'src/db';
-import { AlbumUserRole, AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import { AlbumUserRole, AssetFileType, AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
@@ -15,6 +15,12 @@ export type AuthUser = {
 export type AlbumUser = {
   user: User;
   role: AlbumUserRole;
+};
+
+export type AssetFile = {
+  id: string;
+  type: AssetFileType;
+  path: string;
 };
 
 export type Library = {
