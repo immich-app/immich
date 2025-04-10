@@ -22,6 +22,11 @@
     background-repeat: repeat;
     background-size: 235px, 235px;
   }
+  @media (max-width: 850px) {
+    [data-skeleton] {
+      background-size: 100px, 100px;
+    }
+  }
   :global(.dark) [data-skeleton] {
     background-image: url('/dark_skeleton.png');
   }

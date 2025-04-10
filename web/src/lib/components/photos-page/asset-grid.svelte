@@ -277,7 +277,7 @@
           bucketHeight = assetStore.buckets[i].bucketHeight;
         }
         let next = top - bucketHeight * maxScrollPercent;
-        if (next < 0) {
+        if (next < 0 && bucket) {
           scrubBucket = bucket;
           scrubBucketPercent = top / (bucketHeight * maxScrollPercent);
           found = true;
@@ -698,7 +698,6 @@
 
 {#if assetStore.buckets.length > 0}
   <Scrubber
-    invisible={showSkeleton}
     {assetStore}
     height={assetStore.viewportHeight}
     timelineTopOffset={assetStore.topSectionHeight}
@@ -771,8 +770,9 @@
           style:position="absolute"
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
+          style:padding-left="10px"
         >
-          <Skeleton height={bucket.bucketHeight} title={bucket.bucketDateFormatted} />
+          <Skeleton height={bucket.bucketHeight - bucket.store.headerHeight} title={bucket.bucketDateFormatted} />
         </div>
       {:else if display}
         <div
@@ -797,7 +797,13 @@
         </div>
       {/if}
     {/each}
-    <!-- <div class="h-[60px]" style:position="absolute" style:left="0" style:right="0" style:bottom="0"></div> -->
+    <div
+      class="h-[60px]"
+      style:position="absolute"
+      style:left="0"
+      style:right="0"
+      style:transform={`translate3d(0,${assetStore.timelineHeight}px,0)`}
+    ></div>
   </section>
 </section>
 

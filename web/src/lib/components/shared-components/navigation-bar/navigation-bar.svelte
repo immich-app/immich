@@ -58,7 +58,7 @@
 
 <section
   id="dashboard-navbar"
-  class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-screen text-sm"
+  class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm"
 >
   <SkipLink text={$t('skip_to_content')} />
   <div

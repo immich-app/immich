@@ -24,6 +24,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
+  import { onMount } from 'svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -124,24 +125,59 @@
     mouseOver = false;
   };
 
+  let timer: ReturnType<typeof setTimeout>;
+  const clearLongPressTimer = () => clearTimeout(timer);
+
+  let startX: number = 0;
+  let startY: number = 0;
   function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
-    let timer: ReturnType<typeof setTimeout>;
-    const start = (event: TouchEvent) => {
+    let didPress = false;
+    const start = (evt: TouchEvent) => {
+      startX = evt.changedTouches[0].clientX;
+      startY = evt.changedTouches[0].clientY;
+      didPress = false;
       timer = setTimeout(() => {
         onLongPress();
-        event.preventDefault();
+        didPress = true;
       }, 350);
     };
-    const end = () => clearTimeout(timer);
-    element.addEventListener('touchstart', start);
-    element.addEventListener('touchend', end);
+    const click = (e: MouseEvent) => {
+      if (!didPress) {
+        return;
+      }
+      e.stopPropagation();
+      e.preventDefault();
+    };
+    element.addEventListener('click', click);
+    element.addEventListener('touchstart', start, true);
+    element.addEventListener('touchend', clearLongPressTimer, true);
     return {
       destroy: () => {
-        element.removeEventListener('touchstart', start);
-        element.removeEventListener('touchend', end);
+        element.removeEventListener('click', click);
+        element.removeEventListener('touchstart', start, true);
+        element.removeEventListener('touchend', clearLongPressTimer, true);
       },
     };
   }
+  function moveHandler(e: PointerEvent) {
+    var diffX = Math.abs(startX - e.clientX);
+    var diffY = Math.abs(startY - e.clientY);
+    if (diffX >= 10 || diffY >= 10) {
+      clearLongPressTimer();
+    }
+  }
+  onMount(() => {
+    document.addEventListener('scroll', clearLongPressTimer, true);
+    document.addEventListener('wheel', clearLongPressTimer, true);
+    document.addEventListener('contextmenu', clearLongPressTimer, true);
+    document.addEventListener('pointermove', moveHandler, true);
+    return () => {
+      document.removeEventListener('scroll', clearLongPressTimer, true);
+      document.removeEventListener('wheel', clearLongPressTimer, true);
+      document.removeEventListener('contextmenu', clearLongPressTimer, true);
+      document.removeEventListener('pointermove', moveHandler, true);
+    };
+  });
 </script>
 
 <div
