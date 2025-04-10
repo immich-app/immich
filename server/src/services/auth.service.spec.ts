@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { UserAdmin } from 'src/database';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
-import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, Permission } from 'src/enum';
 import { AuthService } from 'src/services/auth.service';
 import { UserMetadataItem } from 'src/types';
@@ -89,7 +89,7 @@ describe('AuthService', () => {
     });
 
     it('should check the user has a password', async () => {
-      mocks.user.getByEmail.mockResolvedValue({} as UserEntity);
+      mocks.user.getByEmail.mockResolvedValue({} as UserAdmin);
 
       await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
 
@@ -97,7 +97,7 @@ describe('AuthService', () => {
     });
 
     it('should successfully log the user in', async () => {
-      const user = { ...factory.user(), password: 'immich_password' } as UserEntity;
+      const user = { ...(factory.user() as UserAdmin), password: 'immich_password' };
       const session = factory.session();
       mocks.user.getByEmail.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(session);
@@ -124,7 +124,7 @@ describe('AuthService', () => {
       mocks.user.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
         password: 'hash-password',
-      } as UserEntity);
+      } as UserAdmin & { password: string });
       mocks.user.update.mockResolvedValue(userStub.user1);
 
       await sut.changePassword(auth, dto);
@@ -143,7 +143,7 @@ describe('AuthService', () => {
     });
 
     it('should throw when password does not match existing password', async () => {
-      const auth = { user: { email: 'test@imimch.com' } as UserEntity };
+      const auth = { user: { email: 'test@imimch.com' } as UserAdmin };
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       mocks.crypto.compareBcrypt.mockReturnValue(false);
@@ -151,7 +151,7 @@ describe('AuthService', () => {
       mocks.user.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
         password: 'hash-password',
-      } as UserEntity);
+      } as UserAdmin & { password: string });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -163,7 +163,7 @@ describe('AuthService', () => {
       mocks.user.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
         password: '',
-      } as UserEntity);
+      } as UserAdmin & { password: string });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -217,7 +217,7 @@ describe('AuthService', () => {
     const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
 
     it('should only allow one admin', async () => {
-      mocks.user.getAdmin.mockResolvedValue({} as UserEntity);
+      mocks.user.getAdmin.mockResolvedValue({} as UserAdmin);
 
       await expect(sut.adminSignUp(dto)).rejects.toBeInstanceOf(BadRequestException);
 
@@ -231,7 +231,7 @@ describe('AuthService', () => {
         id: 'admin',
         createdAt: new Date('2021-01-01'),
         metadata: [] as UserMetadataItem[],
-      } as UserEntity);
+      } as unknown as UserAdmin);
 
       await expect(sut.adminSignUp(dto)).resolves.toMatchObject({
         avatarColor: expect.any(String),
@@ -294,7 +294,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept an expired key', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired as any);
 
       await expect(
         sut.authenticate({
@@ -306,7 +306,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept a key on a non-shared route', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid as any);
 
       await expect(
         sut.authenticate({
@@ -318,7 +318,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept a key without a user', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired as any);
       mocks.user.get.mockResolvedValue(void 0);
 
       await expect(
@@ -331,7 +331,7 @@ describe('AuthService', () => {
     });
 
     it('should accept a base64url key', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid as any);
       mocks.user.get.mockResolvedValue(userStub.admin);
 
       await expect(
@@ -348,7 +348,7 @@ describe('AuthService', () => {
     });
 
     it('should accept a hex key', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid as any);
       mocks.user.get.mockResolvedValue(userStub.admin);
 
       await expect(
@@ -717,7 +717,7 @@ describe('AuthService', () => {
       const auth = { user: authUser, apiKey: authApiKey };
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
-      mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserEntity);
+      mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserAdmin);
 
       await expect(sut.link(auth, { url: 'http://immich/user-settings?code=abc123' })).rejects.toBeInstanceOf(
         BadRequestException,

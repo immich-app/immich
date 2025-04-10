@@ -1,5 +1,4 @@
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { UserEntity } from 'src/entities/user.entity';
 
 export class PersonEntity {
   id!: string;
@@ -7,7 +6,6 @@ export class PersonEntity {
   updatedAt!: Date;
   updateId?: string;
   ownerId!: string;
-  owner!: UserEntity;
   name!: string;
   birthDate!: Date | string | null;
   thumbnailPath!: string;
