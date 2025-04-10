@@ -257,7 +257,6 @@
     const upper = rect?.height - (PADDING_TOP + PADDING_BOTTOM);
     hoverY = clamp(clientY - rect?.top - PADDING_TOP, lower, upper);
     const x = rect!.left + rect!.width / 2;
-    // console.log('hoverY is', hoverY, clientY);
     const { segment, bucketPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
     activeSegment = segment;
     isHoverOnPaddingTop = isOnPaddingTop;
@@ -354,7 +353,7 @@
   role="scrollbar"
   aria-controls="time-label"
   aria-valuenow={scrollY + PADDING_TOP}
-  aria-valuemax={toScrollY(100)}
+  aria-valuemax={toScrollY(1)}
   aria-valuemin={toScrollY(0)}
   data-id="immich-scrubbable-scrollbar"
   class="absolute right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
