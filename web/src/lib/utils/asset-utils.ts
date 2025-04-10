@@ -162,6 +162,18 @@ export const downloadBlob = (data: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+export const downloadUrl = (url: string, filename: string) => {
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+
+  URL.revokeObjectURL(url);
+};
+
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
   const $preferences = get<UserPreferencesResponseDto | undefined>(preferences);
   const dto = { ...options, archiveSize: $preferences?.download.archiveSize };
@@ -238,12 +250,8 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     }
   }
 
-  for (const { filename, id, size } of assets) {
-    const downloadKey = filename;
-
+  for (const { filename, id } of assets) {
     try {
-      const abort = new AbortController();
-      downloadManager.add(downloadKey, size, abort);
       const key = getKey();
 
       notificationController.show({
@@ -251,20 +259,9 @@ export const downloadFile = async (asset: AssetResponseDto) => {
         message: $t('downloading_asset_filename', { values: { filename: asset.originalFileName } }),
       });
 
-      // TODO use sdk once it supports progress events
-      const { data } = await downloadRequest({
-        method: 'GET',
-        url: getBaseUrl() + `/assets/${id}/original` + (key ? `?key=${key}` : ''),
-        signal: abort.signal,
-        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
-      });
-
-      downloadBlob(data, filename);
+      downloadUrl(getBaseUrl() + `/assets/${id}/original` + (key ? `?key=${key}` : ''), filename);
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
-      downloadManager.clear(downloadKey);
-    } finally {
-      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   }
 };
