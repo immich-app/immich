@@ -338,7 +338,9 @@ export class AuthService extends BaseService {
 
       return {
         user: session.user,
-        session,
+        session: {
+          id: session.id,
+        },
       };
     }
 

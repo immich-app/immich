@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { Place } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
@@ -233,8 +234,11 @@ export function mapPlaces(place: SearchPlacesItem): PlacesResponseDto {
     longitude: place.longitude,
     admin1name: place.admin1Name ?? undefined,
     admin2name: place.admin2Name ?? undefined,
+    admin1name: place.admin1Name ?? undefined,
+    admin2name: place.admin2Name ?? undefined,
   };
 }
+
 
 export enum SearchSuggestionType {
   COUNTRY = 'country',

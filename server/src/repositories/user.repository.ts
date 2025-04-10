@@ -5,10 +5,10 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns, UserAdmin } from 'src/database';
 import { DB, UserMetadata as DbUserMetadata } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { UserMetadata, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
 import { AssetType, UserStatus } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
+import { UserMetadata, UserMetadataItem } from 'src/types';
 import { asUuid } from 'src/utils/database';
 
 type Upsert = Insertable<DbUserMetadata>;

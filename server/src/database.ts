@@ -1,5 +1,5 @@
-import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
-import { AssetStatus, AssetType, Permission, UserStatus } from 'src/enum';
+import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
   id: string;
@@ -29,6 +29,19 @@ export type AuthApiKey = {
   permissions: Permission[];
 };
 
+export type Activity = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  albumId: string;
+  userId: string;
+  user: User;
+  assetId: string | null;
+  comment: string | null;
+  isLiked: boolean;
+  updateId: string;
+};
+
 export type ApiKey = {
   id: string;
   name: string;
@@ -36,6 +49,31 @@ export type ApiKey = {
   createdAt: Date;
   updatedAt: Date;
   permissions: Permission[];
+};
+
+export type Tag = {
+  id: string;
+  value: string;
+  createdAt: Date;
+  updatedAt: Date;
+  color: string | null;
+  parentId: string | null;
+};
+
+export type Memory = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  memoryAt: Date;
+  seenAt: Date | null;
+  showAt: Date | null;
+  hideAt: Date | null;
+  type: MemoryType;
+  data: OnThisDayData;
+  ownerId: string;
+  isSaved: boolean;
+  assets: Asset[];
 };
 
 export type User = {
@@ -57,7 +95,7 @@ export type UserAdmin = User & {
   quotaSizeInBytes: number | null;
   quotaUsageInBytes: number;
   status: UserStatus;
-  metadata: UserMetadataEntity[];
+  metadata: UserMetadataItem[];
 };
 
 export type Asset = {
@@ -92,6 +130,13 @@ export type Asset = {
   type: AssetType;
 };
 
+export type SidecarWriteAsset = {
+  id: string;
+  sidecarPath: string | null;
+  originalPath: string;
+  tags: Array<{ value: string }>;
+};
+
 export type AuthSharedLink = {
   id: string;
   expiresAt: Date | null;
@@ -117,6 +162,28 @@ export type Partner = {
   inTimeline: boolean;
 };
 
+export type Place = {
+  admin1Code: string | null;
+  admin1Name: string | null;
+  admin2Code: string | null;
+  admin2Name: string | null;
+  alternateNames: string | null;
+  countryCode: string;
+  id: number;
+  latitude: number;
+  longitude: number;
+  modificationDate: Date;
+  name: string;
+};
+
+export type Session = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deviceOS: string;
+  deviceType: string;
+};
+
 const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
 
 export const columns = {
@@ -140,6 +207,7 @@ export const columns = {
     'shared_links.password',
   ],
   user: userColumns,
+  userWithPrefix: ['users.id', 'users.name', 'users.email', 'users.profileImagePath', 'users.profileChangedAt'],
   userAdmin: [
     ...userColumns,
     'createdAt',

@@ -13,7 +13,10 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile } from 'src/types';
 import { checkAccess } from 'src/utils/access';
 
-export const getAssetFile = (files: AssetFileEntity[], type: AssetFileType | GeneratedImageType) => {
+export const getAssetFile = <T extends { type: AssetFileType }>(
+  files: T[],
+  type: AssetFileType | GeneratedImageType,
+) => {
   return (files || []).find((file) => file.type === type);
 };
 

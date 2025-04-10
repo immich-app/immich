@@ -1,8 +1,21 @@
 import { randomUUID } from 'node:crypto';
-import { ApiKey, Asset, AuthApiKey, AuthUser, Library, Partner, User, UserAdmin } from 'src/database';
+import {
+  Activity,
+  ApiKey,
+  Asset,
+  AuthApiKey,
+  AuthUser,
+  Library,
+  Memory,
+  Partner,
+  Session,
+  SidecarWriteAsset,
+  User,
+  UserAdmin,
+} from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
-import { ActivityItem, MemoryItem, OnThisDayData } from 'src/types';
+import { OnThisDayData } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
 export const newUuids = () =>
@@ -19,13 +32,21 @@ export const newEmbedding = () => {
   return '[' + embedding + ']';
 };
 
-const authFactory = ({ apiKey, ...user }: Partial<AuthUser> & { apiKey?: Partial<AuthApiKey> } = {}) => {
+const authFactory = ({
+  apiKey,
+  session,
+  ...user
+}: Partial<AuthUser> & { apiKey?: Partial<AuthApiKey>; session?: { id: string } } = {}) => {
   const auth: AuthDto = {
     user: authUserFactory(user),
   };
 
   if (apiKey) {
     auth.apiKey = authApiKeyFactory(apiKey);
+  }
+
+  if (session) {
+    auth.session = { id: session.id };
   }
 
   return auth;
@@ -64,7 +85,7 @@ const partnerFactory = (partner: Partial<Partner> = {}) => {
   };
 };
 
-const sessionFactory = () => ({
+const sessionFactory = (session: Partial<Session> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
@@ -73,6 +94,7 @@ const sessionFactory = () => ({
   deviceType: 'mobile',
   token: 'abc123',
   userId: newUuid(),
+  ...session,
 });
 
 const stackFactory = () => ({
@@ -143,7 +165,7 @@ const assetFactory = (asset: Partial<Asset> = {}) => ({
   ...asset,
 });
 
-const activityFactory = (activity: Partial<ActivityItem> = {}) => {
+const activityFactory = (activity: Partial<Activity> = {}) => {
   const userId = activity.userId || newUuid();
   return {
     id: newUuid(),
@@ -186,7 +208,7 @@ const libraryFactory = (library: Partial<Library> = {}) => ({
   ...library,
 });
 
-const memoryFactory = (memory: Partial<MemoryItem> = {}) => ({
+const memoryFactory = (memory: Partial<Memory> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
@@ -210,6 +232,14 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
+const assetSidecarWriteFactory = (asset: Partial<SidecarWriteAsset> = {}) => ({
+  id: newUuid(),
+  sidecarPath: '/path/to/original-path.jpg.xmp',
+  originalPath: '/path/to/original-path.jpg.xmp',
+  tags: [],
+  ...asset,
+});
+
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
@@ -225,4 +255,7 @@ export const factory = {
   user: userFactory,
   userAdmin: userAdminFactory,
   versionHistory: versionHistoryFactory,
+  jobAssets: {
+    sidecarWrite: assetSidecarWriteFactory,
+  },
 };

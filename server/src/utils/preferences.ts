@@ -1,9 +1,57 @@
 import _ from 'lodash';
 import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
-import { UserMetadataItem, UserPreferences, getDefaultPreferences } from 'src/entities/user-metadata.entity';
-import { UserMetadataKey } from 'src/enum';
-import { DeepPartial } from 'src/types';
+import { UserAvatarColor, UserMetadataKey } from 'src/enum';
+import { DeepPartial, UserMetadataItem, UserPreferences } from 'src/types';
+import { HumanReadableSize } from 'src/utils/bytes';
 import { getKeysDeep } from 'src/utils/misc';
+
+const getDefaultPreferences = (user: { email: string }): UserPreferences => {
+  const values = Object.values(UserAvatarColor);
+  const randomIndex = Math.floor(
+    [...user.email].map((letter) => letter.codePointAt(0) ?? 0).reduce((a, b) => a + b, 0) % values.length,
+  );
+
+  return {
+    folders: {
+      enabled: false,
+      sidebarWeb: false,
+    },
+    memories: {
+      enabled: true,
+    },
+    people: {
+      enabled: true,
+      sidebarWeb: false,
+    },
+    sharedLinks: {
+      enabled: true,
+      sidebarWeb: false,
+    },
+    ratings: {
+      enabled: false,
+    },
+    tags: {
+      enabled: false,
+      sidebarWeb: false,
+    },
+    avatar: {
+      color: values[randomIndex],
+    },
+    emailNotifications: {
+      enabled: true,
+      albumInvite: true,
+      albumUpdate: true,
+    },
+    download: {
+      archiveSize: HumanReadableSize.GiB * 4,
+      includeEmbeddedVideos: false,
+    },
+    purchase: {
+      showSupportBadge: true,
+      hideBuyButtonUntil: new Date(2022, 1, 12).toISOString(),
+    },
+  };
+};
 
 export const getPreferences = (email: string, metadata: UserMetadataItem[]): UserPreferences => {
   const preferences = getDefaultPreferences({ email });

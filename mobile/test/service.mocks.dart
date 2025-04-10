@@ -1,4 +1,5 @@
 import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
@@ -10,6 +11,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
 class MockApiService extends Mock implements ApiService {}
+
+class MockAlbumService extends Mock implements AlbumService {}
+
+class MockBackupService extends Mock implements BackupService {}
 
 class MockAlbumService extends Mock implements AlbumService {}
 
