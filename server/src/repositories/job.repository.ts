@@ -209,10 +209,18 @@ export class JobRepository {
         return { jobId: item.data.id, delay: item.data?.delay };
       }
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
-        return { jobId: item.data.id };
+        return { jobId: item.data.id, delay: 1000 };
       }
       case JobName.GENERATE_PERSON_THUMBNAIL: {
         return { priority: 1 };
+      }
+      case JobName.QUEUE_GENERATE_THUMBNAILS: {
+        // JOB DELAY BY JOOB
+        return { delay: 1000 };
+      }
+      case JobName.QUEUE_METADATA_EXTRACTION: {
+        // JOB DELAY BY JOOB
+        return { delay: 1000 };
       }
       case JobName.GENERATE_THUMBNAILS: {
         // JOB DELAY BY JOOB
