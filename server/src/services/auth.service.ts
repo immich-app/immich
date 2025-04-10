@@ -4,6 +4,7 @@ import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
+import { UserAdmin } from 'src/database';
 import { OnEvent } from 'src/decorators';
 import {
   AuthDto,
@@ -17,7 +18,6 @@ import {
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
@@ -190,7 +190,7 @@ export class AuthService extends BaseService {
     const profile = await this.oauthRepository.getProfile(oauth, dto.url, this.resolveRedirectUri(oauth, dto.url));
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
-    let user = await this.userRepository.getByOAuthId(profile.sub);
+    let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
     // link by email
     if (!user && profile.email) {
@@ -318,7 +318,7 @@ export class AuthService extends BaseService {
     throw new UnauthorizedException('Invalid API key');
   }
 
-  private validatePassword(inputPassword: string, user: UserEntity): boolean {
+  private validatePassword(inputPassword: string, user: { password?: string }): boolean {
     if (!user || !user.password) {
       return false;
     }
@@ -338,14 +338,16 @@ export class AuthService extends BaseService {
 
       return {
         user: session.user,
-        session,
+        session: {
+          id: session.id,
+        },
       };
     }
 
     throw new UnauthorizedException('Invalid user token');
   }
 
-  private async createLoginResponse(user: UserEntity, loginDetails: LoginDetails) {
+  private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
     const key = this.cryptoRepository.newPassword(32);
     const token = this.cryptoRepository.hashSha256(key);
 

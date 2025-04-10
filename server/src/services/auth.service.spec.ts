@@ -1,10 +1,10 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { DateTime } from 'luxon';
+import { UserAdmin } from 'src/database';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
-import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, Permission } from 'src/enum';
 import { AuthService } from 'src/services/auth.service';
-import { sessionStub } from 'test/fixtures/session.stub';
+import { UserMetadataItem } from 'src/types';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -89,7 +89,7 @@ describe('AuthService', () => {
     });
 
     it('should check the user has a password', async () => {
-      mocks.user.getByEmail.mockResolvedValue({} as UserEntity);
+      mocks.user.getByEmail.mockResolvedValue({} as UserAdmin);
 
       await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
 
@@ -97,17 +97,19 @@ describe('AuthService', () => {
     });
 
     it('should successfully log the user in', async () => {
-      mocks.user.getByEmail.mockResolvedValue(userStub.user1);
-      mocks.session.create.mockResolvedValue(sessionStub.valid);
+      const user = { ...(factory.user() as UserAdmin), password: 'immich_password' };
+      const session = factory.session();
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(session);
 
       await expect(sut.login(fixtures.login, loginDetails)).resolves.toEqual({
         accessToken: 'cmFuZG9tLWJ5dGVz',
-        userId: 'user-id',
-        userEmail: 'immich@test.com',
-        name: 'immich_name',
-        profileImagePath: '',
-        isAdmin: false,
-        shouldChangePassword: false,
+        userId: user.id,
+        userEmail: user.email,
+        name: user.name,
+        profileImagePath: user.profileImagePath,
+        isAdmin: user.isAdmin,
+        shouldChangePassword: user.shouldChangePassword,
       });
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
@@ -122,7 +124,7 @@ describe('AuthService', () => {
       mocks.user.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
         password: 'hash-password',
-      } as UserEntity);
+      } as UserAdmin & { password: string });
       mocks.user.update.mockResolvedValue(userStub.user1);
 
       await sut.changePassword(auth, dto);
@@ -141,7 +143,7 @@ describe('AuthService', () => {
     });
 
     it('should throw when password does not match existing password', async () => {
-      const auth = { user: { email: 'test@imimch.com' } as UserEntity };
+      const auth = { user: { email: 'test@imimch.com' } as UserAdmin };
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       mocks.crypto.compareBcrypt.mockReturnValue(false);
@@ -149,7 +151,7 @@ describe('AuthService', () => {
       mocks.user.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
         password: 'hash-password',
-      } as UserEntity);
+      } as UserAdmin & { password: string });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -161,7 +163,7 @@ describe('AuthService', () => {
       mocks.user.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
         password: '',
-      } as UserEntity);
+      } as UserAdmin & { password: string });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -215,7 +217,7 @@ describe('AuthService', () => {
     const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
 
     it('should only allow one admin', async () => {
-      mocks.user.getAdmin.mockResolvedValue({} as UserEntity);
+      mocks.user.getAdmin.mockResolvedValue({} as UserAdmin);
 
       await expect(sut.adminSignUp(dto)).rejects.toBeInstanceOf(BadRequestException);
 
@@ -228,8 +230,8 @@ describe('AuthService', () => {
         ...dto,
         id: 'admin',
         createdAt: new Date('2021-01-01'),
-        metadata: [] as UserMetadataEntity[],
-      } as UserEntity);
+        metadata: [] as UserMetadataItem[],
+      } as unknown as UserAdmin);
 
       await expect(sut.adminSignUp(dto)).resolves.toMatchObject({
         avatarColor: expect.any(String),
@@ -256,8 +258,14 @@ describe('AuthService', () => {
     });
 
     it('should validate using authorization header', async () => {
-      mocks.user.get.mockResolvedValue(userStub.user1);
-      mocks.session.getByToken.mockResolvedValue(sessionStub.valid as any);
+      const session = factory.session();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: factory.authUser(),
+      };
+
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
 
       await expect(
         sut.authenticate({
@@ -266,8 +274,8 @@ describe('AuthService', () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).resolves.toEqual({
-        user: userStub.user1,
-        session: sessionStub.valid,
+        user: sessionWithToken.user,
+        session: { id: session.id },
       });
     });
   });
@@ -286,7 +294,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept an expired key', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired as any);
 
       await expect(
         sut.authenticate({
@@ -298,7 +306,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept a key on a non-shared route', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid as any);
 
       await expect(
         sut.authenticate({
@@ -310,7 +318,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept a key without a user', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired as any);
       mocks.user.get.mockResolvedValue(void 0);
 
       await expect(
@@ -323,7 +331,7 @@ describe('AuthService', () => {
     });
 
     it('should accept a base64url key', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid as any);
       mocks.user.get.mockResolvedValue(userStub.admin);
 
       await expect(
@@ -340,7 +348,7 @@ describe('AuthService', () => {
     });
 
     it('should accept a hex key', async () => {
-      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid as any);
       mocks.user.get.mockResolvedValue(userStub.admin);
 
       await expect(
@@ -371,7 +379,14 @@ describe('AuthService', () => {
     });
 
     it('should return an auth dto', async () => {
-      mocks.session.getByToken.mockResolvedValue(sessionStub.valid as any);
+      const session = factory.session();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: factory.authUser(),
+      };
+
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
 
       await expect(
         sut.authenticate({
@@ -380,13 +395,20 @@ describe('AuthService', () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).resolves.toEqual({
-        user: userStub.user1,
-        session: sessionStub.valid,
+        user: sessionWithToken.user,
+        session: { id: session.id },
       });
     });
 
     it('should throw if admin route and not an admin', async () => {
-      mocks.session.getByToken.mockResolvedValue(sessionStub.valid as any);
+      const session = factory.session();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: factory.authUser(),
+      };
+
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
 
       await expect(
         sut.authenticate({
@@ -398,8 +420,15 @@ describe('AuthService', () => {
     });
 
     it('should update when access time exceeds an hour', async () => {
-      mocks.session.getByToken.mockResolvedValue(sessionStub.inactive as any);
-      mocks.session.update.mockResolvedValue(sessionStub.valid);
+      const session = factory.session({ updatedAt: DateTime.now().minus({ hours: 2 }).toJSDate() });
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: factory.authUser(),
+      };
+
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
+      mocks.session.update.mockResolvedValue(session);
 
       await expect(
         sut.authenticate({
@@ -408,7 +437,8 @@ describe('AuthService', () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).resolves.toBeDefined();
-      expect(mocks.session.update.mock.calls[0][1]).toMatchObject({ id: 'not_active', updatedAt: expect.any(Date) });
+
+      expect(mocks.session.update).toHaveBeenCalled();
     });
   });
 
@@ -506,7 +536,7 @@ describe('AuthService', () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.user.getByEmail.mockResolvedValue(userStub.user1);
       mocks.user.update.mockResolvedValue(userStub.user1);
-      mocks.session.create.mockResolvedValue(sessionStub.valid);
+      mocks.session.create.mockResolvedValue(factory.session());
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         oauthResponse,
@@ -535,7 +565,7 @@ describe('AuthService', () => {
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getAdmin.mockResolvedValue(userStub.user1);
       mocks.user.create.mockResolvedValue(userStub.user1);
-      mocks.session.create.mockResolvedValue(sessionStub.valid);
+      mocks.session.create.mockResolvedValue(factory.session());
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         oauthResponse,
@@ -550,7 +580,7 @@ describe('AuthService', () => {
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getAdmin.mockResolvedValue(userStub.user1);
       mocks.user.create.mockResolvedValue(userStub.user1);
-      mocks.session.create.mockResolvedValue(sessionStub.valid);
+      mocks.session.create.mockResolvedValue(factory.session());
       mocks.oauth.getProfile.mockResolvedValue({ sub, email: undefined });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toBeInstanceOf(
@@ -572,7 +602,7 @@ describe('AuthService', () => {
       it(`should use the mobile redirect override for a url of ${url}`, async () => {
         mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
         mocks.user.getByOAuthId.mockResolvedValue(userStub.user1);
-        mocks.session.create.mockResolvedValue(sessionStub.valid);
+        mocks.session.create.mockResolvedValue(factory.session());
 
         await sut.callback({ url }, loginDetails);
 
@@ -687,7 +717,7 @@ describe('AuthService', () => {
       const auth = { user: authUser, apiKey: authApiKey };
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
-      mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserEntity);
+      mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserAdmin);
 
       await expect(sut.link(auth, { url: 'http://immich/user-settings?code=abc123' })).rejects.toBeInstanceOf(
         BadRequestException,

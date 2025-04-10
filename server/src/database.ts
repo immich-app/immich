@@ -1,6 +1,7 @@
-import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
-import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
-import { OnThisDayData } from 'src/types';
+import { Selectable } from 'kysely';
+import { Exif as DatabaseExif } from 'src/db';
+import { AlbumUserRole, AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
   id: string;
@@ -9,6 +10,11 @@ export type AuthUser = {
   email: string;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
+};
+
+export type AlbumUser = {
+  user: User;
+  role: AlbumUserRole;
 };
 
 export type Library = {
@@ -96,7 +102,7 @@ export type UserAdmin = User & {
   quotaSizeInBytes: number | null;
   quotaUsageInBytes: number;
   status: UserStatus;
-  metadata: UserMetadataEntity[];
+  metadata: UserMetadataItem[];
 };
 
 export type Asset = {
@@ -162,6 +168,30 @@ export type Partner = {
   updateId: string;
   inTimeline: boolean;
 };
+
+export type Place = {
+  admin1Code: string | null;
+  admin1Name: string | null;
+  admin2Code: string | null;
+  admin2Name: string | null;
+  alternateNames: string | null;
+  countryCode: string;
+  id: number;
+  latitude: number;
+  longitude: number;
+  modificationDate: Date;
+  name: string;
+};
+
+export type Session = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deviceOS: string;
+  deviceType: string;
+};
+
+export type Exif = Omit<Selectable<DatabaseExif>, 'updatedAt' | 'updateId'>;
 
 const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
 

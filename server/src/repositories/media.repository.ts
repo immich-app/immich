@@ -6,7 +6,7 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
-import { ExifEntity } from 'src/entities/exif.entity';
+import { Exif } from 'src/database';
 import { Colorspace, LogLevel } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
@@ -66,7 +66,7 @@ export class MediaRepository {
     return true;
   }
 
-  async writeExif(tags: Partial<ExifEntity>, output: string): Promise<boolean> {
+  async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {
     try {
       const tagsToWrite: WriteTags = {
         ExifImageWidth: tags.exifImageWidth,

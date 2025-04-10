@@ -1,15 +1,13 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import { Tag } from 'src/database';
+import { Exif, Tag, User } from 'src/database';
 import { DB } from 'src/db';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { StackEntity } from 'src/entities/stack.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
@@ -20,7 +18,7 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 export class AssetEntity {
   id!: string;
   deviceAssetId!: string;
-  owner!: UserEntity;
+  owner!: User;
   ownerId!: string;
   libraryId?: string | null;
   deviceId!: string;
@@ -48,7 +46,7 @@ export class AssetEntity {
   livePhotoVideoId!: string | null;
   originalFileName!: string;
   sidecarPath!: string | null;
-  exifInfo?: ExifEntity;
+  exifInfo?: Exif;
   tags?: Tag[];
   sharedLinks!: SharedLinkEntity[];
   albums?: AlbumEntity[];
@@ -66,7 +64,9 @@ export type AssetEntityPlaceholder = AssetEntity & {
 };
 
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
-  return qb.leftJoin('exif', 'assets.id', 'exif.assetId').select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
+  return qb
+    .leftJoin('exif', 'assets.id', 'exif.assetId')
+    .select((eb) => eb.fn.toJson(eb.table('exif')).$castTo<Exif>().as('exifInfo'));
 }
 
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {

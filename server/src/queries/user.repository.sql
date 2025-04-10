@@ -24,7 +24,8 @@ select
     from
       (
         select
-          "user_metadata".*
+          "user_metadata"."key",
+          "user_metadata"."value"
         from
           "user_metadata"
         where
@@ -54,7 +55,21 @@ select
   "shouldChangePassword",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes"
+  "quotaUsageInBytes",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "user_metadata"."key",
+          "user_metadata"."value"
+        from
+          "user_metadata"
+        where
+          "users"."id" = "user_metadata"."userId"
+      ) as agg
+  ) as "metadata"
 from
   "users"
 where
@@ -87,7 +102,21 @@ select
   "shouldChangePassword",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes"
+  "quotaUsageInBytes",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "user_metadata"."key",
+          "user_metadata"."value"
+        from
+          "user_metadata"
+        where
+          "users"."id" = "user_metadata"."userId"
+      ) as agg
+  ) as "metadata"
 from
   "users"
 where
@@ -135,7 +164,21 @@ select
   "shouldChangePassword",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes"
+  "quotaUsageInBytes",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "user_metadata"."key",
+          "user_metadata"."value"
+        from
+          "user_metadata"
+        where
+          "users"."id" = "user_metadata"."userId"
+      ) as agg
+  ) as "metadata"
 from
   "users"
 where
@@ -174,7 +217,8 @@ select
     from
       (
         select
-          "user_metadata".*
+          "user_metadata"."key",
+          "user_metadata"."value"
         from
           "user_metadata"
         where
@@ -210,7 +254,8 @@ select
     from
       (
         select
-          "user_metadata".*
+          "user_metadata"."key",
+          "user_metadata"."value"
         from
           "user_metadata"
         where
