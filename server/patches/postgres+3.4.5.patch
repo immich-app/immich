@@ -7,7 +7,7 @@ index ee8b1e6..8ccb833 100644
  
    function queryError(query, err) {
 +    // prevent the error parsing below from failing if query is malformed
-+    if ( !query || typeof query !== 'object' || !query.origin) throw err
++    if ( !query || typeof query !== 'object' || !query.origin) query.reject(err)
 +
      'query' in err || 'parameters' in err || Object.defineProperties(err, {
        stack: { value: err.stack + query.origin.replace(/.*\n/, '\n'), enumerable: options.debug },
@@ -21,7 +21,7 @@ index f7f58d1..4a3e13e 100644
  
    function queryError(query, err) {
 +    // prevent the error parsing below from failing if query is malformed
-+    if ( !query || typeof query !== 'object' || !query.origin) throw err
++    if ( !query || typeof query !== 'object' || !query.origin) query.reject(err)
 +
      'query' in err || 'parameters' in err || Object.defineProperties(err, {
        stack: { value: err.stack + query.origin.replace(/.*\n/, '\n'), enumerable: options.debug },
@@ -35,7 +35,7 @@ index 97cc97e..452b079 100644
  
    function queryError(query, err) {
 +    // prevent the error parsing below from failing if query is malformed
-+    if ( !query || typeof query !== 'object' || !query.origin) throw err
++    if ( !query || typeof query !== 'object' || !query.origin) query.reject(err)
 +
      'query' in err || 'parameters' in err || Object.defineProperties(err, {
        stack: { value: err.stack + query.origin.replace(/.*\n/, '\n'), enumerable: options.debug },
