@@ -1,4 +1,4 @@
-import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import { AlbumUserRole, AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
@@ -8,6 +8,11 @@ export type AuthUser = {
   email: string;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
+};
+
+export type AlbumUser = {
+  user: User;
+  role: AlbumUserRole;
 };
 
 export type Library = {

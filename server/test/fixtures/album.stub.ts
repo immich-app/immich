@@ -38,10 +38,7 @@ export const albumStub = {
     albumUsers: [
       {
         user: userStub.user1,
-        album: undefined as unknown as AlbumEntity,
         role: AlbumUserRole.EDITOR,
-        userId: userStub.user1.id,
-        albumId: 'album-2',
       },
     ],
     isActivityEnabled: true,
@@ -63,17 +60,11 @@ export const albumStub = {
     albumUsers: [
       {
         user: userStub.user1,
-        album: undefined as unknown as AlbumEntity,
         role: AlbumUserRole.EDITOR,
-        userId: userStub.user1.id,
-        albumId: 'album-3',
       },
       {
         user: userStub.user2,
-        album: undefined as unknown as AlbumEntity,
         role: AlbumUserRole.EDITOR,
-        userId: userStub.user2.id,
-        albumId: 'album-3',
       },
     ],
     isActivityEnabled: true,
@@ -95,10 +86,7 @@ export const albumStub = {
     albumUsers: [
       {
         user: userStub.admin,
-        album: undefined as unknown as AlbumEntity,
         role: AlbumUserRole.EDITOR,
-        userId: userStub.admin.id,
-        albumId: 'album-3',
       },
     ],
     isActivityEnabled: true,
