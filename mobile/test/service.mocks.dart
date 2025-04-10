@@ -1,6 +1,6 @@
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/entity.service.dart';
@@ -16,10 +16,6 @@ class MockAlbumService extends Mock implements AlbumService {}
 
 class MockBackupService extends Mock implements BackupService {}
 
-class MockAlbumService extends Mock implements AlbumService {}
-
-class MockBackupService extends Mock implements BackupService {}
-
 class MockSyncService extends Mock implements SyncService {}
 
 class MockHashService extends Mock implements HashService {}
@@ -30,4 +26,7 @@ class MockNetworkService extends Mock implements NetworkService {}
 
 class MockSearchApi extends Mock implements SearchApi {}
 
+class MockAppSettingService extends Mock implements AppSettingsService {}
+
 class MockBackgroundService extends Mock implements BackgroundService {}
+

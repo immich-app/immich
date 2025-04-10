@@ -6,7 +6,6 @@ import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType } from 'src/enum';
-import { SearchPlacesItem } from 'src/types';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
@@ -227,18 +226,15 @@ export class PlacesResponseDto {
   admin2name?: string;
 }
 
-export function mapPlaces(place: SearchPlacesItem): PlacesResponseDto {
+export function mapPlaces(place: Place): PlacesResponseDto {
   return {
     name: place.name,
     latitude: place.latitude,
     longitude: place.longitude,
     admin1name: place.admin1Name ?? undefined,
     admin2name: place.admin2Name ?? undefined,
-    admin1name: place.admin1Name ?? undefined,
-    admin2name: place.admin2Name ?? undefined,
   };
 }
-
 
 export enum SearchSuggestionType {
   COUNTRY = 'country',

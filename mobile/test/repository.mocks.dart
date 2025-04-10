@@ -4,13 +4,13 @@ import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
-import 'package:immich_mobile/interfaces/asset_api.interface.dart';
 import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
+import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
 import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:mocktail/mocktail.dart';
@@ -26,11 +26,6 @@ class MockExifInfoRepository extends Mock implements IExifInfoRepository {}
 class MockETagRepository extends Mock implements IETagRepository {}
 
 class MockAlbumMediaRepository extends Mock implements IAlbumMediaRepository {}
-
-class MockBackupAlbumRepository extends Mock
-    implements IBackupAlbumRepository {}
-
-class MockAssetApiRepository extends Mock implements IAssetApiRepository {}
 
 class MockBackupAlbumRepository extends Mock
     implements IBackupAlbumRepository {}

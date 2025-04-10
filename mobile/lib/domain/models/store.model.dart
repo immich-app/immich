@@ -65,6 +65,7 @@ enum StoreKey<T> {
 
   // Video settings
   loadOriginalVideo<bool>._(136),
+  manageLocalMediaAndroid<bool>._(137),
 
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000);
