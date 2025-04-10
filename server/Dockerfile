@@ -57,12 +57,10 @@ COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
 COPY server/start*.sh ./
 COPY "docker/scripts/get-cpus.sh" ./
+RUN npm link && npm install -g @immich/cli && npm cache clean --force
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
-RUN npm link && npm install -g @immich/cli && npm cache clean --force
 ENV PATH="${PATH}:/usr/src/app/bin"
-
-RUN cat node_modules/postgres/cf/src/connection.js
 
 ARG BUILD_ID
 ARG BUILD_IMAGE
