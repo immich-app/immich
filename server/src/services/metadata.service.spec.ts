@@ -12,11 +12,33 @@ import { MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
-import { metadataStub } from 'test/fixtures/metadata.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
+
+const makeFaceTags = (face: Partial<{ Name: string }> = {}) => ({
+  RegionInfo: {
+    AppliedToDimensions: {
+      W: 100,
+      H: 100,
+      Unit: 'normalized',
+    },
+    RegionList: [
+      {
+        Type: 'face',
+        Area: {
+          X: 0.05,
+          Y: 0.05,
+          W: 0.1,
+          H: 0.1,
+          Unit: 'normalized',
+        },
+        ...face,
+      },
+    ],
+  },
+});
 
 describe(MetadataService.name, () => {
   let sut: MetadataService;
@@ -969,7 +991,7 @@ describe(MetadataService.name, () => {
     it('should skip importing metadata when the feature is disabled', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false } } });
-      mockReadTags(metadataStub.withFace);
+      mockReadTags(makeFaceTags({ Name: 'Person 1' }));
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.person.getDistinctNames).not.toHaveBeenCalled();
     });
@@ -977,7 +999,7 @@ describe(MetadataService.name, () => {
     it('should skip importing metadata face for assets without tags.RegionInfo', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.empty);
+      mockReadTags();
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.person.getDistinctNames).not.toHaveBeenCalled();
     });
@@ -985,7 +1007,7 @@ describe(MetadataService.name, () => {
     it('should skip importing faces without name', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.withFaceNoName);
+      mockReadTags(makeFaceTags());
       mocks.person.getDistinctNames.mockResolvedValue([]);
       mocks.person.createAll.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -997,7 +1019,7 @@ describe(MetadataService.name, () => {
     it('should skip importing faces with empty name', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.withFaceEmptyName);
+      mockReadTags(makeFaceTags({ Name: '' }));
       mocks.person.getDistinctNames.mockResolvedValue([]);
       mocks.person.createAll.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -1009,7 +1031,7 @@ describe(MetadataService.name, () => {
     it('should apply metadata face tags creating new persons', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.withFace);
+      mockReadTags(makeFaceTags({ Name: personStub.withName.name }));
       mocks.person.getDistinctNames.mockResolvedValue([]);
       mocks.person.createAll.mockResolvedValue([personStub.withName.id]);
       mocks.person.update.mockResolvedValue(personStub.withName);
@@ -1050,7 +1072,7 @@ describe(MetadataService.name, () => {
     it('should assign metadata face tags to existing persons', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.withFace);
+      mockReadTags(makeFaceTags({ Name: personStub.withName.name }));
       mocks.person.getDistinctNames.mockResolvedValue([{ id: personStub.withName.id, name: personStub.withName.name }]);
       mocks.person.createAll.mockResolvedValue([]);
       mocks.person.update.mockResolvedValue(personStub.withName);
