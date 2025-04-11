@@ -60,6 +60,7 @@ dependencies:
   thumbhash: 0.1.0+1
   timezone: ^0.9.4
   url_launcher: ^6.3.1
+  uuid: ^4.5.1
   wakelock_plus: ^1.2.10
 
   native_video_player:
