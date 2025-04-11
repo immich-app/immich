@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
@@ -25,7 +28,16 @@ class IsarDatabaseRepository implements IDatabaseRepository {
       Zone.current[_kzoneTxn] == null ? _db.writeTxn(callback) : callback();
 }
 
-@DriftDatabase(tables: [UserEntity, UserMetadataEntity, PartnerEntity])
+@DriftDatabase(
+  tables: [
+    UserEntity,
+    UserMetadataEntity,
+    PartnerEntity,
+    LocalAlbumEntity,
+    LocalAssetEntity,
+    LocalAlbumAssetEntity,
+  ],
+)
 class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])
       : super(

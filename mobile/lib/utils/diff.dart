@@ -1,3 +1,5 @@
+// ignore_for_file: avoid-unsafe-collection-methods
+
 import 'dart:async';
 
 import 'package:collection/collection.dart';

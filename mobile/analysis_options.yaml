@@ -55,6 +55,9 @@ custom_lint:
       restrict: package:photo_manager
       allowed:
         # required / wanted
+        - 'lib/domain/interfaces/album_media.interface.dart'
+        - 'lib/infrastructure/repositories/album_media.repository.dart'
+        - 'lib/domain/services/sync.service.dart'
         - 'lib/repositories/{album,asset,file}_media.repository.dart'
         # acceptable exceptions for the time being
         - lib/entities/asset.entity.dart # to provide local AssetEntity for now
