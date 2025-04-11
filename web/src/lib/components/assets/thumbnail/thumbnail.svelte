@@ -24,6 +24,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
+  import { getFocusable } from '$lib/utils/focus-util';
 
   interface Props {
     asset: AssetResponseDto;
@@ -183,10 +184,30 @@
       if (evt.key === 'x') {
         onSelect?.(asset);
       }
+      if (document.activeElement === focussableElement && evt.key === 'Escape') {
+        const focusable = getFocusable(document);
+        const index = focusable.indexOf(focussableElement);
+
+        let i = index + 1;
+        while (i !== index) {
+          const next = focusable[i];
+          if (next.dataset.thumbnailFocusContainer !== undefined) {
+            if (i === focusable.length - 1) {
+              i = 0;
+            } else {
+              i++;
+            }
+            continue;
+          }
+          next.focus();
+          break;
+        }
+      }
     }}
     onclick={handleClick}
     bind:this={focussableElement}
     onfocus={handleFocus}
+    data-thumbnail-focus-container
     data-testid="container-with-tabindex"
     tabindex={0}
     role="link"
