@@ -1,4 +1,6 @@
-import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import { Selectable } from 'kysely';
+import { Exif as DatabaseExif } from 'src/db';
+import { AlbumUserRole, AssetFileType, AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
@@ -8,6 +10,17 @@ export type AuthUser = {
   email: string;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
+};
+
+export type AlbumUser = {
+  user: User;
+  role: AlbumUserRole;
+};
+
+export type AssetFile = {
+  id: string;
+  type: AssetFileType;
+  path: string;
 };
 
 export type Library = {
@@ -183,6 +196,8 @@ export type Session = {
   deviceOS: string;
   deviceType: string;
 };
+
+export type Exif = Omit<Selectable<DatabaseExif>, 'updatedAt' | 'updateId'>;
 
 const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
 

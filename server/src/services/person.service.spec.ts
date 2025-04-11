@@ -13,6 +13,7 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 const responseDto: PersonResponseDto = {
@@ -1279,7 +1280,8 @@ describe(PersonService.name, () => {
 
   describe('mapFace', () => {
     it('should map a face', () => {
-      expect(mapFaces(faceStub.face1, { user: personStub.withName.owner })).toEqual({
+      const authDto = factory.auth({ id: faceStub.face1.person.ownerId });
+      expect(mapFaces(faceStub.face1, authDto)).toEqual({
         boundingBoxX1: 0,
         boundingBoxX2: 1,
         boundingBoxY1: 0,

@@ -69,7 +69,7 @@ export class ActivityRepository {
   async getStatistics({ albumId, assetId }: { albumId: string; assetId?: string }): Promise<number> {
     const { count } = await this.db
       .selectFrom('activity')
-      .select((eb) => eb.fn.countAll().as('count'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
       .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
       .leftJoin('assets', 'assets.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
@@ -81,6 +81,6 @@ export class ActivityRepository {
       .where('assets.localDateTime', 'is not', null)
       .executeTakeFirstOrThrow();
 
-    return count as number;
+    return count;
   }
 }
