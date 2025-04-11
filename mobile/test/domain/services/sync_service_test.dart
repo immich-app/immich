@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
@@ -120,7 +121,15 @@ void main() {
       when(() => mockLocalAlbumAssetRepo.linkAssetsToAlbum(any(), any()))
           .thenAnswer((_) async => {});
 
+      when(() => mockLocalAlbumAssetRepo.unlinkAssetsFromAlbum(any(), any()))
+          .thenAnswer((_) async => {});
+
       when(() => mockLocalAlbumRepo.upsert(any())).thenAnswer((_) async => {});
+
+      when(() => mockLocalAlbumRepo.delete(any())).thenAnswer((_) async => {});
+
+      when(() => mockLocalAssetRepo.deleteIds(any()))
+          .thenAnswer((_) async => {});
 
       when(() => mockLocalAlbumRepo.transaction<Null>(any()))
           .thenAnswer((_) async {
@@ -136,28 +145,18 @@ void main() {
     test(
       'album filter should be properly configured with expected settings',
       () {
-        // Access the album filter from the service
         final albumFilter = sut.albumFilter;
 
-        // Verify image option settings
         final imageOption = albumFilter.getOption(AssetType.image);
         expect(imageOption.needTitle, isTrue);
         expect(imageOption.sizeConstraint.ignoreSize, isTrue);
-
-        // Verify video option settings
         final videoOption = albumFilter.getOption(AssetType.video);
         expect(videoOption.needTitle, isTrue);
         expect(videoOption.sizeConstraint.ignoreSize, isTrue);
         expect(videoOption.durationConstraint.allowNullable, isTrue);
-
-        // Verify containsPathModified flag
         expect(albumFilter.containsPathModified, isTrue);
-
-        // Verify time conditions are ignored
         expect(albumFilter.createTimeCond.ignore, isTrue);
         expect(albumFilter.updateTimeCond.ignore, isTrue);
-
-        // Verify ordering
         expect(albumFilter.orders.length, 1);
         expect(
           albumFilter.orders.firstOrNull?.type,
@@ -183,7 +182,6 @@ void main() {
             deviceAlbum.copyWith(updatedAt: earlier),
           );
 
-          // Verify: method returns without making any changes
           expect(result, isFalse);
           verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(any()));
           verifyNever(() => mockLocalAssetRepo.upsertAll(any()));
@@ -197,7 +195,6 @@ void main() {
       test(
         'early return when device album has fewer assets than DB album',
         () async {
-          // Execute
           final result = await sut.handleOnlyAssetsAdded(
             dbAlbum,
             deviceAlbum.copyWith(assetCount: dbAlbum.assetCount - 1),
@@ -345,15 +342,93 @@ void main() {
               verify(() => mockLocalAlbumRepo.upsert(captureAny()));
           albumUpsertCall.called(1);
           verify(() => mockLocalAssetRepo.upsertAll(any())).called(1);
-          verify(
-            () => mockLocalAlbumAssetRepo.linkAssetsToAlbum(albumId, any()),
-          ).called(1);
+          verify(() =>
+                  mockLocalAlbumAssetRepo.linkAssetsToAlbum(albumId, any()))
+              .called(1);
 
           final capturedAlbum =
               albumUpsertCall.captured.singleOrNull as LocalAlbum?;
           expect(capturedAlbum?.assetCount, deviceAssets.length);
 
           expect(capturedAlbum?.thumbnailId, deviceAssets.firstOrNull?.localId);
+        },
+      );
+    });
+
+    group('removeLocalAlbum: ', () {
+      test(
+        'removing album with no assets correctly calls delete',
+        () async {
+          when(() => mockLocalAlbumAssetRepo.getAssetsForAlbum(albumId))
+              .thenAnswer((_) async => []);
+          when(() => mockLocalAlbumRepo.getAssetIdsOnlyInAlbum(albumId))
+              .thenAnswer((_) async => []);
+
+          await sut.removeLocalAlbum(deviceAlbum);
+
+          verify(() => mockLocalAssetRepo.deleteIds([])).called(1);
+          verify(() => mockLocalAlbumRepo.delete(albumId)).called(1);
+          verify(
+            () => mockLocalAlbumAssetRepo.unlinkAssetsFromAlbum(albumId, {}),
+          ).called(1);
+        },
+      );
+
+      test(
+        'removing album with assets unique to that album deletes those assets',
+        () async {
+          final uniqueAssetIds = deviceAssets.map((a) => a.localId).toList();
+          when(() => mockLocalAlbumRepo.getAssetIdsOnlyInAlbum(albumId))
+              .thenAnswer((_) async => uniqueAssetIds);
+
+          await sut.removeLocalAlbum(deviceAlbum);
+
+          verify(() => mockLocalAssetRepo.deleteIds(uniqueAssetIds)).called(1);
+          verify(() => mockLocalAlbumRepo.delete(albumId)).called(1);
+          verify(() => mockLocalAlbumAssetRepo.unlinkAssetsFromAlbum(any(), {}))
+              .called(1);
+        },
+      );
+
+      test(
+        'removing album with shared assets unlinks those assets',
+        () async {
+          final assetIds = deviceAssets.map((a) => a.localId).toList();
+          when(() => mockLocalAlbumRepo.getAssetIdsOnlyInAlbum(albumId))
+              .thenAnswer((_) async => []);
+
+          await sut.removeLocalAlbum(deviceAlbum);
+
+          verify(() => mockLocalAssetRepo.deleteIds([])).called(1);
+          verify(
+            () => mockLocalAlbumAssetRepo.unlinkAssetsFromAlbum(
+              albumId,
+              assetIds,
+            ),
+          ).called(1);
+          verify(() => mockLocalAlbumRepo.delete(albumId)).called(1);
+        },
+      );
+
+      test(
+        'removing album with mixed assets (some unique, some shared)',
+        () async {
+          final uniqueAssetIds = ['asset-1', 'asset-2'];
+          final sharedAssetIds = ['asset-0', 'asset-3', 'asset-4'];
+
+          when(() => mockLocalAlbumRepo.getAssetIdsOnlyInAlbum(albumId))
+              .thenAnswer((_) async => uniqueAssetIds);
+
+          await sut.removeLocalAlbum(deviceAlbum);
+
+          verify(() => mockLocalAssetRepo.deleteIds(uniqueAssetIds)).called(1);
+          verify(
+            () => mockLocalAlbumAssetRepo.unlinkAssetsFromAlbum(
+              albumId,
+              sharedAssetIds,
+            ),
+          ).called(1);
+          verify(() => mockLocalAlbumRepo.delete(albumId)).called(1);
         },
       );
     });
