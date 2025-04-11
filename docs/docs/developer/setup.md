@@ -63,6 +63,13 @@ If you only want to do web development connected to an existing, remote backend,
 IMMICH_SERVER_URL=https://demo.immich.app/ npm run dev
 ```
 
+If you're using PowerShell on Windows you may need to set the env var separately like so:
+
+```powershell
+$env:IMMICH_SERVER_URL = "https://demo.immich.app/"
+npm run dev
+```
+
 #### `@immich/ui`
 
 To see local changes to `@immich/ui` in Immich, do the following:
