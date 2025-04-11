@@ -83,9 +83,7 @@ class BackupSettings extends HookConsumerWidget {
           ),
           buttonText: 'sync_albums'.tr(),
           child: isAlbumSyncInProgress.value
-              ? const CircularProgressIndicator.adaptive(
-                  strokeWidth: 2,
-                )
+              ? const CircularProgressIndicator()
               : ElevatedButton(
                   onPressed: syncAlbums,
                   child: Text('sync'.tr()),

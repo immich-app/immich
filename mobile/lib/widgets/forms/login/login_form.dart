@@ -303,7 +303,7 @@ class LoginForm extends HookConsumerWidget {
                   ),
                   onPressed: () => context.pushRoute(const SettingsRoute()),
                   icon: const Icon(Icons.settings_rounded),
-                  label: const SizedBox.shrink(),
+                  label: const Text(""),
                 ),
               ),
               const SizedBox(width: 1),

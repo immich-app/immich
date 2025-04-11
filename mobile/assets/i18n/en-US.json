@@ -1,4 +1,5 @@
 {
+  "open": "Open",
   "action_common_back": "Back",
   "action_common_cancel": "Cancel",
   "action_common_clear": "Clear",
@@ -312,7 +313,7 @@
   "home_page_delete_remote_err_local": "Local assets in delete remote selection, skipping",
   "home_page_favorite_err_local": "Can not favorite local assets yet, skipping",
   "home_page_favorite_err_partner": "Can not favorite partner assets yet, skipping",
-  "home_page_first_time_notice": "If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).",
+  "home_page_first_time_notice": "If this is your first time using the app, please make sure to choose a backup album so that the timeline can populate photos and videos in it",
   "home_page_share_err_local": "Can not share local assets via link, skipping",
   "home_page_upload_err_limit": "Can only upload a maximum of 30 assets at a time, skipping",
   "ignore_icloud_photos": "Ignore iCloud photos",
