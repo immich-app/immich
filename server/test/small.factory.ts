@@ -4,6 +4,7 @@ import {
   ApiKey,
   Asset,
   AuthApiKey,
+  AuthSharedLink,
   AuthUser,
   Library,
   Memory,
@@ -35,11 +36,19 @@ export const newEmbedding = () => {
 const authFactory = ({
   apiKey,
   session,
-  ...user
-}: Partial<AuthUser> & { apiKey?: Partial<AuthApiKey>; session?: { id: string } } = {}) => {
+  sharedLink,
+  user,
+}: {
+  apiKey?: Partial<AuthApiKey>;
+  session?: { id: string };
+  user?: Partial<UserAdmin>;
+  sharedLink?: Partial<AuthSharedLink>;
+} = {}) => {
   const auth: AuthDto = {
-    user: authUserFactory(user),
+    user: authUserFactory(userAdminFactory(user ?? {})),
   };
+
+  const userId = auth.user.id;
 
   if (apiKey) {
     auth.apiKey = authApiKeyFactory(apiKey);
@@ -49,7 +58,25 @@ const authFactory = ({
     auth.session = { id: session.id };
   }
 
+  if (sharedLink) {
+    auth.sharedLink = authSharedLinkFactory({ ...sharedLink, userId });
+  }
+
   return auth;
+};
+
+const authSharedLinkFactory = (sharedLink: Partial<AuthSharedLink> = {}) => {
+  const {
+    id = newUuid(),
+    expiresAt = null,
+    userId = newUuid(),
+    showExif = true,
+    allowUpload = false,
+    allowDownload = true,
+    password = null,
+  } = sharedLink;
+
+  return { id, expiresAt, userId, showExif, allowUpload, allowDownload, password };
 };
 
 const authApiKeyFactory = (apiKey: Partial<AuthApiKey> = {}) => ({
@@ -58,15 +85,18 @@ const authApiKeyFactory = (apiKey: Partial<AuthApiKey> = {}) => ({
   ...apiKey,
 });
 
-const authUserFactory = (authUser: Partial<AuthUser> = {}) => ({
-  id: newUuid(),
-  isAdmin: false,
-  name: 'Test User',
-  email: 'test@immich.cloud',
-  quotaUsageInBytes: 0,
-  quotaSizeInBytes: null,
-  ...authUser,
-});
+const authUserFactory = (authUser: Partial<AuthUser> = {}) => {
+  const {
+    id = newUuid(),
+    isAdmin = false,
+    name = 'Test User',
+    email = 'test@immich.cloud',
+    quotaUsageInBytes = 0,
+    quotaSizeInBytes = null,
+  } = authUser;
+
+  return { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes };
+};
 
 const partnerFactory = (partner: Partial<Partner> = {}) => {
   const sharedBy = userFactory(partner.sharedBy || {});
@@ -112,25 +142,44 @@ const userFactory = (user: Partial<User> = {}) => ({
   ...user,
 });
 
-const userAdminFactory = (user: Partial<UserAdmin> = {}) => ({
-  id: newUuid(),
-  name: 'Test User',
-  email: 'test@immich.cloud',
-  profileImagePath: '',
-  profileChangedAt: newDate(),
-  storageLabel: null,
-  shouldChangePassword: false,
-  isAdmin: false,
-  createdAt: newDate(),
-  updatedAt: newDate(),
-  deletedAt: null,
-  oauthId: '',
-  quotaSizeInBytes: null,
-  quotaUsageInBytes: 0,
-  status: UserStatus.ACTIVE,
-  metadata: [],
-  ...user,
-});
+const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
+  const {
+    id = newUuid(),
+    name = 'Test User',
+    email = 'test@immich.cloud',
+    profileImagePath = '',
+    profileChangedAt = newDate(),
+    storageLabel = null,
+    shouldChangePassword = false,
+    isAdmin = false,
+    createdAt = newDate(),
+    updatedAt = newDate(),
+    deletedAt = null,
+    oauthId = '',
+    quotaSizeInBytes = null,
+    quotaUsageInBytes = 0,
+    status = UserStatus.ACTIVE,
+    metadata = [],
+  } = user;
+  return {
+    id,
+    name,
+    email,
+    profileImagePath,
+    profileChangedAt,
+    storageLabel,
+    shouldChangePassword,
+    isAdmin,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    oauthId,
+    quotaSizeInBytes,
+    quotaUsageInBytes,
+    status,
+    metadata,
+  };
+};
 
 const assetFactory = (asset: Partial<Asset> = {}) => ({
   id: newUuid(),

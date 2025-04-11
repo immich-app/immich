@@ -52,24 +52,4 @@ export const authStub = {
       key: Buffer.from('shared-link-key'),
     } as SharedLinkEntity,
   }),
-  adminSharedLinkNoExif: Object.freeze<AuthDto>({
-    user: authUser.admin,
-    sharedLink: {
-      id: '123',
-      showExif: false,
-      allowDownload: true,
-      allowUpload: true,
-      key: Buffer.from('shared-link-key'),
-    } as SharedLinkEntity,
-  }),
-  passwordSharedLink: Object.freeze<AuthDto>({
-    user: authUser.admin,
-    sharedLink: {
-      id: '123',
-      allowUpload: false,
-      allowDownload: false,
-      password: 'password-123',
-      showExif: true,
-    } as SharedLinkEntity,
-  }),
 };
