@@ -9,7 +9,7 @@
   let { title, children }: Props = $props();
 </script>
 
-<section class="min-w-screen flex min-h-dvh items-center justify-center relative">
+<section class="min-w-dvw flex min-h-dvh items-center justify-center relative">
   <div class="absolute -z-10 w-full h-full flex place-items-center place-content-center">
     <img
       src={immichLogo}
