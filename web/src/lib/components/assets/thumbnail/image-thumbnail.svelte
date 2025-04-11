@@ -21,7 +21,8 @@
     border?: boolean;
     hiddenIconClass?: string;
     class?: ClassValue;
-    onComplete?: (() => void) | undefined;
+    brokenAssetClass?: ClassValue;
+    onComplete?: ((errored: boolean) => void) | undefined;
   }
 
   let {
@@ -39,6 +40,7 @@
     hiddenIconClass = 'text-white',
     onComplete = undefined,
     class: imageClass = '',
+    brokenAssetClass = '',
   }: Props = $props();
 
   let {
@@ -50,17 +52,17 @@
 
   const setLoaded = () => {
     loaded = true;
-    onComplete?.();
+    onComplete?.(false);
   };
   const setErrored = () => {
     errored = true;
-    onComplete?.();
+    onComplete?.(true);
   };
 
   function mount(elem: HTMLImageElement) {
     if (elem.complete) {
       loaded = true;
-      onComplete?.();
+      onComplete?.(false);
     }
   }
 
@@ -71,6 +73,7 @@
       shadow && 'shadow-lg',
       (circle || !heightStyle) && 'aspect-square',
       border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+      brokenAssetClass,
     ]
       .filter(Boolean)
       .join(' '),

@@ -41,6 +41,7 @@
     showArchiveIcon?: boolean;
     showStackedIcon?: boolean;
     imageClass?: ClassValue;
+    brokenAssetClass?: ClassValue;
     dimmed?: boolean;
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
@@ -67,6 +68,7 @@
     onMouseEvent = undefined,
     handleFocus = undefined,
     imageClass = '',
+    brokenAssetClass = '',
     dimmed = false,
   }: Props = $props();
 
@@ -78,6 +80,7 @@
   let focussableElement: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
+  let thumbError = $state(false);
 
   $effect(() => {
     if (focussed && document.activeElement !== focussableElement) {
@@ -154,10 +157,10 @@
   style:width="{width}px"
   style:height="{height}px"
 >
-  {#if !loaded && asset.thumbhash}
+  {#if (!loaded || thumbError) && asset.thumbhash}
     <canvas
       use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-      class="absolute object-cover z-10"
+      class="absolute object-cover"
       style:width="{width}px"
       style:height="{height}px"
       out:fade={{ duration: THUMBHASH_FADE_DURATION }}
@@ -317,12 +320,13 @@
       </div>
       <ImageThumbnail
         class={imageClass}
+        {brokenAssetClass}
         url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
         curve={selected}
-        onComplete={() => (loaded = true)}
+        onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.type === AssetTypeEnum.Video}
         <div class="absolute top-0 h-full w-full">
