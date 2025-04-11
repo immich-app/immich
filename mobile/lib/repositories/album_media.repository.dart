@@ -30,7 +30,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
 
   @override
   Future<List<String>> getAssetIds(String albumId) async {
-    final album = await AssetPathEntity.fromId(albumId);
+    final album = await AssetPathEntity.obtainPathFromProperties(id: albumId);
     final List<AssetEntity> assets =
         await album.getAssetListRange(start: 0, end: 0x7fffffffffffffff);
     return assets.map((e) => e.id).toList();
@@ -38,7 +38,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
 
   @override
   Future<int> getAssetCount(String albumId) async {
-    final album = await AssetPathEntity.fromId(albumId);
+    final album = await AssetPathEntity.obtainPathFromProperties(id: albumId);
     return album.assetCountAsync;
   }
 
@@ -51,9 +51,9 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     DateTime? modifiedUntil,
     bool orderByModificationDate = false,
   }) async {
-    final onDevice = await AssetPathEntity.fromId(
-      albumId,
-      filterOption: FilterOptionGroup(
+    final onDevice = await AssetPathEntity.obtainPathFromProperties(
+      id: albumId,
+      optionGroup: FilterOptionGroup(
         imageOption: const FilterOption(needTitle: true),
         videoOption: const FilterOption(needTitle: true),
         containsPathModified: true,
@@ -80,7 +80,8 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     DateTime? modifiedFrom,
     DateTime? modifiedUntil,
   }) async {
-    final assetPathEntity = await AssetPathEntity.fromId(id);
+    final assetPathEntity =
+        await AssetPathEntity.obtainPathFromProperties(id: id);
     return _toAlbum(assetPathEntity);
   }
 
