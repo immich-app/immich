@@ -84,7 +84,6 @@
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
-  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
   const maxMd = $derived(mobileDevice.maxMd);
 
   $effect(() => {
