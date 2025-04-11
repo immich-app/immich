@@ -1280,7 +1280,7 @@ describe(PersonService.name, () => {
 
   describe('mapFace', () => {
     it('should map a face', () => {
-      const authDto = factory.auth({ id: faceStub.face1.person.ownerId });
+      const authDto = factory.auth({ user: { id: faceStub.face1.person.ownerId } });
       expect(mapFaces(faceStub.face1, authDto)).toEqual({
         boundingBoxX1: 0,
         boundingBoxX2: 1,

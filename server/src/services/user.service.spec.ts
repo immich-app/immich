@@ -29,7 +29,7 @@ describe(UserService.name, () => {
   describe('getAll', () => {
     it('admin should get all users', async () => {
       const user = factory.userAdmin();
-      const auth = factory.auth(user);
+      const auth = factory.auth({ user });
 
       mocks.user.getList.mockResolvedValue([user]);
 
@@ -39,14 +39,12 @@ describe(UserService.name, () => {
     });
 
     it('non-admin should get all users when publicUsers enabled', async () => {
-      mocks.user.getList.mockResolvedValue([userStub.user1]);
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
 
-      await expect(sut.search(authStub.user1)).resolves.toEqual([
-        expect.objectContaining({
-          id: authStub.user1.user.id,
-          email: authStub.user1.user.email,
-        }),
-      ]);
+      mocks.user.getList.mockResolvedValue([user]);
+
+      await expect(sut.search(auth)).resolves.toEqual([expect.objectContaining({ id: user.id, email: user.email })]);
 
       expect(mocks.user.getList).toHaveBeenCalledWith({ withDeleted: false });
     });
@@ -107,17 +105,19 @@ describe(UserService.name, () => {
 
     it('should throw an error if the user profile could not be updated with the new image', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
-      mocks.user.get.mockResolvedValue(userStub.profilePath);
+      const user = factory.userAdmin({ profileImagePath: '/path/to/profile.jpg' });
+      mocks.user.get.mockResolvedValue(user);
       mocks.user.update.mockRejectedValue(new InternalServerErrorException('mocked error'));
 
       await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(InternalServerErrorException);
     });
 
     it('should delete the previous profile image', async () => {
+      const user = factory.userAdmin({ profileImagePath: '/path/to/profile.jpg' });
       const file = { path: '/profile/path' } as Express.Multer.File;
-      const files = [userStub.profilePath.profileImagePath];
+      const files = [user.profileImagePath];
 
-      mocks.user.get.mockResolvedValue(userStub.profilePath);
+      mocks.user.get.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
       await sut.createProfileImage(authStub.admin, file);
@@ -149,8 +149,10 @@ describe(UserService.name, () => {
     });
 
     it('should delete the profile image if user has one', async () => {
-      mocks.user.get.mockResolvedValue(userStub.profilePath);
-      const files = [userStub.profilePath.profileImagePath];
+      const user = factory.userAdmin({ profileImagePath: '/path/to/profile.jpg' });
+      const files = [user.profileImagePath];
+
+      mocks.user.get.mockResolvedValue(user);
 
       await sut.deleteProfileImage(authStub.admin);
 
@@ -176,9 +178,10 @@ describe(UserService.name, () => {
     });
 
     it('should return the profile picture', async () => {
-      mocks.user.get.mockResolvedValue(userStub.profilePath);
+      const user = factory.userAdmin({ profileImagePath: '/path/to/profile.jpg' });
+      mocks.user.get.mockResolvedValue(user);
 
-      await expect(sut.getProfileImage(userStub.profilePath.id)).resolves.toEqual(
+      await expect(sut.getProfileImage(user.id)).resolves.toEqual(
         new ImmichFileResponse({
           path: '/path/to/profile.jpg',
           contentType: 'image/jpeg',
@@ -186,7 +189,7 @@ describe(UserService.name, () => {
         }),
       );
 
-      expect(mocks.user.get).toHaveBeenCalledWith(userStub.profilePath.id, {});
+      expect(mocks.user.get).toHaveBeenCalledWith(user.id, {});
     });
   });
 
