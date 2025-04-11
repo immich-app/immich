@@ -1,6 +1,15 @@
 import { Selectable } from 'kysely';
 import { Exif as DatabaseExif } from 'src/db';
-import { AlbumUserRole, AssetFileType, AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import {
+  AlbumUserRole,
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  MemoryType,
+  Permission,
+  SourceType,
+  UserStatus,
+} from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
@@ -198,6 +207,36 @@ export type Session = {
 };
 
 export type Exif = Omit<Selectable<DatabaseExif>, 'updatedAt' | 'updateId'>;
+
+export type Person = {
+  createdAt: Date;
+  id: string;
+  ownerId: string;
+  updatedAt: Date;
+  updateId: string;
+  isFavorite: boolean;
+  name: string;
+  birthDate: Date | null;
+  color: string | null;
+  faceAssetId: string | null;
+  isHidden: boolean;
+  thumbnailPath: string;
+};
+
+export type AssetFace = {
+  id: string;
+  deletedAt: Date | null;
+  assetId: string;
+  boundingBoxX1: number;
+  boundingBoxX2: number;
+  boundingBoxY1: number;
+  boundingBoxY2: number;
+  imageHeight: number;
+  imageWidth: number;
+  personId: string | null;
+  sourceType: SourceType;
+  person?: Person | null;
+};
 
 const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
 
