@@ -63,6 +63,18 @@ export class OAuthRepository {
     }
   }
 
+  async getProfilePicture(url: string) {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch picture: ${response.statusText}`);
+    }
+
+    return {
+      data: await response.arrayBuffer(),
+      contentType: response.headers.get('content-type'),
+    };
+  }
+
   private async getClient({
     issuerUrl,
     clientId,
