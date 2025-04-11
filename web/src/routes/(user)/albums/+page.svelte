@@ -11,6 +11,7 @@
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
+  import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 
   interface Props {
     data: PageData;
@@ -44,8 +45,9 @@
   </div>
 
   <Albums
-    ownedAlbums={data.albums}
-    sharedAlbums={data.sharedAlbums}
+    ownedAlbums={albumListingStore.albums}
+    sharedAlbums={albumListingStore.sharedAlbums}
+    isLoading={albumListingStore.isLoading}
     userSettings={$albumViewSettings}
     allowEdit
     {searchQuery}
