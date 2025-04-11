@@ -163,6 +163,9 @@ ThemeData getThemeData({
       ),
     ),
     dialogTheme: DialogThemeData(backgroundColor: colorScheme.surfaceContainer),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      year2023: false,
+    ),
   );
 }
 
