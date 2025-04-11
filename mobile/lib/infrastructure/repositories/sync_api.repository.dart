@@ -90,7 +90,7 @@ class SyncApiRepository implements ISyncApiRepository {
         final ack = jsonData['ack'];
         final converter = _kResponseMap[type];
         if (converter == null) {
-          _logger.warning("[_parseSyncReponse] Unknown type $type");
+          _logger.warning("[_parseSyncResponse] Unknown type $type");
           continue;
         }
 

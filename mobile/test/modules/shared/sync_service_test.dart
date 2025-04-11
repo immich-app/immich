@@ -17,7 +17,8 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../domain/service.mock.dart';
 import '../../fixtures/asset.stub.dart';
-import '../../infrastructure/repository.mock.dart';
+import '../../infrastructure/repository.mock.dart'
+    hide MockAlbumMediaRepository;
 import '../../repository.mocks.dart';
 import '../../service.mocks.dart';
 import '../../test_utils.dart';
