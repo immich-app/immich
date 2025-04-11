@@ -11,3 +11,6 @@ const Duration kBackgroundSyncDuration = Duration(minutes: 1);
 // Hash batch limits
 const int kBatchHashFileLimit = 128;
 const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
+
+// Sync related
+const int kFetchLocalAssetsBatchSize = 40000;

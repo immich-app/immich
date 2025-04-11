@@ -29,4 +29,3 @@ class MockSearchApi extends Mock implements SearchApi {}
 class MockAppSettingService extends Mock implements AppSettingsService {}
 
 class MockBackgroundService extends Mock implements BackgroundService {}
-
