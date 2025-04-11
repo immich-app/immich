@@ -167,6 +167,9 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
+    bool isInHomePage = ref.read(tabProvider.notifier).state == TabEnum.home;
+    bool? isInTrash = ref.read(currentAssetProvider)?.isTrashed;
+
     return AppBar(
       foregroundColor: Colors.grey[100],
       backgroundColor: Colors.transparent,
@@ -175,9 +178,7 @@ class TopControlAppBar extends HookConsumerWidget {
       shape: const Border(),
       actions: [
         if (asset.isRemote && isOwner) buildFavoriteButton(a),
-        if (isOwner &&
-            ref.read(tabProvider.notifier).state != TabEnum.home &&
-            !(ref.read(currentAssetProvider)?.isTrashed ?? false))
+        if (isOwner && !isInHomePage && !(isInTrash ?? false))
           buildLocateButton(),
         if (asset.livePhotoVideoId != null) const MotionPhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
