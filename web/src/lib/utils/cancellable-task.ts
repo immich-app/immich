@@ -61,6 +61,9 @@ export class CancellableTask {
 
     try {
       await f(cancelToken.signal);
+      if (cancelToken.signal.aborted) {
+        return 'CANCELED';
+      }
       this.#transitionToExecuted();
       return 'LOADED';
     } catch (error) {
