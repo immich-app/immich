@@ -253,10 +253,10 @@ export class AuthService extends BaseService {
       const oldPath = user.profileImagePath;
 
       const { contentType, data } = await this.oauthRepository.getProfilePicture(url);
-      const extension = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
+      const extensionWithDot = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
       const profileImagePath = join(
         StorageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
-        `${this.cryptoRepository.randomUUID()}.${extension}`,
+        `${this.cryptoRepository.randomUUID()}${extensionWithDot}`,
       );
 
       this.storageCore.ensureFolders(profileImagePath);

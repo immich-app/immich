@@ -129,6 +129,7 @@ export const mimeTypes = {
   isVideo: (filename: string) => isType(filename, video),
   isRaw: (filename: string) => isType(filename, raw),
   lookup,
+  /** return an extension (including a leading `.`) for a mime-type */
   toExtension,
   assetType: (filename: string) => {
     const contentType = lookup(filename);
