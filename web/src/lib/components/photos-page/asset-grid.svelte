@@ -78,12 +78,18 @@
   let scrubBucketPercent = $state(0);
   let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
   let scrubOverallPercent: number = $state(0);
+  let scrubberWidth = $state(0);
 
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  const maxMd = $derived(mobileDevice.maxMd);
+
+  $effect(() => {
+    assetStore.rowHeight = maxMd ? 100 : 235;
+  });
 
   const scrollTo = (top: number) => {
     element?.scrollTo({ top });
@@ -273,10 +279,21 @@
           bucket = assetStore.buckets[i];
           bucketHeight = assetStore.buckets[i].bucketHeight;
         }
+
         let next = top - bucketHeight * maxScrollPercent;
-        if (next < 0 && bucket) {
+        // instead of checking for < 0, add a little wiggle room for subpixel resolution
+        if (next < -1 && bucket) {
           scrubBucket = bucket;
-          scrubBucketPercent = top / (bucketHeight * maxScrollPercent);
+
+          // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
+          scrubBucketPercent = Math.max(0, top / (bucketHeight * maxScrollPercent));
+
+          // compensate for lost precision/rouding errors advance to the next bucket, if present
+          if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
+            scrubBucket = assetStore.buckets[i + 1];
+            scrubBucketPercent = 0;
+          }
+
           found = true;
           break;
         }
@@ -704,6 +721,7 @@
     {scrubBucketPercent}
     {scrubBucket}
     {onScrub}
+    bind:scrubberWidth
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
       let amount = 50;
@@ -725,15 +743,11 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class={[
-    'scrollbar-hidden h-full overflow-y-auto outline-none',
-    { 'm-0': isEmpty },
-    { 'ml-0': !isEmpty },
-    { 'mr-[60px]': !isEmpty && !usingMobileDevice },
-  ]}
+  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ml-0': !isEmpty }]}
+  style:margin-right={scrubberWidth + 'px'}
   tabindex="-1"
   bind:clientHeight={assetStore.viewportHeight}
-  bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
+  bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v - scrubberWidth), updateSlidingWindow())}
   bind:this={element}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >
@@ -767,7 +781,6 @@
           style:position="absolute"
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
-          style:padding-left="10px"
         >
           <Skeleton height={bucket.bucketHeight - bucket.store.headerHeight} title={bucket.bucketDateFormatted} />
         </div>
@@ -794,6 +807,7 @@
         </div>
       {/if}
     {/each}
+    <!-- spacer for leadout -->
     <div
       class="h-[60px]"
       style:position="absolute"

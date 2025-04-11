@@ -595,7 +595,7 @@ export class AssetStore {
   #pendingChanges: PendingChange[] = [];
   #unsubscribers: Unsubscriber[] = [];
 
-  #rowHeight = 235;
+  #rowHeight = $state(235);
   #headerHeight = $state(49);
   #gap = $state(12);
 
@@ -609,7 +609,11 @@ export class AssetStore {
   constructor() {}
 
   set headerHeight(value) {
+    if (this.#headerHeight == value) {
+      return;
+    }
     this.#headerHeight = value;
+    this.refreshLayout();
   }
 
   get headerHeight() {
@@ -617,11 +621,27 @@ export class AssetStore {
   }
 
   set gap(value) {
+    if (this.#gap == value) {
+      return;
+    }
     this.#gap = value;
+    this.refreshLayout();
   }
 
   get gap() {
     return this.#gap;
+  }
+
+  set rowHeight(value) {
+    if (this.#rowHeight == value) {
+      return;
+    }
+    this.#rowHeight = value;
+    this.refreshLayout();
+  }
+
+  get rowHeight() {
+    return this.#rowHeight;
   }
 
   set scrolling(value: boolean) {
@@ -651,7 +671,6 @@ export class AssetStore {
     const changed = value !== this.#viewportWidth;
     this.#viewportWidth = value;
     this.suspendTransitions = true;
-    this.#rowHeight = value < 850 ? 100 : 235;
     // side-effect - its ok!
     void this.#updateViewportGeometry(changed);
   }
@@ -751,7 +770,7 @@ export class AssetStore {
     let topIntersectingBucket = undefined;
     for (const bucket of this.buckets) {
       this.#updateIntersection(bucket);
-      if (!topIntersectingBucket && bucket.actuallyIntersecting) {
+      if (!topIntersectingBucket && bucket.actuallyIntersecting && bucket.isLoaded) {
         topIntersectingBucket = bucket;
       }
     }

@@ -2,6 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import type { AssetStore, LiteBucket } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { getFocusable } from '$lib/utils/focus-util';
   import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
   import { mdiPlay } from '@mdi/js';
   import { clamp } from 'lodash-es';
@@ -18,6 +19,7 @@
     scrubBucketPercent?: number;
     scrubBucket?: { bucketDate: string | undefined };
     leadout?: boolean;
+    scrubberWidth?: number;
     onScrub?: ScrubberListener;
     onScrubKeyDown?: (event: KeyboardEvent, element: HTMLElement) => void;
     startScrub?: ScrubberListener;
@@ -37,6 +39,7 @@
     onScrubKeyDown = undefined,
     startScrub = undefined,
     stopScrub = undefined,
+    scrubberWidth = $bindable(),
   }: Props = $props();
 
   let isHover = $state(false);
@@ -52,24 +55,30 @@
   const toTimelineY = (scrollY: number) => scrollY / (height - (PADDING_TOP + PADDING_BOTTOM));
 
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+
+  const MOBILE_WIDTH = 20;
+  const DESKTOP_WIDTH = 60;
+  const HOVER_DATE_HEIGHT = 31.75;
+  const PADDING_TOP = $derived(usingMobileDevice ? 25 : HOVER_DATE_HEIGHT);
+  const PADDING_BOTTOM = $derived(usingMobileDevice ? 25 : 10);
+  const MIN_YEAR_LABEL_DISTANCE = 16;
+  const MIN_DOT_DISTANCE = 8;
+
   const width = $derived.by(() => {
     if (isDragging) {
       return '100vw';
     }
     if (usingMobileDevice) {
       if (assetStore.scrolling) {
-        return '20px';
+        return MOBILE_WIDTH + 'px';
       }
       return '0px';
     }
-    return '60px';
+    return DESKTOP_WIDTH + 'px';
   });
-
-  const HOVER_DATE_HEIGHT = 31.75;
-  const PADDING_TOP = $derived(usingMobileDevice ? 25 : HOVER_DATE_HEIGHT);
-  const PADDING_BOTTOM = $derived(usingMobileDevice ? 25 : 10);
-  const MIN_YEAR_LABEL_DISTANCE = 16;
-  const MIN_DOT_DISTANCE = 8;
+  $effect(() => {
+    scrubberWidth = usingMobileDevice ? MOBILE_WIDTH : DESKTOP_WIDTH;
+  });
 
   const toScrollFromBucketPercentage = (
     scrubBucket: { bucketDate: string | undefined } | undefined,
@@ -90,18 +99,16 @@
       if (!match) {
         offset += scrubBucketPercent * relativeBottomOffset;
       }
-      // 2px is the height of the indicator
-      return offset - 2;
+      return offset;
     } else if (leadout) {
       let offset = relativeTopOffset;
       for (const segment of segments) {
         offset += segment.height;
       }
       offset += scrubOverallPercent * relativeBottomOffset;
-      return offset - 2;
+      return offset;
     } else {
-      // 2px is the height of the indicator
-      return scrubOverallPercent * (height - (PADDING_TOP + PADDING_BOTTOM)) - 2;
+      return scrubOverallPercent * (height - (PADDING_TOP + PADDING_BOTTOM));
     }
   };
   let scrollY = $derived(toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent));
@@ -126,10 +133,12 @@
     let segments: Segment[] = [];
     let previousLabeledSegment: Segment | undefined;
 
+    let top = 0;
     for (const [i, bucket] of buckets.entries()) {
       const scrollBarPercentage = bucket.bucketHeight / timelineFullHeight;
 
       const segment = {
+        top,
         count: bucket.assetCount,
         height: toScrollY(scrollBarPercentage),
         bucketDate: bucket.bucketDate,
@@ -138,7 +147,7 @@
         hasLabel: false,
         hasDot: false,
       };
-
+      top += segment.height;
       if (i === 0) {
         segment.hasDot = true;
         segment.hasLabel = true;
@@ -174,41 +183,59 @@
     return activeSegment?.dataset.label;
   });
   const bucketDate = $derived(activeSegment?.dataset.timeSegmentBucketDate);
-  const scrollHoverLabel = $derived.by(() => {
+  const scrollSegment = $derived.by(() => {
     const y = scrollY;
-    let cur = 0;
+    let cur = relativeTopOffset;
     for (const segment of segments) {
-      if (y <= cur + segment.height + relativeTopOffset) {
-        return segment.dateFormatted;
+      if (y < cur + segment.height) {
+        return segment;
       }
       cur += segment.height;
     }
-    return '';
+    return null;
   });
+  const scrollHoverLabel = $derived(scrollSegment?.dateFormatted || '');
 
-  const findElement = (elements: Element[], ...ids: string[]) => {
+  const findElementBestY = (elements: Element[], y: number, ...ids: string[]) => {
     if (ids.length === 0) {
       return undefined;
     }
-    const result = elements.find((element) => {
+    const filtered = elements.filter((element) => {
       if (element instanceof HTMLElement && element.dataset.id) {
         return ids.includes(element.dataset.id);
       }
       return false;
-    });
-    return result as HTMLElement | undefined;
+    }) as HTMLElement[];
+    const imperfect = [];
+    for (const element of filtered) {
+      const boundingClientRect = element.getBoundingClientRect();
+      if (boundingClientRect.y > y) {
+        imperfect.push({
+          element,
+          boundingClientRect,
+        });
+        continue;
+      }
+      if (y <= boundingClientRect.y + boundingClientRect.height) {
+        return {
+          element,
+          boundingClientRect,
+        };
+      }
+    }
+    return imperfect.at(0);
   };
 
   const getActive = (x: number, y: number) => {
     const elements = document.elementsFromPoint(x, y);
-    const element = findElement(elements, 'time-segment', 'lead-in', 'lead-out');
+    const bestElement = findElementBestY(elements, y, 'time-segment', 'lead-in', 'lead-out');
 
-    if (element) {
-      const segment = element as HTMLElement;
-      const sr = segment.getBoundingClientRect();
-      const sy = sr.y;
+    if (bestElement) {
+      const segment = bestElement.element;
+      const boundingClientRect = bestElement.boundingClientRect;
+      const sy = boundingClientRect.y;
       const relativeY = y - sy;
-      const bucketPercentY = relativeY / sr.height;
+      const bucketPercentY = relativeY / boundingClientRect.height;
       return {
         isOnPaddingTop: false,
         isOnPaddingBottom: false,
@@ -218,14 +245,12 @@
     }
 
     // check if padding
-    const bar = findElement(elements, 'immich-scrubbable-scrollbar');
+    const bar = findElementBestY(elements, 0, 'immich-scrubbable-scrollbar');
     let isOnPaddingTop = false;
     let isOnPaddingBottom = false;
 
     if (bar) {
-      const segment = bar as HTMLElement;
-      const sr = segment.getBoundingClientRect();
-
+      const sr = bar.boundingClientRect;
       if (y < sr.top + PADDING_TOP) {
         isOnPaddingTop = true;
       }
@@ -293,7 +318,7 @@
     }
     const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
     const isHoverScrollbar =
-      findElement(elements, 'immich-scrubbable-scrollbar', 'time-label', 'lead-in', 'lead-out') !== undefined;
+      findElementBestY(elements, 0, 'immich-scrubbable-scrollbar', 'time-label', 'lead-in', 'lead-out') !== undefined;
 
     isHover = isHoverScrollbar;
 
@@ -338,6 +363,70 @@
       document.addEventListener('touchend', onTouchEnd, true);
     };
   });
+
+  const isTabEvent = (event: KeyboardEvent) => event?.key === 'Tab';
+  const isTabForward = (event: KeyboardEvent) => isTabEvent(event) && !event.shiftKey;
+  const isTabBackward = (event: KeyboardEvent) => isTabEvent(event) && event.shiftKey;
+  const isArrowUp = (event: KeyboardEvent) => event?.key === 'ArrowUp';
+  const isArrowDown = (event: KeyboardEvent) => event?.key === 'ArrowDown';
+
+  const handleFocus = (event: KeyboardEvent) => {
+    const forward = isTabForward(event);
+    const backward = isTabBackward(event);
+    if (forward || backward) {
+      event.preventDefault();
+
+      const focusable = getFocusable(document);
+      if (scrollBar) {
+        const index = focusable.indexOf(scrollBar);
+        if (index !== -1) {
+          let next: HTMLElement;
+          next = forward
+            ? (focusable[(index + 1) % focusable.length] as HTMLElement)
+            : (focusable[(index - 1) % focusable.length] as HTMLElement);
+          next.focus();
+        }
+      }
+    }
+  };
+  const handleAccessibility = (event: KeyboardEvent) => {
+    if (isTabEvent(event)) {
+      handleFocus(event);
+      return true;
+    }
+    if (isArrowUp(event)) {
+      let next;
+      if (scrollSegment) {
+        const idx = segments.indexOf(scrollSegment);
+        next = idx === -1 ? segments.at(-2) : segments[idx - 1];
+      } else {
+        next = segments.at(-2);
+      }
+      if (next) {
+        event.preventDefault();
+        void onScrub?.(next.bucketDate, -1, 0);
+        return true;
+      }
+    }
+    if (isArrowDown(event) && scrollSegment) {
+      const idx = segments.indexOf(scrollSegment);
+      if (idx !== -1) {
+        const next = segments[idx + 1];
+        if (next) {
+          event.preventDefault();
+          void onScrub?.(next.bucketDate, -1, 0);
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+  const keydown = (event: KeyboardEvent) => {
+    let handled = handleAccessibility(event);
+    if (!handled) {
+      onScrubKeyDown?.(event, event.currentTarget as HTMLElement);
+    }
+  };
 </script>
 
 <svelte:window
@@ -349,9 +438,10 @@
 
 <div
   transition:fly={{ x: 50, duration: 250 }}
-  tabindex="-1"
+  tabindex="0"
   role="scrollbar"
   aria-controls="time-label"
+  aria-valuetext={hoverLabel}
   aria-valuenow={scrollY + PADDING_TOP}
   aria-valuemax={toScrollY(1)}
   aria-valuemin={toScrollY(0)}
@@ -365,7 +455,7 @@
   bind:this={scrollBar}
   onmouseenter={() => (isHover = true)}
   onmouseleave={() => (isHover = false)}
-  onkeydown={(event) => onScrubKeyDown?.(event, event.currentTarget)}
+  onkeydown={keydown}
   draggable="false"
 >
   {#if !usingMobileDevice && hoverLabel && (isHover || isDragging)}
@@ -411,7 +501,7 @@
   {#if !usingMobileDevice && !isDragging}
     <div
       class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
-      style:top="{scrollY + PADDING_TOP}px"
+      style:top="{scrollY + PADDING_TOP - 2}px"
     >
       {#if assetStore.scrolling && scrollHoverLabel && !isHover}
         <p

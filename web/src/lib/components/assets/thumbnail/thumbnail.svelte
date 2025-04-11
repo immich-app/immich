@@ -25,6 +25,7 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { onMount } from 'svelte';
+  import { getFocusable } from '$lib/utils/focus-util';
 
   interface Props {
     asset: AssetResponseDto;
@@ -41,6 +42,7 @@
     showArchiveIcon?: boolean;
     showStackedIcon?: boolean;
     imageClass?: ClassValue;
+    brokenAssetClass?: ClassValue;
     dimmed?: boolean;
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
@@ -67,6 +69,7 @@
     onMouseEvent = undefined,
     handleFocus = undefined,
     imageClass = '',
+    brokenAssetClass = '',
     dimmed = false,
   }: Props = $props();
 
@@ -78,6 +81,7 @@
   let focussableElement: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
+  let thumbError = $state(false);
 
   $effect(() => {
     if (focussed && document.activeElement !== focussableElement) {
@@ -189,10 +193,10 @@
   style:width="{width}px"
   style:height="{height}px"
 >
-  {#if !loaded && asset.thumbhash}
+  {#if (!loaded || thumbError) && asset.thumbhash}
     <canvas
       use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-      class="absolute object-cover z-10"
+      class="absolute object-cover z-40"
       style:width="{width}px"
       style:height="{height}px"
       out:fade={{ duration: THUMBHASH_FADE_DURATION }}
@@ -219,10 +223,30 @@
       if (evt.key === 'x') {
         onSelect?.(asset);
       }
+      if (document.activeElement === focussableElement && evt.key === 'Escape') {
+        const focusable = getFocusable(document);
+        const index = focusable.indexOf(focussableElement);
+
+        let i = index + 1;
+        while (i !== index) {
+          const next = focusable[i];
+          if (next.dataset.thumbnailFocusContainer !== undefined) {
+            if (i === focusable.length - 1) {
+              i = 0;
+            } else {
+              i++;
+            }
+            continue;
+          }
+          next.focus();
+          break;
+        }
+      }
     }}
     onclick={handleClick}
     bind:this={focussableElement}
     onfocus={handleFocus}
+    data-thumbnail-focus-container
     data-testid="container-with-tabindex"
     tabindex={0}
     role="link"
@@ -332,12 +356,13 @@
       </div>
       <ImageThumbnail
         class={imageClass}
+        {brokenAssetClass}
         url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
         curve={selected}
-        onComplete={() => (loaded = true)}
+        onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.type === AssetTypeEnum.Video}
         <div class="absolute top-0 h-full w-full">
