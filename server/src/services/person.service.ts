@@ -542,36 +542,23 @@ export class PersonService extends BaseService {
   }
 
   @OnJob({ name: JobName.GENERATE_PERSON_THUMBNAIL, queue: QueueName.THUMBNAIL_GENERATION })
-  async handleGeneratePersonThumbnail(data: JobOf<JobName.GENERATE_PERSON_THUMBNAIL>): Promise<JobStatus> {
+  async handleGeneratePersonThumbnail({ id }: JobOf<JobName.GENERATE_PERSON_THUMBNAIL>): Promise<JobStatus> {
     const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
       return JobStatus.SKIPPED;
     }
 
-    const person = await this.personRepository.getPersonForThumbnailGenerationJob(data.id);
-    if (!person?.face?.asset) {
-      this.logger.error(`Could not generate person thumbnail: person ${person} has no face asset`);
+    const data = await this.personRepository.getDataForThumbnailGenerationJob(id);
+    if (!data) {
+      this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
       return JobStatus.FAILED;
     }
 
-    const {
-      asset,
-      boundingBoxX1: x1,
-      boundingBoxX2: x2,
-      boundingBoxY1: y1,
-      boundingBoxY2: y2,
-      imageWidth: oldWidth,
-      imageHeight: oldHeight,
-    } = person.face;
+    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight } = data;
 
-    if (asset.files.length === 0) {
-      this.logger.error(`Could not generate person thumbnail: asset ${asset.originalPath} has no preview`);
-      return JobStatus.FAILED;
-    }
+    const { width, height, inputPath } = await this.getInputDimensions(data);
 
-    const { width, height, inputPath } = await this.getInputDimensions(asset, { width: oldWidth, height: oldHeight });
-
-    const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
+    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions = {
@@ -584,7 +571,7 @@ export class PersonService extends BaseService {
     };
 
     await this.mediaRepository.generateThumbnail(inputPath, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id: person.id, thumbnailPath });
+    await this.personRepository.update({ id, thumbnailPath });
 
     return JobStatus.SUCCESS;
   }
@@ -659,35 +646,26 @@ export class PersonService extends BaseService {
     return person;
   }
 
-  private async getInputDimensions(
-    asset: {
-      type: AssetType;
-      exifInfo: { exifImageWidth: number | null; exifImageHeight: number | null };
-      originalPath: string;
-      files: { path: string; type: AssetFileType }[];
-    },
-    oldDims: ImageDimensions,
-  ): Promise<InputDimensions> {
-    if (!asset.exifInfo.exifImageHeight || !asset.exifInfo.exifImageWidth) {
-      throw new Error(`Asset ${asset.originalPath} dimensions are unknown`);
-    }
-
+  private async getInputDimensions(asset: {
+    type: AssetType;
+    exifImageWidth: number;
+    exifImageHeight: number;
+    previewPath: string;
+    originalPath: string;
+    oldWidth: number;
+    oldHeight: number;
+  }): Promise<InputDimensions> {
     if (asset.type === AssetType.IMAGE) {
-      let { exifImageWidth: width, exifImageHeight: height } = asset.exifInfo;
-      if (oldDims.height > oldDims.width !== height > width) {
+      let { exifImageWidth: width, exifImageHeight: height } = asset;
+      if (asset.oldHeight > asset.oldWidth !== height > width) {
         [width, height] = [height, width];
       }
 
       return { width, height, inputPath: asset.originalPath };
     }
 
-    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
-    if (!previewFile) {
-      throw new Error(`Asset ${asset.originalPath} has no preview path`);
-    }
-
-    const { width, height } = await this.mediaRepository.getImageDimensions(previewFile.path);
-    return { width, height, inputPath: previewFile.path };
+    const { width, height } = await this.mediaRepository.getImageDimensions(asset.previewPath);
+    return { width, height, inputPath: asset.previewPath };
   }
 
   private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {

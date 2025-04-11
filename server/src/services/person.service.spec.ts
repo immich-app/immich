@@ -1060,24 +1060,17 @@ describe(PersonService.name, () => {
     });
 
     it('should skip a person with face not found', async () => {
-      mocks.person.getPersonForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.noFace);
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
-    });
-
-    it('should skip a person with a face asset without a thumbnail', async () => {
-      mocks.person.getPersonForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.noPreview);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
     });
 
     it('should generate a thumbnail', async () => {
-      mocks.person.getPersonForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
       mocks.media.generateThumbnail.mockResolvedValue();
 
       await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
 
-      expect(mocks.person.getPersonForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
+      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         assetStub.primaryImage.originalPath,
@@ -1103,7 +1096,7 @@ describe(PersonService.name, () => {
     });
 
     it('should generate a thumbnail without going negative', async () => {
-      mocks.person.getPersonForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailStart);
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailStart);
       mocks.media.generateThumbnail.mockResolvedValue();
 
       await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
@@ -1128,7 +1121,7 @@ describe(PersonService.name, () => {
     });
 
     it('should generate a thumbnail without overflowing', async () => {
-      mocks.person.getPersonForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailEnd);
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailEnd);
       mocks.person.update.mockResolvedValue(personStub.primaryPerson);
       mocks.media.generateThumbnail.mockResolvedValue();
 

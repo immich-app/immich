@@ -15,7 +15,7 @@ export const newPersonRepositoryMock = (): Mocked<RepositoryInterface<PersonRepo
     getFaces: vitest.fn(),
     getFaceById: vitest.fn(),
     getFaceForFacialRecognitionJob: vitest.fn(),
-    getPersonForThumbnailGenerationJob: vitest.fn(),
+    getDataForThumbnailGenerationJob: vitest.fn(),
     reassignFace: vitest.fn(),
     getById: vitest.fn(),
     getByName: vitest.fn(),

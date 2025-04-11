@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
-import { jsonArrayFrom, jsonBuildObject, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable } from 'kysely';
+import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, SourceType } from 'src/enum';
-import { removeUndefinedKeys, toJson } from 'src/utils/database';
+import { removeUndefinedKeys } from 'src/utils/database';
 import { PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
@@ -109,7 +109,7 @@ export class PersonRepository {
     await this.vacuum({ reindexVectors: false });
   }
 
-  @GenerateSql({ params: [[{ id: DummyValue.UUID }]] })
+  @GenerateSql({ params: [DummyValue.UUID] })
   async delete(ids: string[]): Promise<void> {
     if (ids.length === 0) {
       return;
@@ -125,7 +125,7 @@ export class PersonRepository {
     await this.vacuum({ reindexVectors: sourceType === SourceType.MACHINE_LEARNING });
   }
 
-  getAllFaces(options: GetAllFacesOptions | undefined = {}): AsyncIterableIterator<Selectable<AssetFaces>> {
+  getAllFaces(options: GetAllFacesOptions = {}) {
     return this.db
       .selectFrom('asset_faces')
       .selectAll('asset_faces')
@@ -137,7 +137,7 @@ export class PersonRepository {
       .stream();
   }
 
-  getAll(options: GetAllPeopleOptions | undefined = {}) {
+  getAll(options: GetAllPeopleOptions = {}) {
     return this.db
       .selectFrom('person')
       .selectAll('person')
@@ -263,57 +263,33 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getPersonForThumbnailGenerationJob(id: string) {
+  getDataForThumbnailGenerationJob(id: string) {
     return this.db
       .selectFrom('person')
-      .leftJoinLateral(
-        (eb) =>
-          eb
-            .selectFrom('asset_faces')
-            .leftJoinLateral(
-              (eb) =>
-                eb
-                  .selectFrom('assets')
-                  .innerJoin('exif', 'exif.assetId', 'assets.id')
-                  .select(['assets.originalPath', 'assets.type'])
-                  .select((eb) =>
-                    jsonBuildObject({
-                      exifImageWidth: eb.ref('exif.exifImageWidth'),
-                      exifImageHeight: eb.ref('exif.exifImageHeight'),
-                    }).as('exifInfo'),
-                  )
-                  .select((eb) =>
-                    jsonArrayFrom(
-                      eb
-                        .selectFrom('asset_files')
-                        .select(['asset_files.path', 'asset_files.type'])
-                        .whereRef('assets.id', '=', 'asset_files.assetId')
-                        .where('asset_files.type', '=', AssetFileType.PREVIEW)
-                        .limit(1),
-                    ).as('files'),
-                  )
-                  .whereRef('assets.id', '=', 'asset_faces.assetId')
-                  .as('asset'),
-              (join) => join.onTrue(),
-            )
-            .select([
-              'asset_faces.boundingBoxX1',
-              'asset_faces.boundingBoxY1',
-              'asset_faces.boundingBoxX2',
-              'asset_faces.boundingBoxY2',
-              'asset_faces.imageWidth',
-              'asset_faces.imageHeight',
-            ])
-            .select((eb) => toJson(eb, 'asset').as('asset'))
-            .whereRef('asset_faces.id', '=', 'person.faceAssetId')
-            .where('asset_faces.deletedAt', 'is', null)
-            .as('face'),
-        (join) => join.onTrue(),
-      )
-      .select(['person.id', 'person.ownerId', 'person.faceAssetId'])
-      .select((eb) => toJson(eb, 'face').as('face'))
+      .innerJoin('asset_faces', 'asset_faces.id', 'person.faceAssetId')
+      .innerJoin('assets', 'asset_faces.assetId', 'assets.id')
+      .innerJoin('exif', 'exif.assetId', 'assets.id')
+      .innerJoin('asset_files', 'asset_files.assetId', 'assets.id')
+      .select([
+        'person.ownerId',
+        'asset_faces.boundingBoxX1 as x1',
+        'asset_faces.boundingBoxY1 as y1',
+        'asset_faces.boundingBoxX2 as x2',
+        'asset_faces.boundingBoxY2 as y2',
+        'asset_faces.imageWidth as oldWidth',
+        'asset_faces.imageHeight as oldHeight',
+        'exif.exifImageWidth',
+        'exif.exifImageHeight',
+        'assets.type',
+        'assets.originalPath',
+        'asset_files.path as previewPath',
+      ])
       .where('person.id', '=', id)
-      .where('person.faceAssetId', 'is not', null)
+      .where('asset_faces.deletedAt', 'is', null)
+      .where('asset_files.type', '=', AssetFileType.PREVIEW)
+      .where('exif.exifImageWidth', '>', 0)
+      .where('exif.exifImageHeight', '>', 0)
+      .$narrowType<{ exifImageWidth: NotNull; exifImageHeight: NotNull }>()
       .executeTakeFirst();
   }
 
@@ -329,13 +305,11 @@ export class PersonRepository {
   }
 
   getById(personId: string) {
-    return (
-      this.db //
-        .selectFrom('person')
-        .selectAll('person')
-        .where('person.id', '=', personId)
-        .executeTakeFirst() ?? null
-    );
+    return this.db //
+      .selectFrom('person')
+      .selectAll('person')
+      .where('person.id', '=', personId)
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, { withHidden: true }] })

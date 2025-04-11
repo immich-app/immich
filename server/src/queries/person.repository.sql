@@ -23,7 +23,7 @@ REINDEX TABLE person
 -- PersonRepository.delete
 delete from "person"
 where
-  "person"."id" in ($1)
+  "person"."id" in $1
 
 -- PersonRepository.deleteFaces
 delete from "asset_faces"
@@ -134,65 +134,32 @@ where
   "asset_faces"."id" = $1
   and "asset_faces"."deletedAt" is null
 
--- PersonRepository.getPersonForThumbnailGenerationJob
+-- PersonRepository.getDataForThumbnailGenerationJob
 select
-  "person"."id",
   "person"."ownerId",
-  "person"."faceAssetId",
-  to_json("face") as "face"
+  "asset_faces"."boundingBoxX1" as "x1",
+  "asset_faces"."boundingBoxY1" as "y1",
+  "asset_faces"."boundingBoxX2" as "x2",
+  "asset_faces"."boundingBoxY2" as "y2",
+  "asset_faces"."imageWidth" as "oldWidth",
+  "asset_faces"."imageHeight" as "oldHeight",
+  "exif"."exifImageWidth",
+  "exif"."exifImageHeight",
+  "assets"."type",
+  "assets"."originalPath",
+  "asset_files"."path" as "previewPath"
 from
   "person"
-  left join lateral (
-    select
-      "asset_faces"."boundingBoxX1",
-      "asset_faces"."boundingBoxY1",
-      "asset_faces"."boundingBoxX2",
-      "asset_faces"."boundingBoxY2",
-      "asset_faces"."imageWidth",
-      "asset_faces"."imageHeight",
-      to_json("asset") as "asset"
-    from
-      "asset_faces"
-      left join lateral (
-        select
-          "assets"."originalPath",
-          "assets"."type",
-          json_build_object(
-            'exifImageWidth',
-            "exif"."exifImageWidth",
-            'exifImageHeight',
-            "exif"."exifImageHeight"
-          ) as "exifInfo",
-          (
-            select
-              coalesce(json_agg(agg), '[]')
-            from
-              (
-                select
-                  "asset_files"."path",
-                  "asset_files"."type"
-                from
-                  "asset_files"
-                where
-                  "assets"."id" = "asset_files"."assetId"
-                  and "asset_files"."type" = $1
-                limit
-                  $2
-              ) as agg
-          ) as "files"
-        from
-          "assets"
-          inner join "exif" on "exif"."assetId" = "assets"."id"
-        where
-          "assets"."id" = "asset_faces"."assetId"
-      ) as "asset" on true
-    where
-      "asset_faces"."id" = "person"."faceAssetId"
-      and "asset_faces"."deletedAt" is null
-  ) as "face" on true
+  inner join "asset_faces" on "asset_faces"."id" = "person"."faceAssetId"
+  inner join "assets" on "asset_faces"."assetId" = "assets"."id"
+  inner join "exif" on "exif"."assetId" = "assets"."id"
+  inner join "asset_files" on "asset_files"."assetId" = "assets"."id"
 where
-  "person"."id" = $3
-  and "person"."faceAssetId" is not null
+  "person"."id" = $1
+  and "asset_faces"."deletedAt" is null
+  and "asset_files"."type" = $2
+  and "exif"."exifImageWidth" > $3
+  and "exif"."exifImageHeight" > $4
 
 -- PersonRepository.reassignFace
 update "asset_faces"
