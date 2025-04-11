@@ -595,7 +595,7 @@
       id="stack-slideshow"
       class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
     >
-      <div class="relative w-full whitespace-nowrap">
+      <div class="relative w-full">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
             class={['inline-block px-1 relative transition-all pb-2']}
@@ -603,6 +603,7 @@
           >
             <Thumbnail
               imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
+              brokenAssetClass="text-xs"
               dimmed={stackedAsset.id !== asset.id}
               asset={stackedAsset}
               onClick={(stackedAsset) => {
