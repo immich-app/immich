@@ -13,7 +13,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getByIds: vitest.fn().mockResolvedValue([]),
     getAssetForSearchDuplicatesJob: vitest.fn(),
     getAssetForSidecarWriteJob: vitest.fn(),
-    getByIdsWithAllRelations: vitest.fn().mockResolvedValue([]),
+    getByIdsWithAllRelationsButStacks: vitest.fn().mockResolvedValue([]),
     getByAlbumId: vitest.fn(),
     getByDeviceIds: vitest.fn(),
     getByUserId: vitest.fn(),

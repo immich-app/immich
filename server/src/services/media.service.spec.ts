@@ -2,7 +2,6 @@ import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import {
   AssetFileType,
   AssetPathType,
@@ -282,7 +281,7 @@ describe(MediaService.name, () => {
     });
 
     it('should skip thumbnail generation if asset type is unknown', async () => {
-      mocks.asset.getById.mockResolvedValue({ ...assetStub.image, type: 'foo' } as never as AssetEntity);
+      mocks.asset.getById.mockResolvedValue({ ...assetStub.image, type: 'foo' as AssetType });
 
       await expect(sut.handleGenerateThumbnails({ id: assetStub.image.id })).resolves.toBe(JobStatus.SKIPPED);
       expect(mocks.media.probe).not.toHaveBeenCalled();

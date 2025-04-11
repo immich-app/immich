@@ -116,7 +116,7 @@ export class SmartInfoService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
+    const previewFile = getAssetFile(asset.files!, AssetFileType.PREVIEW);
     if (!previewFile) {
       return JobStatus.FAILED;
     }

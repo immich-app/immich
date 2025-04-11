@@ -333,8 +333,7 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should return metadata tags with a default image path if the asset id is not set', async () => {
-      mocks.sharedLink.get.mockResolvedValue({ ...sharedLinkStub.individual, album: undefined, assets: [] });
-
+      mocks.sharedLink.get.mockResolvedValue({ ...sharedLinkStub.individual, album: null, assets: [] });
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '0 shared photos & videos',
         imageUrl: `https://my.immich.app/feature-panel.png`,

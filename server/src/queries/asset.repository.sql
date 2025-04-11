@@ -82,7 +82,7 @@ from
 where
   "assets"."id" = any ($1::uuid[])
 
--- AssetRepository.getByIdsWithAllRelations
+-- AssetRepository.getByIdsWithAllRelationsButStacks
 select
   "assets".*,
   (
@@ -110,7 +110,12 @@ select
     from
       (
         select
-          "tags".*
+          "tags"."id",
+          "tags"."value",
+          "tags"."createdAt",
+          "tags"."updatedAt",
+          "tags"."color",
+          "tags"."parentId"
         from
           "tags"
           inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
@@ -118,28 +123,48 @@ select
           "assets"."id" = "tag_asset"."assetsId"
       ) as agg
   ) as "tags",
-  to_json("exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
+  to_json(
+    (
+      select
+        "exif"."assetId",
+        "exif"."autoStackId",
+        "exif"."bitsPerSample",
+        "exif"."city",
+        "exif"."colorspace",
+        "exif"."country",
+        "exif"."dateTimeOriginal",
+        "exif"."description",
+        "exif"."exifImageHeight",
+        "exif"."exifImageWidth",
+        "exif"."exposureTime",
+        "exif"."fileSizeInByte",
+        "exif"."fNumber",
+        "exif"."focalLength",
+        "exif"."fps",
+        "exif"."iso",
+        "exif"."latitude",
+        "exif"."lensModel",
+        "exif"."livePhotoCID",
+        "exif"."longitude",
+        "exif"."make",
+        "exif"."model",
+        "exif"."modifyDate",
+        "exif"."orientation",
+        "exif"."profileDescription",
+        "exif"."projectionType",
+        "exif"."rating",
+        "exif"."state",
+        "exif"."timeZone"
+      from
+        "exif"
+    )
+  ) as "exifInfo"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
   left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
-  left join lateral (
-    select
-      "asset_stack".*,
-      array_agg("stacked") as "assets"
-    from
-      "assets" as "stacked"
-    where
-      "stacked"."stackId" = "asset_stack"."id"
-      and "stacked"."id" != "asset_stack"."primaryAssetId"
-      and "stacked"."deletedAt" is null
-      and "stacked"."isArchived" = $1
-    group by
-      "asset_stack"."id"
-  ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."id" = any ($2::uuid[])
+  "assets"."id" = any ($1::uuid[])
 
 -- AssetRepository.deleteAll
 delete from "assets"
@@ -194,7 +219,9 @@ select
     from
       (
         select
-          "asset_files".*
+          "asset_files"."id",
+          "asset_files"."path",
+          "asset_files"."type"
         from
           "asset_files"
         where
@@ -344,7 +371,42 @@ order by
 -- AssetRepository.getTimeBucket
 select
   "assets".*,
-  to_json("exif") as "exifInfo",
+  to_json(
+    (
+      select
+        "exif"."assetId",
+        "exif"."autoStackId",
+        "exif"."bitsPerSample",
+        "exif"."city",
+        "exif"."colorspace",
+        "exif"."country",
+        "exif"."dateTimeOriginal",
+        "exif"."description",
+        "exif"."exifImageHeight",
+        "exif"."exifImageWidth",
+        "exif"."exposureTime",
+        "exif"."fileSizeInByte",
+        "exif"."fNumber",
+        "exif"."focalLength",
+        "exif"."fps",
+        "exif"."iso",
+        "exif"."latitude",
+        "exif"."lensModel",
+        "exif"."livePhotoCID",
+        "exif"."longitude",
+        "exif"."make",
+        "exif"."model",
+        "exif"."modifyDate",
+        "exif"."orientation",
+        "exif"."profileDescription",
+        "exif"."projectionType",
+        "exif"."rating",
+        "exif"."state",
+        "exif"."timeZone"
+      from
+        "exif"
+    )
+  ) as "exifInfo",
   to_json("stacked_assets") as "stack"
 from
   "assets"
@@ -463,7 +525,42 @@ limit
 -- AssetRepository.getAllForUserFullSync
 select
   "assets".*,
-  to_json("exif") as "exifInfo",
+  to_json(
+    (
+      select
+        "exif"."assetId",
+        "exif"."autoStackId",
+        "exif"."bitsPerSample",
+        "exif"."city",
+        "exif"."colorspace",
+        "exif"."country",
+        "exif"."dateTimeOriginal",
+        "exif"."description",
+        "exif"."exifImageHeight",
+        "exif"."exifImageWidth",
+        "exif"."exposureTime",
+        "exif"."fileSizeInByte",
+        "exif"."fNumber",
+        "exif"."focalLength",
+        "exif"."fps",
+        "exif"."iso",
+        "exif"."latitude",
+        "exif"."lensModel",
+        "exif"."livePhotoCID",
+        "exif"."longitude",
+        "exif"."make",
+        "exif"."model",
+        "exif"."modifyDate",
+        "exif"."orientation",
+        "exif"."profileDescription",
+        "exif"."projectionType",
+        "exif"."rating",
+        "exif"."state",
+        "exif"."timeZone"
+      from
+        "exif"
+    )
+  ) as "exifInfo",
   to_json("stacked_assets") as "stack"
 from
   "assets"
@@ -496,7 +593,42 @@ limit
 -- AssetRepository.getChangedDeltaSync
 select
   "assets".*,
-  to_json("exif") as "exifInfo",
+  to_json(
+    (
+      select
+        "exif"."assetId",
+        "exif"."autoStackId",
+        "exif"."bitsPerSample",
+        "exif"."city",
+        "exif"."colorspace",
+        "exif"."country",
+        "exif"."dateTimeOriginal",
+        "exif"."description",
+        "exif"."exifImageHeight",
+        "exif"."exifImageWidth",
+        "exif"."exposureTime",
+        "exif"."fileSizeInByte",
+        "exif"."fNumber",
+        "exif"."focalLength",
+        "exif"."fps",
+        "exif"."iso",
+        "exif"."latitude",
+        "exif"."lensModel",
+        "exif"."livePhotoCID",
+        "exif"."longitude",
+        "exif"."make",
+        "exif"."model",
+        "exif"."modifyDate",
+        "exif"."orientation",
+        "exif"."profileDescription",
+        "exif"."projectionType",
+        "exif"."rating",
+        "exif"."state",
+        "exif"."timeZone"
+      from
+        "exif"
+    )
+  ) as "exifInfo",
   to_json("stacked_assets") as "stack"
 from
   "assets"

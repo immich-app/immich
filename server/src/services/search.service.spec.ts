@@ -45,7 +45,7 @@ describe(SearchService.name, () => {
         fieldName: 'exifInfo.city',
         items: [{ value: 'test-city', data: assetStub.withLocation.id }],
       });
-      mocks.asset.getByIdsWithAllRelations.mockResolvedValue([assetStub.withLocation]);
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([assetStub.withLocation]);
       const expectedResponse = [
         { fieldName: 'exifInfo.city', items: [{ value: 'test-city', data: mapAsset(assetStub.withLocation) }] },
       ];

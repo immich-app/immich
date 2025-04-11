@@ -15,7 +15,35 @@ select
           "assets"
           inner join lateral (
             select
-              "exif".*
+              "exif"."assetId",
+              "exif"."autoStackId",
+              "exif"."bitsPerSample",
+              "exif"."city",
+              "exif"."colorspace",
+              "exif"."country",
+              "exif"."dateTimeOriginal",
+              "exif"."description",
+              "exif"."exifImageHeight",
+              "exif"."exifImageWidth",
+              "exif"."exposureTime",
+              "exif"."fileSizeInByte",
+              "exif"."fNumber",
+              "exif"."focalLength",
+              "exif"."fps",
+              "exif"."iso",
+              "exif"."latitude",
+              "exif"."lensModel",
+              "exif"."livePhotoCID",
+              "exif"."longitude",
+              "exif"."make",
+              "exif"."model",
+              "exif"."modifyDate",
+              "exif"."orientation",
+              "exif"."profileDescription",
+              "exif"."projectionType",
+              "exif"."rating",
+              "exif"."state",
+              "exif"."timeZone"
             from
               "exif"
             where
@@ -52,7 +80,12 @@ select
             from
               (
                 select
-                  "tags".*
+                  "tags"."id",
+                  "tags"."value",
+                  "tags"."createdAt",
+                  "tags"."updatedAt",
+                  "tags"."color",
+                  "tags"."parentId"
                 from
                   "tags"
                   inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
@@ -65,7 +98,35 @@ select
           "assets"
           inner join lateral (
             select
-              "exif".*
+              "exif"."assetId",
+              "exif"."autoStackId",
+              "exif"."bitsPerSample",
+              "exif"."city",
+              "exif"."colorspace",
+              "exif"."country",
+              "exif"."dateTimeOriginal",
+              "exif"."description",
+              "exif"."exifImageHeight",
+              "exif"."exifImageWidth",
+              "exif"."exposureTime",
+              "exif"."fileSizeInByte",
+              "exif"."fNumber",
+              "exif"."focalLength",
+              "exif"."fps",
+              "exif"."iso",
+              "exif"."latitude",
+              "exif"."lensModel",
+              "exif"."livePhotoCID",
+              "exif"."longitude",
+              "exif"."make",
+              "exif"."model",
+              "exif"."modifyDate",
+              "exif"."orientation",
+              "exif"."profileDescription",
+              "exif"."projectionType",
+              "exif"."rating",
+              "exif"."state",
+              "exif"."timeZone"
             from
               "exif"
             where

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AssetFace } from 'src/database';
+import { Asset, AssetFace } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
@@ -11,7 +11,6 @@ import {
 } from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetType } from 'src/enum';
 import { mimeTypes } from 'src/utils/mime-types';
 
@@ -90,7 +89,7 @@ const peopleWithFaces = (faces: AssetFace[]): PersonWithFacesResponseDto[] => {
   return result;
 };
 
-const mapStack = (entity: AssetEntity) => {
+const mapStack = (entity: Asset) => {
   if (!entity.stack) {
     return null;
   }
@@ -98,7 +97,7 @@ const mapStack = (entity: AssetEntity) => {
   return {
     id: entity.stack.id,
     primaryAssetId: entity.stack.primaryAssetId,
-    assetCount: entity.stack.assetCount ?? entity.stack.assets.length + 1,
+    assetCount: entity.stack.assetCount ?? entity.stack.assets!.length + 1,
   };
 };
 
@@ -111,7 +110,7 @@ export const hexOrBufferToBase64 = (encoded: string | Buffer) => {
   return encoded.toString('base64');
 };
 
-export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
+export function mapAsset(entity: Asset, options: AssetMapOptions = {}): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
 
   if (stripMetadata) {
@@ -120,7 +119,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
       type: entity.type,
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
-      localDateTime: entity.localDateTime,
+      localDateTime: entity.localDateTime!,
       duration: entity.duration ?? '0:00:00.00000',
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
@@ -140,9 +139,9 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
     thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
-    fileCreatedAt: entity.fileCreatedAt,
-    fileModifiedAt: entity.fileModifiedAt,
-    localDateTime: entity.localDateTime,
+    fileCreatedAt: entity.fileCreatedAt!,
+    fileModifiedAt: entity.fileModifiedAt!,
+    localDateTime: entity.localDateTime!,
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
     isArchived: entity.isArchived,
@@ -151,7 +150,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
-    people: peopleWithFaces(entity.faces),
+    people: entity.faces && peopleWithFaces(entity.faces),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: hexOrBufferToBase64(entity.checksum),
     stack: withStack ? mapStack(entity) : undefined,

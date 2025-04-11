@@ -5,6 +5,7 @@ import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { Asset } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   CreateLibraryDto,
@@ -16,7 +17,6 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AssetSyncResult } from 'src/repositories/library.repository';
@@ -551,7 +551,7 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private checkExistingAsset(asset: AssetEntity, stat: Stats | null): AssetSyncResult {
+  private checkExistingAsset(asset: Asset, stat: Stats | null): AssetSyncResult {
     if (!stat) {
       // File not found on disk or permission error
       if (asset.isOffline) {
