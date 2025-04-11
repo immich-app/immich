@@ -32,6 +32,9 @@
 <UploadCover />
 
 <style>
+  :root {
+    overscroll-behavior: none;
+  }
   .display-none {
     display: none;
   }
