@@ -33,7 +33,7 @@
     "sync:open-api": "node ./dist/bin/sync-open-api.js",
     "sync:sql": "node ./dist/bin/sync-sql.js",
     "email:dev": "email dev -p 3050 --dir src/emails",
-    "postinstall": "[ \"$npm_config_global\" != \"true\" ] && patch-package || true"
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.1",

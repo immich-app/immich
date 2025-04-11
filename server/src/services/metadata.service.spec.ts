@@ -3,8 +3,8 @@ import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { defaults } from 'src/config';
+import { Exif } from 'src/database';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
@@ -12,11 +12,33 @@ import { MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
-import { metadataStub } from 'test/fixtures/metadata.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
+
+const makeFaceTags = (face: Partial<{ Name: string }> = {}) => ({
+  RegionInfo: {
+    AppliedToDimensions: {
+      W: 100,
+      H: 100,
+      Unit: 'normalized',
+    },
+    RegionList: [
+      {
+        Type: 'face',
+        Area: {
+          X: 0.05,
+          Y: 0.05,
+          W: 0.1,
+          H: 0.1,
+          Unit: 'normalized',
+        },
+        ...face,
+      },
+    ],
+  },
+});
 
 describe(MetadataService.name, () => {
   let sut: MetadataService;
@@ -969,7 +991,7 @@ describe(MetadataService.name, () => {
     it('should skip importing metadata when the feature is disabled', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: false } } });
-      mockReadTags(metadataStub.withFace);
+      mockReadTags(makeFaceTags({ Name: 'Person 1' }));
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.person.getDistinctNames).not.toHaveBeenCalled();
     });
@@ -977,7 +999,7 @@ describe(MetadataService.name, () => {
     it('should skip importing metadata face for assets without tags.RegionInfo', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.empty);
+      mockReadTags();
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.person.getDistinctNames).not.toHaveBeenCalled();
     });
@@ -985,7 +1007,7 @@ describe(MetadataService.name, () => {
     it('should skip importing faces without name', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.withFaceNoName);
+      mockReadTags(makeFaceTags());
       mocks.person.getDistinctNames.mockResolvedValue([]);
       mocks.person.createAll.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -997,7 +1019,7 @@ describe(MetadataService.name, () => {
     it('should skip importing faces with empty name', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.withFaceEmptyName);
+      mockReadTags(makeFaceTags({ Name: '' }));
       mocks.person.getDistinctNames.mockResolvedValue([]);
       mocks.person.createAll.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -1009,7 +1031,7 @@ describe(MetadataService.name, () => {
     it('should apply metadata face tags creating new persons', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.withFace);
+      mockReadTags(makeFaceTags({ Name: personStub.withName.name }));
       mocks.person.getDistinctNames.mockResolvedValue([]);
       mocks.person.createAll.mockResolvedValue([personStub.withName.id]);
       mocks.person.update.mockResolvedValue(personStub.withName);
@@ -1050,7 +1072,7 @@ describe(MetadataService.name, () => {
     it('should assign metadata face tags to existing persons', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.primaryImage]);
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(metadataStub.withFace);
+      mockReadTags(makeFaceTags({ Name: personStub.withName.name }));
       mocks.person.getDistinctNames.mockResolvedValue([{ id: personStub.withName.id, name: personStub.withName.name }]);
       mocks.person.createAll.mockResolvedValue([]);
       mocks.person.update.mockResolvedValue(personStub.withName);
@@ -1190,7 +1212,7 @@ describe(MetadataService.name, () => {
       mocks.asset.getByIds.mockResolvedValue([
         {
           ...assetStub.livePhotoStillAsset,
-          exifInfo: { livePhotoCID: assetStub.livePhotoMotionAsset.id } as ExifEntity,
+          exifInfo: { livePhotoCID: assetStub.livePhotoMotionAsset.id } as Exif,
         },
       ]);
       mocks.asset.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
@@ -1229,18 +1251,51 @@ describe(MetadataService.name, () => {
     });
 
     it.each([
-      { Make: '1', Model: '2', Device: { Manufacturer: '3', ModelName: '4' }, AndroidMake: '4', AndroidModel: '5' },
-      { Device: { Manufacturer: '1', ModelName: '2' }, AndroidMake: '3', AndroidModel: '4' },
-      { AndroidMake: '1', AndroidModel: '2' },
-    ])('should read camera make and model correct place %s', async (metaData) => {
+      {
+        exif: {
+          Make: '1',
+          Model: '2',
+          Device: { Manufacturer: '3', ModelName: '4' },
+          AndroidMake: '4',
+          AndroidModel: '5',
+        },
+        expected: { make: '1', model: '2' },
+      },
+      {
+        exif: { Device: { Manufacturer: '1', ModelName: '2' }, AndroidMake: '3', AndroidModel: '4' },
+        expected: { make: '1', model: '2' },
+      },
+      { exif: { AndroidMake: '1', AndroidModel: '2' }, expected: { make: '1', model: '2' } },
+    ])('should read camera make and model $exif -> $expected', async ({ exif, expected }) => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
-      mockReadTags(metaData);
+      mockReadTags(exif);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining(expected));
+    });
+
+    it.each([
+      { exif: {}, expected: null },
+      { exif: { LensID: '1', LensSpec: '2', LensType: '3', LensModel: '4' }, expected: '1' },
+      { exif: { LensSpec: '2', LensType: '3', LensModel: '4' }, expected: '3' },
+      { exif: { LensSpec: '2', LensModel: '4' }, expected: '2' },
+      { exif: { LensModel: '4' }, expected: '4' },
+      { exif: { LensID: '----' }, expected: null },
+      { exif: { LensID: 'Unknown (0 ff ff)' }, expected: null },
+      {
+        exif: { LensID: 'Unknown (E1 40 19 36 2C 35 DF 0E) Tamron 10-24mm f/3.5-4.5 Di II VC HLD (B023) ?' },
+        expected: null,
+      },
+      { exif: { LensID: ' Unknown 6-30mm' }, expected: null },
+      { exif: { LensID: '' }, expected: null },
+    ])('should read camera lens information $exif -> $expected', async ({ exif, expected }) => {
+      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
+      mockReadTags(exif);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
-          make: '1',
-          model: '2',
+          lensModel: expected,
         }),
       );
     });

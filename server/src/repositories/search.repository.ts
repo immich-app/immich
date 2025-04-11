@@ -162,7 +162,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
   numResults: number;
   maxDistance: number;
-  minBirthDate?: Date;
+  minBirthDate?: Date | null;
 }
 
 export interface AssetDuplicateSearch {

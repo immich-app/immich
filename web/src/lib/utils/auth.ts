@@ -3,6 +3,7 @@ import { goto } from '$app/navigation';
 import { foldersStore } from '$lib/stores/folders.svelte';
 import { memoryStore } from '$lib/stores/memory.store.svelte';
 import { purchaseStore } from '$lib/stores/purchase.store';
+import { searchStore } from '$lib/stores/search.svelte';
 import { preferences as preferences$, resetSavedUser, user as user$ } from '$lib/stores/user.store';
 import { resetUserInteraction, userInteraction } from '$lib/stores/user.svelte';
 import { getAboutInfo, getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
@@ -103,5 +104,6 @@ export const handleLogout = async (redirectUri: string) => {
     resetUserInteraction();
     foldersStore.clearCache();
     memoryStore.clearCache();
+    searchStore.clearCache();
   }
 };

@@ -4,6 +4,7 @@ FROM ghcr.io/immich-app/base-server-dev:202503251114@sha256:10e8973e8603c5729436
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
+COPY server/patches ./patches
 RUN npm ci && \
   # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
   # they're marked as optional dependencies, so we need to copy them manually after pruning
@@ -56,7 +57,7 @@ COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
 COPY server/start*.sh ./
 COPY "docker/scripts/get-cpus.sh" ./
-RUN npm link && npm install -g @immich/cli && npm cache clean --force
+RUN npm install -g @immich/cli && npm cache clean --force
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 ENV PATH="${PATH}:/usr/src/app/bin"

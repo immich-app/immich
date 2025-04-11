@@ -88,7 +88,7 @@ describe(AssetService.name, () => {
 
     it('should get memories with partners with inTimeline enabled', async () => {
       const partner = factory.partner();
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.partner.getAll.mockResolvedValue([partner]);
       mocks.asset.getByDayOfYear.mockResolvedValue([]);
@@ -139,7 +139,7 @@ describe(AssetService.name, () => {
 
     it('should not include partner assets if not in timeline', async () => {
       const partner = factory.partner({ inTimeline: false });
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.asset.getRandom.mockResolvedValue([assetStub.image]);
       mocks.partner.getAll.mockResolvedValue([partner]);
@@ -151,7 +151,7 @@ describe(AssetService.name, () => {
 
     it('should include partner assets if in timeline', async () => {
       const partner = factory.partner({ inTimeline: true });
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.asset.getRandom.mockResolvedValue([assetStub.image]);
       mocks.partner.getAll.mockResolvedValue([partner]);

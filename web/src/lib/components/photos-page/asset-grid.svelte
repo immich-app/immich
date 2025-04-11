@@ -6,7 +6,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetBucket, assetsSnapshot, AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { isSearchEnabled } from '$lib/stores/search.store';
+  import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
@@ -448,7 +448,7 @@
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if (searchStore.isSearchEnabled) {
       return;
     }
 
@@ -459,7 +459,7 @@
   };
 
   const onKeyUp = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if (searchStore.isSearchEnabled) {
       return;
     }
 
@@ -648,7 +648,7 @@
 
   let shortcutList = $derived(
     (() => {
-      if ($isSearchEnabled || $showAssetViewer) {
+      if (searchStore.isSearchEnabled || $showAssetViewer) {
         return [];
       }
 

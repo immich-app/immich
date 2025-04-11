@@ -1371,6 +1371,7 @@
   "view_next_asset": "View next asset",
   "view_previous_asset": "View previous asset",
   "view_stack": "View Stack",
+  "view_qr_code": "View QR code",
   "visibility_changed": "Visibility changed for {count, plural, one {# person} other {# people}}",
   "waiting": "Waiting",
   "warning": "Warning",

@@ -9,11 +9,9 @@ import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { Exif } from 'src/db';
+import { AssetFaces, Exif, Person } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { PersonEntity } from 'src/entities/person.entity';
 import {
   AssetType,
   DatabaseLock,
@@ -74,6 +72,19 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
   }
 
   return val;
+};
+
+const getLensModel = (exifTags: ImmichTags): string | null => {
+  const lensModel = String(
+    exifTags.LensID ?? exifTags.LensType ?? exifTags.LensSpec ?? exifTags.LensModel ?? '',
+  ).trim();
+  if (lensModel === '----') {
+    return null;
+  }
+  if (lensModel.startsWith('Unknown')) {
+    return null;
+  }
+  return lensModel || null;
 };
 
 type ImmichTagsWithFaces = ImmichTags & { RegionInfo: NonNullable<ImmichTags['RegionInfo']> };
@@ -228,7 +239,7 @@ export class MetadataService extends BaseService {
       fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
-      lensModel: exifTags.LensModel ?? null,
+      lensModel: getLensModel(exifTags),
       fNumber: validate(exifTags.FNumber),
       focalLength: validate(exifTags.FocalLength),
 
@@ -574,10 +585,10 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const facesToAdd: (Partial<AssetFaceEntity> & { assetId: string })[] = [];
+    const facesToAdd: (Insertable<AssetFaces> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: (Partial<PersonEntity> & { ownerId: string })[] = [];
+    const missing: (Insertable<Person> & { ownerId: string })[] = [];
     const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
     for (const region of tags.RegionInfo.RegionList) {
       if (!region.Name) {
