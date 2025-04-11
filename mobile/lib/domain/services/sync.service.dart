@@ -5,7 +5,8 @@ import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album_asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_asset.interface.dart';
-import 'package:immich_mobile/domain/models/asset/asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/asset.model.dart'
+    hide AssetType;
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
@@ -114,18 +115,43 @@ class SyncService {
     }
   }
 
-  Future<void> removeLocalAlbum(LocalAlbum album) async {
-    _log.info("Removing device album ${album.name}");
+  Future<void> removeLocalAlbum(LocalAlbum a) async {
+    _log.info("Removing device album ${a.name}");
     try {
+      // Do not request title to speed things up on iOS
+      final filter = albumFilter;
+      filter.setOption(
+        AssetType.image,
+        filter.getOption(AssetType.image).copyWith(needTitle: false),
+      );
+      filter.setOption(
+        AssetType.video,
+        filter.getOption(AssetType.video).copyWith(needTitle: false),
+      );
+      final deviceAlbum =
+          await _albumMediaRepository.refresh(a.id, filter: filter);
+      final assetsToDelete =
+          (await _localAlbumAssetRepository.getAssetsForAlbum(deviceAlbum.id))
+              .map((asset) => asset.localId)
+              .toSet();
+
       // Remove all assets that are only in this particular album
       // We cannot remove all assets in the album because they might be in other albums in iOS
-      final assetsToDelete =
-          await _localAlbumRepository.getAssetIdsOnlyInAlbum(album.id);
+      final assetsOnlyInAlbum = assetsToDelete.isEmpty
+          ? <String>{}
+          : (await _localAlbumRepository.getAssetIdsOnlyInAlbum(deviceAlbum.id))
+              .toSet();
       await _localAlbumRepository.transaction(() async {
-        if (assetsToDelete.isNotEmpty) {
-          await _localAssetRepository.deleteIds(assetsToDelete);
-        }
-        await _localAlbumRepository.delete(album.id);
+        // Delete all assets that are only in this particular album
+        await _localAssetRepository.deleteIds(
+          assetsToDelete.intersection(assetsOnlyInAlbum),
+        );
+        // Unlink the others
+        await _localAlbumAssetRepository.unlinkAssetsFromAlbum(
+          deviceAlbum.id,
+          assetsToDelete.difference(assetsOnlyInAlbum),
+        );
+        await _localAlbumRepository.delete(deviceAlbum.id);
       });
     } catch (e, s) {
       _log.warning("Error while removing device album", e, s);
@@ -312,7 +338,8 @@ class SyncService {
         backupSelection: dbAlbum.backupSelection,
       );
 
-      // Only query for assets unique to album if we have assets to delete
+      // Remove all assets that are only in this particular album
+      // We cannot remove all assets in the album because they might be in other albums in iOS
       final assetsOnlyInAlbum = assetsToDelete.isEmpty
           ? <String>{}
           : (await _localAlbumRepository.getAssetIdsOnlyInAlbum(deviceAlbum.id))
@@ -326,8 +353,7 @@ class SyncService {
           assetsToAdd.map((a) => a.localId),
         );
         await _localAlbumRepository.upsert(updatedAlbum);
-        // Remove all assets that are only in this particular album
-        // We cannot remove all assets in the album because they might be in other albums in iOS
+        // Delete all assets that are only in this particular album
         await _localAssetRepository.deleteIds(
           assetsToDelete.intersection(assetsOnlyInAlbum),
         );
