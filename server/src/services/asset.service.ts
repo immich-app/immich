@@ -24,7 +24,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
-import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
+import { getAssetFiles, getMyPartnerIds, onAfterLink, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -103,7 +103,7 @@ export class AssetService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
 
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
-    const repos = { asset: this.assetRepository, event: this.eventRepository };
+    const repos = { asset: this.assetRepository, album: this.albumRepository, event: this.eventRepository };
 
     let previousMotion: AssetEntity | null = null;
     if (rest.livePhotoVideoId) {
@@ -119,8 +119,13 @@ export class AssetService extends BaseService {
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
+    if (rest.livePhotoVideoId) {
+      await onAfterLink(repos, { livePhotoVideoId: rest.livePhotoVideoId });
+    }
+
     if (previousMotion) {
-      await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
+      let albumIds: string[] = asset.albums?.map((album) => album.id) ?? [];
+      await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id, albumIds: albumIds });
     }
 
     if (!asset) {

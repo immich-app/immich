@@ -8,6 +8,7 @@ import { AssetFileType, AssetType, Permission } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { AlbumRepository } from 'src/repositories/album.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile } from 'src/types';
@@ -136,7 +137,7 @@ export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: P
   return [...partnerIds];
 };
 
-export type AssetHookRepositories = { asset: AssetRepository; event: EventRepository };
+export type AssetHookRepositories = { asset: AssetRepository; album: AlbumRepository; event: EventRepository };
 
 export const onBeforeLink = async (
   { asset: assetRepository, event: eventRepository }: AssetHookRepositories,
@@ -175,11 +176,19 @@ export const onBeforeUnlink = async (
   return motion;
 };
 
+export const onAfterLink = async (
+  { album: albumRepository }: AssetHookRepositories,
+  { livePhotoVideoId }: { livePhotoVideoId: string },
+) => {
+  await albumRepository.removeAsset(livePhotoVideoId);
+};
+
 export const onAfterUnlink = async (
-  { asset: assetRepository, event: eventRepository }: AssetHookRepositories,
-  { userId, livePhotoVideoId }: { userId: string; livePhotoVideoId: string },
+  { asset: assetRepository, album: albumRepository, event: eventRepository }: AssetHookRepositories,
+  { userId, livePhotoVideoId, albumIds }: { userId: string; livePhotoVideoId: string, albumIds: string[] },
 ) => {
   await assetRepository.update({ id: livePhotoVideoId, isVisible: true });
+  await albumRepository.addAssetIdToAlbums(albumIds, livePhotoVideoId);
   await eventRepository.emit('asset.show', { assetId: livePhotoVideoId, userId });
 };
 

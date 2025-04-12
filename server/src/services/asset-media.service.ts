@@ -26,7 +26,7 @@ import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
 import { UploadFile } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
-import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
+import { asRequest, getAssetFiles, onAfterLink, onBeforeLink } from 'src/utils/asset.util';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
@@ -141,12 +141,19 @@ export class AssetMediaService extends BaseService {
 
       if (dto.livePhotoVideoId) {
         await onBeforeLink(
-          { asset: this.assetRepository, event: this.eventRepository },
+          { asset: this.assetRepository, album: this.albumRepository, event: this.eventRepository },
           { userId: auth.user.id, livePhotoVideoId: dto.livePhotoVideoId },
         );
       }
 
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
+
+      if (dto.livePhotoVideoId) {
+        await onAfterLink(
+          { asset: this.assetRepository, album: this.albumRepository, event: this.eventRepository },
+          { livePhotoVideoId: dto.livePhotoVideoId },
+        )
+      }
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
