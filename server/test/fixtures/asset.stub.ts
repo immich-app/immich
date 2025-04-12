@@ -1,6 +1,5 @@
 import { AssetFile, Exif } from 'src/database';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { StackEntity } from 'src/entities/stack.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -27,7 +26,7 @@ const fullsizeFile: AssetFile = {
 
 const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];
 
-export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity => {
+export const stackStub = (stackId: string, assets: AssetEntity[]) => {
   return {
     id: stackId,
     assets,
