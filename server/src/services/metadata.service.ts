@@ -198,15 +198,15 @@ export class MetadataService extends BaseService {
     const dates = this.getDates(asset, exifTags, stats);
 
     const { width, height } = this.getImageDimensions(exifTags);
-    let geo: ReverseGeocodeResult, latitude: number | null, longitude: number | null;
-    if (reverseGeocoding.enabled && this.hasGeo(exifTags)) {
+    let geo: ReverseGeocodeResult = { country: null, state: null, city: null },
+      latitude: number | null = null,
+      longitude: number | null = null;
+    if (this.hasGeo(exifTags)) {
       latitude = exifTags.GPSLatitude;
       longitude = exifTags.GPSLongitude;
-      geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
-    } else {
-      latitude = null;
-      longitude = null;
-      geo = { country: null, state: null, city: null };
+      if (reverseGeocoding.enabled) {
+        geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
+      }
     }
 
     const exifData: Insertable<Exif> = {
