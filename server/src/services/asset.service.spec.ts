@@ -592,8 +592,8 @@ describe(AssetService.name, () => {
     });
 
     it('should update stack primary asset if deleted asset was primary asset in a stack', async () => {
-      mocks.stack.update.mockResolvedValue(factory.stack() as unknown as any);
-      mocks.asset.getById.mockResolvedValue(assetStub.primaryImage as AssetEntity);
+      mocks.stack.update.mockResolvedValue(factory.stack() as any);
+      mocks.asset.getById.mockResolvedValue(assetStub.primaryImage);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
