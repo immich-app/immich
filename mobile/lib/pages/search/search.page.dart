@@ -713,9 +713,6 @@ class SearchPage extends HookConsumerWidget {
               ),
             ),
           ),
-          const Center(
-            child: CircularProgressIndicator(),
-          ),
           if (isSearching.value)
             const Expanded(
               child: Center(child: CircularProgressIndicator()),
