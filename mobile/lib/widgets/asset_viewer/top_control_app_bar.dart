@@ -7,6 +7,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/motion_photo_button.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
@@ -166,6 +167,9 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
+    bool isInHomePage = ref.read(tabProvider.notifier).state == TabEnum.home;
+    bool? isInTrash = ref.read(currentAssetProvider)?.isTrashed;
+
     return AppBar(
       foregroundColor: Colors.grey[100],
       backgroundColor: Colors.transparent,
@@ -174,7 +178,7 @@ class TopControlAppBar extends HookConsumerWidget {
       shape: const Border(),
       actions: [
         if (asset.isRemote && isOwner) buildFavoriteButton(a),
-        if (isOwner && ref.read(tabProvider.notifier).state != TabEnum.home)
+        if (isOwner && !isInHomePage && !(isInTrash ?? false))
           buildLocateButton(),
         if (asset.livePhotoVideoId != null) const MotionPhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),

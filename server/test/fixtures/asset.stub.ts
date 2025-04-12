@@ -1,47 +1,35 @@
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFile, Exif } from 'src/database';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
-import { StackEntity } from 'src/entities/stack.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
-const previewFile: AssetFileEntity = {
+export const previewFile: AssetFile = {
   id: 'file-1',
-  assetId: 'asset-id',
   type: AssetFileType.PREVIEW,
   path: '/uploads/user-id/thumbs/path.jpg',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const thumbnailFile: AssetFileEntity = {
+const thumbnailFile: AssetFile = {
   id: 'file-2',
-  assetId: 'asset-id',
   type: AssetFileType.THUMBNAIL,
   path: '/uploads/user-id/webp/path.ext',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const fullsizeFile: AssetFileEntity = {
+const fullsizeFile: AssetFile = {
   id: 'file-3',
-  assetId: 'asset-id',
   type: AssetFileType.FULLSIZE,
   path: '/uploads/user-id/fullsize/path.webp',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const files: AssetFileEntity[] = [fullsizeFile, previewFile, thumbnailFile];
+const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];
 
-export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity => {
+export const stackStub = (stackId: string, assets: AssetEntity[]) => {
   return {
     id: stackId,
     assets,
-    owner: assets[0].owner,
     ownerId: assets[0].ownerId,
     primaryAsset: assets[0],
     primaryAssetId: assets[0].id,
@@ -129,7 +117,7 @@ export const assetStub = {
     isExternal: false,
     exifInfo: {
       fileSizeInByte: 123_000,
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
@@ -203,7 +191,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 1000,
       exifImageWidth: 1000,
-    } as ExifEntity,
+    } as Exif,
     stackId: 'stack-1',
     stack: stackStub('stack-1', [
       { id: 'primary-asset-id' } as AssetEntity,
@@ -248,7 +236,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 3840,
       exifImageWidth: 2160,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
   }),
@@ -286,7 +274,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 3840,
       exifImageWidth: 2160,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
     status: AssetStatus.TRASHED,
@@ -327,7 +315,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 3840,
       exifImageWidth: 2160,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: true,
   }),
@@ -365,7 +353,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 3840,
       exifImageWidth: 2160,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
   }),
@@ -403,7 +391,7 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
   }),
@@ -440,7 +428,7 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
   }),
@@ -476,7 +464,7 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
@@ -515,7 +503,7 @@ export const assetStub = {
       fileSizeInByte: 100_000,
       exifImageHeight: 2160,
       exifImageWidth: 3840,
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
@@ -606,7 +594,7 @@ export const assetStub = {
       city: 'test-city',
       state: 'test-state',
       country: 'test-country',
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
@@ -711,7 +699,7 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 100_000,
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
@@ -750,7 +738,7 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
   }),
@@ -789,7 +777,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
       profileDescription: 'Adobe RGB',
       bitsPerSample: 14,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
   }),
@@ -828,7 +816,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
       profileDescription: 'Adobe RGB',
       bitsPerSample: 14,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
   }),

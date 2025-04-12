@@ -250,7 +250,7 @@ const getEnv = (): EnvData => {
       },
       bigint: {
         to: 20,
-        from: [20],
+        from: [20, 1700],
         parse: (value: string) => Number.parseInt(value),
         serialize: (value: number) => value.toString(),
       },

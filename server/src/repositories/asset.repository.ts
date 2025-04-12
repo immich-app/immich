@@ -470,10 +470,10 @@ export class AssetRepository {
   async getLivePhotoCount(motionId: string): Promise<number> {
     const [{ count }] = await this.db
       .selectFrom('assets')
-      .select((eb) => eb.fn.countAll().as('count'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
       .where('livePhotoVideoId', '=', asUuid(motionId))
       .execute();
-    return count as number;
+    return count;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -646,7 +646,7 @@ export class AssetRepository {
     const { ownerId, otherAssetId, livePhotoCID, type } = options;
     return this.db
       .selectFrom('assets')
-      .select('assets.id')
+      .select(['assets.id', 'assets.ownerId'])
       .innerJoin('exif', 'assets.id', 'exif.assetId')
       .where('id', '!=', asUuid(otherAssetId))
       .where('ownerId', '=', asUuid(ownerId))
@@ -773,10 +773,10 @@ export class AssetRepository {
   getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
     return this.db
       .selectFrom('assets')
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.IMAGE).as(AssetType.IMAGE))
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.IMAGE).as(AssetType.IMAGE))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
       .where('assets.fileCreatedAt', 'is not', null)
       .where('assets.fileModifiedAt', 'is not', null)
@@ -786,7 +786,7 @@ export class AssetRepository {
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
-      .executeTakeFirst() as Promise<AssetStats>;
+      .executeTakeFirstOrThrow();
   }
 
   getRandom(userIds: string[], take: number): Promise<AssetEntity[]> {
@@ -847,7 +847,7 @@ export class AssetRepository {
         The line below outputs in YYYY-MM-DD format, but needs a change in the web app to work.
           .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
         */
-        .select((eb) => eb.fn.countAll().as('count'))
+        .select((eb) => eb.fn.countAll<number>().as('count'))
         .groupBy('timeBucket')
         .orderBy('timeBucket', options.order ?? 'desc')
         .execute() as any as Promise<TimeBucketItem[]>
@@ -1145,10 +1145,10 @@ export class AssetRepository {
   async getLibraryAssetCount(libraryId: string): Promise<number> {
     const { count } = await this.db
       .selectFrom('assets')
-      .select((eb) => eb.fn.countAll().as('count'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
       .where('libraryId', '=', asUuid(libraryId))
       .executeTakeFirstOrThrow();
 
-    return Number(count);
+    return count;
   }
 }
