@@ -43,7 +43,7 @@ export class AssetService extends BaseService {
         yearsAgo,
         // TODO move this to clients
         title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-        assets: assets.map((asset) => mapAsset(asset as AssetEntity, { auth })),
+        assets: assets.map((asset) => mapAsset(asset as unknown as AssetEntity, { auth })),
       };
     });
   }
@@ -203,7 +203,7 @@ export class AssetService extends BaseService {
 
     // Replace the parent of the stack children with a new asset
     if (asset.stack?.primaryAssetId === id) {
-      const stackAssetIds = asset.stack.assets.map((a) => a.id);
+      const stackAssetIds = asset.stack?.assets.map((a) => a.id) ?? [];
       if (stackAssetIds.length > 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
         await this.stackRepository.update(asset.stack.id, {
@@ -233,8 +233,8 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
-    const files = [thumbnailFile?.path, previewFile?.path, asset.encodedVideoPath];
+    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files);
+    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
 
     if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);

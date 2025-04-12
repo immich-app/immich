@@ -5,6 +5,7 @@ import { StorageTemplateService } from 'src/services/storage-template.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
+import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 const motionAsset = assetStub.storageAsset({});
@@ -426,15 +427,16 @@ describe(StorageTemplateService.name, () => {
     });
 
     it('should use the user storage label', async () => {
-      const asset = assetStub.storageAsset();
+      const user = factory.userAdmin({ storageLabel: 'label-1' });
+      const asset = assetStub.storageAsset({ ownerId: user.id });
       mocks.asset.streamStorageTemplateAssets.mockReturnValue(makeStream([asset]));
-      mocks.user.getList.mockResolvedValue([userStub.storageLabel]);
+      mocks.user.getList.mockResolvedValue([user]);
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: asset.id,
         pathType: AssetPathType.ORIGINAL,
         oldPath: asset.originalPath,
-        newPath: `upload/library/user-id/2023/2023-02-23/${asset.originalFileName}`,
+        newPath: `upload/library/${user.storageLabel}/2023/2023-02-23/${asset.originalFileName}`,
       });
 
       await sut.handleMigration();
@@ -442,11 +444,11 @@ describe(StorageTemplateService.name, () => {
       expect(mocks.asset.streamStorageTemplateAssets).toHaveBeenCalled();
       expect(mocks.storage.rename).toHaveBeenCalledWith(
         '/original/path.jpg',
-        `upload/library/label-1/2022/2022-06-19/${asset.originalFileName}`,
+        `upload/library/${user.storageLabel}/2022/2022-06-19/${asset.originalFileName}`,
       );
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: asset.id,
-        originalPath: `upload/library/label-1/2022/2022-06-19/${asset.originalFileName}`,
+        originalPath: `upload/library/${user.storageLabel}/2022/2022-06-19/${asset.originalFileName}`,
       });
     });
 
@@ -546,6 +548,112 @@ describe(StorageTemplateService.name, () => {
         `upload/library/user-id/2022/2022-06-19/${asset.originalFileName}`,
       );
       expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('file rename correctness', () => {
+    it('should not create double extensions when filename has lower extension', async () => {
+      const user = factory.userAdmin({ storageLabel: 'label-1' });
+      const asset = assetStub.storageAsset({
+        ownerId: user.id,
+        originalPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.heic`,
+        originalFileName: 'IMG_7065.HEIC',
+      });
+      mocks.asset.streamStorageTemplateAssets.mockReturnValue(makeStream([asset]));
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.heic`,
+        newPath: `upload/library/${user.id}/2023/2023-02-23/IMG_7065.heic`,
+      });
+
+      await sut.handleMigration();
+
+      expect(mocks.asset.streamStorageTemplateAssets).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalledWith(
+        `upload/library/${user.id}/2022/2022-06-19/IMG_7065.heic`,
+        `upload/library/${user.storageLabel}/2022/2022-06-19/IMG_7065.heic`,
+      );
+    });
+
+    it('should not create double extensions when filename has uppercase extension', async () => {
+      const user = factory.userAdmin();
+      const asset = assetStub.storageAsset({
+        ownerId: user.id,
+        originalPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.HEIC`,
+        originalFileName: 'IMG_7065.HEIC',
+      });
+      mocks.asset.streamStorageTemplateAssets.mockReturnValue(makeStream([asset]));
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.HEIC`,
+        newPath: `upload/library/${user.id}/2023/2023-02-23/IMG_7065.heic`,
+      });
+
+      await sut.handleMigration();
+
+      expect(mocks.asset.streamStorageTemplateAssets).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalledWith(
+        `upload/library/${user.id}/2022/2022-06-19/IMG_7065.HEIC`,
+        `upload/library/${user.id}/2022/2022-06-19/IMG_7065.heic`,
+      );
+    });
+
+    it('should normalize the filename to lowercase (JPEG > jpg)', async () => {
+      const user = factory.userAdmin();
+      const asset = assetStub.storageAsset({
+        ownerId: user.id,
+        originalPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.JPEG`,
+        originalFileName: 'IMG_7065.JPEG',
+      });
+      mocks.asset.streamStorageTemplateAssets.mockReturnValue(makeStream([asset]));
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.JPEG`,
+        newPath: `upload/library/${user.id}/2023/2023-02-23/IMG_7065.jpg`,
+      });
+
+      await sut.handleMigration();
+
+      expect(mocks.asset.streamStorageTemplateAssets).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalledWith(
+        `upload/library/${user.id}/2022/2022-06-19/IMG_7065.JPEG`,
+        `upload/library/${user.id}/2022/2022-06-19/IMG_7065.jpg`,
+      );
+    });
+
+    it('should normalize the filename to lowercase (JPG > jpg)', async () => {
+      const user = factory.userAdmin();
+      const asset = assetStub.storageAsset({
+        ownerId: user.id,
+        originalPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.JPG',
+        originalFileName: 'IMG_7065.JPG',
+      });
+      mocks.asset.streamStorageTemplateAssets.mockReturnValue(makeStream([asset]));
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.JPG`,
+        newPath: `upload/library/${user.id}/2023/2023-02-23/IMG_7065.jpg`,
+      });
+
+      await sut.handleMigration();
+
+      expect(mocks.asset.streamStorageTemplateAssets).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalledWith(
+        `upload/library/${user.id}/2022/2022-06-19/IMG_7065.JPG`,
+        `upload/library/${user.id}/2022/2022-06-19/IMG_7065.jpg`,
+      );
     });
   });
 });

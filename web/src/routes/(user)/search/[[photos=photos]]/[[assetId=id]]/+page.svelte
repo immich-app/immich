@@ -19,7 +19,7 @@
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
+  import { searchStore } from '$lib/stores/search.svelte';
   import { shortcut } from '$lib/actions/shortcut';
   import {
     type AlbumResponseDto,
@@ -33,7 +33,7 @@
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import type { Viewport } from '$lib/stores/assets-store.svelte';
-  import { locale } from '$lib/stores/preferences.store';
+  import { lang, locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
@@ -88,10 +88,10 @@
       assetInteraction.selectedAssets = [];
       return;
     }
-    if (!$preventRaceConditionSearchBar) {
+    if (!searchStore.preventRaceConditionSearchBar) {
       handlePromiseError(goto(previousRoute));
     }
-    $preventRaceConditionSearchBar = false;
+    searchStore.preventRaceConditionSearchBar = false;
   };
 
   $effect(() => {
@@ -153,6 +153,7 @@
       page: nextPage,
       withExif: true,
       isVisible: true,
+      language: $lang,
       ...terms,
     };
 

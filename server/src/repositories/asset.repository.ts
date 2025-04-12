@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
+import { Insertable, Kysely, Selectable, UpdateResult, Updateable, sql } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
@@ -469,10 +470,51 @@ export class AssetRepository {
   async getLivePhotoCount(motionId: string): Promise<number> {
     const [{ count }] = await this.db
       .selectFrom('assets')
-      .select((eb) => eb.fn.countAll().as('count'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
       .where('livePhotoVideoId', '=', asUuid(motionId))
       .execute();
-    return count as number;
+    return count;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getAssetForSearchDuplicatesJob(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .where('assets.id', '=', asUuid(id))
+      .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
+      .select((eb) => [
+        'id',
+        'type',
+        'ownerId',
+        'duplicateId',
+        'stackId',
+        'isVisible',
+        'smart_search.embedding',
+        withFiles(eb, AssetFileType.PREVIEW),
+      ])
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getAssetForSidecarWriteJob(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .where('assets.id', '=', asUuid(id))
+      .select((eb) => [
+        'id',
+        'sidecarPath',
+        'originalPath',
+        jsonArrayFrom(
+          eb
+            .selectFrom('tags')
+            .select(['tags.value'])
+            .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
+            .whereRef('assets.id', '=', 'tag_asset.assetsId'),
+        ).as('tags'),
+      ])
+      .limit(1)
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -604,7 +646,7 @@ export class AssetRepository {
     const { ownerId, otherAssetId, livePhotoCID, type } = options;
     return this.db
       .selectFrom('assets')
-      .select('assets.id')
+      .select(['assets.id', 'assets.ownerId'])
       .innerJoin('exif', 'assets.id', 'exif.assetId')
       .where('id', '!=', asUuid(otherAssetId))
       .where('ownerId', '=', asUuid(ownerId))
@@ -728,24 +770,13 @@ export class AssetRepository {
     return paginationHelper(items as any as AssetEntity[], pagination.take);
   }
 
-  getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | undefined> {
-    return this.db
-      .selectFrom('assets')
-      .selectAll('assets')
-      .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
-      .where('albums_assets_assets.albumsId', '=', asUuid(albumId))
-      .orderBy('updatedAt', 'desc')
-      .limit(1)
-      .executeTakeFirst() as Promise<AssetEntity | undefined>;
-  }
-
   getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
     return this.db
       .selectFrom('assets')
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.IMAGE).as(AssetType.IMAGE))
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.IMAGE).as(AssetType.IMAGE))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
       .where('assets.fileCreatedAt', 'is not', null)
       .where('assets.fileModifiedAt', 'is not', null)
@@ -755,7 +786,7 @@ export class AssetRepository {
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
-      .executeTakeFirst() as Promise<AssetStats>;
+      .executeTakeFirstOrThrow();
   }
 
   getRandom(userIds: string[], take: number): Promise<AssetEntity[]> {
@@ -816,7 +847,7 @@ export class AssetRepository {
         The line below outputs in YYYY-MM-DD format, but needs a change in the web app to work.
           .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
         */
-        .select((eb) => eb.fn.countAll().as('count'))
+        .select((eb) => eb.fn.countAll<number>().as('count'))
         .groupBy('timeBucket')
         .orderBy('timeBucket', options.order ?? 'desc')
         .execute() as any as Promise<TimeBucketItem[]>
@@ -978,6 +1009,9 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
       .where('assets.isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
@@ -1006,6 +1040,9 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
       .where('assets.isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute() as any as Promise<AssetEntity[]>;
@@ -1041,6 +1078,17 @@ export class AssetRepository {
       .execute();
   }
 
+  async deleteFiles(files: Pick<Selectable<AssetFiles>, 'id'>[]): Promise<void> {
+    if (files.length === 0) {
+      return;
+    }
+
+    await this.db
+      .deleteFrom('asset_files')
+      .where('id', '=', anyUuid(files.map((file) => file.id)))
+      .execute();
+  }
+
   @GenerateSql({
     params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
   })
@@ -1064,7 +1112,7 @@ export class AssetRepository {
       .where((eb) =>
         eb.or([
           eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
-          eb('originalPath', 'like', exclusions.join('|')),
+          eb.or(exclusions.map((path) => eb('originalPath', 'like', path))),
         ]),
       )
       .executeTakeFirstOrThrow();
@@ -1097,10 +1145,10 @@ export class AssetRepository {
   async getLibraryAssetCount(libraryId: string): Promise<number> {
     const { count } = await this.db
       .selectFrom('assets')
-      .select((eb) => eb.fn.countAll().as('count'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
       .where('libraryId', '=', asUuid(libraryId))
       .executeTakeFirstOrThrow();
 
-    return Number(count);
+    return count;
   }
 }

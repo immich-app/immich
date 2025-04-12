@@ -11,51 +11,26 @@ import {
   SyncEntityType,
   SystemMetadataKey,
   TranscodeTarget,
+  UserAvatarColor,
+  UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
-import { ActivityRepository } from 'src/repositories/activity.repository';
-import { ApiKeyRepository } from 'src/repositories/api-key.repository';
-import { MemoryRepository } from 'src/repositories/memory.repository';
-import { SessionRepository } from 'src/repositories/session.repository';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
-
-type IActivityRepository = RepositoryInterface<ActivityRepository>;
-type IApiKeyRepository = RepositoryInterface<ApiKeyRepository>;
-type IMemoryRepository = RepositoryInterface<MemoryRepository>;
-type ISessionRepository = RepositoryInterface<SessionRepository>;
-
-export type ActivityItem =
-  | Awaited<ReturnType<IActivityRepository['create']>>
-  | Awaited<ReturnType<IActivityRepository['search']>>[0];
-
-export type ApiKeyItem =
-  | Awaited<ReturnType<IApiKeyRepository['create']>>
-  | NonNullable<Awaited<ReturnType<IApiKeyRepository['getById']>>>
-  | Awaited<ReturnType<IApiKeyRepository['getByUserId']>>[0];
-
-export type MemoryItem =
-  | Awaited<ReturnType<IMemoryRepository['create']>>
-  | Awaited<ReturnType<IMemoryRepository['search']>>[0];
-
-export type SessionItem = Awaited<ReturnType<ISessionRepository['getByUserId']>>[0];
-
-export type TagItem = {
-  id: string;
-  value: string;
-  createdAt: Date;
-  updatedAt: Date;
-  color: string | null;
-  parentId: string | null;
-};
 
 export interface CropOptions {
   top: number;
   left: number;
   width: number;
   height: number;
+}
+
+export interface FullsizeImageOptions {
+  format: ImageFormat;
+  quality: number;
+  enabled: boolean;
 }
 
 export interface ImageOptions {
@@ -78,11 +53,11 @@ interface DecodeImageOptions {
 }
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
-  size: number;
+  size?: number;
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = ImageOptions & DecodeImageOptions;
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality'> & DecodeToBufferOptions;
 
 export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
 
@@ -481,4 +456,55 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.SYSTEM_FLAGS]: DeepPartial<SystemFlags>;
   [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
   [SystemMetadataKey.MEMORIES_STATE]: MemoriesState;
+}
+
+export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
+  key: T;
+  value: UserMetadata[T];
+};
+
+export interface UserPreferences {
+  folders: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  memories: {
+    enabled: boolean;
+  };
+  people: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  ratings: {
+    enabled: boolean;
+  };
+  sharedLinks: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  tags: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  avatar: {
+    color: UserAvatarColor;
+  };
+  emailNotifications: {
+    enabled: boolean;
+    albumInvite: boolean;
+    albumUpdate: boolean;
+  };
+  download: {
+    archiveSize: number;
+    includeEmbeddedVideos: boolean;
+  };
+  purchase: {
+    showSupportBadge: boolean;
+    hideBuyButtonUntil: string;
+  };
+}
+
+export interface UserMetadata extends Record<UserMetadataKey, Record<string, any>> {
+  [UserMetadataKey.PREFERENCES]: DeepPartial<UserPreferences>;
+  [UserMetadataKey.LICENSE]: { licenseKey: string; activationKey: string; activatedAt: string };
 }

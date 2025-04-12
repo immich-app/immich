@@ -1,3 +1,4 @@
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { MemoryType } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
@@ -9,11 +10,11 @@ import {
   PrimaryGeneratedColumn,
   Table,
   UpdateDateColumn,
-  UpdateIdColumn,
 } from 'src/sql-tools';
 import { MemoryData } from 'src/types';
 
 @Table('memories')
+@UpdatedAtTrigger('memories_updated_at')
 export class MemoryTable<T extends MemoryType = MemoryType> {
   @PrimaryGeneratedColumn()
   id!: string;
@@ -23,10 +24,6 @@ export class MemoryTable<T extends MemoryType = MemoryType> {
 
   @UpdateDateColumn()
   updatedAt!: Date;
-
-  @ColumnIndex('IDX_memories_update_id')
-  @UpdateIdColumn()
-  updateId?: string;
 
   @DeleteDateColumn()
   deletedAt?: Date;
@@ -48,13 +45,17 @@ export class MemoryTable<T extends MemoryType = MemoryType> {
   @Column({ type: 'timestamp with time zone' })
   memoryAt!: Date;
 
+  /** when the user last viewed the memory */
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  seenAt?: Date;
+
   @Column({ type: 'timestamp with time zone', nullable: true })
   showAt?: Date;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   hideAt?: Date;
 
-  /** when the user last viewed the memory */
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  seenAt?: Date;
+  @ColumnIndex('IDX_memories_update_id')
+  @UpdateIdColumn()
+  updateId?: string;
 }

@@ -13,7 +13,7 @@
   import { listNavigation } from '$lib/actions/list-navigation';
   import { t } from 'svelte-i18n';
   import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
-  import Map from '$lib/components/shared-components/map/map.svelte';
+  import type Map from '$lib/components/shared-components/map/map.svelte';
   import { get } from 'svelte/store';
   interface Point {
     lng: number;

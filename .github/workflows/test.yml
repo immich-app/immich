@@ -384,7 +384,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Install uv
-        uses: astral-sh/setup-uv@22695119d769bdb6f7032ad67b9bca0ef8c4a174 # v5
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
       - uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
         # with:
@@ -518,7 +518,7 @@ jobs:
         run: npm run build
 
       - name: Run existing migrations
-        run: npm run typeorm:migrations:run
+        run: npm run migrations:run
 
       - name: Test npm run schema:reset command works
         run: npm run typeorm:schema:reset
@@ -532,7 +532,7 @@ jobs:
         id: verify-changed-files
         with:
           files: |
-            server/src/migrations/
+            server/src
       - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |

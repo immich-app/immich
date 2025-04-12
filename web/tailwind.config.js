@@ -55,6 +55,7 @@ export default {
         'max-lg': { max: '1023px' },
         'max-md': { max: '767px' },
         'max-sm': { max: '639px' },
+        sidebar: { min: '850px' },
       },
     },
   },

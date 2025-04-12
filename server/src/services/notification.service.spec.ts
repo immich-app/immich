@@ -1,8 +1,7 @@
 import { plainToInstance } from 'class-transformer';
 import { defaults, SystemConfig } from 'src/config';
+import { AlbumUser } from 'src/database';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
-import { AlbumUserEntity } from 'src/entities/album-user.entity';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
 import { EmailTemplate } from 'src/repositories/notification.repository';
 import { NotificationService } from 'src/services/notification.service';
@@ -265,7 +264,7 @@ describe(NotificationService.name, () => {
       await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).resolves.not.toThrow();
       expect(mocks.notification.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'http://localhost:2283', displayName: userStub.admin.name },
+        data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
       });
       expect(mocks.notification.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -306,7 +305,7 @@ describe(NotificationService.name, () => {
       ).resolves.not.toThrow();
       expect(mocks.notification.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'http://localhost:2283', displayName: userStub.admin.name },
+        data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
       });
       expect(mocks.notification.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -357,8 +356,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: false, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -374,8 +371,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: false } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -391,8 +386,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -414,8 +407,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -443,8 +434,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -452,7 +441,7 @@ describe(NotificationService.name, () => {
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.asset.getById.mockResolvedValue({
         ...assetStub.image,
-        files: [{ assetId: 'asset-id', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' } as AssetFileEntity],
+        files: [{ id: '1', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' }],
       });
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
@@ -476,8 +465,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -515,7 +502,7 @@ describe(NotificationService.name, () => {
     it('should skip recipient that could not be looked up', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUserEntity],
+        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValueOnce(userStub.user1);
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
@@ -528,7 +515,7 @@ describe(NotificationService.name, () => {
     it('should skip recipient with disabled email notifications', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUserEntity],
+        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
@@ -536,8 +523,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: false, albumUpdate: true } },
-            user: userStub.user1,
-            userId: userStub.user1.id,
           },
         ],
       });
@@ -551,7 +536,7 @@ describe(NotificationService.name, () => {
     it('should skip recipient with disabled email notifications for the album update event', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUserEntity],
+        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
@@ -559,8 +544,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumUpdate: false } },
-            user: userStub.user1,
-            userId: userStub.user1.id,
           },
         ],
       });
@@ -574,7 +557,7 @@ describe(NotificationService.name, () => {
     it('should send email', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUserEntity],
+        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue(userStub.user1);
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });

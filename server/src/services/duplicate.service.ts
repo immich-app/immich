@@ -4,13 +4,12 @@ import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetFileType, JobName, JobStatus, QueueName } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { getAssetFile } from 'src/utils/asset.util';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -53,7 +52,7 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const asset = await this.assetRepository.getById(id, { files: true, smartSearch: true });
+    const asset = await this.assetRepository.getAssetForSearchDuplicatesJob(id);
     if (!asset) {
       this.logger.error(`Asset ${id} not found`);
       return JobStatus.FAILED;
@@ -69,20 +68,20 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { previewFile } = getAssetFiles(asset.files);
+    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
     if (!previewFile) {
       this.logger.warn(`Asset ${id} is missing preview image`);
       return JobStatus.FAILED;
     }
 
-    if (!asset.smartSearch?.embedding) {
+    if (!asset.embedding) {
       this.logger.debug(`Asset ${id} is missing embedding`);
       return JobStatus.FAILED;
     }
 
     const duplicateAssets = await this.searchRepository.searchDuplicates({
       assetId: asset.id,
-      embedding: asset.smartSearch.embedding,
+      embedding: asset.embedding,
       maxDistance: machineLearning.duplicateDetection.maxDistance,
       type: asset.type,
       userIds: [asset.ownerId],
@@ -105,7 +104,10 @@ export class DuplicateService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private async updateDuplicates(asset: AssetEntity, duplicateAssets: AssetDuplicateResult[]): Promise<string[]> {
+  private async updateDuplicates(
+    asset: { id: string; duplicateId: string | null },
+    duplicateAssets: AssetDuplicateResult[],
+  ): Promise<string[]> {
     const duplicateIds = [
       ...new Set(
         duplicateAssets

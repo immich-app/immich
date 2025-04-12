@@ -14,7 +14,12 @@ export class Table2 {
 
 export const description = 'should infer the column type from the reference column';
 export const schema: DatabaseSchema = {
-  name: 'public',
+  name: 'postgres',
+  schemaName: 'public',
+  functions: [],
+  enums: [],
+  extensions: [],
+  parameters: [],
   tables: [
     {
       name: 'table1',
@@ -30,6 +35,7 @@ export const schema: DatabaseSchema = {
         },
       ],
       indexes: [],
+      triggers: [],
       constraints: [
         {
           type: DatabaseConstraintType.PRIMARY_KEY,
@@ -55,6 +61,7 @@ export const schema: DatabaseSchema = {
         },
       ],
       indexes: [],
+      triggers: [],
       constraints: [
         {
           type: DatabaseConstraintType.FOREIGN_KEY,

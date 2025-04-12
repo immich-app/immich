@@ -7,6 +7,7 @@ import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { sharedLinkResponseStub, sharedLinkStub } from 'test/fixtures/shared-link.stub';
+import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(SharedLinkService.name, () => {
@@ -46,7 +47,13 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should not return metadata', async () => {
-      const authDto = authStub.adminSharedLinkNoExif;
+      const authDto = factory.auth({
+        sharedLink: {
+          showExif: false,
+          allowDownload: true,
+          allowUpload: true,
+        },
+      });
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.readonlyNoExif);
       await expect(sut.getMine(authDto, {})).resolves.toEqual(sharedLinkResponseStub.readonlyNoMetadata);
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
@@ -208,7 +215,9 @@ describe(SharedLinkService.name, () => {
     it('should update a shared link', async () => {
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.valid);
       mocks.sharedLink.update.mockResolvedValue(sharedLinkStub.valid);
+
       await sut.update(authStub.user1, sharedLinkStub.valid.id, { allowDownload: false });
+
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, sharedLinkStub.valid.id);
       expect(mocks.sharedLink.update).toHaveBeenCalledWith({
         id: sharedLinkStub.valid.id,
@@ -242,6 +251,7 @@ describe(SharedLinkService.name, () => {
   describe('addAssets', () => {
     it('should not work on album shared links', async () => {
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.valid);
+
       await expect(sut.addAssets(authStub.admin, 'link-1', { assetIds: ['asset-1'] })).rejects.toBeInstanceOf(
         BadRequestException,
       );
@@ -273,6 +283,7 @@ describe(SharedLinkService.name, () => {
   describe('removeAssets', () => {
     it('should not work on album shared links', async () => {
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.valid);
+
       await expect(sut.removeAssets(authStub.admin, 'link-1', { assetIds: ['asset-1'] })).rejects.toBeInstanceOf(
         BadRequestException,
       );
@@ -297,31 +308,39 @@ describe(SharedLinkService.name, () => {
   describe('getMetadataTags', () => {
     it('should return null when auth is not a shared link', async () => {
       await expect(sut.getMetadataTags(authStub.admin)).resolves.toBe(null);
+
       expect(mocks.sharedLink.get).not.toHaveBeenCalled();
     });
 
     it('should return null when shared link has a password', async () => {
-      await expect(sut.getMetadataTags(authStub.passwordSharedLink)).resolves.toBe(null);
+      const auth = factory.auth({ user: {}, sharedLink: { password: 'password' } });
+
+      await expect(sut.getMetadataTags(auth)).resolves.toBe(null);
+
       expect(mocks.sharedLink.get).not.toHaveBeenCalled();
     });
 
     it('should return metadata tags', async () => {
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.individual);
+
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '1 shared photos & videos',
-        imageUrl: `http://localhost:2283/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0`,
+        imageUrl: `https://my.immich.app/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0`,
         title: 'Public Share',
       });
+
       expect(mocks.sharedLink.get).toHaveBeenCalled();
     });
 
     it('should return metadata tags with a default image path if the asset id is not set', async () => {
       mocks.sharedLink.get.mockResolvedValue({ ...sharedLinkStub.individual, album: undefined, assets: [] });
+
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '0 shared photos & videos',
-        imageUrl: `http://localhost:2283/feature-panel.png`,
+        imageUrl: `https://my.immich.app/feature-panel.png`,
         title: 'Public Share',
       });
+
       expect(mocks.sharedLink.get).toHaveBeenCalled();
     });
   });

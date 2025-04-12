@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:ebfa8696e47a68cffebb31e370a93ce57c01bc753f246ceaaef72801d1661351 AS builder-cpu
+FROM python:3.11-bookworm@sha256:0a9d314ae6e976351bd37b702bf6b0a89bb58e6304e5df35b960059b12531419 AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 
@@ -54,7 +54,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN apt-get update && apt-get install -y --no-install-recommends g++
 
-COPY --from=ghcr.io/astral-sh/uv:latest@sha256:57da96c4557243fc0a732817854084e81af9393f64dc7d172f39c16465b5e2ba /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:0b6dc79013b689f3bc0cbf12807cb1c901beaafe80f2ee10a1d76aa3842afb92 /uv /uvx /bin/
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
@@ -63,11 +63,11 @@ RUN if [ "$DEVICE" = "rocm" ]; then \
     uv pip install /opt/onnxruntime_rocm-*.whl; \
     fi
 
-FROM python:3.11-slim-bookworm@sha256:7029b00486ac40bed03e36775b864d3f3d39dcbdf19cd45e6a52d541e6c178f0 AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:49d73c49616929b0a4f37c50fee0056eb4b0f15de624591e8d9bf84b4dfdd3ce AS prod-cpu
 
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
-FROM prod-cpu AS prod-openvino
+FROM python:3.11-slim-bookworm@sha256:49d73c49616929b0a4f37c50fee0056eb4b0f15de624591e8d9bf84b4dfdd3ce AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
@@ -81,6 +81,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
+
+ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq libcudnn9-cuda-12 && \
@@ -140,7 +142,6 @@ ENV TRANSFORMERS_CACHE=/cache \
     PYTHONPATH=/usr/src \
     DEVICE=${DEVICE} \
     VIRTUAL_ENV=/opt/venv \
-    LD_BIND_NOW=1 \
     MACHINE_LEARNING_CACHE_FOLDER=/cache
 
 # prevent core dumps
@@ -149,6 +150,7 @@ RUN echo "hard core 0" >> /etc/security/limits.conf && \
     echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
 
 COPY --from=builder /opt/venv /opt/venv
+COPY scripts/healthcheck.py .
 COPY immich_ml immich_ml
 
 ARG BUILD_ID

@@ -7,13 +7,13 @@ import {
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
+  UpdateAlbumUserDto,
   mapAlbum,
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
@@ -58,19 +58,15 @@ export class AlbumService extends BaseService {
       albumMetadata[metadata.albumId] = metadata;
     }
 
-    return Promise.all(
-      albums.map(async (album) => {
-        const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
-        return {
-          ...mapAlbumWithoutAssets(album),
-          sharedLinks: undefined,
-          startDate: albumMetadata[album.id]?.startDate ?? undefined,
-          endDate: albumMetadata[album.id]?.endDate ?? undefined,
-          assetCount: albumMetadata[album.id]?.assetCount ?? 0,
-          lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
-        };
-      }),
-    );
+    return albums.map((album) => ({
+      ...mapAlbumWithoutAssets(album),
+      sharedLinks: undefined,
+      startDate: albumMetadata[album.id]?.startDate ?? undefined,
+      endDate: albumMetadata[album.id]?.endDate ?? undefined,
+      assetCount: albumMetadata[album.id]?.assetCount ?? 0,
+      // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
+      lastModifiedAssetTimestamp: albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined,
+    }));
   }
 
   async get(auth: AuthDto, id: string, dto: AlbumInfoDto): Promise<AlbumResponseDto> {
@@ -79,14 +75,13 @@ export class AlbumService extends BaseService {
     const withAssets = dto.withoutAssets === undefined ? true : !dto.withoutAssets;
     const album = await this.findOrFail(id, { withAssets });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
-    const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
 
     return {
       ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds?.startDate ?? undefined,
       endDate: albumMetadataForIds?.endDate ?? undefined,
       assetCount: albumMetadataForIds?.assetCount ?? 0,
-      lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
+      lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
     };
   }
 
@@ -145,7 +140,7 @@ export class AlbumService extends BaseService {
       order: dto.order,
     });
 
-    return mapAlbumWithoutAssets(updatedAlbum);
+    return mapAlbumWithoutAssets({ ...updatedAlbum, assets: album.assets });
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
@@ -252,7 +247,7 @@ export class AlbumService extends BaseService {
     await this.albumUserRepository.delete({ albumsId: id, usersId: userId });
   }
 
-  async updateUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
+  async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [id] });
     await this.albumUserRepository.update({ albumsId: id, usersId: userId }, { role: dto.role });
   }

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { dirname } from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -11,6 +10,7 @@ import {
   AssetType,
   AudioCodec,
   Colorspace,
+  ImageFormat,
   JobName,
   JobStatus,
   LogLevel,
@@ -24,7 +24,16 @@ import {
 } from 'src/enum';
 import { UpsertFileOptions, WithoutProperty } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
-import { AudioStreamInfo, JobItem, JobOf, VideoFormat, VideoInterfaces, VideoStreamInfo } from 'src/types';
+import {
+  AudioStreamInfo,
+  DecodeToBufferOptions,
+  GenerateThumbnailOptions,
+  JobItem,
+  JobOf,
+  VideoFormat,
+  VideoInterfaces,
+  VideoStreamInfo,
+} from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -131,6 +140,7 @@ export class MediaService extends BaseService {
       return JobStatus.FAILED;
     }
 
+    await this.storageCore.moveAssetImage(asset, AssetPathType.FULLSIZE, image.fullsize.format);
     await this.storageCore.moveAssetImage(asset, AssetPathType.PREVIEW, image.preview.format);
     await this.storageCore.moveAssetImage(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     await this.storageCore.moveAssetVideo(asset);
@@ -151,7 +161,12 @@ export class MediaService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    let generated: { previewPath: string; thumbnailPath: string; thumbhash: Buffer };
+    let generated: {
+      previewPath: string;
+      thumbnailPath: string;
+      fullsizePath?: string;
+      thumbhash: Buffer;
+    };
     if (asset.type === AssetType.VIDEO || asset.originalFileName.toLowerCase().endsWith('.gif')) {
       generated = await this.generateVideoThumbnails(asset);
     } else if (asset.type === AssetType.IMAGE) {
@@ -161,7 +176,7 @@ export class MediaService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
+    const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files);
     const toUpsert: UpsertFileOptions[] = [];
     if (previewFile?.path !== generated.previewPath) {
       toUpsert.push({ assetId: asset.id, path: generated.previewPath, type: AssetFileType.PREVIEW });
@@ -171,11 +186,15 @@ export class MediaService extends BaseService {
       toUpsert.push({ assetId: asset.id, path: generated.thumbnailPath, type: AssetFileType.THUMBNAIL });
     }
 
+    if (generated.fullsizePath && fullsizeFile?.path !== generated.fullsizePath) {
+      toUpsert.push({ assetId: asset.id, path: generated.fullsizePath, type: AssetFileType.FULLSIZE });
+    }
+
     if (toUpsert.length > 0) {
       await this.assetRepository.upsertFiles(toUpsert);
     }
 
-    const pathsToDelete = [];
+    const pathsToDelete: string[] = [];
     if (previewFile && previewFile.path !== generated.previewPath) {
       this.logger.debug(`Deleting old preview for asset ${asset.id}`);
       pathsToDelete.push(previewFile.path);
@@ -184,6 +203,15 @@ export class MediaService extends BaseService {
     if (thumbnailFile && thumbnailFile.path !== generated.thumbnailPath) {
       this.logger.debug(`Deleting old thumbnail for asset ${asset.id}`);
       pathsToDelete.push(thumbnailFile.path);
+    }
+
+    if (fullsizeFile && fullsizeFile.path !== generated.fullsizePath) {
+      this.logger.debug(`Deleting old fullsize preview image for asset ${asset.id}`);
+      pathsToDelete.push(fullsizeFile.path);
+      if (!generated.fullsizePath) {
+        // did not generate a new fullsize image, delete the existing record
+        await this.assetRepository.deleteFiles([fullsizeFile]);
+      }
     }
 
     if (pathsToDelete.length > 0) {
@@ -205,33 +233,71 @@ export class MediaService extends BaseService {
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
 
-    const shouldExtract = image.extractEmbedded && mimeTypes.isRaw(asset.originalPath);
-    const extractedPath = StorageCore.getTempPathInDir(dirname(previewPath));
-    const didExtract = shouldExtract && (await this.mediaRepository.extract(asset.originalPath, extractedPath));
+    const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
+    const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
 
-    try {
-      const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.preview.size));
-      const inputPath = useExtracted ? extractedPath : asset.originalPath;
-      const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-      const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
+    // prevents this extra "enabled" from leaking into fullsizeOptions later
+    const { enabled: imageFullsizeEnabled, ...imageFullsizeConfig } = image.fullsize;
 
-      const orientation = useExtracted && asset.exifInfo?.orientation ? Number(asset.exifInfo.orientation) : undefined;
-      const decodeOptions = { colorspace, processInvalidImages, size: image.preview.size, orientation };
-      const { data, info } = await this.mediaRepository.decodeImage(inputPath, decodeOptions);
+    const shouldConvertFullsize = imageFullsizeEnabled && !mimeTypes.isWebSupportedImage(asset.originalFileName);
+    const shouldExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
+    const decodeOptions: DecodeToBufferOptions = { colorspace, processInvalidImages, size: image.preview.size };
 
-      const options = { colorspace, processInvalidImages, raw: info };
-      const outputs = await Promise.all([
-        this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...options }, thumbnailPath),
-        this.mediaRepository.generateThumbnail(data, { ...image.preview, ...options }, previewPath),
-        this.mediaRepository.generateThumbhash(data, options),
-      ]);
+    let useExtracted = false;
+    let decodeInputPath: string = asset.originalPath;
+    // Converted or extracted image from non-web-supported formats (e.g. RAW)
+    let fullsizePath: string | undefined;
 
-      return { previewPath, thumbnailPath, thumbhash: outputs[2] };
-    } finally {
-      if (didExtract) {
-        await this.storageRepository.unlink(extractedPath);
+    if (shouldConvertFullsize) {
+      // unset size to decode fullsize image
+      decodeOptions.size = undefined;
+      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.fullsize.format);
+    }
+
+    if (shouldExtractEmbedded) {
+      // For RAW files, try extracting embedded preview first
+      // Assume extracted image from RAW always in JPEG format, as implied from the `jpgFromRaw` tag name
+      const extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, ImageFormat.JPEG);
+      const didExtract = await this.mediaRepository.extract(asset.originalPath, extractedPath);
+      useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.preview.size));
+
+      if (useExtracted) {
+        if (shouldConvertFullsize) {
+          // skip re-encoding and directly use extracted as fullsize preview
+          // as usually the extracted image is already heavily compressed, no point doing lossy conversion again
+          fullsizePath = extractedPath;
+        }
+        // use this as origin of preview and thumbnail
+        decodeInputPath = extractedPath;
+        if (asset.exifInfo) {
+          // write essential orientation and colorspace EXIF for correct fullsize preview and subsequent processing
+          const exif = { orientation: asset.exifInfo.orientation, colorspace: asset.exifInfo.colorspace };
+          await this.mediaRepository.writeExif(exif, extractedPath);
+        }
       }
     }
+
+    const { info, data } = await this.mediaRepository.decodeImage(decodeInputPath, decodeOptions);
+
+    const thumbnailOptions = { colorspace, processInvalidImages, raw: info };
+    const promises = [
+      this.mediaRepository.generateThumbhash(data, thumbnailOptions),
+      this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailPath),
+      this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewPath),
+    ];
+
+    // did not extract a usable image from RAW
+    if (fullsizePath && !useExtracted) {
+      const fullsizeOptions: GenerateThumbnailOptions = {
+        ...imageFullsizeConfig,
+        ...thumbnailOptions,
+        size: undefined,
+      };
+      promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
+    }
+    const outputs = await Promise.all(promises);
+
+    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 
   private async generateVideoThumbnails(asset: AssetEntity) {
