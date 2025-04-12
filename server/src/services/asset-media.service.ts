@@ -152,7 +152,7 @@ export class AssetMediaService extends BaseService {
         await onAfterLink(
           { asset: this.assetRepository, album: this.albumRepository, event: this.eventRepository },
           { livePhotoVideoId: dto.livePhotoVideoId },
-        )
+        );
       }
 
       await this.userRepository.updateUsage(auth.user.id, file.size);

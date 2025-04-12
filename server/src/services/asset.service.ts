@@ -24,7 +24,14 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
-import { getAssetFiles, getMyPartnerIds, onAfterLink, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
+import {
+  getAssetFiles,
+  getMyPartnerIds,
+  onAfterLink,
+  onAfterUnlink,
+  onBeforeLink,
+  onBeforeUnlink,
+} from 'src/utils/asset.util';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -124,8 +131,8 @@ export class AssetService extends BaseService {
     }
 
     if (previousMotion) {
-      let albumIds: string[] = asset.albums?.map((album) => album.id) ?? [];
-      await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id, albumIds: albumIds });
+      const albumIds: string[] = asset.albums?.map((album) => album.id) ?? [];
+      await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id, albumIds });
     }
 
     if (!asset) {

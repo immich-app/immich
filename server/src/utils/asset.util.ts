@@ -7,8 +7,8 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileType, AssetType, Permission } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile } from 'src/types';
@@ -185,7 +185,7 @@ export const onAfterLink = async (
 
 export const onAfterUnlink = async (
   { asset: assetRepository, album: albumRepository, event: eventRepository }: AssetHookRepositories,
-  { userId, livePhotoVideoId, albumIds }: { userId: string; livePhotoVideoId: string, albumIds: string[] },
+  { userId, livePhotoVideoId, albumIds }: { userId: string; livePhotoVideoId: string; albumIds: string[] },
 ) => {
   await assetRepository.update({ id: livePhotoVideoId, isVisible: true });
   await albumRepository.addAssetIdToAlbums(albumIds, livePhotoVideoId);

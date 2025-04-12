@@ -347,7 +347,7 @@ export class AlbumRepository {
   @Chunked({ paramIndex: 1, chunkSize: 30_000 })
   private async addAssetToAlbums(db: Kysely<DB>, albumIds: string[], assetId: string): Promise<void> {
     if (albumIds.length === 0) {
-        return;
+      return;
     }
 
     await db
