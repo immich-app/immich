@@ -17,14 +17,14 @@ export class TagRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   get(id: string) {
-    return this.db.selectFrom('tags').select(columns.tagDto).where('id', '=', id).executeTakeFirst();
+    return this.db.selectFrom('tags').select(columns.tag).where('id', '=', id).executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   getByValue(userId: string, value: string) {
     return this.db
       .selectFrom('tags')
-      .select(columns.tagDto)
+      .select(columns.tag)
       .where('userId', '=', userId)
       .where('value', '=', value)
       .executeTakeFirst();
@@ -68,12 +68,7 @@ export class TagRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getAll(userId: string) {
-    return this.db
-      .selectFrom('tags')
-      .select(columns.tagDto)
-      .where('userId', '=', userId)
-      .orderBy('value asc')
-      .execute();
+    return this.db.selectFrom('tags').select(columns.tag).where('userId', '=', userId).orderBy('value asc').execute();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })
