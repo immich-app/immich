@@ -1,5 +1,5 @@
 import { Selectable } from 'kysely';
-import { Exif as DatabaseExif } from 'src/db';
+import { AssetJobStatus as DatabaseAssetJobStatus, Exif as DatabaseExif } from 'src/db';
 import { AssetEntity } from 'src/entities/asset.entity';
 import {
   AlbumUserRole,
@@ -247,6 +247,10 @@ export type AssetFace = {
   personId: string | null;
   sourceType: SourceType;
   person?: Person | null;
+};
+
+export type AssetJobStatus = Selectable<DatabaseAssetJobStatus> & {
+  asset: AssetEntity;
 };
 
 const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
