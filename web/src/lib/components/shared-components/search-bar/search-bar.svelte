@@ -13,7 +13,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
   import { generateId } from '$lib/utils/generate-id';
-  import { tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
 
   interface Props {
     value?: string;
@@ -34,6 +34,10 @@
   let isFocus = $state(false);
 
   const listboxId = generateId();
+
+  onDestroy(() => {
+    searchStore.isSearchEnabled = false;
+  });
 
   const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     const params = getMetadataSearchQuery(payload);
