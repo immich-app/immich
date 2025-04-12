@@ -1,11 +1,10 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import { AssetFace, AssetFile, Exif, Tag, User } from 'src/database';
+import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { DB } from 'src/db';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { StackEntity } from 'src/entities/stack.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
@@ -50,7 +49,7 @@ export class AssetEntity {
   albums?: AlbumEntity[];
   faces!: AssetFace[];
   stackId?: string | null;
-  stack?: StackEntity | null;
+  stack?: Stack | null;
   jobStatus?: AssetJobStatusEntity;
   duplicateId!: string | null;
 }

@@ -2,12 +2,12 @@
 
 -- TagRepository.get
 select
-  "id",
-  "value",
-  "createdAt",
-  "updatedAt",
-  "color",
-  "parentId"
+  "tags"."id",
+  "tags"."value",
+  "tags"."createdAt",
+  "tags"."updatedAt",
+  "tags"."color",
+  "tags"."parentId"
 from
   "tags"
 where
@@ -15,12 +15,12 @@ where
 
 -- TagRepository.getByValue
 select
-  "id",
-  "value",
-  "createdAt",
-  "updatedAt",
-  "color",
-  "parentId"
+  "tags"."id",
+  "tags"."value",
+  "tags"."createdAt",
+  "tags"."updatedAt",
+  "tags"."color",
+  "tags"."parentId"
 from
   "tags"
 where
@@ -42,12 +42,12 @@ rollback
 
 -- TagRepository.getAll
 select
-  "id",
-  "value",
-  "createdAt",
-  "updatedAt",
-  "color",
-  "parentId"
+  "tags"."id",
+  "tags"."value",
+  "tags"."createdAt",
+  "tags"."updatedAt",
+  "tags"."color",
+  "tags"."parentId"
 from
   "tags"
 where

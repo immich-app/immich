@@ -208,7 +208,7 @@ export class AssetService extends BaseService {
 
     // Replace the parent of the stack children with a new asset
     if (asset.stack?.primaryAssetId === id) {
-      const stackAssetIds = asset.stack.assets.map((a) => a.id);
+      const stackAssetIds = asset.stack?.assets.map((a) => a.id) ?? [];
       if (stackAssetIds.length > 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
         await this.stackRepository.update(asset.stack.id, {
