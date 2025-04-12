@@ -4,9 +4,11 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    tags: ['*']
   pull_request:
   release:
     types: [published]
+
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
