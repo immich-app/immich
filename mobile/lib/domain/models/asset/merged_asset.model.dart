@@ -33,7 +33,8 @@ class MergedAsset extends Asset {
   }
 
   @override
-  bool operator ==(covariant MergedAsset other) {
+  bool operator ==(Object other) {
+    if (other is! MergedAsset) return false;
     if (identical(this, other)) return true;
     return super == other &&
         remoteId == other.remoteId &&

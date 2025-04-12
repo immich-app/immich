@@ -12,13 +12,15 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:photo_manager/photo_manager.dart';
 
-import '../../external.mock.dart';
 import '../../fixtures/asset.stub.dart';
 import '../../infrastructure/repository.mock.dart';
 import '../../service.mocks.dart';
 
 class MockAsset extends Mock implements Asset {}
+
+class MockAssetEntity extends Mock implements AssetEntity {}
 
 void main() {
   late HashService sut;

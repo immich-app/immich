@@ -30,7 +30,8 @@ class RemoteAsset extends Asset {
   }
 
   @override
-  bool operator ==(covariant RemoteAsset other) {
+  bool operator ==(Object other) {
+    if (other is! RemoteAsset) return false;
     if (identical(this, other)) return true;
     return super == other && remoteId == other.remoteId;
   }

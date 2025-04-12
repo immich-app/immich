@@ -1,17 +1,118 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
+import 'package:immich_mobile/domain/models/asset/asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:platform/platform.dart';
 
 class DriftLocalAlbumRepository extends DriftDatabaseRepository
     implements ILocalAlbumRepository {
   final Drift _db;
-  const DriftLocalAlbumRepository(this._db) : super(_db);
+  final Platform _platform;
+  const DriftLocalAlbumRepository(this._db, {Platform? platform})
+      : _platform = platform ?? const LocalPlatform(),
+        super(_db);
 
   @override
-  Future<void> upsert(LocalAlbum localAlbum) {
+  Future<List<LocalAlbum>> getAll({SortLocalAlbumsBy? sortBy}) {
+    final query = _db.localAlbumEntity.select();
+    if (sortBy == SortLocalAlbumsBy.id) {
+      query.orderBy([(a) => OrderingTerm.asc(a.id)]);
+    }
+    return query.map((a) => a.toDto()).get();
+  }
+
+  @override
+  Future<void> delete(String albumId) => transaction(() async {
+        // Remove all assets that are only in this particular album
+        // We cannot remove all assets in the album because they might be in other albums in iOS
+        // That is not the case on Android since asset <-> album has one:one mapping
+        final assetsToDelete = _platform.isIOS
+            ? await _getUniqueAssetsInAlbum(albumId)
+            : await _getAssetsIdsInAlbum(albumId);
+        if (assetsToDelete.isNotEmpty) {
+          await _deleteAssets(assetsToDelete);
+        }
+
+        // All the other assets that are still associated will be unlinked automatically on-cascade
+        await _db.managers.localAlbumEntity
+            .filter((a) => a.id.equals(albumId))
+            .delete();
+      });
+
+  @override
+  Future<void> insert(LocalAlbum localAlbum, Iterable<LocalAsset> assets) =>
+      transaction(() async {
+        if (localAlbum.assetCount > 0) {
+          await _upsertAssets(assets);
+        }
+        // Needs to be after asset upsert to link the thumbnail
+        await _upsertAlbum(localAlbum);
+
+        if (localAlbum.assetCount > 0) {
+          await _linkAssetsToAlbum(localAlbum.id, assets);
+        }
+      });
+
+  @override
+  Future<void> addAssets(String albumId, Iterable<LocalAsset> assets) =>
+      transaction(() async {
+        await _upsertAssets(assets);
+        await _linkAssetsToAlbum(albumId, assets);
+      });
+
+  @override
+  Future<void> removeAssets(String albumId, Iterable<String> assetIds) async {
+    if (_platform.isAndroid) {
+      await _deleteAssets(assetIds);
+      return;
+    }
+
+    final uniqueAssets = await _getUniqueAssetsInAlbum(albumId);
+    if (uniqueAssets.isEmpty) {
+      await _unlinkAssetsFromAlbum(albumId, assetIds);
+      return;
+    }
+    // Delete unique assets and unlink others
+    final uniqueSet = uniqueAssets.toSet();
+    final assetsToDelete = <String>[];
+    final assetsToUnLink = <String>[];
+    for (final assetId in assetIds) {
+      if (uniqueSet.contains(assetId)) {
+        assetsToDelete.add(assetId);
+      } else {
+        assetsToUnLink.add(assetId);
+      }
+    }
+    await _unlinkAssetsFromAlbum(albumId, assetsToUnLink);
+    await _deleteAssets(assetsToDelete);
+  }
+
+  @override
+  Future<void> update(LocalAlbum localAlbum) => _upsertAlbum(localAlbum);
+
+  @override
+  Future<List<LocalAsset>> getAssetsForAlbum(String albumId) {
+    final query = _db.localAlbumAssetEntity.select().join(
+      [
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAlbumAssetEntity.assetId
+              .equalsExp(_db.localAssetEntity.localId),
+        ),
+      ],
+    )..where(_db.localAlbumAssetEntity.albumId.equals(albumId));
+    return query
+        .map((row) => row.readTable(_db.localAssetEntity).toDto())
+        .get();
+  }
+
+  Future<void> _upsertAlbum(LocalAlbum localAlbum) {
     final companion = LocalAlbumEntityCompanion.insert(
       id: localAlbum.id,
       name: localAlbum.name,
@@ -26,22 +127,43 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         .insertOne(companion, onConflict: DoUpdate((_) => companion));
   }
 
-  @override
-  Future<List<LocalAlbum>> getAll({SortLocalAlbumsBy? sortBy}) {
-    final query = _db.localAlbumEntity.select();
-    if (sortBy == SortLocalAlbumsBy.id) {
-      query.orderBy([(a) => OrderingTerm.asc(a.id)]);
-    }
-    return query.map((a) => a.toDto()).get();
+  Future<void> _linkAssetsToAlbum(
+    String albumId,
+    Iterable<LocalAsset> assets,
+  ) =>
+      _db.batch(
+        (batch) => batch.insertAll(
+          _db.localAlbumAssetEntity,
+          assets.map(
+            (a) => LocalAlbumAssetEntityCompanion.insert(
+              assetId: a.localId,
+              albumId: albumId,
+            ),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        ),
+      );
+
+  Future<void> _unlinkAssetsFromAlbum(
+    String albumId,
+    Iterable<String> assetIds,
+  ) =>
+      _db.batch(
+        (batch) => batch.deleteWhere(
+          _db.localAlbumAssetEntity,
+          (f) => f.assetId.isIn(assetIds) & f.albumId.equals(albumId),
+        ),
+      );
+
+  Future<List<String>> _getAssetsIdsInAlbum(String albumId) {
+    final query = _db.localAlbumAssetEntity.select()
+      ..where((row) => row.albumId.equals(albumId));
+    return query.map((row) => row.assetId).get();
   }
 
-  @override
-  Future<void> delete(String albumId) => _db.managers.localAlbumEntity
-      .filter((a) => a.id.equals(albumId))
-      .delete();
-
-  @override
-  Future<List<String>> getAssetIdsOnlyInAlbum(String albumId) {
+  /// Get all asset ids that are only in this album and not in other albums.
+  /// This is useful in cases where the album is a smart album or a user-created album, especially on iOS
+  Future<List<String>> _getUniqueAssetsInAlbum(String albumId) {
     final assetId = _db.localAlbumAssetEntity.assetId;
     final query = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([assetId])
@@ -53,4 +175,31 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
 
     return query.map((row) => row.read(assetId)!).get();
   }
+
+  Future<void> _upsertAssets(Iterable<LocalAsset> localAssets) =>
+      _db.batch((batch) async {
+        batch.insertAllOnConflictUpdate(
+          _db.localAssetEntity,
+          localAssets.map(
+            (a) => LocalAssetEntityCompanion.insert(
+              name: a.name,
+              type: a.type,
+              createdAt: Value(a.createdAt),
+              updatedAt: Value(a.updatedAt),
+              width: Value.absentIfNull(a.width),
+              height: Value.absentIfNull(a.height),
+              durationInSeconds: Value.absentIfNull(a.durationInSeconds),
+              localId: a.localId,
+              checksum: Value.absentIfNull(a.checksum),
+            ),
+          ),
+        );
+      });
+
+  Future<void> _deleteAssets(Iterable<String> ids) => _db.batch(
+        (batch) => batch.deleteWhere(
+          _db.localAssetEntity,
+          (f) => f.localId.isIn(ids),
+        ),
+      );
 }

@@ -1,23 +1,79 @@
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/domain/models/asset/asset.model.dart' as asset;
+import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AlbumMediaRepository implements IAlbumMediaRepository {
   const AlbumMediaRepository();
 
+  PMFilter _getAlbumFilter({
+    withAssetTitle = false,
+    withModifiedTime = false,
+    DateTimeFilter? updateTimeCond,
+  }) =>
+      FilterOptionGroup(
+        imageOption: FilterOption(
+          // needTitle is expected to be slow on iOS but is required to fetch the asset title
+          needTitle: withAssetTitle,
+          sizeConstraint: const SizeConstraint(ignoreSize: true),
+        ),
+        videoOption: FilterOption(
+          needTitle: withAssetTitle,
+          sizeConstraint: const SizeConstraint(ignoreSize: true),
+          durationConstraint: const DurationConstraint(allowNullable: true),
+        ),
+        // This is needed to get the modified time of the album
+        containsPathModified: withModifiedTime,
+        createTimeCond: DateTimeCond.def().copyWith(ignore: true),
+        updateTimeCond: updateTimeCond == null
+            ? DateTimeCond.def().copyWith(ignore: true)
+            : DateTimeCond(min: updateTimeCond.min, max: updateTimeCond.max),
+        orders: const [
+          // Always sort the result by createdDate.des to update the thumbnail
+          OrderOption(type: OrderOptionType.createDate, asc: false),
+        ],
+      );
+
   @override
-  Future<List<AssetPathEntity>> getAll({PMFilter? filter}) async {
-    return await PhotoManager.getAssetPathList(
+  Future<List<LocalAlbum>> getAll({
+    withModifiedTime = false,
+    withAssetCount = false,
+    withAssetTitle = false,
+  }) async {
+    final filter = withModifiedTime || withAssetTitle
+        ? _getAlbumFilter(
+            withAssetTitle: withAssetTitle,
+            withModifiedTime: withModifiedTime,
+          )
+
+        // Use an AdvancedCustomFilter to get all albums faster
+        : AdvancedCustomFilter(
+            orderBy: [OrderByItem.asc(CustomColumns.base.id)],
+          );
+
+    final entities = await PhotoManager.getAssetPathList(
       hasAll: true,
       filterOption: filter,
     );
+    return entities.toDtoList(withAssetCount: withAssetCount);
   }
 
   @override
   Future<List<asset.LocalAsset>> getAssetsForAlbum(
-    AssetPathEntity assetPathEntity,
-  ) async {
+    String albumId, {
+    withModifiedTime = false,
+    withAssetTitle = true,
+    DateTimeFilter? updateTimeCond,
+  }) async {
+    final assetPathEntity = await AssetPathEntity.obtainPathFromProperties(
+      id: albumId,
+      optionGroup: _getAlbumFilter(
+        withAssetTitle: withAssetTitle,
+        withModifiedTime: withModifiedTime,
+        updateTimeCond: updateTimeCond,
+      ),
+    );
     final assets = <AssetEntity>[];
     int pageNumber = 0, lastPageCount = 0;
     do {
@@ -33,14 +89,23 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
   }
 
   @override
-  Future<AssetPathEntity> refresh(String albumId, {PMFilter? filter}) =>
-      AssetPathEntity.obtainPathFromProperties(
+  Future<LocalAlbum> refresh(
+    String albumId, {
+    withModifiedTime = false,
+    withAssetCount = false,
+    withAssetTitle = false,
+  }) async =>
+      (await AssetPathEntity.obtainPathFromProperties(
         id: albumId,
-        optionGroup: filter,
-      );
+        optionGroup: _getAlbumFilter(
+          withAssetTitle: withAssetTitle,
+          withModifiedTime: withModifiedTime,
+        ),
+      ))
+          .toDto(withAssetCount: withAssetCount);
 }
 
-extension AssetEntityMediaRepoX on AssetEntity {
+extension on AssetEntity {
   Future<asset.LocalAsset> toDto() async {
     return asset.LocalAsset(
       localId: id,
@@ -60,7 +125,24 @@ extension AssetEntityMediaRepoX on AssetEntity {
   }
 }
 
-extension AssetEntityListMediaRepoX on List<AssetEntity> {
+extension on List<AssetEntity> {
   Future<List<asset.LocalAsset>> toDtoList() =>
       Future.wait(map((a) => a.toDto()));
+}
+
+extension on AssetPathEntity {
+  Future<LocalAlbum> toDto({bool withAssetCount = true}) async => LocalAlbum(
+        id: id,
+        name: name,
+        updatedAt: lastModified ?? DateTime.now(),
+        // the assetCountAsync call is expensive for larger albums with several thousand assets
+        assetCount: withAssetCount ? await assetCountAsync : 0,
+        backupSelection: BackupSelection.none,
+        isAll: isAll,
+      );
+}
+
+extension on List<AssetPathEntity> {
+  Future<List<LocalAlbum>> toDtoList({bool withAssetCount = true}) =>
+      Future.wait(map((a) => a.toDto(withAssetCount: withAssetCount)));
 }

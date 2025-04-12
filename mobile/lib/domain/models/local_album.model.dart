@@ -1,3 +1,5 @@
+import 'package:immich_mobile/utils/nullable_value.dart';
+
 enum BackupSelection {
   none,
   selected,
@@ -30,7 +32,7 @@ class LocalAlbum {
     String? name,
     DateTime? updatedAt,
     int? assetCount,
-    String? thumbnailId,
+    NullableValue<String>? thumbnailId,
     BackupSelection? backupSelection,
     bool? isAll,
   }) {
@@ -39,14 +41,15 @@ class LocalAlbum {
       name: name ?? this.name,
       updatedAt: updatedAt ?? this.updatedAt,
       assetCount: assetCount ?? this.assetCount,
-      thumbnailId: thumbnailId ?? this.thumbnailId,
+      thumbnailId: thumbnailId?.getOrDefault(this.thumbnailId),
       backupSelection: backupSelection ?? this.backupSelection,
       isAll: isAll ?? this.isAll,
     );
   }
 
   @override
-  bool operator ==(covariant LocalAlbum other) {
+  bool operator ==(Object other) {
+    if (other is! LocalAlbum) return false;
     if (identical(this, other)) return true;
 
     return other.id == id &&

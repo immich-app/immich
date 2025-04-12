@@ -51,6 +51,7 @@ dependencies:
   permission_handler: ^11.4.0
   photo_manager: ^3.6.4
   photo_manager_image_provider: ^2.2.0
+  platform: ^3.1.6
   punycode: ^1.0.0
   riverpod_annotation: ^2.6.1
   scrollable_positioned_list: ^0.3.8

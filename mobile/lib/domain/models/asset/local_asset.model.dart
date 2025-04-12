@@ -30,7 +30,8 @@ class LocalAsset extends Asset {
   }
 
   @override
-  bool operator ==(covariant LocalAsset other) {
+  bool operator ==(Object other) {
+    if (other is! LocalAsset) return false;
     if (identical(this, other)) return true;
     return super == other && localId == other.localId;
   }
