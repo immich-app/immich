@@ -1,5 +1,6 @@
 import { Selectable } from 'kysely';
 import { Exif as DatabaseExif } from 'src/db';
+import { AssetEntity } from 'src/entities/asset.entity';
 import {
   AlbumUserRole,
   AssetFileType,
@@ -147,6 +148,7 @@ export type Asset = {
   originalPath: string;
   ownerId: string;
   sidecarPath: string | null;
+  stack?: Stack | null;
   stackId: string | null;
   thumbhash: Buffer<ArrayBufferLike> | null;
   type: AssetType;
@@ -157,6 +159,15 @@ export type SidecarWriteAsset = {
   sidecarPath: string | null;
   originalPath: string;
   tags: Array<{ value: string }>;
+};
+
+export type Stack = {
+  id: string;
+  primaryAssetId: string;
+  owner?: User;
+  ownerId: string;
+  assets: AssetEntity[];
+  assetCount?: number;
 };
 
 export type AuthSharedLink = {
@@ -276,7 +287,7 @@ export const columns = {
     'quotaSizeInBytes',
     'quotaUsageInBytes',
   ],
-  tagDto: ['id', 'value', 'createdAt', 'updatedAt', 'color', 'parentId'],
+  tag: ['tags.id', 'tags.value', 'tags.createdAt', 'tags.updatedAt', 'tags.color', 'tags.parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
   syncAsset: [
     'id',
@@ -292,6 +303,7 @@ export const columns = {
     'isVisible',
     'updateId',
   ],
+  stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [
     'exif.assetId',
     'exif.description',
@@ -319,5 +331,36 @@ export const columns = {
     'exif.rating',
     'exif.fps',
     'exif.updateId',
+  ],
+  exif: [
+    'exif.assetId',
+    'exif.autoStackId',
+    'exif.bitsPerSample',
+    'exif.city',
+    'exif.colorspace',
+    'exif.country',
+    'exif.dateTimeOriginal',
+    'exif.description',
+    'exif.exifImageHeight',
+    'exif.exifImageWidth',
+    'exif.exposureTime',
+    'exif.fileSizeInByte',
+    'exif.fNumber',
+    'exif.focalLength',
+    'exif.fps',
+    'exif.iso',
+    'exif.latitude',
+    'exif.lensModel',
+    'exif.livePhotoCID',
+    'exif.longitude',
+    'exif.make',
+    'exif.model',
+    'exif.modifyDate',
+    'exif.orientation',
+    'exif.profileDescription',
+    'exif.projectionType',
+    'exif.rating',
+    'exif.state',
+    'exif.timeZone',
   ],
 } as const;

@@ -22,7 +22,6 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
@@ -59,7 +58,7 @@ class MultiselectGrid extends HookConsumerWidget {
   final bool editEnabled;
   final Widget? emptyIndicator;
   Widget buildDefaultLoadingIndicator() =>
-      const Center(child: ImmichLoadingIndicator());
+      const Center(child: CircularProgressIndicator());
 
   Widget buildEmptyIndicator() =>
       emptyIndicator ?? Center(child: const Text("no_assets_to_show").tr());

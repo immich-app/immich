@@ -715,7 +715,7 @@ class SearchPage extends HookConsumerWidget {
           ),
           if (isSearching.value)
             const Expanded(
-              child: Center(child: CircularProgressIndicator.adaptive()),
+              child: Center(child: CircularProgressIndicator()),
             )
           else
             SearchResultGrid(
