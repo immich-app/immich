@@ -85,6 +85,7 @@
   let leadout = $state(false);
 
   const maxMd = $derived(mobileDevice.maxMd);
+  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
 
   $effect(() => {
     assetStore.rowHeight = maxMd ? 100 : 235;
@@ -743,10 +744,10 @@
 <section
   id="asset-grid"
   class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ml-0': !isEmpty }]}
-  style:margin-right={scrubberWidth + 'px'}
+  style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={assetStore.viewportHeight}
-  bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v - scrubberWidth), updateSlidingWindow())}
+  bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
   bind:this={element}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >
