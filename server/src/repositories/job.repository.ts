@@ -230,6 +230,14 @@ export class JobRepository {
         // JOB DELAY BY JOOB
         return { delay: 1000 };
       }
+      case JobName.QUEUE_VIDEO_CONVERSION: {
+        // JOB DELAY BY JOOB
+        return { delay: 1000 };
+      }
+      case JobName.VIDEO_CONVERSION: {
+        // JOB DELAY BY JOOB
+        return { delay: 1000 };
+      }
       case JobName.QUEUE_FACIAL_RECOGNITION: {
         return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
       }
