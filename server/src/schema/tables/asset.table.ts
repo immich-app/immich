@@ -79,10 +79,10 @@ export class AssetTable {
   originalPath!: string;
 
   @ColumnIndex('idx_asset_file_created_at')
-  @Column({ type: 'timestamp with time zone', default: null })
+  @Column({ type: 'timestamp with time zone' })
   fileCreatedAt!: Date;
 
-  @Column({ type: 'timestamp with time zone', default: null })
+  @Column({ type: 'timestamp with time zone' })
   fileModifiedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
@@ -135,7 +135,7 @@ export class AssetTable {
   @DeleteDateColumn()
   deletedAt!: Date | null;
 
-  @Column({ type: 'timestamp with time zone', default: null })
+  @Column({ type: 'timestamp with time zone' })
   localDateTime!: Date;
 
   @ForeignKeyColumn(() => StackTable, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
