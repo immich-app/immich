@@ -76,9 +76,6 @@ export class ActivityRepository {
       .where('activity.albumId', '=', albumId)
       .where('activity.isLiked', '=', false)
       .where('assets.deletedAt', 'is', null)
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .executeTakeFirstOrThrow();
 
     return count;

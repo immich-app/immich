@@ -457,9 +457,6 @@ export class AssetRepository {
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
       .where('isVisible', '=', true)
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .where('deletedAt', 'is', null)
       .execute();
 
@@ -674,8 +671,7 @@ export class AssetRepository {
         'exif.timeZone',
         'exif.fileSizeInByte',
       ])
-      .where('assets.deletedAt', 'is', null)
-      .where('assets.fileCreatedAt', 'is not', null);
+      .where('assets.deletedAt', 'is', null);
   }
 
   getStorageTemplateAsset(id: string): Promise<StorageAsset | undefined> {
@@ -712,10 +708,7 @@ export class AssetRepository {
           .where('job_status.duplicatesDetectedAt', 'is', null)
           .where('job_status.previewAt', 'is not', null)
           .where((eb) => eb.exists(eb.selectFrom('smart_search').where('assetId', '=', eb.ref('assets.id'))))
-          .where('assets.isVisible', '=', true)
-          .where('assets.fileCreatedAt', 'is not', null)
-          .where('assets.fileModifiedAt', 'is not', null)
-          .where('assets.localDateTime', 'is not', null),
+          .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.ENCODED_VIDEO, (qb) =>
         qb
@@ -778,9 +771,6 @@ export class AssetRepository {
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (qb) => qb.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
@@ -813,9 +803,6 @@ export class AssetRepository {
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
             .where('assets.isVisible', '=', true)
-            .where('assets.fileCreatedAt', 'is not', null)
-            .where('assets.fileModifiedAt', 'is not', null)
-            .where('assets.localDateTime', 'is not', null)
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
@@ -1009,9 +996,6 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
       .where('assets.isVisible', '=', true)
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
@@ -1040,9 +1024,6 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
       .where('assets.isVisible', '=', true)
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute() as any as Promise<AssetEntity[]>;
