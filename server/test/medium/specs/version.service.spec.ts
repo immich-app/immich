@@ -1,32 +1,39 @@
+import { Kysely } from 'kysely';
 import { serverVersion } from 'src/constants';
+import { DB } from 'src/db';
 import { JobName } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
-import { TestContext } from 'test/factory';
-import { getKyselyDB, newTestService } from 'test/utils';
-
-const setup = async () => {
-  const db = await getKyselyDB();
-  const context = await TestContext.from(db).create();
-  const { sut, mocks } = newTestService(VersionService, context);
-
-  return {
-    context,
-    sut,
-    jobMock: mocks.job,
-  };
-};
+import { newMediumService } from 'test/medium.factory';
+import { getKyselyDB } from 'test/utils';
 
 describe(VersionService.name, () => {
-  describe.concurrent('onBootstrap', () => {
-    it('record the current version on startup', async () => {
-      const { context, sut } = await setup();
+  let defaultDatabase: Kysely<DB>;
 
-      const itemsBefore = await context.versionHistory.getAll();
+  const setup = (db?: Kysely<DB>) => {
+    return newMediumService(VersionService, {
+      database: db || defaultDatabase,
+      repos: {
+        job: 'mock',
+        database: 'real',
+        versionHistory: 'real',
+      },
+    });
+  };
+
+  beforeAll(async () => {
+    defaultDatabase = await getKyselyDB();
+  });
+
+  describe('onBootstrap', () => {
+    it('record the current version on startup', async () => {
+      const { sut, repos } = setup();
+
+      const itemsBefore = await repos.versionHistory.getAll();
       expect(itemsBefore).toHaveLength(0);
 
       await sut.onBootstrap();
 
-      const itemsAfter = await context.versionHistory.getAll();
+      const itemsAfter = await repos.versionHistory.getAll();
       expect(itemsAfter).toHaveLength(1);
       expect(itemsAfter[0]).toEqual({
         createdAt: expect.any(Date),
@@ -36,21 +43,22 @@ describe(VersionService.name, () => {
     });
 
     it('should queue memory creation when upgrading from 1.128.0', async () => {
-      const { context, jobMock, sut } = await setup();
+      const { sut, repos, mocks } = setup();
+      mocks.job.queue.mockResolvedValue(void 0);
 
-      await context.versionHistory.create({ version: 'v1.128.0' });
+      await repos.versionHistory.create({ version: 'v1.128.0' });
       await sut.onBootstrap();
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.MEMORIES_CREATE });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.MEMORIES_CREATE });
     });
 
     it('should not queue memory creation when upgrading from 1.129.0', async () => {
-      const { context, jobMock, sut } = await setup();
+      const { sut, repos, mocks } = setup();
 
-      await context.versionHistory.create({ version: 'v1.129.0' });
+      await repos.versionHistory.create({ version: 'v1.129.0' });
       await sut.onBootstrap();
 
-      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
   });
 });
