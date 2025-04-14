@@ -42,6 +42,8 @@ const EXIF_DATE_TAGS: Array<keyof Tags> = [
   'SubSecMediaCreateDate',
   'MediaCreateDate',
   'DateTimeCreated',
+  // Undocumented, non-standard tag from insta360 in xmp.GPano namespace
+  'SourceImageCreateTime' as keyof Tags,
 ];
 
 const validate = <T>(value: T): NonNullable<T> | null => {
