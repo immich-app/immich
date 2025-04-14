@@ -315,7 +315,7 @@ export class TestContext {
     this.oauth = new OAuthRepository(logger);
     this.partner = new PartnerRepository(this.db);
     this.person = new PersonRepository(this.db);
-    this.process = new ProcessRepository(logger);
+    this.process = new ProcessRepository();
     this.search = new SearchRepository(logger, this.db);
     this.serverInfo = new ServerInfoRepository(config, logger);
     this.session = new SessionRepository(this.db);

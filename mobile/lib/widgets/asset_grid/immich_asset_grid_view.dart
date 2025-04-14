@@ -58,6 +58,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
   final bool shrinkWrap;
   final bool showDragScroll;
   final bool showStack;
+  final bool showLabel;
 
   const ImmichAssetGridView({
     super.key,
@@ -78,6 +79,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
     this.shrinkWrap = false,
     this.showDragScroll = true,
     this.showStack = false,
+    this.showLabel = true,
   });
 
   @override
@@ -284,7 +286,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             backgroundColor: context.isDarkTheme
                 ? context.colorScheme.primary.darken(amount: .5)
                 : context.colorScheme.primary,
-            labelTextBuilder: _labelBuilder,
+            labelTextBuilder: widget.showLabel ? _labelBuilder : null,
             padding: appBarOffset()
                 ? const EdgeInsets.only(top: 60)
                 : const EdgeInsets.only(),

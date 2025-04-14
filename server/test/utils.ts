@@ -199,7 +199,7 @@ export const newTestService = <T extends BaseService>(
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
     person: newPersonRepositoryMock(),
-    process: automock(ProcessRepository, { args: [loggerMock] }),
+    process: automock(ProcessRepository),
     search: automock(SearchRepository, { args: [loggerMock], strict: false }),
     // eslint-disable-next-line no-sparse-arrays
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),

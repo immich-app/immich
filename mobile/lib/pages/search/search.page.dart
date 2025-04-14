@@ -715,7 +715,7 @@ class SearchPage extends HookConsumerWidget {
           ),
           if (isSearching.value)
             const Expanded(
-              child: Center(child: CircularProgressIndicator.adaptive()),
+              child: Center(child: CircularProgressIndicator()),
             )
           else
             SearchResultGrid(
@@ -768,6 +768,7 @@ class SearchResultGrid extends StatelessWidget {
             editEnabled: true,
             favoriteEnabled: true,
             stackEnabled: false,
+            dragScrollLabelEnabled: false,
             emptyIndicator: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: !isSearching
