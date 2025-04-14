@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Insertable } from 'kysely';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { Assets } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   CreateLibraryDto,
@@ -236,16 +238,17 @@ export class LibraryService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const assetImports = (
-      await Promise.all(
-        job.paths.map((assetPath) =>
-          this.processEntity(assetPath, library.ownerId, job.libraryId).catch(() => {
+    const assetImports: Insertable<Assets>[] = [];
+    await Promise.all(
+      job.paths.map((assetPath) =>
+        this.processEntity(assetPath, library.ownerId, job.libraryId)
+          .then((asset) => assetImports.push(asset))
+          .catch(() => {
             this.logger.error(`Error processing asset ${assetPath} for library ${job.libraryId}`);
             return null;
           }),
-        ),
-      )
-    ).filter(<T>(asset: T): asset is Exclude<T, null> => asset !== null);
+      ),
+    );
 
     const assetIds: string[] = [];
 
