@@ -36,6 +36,7 @@ class MultiselectGrid extends HookConsumerWidget {
     this.onRemoveFromAlbum,
     this.topWidget,
     this.stackEnabled = false,
+    this.dragScrollLabelEnabled = true,
     this.archiveEnabled = false,
     this.deleteEnabled = true,
     this.favoriteEnabled = true,
@@ -51,6 +52,7 @@ class MultiselectGrid extends HookConsumerWidget {
   final Future<bool> Function(Iterable<Asset>)? onRemoveFromAlbum;
   final Widget? topWidget;
   final bool stackEnabled;
+  final bool dragScrollLabelEnabled;
   final bool archiveEnabled;
   final bool unarchive;
   final bool deleteEnabled;
@@ -430,6 +432,7 @@ class MultiselectGrid extends HookConsumerWidget {
                               ),
                         topWidget: topWidget,
                         showStack: stackEnabled,
+                        showDragScrollLabel: dragScrollLabelEnabled,
                       ),
                 error: (error, _) => Center(child: Text(error.toString())),
                 loading: buildLoadingIndicator ?? buildDefaultLoadingIndicator,
