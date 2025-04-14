@@ -6,9 +6,8 @@ const Map<String, Locale> locales = {
   // Additional locales
   'Arabic (ar_JO)': Locale('ar', 'JO'),
   'Catalan (ca)': Locale('ca'),
-  'Chinese (zh_CN)': Locale('zh', 'CN'),
-  'Chinese Simplified (zh_Hans)': Locale('zh', 'Hans'),
-  'Chinese TW (zh_TW)': Locale('zh', 'TW'),
+  'Chinese Simplified (zh_CN)': Locale('zh', 'CN'),
+  'Chinese Traditional (zh_TW)': Locale('zh', 'TW'),
   'Czech (cs_CZ)': Locale('cs', 'CZ'),
   'Danish (da_DK)': Locale('da', 'DK'),
   'Dutch (nl_NL)': Locale('nl', 'NL'),
