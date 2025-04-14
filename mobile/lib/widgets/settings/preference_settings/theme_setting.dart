@@ -81,23 +81,23 @@ class ThemeSetting extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: "theme_setting_theme_title".tr()),
+        SettingsSubTitle(title: "theme_title".tr()),
         SettingsSwitchListTile(
           valueNotifier: isSystemTheme,
-          title: 'theme_setting_system_theme_switch'.tr(),
+          title: "system_theme_switch".tr(),
           onChanged: onSystemThemeChange,
         ),
         if (currentTheme.value != ThemeMode.system)
           SettingsSwitchListTile(
             valueNotifier: isDarkTheme,
-            title: 'theme_setting_dark_mode_switch'.tr(),
+            title: "dark_mode_switch".tr(),
             onChanged: onThemeChange,
           ),
         const PrimaryColorSetting(),
         SettingsSwitchListTile(
           valueNotifier: applyThemeToBackgroundProvider,
-          title: "theme_setting_colorful_interface_title".tr(),
-          subtitle: 'theme_setting_colorful_interface_subtitle'.tr(),
+          title: "colorful_interface_title".tr(),
+          subtitle: "colorful_interface_subtitle".tr(),
           onChanged: onSurfaceColorSettingChange,
         ),
       ],

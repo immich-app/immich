@@ -37,7 +37,7 @@ class PersonNameEditForm extends HookConsumerWidget {
           controller: controller,
           autofocus: true,
           decoration: InputDecoration(
-            hintText: 'search_page_person_add_name_dialog_hint'.tr(),
+            hintText: "person_add_name_dialog_hint".tr(),
             border: const OutlineInputBorder(),
             errorText: isError.value ? 'Error occured' : null,
           ),

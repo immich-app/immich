@@ -19,17 +19,17 @@ class ForegroundBackupSettings extends ConsumerWidget {
       return SettingsButtonListTile(
         icon: Icons.cloud_done_rounded,
         iconColor: context.primaryColor,
-        title: 'backup_controller_page_status_on'.tr(),
-        buttonText: 'backup_controller_page_turn_off'.tr(),
+        title: "status_on".tr(),
+        buttonText: "turn_off".tr(),
         onButtonTap: onButtonTap,
       );
     }
 
     return SettingsButtonListTile(
       icon: Icons.cloud_off_rounded,
-      title: 'backup_controller_page_status_off'.tr(),
-      subtileText: 'backup_controller_page_desc_backup'.tr(),
-      buttonText: 'backup_controller_page_turn_on'.tr(),
+      title: "status_off".tr(),
+      subtileText: "desc_backup".tr(),
+      buttonText: "turn_on".tr(),
       onButtonTap: onButtonTap,
     );
   }

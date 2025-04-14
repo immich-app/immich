@@ -135,7 +135,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ),
         ControlBoxButton(
           iconData: Icons.link_rounded,
-          label: "control_bottom_app_bar_share_link".tr(),
+          label: "share_link".tr(),
           onPressed: enabled ? () => onShare(false) : null,
         ),
         if (hasRemote && onArchive != null)
@@ -178,8 +178,8 @@ class ControlBottomAppBar extends HookConsumerWidget {
             child: ControlBoxButton(
               iconData: Icons.cloud_off_outlined,
               label: trashEnabled
-                  ? "control_bottom_app_bar_trash_from_immich".tr()
-                  : "control_bottom_app_bar_delete_from_immich".tr(),
+                  ? "trash_from_immich".tr()
+                  : "delete_from_immich".tr(),
               onPressed: enabled
                   ? () => handleRemoteDelete(
                         !trashEnabled,
@@ -200,7 +200,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
             constraints: const BoxConstraints(maxWidth: 85),
             child: ControlBoxButton(
               iconData: Icons.no_cell_outlined,
-              label: "control_bottom_app_bar_delete_from_local".tr(),
+              label: "delete_from_local".tr(),
               onPressed: enabled
                   ? () {
                       if (!selectionAssetState.hasLocal) {
@@ -224,7 +224,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
             constraints: const BoxConstraints(maxWidth: 95),
             child: ControlBoxButton(
               iconData: Icons.edit_calendar_outlined,
-              label: "control_bottom_app_bar_edit_time".tr(),
+              label: "edit_time".tr(),
               onPressed: enabled ? onEditTime : null,
             ),
           ),
@@ -253,7 +253,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
             constraints: const BoxConstraints(maxWidth: 90),
             child: ControlBoxButton(
               iconData: Icons.remove_circle_outline,
-              label: 'album_viewer_appbar_share_remove'.tr(),
+              label: "appbar_share_remove".tr(),
               onPressed: enabled ? onRemoveFromAlbum : null,
             ),
           ),

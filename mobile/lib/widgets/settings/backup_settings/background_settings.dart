@@ -77,9 +77,9 @@ class BackgroundBackupSettings extends ConsumerWidget {
     if (!isBackgroundEnabled) {
       return SettingsButtonListTile(
         icon: Icons.cloud_sync_outlined,
-        title: 'backup_controller_page_background_is_off'.tr(),
-        subtileText: 'backup_controller_page_background_description'.tr(),
-        buttonText: 'backup_controller_page_background_turn_on'.tr(),
+        title: "background_is_off".tr(),
+        subtileText: "background_description".tr(),
+        buttonText: "background_turn_on".tr(),
         onButtonTap: () =>
             ref.read(backupProvider.notifier).configureBackgroundBackup(
                   enabled: true,
@@ -111,9 +111,9 @@ class _IOSBackgroundRefreshDisabled extends StatelessWidget {
     return SettingsButtonListTile(
       icon: Icons.task_outlined,
       title:
-          'backup_controller_page_background_app_refresh_disabled_title'.tr(),
+          "background_app_refresh_disabled_title".tr(),
       subtileText:
-          'backup_controller_page_background_app_refresh_disabled_content'.tr(),
+          "background_app_refresh_disabled_content".tr(),
       buttonText:
           'backup_controller_page_background_app_refresh_enable_button_text'
               .tr(),
@@ -185,8 +185,8 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
     return SettingsButtonListTile(
       icon: Icons.cloud_sync_rounded,
       iconColor: context.primaryColor,
-      title: 'backup_controller_page_background_is_on'.tr(),
-      buttonText: 'backup_controller_page_background_turn_off'.tr(),
+      title: "background_is_on".tr(),
+      buttonText: "background_turn_off".tr(),
       onButtonTap: () =>
           ref.read(backupProvider.notifier).configureBackgroundBackup(
                 enabled: false,
@@ -197,7 +197,7 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
         children: [
           SettingsSwitchListTile(
             valueNotifier: isWifiRequiredNotifier,
-            title: 'backup_controller_page_background_wifi'.tr(),
+            title: "background_wifi".tr(),
             icon: Icons.wifi,
             onChanged: (enabled) =>
                 ref.read(backupProvider.notifier).configureBackgroundBackup(
@@ -208,7 +208,7 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
           ),
           SettingsSwitchListTile(
             valueNotifier: isChargingRequiredNotifier,
-            title: 'backup_controller_page_background_charging'.tr(),
+            title: "background_charging".tr(),
             icon: Icons.charging_station,
             onChanged: (enabled) =>
                 ref.read(backupProvider.notifier).configureBackgroundBackup(

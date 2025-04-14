@@ -309,7 +309,7 @@ class SearchPage extends HookConsumerWidget {
         ),
         helpText: 'search_filter_date_title'.tr(),
         cancelText: 'action_common_cancel'.tr(),
-        confirmText: 'action_common_select'.tr(),
+        confirmText: "select".tr(),
         saveText: 'action_common_save'.tr(),
         errorFormatText: 'invalid_date_format'.tr(),
         errorInvalidText: 'invalid_date'.tr(),
@@ -804,7 +804,7 @@ class SearchEmptyContent extends StatelessWidget {
           const SizedBox(height: 16),
           Center(
             child: Text(
-              'search_page_search_photos_videos'.tr(),
+              "search_photos_videos".tr(),
               style: context.textTheme.labelLarge,
             ),
           ),

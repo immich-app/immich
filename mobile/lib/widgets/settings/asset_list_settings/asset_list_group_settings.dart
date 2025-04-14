@@ -32,19 +32,19 @@ class GroupSettings extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: "asset_list_group_by_sub_title".tr()),
+        SettingsSubTitle(title: "group_by_sub_title".tr()),
         SettingsRadioListTile(
           groups: [
             SettingsRadioGroup(
-              title: 'asset_list_layout_settings_group_by_month_day'.tr(),
+              title: "layout_settings_group_by_month_day".tr(),
               value: GroupAssetsBy.day,
             ),
             SettingsRadioGroup(
-              title: 'asset_list_layout_settings_group_by_month'.tr(),
+              title: "layout_settings_group_by_month".tr(),
               value: GroupAssetsBy.month,
             ),
             SettingsRadioGroup(
-              title: 'asset_list_layout_settings_group_automatically'.tr(),
+              title: "layout_settings_group_automatically".tr(),
               value: GroupAssetsBy.auto,
             ),
           ],

@@ -35,6 +35,7 @@ import 'package:timezone/data/latest.dart';
 
 void main() async {
   ImmichWidgetsBinding();
+  EasyLocalization.logger.enableBuildModes = [];
   final db = await Bootstrap.initIsar();
   await Bootstrap.initDomain(db);
   await initApp();

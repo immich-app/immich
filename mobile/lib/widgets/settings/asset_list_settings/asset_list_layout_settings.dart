@@ -21,10 +21,10 @@ class LayoutSettings extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: "asset_list_layout_sub_title".tr()),
+        SettingsSubTitle(title: "layout_sub_title".tr()),
         SettingsSwitchListTile(
           valueNotifier: useDynamicLayout,
-          title: "asset_list_layout_settings_dynamic_layout_title".tr(),
+          title: "layout_settings_dynamic_layout_title".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
         SettingsSliderListTile(

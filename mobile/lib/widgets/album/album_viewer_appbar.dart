@@ -63,7 +63,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
       if (!success) {
         ImmichToast.show(
           context: context,
-          msg: "album_viewer_appbar_share_err_delete".tr(),
+          msg: "appbar_share_err_delete".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -118,7 +118,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         context.pop();
         ImmichToast.show(
           context: context,
-          msg: "album_viewer_appbar_share_err_leave".tr(),
+          msg: "appbar_share_err_leave".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -284,7 +284,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             if (!isSuccess) {
               ImmichToast.show(
                 context: context,
-                msg: "album_viewer_appbar_share_err_title".tr(),
+                msg: "appbar_share_err_title".tr(),
                 gravity: ToastGravity.BOTTOM,
                 toastType: ToastType.error,
               );

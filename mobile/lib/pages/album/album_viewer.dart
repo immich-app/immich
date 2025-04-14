@@ -46,7 +46,7 @@ class AlbumViewer extends HookConsumerWidget {
       if (!isSuccess) {
         ImmichToast.show(
           context: context,
-          msg: "album_viewer_appbar_share_err_remove".tr(),
+          msg: "appbar_share_err_remove".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );

@@ -260,7 +260,7 @@ class BottomGalleryBar extends ConsumerWidget {
       } else {
         ImmichToast.show(
           context: context,
-          msg: "album_viewer_appbar_share_err_remove".tr(),
+          msg: "appbar_share_err_remove".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -327,8 +327,8 @@ class BottomGalleryBar extends ConsumerWidget {
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.remove_circle_outline),
-            label: 'album_viewer_appbar_share_remove'.tr(),
-            tooltip: 'album_viewer_appbar_share_remove'.tr(),
+            label: "appbar_share_remove".tr(),
+            tooltip: "appbar_share_remove".tr(),
           ): (_) => handleRemoveFromAlbum(),
         },
     ];

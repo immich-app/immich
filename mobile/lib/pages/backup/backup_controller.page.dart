@@ -85,7 +85,7 @@ class BackupControllerPage extends HookConsumerWidget {
     );
 
     Widget buildSelectedAlbumName() {
-      var text = "backup_controller_page_backup_selected".tr();
+      var text = "backup_selected".tr();
       var albums = ref.watch(backupProvider).selectedBackupAlbums;
 
       if (albums.isNotEmpty) {
@@ -110,7 +110,7 @@ class BackupControllerPage extends HookConsumerWidget {
         return Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
-            "backup_controller_page_none_selected".tr(),
+            "none_selected".tr(),
             style: context.textTheme.labelLarge?.copyWith(
               color: context.primaryColor,
             ),
@@ -120,7 +120,7 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     Widget buildExcludedAlbumName() {
-      var text = "backup_controller_page_excluded".tr();
+      var text = "excluded".tr();
       var albums = ref.watch(backupProvider).excludedBackupAlbums;
 
       if (albums.isNotEmpty) {
@@ -309,22 +309,22 @@ class BackupControllerPage extends HookConsumerWidget {
                   ? [
                       buildFolderSelectionTile(),
                       BackupInfoCard(
-                        title: "backup_controller_page_total".tr(),
-                        subtitle: "backup_controller_page_total_sub".tr(),
+                        title: "total".tr(),
+                        subtitle: "total_sub".tr(),
                         info: ref.watch(backupProvider).availableAlbums.isEmpty
                             ? "..."
                             : "${backupState.allUniqueAssets.length}",
                       ),
                       BackupInfoCard(
-                        title: "backup_controller_page_backup".tr(),
-                        subtitle: "backup_controller_page_backup_sub".tr(),
+                        title: "backup".tr(),
+                        subtitle: "backup_sub".tr(),
                         info: ref.watch(backupProvider).availableAlbums.isEmpty
                             ? "..."
                             : "${backupState.selectedAlbumsBackupAssetsIds.length}",
                       ),
                       BackupInfoCard(
-                        title: "backup_controller_page_remainder".tr(),
-                        subtitle: "backup_controller_page_remainder_sub".tr(),
+                        title: "remainder".tr(),
+                        subtitle: "remainder_sub".tr(),
                         info: ref.watch(backupProvider).availableAlbums.isEmpty
                             ? "..."
                             : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",

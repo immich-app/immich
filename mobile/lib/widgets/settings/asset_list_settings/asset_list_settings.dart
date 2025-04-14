@@ -22,7 +22,7 @@ class AssetListSettings extends HookConsumerWidget {
     final assetListSetting = [
       SettingsSwitchListTile(
         valueNotifier: showStorageIndicator,
-        title: 'theme_setting_asset_list_storage_indicator_title'.tr(),
+        title: "asset_list_storage_indicator_title".tr(),
         onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
       ),
       const LayoutSettings(),
