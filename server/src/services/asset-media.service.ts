@@ -165,7 +165,11 @@ export class AssetMediaService extends BaseService {
   ): Promise<AssetMediaResponseDto> {
     try {
       await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
-      const asset = (await this.assetRepository.getById(id)) as AssetEntity;
+      const asset = await this.assetRepository.getById(id);
+
+      if (!asset) {
+        throw new Error('Asset not found');
+      }
 
       this.requireQuota(auth, file.size);
 
