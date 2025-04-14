@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -11,7 +12,9 @@ import 'package:openapi/api.dart';
 class SyncApiRepository implements ISyncApiRepository {
   final Logger _logger = Logger('SyncApiRepository');
   final ApiService _api;
-  SyncApiRepository(this._api);
+  final int _batchSize;
+  SyncApiRepository(this._api, {int batchSize = kSyncEventBatchSize})
+      : _batchSize = batchSize;
 
   @override
   Stream<List<SyncEvent>> getSyncEvents(List<SyncRequestType> type) {
@@ -23,10 +26,7 @@ class SyncApiRepository implements ISyncApiRepository {
     return _api.syncApi.sendSyncAck(SyncAckSetDto(acks: data));
   }
 
-  Stream<List<SyncEvent>> _getSyncStream(
-    SyncStreamDto dto, {
-    int batchSize = 5000,
-  }) async* {
+  Stream<List<SyncEvent>> _getSyncStream(SyncStreamDto dto) async* {
     final client = http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
@@ -64,7 +64,7 @@ class SyncApiRepository implements ISyncApiRepository {
         previousChunk = parts.removeLast();
         lines.addAll(parts);
 
-        if (lines.length < batchSize) {
+        if (lines.length < _batchSize) {
           continue;
         }
 
@@ -90,7 +90,7 @@ class SyncApiRepository implements ISyncApiRepository {
         final ack = jsonData['ack'];
         final converter = _kResponseMap[type];
         if (converter == null) {
-          _logger.warning("[_parseSyncReponse] Unknown type $type");
+          _logger.warning("[_parseSyncResponse] Unknown type $type");
           continue;
         }
 

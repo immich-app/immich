@@ -15,11 +15,16 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   DriftSyncStreamRepository(super.db) : _db = db;
 
   @override
-  Future<bool> deleteUsersV1(SyncUserDeleteV1 data) async {
+  Future<bool> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
-      await _db.managers.userEntity
-          .filter((row) => row.id.equals(data.userId.toUuidByte()))
-          .delete();
+      await _db.batch((batch) {
+        for (final user in data) {
+          batch.delete(
+            _db.userEntity,
+            UserEntityCompanion(id: Value(user.userId.toUuidByte())),
+          );
+        }
+      });
       return true;
     } catch (e, s) {
       _logger.severe('Error while processing SyncUserDeleteV1', e, s);
@@ -28,17 +33,22 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<bool> updateUsersV1(SyncUserV1 data) async {
-    final companion = UserEntityCompanion(
-      name: Value(data.name),
-      email: Value(data.email),
-    );
-
+  Future<bool> updateUsersV1(Iterable<SyncUserV1> data) async {
     try {
-      await _db.userEntity.insertOne(
-        companion.copyWith(id: Value(data.id.toUuidByte())),
-        onConflict: DoUpdate((_) => companion),
-      );
+      await _db.batch((batch) {
+        for (final user in data) {
+          final companion = UserEntityCompanion(
+            name: Value(user.name),
+            email: Value(user.email),
+          );
+
+          batch.insert(
+            _db.userEntity,
+            companion.copyWith(id: Value(user.id.toUuidByte())),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
       return true;
     } catch (e, s) {
       _logger.severe('Error while processing SyncUserV1', e, s);
@@ -47,15 +57,19 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<bool> deletePartnerV1(SyncPartnerDeleteV1 data) async {
+  Future<bool> deletePartnerV1(Iterable<SyncPartnerDeleteV1> data) async {
     try {
-      await _db.managers.partnerEntity
-          .filter(
-            (row) =>
-                row.sharedById.id.equals(data.sharedById.toUuidByte()) &
-                row.sharedWithId.id.equals(data.sharedWithId.toUuidByte()),
-          )
-          .delete();
+      await _db.batch((batch) {
+        for (final partner in data) {
+          batch.delete(
+            _db.partnerEntity,
+            PartnerEntityCompanion(
+              sharedById: Value(partner.sharedById.toUuidByte()),
+              sharedWithId: Value(partner.sharedWithId.toUuidByte()),
+            ),
+          );
+        }
+      });
       return true;
     } catch (e, s) {
       _logger.severe('Error while processing SyncPartnerDeleteV1', e, s);
@@ -64,18 +78,23 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<bool> updatePartnerV1(SyncPartnerV1 data) async {
-    final companion =
-        PartnerEntityCompanion(inTimeline: Value(data.inTimeline));
-
+  Future<bool> updatePartnerV1(Iterable<SyncPartnerV1> data) async {
     try {
-      await _db.partnerEntity.insertOne(
-        companion.copyWith(
-          sharedById: Value(data.sharedById.toUuidByte()),
-          sharedWithId: Value(data.sharedWithId.toUuidByte()),
-        ),
-        onConflict: DoUpdate((_) => companion),
-      );
+      await _db.batch((batch) {
+        for (final partner in data) {
+          final companion =
+              PartnerEntityCompanion(inTimeline: Value(partner.inTimeline));
+
+          batch.insert(
+            _db.partnerEntity,
+            companion.copyWith(
+              sharedById: Value(partner.sharedById.toUuidByte()),
+              sharedWithId: Value(partner.sharedWithId.toUuidByte()),
+            ),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
       return true;
     } catch (e, s) {
       _logger.severe('Error while processing SyncPartnerV1', e, s);

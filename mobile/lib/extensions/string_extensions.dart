@@ -35,5 +35,6 @@ extension DurationExtension on String {
 }
 
 extension UUIDExtension on String {
-  Uint8List toUuidByte() => UuidParsing.parseAsByteList(this);
+  Uint8List toUuidByte({bool shouldValidate = false}) =>
+      UuidParsing.parseAsByteList(this, validate: shouldValidate);
 }

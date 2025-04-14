@@ -35,11 +35,11 @@ abstract final class SyncStreamStub {
     sharedWithId: "4",
   );
   static final partnerEvents = [
-    SyncEvent(type: SyncEntityType.partnerV1, data: partnerV1, ack: "3"),
     SyncEvent(
       type: SyncEntityType.partnerDeleteV1,
       data: partnerDeleteV1,
       ack: "4",
     ),
+    SyncEvent(type: SyncEntityType.partnerV1, data: partnerV1, ack: "3"),
   ];
 }
