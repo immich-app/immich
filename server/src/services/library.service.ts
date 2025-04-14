@@ -236,7 +236,16 @@ export class LibraryService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const assetImports = job.paths.map((assetPath) => this.processEntity(assetPath, library.ownerId, job.libraryId));
+    const assetImports = (
+      await Promise.all(
+        job.paths.map((assetPath) =>
+          this.processEntity(assetPath, library.ownerId, job.libraryId).catch(() => {
+            this.logger.error(`Error processing asset ${assetPath} for library ${job.libraryId}`);
+            return null;
+          }),
+        ),
+      )
+    ).filter(<T>(asset: T): asset is Exclude<T, null> => asset !== null);
 
     const assetIds: string[] = [];
 
@@ -374,8 +383,9 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private processEntity(filePath: string, ownerId: string, libraryId: string) {
+  private async processEntity(filePath: string, ownerId: string, libraryId: string) {
     const assetPath = path.normalize(filePath);
+    const stat = await this.storageRepository.stat(assetPath);
 
     return {
       ownerId,
@@ -383,9 +393,9 @@ export class LibraryService extends BaseService {
       checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
       originalPath: assetPath,
 
-      fileCreatedAt: null,
-      fileModifiedAt: null,
-      localDateTime: null,
+      fileCreatedAt: stat.mtime,
+      fileModifiedAt: stat.mtime,
+      localDateTime: stat.mtime,
       // TODO: device asset id is deprecated, remove it
       deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
       deviceId: 'Library Import',
