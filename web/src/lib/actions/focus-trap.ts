@@ -1,4 +1,5 @@
 import { shortcuts } from '$lib/actions/shortcut';
+import { getFocusable } from '$lib/utils/focus-util';
 import { tick } from 'svelte';
 
 interface Options {
@@ -7,9 +8,6 @@ interface Options {
    */
   active?: boolean;
 }
-
-const selectors =
-  'button:not([disabled], .hidden), [href]:not(.hidden), input:not([disabled], .hidden), select:not([disabled], .hidden), textarea:not([disabled], .hidden), [tabindex]:not([tabindex="-1"], .hidden)';
 
 export function focusTrap(container: HTMLElement, options?: Options) {
   const triggerElement = document.activeElement;
@@ -21,7 +19,7 @@ export function focusTrap(container: HTMLElement, options?: Options) {
   };
 
   const setInitialFocus = () => {
-    const focusableElement = container.querySelector<HTMLElement>(selectors);
+    const focusableElement = getFocusable(container)[0];
     // Use tick() to ensure focus trap works correctly inside <Portal />
     void tick().then(() => focusableElement?.focus());
   };
@@ -30,11 +28,11 @@ export function focusTrap(container: HTMLElement, options?: Options) {
     setInitialFocus();
   }
 
-  const getFocusableElements = (): [HTMLElement | null, HTMLElement | null] => {
-    const focusableElements = container.querySelectorAll<HTMLElement>(selectors);
+  const getFocusableElements = () => {
+    const focusableElements = getFocusable(container);
     return [
-      focusableElements.item(0), //
-      focusableElements.item(focusableElements.length - 1),
+      focusableElements.at(0), //
+      focusableElements.at(-1),
     ];
   };
 
