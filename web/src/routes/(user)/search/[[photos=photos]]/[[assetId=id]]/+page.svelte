@@ -19,7 +19,6 @@
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { searchStore } from '$lib/stores/search.svelte';
   import { shortcut } from '$lib/actions/shortcut';
   import {
     type AlbumResponseDto,
@@ -88,10 +87,7 @@
       assetInteraction.selectedAssets = [];
       return;
     }
-    if (!searchStore.preventRaceConditionSearchBar) {
-      handlePromiseError(goto(previousRoute));
-    }
-    searchStore.preventRaceConditionSearchBar = false;
+    handlePromiseError(goto(previousRoute));
   };
 
   $effect(() => {
