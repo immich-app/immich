@@ -63,17 +63,25 @@ class SyncStreamService {
             }
           }
           await _syncApiRepository.ack(acks.values.toList());
+          _logger.info("$types events processed");
         } catch (error, stack) {
           _logger.warning("Error handling sync events", error, stack);
         }
         streamCompleter.completeOnce();
       },
-      onError: (_) => streamCompleter.completeOnce(),
+      onError: (error) {
+        _logger.warning("Error in sync stream for $types", error);
+        streamCompleter.completeOnce();
+      },
       // onDone is required to be called in cases where the stream is empty
-      onDone: () => shouldSkipOnDone ? null : streamCompleter.completeOnce,
+      onDone: () {
+        _logger.info("$types stream done");
+        if (!shouldSkipOnDone) {
+          streamCompleter.completeOnce();
+        }
+      },
     );
-    streamCompleter.future.whenComplete(subscription.cancel);
-    return await streamCompleter.future;
+    return await streamCompleter.future.whenComplete(subscription.cancel);
   }
 
   Future<void> syncUsers() => _syncEvent([SyncRequestType.usersV1]);
