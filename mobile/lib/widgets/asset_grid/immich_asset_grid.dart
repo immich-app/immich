@@ -32,6 +32,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final Widget? topWidget;
   final bool shrinkWrap;
   final bool showDragScroll;
+  final bool showDragScrollLabel;
   final bool showStack;
 
   const ImmichAssetGrid({
@@ -52,6 +53,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.topWidget,
     this.shrinkWrap = false,
     this.showDragScroll = true,
+    this.showDragScrollLabel = true,
     this.showStack = false,
   });
 
@@ -119,6 +121,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           shrinkWrap: shrinkWrap,
           showDragScroll: showDragScroll,
           showStack: showStack,
+          showLabel: showDragScrollLabel,
         ),
       );
     }

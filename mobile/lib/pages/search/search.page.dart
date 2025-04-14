@@ -768,6 +768,7 @@ class SearchResultGrid extends StatelessWidget {
             editEnabled: true,
             favoriteEnabled: true,
             stackEnabled: false,
+            dragScrollLabelEnabled: false,
             emptyIndicator: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: !isSearching
