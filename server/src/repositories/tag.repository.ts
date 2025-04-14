@@ -38,7 +38,7 @@ export class TagRepository {
         .insertInto('tags')
         .values({ userId, value, parentId })
         .onConflict((oc) => oc.columns(['userId', 'value']).doUpdateSet({ parentId }))
-        .returningAll()
+        .returning(columns.tag)
         .executeTakeFirstOrThrow();
 
       // update closure table

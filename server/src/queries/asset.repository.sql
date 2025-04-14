@@ -110,7 +110,12 @@ select
     from
       (
         select
-          "tags".*
+          "tags"."id",
+          "tags"."value",
+          "tags"."createdAt",
+          "tags"."updatedAt",
+          "tags"."color",
+          "tags"."parentId"
         from
           "tags"
           inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
@@ -194,7 +199,9 @@ select
     from
       (
         select
-          "asset_files".*
+          "asset_files"."id",
+          "asset_files"."path",
+          "asset_files"."type"
         from
           "asset_files"
         where

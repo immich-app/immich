@@ -37,7 +37,12 @@ on conflict ("userId", "value") do update
 set
   "parentId" = $4
 returning
-  *
+  "tags"."id",
+  "tags"."value",
+  "tags"."createdAt",
+  "tags"."updatedAt",
+  "tags"."color",
+  "tags"."parentId"
 rollback
 
 -- TagRepository.getAll
