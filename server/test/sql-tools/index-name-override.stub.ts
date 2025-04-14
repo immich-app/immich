@@ -9,7 +9,12 @@ export class Table1 {
 
 export const description = 'should create an index with a specific name';
 export const schema: DatabaseSchema = {
-  name: 'public',
+  name: 'postgres',
+  schemaName: 'public',
+  functions: [],
+  enums: [],
+  extensions: [],
+  parameters: [],
   tables: [
     {
       name: 'table1',
@@ -33,6 +38,7 @@ export const schema: DatabaseSchema = {
           synchronize: true,
         },
       ],
+      triggers: [],
       constraints: [],
       synchronize: true,
     },

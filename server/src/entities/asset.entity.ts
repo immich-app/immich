@@ -1,16 +1,9 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { AssetFace, AssetFile, AssetJobStatus, columns, Exif, Stack, Tag, User } from 'src/database';
 import { DB } from 'src/db';
 import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
-import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { SmartSearchEntity } from 'src/entities/smart-search.entity';
-import { StackEntity } from 'src/entities/stack.entity';
-import { TagEntity } from 'src/entities/tag.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
@@ -21,14 +14,14 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 export class AssetEntity {
   id!: string;
   deviceAssetId!: string;
-  owner!: UserEntity;
+  owner!: User;
   ownerId!: string;
   libraryId?: string | null;
   deviceId!: string;
   type!: AssetType;
   status!: AssetStatus;
   originalPath!: string;
-  files!: AssetFileEntity[];
+  files!: AssetFile[];
   thumbhash!: Buffer | null;
   encodedVideoPath!: string | null;
   createdAt!: Date;
@@ -49,15 +42,14 @@ export class AssetEntity {
   livePhotoVideoId!: string | null;
   originalFileName!: string;
   sidecarPath!: string | null;
-  exifInfo?: ExifEntity;
-  smartSearch?: SmartSearchEntity;
-  tags!: TagEntity[];
+  exifInfo?: Exif;
+  tags?: Tag[];
   sharedLinks!: SharedLinkEntity[];
   albums?: AlbumEntity[];
-  faces!: AssetFaceEntity[];
+  faces!: AssetFace[];
   stackId?: string | null;
-  stack?: StackEntity | null;
-  jobStatus?: AssetJobStatusEntity;
+  stack?: Stack | null;
+  jobStatus?: AssetJobStatus;
   duplicateId!: string | null;
 }
 
@@ -68,7 +60,9 @@ export type AssetEntityPlaceholder = AssetEntity & {
 };
 
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
-  return qb.leftJoin('exif', 'assets.id', 'exif.assetId').select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
+  return qb
+    .leftJoin('exif', 'assets.id', 'exif.assetId')
+    .select((eb) => eb.fn.toJson(eb.table('exif')).$castTo<Exif>().as('exifInfo'));
 }
 
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
@@ -87,7 +81,7 @@ export function withFaces(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?:
   return jsonArrayFrom(
     eb
       .selectFrom('asset_faces')
-      .selectAll()
+      .selectAll('asset_faces')
       .whereRef('asset_faces.assetId', '=', 'assets.id')
       .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
   ).as('faces');
@@ -97,9 +91,9 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   return jsonArrayFrom(
     eb
       .selectFrom('asset_files')
-      .selectAll()
+      .select(columns.assetFiles)
       .whereRef('asset_files.assetId', '=', 'assets.id')
-      .$if(!!type, (qb) => qb.where('type', '=', type!)),
+      .$if(!!type, (qb) => qb.where('asset_files.type', '=', type!)),
   ).as('files');
 }
 
@@ -176,7 +170,7 @@ export function withAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, { albumId
       jsonArrayFrom(
         eb
           .selectFrom('albums')
-          .selectAll()
+          .selectAll('albums')
           .innerJoin('albums_assets_assets', (join) =>
             join
               .onRef('albums.id', '=', 'albums_assets_assets.albumsId')
@@ -202,7 +196,7 @@ export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
   return jsonArrayFrom(
     eb
       .selectFrom('tags')
-      .selectAll('tags')
+      .select(columns.tag)
       .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
       .whereRef('assets.id', '=', 'tag_asset.assetsId'),
   ).as('tags');

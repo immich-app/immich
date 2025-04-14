@@ -1,5 +1,5 @@
+import { Session } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 
 const authUser = {
@@ -27,7 +27,7 @@ export const authStub = {
     user: authUser.user1,
     session: {
       id: 'token-id',
-    } as SessionEntity,
+    } as Session,
   }),
   user2: Object.freeze<AuthDto>({
     user: {
@@ -40,7 +40,7 @@ export const authStub = {
     },
     session: {
       id: 'token-id',
-    } as SessionEntity,
+    } as Session,
   }),
   adminSharedLink: Object.freeze<AuthDto>({
     user: authUser.admin,
@@ -50,26 +50,6 @@ export const authStub = {
       allowDownload: true,
       allowUpload: true,
       key: Buffer.from('shared-link-key'),
-    } as SharedLinkEntity,
-  }),
-  adminSharedLinkNoExif: Object.freeze<AuthDto>({
-    user: authUser.admin,
-    sharedLink: {
-      id: '123',
-      showExif: false,
-      allowDownload: true,
-      allowUpload: true,
-      key: Buffer.from('shared-link-key'),
-    } as SharedLinkEntity,
-  }),
-  passwordSharedLink: Object.freeze<AuthDto>({
-    user: authUser.admin,
-    sharedLink: {
-      id: '123',
-      allowUpload: false,
-      allowDownload: false,
-      password: 'password-123',
-      showExif: true,
     } as SharedLinkEntity,
   }),
 };

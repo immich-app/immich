@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { AssetFace } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
@@ -10,7 +11,6 @@ import {
 } from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetType } from 'src/enum';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -71,7 +71,8 @@ export type AssetMapOptions = {
   auth?: AuthDto;
 };
 
-const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[] => {
+// TODO: this is inefficient
+const peopleWithFaces = (faces: AssetFace[]): PersonWithFacesResponseDto[] => {
   const result: PersonWithFacesResponseDto[] = [];
   if (faces) {
     for (const face of faces) {

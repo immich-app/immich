@@ -24,6 +24,8 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
+  import { onMount } from 'svelte';
+  import { getFocusable } from '$lib/utils/focus-util';
 
   interface Props {
     asset: AssetResponseDto;
@@ -40,6 +42,7 @@
     showArchiveIcon?: boolean;
     showStackedIcon?: boolean;
     imageClass?: ClassValue;
+    brokenAssetClass?: ClassValue;
     dimmed?: boolean;
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
@@ -66,6 +69,7 @@
     onMouseEvent = undefined,
     handleFocus = undefined,
     imageClass = '',
+    brokenAssetClass = '',
     dimmed = false,
   }: Props = $props();
 
@@ -77,6 +81,7 @@
   let focussableElement: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
+  let thumbError = $state(false);
 
   $effect(() => {
     if (focussed && document.activeElement !== focussableElement) {
@@ -124,24 +129,59 @@
     mouseOver = false;
   };
 
+  let timer: ReturnType<typeof setTimeout>;
+  const clearLongPressTimer = () => clearTimeout(timer);
+
+  let startX: number = 0;
+  let startY: number = 0;
   function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
-    let timer: ReturnType<typeof setTimeout>;
-    const start = (event: TouchEvent) => {
+    let didPress = false;
+    const start = (evt: TouchEvent) => {
+      startX = evt.changedTouches[0].clientX;
+      startY = evt.changedTouches[0].clientY;
+      didPress = false;
       timer = setTimeout(() => {
         onLongPress();
-        event.preventDefault();
+        didPress = true;
       }, 350);
     };
-    const end = () => clearTimeout(timer);
-    element.addEventListener('touchstart', start);
-    element.addEventListener('touchend', end);
+    const click = (e: MouseEvent) => {
+      if (!didPress) {
+        return;
+      }
+      e.stopPropagation();
+      e.preventDefault();
+    };
+    element.addEventListener('click', click);
+    element.addEventListener('touchstart', start, true);
+    element.addEventListener('touchend', clearLongPressTimer, true);
     return {
       destroy: () => {
-        element.removeEventListener('touchstart', start);
-        element.removeEventListener('touchend', end);
+        element.removeEventListener('click', click);
+        element.removeEventListener('touchstart', start, true);
+        element.removeEventListener('touchend', clearLongPressTimer, true);
       },
     };
   }
+  function moveHandler(e: PointerEvent) {
+    var diffX = Math.abs(startX - e.clientX);
+    var diffY = Math.abs(startY - e.clientY);
+    if (diffX >= 10 || diffY >= 10) {
+      clearLongPressTimer();
+    }
+  }
+  onMount(() => {
+    document.addEventListener('scroll', clearLongPressTimer, true);
+    document.addEventListener('wheel', clearLongPressTimer, true);
+    document.addEventListener('contextmenu', clearLongPressTimer, true);
+    document.addEventListener('pointermove', moveHandler, true);
+    return () => {
+      document.removeEventListener('scroll', clearLongPressTimer, true);
+      document.removeEventListener('wheel', clearLongPressTimer, true);
+      document.removeEventListener('contextmenu', clearLongPressTimer, true);
+      document.removeEventListener('pointermove', moveHandler, true);
+    };
+  });
 </script>
 
 <div
@@ -153,10 +193,10 @@
   style:width="{width}px"
   style:height="{height}px"
 >
-  {#if !loaded && asset.thumbhash}
+  {#if (!loaded || thumbError) && asset.thumbhash}
     <canvas
       use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-      class="absolute object-cover z-10"
+      class="absolute object-cover"
       style:width="{width}px"
       style:height="{height}px"
       out:fade={{ duration: THUMBHASH_FADE_DURATION }}
@@ -183,10 +223,30 @@
       if (evt.key === 'x') {
         onSelect?.(asset);
       }
+      if (document.activeElement === focussableElement && evt.key === 'Escape') {
+        const focusable = getFocusable(document);
+        const index = focusable.indexOf(focussableElement);
+
+        let i = index + 1;
+        while (i !== index) {
+          const next = focusable[i];
+          if (next.dataset.thumbnailFocusContainer !== undefined) {
+            if (i === focusable.length - 1) {
+              i = 0;
+            } else {
+              i++;
+            }
+            continue;
+          }
+          next.focus();
+          break;
+        }
+      }
     }}
     onclick={handleClick}
     bind:this={focussableElement}
     onfocus={handleFocus}
+    data-thumbnail-focus-container
     data-testid="container-with-tabindex"
     tabindex={0}
     role="link"
@@ -296,12 +356,13 @@
       </div>
       <ImageThumbnail
         class={imageClass}
+        {brokenAssetClass}
         url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
         curve={selected}
-        onComplete={() => (loaded = true)}
+        onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.type === AssetTypeEnum.Video}
         <div class="absolute top-0 h-full w-full">

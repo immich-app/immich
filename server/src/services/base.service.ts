@@ -4,7 +4,7 @@ import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { UserEntity } from 'src/entities/user.entity';
+import { UserAdmin } from 'src/database';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -138,7 +138,7 @@ export class BaseService {
     return checkAccess(this.accessRepository, request);
   }
 
-  async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserEntity> {
+  async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {
     const user = await this.userRepository.getByEmail(dto.email);
     if (user) {
       throw new BadRequestException('User exists');

@@ -1,12 +1,11 @@
-import { AlbumUserEntity } from 'src/entities/album-user.entity';
+import { AlbumUser, User } from 'src/database';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { AssetOrder } from 'src/enum';
 
 export class AlbumEntity {
   id!: string;
-  owner!: UserEntity;
+  owner!: User;
   ownerId!: string;
   albumName!: string;
   description!: string;
@@ -16,7 +15,7 @@ export class AlbumEntity {
   deletedAt!: Date | null;
   albumThumbnailAsset!: AssetEntity | null;
   albumThumbnailAssetId!: string | null;
-  albumUsers!: AlbumUserEntity[];
+  albumUsers!: AlbumUser[];
   assets!: AssetEntity[];
   sharedLinks!: SharedLinkEntity[];
   isActivityEnabled!: boolean;

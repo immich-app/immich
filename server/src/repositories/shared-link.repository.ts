@@ -114,7 +114,7 @@ export class SharedLinkRepository {
             .as('assets'),
         (join) => join.onTrue(),
       )
-      .select((eb) => eb.fn.toJson('assets').as('assets'))
+      .select('assets.assets')
       .leftJoinLateral(
         (eb) =>
           eb

@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { savedSearchTerms } from '$lib/stores/search.store';
+  import { searchStore } from '$lib/stores/search.svelte';
   import { mdiMagnify, mdiClose } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
@@ -29,7 +29,7 @@
   }: Props = $props();
 
   let filteredSearchTerms = $derived(
-    $savedSearchTerms.filter((term) => term.toLowerCase().includes(searchQuery.toLowerCase())),
+    searchStore.savedSearchTerms.filter((term) => term.toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
   $effect(() => {

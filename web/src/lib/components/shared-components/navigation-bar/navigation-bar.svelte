@@ -23,7 +23,7 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import { isSidebarOpen } from '$lib/stores/side-bar.svelte';
+  import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
@@ -58,36 +58,34 @@
 
 <section
   id="dashboard-navbar"
-  class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-screen text-sm"
+  class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm"
 >
   <SkipLink text={$t('skip_to_content')} />
   <div
-    class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
+    class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
   >
     <div class="flex flex-row gap-1 mx-4 items-center">
-      <div>
-        <IconButton
-          id={menuButtonId}
-          shape="round"
-          color="secondary"
-          variant="ghost"
-          size="medium"
-          aria-label={$t('main_menu')}
-          icon={mdiMenu}
-          onclick={() => {
-            isSidebarOpen.value = !isSidebarOpen.value;
-          }}
-          onmousedown={(event: MouseEvent) => {
-            if (isSidebarOpen.value) {
-              // stops event from reaching the default handler when clicking outside of the sidebar
-              event.stopPropagation();
-            }
-          }}
-          class="md:hidden"
-        />
-      </div>
+      <IconButton
+        id={menuButtonId}
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        size="medium"
+        aria-label={$t('main_menu')}
+        icon={mdiMenu}
+        onclick={() => {
+          sidebarStore.toggle();
+        }}
+        onmousedown={(event: MouseEvent) => {
+          if (sidebarStore.isOpen) {
+            // stops event from reaching the default handler when clicking outside of the sidebar
+            event.stopPropagation();
+          }
+        }}
+        class="sidebar:hidden"
+      />
       <a data-sveltekit-preload-data="hover" href={AppRoute.PHOTOS}>
-        <ImmichLogo class="max-md:h-[48px] h-[50px]" noText={mobileDevice.maxMd} />
+        <ImmichLogo class="max-md:h-[48px] h-[50px]" noText={!mobileDevice.isFullSidebar} />
       </a>
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pr-6">
