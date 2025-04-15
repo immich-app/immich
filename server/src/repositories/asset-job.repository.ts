@@ -75,16 +75,19 @@ export class AssetJobRepository {
       .where('assets.deletedAt', 'is', null);
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getForStorageTemplateJob(id: string): Promise<StorageAsset | undefined> {
     return this.storageTemplateAssetQuery().where('assets.id', '=', id).executeTakeFirst() as Promise<
       StorageAsset | undefined
     >;
   }
 
+  @GenerateSql({ params: [], stream: true })
   streamForStorageTemplateJob() {
     return this.storageTemplateAssetQuery().stream() as AsyncIterableIterator<StorageAsset>;
   }
 
+  @GenerateSql({ params: [DummyValue.DATE], stream: true })
   streamForDeletedJob(trashedBefore: Date) {
     return this.db
       .selectFrom('assets')

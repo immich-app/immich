@@ -58,3 +58,53 @@ where
   "assets"."id" = $1::uuid
 limit
   $2
+
+-- AssetJobRepository.getForStorageTemplateJob
+select
+  "assets"."id",
+  "assets"."ownerId",
+  "assets"."type",
+  "assets"."checksum",
+  "assets"."originalPath",
+  "assets"."isExternal",
+  "assets"."sidecarPath",
+  "assets"."originalFileName",
+  "assets"."livePhotoVideoId",
+  "assets"."fileCreatedAt",
+  "exif"."timeZone",
+  "exif"."fileSizeInByte"
+from
+  "assets"
+  inner join "exif" on "assets"."id" = "exif"."assetId"
+where
+  "assets"."deletedAt" is null
+  and "assets"."id" = $1
+
+-- AssetJobRepository.streamForStorageTemplateJob
+select
+  "assets"."id",
+  "assets"."ownerId",
+  "assets"."type",
+  "assets"."checksum",
+  "assets"."originalPath",
+  "assets"."isExternal",
+  "assets"."sidecarPath",
+  "assets"."originalFileName",
+  "assets"."livePhotoVideoId",
+  "assets"."fileCreatedAt",
+  "exif"."timeZone",
+  "exif"."fileSizeInByte"
+from
+  "assets"
+  inner join "exif" on "assets"."id" = "exif"."assetId"
+where
+  "assets"."deletedAt" is null
+
+-- AssetJobRepository.streamForDeletedJob
+select
+  "id",
+  "isOffline"
+from
+  "assets"
+where
+  "assets"."deletedAt" <= $1
