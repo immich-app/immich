@@ -1486,14 +1486,14 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarWrite', () => {
     it('should skip assets that do not exist anymore', async () => {
-      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(void 0);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(void 0);
       await expect(sut.handleSidecarWrite({ id: 'asset-123' })).resolves.toBe(JobStatus.FAILED);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
     });
 
     it('should skip jobs with no metadata', async () => {
       const asset = factory.jobAssets.sidecarWrite();
-      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(asset);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
       await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.SKIPPED);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
     });
@@ -1504,7 +1504,7 @@ describe(MetadataService.name, () => {
       const gps = 12;
       const date = '2023-11-22T04:56:12.196Z';
 
-      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(asset);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
       await expect(
         sut.handleSidecarWrite({
           id: asset.id,

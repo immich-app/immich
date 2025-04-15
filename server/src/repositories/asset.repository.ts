@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Selectable, UpdateResult, Updateable, sql } from 'kysely';
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
@@ -24,7 +23,6 @@ import {
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
-import { StorageAsset } from 'src/types';
 import { anyUuid, asUuid, removeUndefinedKeys, unnest } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
@@ -474,47 +472,6 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAssetForSearchDuplicatesJob(id: string) {
-    return this.db
-      .selectFrom('assets')
-      .where('assets.id', '=', asUuid(id))
-      .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
-      .select((eb) => [
-        'id',
-        'type',
-        'ownerId',
-        'duplicateId',
-        'stackId',
-        'isVisible',
-        'smart_search.embedding',
-        withFiles(eb, AssetFileType.PREVIEW),
-      ])
-      .limit(1)
-      .executeTakeFirst();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getAssetForSidecarWriteJob(id: string) {
-    return this.db
-      .selectFrom('assets')
-      .where('assets.id', '=', asUuid(id))
-      .select((eb) => [
-        'id',
-        'sidecarPath',
-        'originalPath',
-        jsonArrayFrom(
-          eb
-            .selectFrom('tags')
-            .select(['tags.value'])
-            .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
-            .whereRef('assets.id', '=', 'tag_asset.assetsId'),
-        ).as('tags'),
-      ])
-      .limit(1)
-      .executeTakeFirst();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
   getById(
     id: string,
     { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {},
@@ -651,45 +608,6 @@ export class AssetRepository {
       .where('exif.livePhotoCID', '=', livePhotoCID)
       .limit(1)
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
-  }
-
-  private storageTemplateAssetQuery() {
-    return this.db
-      .selectFrom('assets')
-      .innerJoin('exif', 'assets.id', 'exif.assetId')
-      .select([
-        'assets.id',
-        'assets.ownerId',
-        'assets.type',
-        'assets.checksum',
-        'assets.originalPath',
-        'assets.isExternal',
-        'assets.sidecarPath',
-        'assets.originalFileName',
-        'assets.livePhotoVideoId',
-        'assets.fileCreatedAt',
-        'exif.timeZone',
-        'exif.fileSizeInByte',
-      ])
-      .where('assets.deletedAt', 'is', null);
-  }
-
-  getStorageTemplateAsset(id: string): Promise<StorageAsset | undefined> {
-    return this.storageTemplateAssetQuery().where('assets.id', '=', id).executeTakeFirst() as Promise<
-      StorageAsset | undefined
-    >;
-  }
-
-  streamStorageTemplateAssets() {
-    return this.storageTemplateAssetQuery().stream() as AsyncIterableIterator<StorageAsset>;
-  }
-
-  streamDeletedAssets(trashedBefore: Date) {
-    return this.db
-      .selectFrom('assets')
-      .select(['id', 'isOffline'])
-      .where('assets.deletedAt', '<=', trashedBefore)
-      .stream();
   }
 
   @GenerateSql(
