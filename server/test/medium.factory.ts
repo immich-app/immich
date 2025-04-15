@@ -22,7 +22,7 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
-import { newUuid } from 'test/small.factory';
+import { newDate, newUuid } from 'test/small.factory';
 import { automock, ServiceOverrides } from 'test/utils';
 import { Mocked } from 'vitest';
 
@@ -287,6 +287,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
 
 const assetInsert = (asset: Partial<Insertable<Assets>> = {}) => {
   const id = asset.id || newUuid();
+  const now = newDate();
   const defaults: Insertable<Assets> = {
     deviceAssetId: '',
     deviceId: '',
@@ -296,6 +297,9 @@ const assetInsert = (asset: Partial<Insertable<Assets>> = {}) => {
     originalPath: '/path/to/something.jpg',
     ownerId: '@immich.cloud',
     isVisible: true,
+    fileCreatedAt: now,
+    fileModifiedAt: now,
+    localDateTime: now,
   };
 
   return {
