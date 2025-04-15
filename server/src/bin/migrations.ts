@@ -93,7 +93,7 @@ const create = (path: string, up: string[], down: string[]) => {
   const filename = `${timestamp}-${name}.ts`;
   const folder = dirname(path);
   const fullPath = join(folder, filename);
-  writeFileSync(fullPath, asMigration('kysely', { name, timestamp, up, down }));
+  writeFileSync(fullPath, asMigration('typeorm', { name, timestamp, up, down }));
   console.log(`Wrote ${fullPath}`);
 };
 

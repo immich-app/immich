@@ -313,8 +313,5 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null))
-    .where('assets.fileCreatedAt', 'is not', null)
-    .where('assets.fileModifiedAt', 'is not', null)
-    .where('assets.localDateTime', 'is not', null);
+    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
 }

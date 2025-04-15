@@ -95,6 +95,9 @@ export class TestFactory {
       originalPath: '/path/to/something.jpg',
       ownerId: '@immich.cloud',
       isVisible: true,
+      fileCreatedAt: new Date('2000-01-01T00:00:00Z'),
+      fileModifiedAt: new Date('2000-01-01T00:00:00Z'),
+      localDateTime: new Date('2000-01-01T00:00:00Z'),
     };
 
     return {
