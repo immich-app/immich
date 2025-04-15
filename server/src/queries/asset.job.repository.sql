@@ -59,6 +59,37 @@ where
 limit
   $2
 
+-- AssetJobRepository.streamForThumbnailJob
+select
+  "assets"."id",
+  "assets"."thumbhash",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_files"."id",
+          "asset_files"."path",
+          "asset_files"."type"
+        from
+          "asset_files"
+        where
+          "asset_files"."assetId" = "assets"."id"
+      ) as agg
+  ) as "files"
+from
+  "assets"
+  inner join "asset_job_status" on "asset_job_status"."assetId" = "assets"."id"
+where
+  "assets"."deletedAt" is null
+  and "assets"."isVisible" = $1
+  and (
+    "asset_job_status"."previewAt" is null
+    or "asset_job_status"."thumbnailAt" is null
+    or "assets"."thumbhash" is null
+  )
+
 -- AssetJobRepository.getForStorageTemplateJob
 select
   "assets"."id",

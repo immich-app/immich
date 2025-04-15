@@ -54,6 +54,29 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [false], stream: true })
+  streamForThumbnailJob(force: boolean) {
+    return this.db
+      .selectFrom('assets')
+      .select(['assets.id', 'assets.thumbhash'])
+      .select(withFiles)
+      .where('assets.deletedAt', 'is', null)
+      .where('assets.isVisible', '=', true)
+      .$if(!force, (qb) =>
+        qb
+          // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
+          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
+          .where((eb) =>
+            eb.or([
+              eb('asset_job_status.previewAt', 'is', null),
+              eb('asset_job_status.thumbnailAt', 'is', null),
+              eb('assets.thumbhash', 'is', null),
+            ]),
+          ),
+      )
+      .stream();
+  }
+
   private storageTemplateAssetQuery() {
     return this.db
       .selectFrom('assets')
