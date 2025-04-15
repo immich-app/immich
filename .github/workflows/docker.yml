@@ -178,6 +178,12 @@ jobs:
             echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
           fi
 
+      - name: Generate docker image tags
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: 'true'
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
@@ -185,7 +191,7 @@ jobs:
           context: ${{ env.context }}
           file: ${{ env.file }}
           platforms: ${{ matrix.platforms }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-to: ${{ steps.cache-target.outputs.cache-to }}
           cache-from: |
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }}
@@ -287,8 +293,26 @@ jobs:
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
         run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
+          # Process annotations
+          declare -a ANNOTATIONS=()
+          if [[ -n "$DOCKER_METADATA_OUTPUT_JSON" ]]; then
+            while IFS= read -r annotation; do
+              # Extract key and value by removing the manifest: prefix
+              if [[ "$annotation" =~ ^manifest:(.+)=(.+)$ ]]; then
+                key="${BASH_REMATCH[1]}"
+                value="${BASH_REMATCH[2]}"
+                # Use array to properly handle arguments with spaces
+                ANNOTATIONS+=(--annotation "index:$key=$value")
+              fi
+            done < <(jq -r '.annotations[]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          fi
+
+          TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+          SOURCE_ARGS=$(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
+
+          echo "docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS"
+
+          docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS
 
   build_and_push_server:
     name: Build and Push Server
@@ -343,8 +367,14 @@ jobs:
             # Essentially just ignore the cache output (forks can't write to registry cache)
             echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
           else
-            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
+            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
           fi
+
+      - name: Generate docker image tags
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: 'true'
 
       - name: Build and push image
         id: build
@@ -353,7 +383,7 @@ jobs:
           context: ${{ env.context }}
           file: ${{ env.file }}
           platforms: ${{ matrix.platform }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-to: ${{ steps.cache-target.outputs.cache-to }}
           cache-from: |
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }}
@@ -441,8 +471,26 @@ jobs:
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
         run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
+          # Process annotations
+          declare -a ANNOTATIONS=()
+          if [[ -n "$DOCKER_METADATA_OUTPUT_JSON" ]]; then
+            while IFS= read -r annotation; do
+              # Extract key and value by removing the manifest: prefix
+              if [[ "$annotation" =~ ^manifest:(.+)=(.+)$ ]]; then
+                key="${BASH_REMATCH[1]}"
+                value="${BASH_REMATCH[2]}"
+                # Use array to properly handle arguments with spaces
+                ANNOTATIONS+=(--annotation "index:$key=$value")
+              fi
+            done < <(jq -r '.annotations[]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          fi
+
+          TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+          SOURCE_ARGS=$(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
+
+          echo "docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS"
+
+          docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS
 
   success-check-server:
     name: Docker Build & Push Server Success
