@@ -6,6 +6,7 @@ import { AssetJobStatus, Assets, DB } from 'src/db';
 import { AssetType } from 'src/enum';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -30,6 +31,7 @@ type Repositories = {
   activity: ActivityRepository;
   album: AlbumRepository;
   asset: AssetRepository;
+  assetJob: AssetJobRepository;
   config: ConfigRepository;
   crypto: CryptoRepository;
   database: DatabaseRepository;
@@ -113,6 +115,10 @@ export const getRepository = <K extends keyof Repositories>(key: K, db: Kysely<D
       return new AssetRepository(db);
     }
 
+    case 'assetJob': {
+      return new AssetJobRepository(db);
+    }
+
     case 'config': {
       return new ConfigRepository();
     }
@@ -173,6 +179,10 @@ const getRepositoryMock = <K extends keyof Repositories>(key: K) => {
 
     case 'asset': {
       return automock(AssetRepository);
+    }
+
+    case 'assetJob': {
+      return automock(AssetJobRepository);
     }
 
     case 'config': {
@@ -237,6 +247,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.albumUser,
     repositories.apiKey,
     repositories.asset || getRepositoryMock('asset'),
+    repositories.assetJob || getRepositoryMock('assetJob'),
     repositories.audit,
     repositories.config || getRepositoryMock('config'),
     repositories.cron,
