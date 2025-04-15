@@ -34,7 +34,9 @@ jobs:
       - name: Check if we should force jobs to run
         id: should_force
         run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
-
+      - name: generate translation file
+        run: cd mobile; make translation
+        
   build-sign-android:
     name: Build and sign Android
     needs: pre-job
