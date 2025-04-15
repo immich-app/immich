@@ -1,9 +1,8 @@
 import { FileMigrationProvider, Kysely, Migrator } from 'kysely';
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import { mkdir, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse } from 'pg-connection-string';
-import postgres, { Notice } from 'postgres';
+import { getKyselyConfig } from 'src/utils/database';
 import { GenericContainer, Wait } from 'testcontainers';
 import { DataSource } from 'typeorm';
 
@@ -78,36 +77,7 @@ const globalSetup = async () => {
     database: parsed.database ?? undefined,
   };
 
-  const driverOptions = {
-    ...parsedOptions,
-    onnotice: (notice: Notice) => {
-      if (notice['severity'] !== 'NOTICE') {
-        console.warn('Postgres notice:', notice);
-      }
-    },
-    max: 10,
-    types: {
-      date: {
-        to: 1184,
-        from: [1082, 1114, 1184],
-        serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
-        parse: (x: string) => new Date(x),
-      },
-      bigint: {
-        to: 20,
-        from: [20],
-        parse: (value: string) => Number.parseInt(value),
-        serialize: (value: number) => value.toString(),
-      },
-    },
-    connection: {
-      TimeZone: 'UTC',
-    },
-  };
-
-  const db = new Kysely({
-    dialect: new PostgresJSDialect({ postgres: postgres({ ...driverOptions, max: 1, database: 'postgres' }) }),
-  });
+  const db = new Kysely(getKyselyConfig(parsedOptions));
 
   // TODO just call `databaseRepository.migrate()` (probably have to wait until TypeOrm is gone)
   const migrator = new Migrator({
