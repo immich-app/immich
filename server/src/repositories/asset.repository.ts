@@ -6,7 +6,6 @@ import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import {
   AssetEntity,
-  AssetEntityPlaceholder,
   hasPeople,
   searchAssetBuilder,
   truncatedDate,
@@ -236,12 +235,8 @@ export class AssetRepository {
       .execute();
   }
 
-  create(asset: Insertable<Assets>): Promise<AssetEntityPlaceholder> {
-    return this.db
-      .insertInto('assets')
-      .values(asset)
-      .returningAll()
-      .executeTakeFirst() as any as Promise<AssetEntityPlaceholder>;
+  create(asset: Insertable<Assets>): Promise<AssetEntity> {
+    return this.db.insertInto('assets').values(asset).returningAll().executeTakeFirst() as any as Promise<AssetEntity>;
   }
 
   createAll(assets: Insertable<Assets>[]): Promise<AssetEntity[]> {
