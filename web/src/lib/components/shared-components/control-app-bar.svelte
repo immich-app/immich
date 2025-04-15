@@ -69,9 +69,17 @@
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
   <div
     id="asset-selection-app-bar"
-    class={`grid ${multiRow ? 'grid-cols-[100%] md:grid-cols-[25%_50%_25%]' : 'grid-cols-[10%_80%_10%] sm:grid-cols-[25%_50%_25%]'} justify-between lg:grid-cols-[25%_50%_25%] ${appBarBorder} mx-2 my-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${
-      forceDark && 'bg-immich-dark-gray text-white'
-    }`}
+    class={[
+      'grid',
+      multiRow && 'grid-cols-[100%] md:grid-cols-[25%_50%_25%]',
+      !multiRow && 'grid-cols-[10%_80%_10%] sm:grid-cols-[25%_50%_25%]',
+      'justify-between lg:grid-cols-[25%_50%_25%]',
+      appBarBorder,
+      'mx-2 my-2 place-items-center rounded-lg p-2 max-md:p-0 transition-all',
+      tailwindClasses,
+      'bg-immich-gray dark:bg-immich-dark-gray',
+      forceDark && 'bg-immich-dark-gray text-white',
+    ]}
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
