@@ -78,6 +78,10 @@ jobs:
         working-directory: ./mobile
         run: flutter pub get
 
+      - name: Generate translation file
+        run: make translation
+        working-directory: ./mobile
+
       - name: Build Android App Bundle
         working-directory: ./mobile
         env:

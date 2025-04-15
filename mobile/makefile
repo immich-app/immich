@@ -17,3 +17,6 @@ build_release_android:
 
 migrations:
 	dart run drift_dev make-migrations
+
+translation:
+	dart run easy_localization:generate -S ../i18n 

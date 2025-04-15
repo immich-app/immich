@@ -31,8 +31,10 @@ import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
+import 'package:immich_mobile/generated/codegen_loader.g.dart';
 
 void main() async {
+  EasyLocalization.logger.enableBuildModes = [];
   ImmichWidgetsBinding();
   final db = await Bootstrap.initIsar();
   await Bootstrap.initDomain(db);
@@ -234,6 +236,7 @@ class MainWidget extends StatelessWidget {
       path: translationsPath,
       useFallbackTranslations: true,
       fallbackLocale: locales.values.first,
+      assetLoader: const CodegenLoader(),
       child: const ImmichApp(),
     );
   }
