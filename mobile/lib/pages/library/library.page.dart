@@ -237,6 +237,9 @@ class PeopleCollectionCard extends ConsumerWidget {
                   ),
                 ),
                 child: people.widgetWhen(
+                  onLoading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
                   onData: (people) {
                     return GridView.count(
                       crossAxisCount: 2,
