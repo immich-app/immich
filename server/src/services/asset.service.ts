@@ -172,7 +172,7 @@ export class AssetService extends BaseService {
       }
     };
 
-    const assets = this.assetRepository.streamDeletedAssets(trashedBefore);
+    const assets = this.assetJobRepository.streamForDeletedJob(trashedBefore);
     for await (const asset of assets) {
       chunk.push(asset);
       if (chunk.length >= JOBS_ASSET_PAGINATION_SIZE) {

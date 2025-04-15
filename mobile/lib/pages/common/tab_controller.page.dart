@@ -65,7 +65,7 @@ class TabControllerPage extends HookConsumerWidget {
 
     final navigationDestinations = [
       NavigationDestination(
-        label: 'tab_controller_nav_photos'.tr(),
+        label: 'photos'.tr(),
         icon: const Icon(
           Icons.photo_library_outlined,
         ),
@@ -78,7 +78,7 @@ class TabControllerPage extends HookConsumerWidget {
         ),
       ),
       NavigationDestination(
-        label: 'tab_controller_nav_search'.tr(),
+        label: 'search'.tr(),
         icon: const Icon(
           Icons.search_rounded,
         ),

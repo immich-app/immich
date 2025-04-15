@@ -1,9 +1,8 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
+import { AssetFace, AssetFile, AssetJobStatus, columns, Exif, Stack, Tag, User } from 'src/database';
 import { DB } from 'src/db';
 import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
@@ -50,7 +49,7 @@ export class AssetEntity {
   faces!: AssetFace[];
   stackId?: string | null;
   stack?: Stack | null;
-  jobStatus?: AssetJobStatusEntity;
+  jobStatus?: AssetJobStatus;
   duplicateId!: string | null;
 }
 
@@ -82,7 +81,7 @@ export function withFaces(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?:
   return jsonArrayFrom(
     eb
       .selectFrom('asset_faces')
-      .selectAll()
+      .selectAll('asset_faces')
       .whereRef('asset_faces.assetId', '=', 'assets.id')
       .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
   ).as('faces');
@@ -92,7 +91,7 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   return jsonArrayFrom(
     eb
       .selectFrom('asset_files')
-      .selectAll('asset_files')
+      .select(columns.assetFiles)
       .whereRef('asset_files.assetId', '=', 'assets.id')
       .$if(!!type, (qb) => qb.where('asset_files.type', '=', type!)),
   ).as('files');
@@ -171,7 +170,7 @@ export function withAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, { albumId
       jsonArrayFrom(
         eb
           .selectFrom('albums')
-          .selectAll()
+          .selectAll('albums')
           .innerJoin('albums_assets_assets', (join) =>
             join
               .onRef('albums.id', '=', 'albums_assets_assets.albumsId')
@@ -197,7 +196,7 @@ export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
   return jsonArrayFrom(
     eb
       .selectFrom('tags')
-      .selectAll('tags')
+      .select(columns.tag)
       .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
       .whereRef('assets.id', '=', 'tag_asset.assetsId'),
   ).as('tags');
@@ -314,8 +313,5 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null))
-    .where('assets.fileCreatedAt', 'is not', null)
-    .where('assets.fileModifiedAt', 'is not', null)
-    .where('assets.localDateTime', 'is not', null);
+    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
 }

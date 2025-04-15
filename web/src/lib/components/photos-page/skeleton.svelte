@@ -13,7 +13,11 @@
   >
     {title}
   </div>
-  <div class="animate-pulse absolute h-full ml-[10px]" style:width="calc(100% - 10px)" data-skeleton="true"></div>
+  <div
+    class="animate-pulse absolute h-full ml-[10px] mr-[10px]"
+    style:width="calc(100% - 20px)"
+    data-skeleton="true"
+  ></div>
 </div>
 
 <style>

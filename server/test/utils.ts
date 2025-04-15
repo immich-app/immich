@@ -12,6 +12,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -114,6 +115,7 @@ export type ServiceOverrides = {
   apiKey: ApiKeyRepository;
   audit: AuditRepository;
   asset: AssetRepository;
+  assetJob: AssetJobRepository;
   config: ConfigRepository;
   cron: CronRepository;
   crypto: CryptoRepository;
@@ -181,6 +183,7 @@ export const newTestService = <T extends BaseService>(
     album: automock(AlbumRepository, { strict: false }),
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
+    assetJob: automock(AssetJobRepository),
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),
@@ -199,7 +202,7 @@ export const newTestService = <T extends BaseService>(
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
     person: newPersonRepositoryMock(),
-    process: automock(ProcessRepository, { args: [loggerMock] }),
+    process: automock(ProcessRepository),
     search: automock(SearchRepository, { args: [loggerMock], strict: false }),
     // eslint-disable-next-line no-sparse-arrays
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),
@@ -227,6 +230,7 @@ export const newTestService = <T extends BaseService>(
     overrides.albumUser || (mocks.albumUser as As<AlbumUserRepository>),
     overrides.apiKey || (mocks.apiKey as As<ApiKeyRepository>),
     overrides.asset || (mocks.asset as As<AssetRepository>),
+    overrides.assetJob || (mocks.assetJob as As<AssetJobRepository>),
     overrides.audit || (mocks.audit as As<AuditRepository>),
     overrides.config || (mocks.config as As<ConfigRepository> as ConfigRepository),
     overrides.cron || (mocks.cron as As<CronRepository>),

@@ -263,6 +263,35 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should not delete latituide and longitude without reverse geocode', async () => {
+      // regression test for issue 17511
+      mocks.asset.getByIds.mockResolvedValue([assetStub.withLocation]);
+      mocks.systemMetadata.get.mockResolvedValue({ reverseGeocoding: { enabled: false } });
+      mocks.storage.stat.mockResolvedValue({
+        size: 123_456,
+        mtime: assetStub.withLocation.fileModifiedAt,
+        mtimeMs: assetStub.withLocation.fileModifiedAt.valueOf(),
+        birthtimeMs: assetStub.withLocation.fileCreatedAt.valueOf(),
+      } as Stats);
+      mockReadTags({
+        GPSLatitude: assetStub.withLocation.exifInfo!.latitude!,
+        GPSLongitude: assetStub.withLocation.exifInfo!.longitude!,
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(mocks.asset.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ city: null, state: null, country: null }),
+      );
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: assetStub.withLocation.id,
+        duration: null,
+        fileCreatedAt: assetStub.withLocation.fileCreatedAt,
+        fileModifiedAt: assetStub.withLocation.fileModifiedAt,
+        localDateTime: new Date('2023-02-22T05:06:29.716Z'),
+      });
+    });
+
     it('should apply reverse geocoding', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.withLocation]);
       mocks.systemMetadata.get.mockResolvedValue({ reverseGeocoding: { enabled: true } });
@@ -1457,14 +1486,14 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarWrite', () => {
     it('should skip assets that do not exist anymore', async () => {
-      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(void 0);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(void 0);
       await expect(sut.handleSidecarWrite({ id: 'asset-123' })).resolves.toBe(JobStatus.FAILED);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
     });
 
     it('should skip jobs with no metadata', async () => {
       const asset = factory.jobAssets.sidecarWrite();
-      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(asset);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
       await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.SKIPPED);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
     });
@@ -1475,7 +1504,7 @@ describe(MetadataService.name, () => {
       const gps = 12;
       const date = '2023-11-22T04:56:12.196Z';
 
-      mocks.asset.getAssetForSidecarWriteJob.mockResolvedValue(asset);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
       await expect(
         sut.handleSidecarWrite({
           id: asset.id,

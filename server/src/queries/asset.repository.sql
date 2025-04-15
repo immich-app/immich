@@ -110,7 +110,12 @@ select
     from
       (
         select
-          "tags".*
+          "tags"."id",
+          "tags"."value",
+          "tags"."createdAt",
+          "tags"."updatedAt",
+          "tags"."color",
+          "tags"."parentId"
         from
           "tags"
           inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
@@ -166,9 +171,6 @@ where
   "ownerId" = $1::uuid
   and "deviceId" = $2
   and "isVisible" = $3
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
   and "deletedAt" is null
 
 -- AssetRepository.getLivePhotoCount
@@ -178,63 +180,6 @@ from
   "assets"
 where
   "livePhotoVideoId" = $1::uuid
-
--- AssetRepository.getAssetForSearchDuplicatesJob
-select
-  "id",
-  "type",
-  "ownerId",
-  "duplicateId",
-  "stackId",
-  "isVisible",
-  "smart_search"."embedding",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "asset_files".*
-        from
-          "asset_files"
-        where
-          "asset_files"."assetId" = "assets"."id"
-          and "asset_files"."type" = $1
-      ) as agg
-  ) as "files"
-from
-  "assets"
-  left join "smart_search" on "assets"."id" = "smart_search"."assetId"
-where
-  "assets"."id" = $2::uuid
-limit
-  $3
-
--- AssetRepository.getAssetForSidecarWriteJob
-select
-  "id",
-  "sidecarPath",
-  "originalPath",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "tags"."value"
-        from
-          "tags"
-          inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
-        where
-          "assets"."id" = "tag_asset"."assetsId"
-      ) as agg
-  ) as "tags"
-from
-  "assets"
-where
-  "assets"."id" = $1::uuid
-limit
-  $2
 
 -- AssetRepository.getById
 select
@@ -327,9 +272,6 @@ with
     where
       "assets"."deletedAt" is null
       and "assets"."isVisible" = $2
-      and "assets"."fileCreatedAt" is not null
-      and "assets"."fileModifiedAt" is not null
-      and "assets"."localDateTime" is not null
   )
 select
   "timeBucket",
@@ -483,9 +425,6 @@ from
 where
   "assets"."ownerId" = $1::uuid
   and "assets"."isVisible" = $2
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
   and "assets"."updatedAt" <= $3
   and "assets"."id" > $4
 order by
@@ -516,9 +455,6 @@ from
 where
   "assets"."ownerId" = any ($1::uuid[])
   and "assets"."isVisible" = $2
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
   and "assets"."updatedAt" > $3
 limit
   $4
