@@ -73,7 +73,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              'select_additional_user_for_sharing_page_suggestions'.tr(),
+              'suggestions'.tr(),
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -126,7 +126,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'share_invite',
+          'invite_to_album',
         ).tr(),
         elevation: 0,
         centerTitle: false,
@@ -141,7 +141,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
             onPressed:
                 sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
             child: const Text(
-              "share_add",
+              "add",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ).tr(),
           ),

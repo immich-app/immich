@@ -142,7 +142,7 @@ class CreateAlbumPage extends HookConsumerWidget {
               AlbumActionFilledButton(
                 iconData: Icons.add_photo_alternate_outlined,
                 onPressed: onSelectPhotosButtonPressed,
-                labelText: "share_add_photos".tr(),
+                labelText: "add_photos".tr(),
               ),
             ],
           ),
@@ -207,7 +207,7 @@ class CreateAlbumPage extends HookConsumerWidget {
           icon: const Icon(Icons.close_rounded),
         ),
         title: const Text(
-          'share_create_album',
+          'create_album',
         ).tr(),
         actions: [
           TextButton(
@@ -215,7 +215,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                 ? createNonSharedAlbum
                 : null,
             child: Text(
-              'create_shared_album_page_create'.tr(),
+              'create'.tr(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: albumTitleController.text.isNotEmpty
