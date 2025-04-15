@@ -77,6 +77,16 @@ export class AssetJobRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForMigrationJob(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .select(['assets.id', 'assets.ownerId', 'assets.encodedVideoPath'])
+      .select(withFiles)
+      .where('assets.id', '=', id)
+      .executeTakeFirst();
+  }
+
   private storageTemplateAssetQuery() {
     return this.db
       .selectFrom('assets')

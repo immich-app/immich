@@ -121,6 +121,13 @@ export type UserAdmin = User & {
   metadata: UserMetadataItem[];
 };
 
+export type StorageAsset = {
+  id: string;
+  ownerId: string;
+  files: AssetFile[];
+  encodedVideoPath: string | null;
+};
+
 export type Asset = {
   createdAt: Date;
   updatedAt: Date;

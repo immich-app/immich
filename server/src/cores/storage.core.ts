@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { APP_MEDIA_LOCATION } from 'src/constants';
-import { AssetEntity } from 'src/entities/asset.entity';
+import { StorageAsset } from 'src/database';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -27,6 +27,8 @@ export interface MoveRequest {
 
 export type GeneratedImageType = AssetPathType.PREVIEW | AssetPathType.THUMBNAIL | AssetPathType.FULLSIZE;
 export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDEO;
+
+type ThumbnailPathEntity = { id: string; ownerId: string };
 
 let instance: StorageCore | null;
 
@@ -84,19 +86,19 @@ export class StorageCore {
     return join(APP_MEDIA_LOCATION, folder);
   }
 
-  static getPersonThumbnailPath(person: { id: string; ownerId: string }) {
+  static getPersonThumbnailPath(person: ThumbnailPathEntity) {
     return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, person.ownerId, `${person.id}.jpeg`);
   }
 
-  static getImagePath(asset: AssetEntity, type: GeneratedImageType, format: ImageFormat) {
+  static getImagePath(asset: ThumbnailPathEntity, type: GeneratedImageType, format: ImageFormat) {
     return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}-${type}.${format}`);
   }
 
-  static getEncodedVideoPath(asset: AssetEntity) {
+  static getEncodedVideoPath(asset: ThumbnailPathEntity) {
     return StorageCore.getNestedPath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.mp4`);
   }
 
-  static getAndroidMotionPath(asset: AssetEntity, uuid: string) {
+  static getAndroidMotionPath(asset: ThumbnailPathEntity, uuid: string) {
     return StorageCore.getNestedPath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${uuid}-MP.mp4`);
   }
 
@@ -114,7 +116,7 @@ export class StorageCore {
     return normalizedPath.startsWith(normalizedAppMediaLocation);
   }
 
-  async moveAssetImage(asset: AssetEntity, pathType: GeneratedImageType, format: ImageFormat) {
+  async moveAssetImage(asset: StorageAsset, pathType: GeneratedImageType, format: ImageFormat) {
     const { id: entityId, files } = asset;
     const oldFile = getAssetFile(files, pathType);
     return this.moveFile({
@@ -125,7 +127,7 @@ export class StorageCore {
     });
   }
 
-  async moveAssetVideo(asset: AssetEntity) {
+  async moveAssetVideo(asset: StorageAsset) {
     return this.moveFile({
       entityId: asset.id,
       pathType: AssetPathType.ENCODED_VIDEO,

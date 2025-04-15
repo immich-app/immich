@@ -191,13 +191,14 @@ describe(MediaService.name, () => {
 
   describe('handleAssetMigration', () => {
     it('should fail if asset does not exist', async () => {
+      mocks.assetJob.getForMigrationJob.mockResolvedValue(void 0);
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.FAILED);
 
       expect(mocks.move.getByEntity).not.toHaveBeenCalled();
     });
 
     it('should move asset files', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
+      mocks.assetJob.getForMigrationJob.mockResolvedValue(assetStub.image);
       mocks.move.create.mockResolvedValue({
         entityId: assetStub.image.id,
         id: 'move-id',
