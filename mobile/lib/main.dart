@@ -34,7 +34,6 @@ import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 
 void main() async {
-  EasyLocalization.logger.enableBuildModes = [];
   ImmichWidgetsBinding();
   final db = await Bootstrap.initIsar();
   await Bootstrap.initDomain(db);
