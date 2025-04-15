@@ -49,7 +49,12 @@
     "job_settings": "Configuración de tarefas",
     "job_settings_description": "Administrar tarefas simultáneas",
     "job_status": "Estado da tarefa",
-    "jobs_failed": "{jobCount, one {# errado}, plural, other {# errados}}"
+    "jobs_failed": "{jobCount, one {# errado}, plural, other {# errados}}",
+    "note_cannot_be_changed_later": "NOTA: Non editable posteriormente!",
+    "notification_email_host_description": "Host do servidor de correo electrónico (p. ex.: smtp.immich.app)",
+    "notification_email_ignore_certificate_errors": "Ignorar erros de certificado",
+    "notification_email_ignore_certificate_errors_description": "Ignorar erros de validación de certificados TLS (non recomendado)",
+    "notification_settings": "Configuración de notificacións"
   },
   "year": "Ano",
   "yes": "Si",
