@@ -51,7 +51,7 @@ jobs:
         working-directory: ./mobile
 
       - name: Generate translation file
-        run: make translation
+        run: make translation; dart format lib/generated/codegen_loader.g.dart
         working-directory: ./mobile
 
       - name: Run Build Runner
