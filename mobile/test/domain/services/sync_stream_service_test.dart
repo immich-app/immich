@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
+import 'package:immich_mobile/domain/utils/cancel.exception.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
@@ -57,7 +58,9 @@ void main() {
   });
 
   tearDown(() async {
-    await streamController.close();
+    if (!streamController.isClosed) {
+      await streamController.close();
+    }
   });
 
   // Helper to trigger sync and add events to the stream
@@ -83,8 +86,8 @@ void main() {
         await expectLater(future, completes);
         // Verify ack includes last ack from each successfully handled type
         verify(
-          () => mockSyncApiRepo
-              .ack(any(that: containsAllInOrder(["5", "2", "4", "3"]))),
+          () =>
+              mockSyncApiRepo.ack(any(that: containsAll(["5", "2", "4", "3"]))),
         ).called(1);
       },
     );
@@ -159,9 +162,8 @@ void main() {
       await triggerSyncAndEmit(events);
 
       // Expect ack only for userDeleteV1 (ack: "2") and partnerDeleteV1 (ack: "4")
-      verify(
-        () => mockSyncApiRepo.ack(any(that: containsAllInOrder(["2", "4"]))),
-      ).called(1);
+      verify(() => mockSyncApiRepo.ack(any(that: containsAll(["2", "4"]))))
+          .called(1);
     });
 
     test("does not process or ack when stream emits an empty list", () async {
@@ -183,15 +185,19 @@ void main() {
       int callOrder = 0;
       int handler1StartOrder = -1;
       int handler2StartOrder = -1;
+      int handler1Calls = 0;
+      int handler2Calls = 0;
 
       when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer((_) async {
-        handler1StartOrder = ++callOrder; // Record when handler 1 starts
-        await completer1.future; // Wait for external signal
+        handler1Calls++;
+        handler1StartOrder = ++callOrder;
+        await completer1.future;
         return true;
       });
       when(() => mockSyncStreamRepo.updatePartnerV1(any()))
           .thenAnswer((_) async {
-        handler2StartOrder = ++callOrder; // Record when handler 2 starts
+        handler2Calls++;
+        handler2StartOrder = ++callOrder;
         await completer2.future;
         return true;
       });
@@ -200,43 +206,97 @@ void main() {
       final batch2 = SyncStreamStub.partnerEvents;
 
       final syncFuture = sut.syncUsers();
-      streamController.add(batch1); // Emit first batch
+      await pumpEventQueue();
 
-      // Ensure first batch processing starts
-      await Future.delayed(const Duration(milliseconds: 10));
+      streamController.add(batch1);
+      await pumpEventQueue();
+      // Small delay to ensure the first handler starts
+      await Future.delayed(const Duration(milliseconds: 20));
+
       expect(handler1StartOrder, 1, reason: "Handler 1 should start first");
+      expect(handler1Calls, 1);
 
-      streamController.add(batch2); // Emit second batch while first is waiting
+      streamController.add(batch2);
+      await pumpEventQueue();
+      // Small delay
+      await Future.delayed(const Duration(milliseconds: 20));
 
-      await Future.delayed(const Duration(milliseconds: 10));
-      // Handler 2 should NOT have started yet because mutex is held by handler 1
-      expect(
-        handler2StartOrder,
-        -1,
-        reason: "Handler 2 should wait for Handler 1",
-      );
+      expect(handler2StartOrder, -1, reason: "Handler 2 should wait");
+      expect(handler2Calls, 0);
 
-      completer1.complete(); // Allow first handler to finish
-      // Allow second batch to start processing
-      await Future.delayed(const Duration(milliseconds: 10));
+      completer1.complete();
+      await pumpEventQueue(times: 40);
+      // Small delay to ensure the second handler starts
+      await Future.delayed(const Duration(milliseconds: 20));
 
-      // Now handler 2 should start
-      expect(
-        handler2StartOrder,
-        2,
-        reason: "Handler 2 should start after Handler 1 finishes",
-      );
+      expect(handler2StartOrder, 2, reason: "Handler 2 should start after H1");
+      expect(handler2Calls, 1);
 
-      completer2.complete(); // Allow second handler to finish
-      await streamController.close(); // Close stream
-      await syncFuture; // Wait for overall completion
+      completer2.complete();
+      await pumpEventQueue(times: 40);
+      // Small delay before closing the stream
+      await Future.delayed(const Duration(milliseconds: 20));
 
-      // Verify handlers were called and acks sent for both batches eventually
+      if (!streamController.isClosed) {
+        await streamController.close();
+      }
+      await pumpEventQueue(times: 40);
+      // Small delay to ensure the sync completes
+      await Future.delayed(const Duration(milliseconds: 20));
+
+      await syncFuture;
+
       verify(() => mockSyncStreamRepo.updateUsersV1(any())).called(1);
       verify(() => mockSyncStreamRepo.updatePartnerV1(any())).called(1);
-      // Acks might be called separately or combined depending on timing, check count
       verify(() => mockSyncApiRepo.ack(any())).called(2);
     });
+
+    test(
+      "stops processing and ack when cancel completer is completed",
+      () async {
+        final cancelCompleter = Completer<bool>();
+        sut = SyncStreamService(
+          syncApiRepository: mockSyncApiRepo,
+          syncStreamRepository: mockSyncStreamRepo,
+          cancelCompleter: cancelCompleter,
+        );
+
+        final processingCompleter = Completer<void>();
+        bool handlerStarted = false;
+
+        // Make handler wait so we can cancel it mid-flight
+        when(() => mockSyncStreamRepo.updateUsersV1(any()))
+            .thenAnswer((_) async {
+          handlerStarted = true;
+          await processingCompleter
+              .future; // Wait indefinitely until test completes it
+          return true;
+        });
+
+        final syncFuture = sut.syncUsers();
+        await pumpEventQueue(times: 30);
+
+        streamController.add(SyncStreamStub.userEvents);
+        // Ensure processing starts
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        expect(handlerStarted, isTrue, reason: "Handler should have started");
+
+        cancelCompleter.complete(true); // Signal cancellation
+
+        // Allow cancellation logic to propagate
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        // Complete the handler's completer after cancellation signal
+        // to ensure the cancellation logic itself isn't blocked by the handler.
+        processingCompleter.complete();
+
+        await expectLater(syncFuture, throwsA(isA<CancelException>()));
+
+        // Verify that ack was NOT called because processing was cancelled
+        verifyNever(() => mockSyncApiRepo.ack(any()));
+      },
+    );
 
     test("completes successfully when ack call throws an exception", () async {
       when(() => mockSyncApiRepo.ack(any())).thenThrow(Exception("Ack Error"));

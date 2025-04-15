@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
+import 'package:immich_mobile/domain/utils/cancel.exception.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -13,12 +14,15 @@ class SyncStreamService {
 
   final ISyncApiRepository _syncApiRepository;
   final ISyncStreamRepository _syncStreamRepository;
+  final Completer<bool>? _cancelCompleter;
 
   SyncStreamService({
     required ISyncApiRepository syncApiRepository,
     required ISyncStreamRepository syncStreamRepository,
+    Completer<bool>? cancelCompleter,
   })  : _syncApiRepository = syncApiRepository,
-        _syncStreamRepository = syncStreamRepository;
+        _syncStreamRepository = syncStreamRepository,
+        _cancelCompleter = cancelCompleter;
 
   Future<bool> _handleSyncData(
     SyncEntityType type,
@@ -65,7 +69,8 @@ class SyncStreamService {
     // the following flag ensures that the onDone callback is not called
     // before the events are processed and also that events are processed sequentially
     Completer? mutex;
-    final subscription = _syncApiRepository.getSyncEvents(types).listen(
+    StreamSubscription? subscription;
+    subscription = _syncApiRepository.getSyncEvents(types).listen(
       (events) async {
         if (events.isEmpty) {
           _logger.warning("Received empty sync events");
@@ -77,6 +82,18 @@ class SyncStreamService {
           await mutex!.future;
         }
 
+        if (_cancelCompleter?.isCompleted ?? false) {
+          _logger.info("Sync cancelled, stopping stream");
+          subscription?.cancel();
+          if (!streamCompleter.isCompleted) {
+            streamCompleter.completeError(
+              const CancelException(),
+              StackTrace.current,
+            );
+          }
+          return;
+        }
+
         // Take control of the mutex and process the events
         mutex = Completer();
 
@@ -85,6 +102,20 @@ class SyncStreamService {
           final Map<SyncEntityType, String> acks = {};
 
           for (final entry in eventsMap.entries) {
+            if (_cancelCompleter?.isCompleted ?? false) {
+              _logger.info("Sync cancelled, stopping stream");
+              mutex?.complete();
+              mutex = null;
+              if (!streamCompleter.isCompleted) {
+                streamCompleter.completeError(
+                  const CancelException(),
+                  StackTrace.current,
+                );
+              }
+
+              return;
+            }
+
             final type = entry.key;
             final data = entry.value;
 
@@ -133,7 +164,10 @@ class SyncStreamService {
         }
       },
     );
-    return await streamCompleter.future.whenComplete(subscription.cancel);
+    return await streamCompleter.future.whenComplete(() {
+      _logger.info("Sync stream completed");
+      return subscription?.cancel();
+    });
   }
 
   Future<void> syncUsers() =>
