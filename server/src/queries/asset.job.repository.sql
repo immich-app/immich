@@ -90,6 +90,31 @@ where
     or "assets"."thumbhash" is null
   )
 
+-- AssetJobRepository.getForMigrationJob
+select
+  "assets"."id",
+  "assets"."ownerId",
+  "assets"."encodedVideoPath",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_files"."id",
+          "asset_files"."path",
+          "asset_files"."type"
+        from
+          "asset_files"
+        where
+          "asset_files"."assetId" = "assets"."id"
+      ) as agg
+  ) as "files"
+from
+  "assets"
+where
+  "assets"."id" = $1
+
 -- AssetJobRepository.getForStorageTemplateJob
 select
   "assets"."id",
