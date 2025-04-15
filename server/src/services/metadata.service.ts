@@ -759,7 +759,7 @@ export class MetadataService extends BaseService {
   }
 
   private async processSidecar(id: string, isSync: boolean): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { files: true });
 
     if (!asset) {
       return JobStatus.FAILED;

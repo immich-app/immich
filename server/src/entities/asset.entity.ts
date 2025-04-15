@@ -41,7 +41,6 @@ export class AssetEntity {
   livePhotoVideo!: AssetEntity | null;
   livePhotoVideoId!: string | null;
   originalFileName!: string;
-  sidecarPath!: string | null;
   exifInfo?: Exif;
   tags?: Tag[];
   sharedLinks!: SharedLinkEntity[];
