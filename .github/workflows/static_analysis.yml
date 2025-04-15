@@ -28,9 +28,6 @@ jobs:
       - name: Check if we should force jobs to run
         id: should_force
         run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
-      - name: generate translation file
-        run: cd mobile; make translation
-        
   mobile-dart-analyze:
     name: Run Dart Code Analysis
     needs: pre-job
@@ -50,6 +47,10 @@ jobs:
 
       - name: Install dependencies
         run: dart pub get
+        working-directory: ./mobile
+
+      - name: Generate translation file
+        run: make translation
         working-directory: ./mobile
 
       - name: Run Build Runner
