@@ -675,7 +675,7 @@ class SearchPage extends HookConsumerWidget {
                   SearchFilterChip(
                     icon: Icons.people_alt_outlined,
                     onTap: showPeoplePicker,
-                    label: 'search_filter_people'.tr(),
+                    label: 'people'.tr(),
                     currentFilter: peopleCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(

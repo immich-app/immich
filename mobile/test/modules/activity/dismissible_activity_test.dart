@@ -72,7 +72,7 @@ void main() {
     await tester.drag(dismissible, const Offset(-500, 0));
     await tester.pumpAndSettle();
 
-    final okButton = find.text('delete_dialog_ok');
+    final okButton = find.text('delete');
     await tester.tap(okButton);
     await tester.pumpAndSettle();
 
