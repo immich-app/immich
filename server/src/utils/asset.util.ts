@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
-import { StorageCore } from 'src/cores/storage.core';
+import { GeneratedImageType, StorageCore } from 'src/cores/storage.core';
+import { AssetFile } from 'src/database';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, AssetType, Permission } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -13,14 +13,17 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile } from 'src/types';
 import { checkAccess } from 'src/utils/access';
 
-const getFileByType = (files: AssetFileEntity[] | undefined, type: AssetFileType) => {
+export const getAssetFile = <T extends { type: AssetFileType }>(
+  files: T[],
+  type: AssetFileType | GeneratedImageType,
+) => {
   return (files || []).find((file) => file.type === type);
 };
 
-export const getAssetFiles = (files?: AssetFileEntity[]) => ({
-  fullsizeFile: getFileByType(files, AssetFileType.FULLSIZE),
-  previewFile: getFileByType(files, AssetFileType.PREVIEW),
-  thumbnailFile: getFileByType(files, AssetFileType.THUMBNAIL),
+export const getAssetFiles = (files: AssetFile[]) => ({
+  fullsizeFile: getAssetFile(files, AssetFileType.FULLSIZE),
+  previewFile: getAssetFile(files, AssetFileType.PREVIEW),
+  thumbnailFile: getAssetFile(files, AssetFileType.THUMBNAIL),
 });
 
 export const addAssets = async (

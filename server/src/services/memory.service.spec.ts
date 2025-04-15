@@ -24,7 +24,7 @@ describe(MemoryService.name, () => {
 
       mocks.memory.search.mockResolvedValue([memory1, memory2]);
 
-      await expect(sut.search(factory.auth({ id: userId }), {})).resolves.toEqual(
+      await expect(sut.search(factory.auth({ user: { id: userId } }), {})).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({ id: memory1.id, assets: [expect.objectContaining({ id: asset.id })] }),
           expect.objectContaining({ id: memory2.id, assets: [] }),
@@ -60,7 +60,9 @@ describe(MemoryService.name, () => {
       mocks.memory.get.mockResolvedValue(memory);
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
 
-      await expect(sut.get(factory.auth({ id: userId }), memory.id)).resolves.toMatchObject({ id: memory.id });
+      await expect(sut.get(factory.auth({ user: { id: userId } }), memory.id)).resolves.toMatchObject({
+        id: memory.id,
+      });
 
       expect(mocks.memory.get).toHaveBeenCalledWith(memory.id);
       expect(mocks.access.memory.checkOwnerAccess).toHaveBeenCalledWith(memory.ownerId, new Set([memory.id]));
@@ -75,7 +77,7 @@ describe(MemoryService.name, () => {
       mocks.memory.create.mockResolvedValue(memory);
 
       await expect(
-        sut.create(factory.auth({ id: userId }), {
+        sut.create(factory.auth({ user: { id: userId } }), {
           type: memory.type,
           data: memory.data,
           memoryAt: memory.memoryAt,
@@ -105,7 +107,7 @@ describe(MemoryService.name, () => {
       mocks.memory.create.mockResolvedValue(memory);
 
       await expect(
-        sut.create(factory.auth({ id: userId }), {
+        sut.create(factory.auth({ user: { id: userId } }), {
           type: memory.type,
           data: memory.data,
           assetIds: memory.assets.map((asset) => asset.id),

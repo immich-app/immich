@@ -13,7 +13,11 @@
   >
     {title}
   </div>
-  <div class="animate-pulse absolute w-full h-full" data-skeleton="true"></div>
+  <div
+    class="animate-pulse absolute h-full ml-[10px] mr-[10px]"
+    style:width="calc(100% - 20px)"
+    data-skeleton="true"
+  ></div>
 </div>
 
 <style>
@@ -21,6 +25,11 @@
     background-image: url('/light_skeleton.png');
     background-repeat: repeat;
     background-size: 235px, 235px;
+  }
+  @media (max-width: 767px) {
+    [data-skeleton] {
+      background-size: 100px, 100px;
+    }
   }
   :global(.dark) [data-skeleton] {
     background-image: url('/dark_skeleton.png');

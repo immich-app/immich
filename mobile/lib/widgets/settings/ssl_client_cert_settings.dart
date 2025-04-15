@@ -65,7 +65,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
                 onPressed: widget.isLoggedIn || !isCertExist
                     ? null
                     : () => removeCert(context),
-                child: Text("client_cert_remove".tr()),
+                child: Text("remove".tr()),
               ),
             ],
           ),

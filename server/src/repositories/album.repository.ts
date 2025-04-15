@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
 import { Albums, DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
@@ -19,26 +20,8 @@ export interface AlbumInfoOptions {
   withAssets: boolean;
 }
 
-const userColumns = [
-  'id',
-  'email',
-  'createdAt',
-  'profileImagePath',
-  'isAdmin',
-  'shouldChangePassword',
-  'deletedAt',
-  'oauthId',
-  'updatedAt',
-  'storageLabel',
-  'name',
-  'quotaSizeInBytes',
-  'quotaUsageInBytes',
-  'status',
-  'profileChangedAt',
-] as const;
-
 const withOwner = (eb: ExpressionBuilder<DB, 'albums'>) => {
-  return jsonObjectFrom(eb.selectFrom('users').select(userColumns).whereRef('users.id', '=', 'albums.ownerId')).as(
+  return jsonObjectFrom(eb.selectFrom('users').select(columns.user).whereRef('users.id', '=', 'albums.ownerId')).as(
     'owner',
   );
 };
@@ -47,9 +30,9 @@ const withAlbumUsers = (eb: ExpressionBuilder<DB, 'albums'>) => {
   return jsonArrayFrom(
     eb
       .selectFrom('albums_shared_users_users as album_users')
-      .selectAll('album_users')
+      .select('album_users.role')
       .select((eb) =>
-        jsonObjectFrom(eb.selectFrom('users').select(userColumns).whereRef('users.id', '=', 'album_users.usersId')).as(
+        jsonObjectFrom(eb.selectFrom('users').select(columns.user).whereRef('users.id', '=', 'album_users.usersId')).as(
           'user',
         ),
       )

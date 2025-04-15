@@ -39,7 +39,7 @@ describe(SyncService.name, () => {
   describe('getChangesForDeltaSync', () => {
     it('should return a response requiring a full sync when partners are out of sync', async () => {
       const partner = factory.partner();
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.partner.getAll.mockResolvedValue([partner]);
 

@@ -22,7 +22,7 @@ describe(PartnerService.name, () => {
       const user2 = factory.user();
       const sharedWithUser2 = factory.partner({ sharedBy: user1, sharedWith: user2 });
       const sharedWithUser1 = factory.partner({ sharedBy: user2, sharedWith: user1 });
-      const auth = factory.auth({ id: user1.id });
+      const auth = factory.auth({ user: { id: user1.id } });
 
       mocks.partner.getAll.mockResolvedValue([sharedWithUser1, sharedWithUser2]);
 
@@ -35,7 +35,7 @@ describe(PartnerService.name, () => {
       const user2 = factory.user();
       const sharedWithUser2 = factory.partner({ sharedBy: user1, sharedWith: user2 });
       const sharedWithUser1 = factory.partner({ sharedBy: user2, sharedWith: user1 });
-      const auth = factory.auth({ id: user1.id });
+      const auth = factory.auth({ user: { id: user1.id } });
 
       mocks.partner.getAll.mockResolvedValue([sharedWithUser1, sharedWithUser2]);
       await expect(sut.search(auth, { direction: PartnerDirection.SharedWith })).resolves.toBeDefined();
@@ -48,7 +48,7 @@ describe(PartnerService.name, () => {
       const user1 = factory.user();
       const user2 = factory.user();
       const partner = factory.partner({ sharedBy: user1, sharedWith: user2 });
-      const auth = factory.auth({ id: user1.id });
+      const auth = factory.auth({ user: { id: user1.id } });
 
       mocks.partner.get.mockResolvedValue(void 0);
       mocks.partner.create.mockResolvedValue(partner);
@@ -65,7 +65,7 @@ describe(PartnerService.name, () => {
       const user1 = factory.user();
       const user2 = factory.user();
       const partner = factory.partner({ sharedBy: user1, sharedWith: user2 });
-      const auth = factory.auth({ id: user1.id });
+      const auth = factory.auth({ user: { id: user1.id } });
 
       mocks.partner.get.mockResolvedValue(partner);
 
@@ -80,7 +80,7 @@ describe(PartnerService.name, () => {
       const user1 = factory.user();
       const user2 = factory.user();
       const partner = factory.partner({ sharedBy: user1, sharedWith: user2 });
-      const auth = factory.auth({ id: user1.id });
+      const auth = factory.auth({ user: { id: user1.id } });
 
       mocks.partner.get.mockResolvedValue(partner);
 
@@ -113,7 +113,7 @@ describe(PartnerService.name, () => {
       const user1 = factory.user();
       const user2 = factory.user();
       const partner = factory.partner({ sharedBy: user1, sharedWith: user2 });
-      const auth = factory.auth({ id: user1.id });
+      const auth = factory.auth({ user: { id: user1.id } });
 
       mocks.access.partner.checkUpdateAccess.mockResolvedValue(new Set([user2.id]));
       mocks.partner.update.mockResolvedValue(partner);

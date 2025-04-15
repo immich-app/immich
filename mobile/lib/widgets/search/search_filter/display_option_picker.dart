@@ -42,7 +42,7 @@ class DisplayOptionPicker extends HookWidget {
           },
         ),
         CheckboxListTile(
-          title: const Text('search_filter_display_option_favorite').tr(),
+          title: const Text('favorite').tr(),
           value: options.value[DisplayOption.favorite],
           onChanged: (value) {
             options.value = {
@@ -53,7 +53,7 @@ class DisplayOptionPicker extends HookWidget {
           },
         ),
         CheckboxListTile(
-          title: const Text('search_filter_display_option_archive').tr(),
+          title: const Text('archive').tr(),
           value: options.value[DisplayOption.archive],
           onChanged: (value) {
             options.value = {

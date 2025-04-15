@@ -53,28 +53,29 @@ class PhotosPage extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 16.0),
               child: Text(
                 'home_page_building_timeline',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                style: context.textTheme.titleMedium?.copyWith(
                   color: context.primaryColor,
                 ),
               ).tr(),
             ),
+            const SizedBox(height: 8),
             AnimatedOpacity(
-              duration: const Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 1000),
               opacity: tipOneOpacity.value,
-              child: SizedBox(
-                width: 250,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: const Text(
-                    'home_page_first_time_notice',
-                    textAlign: TextAlign.justify,
-                    style: TextStyle(
-                      fontSize: 12,
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: 320,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'home_page_first_time_notice',
+                        textAlign: TextAlign.center,
+                        style: context.textTheme.bodyMedium,
+                      ).tr(),
                     ),
-                  ).tr(),
-                ),
+                  ),
+                ],
               ),
             ),
           ],

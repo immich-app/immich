@@ -8,25 +8,25 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/scroll_to_date_notifier.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/tab.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_drag_region.dart';
+import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/asset_viewer/scroll_to_date_notifier.provider.dart';
-import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'asset_grid_data_structure.dart';
@@ -58,6 +58,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
   final bool shrinkWrap;
   final bool showDragScroll;
   final bool showStack;
+  final bool showLabel;
 
   const ImmichAssetGridView({
     super.key,
@@ -78,6 +79,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
     this.shrinkWrap = false,
     this.showDragScroll = true,
     this.showStack = false,
+    this.showLabel = true,
   });
 
   @override
@@ -106,6 +108,8 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   int? _dragAnchorSectionIndex;
   final Set<Asset> _draggedAssets =
       HashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
+
+  ScrollPhysics? _scrollPhysics;
 
   Set<Asset> _getSelectedAssets() {
     return Set.from(_selectedAssets);
@@ -265,6 +269,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       ),
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
+      physics: _scrollPhysics,
       itemScrollController: _itemScrollController,
       scrollOffsetController: _scrollOffsetController,
       itemCount: widget.renderList.elements.length +
@@ -281,7 +286,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             backgroundColor: context.isDarkTheme
                 ? context.colorScheme.primary.darken(amount: .5)
                 : context.colorScheme.primary,
-            labelTextBuilder: _labelBuilder,
+            labelTextBuilder: widget.showLabel ? _labelBuilder : null,
             padding: appBarOffset()
                 ? const EdgeInsets.only(top: 60)
                 : const EdgeInsets.only(),
@@ -439,6 +444,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
 
   void _setDragStartIndex(AssetIndex index) {
     setState(() {
+      _scrollPhysics = const ClampingScrollPhysics();
       _dragAnchorAssetIndex = index.rowIndex;
       _dragAnchorSectionIndex = index.sectionIndex;
       _dragging = true;
@@ -446,6 +452,12 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   }
 
   void _stopDrag() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Update the physics post frame to prevent sudden change in physics on iOS.
+      setState(() {
+        _scrollPhysics = null;
+      });
+    });
     setState(() {
       _dragging = false;
       _draggedAssets.clear();
@@ -546,15 +558,16 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
         if (didPop) {
           return;
         } else {
-          if (widget.preselectedAssets == null) {
-            Navigator.of(context).canPop() ? Navigator.of(context).pop() : null;
-          }
-          if (_selectedAssets.length != widget.preselectedAssets!.length &&
-              !widget.preselectedAssets!.containsAll(_selectedAssets)) {
-            {
-              _deselectAll();
-              return;
-            }
+          /// `preselectedAssets` is only present when opening the asset grid from the
+          /// "add to album" button.
+          ///
+          /// `_selectedAssets` includes `preselectedAssets` on initialization.
+          if (_selectedAssets.length >
+              (widget.preselectedAssets?.length ?? 0)) {
+            /// `_deselectAll` only deselects the selected assets,
+            /// doesn't affect the preselected ones.
+            _deselectAll();
+            return;
           } else {
             Navigator.of(context).canPop() ? Navigator.of(context).pop() : null;
           }

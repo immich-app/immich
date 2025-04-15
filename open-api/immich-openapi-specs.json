@@ -7656,7 +7656,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.131.0",
+    "version": "1.131.3",
     "contact": {}
   },
   "tags": [],
@@ -13624,7 +13624,7 @@
           },
           "quotaSizeInBytes": {
             "format": "int64",
-            "minimum": 1,
+            "minimum": 0,
             "nullable": true,
             "type": "integer"
           },
@@ -13763,7 +13763,7 @@
           },
           "quotaSizeInBytes": {
             "format": "int64",
-            "minimum": 1,
+            "minimum": 0,
             "nullable": true,
             "type": "integer"
           },

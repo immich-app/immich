@@ -24,7 +24,8 @@ select
     from
       (
         select
-          "user_metadata".*
+          "user_metadata"."key",
+          "user_metadata"."value"
         from
           "user_metadata"
         where
@@ -54,7 +55,21 @@ select
   "shouldChangePassword",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes"
+  "quotaUsageInBytes",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "user_metadata"."key",
+          "user_metadata"."value"
+        from
+          "user_metadata"
+        where
+          "users"."id" = "user_metadata"."userId"
+      ) as agg
+  ) as "metadata"
 from
   "users"
 where
@@ -87,7 +102,21 @@ select
   "shouldChangePassword",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes"
+  "quotaUsageInBytes",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "user_metadata"."key",
+          "user_metadata"."value"
+        from
+          "user_metadata"
+        where
+          "users"."id" = "user_metadata"."userId"
+      ) as agg
+  ) as "metadata"
 from
   "users"
 where
@@ -135,7 +164,21 @@ select
   "shouldChangePassword",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes"
+  "quotaUsageInBytes",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "user_metadata"."key",
+          "user_metadata"."value"
+        from
+          "user_metadata"
+        where
+          "users"."id" = "user_metadata"."userId"
+      ) as agg
+  ) as "metadata"
 from
   "users"
 where
@@ -174,7 +217,8 @@ select
     from
       (
         select
-          "user_metadata".*
+          "user_metadata"."key",
+          "user_metadata"."value"
         from
           "user_metadata"
         where
@@ -210,7 +254,8 @@ select
     from
       (
         select
-          "user_metadata".*
+          "user_metadata"."key",
+          "user_metadata"."value"
         from
           "user_metadata"
         where
@@ -232,15 +277,15 @@ select
   count(*) filter (
     where
       (
-        "assets"."type" = $1
-        and "assets"."isVisible" = $2
+        "assets"."type" = 'IMAGE'
+        and "assets"."isVisible" = true
       )
   ) as "photos",
   count(*) filter (
     where
       (
-        "assets"."type" = $3
-        and "assets"."isVisible" = $4
+        "assets"."type" = 'VIDEO'
+        and "assets"."isVisible" = true
       )
   ) as "videos",
   coalesce(
@@ -255,7 +300,7 @@ select
       where
         (
           "assets"."libraryId" is null
-          and "assets"."type" = $5
+          and "assets"."type" = 'IMAGE'
         )
     ),
     0
@@ -265,7 +310,7 @@ select
       where
         (
           "assets"."libraryId" is null
-          and "assets"."type" = $6
+          and "assets"."type" = 'VIDEO'
         )
     ),
     0

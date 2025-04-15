@@ -165,7 +165,11 @@ export class AssetMediaService extends BaseService {
   ): Promise<AssetMediaResponseDto> {
     try {
       await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
-      const asset = (await this.assetRepository.getById(id)) as AssetEntity;
+      const asset = await this.assetRepository.getById(id);
+
+      if (!asset) {
+        throw new Error('Asset not found');
+      }
 
       this.requireQuota(auth, file.size);
 
@@ -435,7 +439,7 @@ export class AssetMediaService extends BaseService {
   }
 
   private requireQuota(auth: AuthDto, size: number) {
-    if (auth.user.quotaSizeInBytes && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
+    if (auth.user.quotaSizeInBytes !== null && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
       throw new BadRequestException('Quota has been exceeded!');
     }
   }

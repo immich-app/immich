@@ -5,4 +5,10 @@ TYPESCRIPT_SDK=/usr/src/open-api/typescript-sdk
 npm --prefix "$TYPESCRIPT_SDK" install
 npm --prefix "$TYPESCRIPT_SDK" run build
 
+UPSTREAM="${IMMICH_SERVER_URL:-http://immich-server:2283/}"
+until wget --spider --quiet "${UPSTREAM}/api/server/config"; do
+    echo 'waiting for api server...'
+    sleep 1
+done
+
 node ./node_modules/.bin/vite dev --host 0.0.0.0 --port 3000

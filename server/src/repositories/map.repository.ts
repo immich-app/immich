@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { getName } from 'i18n-iso-countries';
-import { Expression, Kysely, sql, SqlBool } from 'kysely';
+import { Expression, Insertable, Kysely, NotNull, sql, SqlBool } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { randomUUID } from 'node:crypto';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
 import { citiesFile } from 'src/constants';
 import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
 import { SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -89,6 +87,7 @@ export class MapRepository {
           .on('exif.longitude', 'is not', null),
       )
       .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
+      .$narrowType<{ lat: NotNull; lon: NotNull }>()
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (q) => q.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
@@ -116,7 +115,7 @@ export class MapRepository {
         return eb.or(expression);
       })
       .orderBy('fileCreatedAt', 'desc')
-      .execute() as Promise<MapMarker[]>;
+      .execute();
   }
 
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
@@ -183,16 +182,11 @@ export class MapRepository {
       return;
     }
 
-    await this.db.schema.dropTable('naturalearth_countries_tmp').ifExists().execute();
-    await sql`CREATE TABLE naturalearth_countries_tmp (LIKE naturalearth_countries INCLUDING ALL EXCLUDING INDEXES)`.execute(
-      this.db,
-    );
-
-    const entities: Omit<NaturalEarthCountriesTempEntity, 'id'>[] = [];
+    const entities: Insertable<NaturalearthCountries>[] = [];
     for (const feature of geoJSONData.features) {
       for (const entry of feature.geometry.coordinates) {
         const coordinates: number[][][] = feature.geometry.type === 'MultiPolygon' ? entry[0] : entry;
-        const featureRecord: Omit<NaturalEarthCountriesTempEntity, 'id'> = {
+        const featureRecord: Insertable<NaturalearthCountries> = {
           admin: feature.properties.ADMIN,
           admin_a3: feature.properties.ADM0_A3,
           type: feature.properties.TYPE,
@@ -204,15 +198,18 @@ export class MapRepository {
         }
       }
     }
-    await this.db.insertInto('naturalearth_countries_tmp').values(entities).execute();
-
-    await sql`ALTER TABLE naturalearth_countries_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db);
 
     await this.db.transaction().execute(async (manager) => {
-      await manager.schema.alterTable('naturalearth_countries').renameTo('naturalearth_countries_old').execute();
+      await sql`CREATE TABLE naturalearth_countries_tmp
+                (
+                  LIKE naturalearth_countries INCLUDING ALL EXCLUDING INDEXES
+                )`.execute(manager);
+      await manager.schema.dropTable('naturalearth_countries').execute();
       await manager.schema.alterTable('naturalearth_countries_tmp').renameTo('naturalearth_countries').execute();
-      await manager.schema.dropTable('naturalearth_countries_old').execute();
     });
+
+    await this.db.insertInto('naturalearth_countries').values(entities).execute();
+    await sql`ALTER TABLE naturalearth_countries ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db);
   }
 
   private async importGeodata() {
@@ -222,16 +219,17 @@ export class MapRepository {
       this.loadAdmin(resourcePaths.geodata.admin2),
     ]);
 
-    await this.db.schema.dropTable('geodata_places_tmp').ifExists().execute();
-    await sql`CREATE TABLE geodata_places_tmp (LIKE geodata_places INCLUDING ALL EXCLUDING INDEXES)`.execute(this.db);
+    await this.db.transaction().execute(async (manager) => {
+      await sql`CREATE TABLE geodata_places_tmp
+                (
+                  LIKE geodata_places INCLUDING ALL EXCLUDING INDEXES
+                )`.execute(manager);
+      await manager.schema.dropTable('geodata_places').execute();
+      await manager.schema.alterTable('geodata_places_tmp').renameTo('geodata_places').execute();
+    });
+
     await this.loadCities500(admin1, admin2);
     await this.createGeodataIndices();
-
-    await this.db.transaction().execute(async (manager) => {
-      await manager.schema.alterTable('geodata_places').renameTo('geodata_places_old').execute();
-      await manager.schema.alterTable('geodata_places_tmp').renameTo('geodata_places').execute();
-      await manager.schema.dropTable('geodata_places_old').execute();
-    });
   }
 
   private async loadCities500(admin1Map: Map<string, string>, admin2Map: Map<string, string>) {
@@ -271,7 +269,7 @@ export class MapRepository {
         const curLength = bufferGeodata.length;
         futures.push(
           this.db
-            .insertInto('geodata_places_tmp')
+            .insertInto('geodata_places')
             .values(bufferGeodata)
             .execute()
             .then(() => {
@@ -290,7 +288,7 @@ export class MapRepository {
       }
     }
 
-    await this.db.insertInto('geodata_places_tmp').values(bufferGeodata).execute();
+    await this.db.insertInto('geodata_places').values(bufferGeodata).execute();
   }
 
   private async loadAdmin(filePath: string) {
@@ -313,26 +311,31 @@ export class MapRepository {
 
   private createGeodataIndices() {
     return Promise.all([
-      sql`ALTER TABLE geodata_places_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db),
+      sql`ALTER TABLE geodata_places ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db),
       sql`
-        CREATE INDEX IDX_geodata_gist_earthcoord_${sql.raw(randomUUID().replaceAll('-', '_'))}
-                ON geodata_places_tmp
+        CREATE INDEX IDX_geodata_gist_earthcoord
+                ON geodata_places
                 USING gist (ll_to_earth_public(latitude, longitude))
                 WITH (fillfactor = 100)
       `.execute(this.db),
       this.db.schema
-        .createIndex(`idx_geodata_places_country_code_${randomUUID().replaceAll('-', '_')}`)
-        .on('geodata_places_tmp')
+        .createIndex(`idx_geodata_places_alternate_names`)
+        .on('geodata_places')
+        .using('gin (f_unaccent("alternateNames") gin_trgm_ops)')
+        .execute(),
+      this.db.schema
+        .createIndex(`idx_geodata_places_name`)
+        .on('geodata_places')
         .using('gin (f_unaccent(name) gin_trgm_ops)')
         .execute(),
       this.db.schema
-        .createIndex(`idx_geodata_places_country_code_${randomUUID().replaceAll('-', '_')}`)
-        .on('geodata_places_tmp')
+        .createIndex(`idx_geodata_places_admin1_name`)
+        .on('geodata_places')
         .using('gin (f_unaccent("admin1Name") gin_trgm_ops)')
         .execute(),
       this.db.schema
-        .createIndex(`idx_geodata_places_admin2_name_${randomUUID().replaceAll('-', '_')}`)
-        .on('geodata_places_tmp')
+        .createIndex(`idx_geodata_places_admin2_name`)
+        .on('geodata_places')
         .using('gin (f_unaccent("admin2Name") gin_trgm_ops)')
         .execute(),
     ]);

@@ -1,8 +1,8 @@
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
+import { Exif } from 'src/database';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
 import {
   AssetFileType,
   AssetPathType,
@@ -39,6 +39,7 @@ describe(MediaService.name, () => {
 
   describe('handleQueueGenerateThumbnails', () => {
     it('should queue all assets', async () => {
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.image]));
       mocks.asset.getAll.mockResolvedValue({
         items: [assetStub.image],
         hasNextPage: false,
@@ -49,8 +50,7 @@ describe(MediaService.name, () => {
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalled();
-      expect(mocks.asset.getWithout).not.toHaveBeenCalled();
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -68,6 +68,7 @@ describe(MediaService.name, () => {
     });
 
     it('should queue trashed assets when force is true', async () => {
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.archived]));
       mocks.asset.getAll.mockResolvedValue({
         items: [assetStub.trashed],
         hasNextPage: false,
@@ -76,11 +77,7 @@ describe(MediaService.name, () => {
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalledWith(
-        { skip: 0, take: 1000 },
-        expect.objectContaining({ withDeleted: true }),
-      );
-      expect(mocks.asset.getWithout).not.toHaveBeenCalled();
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -90,19 +87,12 @@ describe(MediaService.name, () => {
     });
 
     it('should queue archived assets when force is true', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.archived],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.archived]));
       mocks.person.getAll.mockReturnValue(makeStream());
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalledWith(
-        { skip: 0, take: 1000 },
-        expect.objectContaining({ withArchived: true }),
-      );
-      expect(mocks.asset.getWithout).not.toHaveBeenCalled();
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -112,18 +102,13 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all people with missing thumbnail path', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.image]));
       mocks.person.getAll.mockReturnValue(makeStream([personStub.noThumbnail, personStub.noThumbnail]));
       mocks.person.getRandomFace.mockResolvedValueOnce(faceStub.face1);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
-
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
       expect(mocks.person.getRandomFace).toHaveBeenCalled();
       expect(mocks.person.update).toHaveBeenCalledTimes(1);
@@ -138,15 +123,11 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all assets with missing resize path', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.noResizePath],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noResizePath]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -158,15 +139,11 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all assets with missing webp path', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.noWebpPath],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noWebpPath]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -178,15 +155,11 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all assets with missing thumbhash', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.noThumbhash],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noThumbhash]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -218,13 +191,14 @@ describe(MediaService.name, () => {
 
   describe('handleAssetMigration', () => {
     it('should fail if asset does not exist', async () => {
+      mocks.assetJob.getForMigrationJob.mockResolvedValue(void 0);
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.FAILED);
 
       expect(mocks.move.getByEntity).not.toHaveBeenCalled();
     });
 
     it('should move asset files', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
+      mocks.assetJob.getForMigrationJob.mockResolvedValue(assetStub.image);
       mocks.move.create.mockResolvedValue({
         entityId: assetStub.image.id,
         id: 'move-id',
@@ -234,6 +208,24 @@ describe(MediaService.name, () => {
       });
 
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.FULLSIZE,
+        oldPath: '/uploads/user-id/fullsize/path.webp',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+      });
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.PREVIEW,
+        oldPath: '/uploads/user-id/thumbs/path.jpg',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      });
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.THUMBNAIL,
+        oldPath: '/uploads/user-id/webp/path.ext',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      });
       expect(mocks.move.create).toHaveBeenCalledTimes(3);
     });
   });
@@ -301,7 +293,7 @@ describe(MediaService.name, () => {
     it('should generate P3 thumbnails for a wide gamut image', async () => {
       mocks.asset.getById.mockResolvedValue({
         ...assetStub.image,
-        exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity,
+        exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as Exif,
       });
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
@@ -2590,47 +2582,47 @@ describe(MediaService.name, () => {
 
   describe('isSRGB', () => {
     it('should return true for srgb colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB' } as ExifEntity };
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB' } as Exif };
       expect(sut.isSRGB(asset)).toEqual(true);
     });
 
     it('should return true for srgb profile description', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB v1.31' } as ExifEntity };
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB v1.31' } as Exif };
       expect(sut.isSRGB(asset)).toEqual(true);
     });
 
     it('should return true for 8-bit image with no colorspace metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 8 } as ExifEntity };
+      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 8 } as Exif };
       expect(sut.isSRGB(asset)).toEqual(true);
     });
 
     it('should return true for image with no colorspace or bit depth metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: {} as ExifEntity };
+      const asset = { ...assetStub.image, exifInfo: {} as Exif };
       expect(sut.isSRGB(asset)).toEqual(true);
     });
 
     it('should return false for non-srgb colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'Adobe RGB' } as ExifEntity };
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'Adobe RGB' } as Exif };
       expect(sut.isSRGB(asset)).toEqual(false);
     });
 
     it('should return false for non-srgb profile description', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sP3C' } as ExifEntity };
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sP3C' } as Exif };
       expect(sut.isSRGB(asset)).toEqual(false);
     });
 
     it('should return false for 16-bit image with no colorspace metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 16 } as ExifEntity };
+      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 16 } as Exif };
       expect(sut.isSRGB(asset)).toEqual(false);
     });
 
     it('should return true for 16-bit image with sRGB colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB', bitsPerSample: 16 } as ExifEntity };
+      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB', bitsPerSample: 16 } as Exif };
       expect(sut.isSRGB(asset)).toEqual(true);
     });
 
     it('should return true for 16-bit image with sRGB profile', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB', bitsPerSample: 16 } as ExifEntity };
+      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB', bitsPerSample: 16 } as Exif };
       expect(sut.isSRGB(asset)).toEqual(true);
     });
   });

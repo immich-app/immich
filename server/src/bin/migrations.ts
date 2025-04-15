@@ -1,15 +1,20 @@
 #!/usr/bin/env node
-process.env.DB_URL = 'postgres://postgres:postgres@localhost:5432/immich';
+process.env.DB_URL = process.env.DB_URL || 'postgres://postgres:postgres@localhost:5432/immich';
 
+import { Kysely } from 'kysely';
 import { writeFileSync } from 'node:fs';
+import { basename, dirname, extname, join } from 'node:path';
 import postgres from 'postgres';
 import { ConfigRepository } from 'src/repositories/config.repository';
-import 'src/schema/tables';
-import { DatabaseTable, schemaDiff, schemaFromDatabase, schemaFromDecorators } from 'src/sql-tools';
+import { DatabaseRepository } from 'src/repositories/database.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import 'src/schema';
+import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
+import { getKyselyConfig } from 'src/utils/database';
 
 const main = async () => {
   const command = process.argv[2];
-  const name = process.argv[3] || 'Migration';
+  const path = process.argv[3] || 'src/Migration';
 
   switch (command) {
     case 'debug': {
@@ -17,13 +22,19 @@ const main = async () => {
       return;
     }
 
+    case 'run': {
+      const only = process.argv[3] as 'kysely' | 'typeorm' | undefined;
+      await run(only);
+      return;
+    }
+
     case 'create': {
-      create(name, [], []);
+      create(path, [], []);
       return;
     }
 
     case 'generate': {
-      await generate(name);
+      await generate(path);
       return;
     }
 
@@ -31,33 +42,46 @@ const main = async () => {
       console.log(`Usage:
   node dist/bin/migrations.js create <name>
   node dist/bin/migrations.js generate <name>
+  node dist/bin/migrations.js run
 `);
     }
   }
 };
 
+const run = async (only?: 'kysely' | 'typeorm') => {
+  const configRepository = new ConfigRepository();
+  const { database } = configRepository.getEnv();
+  const logger = new LoggingRepository(undefined, configRepository);
+  const db = new Kysely<any>(getKyselyConfig(database.config.kysely));
+  const databaseRepository = new DatabaseRepository(db, logger, configRepository);
+
+  await databaseRepository.runMigrations({ only });
+};
+
 const debug = async () => {
-  const { up, down } = await compare();
+  const { up } = await compare();
   const upSql = '-- UP\n' + up.asSql({ comments: true }).join('\n');
-  const downSql = '-- DOWN\n' + down.asSql({ comments: true }).join('\n');
-  writeFileSync('./migrations.sql', upSql + '\n\n' + downSql);
+  // const downSql = '-- DOWN\n' + down.asSql({ comments: true }).join('\n');
+  writeFileSync('./migrations.sql', upSql + '\n\n');
   console.log('Wrote migrations.sql');
 };
 
-const generate = async (name: string) => {
+const generate = async (path: string) => {
   const { up, down } = await compare();
   if (up.items.length === 0) {
     console.log('No changes detected');
     return;
   }
-  create(name, up.asSql(), down.asSql());
+  create(path, up.asSql(), down.asSql());
 };
 
-const create = (name: string, up: string[], down: string[]) => {
+const create = (path: string, up: string[], down: string[]) => {
   const timestamp = Date.now();
+  const name = basename(path, extname(path));
   const filename = `${timestamp}-${name}.ts`;
-  const fullPath = `./src/${filename}`;
-  writeFileSync(fullPath, asMigration('kysely', { name, timestamp, up, down }));
+  const folder = dirname(path);
+  const fullPath = join(folder, filename);
+  writeFileSync(fullPath, asMigration('typeorm', { name, timestamp, up, down }));
   console.log(`Wrote ${fullPath}`);
 };
 
@@ -66,16 +90,25 @@ const compare = async () => {
   const { database } = configRepository.getEnv();
   const db = postgres(database.config.kysely);
 
-  const source = schemaFromDecorators();
+  const source = schemaFromCode();
   const target = await schemaFromDatabase(db, {});
+
+  const sourceParams = new Set(source.parameters.map(({ name }) => name));
+  target.parameters = target.parameters.filter(({ name }) => sourceParams.has(name));
+
+  const sourceTables = new Set(source.tables.map(({ name }) => name));
+  target.tables = target.tables.filter(({ name }) => sourceTables.has(name));
 
   console.log(source.warnings.join('\n'));
 
-  const isIncluded = (table: DatabaseTable) => source.tables.some(({ name }) => table.name === name);
-  target.tables = target.tables.filter((table) => isIncluded(table));
-
-  const up = schemaDiff(source, target, { ignoreExtraTables: true });
-  const down = schemaDiff(target, source, { ignoreExtraTables: false });
+  const up = schemaDiff(source, target, {
+    tables: { ignoreExtra: true },
+    functions: { ignoreExtra: false },
+  });
+  const down = schemaDiff(target, source, {
+    tables: { ignoreExtra: false },
+    functions: { ignoreExtra: false },
+  });
 
   return { up, down };
 };

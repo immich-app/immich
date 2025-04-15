@@ -28,7 +28,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type Viewport } from '$lib/stores/assets-store.svelte';
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
-  import { locale, videoViewerMuted } from '$lib/stores/preferences.store';
+  import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
@@ -449,6 +449,7 @@
                     poster={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
                     draggable="false"
                     muted={$videoViewerMuted}
+                    volume={$videoViewerVolume}
                     transition:fade
                   ></video>
                 {:else}

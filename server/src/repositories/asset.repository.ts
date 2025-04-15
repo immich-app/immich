@@ -23,7 +23,6 @@ import {
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
-import { StorageAsset } from 'src/types';
 import { anyUuid, asUuid, removeUndefinedKeys, unnest } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
@@ -456,9 +455,6 @@ export class AssetRepository {
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
       .where('isVisible', '=', true)
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .where('deletedAt', 'is', null)
       .execute();
 
@@ -469,10 +465,10 @@ export class AssetRepository {
   async getLivePhotoCount(motionId: string): Promise<number> {
     const [{ count }] = await this.db
       .selectFrom('assets')
-      .select((eb) => eb.fn.countAll().as('count'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
       .where('livePhotoVideoId', '=', asUuid(motionId))
       .execute();
-    return count as number;
+    return count;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -604,7 +600,7 @@ export class AssetRepository {
     const { ownerId, otherAssetId, livePhotoCID, type } = options;
     return this.db
       .selectFrom('assets')
-      .select('assets.id')
+      .select(['assets.id', 'assets.ownerId'])
       .innerJoin('exif', 'assets.id', 'exif.assetId')
       .where('id', '!=', asUuid(otherAssetId))
       .where('ownerId', '=', asUuid(ownerId))
@@ -612,46 +608,6 @@ export class AssetRepository {
       .where('exif.livePhotoCID', '=', livePhotoCID)
       .limit(1)
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
-  }
-
-  private storageTemplateAssetQuery() {
-    return this.db
-      .selectFrom('assets')
-      .innerJoin('exif', 'assets.id', 'exif.assetId')
-      .select([
-        'assets.id',
-        'assets.ownerId',
-        'assets.type',
-        'assets.checksum',
-        'assets.originalPath',
-        'assets.isExternal',
-        'assets.sidecarPath',
-        'assets.originalFileName',
-        'assets.livePhotoVideoId',
-        'assets.fileCreatedAt',
-        'exif.timeZone',
-        'exif.fileSizeInByte',
-      ])
-      .where('assets.deletedAt', 'is', null)
-      .where('assets.fileCreatedAt', 'is not', null);
-  }
-
-  getStorageTemplateAsset(id: string): Promise<StorageAsset | undefined> {
-    return this.storageTemplateAssetQuery().where('assets.id', '=', id).executeTakeFirst() as Promise<
-      StorageAsset | undefined
-    >;
-  }
-
-  streamStorageTemplateAssets() {
-    return this.storageTemplateAssetQuery().stream() as AsyncIterableIterator<StorageAsset>;
-  }
-
-  streamDeletedAssets(trashedBefore: Date) {
-    return this.db
-      .selectFrom('assets')
-      .select(['id', 'isOffline'])
-      .where('assets.deletedAt', '<=', trashedBefore)
-      .stream();
   }
 
   @GenerateSql(
@@ -670,10 +626,7 @@ export class AssetRepository {
           .where('job_status.duplicatesDetectedAt', 'is', null)
           .where('job_status.previewAt', 'is not', null)
           .where((eb) => eb.exists(eb.selectFrom('smart_search').where('assetId', '=', eb.ref('assets.id'))))
-          .where('assets.isVisible', '=', true)
-          .where('assets.fileCreatedAt', 'is not', null)
-          .where('assets.fileModifiedAt', 'is not', null)
-          .where('assets.localDateTime', 'is not', null),
+          .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.ENCODED_VIDEO, (qb) =>
         qb
@@ -731,20 +684,17 @@ export class AssetRepository {
   getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
     return this.db
       .selectFrom('assets')
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.IMAGE).as(AssetType.IMAGE))
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
-      .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.IMAGE).as(AssetType.IMAGE))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (qb) => qb.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
-      .executeTakeFirst() as Promise<AssetStats>;
+      .executeTakeFirstOrThrow();
   }
 
   getRandom(userIds: string[], take: number): Promise<AssetEntity[]> {
@@ -771,9 +721,6 @@ export class AssetRepository {
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
             .where('assets.isVisible', '=', true)
-            .where('assets.fileCreatedAt', 'is not', null)
-            .where('assets.fileModifiedAt', 'is not', null)
-            .where('assets.localDateTime', 'is not', null)
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
@@ -805,7 +752,7 @@ export class AssetRepository {
         The line below outputs in YYYY-MM-DD format, but needs a change in the web app to work.
           .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
         */
-        .select((eb) => eb.fn.countAll().as('count'))
+        .select((eb) => eb.fn.countAll<number>().as('count'))
         .groupBy('timeBucket')
         .orderBy('timeBucket', options.order ?? 'desc')
         .execute() as any as Promise<TimeBucketItem[]>
@@ -967,9 +914,6 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
       .where('assets.isVisible', '=', true)
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
@@ -998,9 +942,6 @@ export class AssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
       .where('assets.isVisible', '=', true)
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .where('assets.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute() as any as Promise<AssetEntity[]>;
@@ -1103,10 +1044,10 @@ export class AssetRepository {
   async getLibraryAssetCount(libraryId: string): Promise<number> {
     const { count } = await this.db
       .selectFrom('assets')
-      .select((eb) => eb.fn.countAll().as('count'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
       .where('libraryId', '=', asUuid(libraryId))
       .executeTakeFirstOrThrow();
 
-    return Number(count);
+    return count;
   }
 }

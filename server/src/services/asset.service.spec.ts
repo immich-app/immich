@@ -88,7 +88,7 @@ describe(AssetService.name, () => {
 
     it('should get memories with partners with inTimeline enabled', async () => {
       const partner = factory.partner();
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.partner.getAll.mockResolvedValue([partner]);
       mocks.asset.getByDayOfYear.mockResolvedValue([]);
@@ -139,7 +139,7 @@ describe(AssetService.name, () => {
 
     it('should not include partner assets if not in timeline', async () => {
       const partner = factory.partner({ inTimeline: false });
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.asset.getRandom.mockResolvedValue([assetStub.image]);
       mocks.partner.getAll.mockResolvedValue([partner]);
@@ -151,7 +151,7 @@ describe(AssetService.name, () => {
 
     it('should include partner assets if in timeline', async () => {
       const partner = factory.partner({ inTimeline: true });
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.asset.getRandom.mockResolvedValue([assetStub.image]);
       mocks.partner.getAll.mockResolvedValue([partner]);
@@ -536,12 +536,12 @@ describe(AssetService.name, () => {
     it('should immediately queue assets for deletion if trash is disabled', async () => {
       const asset = factory.asset({ isOffline: false });
 
-      mocks.asset.streamDeletedAssets.mockReturnValue(makeStream([asset]));
+      mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: false } });
 
       await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.streamDeletedAssets).toHaveBeenCalledWith(new Date());
+      expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(new Date());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
       ]);
@@ -550,12 +550,12 @@ describe(AssetService.name, () => {
     it('should queue assets for deletion after trash duration', async () => {
       const asset = factory.asset({ isOffline: false });
 
-      mocks.asset.streamDeletedAssets.mockReturnValue(makeStream([asset]));
+      mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: true, days: 7 } });
 
       await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.streamDeletedAssets).toHaveBeenCalledWith(DateTime.now().minus({ days: 7 }).toJSDate());
+      expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(DateTime.now().minus({ days: 7 }).toJSDate());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
       ]);
@@ -578,6 +578,7 @@ describe(AssetService.name, () => {
               files: [
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
+                '/uploads/user-id/fullsize/path.webp',
                 assetWithFace.encodedVideoPath,
                 assetWithFace.sidecarPath,
                 assetWithFace.originalPath,
@@ -591,8 +592,8 @@ describe(AssetService.name, () => {
     });
 
     it('should update stack primary asset if deleted asset was primary asset in a stack', async () => {
-      mocks.stack.update.mockResolvedValue(factory.stack() as unknown as any);
-      mocks.asset.getById.mockResolvedValue(assetStub.primaryImage as AssetEntity);
+      mocks.stack.update.mockResolvedValue(factory.stack() as any);
+      mocks.asset.getById.mockResolvedValue(assetStub.primaryImage);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
@@ -637,7 +638,14 @@ describe(AssetService.name, () => {
           {
             name: JobName.DELETE_FILES,
             data: {
-              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.jpeg'],
+              files: [
+                '/uploads/user-id/webp/path.ext',
+                '/uploads/user-id/thumbs/path.jpg',
+                '/uploads/user-id/fullsize/path.webp',
+                undefined,
+                undefined,
+                'fake_path/asset_1.jpeg',
+              ],
             },
           },
         ],
@@ -658,7 +666,14 @@ describe(AssetService.name, () => {
           {
             name: JobName.DELETE_FILES,
             data: {
-              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.jpeg'],
+              files: [
+                '/uploads/user-id/webp/path.ext',
+                '/uploads/user-id/thumbs/path.jpg',
+                '/uploads/user-id/fullsize/path.webp',
+                undefined,
+                undefined,
+                'fake_path/asset_1.jpeg',
+              ],
             },
           },
         ],

@@ -1,3 +1,4 @@
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { SyncEntityType } from 'src/enum';
 import { SessionTable } from 'src/schema/tables/session.table';
 import {
@@ -8,10 +9,10 @@ import {
   PrimaryColumn,
   Table,
   UpdateDateColumn,
-  UpdateIdColumn,
 } from 'src/sql-tools';
 
 @Table('session_sync_checkpoints')
+@UpdatedAtTrigger('session_sync_checkpoints_updated_at')
 export class SessionSyncCheckpointTable {
   @ForeignKeyColumn(() => SessionTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', primary: true })
   sessionId!: string;
@@ -25,10 +26,10 @@ export class SessionSyncCheckpointTable {
   @UpdateDateColumn()
   updatedAt!: Date;
 
+  @Column()
+  ack!: string;
+
   @ColumnIndex('IDX_session_sync_checkpoints_update_id')
   @UpdateIdColumn()
   updateId!: string;
-
-  @Column()
-  ack!: string;
 }

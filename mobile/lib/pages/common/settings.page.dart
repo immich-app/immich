@@ -15,7 +15,7 @@ import 'package:immich_mobile/routing/router.dart';
 
 enum SettingSection {
   advanced(
-    'advanced_settings_tile_title',
+    'advanced',
     Icons.build_outlined,
     "advanced_settings_tile_subtitle",
   ),
@@ -40,7 +40,7 @@ enum SettingSection {
     "networking_subtitle",
   ),
   notifications(
-    'setting_notifications_title',
+    'notifications',
     Icons.notifications_none_rounded,
     "setting_notifications_subtitle",
   ),
@@ -83,7 +83,7 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: const Text('setting_pages_app_bar_settings').tr(),
+        title: const Text('settings').tr(),
       ),
       body: context.isMobile ? _MobileLayout() : _TabletLayout(),
     );

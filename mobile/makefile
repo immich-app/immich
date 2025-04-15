@@ -14,3 +14,9 @@ create_splash:
 
 build_release_android:
 	flutter build appbundle
+
+migrations:
+	dart run drift_dev make-migrations
+
+translation:
+	dart run easy_localization:generate -S ../i18n 

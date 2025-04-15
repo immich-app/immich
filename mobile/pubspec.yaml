@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.131.0+192
+version: 1.131.3+193
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -51,6 +51,7 @@ dependencies:
   permission_handler: ^11.4.0
   photo_manager: ^3.6.4
   photo_manager_image_provider: ^2.2.0
+  punycode: ^1.0.0
   riverpod_annotation: ^2.6.1
   scrollable_positioned_list: ^0.3.8
   share_handler: ^0.0.22
@@ -73,6 +74,9 @@ dependencies:
   isar_flutter_libs: # contains Isar Core
     version: *isar_version
     hosted: https://pub.isar-community.dev/
+  # DB
+  drift: ^2.23.1
+  drift_flutter: ^0.2.4
 
 dependency_overrides:
   analyzer: ^6.0.0
@@ -99,12 +103,14 @@ dev_dependencies:
   immich_mobile_immich_lint:
     path: './immich_lint'
   fake_async: ^1.3.1
+  file: ^7.0.1 # for MemoryFileSystem
+  # Drift generator
+  drift_dev: ^2.23.1
 
 flutter:
   uses-material-design: true
   assets:
     - assets/
-    - assets/i18n/
   fonts:
     - family: Inconsolata
       fonts:

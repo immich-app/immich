@@ -5,9 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Stats } from 'node:fs';
+import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType, AssetStatus, AssetType, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
@@ -166,7 +166,7 @@ const assetEntity = Object.freeze({
   isArchived: false,
   encodedVideoPath: '',
   duration: '0:00:00.000000',
-  files: [] as AssetFileEntity[],
+  files: [] as AssetFile[],
   exifInfo: {
     latitude: 49.533_547,
     longitude: 10.703_075,
@@ -535,12 +535,9 @@ describe(AssetMediaService.name, () => {
         ...assetStub.image,
         files: [
           {
-            assetId: assetStub.image.id,
-            createdAt: assetStub.image.fileCreatedAt,
             id: '42',
             path: '/path/to/preview',
             type: AssetFileType.THUMBNAIL,
-            updatedAt: new Date(),
           },
         ],
       });
@@ -555,12 +552,9 @@ describe(AssetMediaService.name, () => {
         ...assetStub.image,
         files: [
           {
-            assetId: assetStub.image.id,
-            createdAt: assetStub.image.fileCreatedAt,
             id: '42',
             path: '/path/to/preview.jpg',
             type: AssetFileType.PREVIEW,
-            updatedAt: new Date(),
           },
         ],
       });
@@ -584,7 +578,7 @@ describe(AssetMediaService.name, () => {
         sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.PREVIEW }),
       ).resolves.toEqual(
         new ImmichFileResponse({
-          path: assetStub.image.files[0].path,
+          path: '/uploads/user-id/thumbs/path.jpg',
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'image/jpeg',
           fileName: 'asset-id_preview.jpg',
@@ -599,7 +593,7 @@ describe(AssetMediaService.name, () => {
         sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.THUMBNAIL }),
       ).resolves.toEqual(
         new ImmichFileResponse({
-          path: assetStub.image.files[1].path,
+          path: '/uploads/user-id/webp/path.ext',
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'application/octet-stream',
           fileName: 'asset-id_thumbnail.ext',
@@ -669,9 +663,18 @@ describe(AssetMediaService.name, () => {
   });
 
   describe('replaceAsset', () => {
-    it('should error when update photo does not exist', async () => {
+    it('should fail the auth check when update photo does not exist', async () => {
       await expect(sut.replaceAsset(authStub.user1, 'id', replaceDto, fileStub.photo)).rejects.toThrow(
         'Not found or no asset.update access',
+      );
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+    });
+
+    it('should fail if asset cannot be fetched', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, fileStub.photo)).rejects.toThrow(
+        'Asset not found',
       );
 
       expect(mocks.asset.create).not.toHaveBeenCalled();

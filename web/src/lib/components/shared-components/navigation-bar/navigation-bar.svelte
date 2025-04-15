@@ -1,3 +1,7 @@
+<script lang="ts" module>
+  export const menuButtonId = 'top-menu-button';
+</script>
+
 <script lang="ts">
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
@@ -12,13 +16,14 @@
   import { handleLogout } from '$lib/utils/auth';
   import { getAboutInfo, logout, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, IconButton } from '@immich/ui';
-  import { mdiHelpCircleOutline, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
+  import { mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
@@ -53,15 +58,36 @@
 
 <section
   id="dashboard-navbar"
-  class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-screen text-sm"
+  class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm"
 >
   <SkipLink text={$t('skip_to_content')} />
   <div
-    class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
+    class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
   >
-    <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
-      <ImmichLogo class="max-md:h-[48px] h-[50px]" noText={mobileDevice.maxMd} />
-    </a>
+    <div class="flex flex-row gap-1 mx-4 items-center">
+      <IconButton
+        id={menuButtonId}
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        size="medium"
+        aria-label={$t('main_menu')}
+        icon={mdiMenu}
+        onclick={() => {
+          sidebarStore.toggle();
+        }}
+        onmousedown={(event: MouseEvent) => {
+          if (sidebarStore.isOpen) {
+            // stops event from reaching the default handler when clicking outside of the sidebar
+            event.stopPropagation();
+          }
+        }}
+        class="sidebar:hidden"
+      />
+      <a data-sveltekit-preload-data="hover" href={AppRoute.PHOTOS}>
+        <ImmichLogo class="max-md:h-[48px] h-[50px]" noText={!mobileDevice.isFullSidebar} />
+      </a>
+    </div>
     <div class="flex justify-between gap-4 lg:gap-8 pr-6">
       <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:block">
         {#if $featureFlags.search}
@@ -80,7 +106,6 @@
             href={AppRoute.SEARCH}
             id="search-button"
             class="sm:hidden"
-            title={$t('go_to_search')}
             aria-label={$t('go_to_search')}
           />
         {/if}
@@ -120,7 +145,6 @@
             color="secondary"
             variant="ghost"
             size="medium"
-            title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
             onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
             aria-label={$t('support_and_feedback')}

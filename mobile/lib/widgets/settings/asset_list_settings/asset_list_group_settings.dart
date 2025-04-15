@@ -40,7 +40,7 @@ class GroupSettings extends HookConsumerWidget {
               value: GroupAssetsBy.day,
             ),
             SettingsRadioGroup(
-              title: 'asset_list_layout_settings_group_by_month'.tr(),
+              title: 'month'.tr(),
               value: GroupAssetsBy.month,
             ),
             SettingsRadioGroup(

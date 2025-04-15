@@ -1,8 +1,9 @@
-import { Column, ColumnIndex, CreateDateColumn, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
+import { Column, ColumnIndex, CreateDateColumn, Table } from 'src/sql-tools';
 
 @Table('partners_audit')
 export class PartnerAuditTable {
-  @PrimaryGeneratedColumn({ type: 'v7' })
+  @PrimaryGeneratedUuidV7Column()
   id!: string;
 
   @ColumnIndex('IDX_partners_audit_shared_by_id')
