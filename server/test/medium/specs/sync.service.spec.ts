@@ -1,22 +1,37 @@
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SyncEntityType, SyncRequestType } from 'src/enum';
 import { SYNC_TYPES_ORDER, SyncService } from 'src/services/sync.service';
-import { TestContext, TestFactory } from 'test/factory';
-import { getKyselyDB, newTestService } from 'test/utils';
+import { mediumFactory, newMediumService } from 'test/medium.factory';
+import { factory } from 'test/small.factory';
+import { getKyselyDB } from 'test/utils';
 
 const setup = async () => {
-  const user = TestFactory.user();
-  const session = TestFactory.session({ userId: user.id });
-  const auth = TestFactory.auth({ session, user });
-
   const db = await getKyselyDB();
 
-  const context = await TestContext.from(db).withUser(user).withSession(session).create();
+  const { sut, mocks, repos, getRepository } = newMediumService(SyncService, {
+    database: db,
+    repos: {
+      sync: 'real',
+      session: 'real',
+    },
+  });
 
-  const { sut } = newTestService(SyncService, context);
+  const user = mediumFactory.userInsert();
+  const session = mediumFactory.sessionInsert({ userId: user.id });
+  const auth = factory.auth({
+    session,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    },
+  });
+
+  await getRepository('user').create(user);
+  await getRepository('session').create(session);
 
   const testSync = async (auth: AuthDto, types: SyncRequestType[]) => {
-    const stream = TestFactory.stream();
+    const stream = mediumFactory.syncStream();
     // Wait for 1ms to ensure all updates are available
     await new Promise((resolve) => setTimeout(resolve, 1));
     await sut.stream(auth, stream, { types });
@@ -25,9 +40,11 @@ const setup = async () => {
   };
 
   return {
-    auth,
-    context,
     sut,
+    auth,
+    mocks,
+    repos,
+    getRepository,
     testSync,
   };
 };
@@ -43,9 +60,10 @@ describe(SyncService.name, () => {
 
   describe.concurrent(SyncEntityType.UserV1, () => {
     it('should detect and sync the first user', async () => {
-      const { context, auth, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
-      const user = await context.user.get(auth.user.id, { withDeleted: false });
+      const userRepo = getRepository('user');
+      const user = await userRepo.get(auth.user.id, { withDeleted: false });
       if (!user) {
         expect.fail('First user should exist');
       }
@@ -73,10 +91,11 @@ describe(SyncService.name, () => {
     });
 
     it('should detect and sync a soft deleted user', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
       const deletedAt = new Date().toISOString();
-      const deleted = await context.createUser({ deletedAt });
+      const deletedUser = mediumFactory.userInsert({ deletedAt });
+      const deleted = await getRepository('user').create(deletedUser);
 
       const response = await testSync(auth, [SyncRequestType.UsersV1]);
 
@@ -114,10 +133,12 @@ describe(SyncService.name, () => {
     });
 
     it('should detect and sync a deleted user', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
-      const user = await context.createUser();
-      await context.user.delete({ id: user.id }, true);
+      const userRepo = getRepository('user');
+      const user = mediumFactory.userInsert();
+      await userRepo.create(user);
+      await userRepo.delete({ id: user.id }, true);
 
       const response = await testSync(auth, [SyncRequestType.UsersV1]);
 
@@ -152,7 +173,7 @@ describe(SyncService.name, () => {
     });
 
     it('should sync a user and then an update to that same user', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
       const initialSyncResponse = await testSync(auth, [SyncRequestType.UsersV1]);
 
@@ -175,8 +196,8 @@ describe(SyncService.name, () => {
       const acks = [initialSyncResponse[0].ack];
       await sut.setAcks(auth, { acks });
 
-      const updated = await context.user.update(auth.user.id, { name: 'new name' });
-
+      const userRepo = getRepository('user');
+      const updated = await userRepo.update(auth.user.id, { name: 'new name' });
       const updatedSyncResponse = await testSync(auth, [SyncRequestType.UsersV1]);
 
       expect(updatedSyncResponse).toHaveLength(1);
@@ -199,12 +220,16 @@ describe(SyncService.name, () => {
 
   describe.concurrent(SyncEntityType.PartnerV1, () => {
     it('should detect and sync the first partner', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
       const user1 = auth.user;
-      const user2 = await context.createUser();
+      const userRepo = getRepository('user');
+      const partnerRepo = getRepository('partner');
 
-      const partner = await context.createPartner({ sharedById: user2.id, sharedWithId: user1.id });
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
+
+      const partner = await partnerRepo.create({ sharedById: user2.id, sharedWithId: user1.id });
 
       const initialSyncResponse = await testSync(auth, [SyncRequestType.PartnersV1]);
 
@@ -232,13 +257,16 @@ describe(SyncService.name, () => {
     });
 
     it('should detect and sync a deleted partner', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
+      const userRepo = getRepository('user');
       const user1 = auth.user;
-      const user2 = await context.createUser();
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
 
-      const partner = await context.createPartner({ sharedById: user2.id, sharedWithId: user1.id });
-      await context.partner.remove(partner);
+      const partnerRepo = getRepository('partner');
+      const partner = await partnerRepo.create({ sharedById: user2.id, sharedWithId: user1.id });
+      await partnerRepo.remove(partner);
 
       const response = await testSync(auth, [SyncRequestType.PartnersV1]);
 
@@ -265,13 +293,15 @@ describe(SyncService.name, () => {
     });
 
     it('should detect and sync a partner share both to and from another user', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
+      const userRepo = getRepository('user');
       const user1 = auth.user;
-      const user2 = await context.createUser();
+      const user2 = await userRepo.create(mediumFactory.userInsert());
 
-      const partner1 = await context.createPartner({ sharedById: user2.id, sharedWithId: user1.id });
-      const partner2 = await context.createPartner({ sharedById: user1.id, sharedWithId: user2.id });
+      const partnerRepo = getRepository('partner');
+      const partner1 = await partnerRepo.create({ sharedById: user2.id, sharedWithId: user1.id });
+      const partner2 = await partnerRepo.create({ sharedById: user1.id, sharedWithId: user2.id });
 
       const response = await testSync(auth, [SyncRequestType.PartnersV1]);
 
@@ -307,12 +337,14 @@ describe(SyncService.name, () => {
     });
 
     it('should sync a partner and then an update to that same partner', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
+      const userRepo = getRepository('user');
       const user1 = auth.user;
-      const user2 = await context.createUser();
+      const user2 = await userRepo.create(mediumFactory.userInsert());
 
-      const partner = await context.createPartner({ sharedById: user2.id, sharedWithId: user1.id });
+      const partnerRepo = getRepository('partner');
+      const partner = await partnerRepo.create({ sharedById: user2.id, sharedWithId: user1.id });
 
       const initialSyncResponse = await testSync(auth, [SyncRequestType.PartnersV1]);
 
@@ -334,7 +366,7 @@ describe(SyncService.name, () => {
       const acks = [initialSyncResponse[0].ack];
       await sut.setAcks(auth, { acks });
 
-      const updated = await context.partner.update(
+      const updated = await partnerRepo.update(
         { sharedById: partner.sharedById, sharedWithId: partner.sharedWithId },
         { inTimeline: true },
       );
@@ -358,26 +390,31 @@ describe(SyncService.name, () => {
     });
 
     it('should not sync a partner or partner delete for an unrelated user', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      const user3 = await context.createUser();
+      const userRepo = getRepository('user');
+      const user2 = await userRepo.create(mediumFactory.userInsert());
+      const user3 = await userRepo.create(mediumFactory.userInsert());
 
-      await context.createPartner({ sharedById: user2.id, sharedWithId: user3.id });
+      const partnerRepo = getRepository('partner');
+      const partner = await partnerRepo.create({ sharedById: user2.id, sharedWithId: user3.id });
 
       expect(await testSync(auth, [SyncRequestType.PartnersV1])).toHaveLength(0);
 
-      await context.partner.remove({ sharedById: user2.id, sharedWithId: user3.id });
+      await partnerRepo.remove(partner);
 
       expect(await testSync(auth, [SyncRequestType.PartnersV1])).toHaveLength(0);
     });
 
     it('should not sync a partner delete after a user is deleted', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      await context.createPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
-      await context.user.delete({ id: user2.id }, true);
+      const userRepo = getRepository('user');
+      const user2 = await userRepo.create(mediumFactory.userInsert());
+
+      const partnerRepo = getRepository('partner');
+      await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+      await userRepo.delete({ id: user2.id }, true);
 
       expect(await testSync(auth, [SyncRequestType.PartnersV1])).toHaveLength(0);
     });
@@ -385,21 +422,23 @@ describe(SyncService.name, () => {
 
   describe.concurrent(SyncEntityType.AssetV1, () => {
     it('should detect and sync the first asset', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
       const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
       const thumbhash = '2225vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
       const date = new Date().toISOString();
 
-      const asset = TestFactory.asset({
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({
         ownerId: auth.user.id,
         checksum: Buffer.from(checksum, 'base64'),
         thumbhash: Buffer.from(thumbhash, 'base64'),
         fileCreatedAt: date,
         fileModifiedAt: date,
+        localDateTime: date,
         deletedAt: null,
       });
-      await context.createAsset(asset);
+      await assetRepo.create(asset);
 
       const initialSyncResponse = await testSync(auth, [SyncRequestType.AssetsV1]);
 
@@ -413,12 +452,12 @@ describe(SyncService.name, () => {
               ownerId: asset.ownerId,
               thumbhash,
               checksum,
-              deletedAt: null,
-              fileCreatedAt: date,
-              fileModifiedAt: date,
-              isFavorite: false,
-              isVisible: true,
-              localDateTime: '2000-01-01T00:00:00.000Z',
+              deletedAt: asset.deletedAt,
+              fileCreatedAt: asset.fileCreatedAt,
+              fileModifiedAt: asset.fileModifiedAt,
+              isFavorite: asset.isFavorite,
+              isVisible: asset.isVisible,
+              localDateTime: asset.localDateTime,
               type: asset.type,
             },
             type: 'AssetV1',
@@ -435,11 +474,12 @@ describe(SyncService.name, () => {
     });
 
     it('should detect and sync a deleted asset', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
-      const asset = TestFactory.asset({ ownerId: auth.user.id });
-      await context.createAsset(asset);
-      await context.asset.remove(asset);
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({ ownerId: auth.user.id });
+      await assetRepo.create(asset);
+      await assetRepo.remove(asset);
 
       const response = await testSync(auth, [SyncRequestType.AssetsV1]);
 
@@ -465,19 +505,26 @@ describe(SyncService.name, () => {
     });
 
     it('should not sync an asset or asset delete for an unrelated user', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      const session = TestFactory.session({ userId: user2.id });
-      const auth2 = TestFactory.auth({ session, user: user2 });
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
 
-      const asset = TestFactory.asset({ ownerId: user2.id });
-      await context.createAsset(asset);
+      const sessionRepo = getRepository('session');
+      const session = mediumFactory.sessionInsert({ userId: user2.id });
+      await sessionRepo.create(session);
+
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({ ownerId: user2.id });
+      await assetRepo.create(asset);
+
+      const auth2 = factory.auth({ session, user: user2 });
 
       expect(await testSync(auth2, [SyncRequestType.AssetsV1])).toHaveLength(1);
       expect(await testSync(auth, [SyncRequestType.AssetsV1])).toHaveLength(0);
 
-      await context.asset.remove(asset);
+      await assetRepo.remove(asset);
       expect(await testSync(auth2, [SyncRequestType.AssetsV1])).toHaveLength(1);
       expect(await testSync(auth, [SyncRequestType.AssetsV1])).toHaveLength(0);
     });
@@ -485,24 +532,30 @@ describe(SyncService.name, () => {
 
   describe.concurrent(SyncRequestType.PartnerAssetsV1, () => {
     it('should detect and sync the first partner asset', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
       const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
       const thumbhash = '2225vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
       const date = new Date().toISOString();
 
-      const user2 = await context.createUser();
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
 
-      const asset = TestFactory.asset({
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({
         ownerId: user2.id,
         checksum: Buffer.from(checksum, 'base64'),
         thumbhash: Buffer.from(thumbhash, 'base64'),
         fileCreatedAt: date,
         fileModifiedAt: date,
+        localDateTime: date,
         deletedAt: null,
       });
-      await context.createAsset(asset);
-      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+      await assetRepo.create(asset);
+
+      const partnerRepo = getRepository('partner');
+      await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
 
       const initialSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetsV1]);
 
@@ -521,7 +574,7 @@ describe(SyncService.name, () => {
               fileModifiedAt: date,
               isFavorite: false,
               isVisible: true,
-              localDateTime: '2000-01-01T00:00:00.000Z',
+              localDateTime: date,
               type: asset.type,
             },
             type: SyncEntityType.PartnerAssetV1,
@@ -538,13 +591,19 @@ describe(SyncService.name, () => {
     });
 
     it('should detect and sync a deleted partner asset', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      const asset = TestFactory.asset({ ownerId: user2.id });
-      await context.createAsset(asset);
-      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-      await context.asset.remove(asset);
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
+      const asset = mediumFactory.assetInsert({ ownerId: user2.id });
+
+      const assetRepo = getRepository('asset');
+      await assetRepo.create(asset);
+
+      const partnerRepo = getRepository('partner');
+      await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+      await assetRepo.remove(asset);
 
       const response = await testSync(auth, [SyncRequestType.PartnerAssetsV1]);
 
@@ -570,62 +629,89 @@ describe(SyncService.name, () => {
     });
 
     it('should not sync a deleted partner asset due to a user delete', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-      await context.createAsset({ ownerId: user2.id });
-      await context.user.delete({ id: user2.id }, true);
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
+
+      const partnerRepo = getRepository('partner');
+      await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+
+      const assetRepo = getRepository('asset');
+      await assetRepo.create(mediumFactory.assetInsert({ ownerId: user2.id }));
+
+      await userRepo.delete({ id: user2.id }, true);
 
       const response = await testSync(auth, [SyncRequestType.PartnerAssetsV1]);
-
       expect(response).toHaveLength(0);
     });
 
     it('should not sync a deleted partner asset due to a partner delete (unshare)', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      await context.createAsset({ ownerId: user2.id });
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
+
+      const assetRepo = getRepository('asset');
+      await assetRepo.create(mediumFactory.assetInsert({ ownerId: user2.id }));
+
+      const partnerRepo = getRepository('partner');
       const partner = { sharedById: user2.id, sharedWithId: auth.user.id };
-      await context.partner.create(partner);
+      await partnerRepo.create(partner);
 
       await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(1);
 
-      await context.partner.remove(partner);
+      await partnerRepo.remove(partner);
 
       await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
     });
 
     it('should not sync an asset or asset delete for own user', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      const asset = await context.createAsset({ ownerId: auth.user.id });
-      const partner = { sharedById: user2.id, sharedWithId: auth.user.id };
-      await context.partner.create(partner);
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
+
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({ ownerId: auth.user.id });
+      await assetRepo.create(asset);
+
+      const partnerRepo = getRepository('partner');
+      await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
 
       await expect(testSync(auth, [SyncRequestType.AssetsV1])).resolves.toHaveLength(1);
       await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
 
-      await context.asset.remove(asset);
+      await assetRepo.remove(asset);
 
       await expect(testSync(auth, [SyncRequestType.AssetsV1])).resolves.toHaveLength(1);
       await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
     });
 
     it('should not sync an asset or asset delete for unrelated user', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      const session = TestFactory.session({ userId: user2.id });
-      const auth2 = TestFactory.auth({ session, user: user2 });
-      const asset = await context.createAsset({ ownerId: user2.id });
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
+
+      const sessionRepo = getRepository('session');
+      const session = mediumFactory.sessionInsert({ userId: user2.id });
+      await sessionRepo.create(session);
+
+      const auth2 = factory.auth({ session, user: user2 });
+
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({ ownerId: user2.id });
+      await assetRepo.create(asset);
 
       await expect(testSync(auth2, [SyncRequestType.AssetsV1])).resolves.toHaveLength(1);
       await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
 
-      await context.asset.remove(asset);
+      await assetRepo.remove(asset);
 
       await expect(testSync(auth2, [SyncRequestType.AssetsV1])).resolves.toHaveLength(1);
       await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
@@ -634,13 +720,12 @@ describe(SyncService.name, () => {
 
   describe.concurrent(SyncRequestType.AssetExifsV1, () => {
     it('should detect and sync the first asset exif', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
-      const asset = TestFactory.asset({ ownerId: auth.user.id });
-      const exif = { assetId: asset.id, make: 'Canon' };
-
-      await context.createAsset(asset);
-      await context.asset.upsertExif(exif);
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({ ownerId: auth.user.id });
+      await assetRepo.create(asset);
+      await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon' });
 
       const initialSyncResponse = await testSync(auth, [SyncRequestType.AssetExifsV1]);
 
@@ -690,19 +775,25 @@ describe(SyncService.name, () => {
     });
 
     it('should only sync asset exif for own user', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      const session = TestFactory.session({ userId: user2.id });
-      const auth2 = TestFactory.auth({ session, user: user2 });
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
 
-      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-      const asset = TestFactory.asset({ ownerId: user2.id });
-      const exif = { assetId: asset.id, make: 'Canon' };
+      const partnerRepo = getRepository('partner');
+      await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
 
-      await context.createAsset(asset);
-      await context.asset.upsertExif(exif);
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({ ownerId: user2.id });
+      await assetRepo.create(asset);
+      await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon' });
 
+      const sessionRepo = getRepository('session');
+      const session = mediumFactory.sessionInsert({ userId: user2.id });
+      await sessionRepo.create(session);
+
+      const auth2 = factory.auth({ session, user: user2 });
       await expect(testSync(auth2, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
       await expect(testSync(auth, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(0);
     });
@@ -710,14 +801,19 @@ describe(SyncService.name, () => {
 
   describe.concurrent(SyncRequestType.PartnerAssetExifsV1, () => {
     it('should detect and sync the first partner asset exif', async () => {
-      const { auth, context, sut, testSync } = await setup();
+      const { auth, sut, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-      const asset = TestFactory.asset({ ownerId: user2.id });
-      await context.createAsset(asset);
-      const exif = { assetId: asset.id, make: 'Canon' };
-      await context.asset.upsertExif(exif);
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
+
+      const partnerRepo = getRepository('partner');
+      await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({ ownerId: user2.id });
+      await assetRepo.create(asset);
+      await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon' });
 
       const initialSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
 
@@ -767,32 +863,46 @@ describe(SyncService.name, () => {
     });
 
     it('should not sync partner asset exif for own user', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-      const asset = TestFactory.asset({ ownerId: auth.user.id });
-      const exif = { assetId: asset.id, make: 'Canon' };
-      await context.createAsset(asset);
-      await context.asset.upsertExif(exif);
+      const userRepo = getRepository('user');
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user2);
+
+      const partnerRepo = getRepository('partner');
+      await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({ ownerId: auth.user.id });
+      await assetRepo.create(asset);
+      await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon' });
 
       await expect(testSync(auth, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
       await expect(testSync(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
     });
 
     it('should not sync partner asset exif for unrelated user', async () => {
-      const { auth, context, testSync } = await setup();
+      const { auth, getRepository, testSync } = await setup();
 
-      const user2 = await context.createUser();
-      const user3 = await context.createUser();
-      const session = TestFactory.session({ userId: user3.id });
-      const authUser3 = TestFactory.auth({ session, user: user3 });
-      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-      const asset = TestFactory.asset({ ownerId: user3.id });
-      const exif = { assetId: asset.id, make: 'Canon' };
-      await context.createAsset(asset);
-      await context.asset.upsertExif(exif);
+      const userRepo = getRepository('user');
 
+      const user2 = mediumFactory.userInsert();
+      const user3 = mediumFactory.userInsert();
+      await Promise.all([userRepo.create(user2), userRepo.create(user3)]);
+
+      const partnerRepo = getRepository('partner');
+      await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+
+      const assetRepo = getRepository('asset');
+      const asset = mediumFactory.assetInsert({ ownerId: user3.id });
+      await assetRepo.create(asset);
+      await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon' });
+
+      const sessionRepo = getRepository('session');
+      const session = mediumFactory.sessionInsert({ userId: user3.id });
+      await sessionRepo.create(session);
+
+      const authUser3 = factory.auth({ session, user: user3 });
       await expect(testSync(authUser3, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
       await expect(testSync(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
     });

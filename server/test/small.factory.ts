@@ -41,7 +41,10 @@ const authFactory = ({
 }: {
   apiKey?: Partial<AuthApiKey>;
   session?: { id: string };
-  user?: Partial<UserAdmin>;
+  user?: Omit<
+    Partial<UserAdmin>,
+    'createdAt' | 'updatedAt' | 'deletedAt' | 'fileCreatedAt' | 'fileModifiedAt' | 'localDateTime' | 'profileChangedAt'
+  >;
   sharedLink?: Partial<AuthSharedLink>;
 } = {}) => {
   const auth: AuthDto = {

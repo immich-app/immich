@@ -1,9 +1,11 @@
 import { ClassConstructor } from 'class-transformer';
 import { Insertable, Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { randomBytes } from 'node:crypto';
-import { AssetJobStatus, Assets, DB } from 'src/db';
-import { AssetType } from 'src/enum';
+import { createHash, randomBytes } from 'node:crypto';
+import { Writable } from 'node:stream';
+import { AssetFace } from 'src/database';
+import { AssetJobStatus, Assets, DB, FaceSearch, Person, Sessions } from 'src/db';
+import { AssetType, SourceType } from 'src/enum';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
@@ -15,16 +17,21 @@ import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
+import { PersonRepository } from 'src/repositories/person.repository';
+import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
-import { newDate, newUuid } from 'test/small.factory';
+import { newDate, newEmbedding, newUuid } from 'test/small.factory';
 import { automock, ServiceOverrides } from 'test/utils';
 import { Mocked } from 'vitest';
+
+const sha256 = (value: string) => createHash('sha256').update(value).digest('base64');
 
 // type Repositories = Omit<ServiceOverrides, 'access' | 'telemetry'>;
 type Repositories = {
@@ -40,7 +47,10 @@ type Repositories = {
   logger: LoggingRepository;
   memory: MemoryRepository;
   partner: PartnerRepository;
+  person: PersonRepository;
+  search: SearchRepository;
   session: SessionRepository;
+  sync: SyncRepository;
   systemMetadata: SystemMetadataRepository;
   versionHistory: VersionHistoryRepository;
 };
@@ -145,8 +155,20 @@ export const getRepository = <K extends keyof Repositories>(key: K, db: Kysely<D
       return new PartnerRepository(db);
     }
 
+    case 'person': {
+      return new PersonRepository(db);
+    }
+
+    case 'search': {
+      return new SearchRepository(db);
+    }
+
     case 'session': {
       return new SessionRepository(db);
+    }
+
+    case 'sync': {
+      return new SyncRepository(db);
     }
 
     case 'systemMetadata': {
@@ -216,8 +238,16 @@ const getRepositoryMock = <K extends keyof Repositories>(key: K) => {
       return automock(PartnerRepository);
     }
 
+    case 'person': {
+      return automock(PersonRepository);
+    }
+
     case 'session': {
       return automock(SessionRepository);
+    }
+
+    case 'sync': {
+      return automock(SyncRepository);
     }
 
     case 'systemMetadata': {
@@ -266,7 +296,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.notification,
     repositories.oauth,
     repositories.partner || getRepositoryMock('partner'),
-    repositories.person,
+    repositories.person || getRepositoryMock('person'),
     repositories.process,
     repositories.search,
     repositories.serverInfo,
@@ -274,7 +304,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.sharedLink,
     repositories.stack,
     repositories.storage,
-    repositories.sync,
+    repositories.sync || getRepositoryMock('sync'),
     repositories.systemMetadata || getRepositoryMock('systemMetadata'),
     repositories.tag,
     repositories.telemetry,
@@ -297,6 +327,7 @@ const assetInsert = (asset: Partial<Insertable<Assets>> = {}) => {
     originalPath: '/path/to/something.jpg',
     ownerId: '@immich.cloud',
     isVisible: true,
+    isFavorite: false,
     fileCreatedAt: now,
     fileModifiedAt: now,
     localDateTime: now,
@@ -306,6 +337,38 @@ const assetInsert = (asset: Partial<Insertable<Assets>> = {}) => {
     ...defaults,
     ...asset,
     id,
+  };
+};
+
+const faceInsert = (face: Partial<Insertable<FaceSearch>> & { faceId: string }) => {
+  const defaults = {
+    faceId: face.faceId,
+    embedding: face.embedding || newEmbedding(),
+  };
+  return {
+    ...defaults,
+    ...face,
+  };
+};
+
+const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) => {
+  const defaults = {
+    assetId: assetFace.assetId ?? newUuid(),
+    boundingBoxX1: assetFace.boundingBoxX1 ?? 0,
+    boundingBoxX2: assetFace.boundingBoxX2 ?? 1,
+    boundingBoxY1: assetFace.boundingBoxY1 ?? 0,
+    boundingBoxY2: assetFace.boundingBoxY2 ?? 1,
+    deletedAt: assetFace.deletedAt ?? null,
+    id: assetFace.id ?? newUuid(),
+    imageHeight: assetFace.imageHeight ?? 10,
+    imageWidth: assetFace.imageWidth ?? 10,
+    personId: assetFace.personId ?? null,
+    sourceType: assetFace.sourceType ?? SourceType.MACHINE_LEARNING,
+  };
+
+  return {
+    ...defaults,
+    ...assetFace,
   };
 };
 
@@ -327,6 +390,41 @@ const assetJobStatusInsert = (
   };
 };
 
+const personInsert = (person: Partial<Insertable<Person>> & { ownerId: string }) => {
+  const defaults = {
+    birthDate: person.birthDate || null,
+    color: person.color || null,
+    createdAt: person.createdAt || newDate(),
+    faceAssetId: person.faceAssetId || null,
+    id: person.id || newUuid(),
+    isFavorite: person.isFavorite || false,
+    isHidden: person.isHidden || false,
+    name: person.name || 'Test Name',
+    ownerId: person.ownerId || newUuid(),
+    thumbnailPath: person.thumbnailPath || '/path/to/thumbnail.jpg',
+    updatedAt: person.updatedAt || newDate(),
+    updateId: person.updateId || newUuid(),
+  };
+  return {
+    ...defaults,
+    ...person,
+  };
+};
+
+const sessionInsert = ({ id = newUuid(), userId, ...session }: Partial<Insertable<Sessions>> & { userId: string }) => {
+  const defaults: Insertable<Sessions> = {
+    id,
+    userId,
+    token: sha256(id),
+  };
+
+  return {
+    ...defaults,
+    ...session,
+    id,
+  };
+};
+
 const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
   const id = user.id || newUuid();
 
@@ -339,8 +437,34 @@ const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
   return { ...defaults, ...user, id };
 };
 
+class CustomWritable extends Writable {
+  private data = '';
+
+  _write(chunk: any, encoding: string, callback: () => void) {
+    this.data += chunk.toString();
+    callback();
+  }
+
+  getResponse() {
+    const result = this.data;
+    return result
+      .split('\n')
+      .filter((x) => x.length > 0)
+      .map((x) => JSON.parse(x));
+  }
+}
+
+const syncStream = () => {
+  return new CustomWritable();
+};
+
 export const mediumFactory = {
   assetInsert,
+  assetFaceInsert,
   assetJobStatusInsert,
+  faceInsert,
+  personInsert,
+  sessionInsert,
+  syncStream,
   userInsert,
 };
