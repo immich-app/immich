@@ -6,7 +6,6 @@ import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity, searchAssetBuilder } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import { Paginated } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -203,12 +202,7 @@ export interface GetCameraMakesOptions {
 
 @Injectable()
 export class SearchRepository {
-  constructor(
-    private logger: LoggingRepository,
-    @InjectKysely() private db: Kysely<DB>,
-  ) {
-    this.logger.setContext(SearchRepository.name);
-  }
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({
     params: [
