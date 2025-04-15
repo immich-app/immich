@@ -150,7 +150,7 @@ class SqlGenerator {
           try {
             const result: AsyncIterableIterator<unknown> = target.apply(instance, params);
             for await (const _ of result) {
-              // noop
+              break;
             }
           } catch (error) {
             handleError(queryLabel, error);
