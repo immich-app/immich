@@ -117,6 +117,11 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getAlbumThumbnailFile(id: string) {
+    return this.db.selectFrom('asset_files').select(columns.assetFiles).where('asset_files.assetId', '=', id).execute();
+  }
+
   private storageTemplateAssetQuery() {
     return this.db
       .selectFrom('assets')

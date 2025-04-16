@@ -412,11 +412,12 @@ describe(NotificationService.name, () => {
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFile.mockResolvedValue([]);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
-        files: true,
-      });
+      expect(mocks.assetJob.getAlbumThumbnailFile).toHaveBeenCalledWith(
+        albumStub.emptyWithValidThumbnail.albumThumbnailAssetId,
+      );
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -439,15 +440,14 @@ describe(NotificationService.name, () => {
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.asset.getById.mockResolvedValue({
-        ...assetStub.image,
-        files: [{ id: '1', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' }],
-      });
+      mocks.assetJob.getAlbumThumbnailFile.mockResolvedValue([
+        { id: '1', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' },
+      ]);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
-        files: true,
-      });
+      expect(mocks.assetJob.getAlbumThumbnailFile).toHaveBeenCalledWith(
+        albumStub.emptyWithValidThumbnail.albumThumbnailAssetId,
+      );
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -470,12 +470,12 @@ describe(NotificationService.name, () => {
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getAlbumThumbnailFile.mockResolvedValue(assetStub.image.files);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
-        files: true,
-      });
+      expect(mocks.assetJob.getAlbumThumbnailFile).toHaveBeenCalledWith(
+        albumStub.emptyWithValidThumbnail.albumThumbnailAssetId,
+      );
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -506,6 +506,7 @@ describe(NotificationService.name, () => {
       });
       mocks.user.get.mockResolvedValueOnce(userStub.user1);
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFile.mockResolvedValue([]);
 
       await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(mocks.user.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
@@ -527,6 +528,7 @@ describe(NotificationService.name, () => {
         ],
       });
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFile.mockResolvedValue([]);
 
       await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(mocks.user.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
@@ -548,6 +550,7 @@ describe(NotificationService.name, () => {
         ],
       });
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFile.mockResolvedValue([]);
 
       await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(mocks.user.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
@@ -561,6 +564,7 @@ describe(NotificationService.name, () => {
       });
       mocks.user.get.mockResolvedValue(userStub.user1);
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFile.mockResolvedValue([]);
 
       await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(mocks.user.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
