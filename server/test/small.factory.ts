@@ -310,4 +310,5 @@ export const factory = {
   jobAssets: {
     sidecarWrite: assetSidecarWriteFactory,
   },
+  uuid: newUuid,
 };

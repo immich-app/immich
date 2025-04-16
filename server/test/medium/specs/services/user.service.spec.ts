@@ -60,6 +60,25 @@ describe(UserService.name, () => {
     });
   });
 
+  describe('search', () => {
+    it('should get users', async () => {
+      const { sut, repos } = createSut();
+      const user1 = mediumFactory.userInsert();
+      const user2 = mediumFactory.userInsert();
+
+      await Promise.all([repos.user.create(user1), repos.user.create(user2)]);
+
+      const auth = factory.auth({ user: user1 });
+
+      await expect(sut.search(auth)).resolves.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ email: user1.email }),
+          expect.objectContaining({ email: user2.email }),
+        ]),
+      );
+    });
+  });
+
   describe('get', () => {
     it('should get a user', async () => {
       const { sut, repos } = createSut();
