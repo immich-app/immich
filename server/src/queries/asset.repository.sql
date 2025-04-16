@@ -87,22 +87,25 @@ select
   "assets".*,
   (
     select
-      jsonb_agg(
-        case
-          when "person"."id" is not null then jsonb_insert(
-            to_jsonb("asset_faces"),
-            '{person}'::text[],
-            to_jsonb("person")
-          )
-          else to_jsonb("asset_faces")
-        end
-      ) as "faces"
+      coalesce(json_agg(agg), '[]')
     from
-      "asset_faces"
-      left join "person" on "person"."id" = "asset_faces"."personId"
-    where
-      "asset_faces"."assetId" = "assets"."id"
-      and "asset_faces"."deletedAt" is null
+      (
+        select
+          "asset_faces".*,
+          "person" as "person"
+        from
+          "asset_faces"
+          left join lateral (
+            select
+              "person".*
+            from
+              "person"
+            where
+              "asset_faces"."personId" = "person"."id"
+          ) as "person" on true
+        where
+          "asset_faces"."deletedAt" is null
+      ) as agg
   ) as "faces",
   (
     select

@@ -92,30 +92,18 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
 }
 
 export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
-  return eb
-    .selectFrom('asset_faces')
-    .leftJoin('person', 'person.id', 'asset_faces.personId')
-    .whereRef('asset_faces.assetId', '=', 'assets.id')
-    .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null))
-    .select((eb) =>
-      eb
-        .fn('jsonb_agg', [
-          eb
-            .case()
-            .when('person.id', 'is not', null)
-            .then(
-              eb.fn('jsonb_insert', [
-                eb.fn('to_jsonb', [eb.table('asset_faces')]),
-                sql`'{person}'::text[]`,
-                eb.fn('to_jsonb', [eb.table('person')]),
-              ]),
-            )
-            .else(eb.fn('to_jsonb', [eb.table('asset_faces')]))
-            .end(),
-        ])
-        .as('faces'),
-    )
-    .as('faces');
+  return jsonArrayFrom(
+    eb
+      .selectFrom('asset_faces')
+      .leftJoinLateral(
+        (eb) =>
+          eb.selectFrom('person').selectAll('person').whereRef('asset_faces.personId', '=', 'person.id').as('person'),
+        (join) => join.onTrue(),
+      )
+      .selectAll('asset_faces')
+      .select((eb) => eb.table('person').as('person'))
+      .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
+  ).as('faces');
 }
 
 export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[]) {
