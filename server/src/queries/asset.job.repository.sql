@@ -183,6 +183,16 @@ from
 where
   "assets"."id" = $1
 
+-- AssetJobRepository.getAlbumThumbnailFile
+select
+  "asset_files"."id",
+  "asset_files"."path",
+  "asset_files"."type"
+from
+  "asset_files"
+where
+  "asset_files"."assetId" = $1
+
 -- AssetJobRepository.getForStorageTemplateJob
 select
   "assets"."id",
