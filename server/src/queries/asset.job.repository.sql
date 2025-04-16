@@ -219,6 +219,46 @@ from
 where
   "assets"."id" = $2
 
+-- AssetJobRepository.getForDetectFacesJob
+select
+  "assets"."id",
+  "assets"."isVisible",
+  to_json("exif") as "exifInfo",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_faces".*
+        from
+          "asset_faces"
+        where
+          "asset_faces"."assetId" = "assets"."id"
+      ) as agg
+  ) as "faces",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_files"."id",
+          "asset_files"."path",
+          "asset_files"."type"
+        from
+          "asset_files"
+        where
+          "asset_files"."assetId" = "assets"."id"
+          and "asset_files"."type" = $1
+      ) as agg
+  ) as "files"
+from
+  "assets"
+  inner join "exif" on "assets"."id" = "exif"."assetId"
+where
+  "assets"."id" = $2
+
 -- AssetJobRepository.getForStorageTemplateJob
 select
   "assets"."id",

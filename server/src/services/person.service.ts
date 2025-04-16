@@ -24,7 +24,6 @@ import {
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
 import {
-  AssetFileType,
   AssetType,
   CacheControl,
   ImageFormat,
@@ -41,7 +40,6 @@ import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
 import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -297,10 +295,9 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = { exifInfo: true, faces: { person: false, withDeleted: true }, files: true };
-    const [asset] = await this.assetRepository.getByIds([id], relations);
-    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
-    if (!asset || !previewFile) {
+    const asset = await this.assetJobRepository.getForDetectFacesJob(id);
+    const previewFile = asset?.files[0];
+    if (!asset || asset.files.length !== 1 || !previewFile) {
       return JobStatus.FAILED;
     }
 
