@@ -28,7 +28,7 @@ export interface MoveRequest {
 export type GeneratedImageType = AssetPathType.PREVIEW | AssetPathType.THUMBNAIL | AssetPathType.FULLSIZE;
 export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDEO;
 
-type ThumbnailPathEntity = { id: string; ownerId: string };
+export type ThumbnailPathEntity = { id: string; ownerId: string };
 
 let instance: StorageCore | null;
 

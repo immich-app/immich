@@ -157,7 +157,7 @@ export const assetStub = {
     isOffline: false,
   }),
 
-  primaryImage: Object.freeze<AssetEntity>({
+  primaryImage: Object.freeze({
     id: 'primary-asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -200,9 +200,10 @@ export const assetStub = {
     ]),
     duplicateId: null,
     isOffline: false,
+    libraryId: null,
   }),
 
-  image: Object.freeze<AssetEntity>({
+  image: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -239,6 +240,7 @@ export const assetStub = {
     } as Exif,
     duplicateId: null,
     isOffline: false,
+    libraryId: null,
   }),
 
   trashed: Object.freeze<AssetEntity>({
@@ -470,7 +472,7 @@ export const assetStub = {
     isOffline: false,
   }),
 
-  video: Object.freeze<AssetEntity>({
+  video: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     originalFileName: 'asset-id.ext',
@@ -507,6 +509,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    libraryId: null,
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -522,7 +525,8 @@ export const assetStub = {
       fileSizeInByte: 100_000,
       timeZone: `America/New_York`,
     },
-  } as AssetEntity),
+    libraryId: null,
+  } as AssetEntity & { libraryId: string | null; files: AssetFile[]; exifInfo: Exif }),
 
   livePhotoStillAsset: Object.freeze({
     id: 'live-photo-still-asset',
@@ -539,7 +543,7 @@ export const assetStub = {
       timeZone: `America/New_York`,
     },
     files,
-  } as AssetEntity),
+  } as AssetEntity & { libraryId: string | null }),
 
   livePhotoWithOriginalFileName: Object.freeze({
     id: 'live-photo-still-asset',
@@ -556,9 +560,10 @@ export const assetStub = {
       fileSizeInByte: 25_000,
       timeZone: `America/New_York`,
     },
-  } as AssetEntity),
+    libraryId: null,
+  } as AssetEntity & { libraryId: string | null }),
 
-  withLocation: Object.freeze<AssetEntity>({
+  withLocation: Object.freeze({
     id: 'asset-with-favorite-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -598,9 +603,10 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    libraryId: null,
   }),
 
-  sidecar: Object.freeze<AssetEntity>({
+  sidecar: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -632,6 +638,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    libraryId: null,
   }),
 
   sidecarWithoutExt: Object.freeze<AssetEntity>({
@@ -743,7 +750,7 @@ export const assetStub = {
     isOffline: false,
   }),
 
-  imageDng: Object.freeze<AssetEntity>({
+  imageDng: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -782,7 +789,7 @@ export const assetStub = {
     isOffline: false,
   }),
 
-  imageHif: Object.freeze<AssetEntity>({
+  imageHif: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',

@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { withFiles } from 'src/entities/asset.entity';
+import { withExifInner, withFaces, withFiles } from 'src/entities/asset.entity';
 import { AssetFileType } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { asUuid } from 'src/utils/database';
@@ -83,6 +84,35 @@ export class AssetJobRepository {
       .selectFrom('assets')
       .select(['assets.id', 'assets.ownerId', 'assets.encodedVideoPath'])
       .select(withFiles)
+      .where('assets.id', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForGenerateThumbnailJob(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .select([
+        'assets.id',
+        'assets.isVisible',
+        'assets.originalFileName',
+        'assets.originalPath',
+        'assets.ownerId',
+        'assets.thumbhash',
+        'assets.type',
+      ])
+      .select(withFiles)
+      .$call(withExifInner)
+      .where('assets.id', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForMetadataExtraction(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .select(columns.asset)
+      .select(withFaces)
       .where('assets.id', '=', id)
       .executeTakeFirst();
   }
