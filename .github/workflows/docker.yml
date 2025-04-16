@@ -108,6 +108,7 @@ jobs:
     needs: pre-job
     permissions:
       contents: read
+      packages: write
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
     runs-on: ${{ matrix.runner }}
     env:
@@ -339,6 +340,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
+      packages: write
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     env:
