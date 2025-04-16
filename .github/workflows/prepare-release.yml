@@ -40,6 +40,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: true
 
       - name: Install uv
         uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
@@ -79,6 +80,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: false
 
       - name: Download APK
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
@@ -90,6 +92,7 @@ jobs:
         with:
           draft: true
           tag_name: ${{ env.IMMICH_VERSION }}
+          token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true
           body_path: misc/release/notes.tmpl
           files: |
