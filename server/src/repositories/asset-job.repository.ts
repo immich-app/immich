@@ -137,6 +137,18 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForDetectFacesJob(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .select(['assets.id', 'assets.isVisible'])
+      .$call(withExifInner)
+      .select((eb) => withFaces(eb, true))
+      .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
+      .where('assets.id', '=', id)
+      .executeTakeFirst();
+  }
+
   private storageTemplateAssetQuery() {
     return this.db
       .selectFrom('assets')

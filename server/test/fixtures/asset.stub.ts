@@ -52,7 +52,7 @@ export const assetStub = {
     fileSizeInByte: 12_345,
     ...asset,
   }),
-  noResizePath: Object.freeze<AssetEntity>({
+  noResizePath: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     originalFileName: 'IMG_123.jpg',
@@ -79,6 +79,7 @@ export const assetStub = {
     livePhotoVideoId: null,
     sharedLinks: [],
     faces: [],
+    exifInfo: {} as Exif,
     sidecarPath: null,
     deletedAt: null,
     isExternal: false,
