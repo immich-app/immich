@@ -20,7 +20,7 @@ export async function bootstrap() {
   app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
-  await app.listen(0);
+  await app.init();
 
   const configRepository = app.get(ConfigRepository);
   const { environment } = configRepository.getEnv();
