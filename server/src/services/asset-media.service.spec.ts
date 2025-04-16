@@ -663,9 +663,18 @@ describe(AssetMediaService.name, () => {
   });
 
   describe('replaceAsset', () => {
-    it('should error when update photo does not exist', async () => {
+    it('should fail the auth check when update photo does not exist', async () => {
       await expect(sut.replaceAsset(authStub.user1, 'id', replaceDto, fileStub.photo)).rejects.toThrow(
         'Not found or no asset.update access',
+      );
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+    });
+
+    it('should fail if asset cannot be fetched', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, fileStub.photo)).rejects.toThrow(
+        'Asset not found',
       );
 
       expect(mocks.asset.create).not.toHaveBeenCalled();

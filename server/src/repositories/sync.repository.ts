@@ -3,6 +3,7 @@ import { Insertable, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB, SessionSyncCheckpoints } from 'src/db';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import { SyncEntityType } from 'src/enum';
 import { SyncAck } from 'src/types';
 
@@ -13,6 +14,7 @@ type upsertTables = 'users' | 'partners' | 'assets' | 'exif';
 export class SyncRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getCheckpoints(sessionId: string) {
     return this.db
       .selectFrom('session_sync_checkpoints')
@@ -33,6 +35,7 @@ export class SyncRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   deleteCheckpoints(sessionId: string, types?: SyncEntityType[]) {
     return this.db
       .deleteFrom('session_sync_checkpoints')
@@ -41,6 +44,7 @@ export class SyncRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [], stream: true })
   getUserUpserts(ack?: SyncAck) {
     return this.db
       .selectFrom('users')
@@ -49,6 +53,7 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [], stream: true })
   getUserDeletes(ack?: SyncAck) {
     return this.db
       .selectFrom('users_audit')
@@ -57,6 +62,7 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getPartnerUpserts(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('partners')
@@ -66,6 +72,7 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getPartnerDeletes(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('partners_audit')
@@ -75,6 +82,7 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getAssetUpserts(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('assets')
@@ -84,6 +92,7 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getPartnerAssetsUpserts(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('assets')
@@ -95,6 +104,7 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getAssetDeletes(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('assets_audit')
@@ -105,6 +115,7 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getPartnerAssetDeletes(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('assets_audit')
@@ -116,6 +127,7 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getAssetExifsUpserts(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('exif')
@@ -125,6 +137,7 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getPartnerAssetExifsUpserts(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('exif')

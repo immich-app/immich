@@ -7,8 +7,8 @@ class UploadDialog extends ConfirmDialog {
       : super(
           title: 'upload_dialog_title',
           content: 'upload_dialog_info',
-          cancel: 'upload_dialog_cancel',
-          ok: 'upload_dialog_ok',
+          cancel: 'cancel',
+          ok: 'upload',
           onOk: onUpload,
         );
 }

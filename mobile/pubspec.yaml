@@ -6,7 +6,7 @@ version: 1.131.3+193
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
-  flutter: 3.29.2
+  flutter: 3.29.3
 
 isar_version: &isar_version 3.1.8
 
@@ -16,7 +16,7 @@ dependencies:
 
   async: ^2.11.0
   auto_route: ^9.2.0
-  background_downloader: ^8.5.5
+  background_downloader: ^9.2.0
   cached_network_image: ^3.4.1
   cancellation_token_http: ^2.1.0
   collection: ^1.18.0
@@ -111,7 +111,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
-    - assets/i18n/
   fonts:
     - family: Inconsolata
       fonts:

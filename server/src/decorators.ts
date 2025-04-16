@@ -123,6 +123,7 @@ export const GENERATE_SQL_KEY = 'generate-sql-key';
 export interface GenerateSqlQueries {
   name?: string;
   params: unknown[];
+  stream?: boolean;
 }
 
 export const Telemetry = (options: { enabled?: boolean }) =>

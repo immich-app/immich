@@ -44,7 +44,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
               }
             }),
             child: const Text(
-              'permission_onboarding_grant_permission',
+              'grant_permission',
             ).tr(),
           ),
         ],
@@ -168,7 +168,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
                   ),
                 ),
                 TextButton(
-                  child: const Text('permission_onboarding_back').tr(),
+                  child: const Text('back').tr(),
                   onPressed: () => context.maybePop(),
                 ),
               ],

@@ -42,6 +42,12 @@ docker run -it -v "$(pwd)":/import:ro -e IMMICH_INSTANCE_URL=https://your-immich
 
 Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variables as suitable. You can also use a Docker env file to store your sensitive API key.
 
+This `docker run` command will directly run the command `immich` inside the container. You can directly append the desired parameters (see under "usage") to the commandline like this:
+
+```bash
+docker run -it -v "$(pwd)":/import:ro -e IMMICH_INSTANCE_URL=https://your-immich-instance/api -e IMMICH_API_KEY=your-api-key ghcr.io/immich-app/immich-cli:latest upload -a -c 5 --recursive directory/
+```
+
 ## Usage
 
 <details>

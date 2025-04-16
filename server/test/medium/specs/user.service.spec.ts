@@ -1,51 +1,60 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { DB } from 'src/db';
-import { JobName, JobStatus } from 'src/enum';
+import { ImmichEnvironment, JobName, JobStatus } from 'src/enum';
 import { UserService } from 'src/services/user.service';
-import { TestContext, TestFactory } from 'test/factory';
-import { getKyselyDB, newTestService, ServiceMocks } from 'test/utils';
-
-const setup = async (db: Kysely<DB>) => {
-  const context = await TestContext.from(db).withUser({ isAdmin: true }).create();
-  const { sut, mocks } = newTestService(UserService, context);
-
-  return { sut, mocks, context };
-};
+import { mediumFactory, newMediumService } from 'test/medium.factory';
+import { factory } from 'test/small.factory';
+import { getKyselyDB } from 'test/utils';
 
 describe(UserService.name, () => {
-  let sut: UserService;
-  let context: TestContext;
-  let mocks: ServiceMocks;
+  let defaultDatabase: Kysely<DB>;
+
+  const createSut = (db?: Kysely<DB>) => {
+    process.env.IMMICH_ENV = ImmichEnvironment.TESTING;
+
+    return newMediumService(UserService, {
+      database: db || defaultDatabase,
+      repos: {
+        user: 'real',
+        crypto: 'real',
+        config: 'real',
+        job: 'mock',
+        systemMetadata: 'real',
+      },
+    });
+  };
 
   beforeAll(async () => {
-    ({ sut, context, mocks } = await setup(await getKyselyDB()));
+    defaultDatabase = await getKyselyDB();
+    const { repos } = createSut();
+    await repos.user.create({ isAdmin: true, email: 'admin@immich.cloud' });
   });
 
   describe('create', () => {
     it('should create a user', async () => {
-      const userDto = TestFactory.user();
+      const { sut } = createSut();
+      const user = mediumFactory.userInsert();
 
-      await expect(sut.createUser(userDto)).resolves.toEqual(
-        expect.objectContaining({
-          id: userDto.id,
-          name: userDto.name,
-          email: userDto.email,
-        }),
+      await expect(sut.createUser({ name: user.name, email: user.email })).resolves.toEqual(
+        expect.objectContaining({ name: user.name, email: user.email }),
       );
     });
 
     it('should reject user with duplicate email', async () => {
-      const userDto = TestFactory.user();
-      const userDto2 = TestFactory.user({ email: userDto.email });
+      const { sut } = createSut();
 
-      await sut.createUser(userDto);
+      const user = mediumFactory.userInsert();
 
-      await expect(sut.createUser(userDto2)).rejects.toThrow('User exists');
+      await expect(sut.createUser({ email: user.email })).resolves.toMatchObject({ email: user.email });
+      await expect(sut.createUser({ email: user.email })).rejects.toThrow('User exists');
     });
 
     it('should not return password', async () => {
-      const user = await sut.createUser(TestFactory.user());
+      const { sut } = createSut();
+      const dto = mediumFactory.userInsert({ password: 'password' });
+
+      const user = await sut.createUser({ email: dto.email, password: 'password' });
 
       expect((user as any).password).toBeUndefined();
     });
@@ -53,79 +62,72 @@ describe(UserService.name, () => {
 
   describe('get', () => {
     it('should get a user', async () => {
-      const userDto = TestFactory.user();
+      const { sut, repos } = createSut();
+      const user = mediumFactory.userInsert();
 
-      await context.createUser(userDto);
+      await repos.user.create(user);
 
-      await expect(sut.get(userDto.id)).resolves.toEqual(
+      await expect(sut.get(user.id)).resolves.toEqual(
         expect.objectContaining({
-          id: userDto.id,
-          name: userDto.name,
-          email: userDto.email,
+          id: user.id,
+          name: user.name,
+          email: user.email,
         }),
       );
     });
 
     it('should not return password', async () => {
-      const { id } = await context.createUser();
+      const { sut, repos } = createSut();
+      const user = mediumFactory.userInsert();
 
-      const user = await sut.get(id);
+      await repos.user.create(user);
 
-      expect((user as any).password).toBeUndefined();
+      const result = await sut.get(user.id);
+
+      expect((result as any).password).toBeUndefined();
     });
   });
 
   describe('updateMe', () => {
     it('should update a user', async () => {
-      const userDto = TestFactory.user();
-      const sessionDto = TestFactory.session({ userId: userDto.id });
-      const authDto = TestFactory.auth({ user: userDto });
+      const { sut, repos: repositories } = createSut();
 
-      const before = await context.createUser(userDto);
-      await context.createSession(sessionDto);
-
-      const newUserDto = TestFactory.user();
-
-      const after = await sut.updateMe(authDto, { name: newUserDto.name, email: newUserDto.email });
-
-      if (!before || !after) {
-        expect.fail('User should be found');
-      }
+      const before = await repositories.user.create(mediumFactory.userInsert());
+      const auth = factory.auth({ user: { id: before.id } });
+      const after = await sut.updateMe(auth, { name: `${before.name} Updated` });
 
       expect(before.updatedAt).toBeDefined();
       expect(after.updatedAt).toBeDefined();
       expect(before.updatedAt).not.toEqual(after.updatedAt);
-      expect(after).toEqual(expect.objectContaining({ name: newUserDto.name, email: newUserDto.email }));
     });
   });
 
   describe('setLicense', () => {
-    const userLicense = {
-      licenseKey: 'IMCL-FF69-TUK1-RWZU-V9Q8-QGQS-S5GC-X4R2-UFK4',
-      activationKey:
-        'KuX8KsktrBSiXpQMAH0zLgA5SpijXVr_PDkzLdWUlAogCTMBZ0I3KCHXK0eE9EEd7harxup8_EHMeqAWeHo5VQzol6LGECpFv585U9asXD4Zc-UXt3mhJr2uhazqipBIBwJA2YhmUCDy8hiyiGsukDQNu9Rg9C77UeoKuZBWVjWUBWG0mc1iRqfvF0faVM20w53czAzlhaMxzVGc3Oimbd7xi_CAMSujF_2y8QpA3X2fOVkQkzdcH9lV0COejl7IyH27zQQ9HrlrXv3Lai5Hw67kNkaSjmunVBxC5PS0TpKoc9SfBJMaAGWnaDbjhjYUrm-8nIDQnoeEAidDXVAdPw',
-    };
     it('should set a license', async () => {
-      const userDto = TestFactory.user();
-      const sessionDto = TestFactory.session({ userId: userDto.id });
-      const authDto = TestFactory.auth({ user: userDto });
+      const license = {
+        licenseKey: 'IMCL-FF69-TUK1-RWZU-V9Q8-QGQS-S5GC-X4R2-UFK4',
+        activationKey:
+          'KuX8KsktrBSiXpQMAH0zLgA5SpijXVr_PDkzLdWUlAogCTMBZ0I3KCHXK0eE9EEd7harxup8_EHMeqAWeHo5VQzol6LGECpFv585U9asXD4Zc-UXt3mhJr2uhazqipBIBwJA2YhmUCDy8hiyiGsukDQNu9Rg9C77UeoKuZBWVjWUBWG0mc1iRqfvF0faVM20w53czAzlhaMxzVGc3Oimbd7xi_CAMSujF_2y8QpA3X2fOVkQkzdcH9lV0COejl7IyH27zQQ9HrlrXv3Lai5Hw67kNkaSjmunVBxC5PS0TpKoc9SfBJMaAGWnaDbjhjYUrm-8nIDQnoeEAidDXVAdPw',
+      };
+      const { sut, repos } = createSut();
+      const user = mediumFactory.userInsert();
+      await repos.user.create(user);
+      const auth = factory.auth({ user: { id: user.id } });
 
-      await context.getFactory().withUser(userDto).withSession(sessionDto).create();
+      await expect(sut.getLicense(auth)).rejects.toThrowError();
+      const after = await sut.setLicense(auth, license);
 
-      await expect(sut.getLicense(authDto)).rejects.toThrowError();
+      expect(after.licenseKey).toEqual(license.licenseKey);
+      expect(after.activationKey).toEqual(license.activationKey);
 
-      const after = await sut.setLicense(authDto, userLicense);
-
-      expect(after.licenseKey).toEqual(userLicense.licenseKey);
-      expect(after.activationKey).toEqual(userLicense.activationKey);
-
-      const getResponse = await sut.getLicense(authDto);
+      const getResponse = await sut.getLicense(auth);
       expect(getResponse).toEqual(after);
     });
   });
 
   describe.sequential('handleUserDeleteCheck', () => {
     beforeEach(async () => {
+      const { sut } = createSut();
       // These tests specifically have to be sequential otherwise we hit race conditions with config changes applying in incorrect tests
       const config = await sut.getConfig({ withCache: false });
       config.user.deleteDelay = 7;
@@ -133,16 +135,19 @@ describe(UserService.name, () => {
     });
 
     it('should work when there are no deleted users', async () => {
+      const { sut, mocks } = createSut();
+      mocks.job.queueAll.mockResolvedValue(void 0);
+
       await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
 
       expect(mocks.job.queueAll).toHaveBeenCalledExactlyOnceWith([]);
     });
 
     it('should work when there is a user to delete', async () => {
-      const { sut, context, mocks } = await setup(await getKyselyDB());
-      const user = TestFactory.user({ deletedAt: DateTime.now().minus({ days: 60 }).toJSDate() });
-
-      await context.createUser(user);
+      const { sut, repos, mocks } = createSut(await getKyselyDB());
+      mocks.job.queueAll.mockResolvedValue(void 0);
+      const user = mediumFactory.userInsert({ deletedAt: DateTime.now().minus({ days: 60 }).toJSDate() });
+      await repos.user.create(user);
 
       await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
 
@@ -152,10 +157,10 @@ describe(UserService.name, () => {
     });
 
     it('should skip a recently deleted user', async () => {
-      const { sut, context, mocks } = await setup(await getKyselyDB());
-      const user = TestFactory.user({ deletedAt: DateTime.now().minus({ days: 5 }).toJSDate() });
-
-      await context.createUser(user);
+      const { sut, repos, mocks } = createSut(await getKyselyDB());
+      mocks.job.queueAll.mockResolvedValue(void 0);
+      const user = mediumFactory.userInsert({ deletedAt: DateTime.now().minus({ days: 5 }).toJSDate() });
+      await repos.user.create(user);
 
       await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
 
@@ -163,10 +168,10 @@ describe(UserService.name, () => {
     });
 
     it('should respect a custom user delete delay', async () => {
-      const db = await getKyselyDB();
-      const { sut, context, mocks } = await setup(db);
-      const user = TestFactory.user({ deletedAt: DateTime.now().minus({ days: 25 }).toJSDate() });
-      await context.createUser(user);
+      const { sut, repos, mocks } = createSut(await getKyselyDB());
+      mocks.job.queueAll.mockResolvedValue(void 0);
+      const user = mediumFactory.userInsert({ deletedAt: DateTime.now().minus({ days: 25 }).toJSDate() });
+      await repos.user.create(user);
 
       const config = await sut.getConfig({ withCache: false });
       config.user.deleteDelay = 30;

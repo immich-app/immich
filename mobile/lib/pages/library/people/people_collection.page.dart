@@ -81,7 +81,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
                         Icons.search_rounded,
                         color: context.colorScheme.primary,
                       ),
-                      hintText: 'search_filter_people_hint'.tr(),
+                      hintText: 'filter_people'.tr(),
                     ),
                     autofocus: true,
                   )

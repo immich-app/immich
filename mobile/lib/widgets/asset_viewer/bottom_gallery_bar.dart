@@ -273,16 +273,16 @@ class BottomGalleryBar extends ConsumerWidget {
           icon: Icon(
             Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
           ),
-          label: 'control_bottom_app_bar_share'.tr(),
-          tooltip: 'control_bottom_app_bar_share'.tr(),
+          label: 'share'.tr(),
+          tooltip: 'share'.tr(),
         ): (_) => shareAsset(),
       },
       if (asset.isImage)
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.tune_outlined),
-            label: 'control_bottom_app_bar_edit'.tr(),
-            tooltip: 'control_bottom_app_bar_edit'.tr(),
+            label: 'edit'.tr(),
+            tooltip: 'edit'.tr(),
           ): (_) => handleEdit(),
         },
       if (isOwner)
@@ -290,45 +290,45 @@ class BottomGalleryBar extends ConsumerWidget {
           asset.isArchived
               ? BottomNavigationBarItem(
                   icon: const Icon(Icons.unarchive_rounded),
-                  label: 'control_bottom_app_bar_unarchive'.tr(),
-                  tooltip: 'control_bottom_app_bar_unarchive'.tr(),
+                  label: 'unarchive'.tr(),
+                  tooltip: 'unarchive'.tr(),
                 )
               : BottomNavigationBarItem(
                   icon: const Icon(Icons.archive_outlined),
-                  label: 'control_bottom_app_bar_archive'.tr(),
-                  tooltip: 'control_bottom_app_bar_archive'.tr(),
+                  label: 'archive'.tr(),
+                  tooltip: 'archive'.tr(),
                 ): (_) => handleArchive(),
         },
       if (isOwner && asset.stackCount > 0)
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.burst_mode_outlined),
-            label: 'control_bottom_app_bar_stack'.tr(),
-            tooltip: 'control_bottom_app_bar_stack'.tr(),
+            label: 'stack'.tr(),
+            tooltip: 'stack'.tr(),
           ): (_) => showStackActionItems(),
         },
       if (isOwner && !isInAlbum)
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.delete_outline),
-            label: 'control_bottom_app_bar_delete'.tr(),
-            tooltip: 'control_bottom_app_bar_delete'.tr(),
+            label: 'delete'.tr(),
+            tooltip: 'delete'.tr(),
           ): (_) => handleDelete(),
         },
       if (!isOwner)
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.download_outlined),
-            label: 'control_bottom_app_bar_download'.tr(),
-            tooltip: 'control_bottom_app_bar_download'.tr(),
+            label: 'download'.tr(),
+            tooltip: 'download'.tr(),
           ): (_) => handleDownload(),
         },
       if (isInAlbum)
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.remove_circle_outline),
-            label: 'album_viewer_appbar_share_remove'.tr(),
-            tooltip: 'album_viewer_appbar_share_remove'.tr(),
+            label: 'remove_from_album'.tr(),
+            tooltip: 'remove_from_album'.tr(),
           ): (_) => handleRemoveFromAlbum(),
         },
     ];

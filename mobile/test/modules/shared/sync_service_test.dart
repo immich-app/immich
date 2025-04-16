@@ -274,6 +274,15 @@ void main() {
           List.filled(assets.length, null),
         );
         await s.upsertAssetsWithExif(assets);
+        verify(
+          () => exifInfoRepository.updateAll(
+            any(
+              that: containsAll(
+                assets.map((a) => a.exifInfo!.copyWith(assetId: a.id)),
+              ),
+            ),
+          ),
+        );
         expect(assets.map((a) => a.exifInfo?.assetId), assets.map((a) => a.id));
       });
     });

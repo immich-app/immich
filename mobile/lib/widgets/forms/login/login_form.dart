@@ -323,7 +323,7 @@ class LoginForm extends HookConsumerWidget {
                       isLoadingServer.value ? null : getServerAuthSettings,
                   icon: const Icon(Icons.arrow_forward_rounded),
                   label: const Text(
-                    'login_form_next_button',
+                    'next',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ).tr(),
                 ),
@@ -430,7 +430,7 @@ class LoginForm extends HookConsumerWidget {
             TextButton.icon(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => serverEndpoint.value = null,
-              label: const Text('login_form_back_button_text').tr(),
+              label: const Text('back').tr(),
             ),
           ],
         ),

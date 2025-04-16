@@ -117,8 +117,8 @@ class _LocationServiceDisabledDialog extends ConfirmDialog {
       : super(
           title: 'map_location_service_disabled_title'.tr(),
           content: 'map_location_service_disabled_content'.tr(),
-          cancel: 'map_location_dialog_cancel'.tr(),
-          ok: 'map_location_dialog_yes'.tr(),
+          cancel: 'cancel'.tr(),
+          ok: 'yes'.tr(),
           onOk: () async {
             await Geolocator.openLocationSettings();
           },
@@ -130,8 +130,8 @@ class _LocationPermissionDisabledDialog extends ConfirmDialog {
       : super(
           title: 'map_no_location_permission_title'.tr(),
           content: 'map_no_location_permission_content'.tr(),
-          cancel: 'map_location_dialog_cancel'.tr(),
-          ok: 'map_location_dialog_yes'.tr(),
+          cancel: 'cancel'.tr(),
+          ok: 'yes'.tr(),
           onOk: () {},
         );
 }

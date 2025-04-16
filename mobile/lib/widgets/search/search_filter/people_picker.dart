@@ -35,7 +35,7 @@ class PeoplePicker extends HookConsumerWidget {
             onChanged: (value) => searchQuery.value = value,
             onTapOutside: (_) => formFocus.unfocus(),
             filled: true,
-            hintText: 'search_filter_people_hint'.tr(),
+            hintText: 'filter_people'.tr(),
           ),
         ),
         Padding(

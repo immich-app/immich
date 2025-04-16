@@ -536,12 +536,12 @@ describe(AssetService.name, () => {
     it('should immediately queue assets for deletion if trash is disabled', async () => {
       const asset = factory.asset({ isOffline: false });
 
-      mocks.asset.streamDeletedAssets.mockReturnValue(makeStream([asset]));
+      mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: false } });
 
       await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.streamDeletedAssets).toHaveBeenCalledWith(new Date());
+      expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(new Date());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
       ]);
@@ -550,12 +550,12 @@ describe(AssetService.name, () => {
     it('should queue assets for deletion after trash duration', async () => {
       const asset = factory.asset({ isOffline: false });
 
-      mocks.asset.streamDeletedAssets.mockReturnValue(makeStream([asset]));
+      mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: true, days: 7 } });
 
       await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.streamDeletedAssets).toHaveBeenCalledWith(DateTime.now().minus({ days: 7 }).toJSDate());
+      expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(DateTime.now().minus({ days: 7 }).toJSDate());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
       ]);
