@@ -2,7 +2,6 @@ import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, 
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { AssetFace, AssetFile, AssetJobStatus, columns, Exif, Stack, Tag, User } from 'src/database';
 import { DB } from 'src/db';
-import { AlbumEntity } from 'src/entities/album.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
@@ -45,7 +44,6 @@ export class AssetEntity {
   exifInfo?: Exif;
   tags?: Tag[];
   sharedLinks!: SharedLinkEntity[];
-  albums?: AlbumEntity[];
   faces!: AssetFace[];
   stackId?: string | null;
   stack?: Stack | null;
@@ -156,34 +154,6 @@ export function withLibrary(eb: ExpressionBuilder<DB, 'assets'>) {
   return jsonObjectFrom(eb.selectFrom('libraries').selectAll().whereRef('libraries.id', '=', 'assets.libraryId')).as(
     'library',
   );
-}
-
-export function withAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, { albumId }: { albumId?: string }) {
-  return qb
-    .select((eb) =>
-      jsonArrayFrom(
-        eb
-          .selectFrom('albums')
-          .selectAll('albums')
-          .innerJoin('albums_assets_assets', (join) =>
-            join
-              .onRef('albums.id', '=', 'albums_assets_assets.albumsId')
-              .onRef('assets.id', '=', 'albums_assets_assets.assetsId'),
-          )
-          .whereRef('albums.id', '=', 'albums_assets_assets.albumsId')
-          .$if(!!albumId, (qb) => qb.where('albums.id', '=', asUuid(albumId!))),
-      ).as('albums'),
-    )
-    .$if(!!albumId, (qb) =>
-      qb.where((eb) =>
-        eb.exists((eb) =>
-          eb
-            .selectFrom('albums_assets_assets')
-            .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
-            .where('albums_assets_assets.albumsId', '=', asUuid(albumId!)),
-        ),
-      ),
-    );
 }
 
 export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {

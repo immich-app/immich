@@ -9,7 +9,6 @@ import {
   hasPeople,
   searchAssetBuilder,
   truncatedDate,
-  withAlbums,
   withExif,
   withFaces,
   withFacesAndPeople,
@@ -381,16 +380,6 @@ export class AssetRepository {
     await this.db.deleteFrom('assets').where('ownerId', '=', ownerId).execute();
   }
 
-  async getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity> {
-    const items = await withAlbums(this.db.selectFrom('assets'), { albumId })
-      .selectAll('assets')
-      .where('deletedAt', 'is', null)
-      .orderBy('fileCreatedAt', 'desc')
-      .execute();
-
-    return paginationHelper(items as any as AssetEntity[], pagination.take);
-  }
-
   async getByDeviceIds(ownerId: string, deviceId: string, deviceAssetIds: string[]): Promise<string[]> {
     const assets = await this.db
       .selectFrom('assets')
@@ -760,7 +749,11 @@ export class AssetRepository {
       .selectFrom('assets')
       .selectAll('assets')
       .$call(withExif)
-      .$if(!!options.albumId, (qb) => withAlbums(qb, { albumId: options.albumId }))
+      .$if(!!options.albumId, (qb) =>
+        qb
+          .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
+          .where('albums_assets_assets.albumsId', '=', options.albumId!),
+      )
       .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
       .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
       .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
