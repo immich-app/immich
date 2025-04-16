@@ -1,4 +1,4 @@
-// ignore_for_file: avoid-unnecessary-futures
+// ignore_for_file: avoid-unnecessary-futures, avoid-async-call-in-sync-function
 
 import 'dart:async';
 
@@ -355,6 +355,48 @@ void main() {
 
       expect(handlerFinished, isTrue);
       verify(() => mockSyncApiRepo.ack(any())).called(1);
+    });
+
+    test("processes events in the defined _kSyncTypeOrder", () async {
+      final future = sut.syncUsers();
+      await pumpEventQueue();
+      if (!streamController.isClosed) {
+        final events = [
+          SyncEvent(
+            type: SyncEntityType.partnerV1,
+            data: SyncStreamStub.partnerV1,
+            ack: "1",
+          ), // Should be processed last
+          SyncEvent(
+            type: SyncEntityType.userV1,
+            data: SyncStreamStub.userV1Admin,
+            ack: "2",
+          ), // Should be processed second
+          SyncEvent(
+            type: SyncEntityType.partnerDeleteV1,
+            data: SyncStreamStub.partnerDeleteV1,
+            ack: "3",
+          ), // Should be processed third
+          SyncEvent(
+            type: SyncEntityType.userDeleteV1,
+            data: SyncStreamStub.userDeleteV1,
+            ack: "4",
+          ), // Should be processed first
+        ];
+
+        streamController.add(events);
+        await streamController.close();
+      }
+      await future;
+
+      verifyInOrder([
+        () => mockSyncStreamRepo.deleteUsersV1(any()),
+        () => mockSyncStreamRepo.updateUsersV1(any()),
+        () => mockSyncStreamRepo.deletePartnerV1(any()),
+        () => mockSyncStreamRepo.updatePartnerV1(any()),
+        // Verify ack happens after all processing
+        () => mockSyncApiRepo.ack(any()),
+      ]);
     });
   });
 
