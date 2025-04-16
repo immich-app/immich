@@ -183,7 +183,7 @@ from
 where
   "assets"."id" = $1
 
--- AssetJobRepository.getAlbumThumbnailFile
+-- AssetJobRepository.getAlbumThumbnailFiles
 select
   "asset_files"."id",
   "asset_files"."path",
@@ -192,6 +192,32 @@ from
   "asset_files"
 where
   "asset_files"."assetId" = $1
+  and "asset_files"."type" = $2
+
+-- AssetJobRepository.getForClipEncoding
+select
+  "assets"."id",
+  "assets"."isVisible",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_files"."id",
+          "asset_files"."path",
+          "asset_files"."type"
+        from
+          "asset_files"
+        where
+          "asset_files"."assetId" = "assets"."id"
+          and "asset_files"."type" = $1
+      ) as agg
+  ) as "files"
+from
+  "assets"
+where
+  "assets"."id" = $2
 
 -- AssetJobRepository.getForStorageTemplateJob
 select

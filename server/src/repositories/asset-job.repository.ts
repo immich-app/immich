@@ -117,9 +117,24 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.THUMBNAIL] })
+  getAlbumThumbnailFiles(id: string, fileType?: AssetFileType) {
+    return this.db
+      .selectFrom('asset_files')
+      .select(columns.assetFiles)
+      .where('asset_files.assetId', '=', id)
+      .$if(!!fileType, (qb) => qb.where('asset_files.type', '=', fileType!))
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAlbumThumbnailFile(id: string) {
-    return this.db.selectFrom('asset_files').select(columns.assetFiles).where('asset_files.assetId', '=', id).execute();
+  getForClipEncoding(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .select(['assets.id', 'assets.isVisible'])
+      .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
+      .where('assets.id', '=', id)
+      .executeTakeFirst();
   }
 
   private storageTemplateAssetQuery() {
