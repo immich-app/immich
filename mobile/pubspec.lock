@@ -1933,6 +1933,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.3"
+  worker_manager:
+    dependency: "direct main"
+    description:
+      name: worker_manager
+      sha256: "086ed63e9b36266e851404ca90fd44e37c0f4c9bbf819e5f8d7c87f9741c0591"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.2.3"
   xdg_directories:
     dependency: transitive
     description:

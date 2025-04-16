@@ -62,6 +62,7 @@ dependencies:
   url_launcher: ^6.3.1
   uuid: ^4.5.1
   wakelock_plus: ^1.2.10
+  worker_manager: ^7.2.3
 
   native_video_player:
     git:

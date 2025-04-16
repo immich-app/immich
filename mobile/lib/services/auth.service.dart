@@ -121,8 +121,8 @@ class AuthService {
   ///
   /// All deletions are executed in parallel using [Future.wait].
   Future<void> clearLocalData() {
+    _backgroundSyncManager.cancel();
     return Future.wait([
-      _backgroundSyncManager.cancel(),
       _authRepository.clearLocalData(),
       Store.delete(StoreKey.currentUser),
       Store.delete(StoreKey.accessToken),

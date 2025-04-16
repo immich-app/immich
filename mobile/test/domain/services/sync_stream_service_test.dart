@@ -7,12 +7,20 @@ import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
-import 'package:immich_mobile/domain/utils/cancel.exception.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
+import 'package:worker_manager/worker_manager.dart';
 
 import '../../fixtures/sync_stream.stub.dart';
 import '../../infrastructure/repository.mock.dart';
+
+class _CancellationWrapper {
+  const _CancellationWrapper();
+
+  bool isCancelled() => false;
+}
+
+class _MockCancellationWrapper extends Mock implements _CancellationWrapper {}
 
 void main() {
   late SyncStreamService sut;
@@ -96,7 +104,7 @@ void main() {
       when(() => mockSyncApiRepo.getSyncEvents(any()))
           .thenAnswer((_) => Stream.error(Exception("Stream Error")));
       // Should complete gracefully without throwing
-      await expectLater(sut.syncUsers(), completes);
+      await expectLater(sut.syncUsers(), throwsException);
       verifyNever(() => mockSyncApiRepo.ack(any())); // No ack on stream error
     });
 
@@ -252,13 +260,15 @@ void main() {
     });
 
     test(
-      "stops processing and ack when cancel completer is completed",
+      "stops processing and ack when cancel checker is completed",
       () async {
-        final cancelCompleter = Completer<bool>();
+        final cancellationChecker = _MockCancellationWrapper();
+        when(() => cancellationChecker.isCancelled()).thenAnswer((_) => false);
+
         sut = SyncStreamService(
           syncApiRepository: mockSyncApiRepo,
           syncStreamRepository: mockSyncStreamRepo,
-          cancelCompleter: cancelCompleter,
+          cancelChecker: cancellationChecker.isCancelled,
         );
 
         final processingCompleter = Completer<void>();
@@ -282,7 +292,7 @@ void main() {
 
         expect(handlerStarted, isTrue, reason: "Handler should have started");
 
-        cancelCompleter.complete(true); // Signal cancellation
+        when(() => cancellationChecker.isCancelled()).thenAnswer((_) => true);
 
         // Allow cancellation logic to propagate
         await Future.delayed(const Duration(milliseconds: 10));
@@ -291,7 +301,7 @@ void main() {
         // to ensure the cancellation logic itself isn't blocked by the handler.
         processingCompleter.complete();
 
-        await expectLater(syncFuture, throwsA(isA<CancelException>()));
+        await expectLater(syncFuture, throwsA(isA<CanceledError>()));
 
         // Verify that ack was NOT called because processing was cancelled
         verifyNever(() => mockSyncApiRepo.ack(any()));

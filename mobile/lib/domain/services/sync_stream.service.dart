@@ -5,24 +5,24 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
-import 'package:immich_mobile/domain/utils/cancel.exception.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
+import 'package:worker_manager/worker_manager.dart';
 
 class SyncStreamService {
   final Logger _logger = Logger('SyncStreamService');
 
   final ISyncApiRepository _syncApiRepository;
   final ISyncStreamRepository _syncStreamRepository;
-  final Completer<bool>? _cancelCompleter;
+  final bool Function()? _cancelChecker;
 
   SyncStreamService({
     required ISyncApiRepository syncApiRepository,
     required ISyncStreamRepository syncStreamRepository,
-    Completer<bool>? cancelCompleter,
+    bool Function()? cancelChecker,
   })  : _syncApiRepository = syncApiRepository,
         _syncStreamRepository = syncStreamRepository,
-        _cancelCompleter = cancelCompleter;
+        _cancelChecker = cancelChecker;
 
   Future<bool> _handleSyncData(
     SyncEntityType type,
@@ -61,7 +61,7 @@ class SyncStreamService {
     return false;
   }
 
-  Future<void> _syncEvent(List<SyncRequestType> types) async {
+  Future<void> _syncEvent(List<SyncRequestType> types) {
     _logger.info("Syncing Events: $types");
     final streamCompleter = Completer();
     bool shouldComplete = false;
@@ -70,101 +70,111 @@ class SyncStreamService {
     // before the events are processed and also that events are processed sequentially
     Completer? mutex;
     StreamSubscription? subscription;
-    subscription = _syncApiRepository.getSyncEvents(types).listen(
-      (events) async {
-        if (events.isEmpty) {
-          _logger.warning("Received empty sync events");
-          return;
-        }
-
-        // If previous events are still being processed, wait for them to finish
-        if (mutex != null) {
-          await mutex!.future;
-        }
-
-        if (_cancelCompleter?.isCompleted ?? false) {
-          _logger.info("Sync cancelled, stopping stream");
-          subscription?.cancel();
-          if (!streamCompleter.isCompleted) {
-            streamCompleter.completeError(
-              const CancelException(),
-              StackTrace.current,
-            );
+    try {
+      subscription = _syncApiRepository.getSyncEvents(types).listen(
+        (events) async {
+          if (events.isEmpty) {
+            _logger.warning("Received empty sync events");
+            return;
           }
-          return;
-        }
 
-        // Take control of the mutex and process the events
-        mutex = Completer();
+          // If previous events are still being processed, wait for them to finish
+          if (mutex != null) {
+            await mutex!.future;
+          }
 
-        try {
-          final eventsMap = events.groupListsBy((event) => event.type);
-          final Map<SyncEntityType, String> acks = {};
+          if (_cancelChecker?.call() ?? false) {
+            _logger.info("Sync cancelled, stopping stream");
+            subscription?.cancel();
+            if (!streamCompleter.isCompleted) {
+              streamCompleter.completeError(
+                CanceledError(),
+                StackTrace.current,
+              );
+            }
+            return;
+          }
 
-          for (final entry in eventsMap.entries) {
-            if (_cancelCompleter?.isCompleted ?? false) {
-              _logger.info("Sync cancelled, stopping stream");
-              mutex?.complete();
-              mutex = null;
-              if (!streamCompleter.isCompleted) {
-                streamCompleter.completeError(
-                  const CancelException(),
-                  StackTrace.current,
-                );
+          // Take control of the mutex and process the events
+          mutex = Completer();
+
+          try {
+            final eventsMap = events.groupListsBy((event) => event.type);
+            final Map<SyncEntityType, String> acks = {};
+
+            for (final entry in eventsMap.entries) {
+              if (_cancelChecker?.call() ?? false) {
+                _logger.info("Sync cancelled, stopping stream");
+                mutex?.complete();
+                mutex = null;
+                if (!streamCompleter.isCompleted) {
+                  streamCompleter.completeError(
+                    CanceledError(),
+                    StackTrace.current,
+                  );
+                }
+
+                return;
               }
 
-              return;
+              final type = entry.key;
+              final data = entry.value;
+
+              if (data.isEmpty) {
+                _logger.warning("Received empty sync events for $type");
+                continue;
+              }
+
+              if (await _handleSyncData(type, data.map((e) => e.data))) {
+                // ignore: avoid-unsafe-collection-methods
+                acks[type] = data.last.ack;
+              } else {
+                _logger.warning("Failed to handle sync events for $type");
+              }
             }
 
-            final type = entry.key;
-            final data = entry.value;
-
-            if (data.isEmpty) {
-              _logger.warning("Received empty sync events for $type");
-              continue;
+            if (acks.isNotEmpty) {
+              await _syncApiRepository.ack(acks.values.toList());
             }
-
-            if (await _handleSyncData(type, data.map((e) => e.data))) {
-              // ignore: avoid-unsafe-collection-methods
-              acks[type] = data.last.ack;
-            } else {
-              _logger.warning("Failed to handle sync events for $type");
-            }
+            _logger.info("$types events processed");
+          } catch (error, stack) {
+            _logger.warning("Error handling sync events", error, stack);
+          } finally {
+            mutex?.complete();
+            mutex = null;
           }
 
-          if (acks.isNotEmpty) {
-            await _syncApiRepository.ack(acks.values.toList());
+          if (shouldComplete) {
+            _logger.info("Sync done, completing stream");
+            if (!streamCompleter.isCompleted) streamCompleter.complete();
           }
-          _logger.info("$types events processed");
-        } catch (error, stack) {
-          _logger.warning("Error handling sync events", error, stack);
-        } finally {
-          mutex?.complete();
-          mutex = null;
-        }
-
-        if (shouldComplete) {
-          _logger.info("Sync done, completing stream");
-          if (!streamCompleter.isCompleted) streamCompleter.complete();
-        }
-      },
-      onError: (error, stack) {
-        _logger.warning("Error in sync stream for $types", error, stack);
-        // Do not proceed if the stream errors
-        if (!streamCompleter.isCompleted) streamCompleter.complete();
-      },
-      onDone: () {
-        _logger.info("$types stream done");
-        if (mutex == null && !streamCompleter.isCompleted) {
-          streamCompleter.complete();
-        } else {
-          // Marks the stream as done but does not complete the completer
-          // until the events are processed
-          shouldComplete = true;
-        }
-      },
-    );
-    return await streamCompleter.future.whenComplete(() {
+        },
+        onError: (error, stack) {
+          _logger.warning("Error in sync stream for $types", error, stack);
+          // Do not proceed if the stream errors
+          if (!streamCompleter.isCompleted) {
+            // ignore: avoid-missing-completer-stack-trace
+            streamCompleter.completeError(error, stack);
+          }
+        },
+        onDone: () {
+          _logger.info("$types stream done");
+          if (mutex == null && !streamCompleter.isCompleted) {
+            streamCompleter.complete();
+          } else {
+            // Marks the stream as done but does not complete the completer
+            // until the events are processed
+            shouldComplete = true;
+          }
+        },
+      );
+    } catch (error, stack) {
+      _logger.severe("Error starting sync stream", error, stack);
+      if (!streamCompleter.isCompleted) {
+        streamCompleter.completeError(error, stack);
+      }
+    }
+    return streamCompleter.future.whenComplete(() {
       _logger.info("Sync stream completed");
       return subscription?.cancel();
     });

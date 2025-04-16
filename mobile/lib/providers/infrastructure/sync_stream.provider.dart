@@ -10,7 +10,7 @@ final syncStreamServiceProvider = Provider(
   (ref) => SyncStreamService(
     syncApiRepository: ref.watch(syncApiRepositoryProvider),
     syncStreamRepository: ref.watch(syncStreamRepositoryProvider),
-    cancelCompleter: ref.watch(cancellationProvider),
+    cancelChecker: ref.watch(cancellationProvider),
   ),
 );
 
