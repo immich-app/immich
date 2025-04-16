@@ -104,7 +104,8 @@ select
               "asset_faces"."personId" = "person"."id"
           ) as "person" on true
         where
-          "asset_faces"."deletedAt" is null
+          "asset_faces"."assetId" = "assets"."id"
+          and "asset_faces"."deletedAt" is null
       ) as agg
   ) as "faces",
   (

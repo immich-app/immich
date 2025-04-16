@@ -102,6 +102,7 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDele
       )
       .selectAll('asset_faces')
       .select((eb) => eb.table('person').as('person'))
+      .whereRef('asset_faces.assetId', '=', 'assets.id')
       .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
   ).as('faces');
 }
