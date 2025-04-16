@@ -11,12 +11,17 @@ class BackgroundSyncManager {
 
   BackgroundSyncManager();
 
-  void cancel() {
+  Future<void> cancel() {
+    final futures = <Future>[];
+    if (_userSyncTask != null) {
+      futures.add(_userSyncTask!.future);
+    }
     _userSyncTask?.cancel();
     _userSyncTask = null;
+    return Future.wait(futures);
   }
 
-  Future<void> syncUsers() async {
+  Future<void> syncUsers() {
     if (_userSyncTask != null) {
       return _userSyncTask!.future;
     }
@@ -27,5 +32,6 @@ class BackgroundSyncManager {
     _userSyncTask!.whenComplete(() {
       _userSyncTask = null;
     });
+    return _userSyncTask!.future;
   }
 }

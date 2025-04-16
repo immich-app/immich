@@ -120,9 +120,10 @@ class AuthService {
   /// - Asset ETag
   ///
   /// All deletions are executed in parallel using [Future.wait].
-  Future<void> clearLocalData() {
-    _backgroundSyncManager.cancel();
-    return Future.wait([
+  Future<void> clearLocalData() async {
+    // Cancel any ongoing background sync operations before clearing data
+    await _backgroundSyncManager.cancel();
+    await Future.wait([
       _authRepository.clearLocalData(),
       Store.delete(StoreKey.currentUser),
       Store.delete(StoreKey.accessToken),

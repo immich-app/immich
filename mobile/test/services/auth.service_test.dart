@@ -120,7 +120,7 @@ void main() {
   group('logout', () {
     test('Should logout user', () async {
       when(() => authApiRepository.logout()).thenAnswer((_) async => {});
-      when(() => backgroundSyncManager.cancel()).thenAnswer((_) => {});
+      when(() => backgroundSyncManager.cancel()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData())
           .thenAnswer((_) => Future.value(null));
 
@@ -134,7 +134,7 @@ void main() {
     test('Should clear local data even on server error', () async {
       when(() => authApiRepository.logout())
           .thenThrow(Exception('Server error'));
-      when(() => backgroundSyncManager.cancel()).thenAnswer((_) => {});
+      when(() => backgroundSyncManager.cancel()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData())
           .thenAnswer((_) => Future.value(null));
 

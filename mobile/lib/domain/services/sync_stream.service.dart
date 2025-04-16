@@ -9,6 +9,19 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:worker_manager/worker_manager.dart';
 
+const _kSyncTypeOrder = [
+  SyncEntityType.userDeleteV1,
+  SyncEntityType.userV1,
+  SyncEntityType.partnerDeleteV1,
+  SyncEntityType.partnerV1,
+  SyncEntityType.assetDeleteV1,
+  SyncEntityType.assetV1,
+  SyncEntityType.assetExifV1,
+  SyncEntityType.partnerAssetDeleteV1,
+  SyncEntityType.partnerAssetV1,
+  SyncEntityType.partnerAssetExifV1,
+];
+
 class SyncStreamService {
   final Logger _logger = Logger('SyncStreamService');
 
@@ -102,7 +115,12 @@ class SyncStreamService {
             final eventsMap = events.groupListsBy((event) => event.type);
             final Map<SyncEntityType, String> acks = {};
 
-            for (final entry in eventsMap.entries) {
+            for (final type in _kSyncTypeOrder) {
+              final data = eventsMap[type];
+              if (data == null) {
+                continue;
+              }
+
               if (_cancelChecker?.call() ?? false) {
                 _logger.info("Sync cancelled, stopping stream");
                 mutex?.complete();
@@ -116,9 +134,6 @@ class SyncStreamService {
 
                 return;
               }
-
-              final type = entry.key;
-              final data = entry.value;
 
               if (data.isEmpty) {
                 _logger.warning("Received empty sync events for $type");

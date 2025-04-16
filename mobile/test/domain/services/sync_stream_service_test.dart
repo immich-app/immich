@@ -275,7 +275,7 @@ void main() {
         bool handlerStarted = false;
 
         // Make handler wait so we can cancel it mid-flight
-        when(() => mockSyncStreamRepo.updateUsersV1(any()))
+        when(() => mockSyncStreamRepo.deleteUsersV1(any()))
             .thenAnswer((_) async {
           handlerStarted = true;
           await processingCompleter
