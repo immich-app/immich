@@ -582,12 +582,7 @@ export class LibraryService extends BaseService {
       return AssetSyncResult.CHECK_OFFLINE;
     }
 
-    if (
-      !asset.fileCreatedAt ||
-      !asset.localDateTime ||
-      !asset.fileModifiedAt ||
-      stat.mtime.valueOf() !== asset.fileModifiedAt.valueOf()
-    ) {
+    if (stat.mtime.valueOf() !== asset.fileModifiedAt.valueOf()) {
       this.logger.verbose(`Asset ${asset.originalPath} needs metadata extraction in library ${asset.libraryId}`);
 
       return AssetSyncResult.UPDATE;
