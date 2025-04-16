@@ -247,7 +247,7 @@ export class MapRepository {
     let futures = [];
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
-      if (lineSplit[7] === 'PPLX' && lineSplit[8] !== 'AU') {
+      if ((lineSplit[7] === 'PPLX' && lineSplit[8] !== 'AU') || lineSplit[7] === 'PPLH') {
         continue;
       }
 

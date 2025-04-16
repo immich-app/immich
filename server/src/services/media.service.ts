@@ -51,30 +51,16 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.QUEUE_GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.QUEUE_GENERATE_THUMBNAILS>): Promise<JobStatus> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination, {
-            isVisible: true,
-            withDeleted: true,
-            withArchived: true,
-          })
-        : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
-    });
+    const thumbJobs: JobItem[] = [];
+    for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
+      const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
 
-    for await (const assets of assetPagination) {
-      const jobs: JobItem[] = [];
-
-      for (const asset of assets) {
-        const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
-
-        if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
-          jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
-          continue;
-        }
+      if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
+        thumbJobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
+        continue;
       }
-
-      await this.jobRepository.queueAll(jobs);
     }
+    await this.jobRepository.queueAll(thumbJobs);
 
     const jobs: JobItem[] = [];
 
@@ -135,7 +121,7 @@ export class MediaService extends BaseService {
   @OnJob({ name: JobName.MIGRATE_ASSET, queue: QueueName.MIGRATION })
   async handleAssetMigration({ id }: JobOf<JobName.MIGRATE_ASSET>): Promise<JobStatus> {
     const { image } = await this.getConfig({ withCache: true });
-    const [asset] = await this.assetRepository.getByIds([id], { files: true });
+    const asset = await this.assetJobRepository.getForMigrationJob(id);
     if (!asset) {
       return JobStatus.FAILED;
     }

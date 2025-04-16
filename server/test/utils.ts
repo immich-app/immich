@@ -1,11 +1,9 @@
 import { ClassConstructor } from 'class-transformer';
 import { Kysely, sql } from 'kysely';
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
 import { parse } from 'pg-connection-string';
 import { PNG } from 'pngjs';
-import postgres, { Notice } from 'postgres';
 import { DB } from 'src/db';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -51,6 +49,7 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
+import { getKyselyConfig } from 'src/utils/database';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
@@ -203,7 +202,7 @@ export const newTestService = <T extends BaseService>(
     partner: automock(PartnerRepository, { strict: false }),
     person: newPersonRepositoryMock(),
     process: automock(ProcessRepository),
-    search: automock(SearchRepository, { args: [loggerMock], strict: false }),
+    search: automock(SearchRepository, { strict: false }),
     // eslint-disable-next-line no-sparse-arrays
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),
     session: automock(SessionRepository),
@@ -305,44 +304,13 @@ export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
     database: parsed.database ?? undefined,
   };
 
-  const driverOptions = {
-    ...parsedOptions,
-    onnotice: (notice: Notice) => {
-      if (notice['severity'] !== 'NOTICE') {
-        console.warn('Postgres notice:', notice);
-      }
-    },
-    max: 10,
-    types: {
-      date: {
-        to: 1184,
-        from: [1082, 1114, 1184],
-        serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
-        parse: (x: string) => new Date(x),
-      },
-      bigint: {
-        to: 20,
-        from: [20],
-        parse: (value: string) => Number.parseInt(value),
-        serialize: (value: number) => value.toString(),
-      },
-    },
-    connection: {
-      TimeZone: 'UTC',
-    },
-  };
-
-  const kysely = new Kysely<DB>({
-    dialect: new PostgresJSDialect({ postgres: postgres({ ...driverOptions, max: 1, database: 'postgres' }) }),
-  });
+  const kysely = new Kysely<DB>(getKyselyConfig({ ...parsedOptions, max: 1, database: 'postgres' }));
   const randomSuffix = Math.random().toString(36).slice(2, 7);
   const dbName = `immich_${suffix ?? randomSuffix}`;
 
   await sql.raw(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`).execute(kysely);
 
-  return new Kysely<DB>({
-    dialect: new PostgresJSDialect({ postgres: postgres({ ...driverOptions, database: dbName }) }),
-  });
+  return new Kysely<DB>(getKyselyConfig({ ...parsedOptions, database: dbName }));
 };
 
 export const newRandomImage = () => {

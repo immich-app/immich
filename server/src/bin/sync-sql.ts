@@ -4,13 +4,11 @@ import { Reflector } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { ClassConstructor } from 'class-transformer';
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import postgres from 'postgres';
 import { format } from 'sql-formatter';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
 import { repositories } from 'src/repositories';
@@ -18,6 +16,11 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService } from 'src/services/auth.service';
+import { getKyselyConfig } from 'src/utils/database';
+
+const handleError = (label: string, error: Error | any) => {
+  console.error(`${label} error: ${error}`);
+};
 
 export class SqlLogger {
   queries: string[] = [];
@@ -75,7 +78,7 @@ class SqlGenerator {
     const moduleFixture = await Test.createTestingModule({
       imports: [
         KyselyModule.forRoot({
-          dialect: new PostgresJSDialect({ postgres: postgres(database.config.kysely) }),
+          ...getKyselyConfig(database.config.kysely),
           log: (event) => {
             if (event.level === 'query') {
               this.sqlLogger.logQuery(event.query.sql);
@@ -135,7 +138,7 @@ class SqlGenerator {
         queries.push({ params: [] });
       }
 
-      for (const { name, params } of queries) {
+      for (const { name, params, stream } of queries) {
         let queryLabel = `${label}.${key}`;
         if (name) {
           queryLabel += ` (${name})`;
@@ -143,8 +146,19 @@ class SqlGenerator {
 
         this.sqlLogger.clear();
 
-        // errors still generate sql, which is all we care about
-        await target.apply(instance, params).catch((error: Error) => console.error(`${queryLabel} error: ${error}`));
+        if (stream) {
+          try {
+            const result: AsyncIterableIterator<unknown> = target.apply(instance, params);
+            for await (const _ of result) {
+              break;
+            }
+          } catch (error) {
+            handleError(queryLabel, error);
+          }
+        } else {
+          // errors still generate sql, which is all we care about
+          await target.apply(instance, params).catch((error: Error) => handleError(queryLabel, error));
+        }
 
         if (this.sqlLogger.queries.length === 0) {
           console.warn(`No queries recorded for ${queryLabel}`);

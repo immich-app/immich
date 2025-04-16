@@ -53,12 +53,6 @@ export class AssetEntity {
   duplicateId!: string | null;
 }
 
-export type AssetEntityPlaceholder = AssetEntity & {
-  fileCreatedAt: Date | null;
-  fileModifiedAt: Date | null;
-  localDateTime: Date | null;
-};
-
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('exif', 'assets.id', 'exif.assetId')

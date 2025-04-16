@@ -83,9 +83,20 @@ To see local changes to `@immich/ui` in Immich, do the following:
 
 ### Mobile app
 
-The mobile app `(/mobile)` will required Flutter toolchain 3.13.x and FVM to be installed on your system.
+#### Setup
 
-Please refer to the [Flutter's official documentation](https://flutter.dev/docs/get-started/install) for more information on setting up the toolchain on your machine.
+1. Setup Flutter toolchain using FVM.
+2. Run `flutter pub get` to install the dependencies.
+3. Run `make translation` to generate the translation file.
+4. Run `fvm flutter run` to start the app.
+
+#### Translation
+
+To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then, from the `mobile/` directory, run
+
+```bash
+make translation
+```
 
 The mobile app asks you what backend to connect to. You can utilize the demo backend (https://demo.immich.app/) if you don't need to change server code or upload photos. Alternatively, you can run the server yourself per the instructions above.
 
