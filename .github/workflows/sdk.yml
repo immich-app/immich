@@ -4,13 +4,14 @@ on:
   release:
     types: [published]
 
-permissions:
-  packages: write
+permissions: {}
 
 jobs:
   publish:
     name: Publish `@immich/sdk`
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./open-api/typescript-sdk

@@ -4,11 +4,14 @@ on:
   pull_request:
     types: [labeled]
 
+permissions: {}
+
 jobs:
   fix-formatting:
     runs-on: ubuntu-latest
     if: ${{ github.event.label.name == 'fix:formatting' }}
     permissions:
+      contents: write
       pull-requests: write
     steps:
       - name: Generate a token

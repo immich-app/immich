@@ -9,9 +9,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   pre-job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       should_run_web: ${{ steps.found_paths.outputs.web == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
@@ -61,6 +65,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./server
@@ -100,6 +106,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_cli == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./cli
@@ -143,6 +151,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_cli == 'true' }}
     runs-on: windows-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./cli
@@ -179,6 +189,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_web == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./web
@@ -226,6 +238,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./e2e
@@ -267,6 +281,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./server
@@ -294,6 +310,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_server_cli == 'true' }}
     runs-on: mich
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./e2e
@@ -337,6 +355,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_web == 'true' }}
     runs-on: mich
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./e2e
@@ -379,6 +399,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_mobile == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -398,6 +420,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./machine-learning
@@ -434,6 +458,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs['should_run_.github'] == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./.github
@@ -459,6 +485,8 @@ jobs:
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -469,12 +497,14 @@ jobs:
         with:
           ignore_paths: >-
             **/open-api/**
-            **/openapi/**
+            **/openapi**
             **/node_modules/**
 
   generated-api-up-to-date:
     name: OpenAPI Clients
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -514,6 +544,8 @@ jobs:
   generated-typeorm-migrations-up-to-date:
     name: TypeORM Checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       postgres:
         image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52

@@ -9,6 +9,9 @@ jobs:
   checks:
     name: Docs Deploy Checks
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pull-requests: read
     outputs:
       parameters: ${{ steps.parameters.outputs.result }}
       artifact: ${{ steps.get-artifact.outputs.result }}
@@ -95,6 +98,10 @@ jobs:
     name: Docs Deploy
     runs-on: ubuntu-latest
     needs: checks
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
     if: ${{ fromJson(needs.checks.outputs.artifact).found && fromJson(needs.checks.outputs.parameters).shouldDeploy }}
     steps:
       - name: Checkout code

@@ -21,13 +21,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-root
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   bump_version:
     runs-on: ubuntu-latest
-
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
-
+    permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
       - name: Generate a token
         id: generate-token
@@ -67,7 +68,9 @@ jobs:
   prepare_release:
     runs-on: ubuntu-latest
     needs: build_mobile
-
+    permissions:
+      actions: read # To download the app artifact
+      # No content permissions are needed because it uses the app-token
     steps:
       - name: Generate a token
         id: generate-token

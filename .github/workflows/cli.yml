@@ -16,13 +16,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  packages: write
+permissions: {}
 
 jobs:
   publish:
     name: CLI Publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./cli
@@ -51,6 +52,9 @@ jobs:
   docker:
     name: Docker
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     needs: publish
 
     steps:
