@@ -6,7 +6,6 @@ import { ArgOf } from 'src/repositories/event.repository';
 import { EmailTemplate } from 'src/repositories/notification.repository';
 import { BaseService } from 'src/services/base.service';
 import { EmailImageAttachment, IEntityJob, INotifyAlbumUpdateJob, JobItem, JobOf } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
 import { getExternalDomain } from 'src/utils/misc';
 import { isEqualObject } from 'src/utils/object';
@@ -398,19 +397,18 @@ export class NotificationService extends BaseService {
       return;
     }
 
-    const albumThumbnailFiles = await this.assetJobRepository.getAlbumThumbnailFile(album.albumThumbnailAssetId);
-    if (albumThumbnailFiles.length === 0) {
-      return;
-    }
+    const albumThumbnailFiles = await this.assetJobRepository.getAlbumThumbnailFiles(
+      album.albumThumbnailAssetId,
+      AssetFileType.THUMBNAIL,
+    );
 
-    const thumbnailFile = getAssetFile(albumThumbnailFiles, AssetFileType.THUMBNAIL);
-    if (!thumbnailFile) {
+    if (albumThumbnailFiles.length !== 1) {
       return;
     }
 
     return {
-      filename: `album-thumbnail${getFilenameExtension(thumbnailFile.path)}`,
-      path: thumbnailFile.path,
+      filename: `album-thumbnail${getFilenameExtension(albumThumbnailFiles[0].path)}`,
+      path: albumThumbnailFiles[0].path,
       cid: 'album-thumbnail',
     };
   }
