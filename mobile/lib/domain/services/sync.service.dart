@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
@@ -30,7 +31,8 @@ class SyncService {
       // The deviceAlbums will not have the updatedAt field
       // and the assetCount will be 0. They are refreshed later
       // after the comparison
-      final deviceAlbums = await _albumMediaRepository.getAll();
+      final deviceAlbums =
+          (await _albumMediaRepository.getAll()).sortedBy((a) => a.id);
       final dbAlbums =
           await _localAlbumRepository.getAll(sortBy: SortLocalAlbumsBy.id);
 

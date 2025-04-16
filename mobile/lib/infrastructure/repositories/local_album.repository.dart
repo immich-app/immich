@@ -20,11 +20,28 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
 
   @override
   Future<List<LocalAlbum>> getAll({SortLocalAlbumsBy? sortBy}) {
-    final query = _db.localAlbumEntity.select();
+    final assetCount = _db.localAlbumAssetEntity.assetId.count();
+
+    final query = _db.localAlbumEntity.select().join([
+      innerJoin(
+        _db.localAlbumAssetEntity,
+        _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+        useColumns: false,
+      ),
+    ]);
+    query
+      ..addColumns([assetCount])
+      ..groupBy([_db.localAlbumEntity.id]);
     if (sortBy == SortLocalAlbumsBy.id) {
-      query.orderBy([(a) => OrderingTerm.asc(a.id)]);
+      query.orderBy([OrderingTerm.asc(_db.localAlbumEntity.id)]);
     }
-    return query.map((a) => a.toDto()).get();
+    return query
+        .map(
+          (row) => row
+              .readTable(_db.localAlbumEntity)
+              .toDto(assetCount: row.read(assetCount) ?? 0),
+        )
+        .get();
   }
 
   @override

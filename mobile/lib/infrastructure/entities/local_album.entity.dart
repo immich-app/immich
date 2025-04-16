@@ -22,11 +22,12 @@ class LocalAlbumEntity extends Table with DriftDefaultsMixin {
 }
 
 extension LocalAlbumEntityX on LocalAlbumEntityData {
-  LocalAlbum toDto() {
+  LocalAlbum toDto({int assetCount = 0}) {
     return LocalAlbum(
       id: id,
       name: name,
       updatedAt: updatedAt,
+      assetCount: assetCount,
       thumbnailId: thumbnailId,
       backupSelection: backupSelection,
       isAll: isAll,
