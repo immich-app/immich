@@ -24,7 +24,7 @@ export async function bootstrap() {
   app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
-  await (host ?  app.listen(0, host) : app.listen(0));
+  await (host ? app.listen(0, host) : app.listen(0));
 
   logger.log(`Immich Microservices is running [v${serverVersion}] [${environment}] `);
 }
