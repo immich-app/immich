@@ -58,6 +58,9 @@ It only needs to be set if the Immich deployment method is changing.
 | :----------------------- | :--------------------------------------------------------------------------------------------------- | :-----: | :--------- |
 | `IMMICH_WORKERS_INCLUDE` | Only run these workers.                                                                              |         | server     |
 | `IMMICH_WORKERS_EXCLUDE` | Do not run these workers. Matches against default workers, or `IMMICH_WORKERS_INCLUDE` if specified. |         | server     |
+| `IMMICH_MICROSERVICES_QUEUES_INCLUDE`| Only process these job queues within the microservices worker.                                        |   All   | server     |
+| `IMMICH_MICROSERVICES_QUEUES_EXCLUDE`| Do not process these job queues within the microservices worker.                                      |         | server     |
+
 
 :::info
 Information on the current workers can be found [here](/docs/administration/jobs-workers).

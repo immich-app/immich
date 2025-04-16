@@ -116,7 +116,10 @@ export interface EnvData {
     ignoreMountCheckErrors: boolean;
   };
 
-  workers: ImmichWorker[];
+  workers: {
+    list: ImmichWorker[],
+    queues: QueueName[]
+  };
 
   noColor: boolean;
   nodeVersion?: string;
@@ -136,6 +139,7 @@ const stagingKeys = {
     'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUE3Sy8yd3ZLUS9NdU8ydi9MUm5saAoyUy9zTHhDOGJiTEw1UUlKOGowQ3BVZW40YURlY2dYMUpKUmtGNlpUVUtpNTdTbEhtS3RSM2JOTzJmdTBUUVg5Ck5WMEJzVzllZVB0MmlTMWl4VVFmTzRObjdvTjZzbEtac01qd29RNGtGRGFmM3VHTlZJc0dMb3UxVWRLUVhpeDEKUlRHcXVTb3NZVjNWRlk3Q1hGYTVWaENBL3poVXNsNGFuVXp3eEF6M01jUFVlTXBaenYvbVZiQlRKVzBPSytWZgpWQUJvMXdYMkVBanpBekVHVzQ3Vko4czhnMnQrNHNPaHFBNStMQjBKVzlORUg5QUpweGZzWE4zSzVtM00yNUJVClZXcTlRYStIdHRENnJ0bnAvcUFweXVkWUdwZk9HYTRCUlZTR1MxMURZM0xrb2FlRzYwUEU5NHpoYjduOHpMWkgKelFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tDQo=',
 };
 
+const QUEUE_TYPES = new Set(Object.values(QueueName));
 const WORKER_TYPES = new Set(Object.values(ImmichWorker));
 const TELEMETRY_TYPES = new Set(Object.values(ImmichTelemetry));
 
@@ -158,10 +162,21 @@ const getEnv = (): EnvData => {
 
   const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
   const excludedWorkers = asSet(dto.IMMICH_WORKERS_EXCLUDE, []);
+  
   const workers = [...setDifference(includedWorkers, excludedWorkers)];
   for (const worker of workers) {
     if (!WORKER_TYPES.has(worker)) {
       throw new Error(`Invalid worker(s) found: ${workers.join(',')}`);
+    }
+  }
+
+  const includedQueues = asSet(dto.IMMICH_MICROSERVICES_QUEUES_INCLUDE, Object.values(QueueName));
+  const excludedQueues = asSet(dto.IMMICH_MICROSERVICES_QUEUES_EXCLUDE, []);
+  const queues = [...setDifference(includedQueues, excludedQueues)];
+
+  for (const queue of queues) {
+    if (!QUEUE_TYPES.has(queue)) {
+      throw new Error(`Invalid queue(s) found: ${queues.join(',')}, supported are only: ${Object.values(QueueName).join(", ")}`);
     }
   }
 
@@ -375,7 +390,10 @@ const getEnv = (): EnvData => {
       metrics: telemetries,
     },
 
-    workers,
+    workers: {
+      list: workers,
+      queues
+    },
 
     noColor: !!dto.NO_COLOR,
   };

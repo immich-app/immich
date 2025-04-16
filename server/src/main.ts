@@ -68,7 +68,7 @@ function bootstrap() {
 
   process.title = 'immich';
   const { workers } = new ConfigRepository().getEnv();
-  for (const worker of workers) {
+  for (const worker of workers.list) {
     bootstrapWorker(worker);
   }
 }

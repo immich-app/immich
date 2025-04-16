@@ -248,53 +248,108 @@ describe('getEnv', () => {
   });
 
   describe('workers', () => {
-    it('should return default workers', () => {
-      const { workers } = getEnv();
-      expect(workers).toEqual(['api', 'microservices']);
-    });
+    describe('queues', () => {
+      it('should return default queues', () => {
+        const { workers: { queues } } = getEnv();
+        expect(queues).toEqual([
+          "thumbnailGeneration",
+          "metadataExtraction",
+          "videoConversion",
+          "faceDetection",
+          "facialRecognition",
+          "smartSearch",
+          "duplicateDetection",
+          "backgroundTask",
+          "storageTemplateMigration",
+          "migration",
+          "search",
+          "sidecar",
+          "library",
+          "notifications",
+          "backupDatabase",
+        ]);
+      });
 
-    it('should return included workers', () => {
-      process.env.IMMICH_WORKERS_INCLUDE = 'api';
-      const { workers } = getEnv();
-      expect(workers).toEqual(['api']);
-    });
+      it('should return included queues', () => {
+        process.env.IMMICH_MICROSERVICES_QUEUES_INCLUDE = 'videoConversion,thumbnailGeneration';
+        const { workers: { queues } } = getEnv();
+        expect(queues).toEqual([
+          "videoConversion",
+          "thumbnailGeneration",
+        ]);
+      });
 
-    it('should excluded workers from defaults', () => {
-      process.env.IMMICH_WORKERS_EXCLUDE = 'api';
-      const { workers } = getEnv();
-      expect(workers).toEqual(['microservices']);
-    });
+      it('should exclude videoConversion and thumbnailGeneration from queues from include list', () => {
+        process.env.IMMICH_MICROSERVICES_QUEUES_INCLUDE = '';
+        process.env.IMMICH_MICROSERVICES_QUEUES_EXCLUDE = 'videoConversion,thumbnailGeneration';
+        const { workers: { queues } } = getEnv();
+        expect(queues).toEqual([
+          "metadataExtraction",
+          "faceDetection",
+          "facialRecognition",
+          "smartSearch",
+          "duplicateDetection",
+          "backgroundTask",
+          "storageTemplateMigration",
+          "migration",
+          "search",
+          "sidecar",
+          "library",
+          "notifications",
+          "backupDatabase",
+        ]);
+      });
+    })
 
-    it('should exclude workers from include list', () => {
-      process.env.IMMICH_WORKERS_INCLUDE = 'api,microservices,randomservice';
-      process.env.IMMICH_WORKERS_EXCLUDE = 'randomservice,microservices';
-      const { workers } = getEnv();
-      expect(workers).toEqual(['api']);
-    });
-
-    it('should remove whitespace from included workers before parsing', () => {
-      process.env.IMMICH_WORKERS_INCLUDE = 'api, microservices';
-      const { workers } = getEnv();
-      expect(workers).toEqual(['api', 'microservices']);
-    });
-
-    it('should remove whitespace from excluded workers before parsing', () => {
-      process.env.IMMICH_WORKERS_EXCLUDE = 'api, microservices';
-      const { workers } = getEnv();
-      expect(workers).toEqual([]);
-    });
-
-    it('should remove whitespace from included and excluded workers before parsing', () => {
-      process.env.IMMICH_WORKERS_INCLUDE = 'api, microservices, randomservice,randomservice2';
-      process.env.IMMICH_WORKERS_EXCLUDE = 'randomservice,microservices, randomservice2';
-      const { workers } = getEnv();
-      expect(workers).toEqual(['api']);
-    });
-
-    it('should throw error for invalid workers', () => {
-      process.env.IMMICH_WORKERS_INCLUDE = 'api,microservices,randomservice';
-      expect(getEnv).toThrowError('Invalid worker(s) found: api,microservices,randomservice');
-    });
+    describe('list', () => {
+      it('should return default workers', () => {
+        const { workers } = getEnv();
+        expect(workers.list).toEqual(['api', 'microservices']);
+      });
+  
+      it('should return included workers', () => {
+        process.env.IMMICH_WORKERS_INCLUDE = 'api';
+        const { workers } = getEnv();
+        expect(workers.list).toEqual(['api']);
+      });
+  
+      it('should excluded workers from defaults', () => {
+        process.env.IMMICH_WORKERS_EXCLUDE = 'api';
+        const { workers } = getEnv();
+        expect(workers.list).toEqual(['microservices']);
+      });
+  
+      it('should exclude workers from include list', () => {
+        process.env.IMMICH_WORKERS_INCLUDE = 'api,microservices,randomservice';
+        process.env.IMMICH_WORKERS_EXCLUDE = 'randomservice,microservices';
+        const { workers } = getEnv();
+        expect(workers.list).toEqual(['api']);
+      });
+  
+      it('should remove whitespace from included workers before parsing', () => {
+        process.env.IMMICH_WORKERS_INCLUDE = 'api, microservices';
+        const { workers } = getEnv();
+        expect(workers.list).toEqual(['api', 'microservices']);
+      });
+  
+      it('should remove whitespace from excluded workers before parsing', () => {
+        process.env.IMMICH_WORKERS_EXCLUDE = 'api, microservices';
+        const { workers } = getEnv();
+        expect(workers.list).toEqual([]);
+      });
+  
+      it('should remove whitespace from included and excluded workers before parsing', () => {
+        process.env.IMMICH_WORKERS_INCLUDE = 'api, microservices, randomservice,randomservice2';
+        process.env.IMMICH_WORKERS_EXCLUDE = 'randomservice,microservices, randomservice2';
+        const { workers } = getEnv();
+        expect(workers.list).toEqual(['api']);
+      });
+  
+      it('should throw error for invalid workers', () => {
+        process.env.IMMICH_WORKERS_INCLUDE = 'api,microservices,randomservice';
+        expect(getEnv).toThrowError('Invalid worker(s) found: api,microservices,randomservice');
+      });
+    })
   });
 
   describe('network', () => {
