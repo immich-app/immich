@@ -56,13 +56,13 @@ export class AssetEntity {
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('exif', 'assets.id', 'exif.assetId')
-    .select((eb) => eb.fn.toJson(eb.table('exif')).$castTo<Exif>().as('exifInfo'));
+    .select((eb) => eb.fn.toJson(eb.table('exif')).$castTo<Exif | null>().as('exifInfo'));
 }
 
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .innerJoin('exif', 'assets.id', 'exif.assetId')
-    .select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
+    .select((eb) => eb.fn.toJson(eb.table('exif')).$castTo<Exif>().as('exifInfo'));
 }
 
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {

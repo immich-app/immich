@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
+import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
+import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import {
   AssetFileType,
   AssetPathType,
@@ -136,7 +136,7 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
   async handleGenerateThumbnails({ id }: JobOf<JobName.GENERATE_THUMBNAILS>): Promise<JobStatus> {
-    const asset = await this.assetRepository.getById(id, { exifInfo: true, files: true });
+    const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
       return JobStatus.FAILED;
@@ -213,7 +213,13 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private async generateImageThumbnails(asset: AssetEntity) {
+  private async generateImageThumbnails(asset: {
+    id: string;
+    ownerId: string;
+    originalFileName: string;
+    originalPath: string;
+    exifInfo: Exif;
+  }) {
     const { image } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
@@ -286,7 +292,7 @@ export class MediaService extends BaseService {
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 
-  private async generateVideoThumbnails(asset: AssetEntity) {
+  private async generateVideoThumbnails(asset: ThumbnailPathEntity & { originalPath: string }) {
     const { image, ffmpeg } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
@@ -515,8 +521,8 @@ export class MediaService extends BaseService {
     return name !== VideoContainer.MP4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 
-  isSRGB(asset: AssetEntity): boolean {
-    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo ?? {};
+  isSRGB(asset: { exifInfo: Exif }): boolean {
+    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo;
     if (colorspace || profileDescription) {
       return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
     } else if (bitsPerSample) {

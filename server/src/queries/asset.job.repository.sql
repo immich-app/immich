@@ -115,6 +115,74 @@ from
 where
   "assets"."id" = $1
 
+-- AssetJobRepository.getForGenerateThumbnailJob
+select
+  "assets"."id",
+  "assets"."isVisible",
+  "assets"."originalFileName",
+  "assets"."originalPath",
+  "assets"."ownerId",
+  "assets"."thumbhash",
+  "assets"."type",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_files"."id",
+          "asset_files"."path",
+          "asset_files"."type"
+        from
+          "asset_files"
+        where
+          "asset_files"."assetId" = "assets"."id"
+      ) as agg
+  ) as "files",
+  to_json("exif") as "exifInfo"
+from
+  "assets"
+  inner join "exif" on "assets"."id" = "exif"."assetId"
+where
+  "assets"."id" = $1
+
+-- AssetJobRepository.getForMetadataExtraction
+select
+  "assets"."id",
+  "assets"."checksum",
+  "assets"."deviceAssetId",
+  "assets"."deviceId",
+  "assets"."fileCreatedAt",
+  "assets"."fileModifiedAt",
+  "assets"."isExternal",
+  "assets"."isVisible",
+  "assets"."libraryId",
+  "assets"."livePhotoVideoId",
+  "assets"."localDateTime",
+  "assets"."originalFileName",
+  "assets"."originalPath",
+  "assets"."ownerId",
+  "assets"."sidecarPath",
+  "assets"."type",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_faces".*
+        from
+          "asset_faces"
+        where
+          "asset_faces"."assetId" = "assets"."id"
+          and "asset_faces"."deletedAt" is null
+      ) as agg
+  ) as "faces"
+from
+  "assets"
+where
+  "assets"."id" = $1
+
 -- AssetJobRepository.getForStorageTemplateJob
 select
   "assets"."id",

@@ -116,6 +116,8 @@ export const sharedLinkStub = {
     album: undefined,
     description: null,
     assets: [assetStub.image],
+    password: 'password',
+    albumId: null,
   } as SharedLinkEntity),
   valid: Object.freeze({
     id: '123',
