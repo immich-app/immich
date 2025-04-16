@@ -7,6 +7,15 @@ on:
       ref:
         required: false
         type: string
+    secrets:
+      KEY_JKS:
+        required: true
+      ALIAS:
+        required: true
+      ANDROID_KEY_PASSWORD:
+        required: true
+      ANDROID_STORE_PASSWORD:
+        required: true
   pull_request:
   push:
     branches: [main]

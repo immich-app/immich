@@ -61,7 +61,11 @@ jobs:
   build_mobile:
     uses: ./.github/workflows/build-mobile.yml
     needs: bump_version
-    secrets: inherit
+    secrets:
+      KEY_JKS: ${{ secrets.KEY_JKS }}
+      ALIAS: ${{ secrets.ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
     with:
       ref: ${{ needs.bump_version.outputs.ref }}
 
