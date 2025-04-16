@@ -52,17 +52,9 @@ jobs:
     runs-on: macos-14
 
     steps:
-      - name: Determine ref
-        id: get-ref
-        run: |
-          input_ref="${{ inputs.ref }}"
-          github_ref="${{ github.sha }}"
-          ref="${input_ref:-$github_ref}"
-          echo "ref=$ref" >> $GITHUB_OUTPUT
-
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
-          ref: ${{ steps.get-ref.outputs.ref }}
+          ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
       - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4

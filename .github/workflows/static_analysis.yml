@@ -77,9 +77,11 @@ jobs:
 
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated files not up to date! Run make_build inside the mobile directory"
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
       - name: Run dart analyze

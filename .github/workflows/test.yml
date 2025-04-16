@@ -536,9 +536,11 @@ jobs:
 
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+            CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated files not up to date!"
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
   generated-typeorm-migrations-up-to-date:
@@ -599,9 +601,11 @@ jobs:
             server/src
       - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+            CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated migration files not up to date!"
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          echo "Changed files: ${CHANGED_FILES}"
           cat ./src/*-TestMigration.ts
           exit 1
 
@@ -619,9 +623,11 @@ jobs:
 
       - name: Verify SQL files have not changed
         if: steps.verify-changed-sql-files.outputs.files_changed == 'true'
+        env:
+            CHANGED_FILES: ${{ steps.verify-changed-sql-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated SQL files not up to date!"
-          echo "Changed files: ${{ steps.verify-changed-sql-files.outputs.changed_files }}"
+          echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
   # mobile-integration-tests:
