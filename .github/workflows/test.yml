@@ -521,7 +521,7 @@ jobs:
         run: npm run migrations:run
 
       - name: Test npm run schema:reset command works
-        run: npm run typeorm:schema:reset
+        run: npm run schema:reset
 
       - name: Generate new migrations
         continue-on-error: true
