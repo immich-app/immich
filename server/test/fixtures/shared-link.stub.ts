@@ -1,10 +1,10 @@
+import { UserAdmin } from 'src/database';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ExifResponseDto } from 'src/dtos/exif.dto';
 import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
 import { mapUser } from 'src/dtos/user.dto';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { AssetOrder, AssetStatus, AssetType, SharedLinkType } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -106,7 +106,6 @@ export const sharedLinkStub = {
   individual: Object.freeze({
     id: '123',
     userId: authStub.admin.user.id,
-    user: userStub.admin,
     key: sharedLinkBytes,
     type: SharedLinkType.INDIVIDUAL,
     createdAt: today,
@@ -117,6 +116,8 @@ export const sharedLinkStub = {
     album: undefined,
     description: null,
     assets: [assetStub.image],
+    password: 'password',
+    albumId: null,
   } as SharedLinkEntity),
   valid: Object.freeze({
     id: '123',
@@ -154,7 +155,6 @@ export const sharedLinkStub = {
   readonlyNoExif: Object.freeze<SharedLinkEntity>({
     id: '123',
     userId: authStub.admin.user.id,
-    user: userStub.admin,
     key: sharedLinkBytes,
     type: SharedLinkType.ALBUM,
     createdAt: today,
@@ -185,7 +185,7 @@ export const sharedLinkStub = {
         {
           id: 'id_1',
           status: AssetStatus.ACTIVE,
-          owner: undefined as unknown as UserEntity,
+          owner: undefined as unknown as UserAdmin,
           ownerId: 'user_id_1',
           deviceAssetId: 'device_asset_id_1',
           deviceId: 'device_id_1',
@@ -234,7 +234,6 @@ export const sharedLinkStub = {
             iso: 100,
             exposureTime: '1/16',
             fps: 100,
-            asset: null as any,
             profileDescription: 'sRGB',
             bitsPerSample: 8,
             colorspace: 'sRGB',
@@ -253,7 +252,6 @@ export const sharedLinkStub = {
   passwordRequired: Object.freeze<SharedLinkEntity>({
     id: '123',
     userId: authStub.admin.user.id,
-    user: userStub.admin,
     key: sharedLinkBytes,
     type: SharedLinkType.ALBUM,
     createdAt: today,

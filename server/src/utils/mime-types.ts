@@ -55,6 +55,10 @@ const image: Record<string, string[]> = {
   '.webp': ['image/webp'],
 };
 
+const extensionOverrides: Record<string, string> = {
+  'image/jpeg': '.jpg',
+};
+
 /**
  * list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
  * @TODO share with the client
@@ -104,6 +108,11 @@ const types = { ...image, ...video, ...sidecar };
 const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
 
 const lookup = (filename: string) => types[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
+const toExtension = (mimeType: string) => {
+  return (
+    extensionOverrides[mimeType] || Object.entries(types).find(([, mimeTypes]) => mimeTypes.includes(mimeType))?.[0]
+  );
+};
 
 export const mimeTypes = {
   image,
@@ -120,6 +129,8 @@ export const mimeTypes = {
   isVideo: (filename: string) => isType(filename, video),
   isRaw: (filename: string) => isType(filename, raw),
   lookup,
+  /** return an extension (including a leading `.`) for a mime-type */
+  toExtension,
   assetType: (filename: string) => {
     const contentType = lookup(filename);
     if (contentType.startsWith('image/')) {

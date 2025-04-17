@@ -91,7 +91,7 @@ class EditImagePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("edit_image_title".tr()),
+        title: Text("edit".tr()),
         backgroundColor: context.scaffoldBackgroundColor,
         leading: IconButton(
           icon: Icon(

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { getName } from 'i18n-iso-countries';
-import { Expression, Insertable, Kysely, sql, SqlBool } from 'kysely';
+import { Expression, Insertable, Kysely, NotNull, sql, SqlBool } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -87,6 +87,7 @@ export class MapRepository {
           .on('exif.longitude', 'is not', null),
       )
       .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
+      .$narrowType<{ lat: NotNull; lon: NotNull }>()
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (q) => q.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
@@ -114,7 +115,7 @@ export class MapRepository {
         return eb.or(expression);
       })
       .orderBy('fileCreatedAt', 'desc')
-      .execute() as Promise<MapMarker[]>;
+      .execute();
   }
 
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
@@ -246,7 +247,7 @@ export class MapRepository {
     let futures = [];
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
-      if (lineSplit[7] === 'PPLX' && lineSplit[8] !== 'AU') {
+      if ((lineSplit[7] === 'PPLX' && lineSplit[8] !== 'AU') || lineSplit[7] === 'PPLH') {
         continue;
       }
 

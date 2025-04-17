@@ -18,7 +18,7 @@ class AllPeoplePage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'all_people_page_title',
+          'people',
         ).tr(),
         leading: IconButton(
           onPressed: () => context.maybePop(),

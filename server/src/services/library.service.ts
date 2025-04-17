@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Insertable } from 'kysely';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { Assets } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   CreateLibraryDto,
@@ -236,7 +238,14 @@ export class LibraryService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const assetImports = job.paths.map((assetPath) => this.processEntity(assetPath, library.ownerId, job.libraryId));
+    const assetImports: Insertable<Assets>[] = [];
+    await Promise.all(
+      job.paths.map((path) =>
+        this.processEntity(path, library.ownerId, job.libraryId)
+          .then((asset) => assetImports.push(asset))
+          .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}`, error)),
+      ),
+    );
 
     const assetIds: string[] = [];
 
@@ -374,8 +383,9 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private processEntity(filePath: string, ownerId: string, libraryId: string) {
+  private async processEntity(filePath: string, ownerId: string, libraryId: string) {
     const assetPath = path.normalize(filePath);
+    const stat = await this.storageRepository.stat(assetPath);
 
     return {
       ownerId,
@@ -383,9 +393,9 @@ export class LibraryService extends BaseService {
       checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
       originalPath: assetPath,
 
-      fileCreatedAt: null,
-      fileModifiedAt: null,
-      localDateTime: null,
+      fileCreatedAt: stat.mtime,
+      fileModifiedAt: stat.mtime,
+      localDateTime: stat.mtime,
       // TODO: device asset id is deprecated, remove it
       deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
       deviceId: 'Library Import',
@@ -572,12 +582,7 @@ export class LibraryService extends BaseService {
       return AssetSyncResult.CHECK_OFFLINE;
     }
 
-    if (
-      !asset.fileCreatedAt ||
-      !asset.localDateTime ||
-      !asset.fileModifiedAt ||
-      stat.mtime.valueOf() !== asset.fileModifiedAt.valueOf()
-    ) {
+    if (stat.mtime.valueOf() !== asset.fileModifiedAt.valueOf()) {
       this.logger.verbose(`Asset ${asset.originalPath} needs metadata extraction in library ${asset.libraryId}`);
 
       return AssetSyncResult.UPDATE;

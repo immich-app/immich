@@ -2,7 +2,6 @@
 process.env.DB_URL = process.env.DB_URL || 'postgres://postgres:postgres@localhost:5432/immich';
 
 import { Kysely } from 'kysely';
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import { writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join } from 'node:path';
 import postgres from 'postgres';
@@ -11,6 +10,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema';
 import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
+import { getKyselyConfig } from 'src/utils/database';
 
 const main = async () => {
   const command = process.argv[2];
@@ -52,19 +52,7 @@ const run = async (only?: 'kysely' | 'typeorm') => {
   const configRepository = new ConfigRepository();
   const { database } = configRepository.getEnv();
   const logger = new LoggingRepository(undefined, configRepository);
-  const db = new Kysely<any>({
-    dialect: new PostgresJSDialect({ postgres: postgres(database.config.kysely) }),
-    log(event) {
-      if (event.level === 'error') {
-        console.error('Query failed :', {
-          durationMs: event.queryDurationMillis,
-          error: event.error,
-          sql: event.query.sql,
-          params: event.query.parameters,
-        });
-      }
-    },
-  });
+  const db = new Kysely<any>(getKyselyConfig(database.config.kysely));
   const databaseRepository = new DatabaseRepository(db, logger, configRepository);
 
   await databaseRepository.runMigrations({ only });
@@ -93,7 +81,7 @@ const create = (path: string, up: string[], down: string[]) => {
   const filename = `${timestamp}-${name}.ts`;
   const folder = dirname(path);
   const fullPath = join(folder, filename);
-  writeFileSync(fullPath, asMigration('kysely', { name, timestamp, up, down }));
+  writeFileSync(fullPath, asMigration('typeorm', { name, timestamp, up, down }));
   console.log(`Wrote ${fullPath}`);
 };
 

@@ -1,4 +1,16 @@
-import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import { Selectable } from 'kysely';
+import { AssetJobStatus as DatabaseAssetJobStatus, Exif as DatabaseExif } from 'src/db';
+import { AssetEntity } from 'src/entities/asset.entity';
+import {
+  AlbumUserRole,
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  MemoryType,
+  Permission,
+  SourceType,
+  UserStatus,
+} from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
@@ -8,6 +20,17 @@ export type AuthUser = {
   email: string;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
+};
+
+export type AlbumUser = {
+  user: User;
+  role: AlbumUserRole;
+};
+
+export type AssetFile = {
+  id: string;
+  type: AssetFileType;
+  path: string;
 };
 
 export type Library = {
@@ -98,6 +121,13 @@ export type UserAdmin = User & {
   metadata: UserMetadataItem[];
 };
 
+export type StorageAsset = {
+  id: string;
+  ownerId: string;
+  files: AssetFile[];
+  encodedVideoPath: string | null;
+};
+
 export type Asset = {
   createdAt: Date;
   updatedAt: Date;
@@ -125,6 +155,7 @@ export type Asset = {
   originalPath: string;
   ownerId: string;
   sidecarPath: string | null;
+  stack?: Stack | null;
   stackId: string | null;
   thumbhash: Buffer<ArrayBufferLike> | null;
   type: AssetType;
@@ -135,6 +166,15 @@ export type SidecarWriteAsset = {
   sidecarPath: string | null;
   originalPath: string;
   tags: Array<{ value: string }>;
+};
+
+export type Stack = {
+  id: string;
+  primaryAssetId: string;
+  owner?: User;
+  ownerId: string;
+  assets: AssetEntity[];
+  assetCount?: number;
 };
 
 export type AuthSharedLink = {
@@ -184,9 +224,64 @@ export type Session = {
   deviceType: string;
 };
 
+export type Exif = Omit<Selectable<DatabaseExif>, 'updatedAt' | 'updateId'>;
+
+export type Person = {
+  createdAt: Date;
+  id: string;
+  ownerId: string;
+  updatedAt: Date;
+  updateId: string;
+  isFavorite: boolean;
+  name: string;
+  birthDate: Date | null;
+  color: string | null;
+  faceAssetId: string | null;
+  isHidden: boolean;
+  thumbnailPath: string;
+};
+
+export type AssetFace = {
+  id: string;
+  deletedAt: Date | null;
+  assetId: string;
+  boundingBoxX1: number;
+  boundingBoxX2: number;
+  boundingBoxY1: number;
+  boundingBoxY2: number;
+  imageHeight: number;
+  imageWidth: number;
+  personId: string | null;
+  sourceType: SourceType;
+  person?: Person | null;
+};
+
+export type AssetJobStatus = Selectable<DatabaseAssetJobStatus> & {
+  asset: AssetEntity;
+};
+
 const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
 
 export const columns = {
+  asset: [
+    'assets.id',
+    'assets.checksum',
+    'assets.deviceAssetId',
+    'assets.deviceId',
+    'assets.fileCreatedAt',
+    'assets.fileModifiedAt',
+    'assets.isExternal',
+    'assets.isVisible',
+    'assets.libraryId',
+    'assets.livePhotoVideoId',
+    'assets.localDateTime',
+    'assets.originalFileName',
+    'assets.originalPath',
+    'assets.ownerId',
+    'assets.sidecarPath',
+    'assets.type',
+  ],
+  assetFiles: ['asset_files.id', 'asset_files.path', 'asset_files.type'],
   authUser: [
     'users.id',
     'users.name',
@@ -222,7 +317,7 @@ export const columns = {
     'quotaSizeInBytes',
     'quotaUsageInBytes',
   ],
-  tagDto: ['id', 'value', 'createdAt', 'updatedAt', 'color', 'parentId'],
+  tag: ['tags.id', 'tags.value', 'tags.createdAt', 'tags.updatedAt', 'tags.color', 'tags.parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
   syncAsset: [
     'id',
@@ -238,6 +333,7 @@ export const columns = {
     'isVisible',
     'updateId',
   ],
+  stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [
     'exif.assetId',
     'exif.description',
@@ -265,5 +361,36 @@ export const columns = {
     'exif.rating',
     'exif.fps',
     'exif.updateId',
+  ],
+  exif: [
+    'exif.assetId',
+    'exif.autoStackId',
+    'exif.bitsPerSample',
+    'exif.city',
+    'exif.colorspace',
+    'exif.country',
+    'exif.dateTimeOriginal',
+    'exif.description',
+    'exif.exifImageHeight',
+    'exif.exifImageWidth',
+    'exif.exposureTime',
+    'exif.fileSizeInByte',
+    'exif.fNumber',
+    'exif.focalLength',
+    'exif.fps',
+    'exif.iso',
+    'exif.latitude',
+    'exif.lensModel',
+    'exif.livePhotoCID',
+    'exif.longitude',
+    'exif.make',
+    'exif.model',
+    'exif.modifyDate',
+    'exif.orientation',
+    'exif.profileDescription',
+    'exif.projectionType',
+    'exif.rating',
+    'exif.state',
+    'exif.timeZone',
   ],
 } as const;

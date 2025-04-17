@@ -118,7 +118,7 @@ export class StorageTemplateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const asset = await this.assetRepository.getStorageTemplateAsset(id);
+    const asset = await this.assetJobRepository.getForStorageTemplateJob(id);
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -130,7 +130,7 @@ export class StorageTemplateService extends BaseService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const livePhotoVideo = await this.assetRepository.getStorageTemplateAsset(asset.livePhotoVideoId);
+      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
       if (!livePhotoVideo) {
         return JobStatus.FAILED;
       }
@@ -152,7 +152,7 @@ export class StorageTemplateService extends BaseService {
 
     await this.moveRepository.cleanMoveHistory();
 
-    const assets = this.assetRepository.streamStorageTemplateAssets();
+    const assets = this.assetJobRepository.streamForStorageTemplateJob();
     const users = await this.userRepository.getList();
 
     for await (const asset of assets) {

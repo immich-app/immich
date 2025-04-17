@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
+import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
+import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import {
   AssetFileType,
   AssetPathType,
@@ -51,30 +51,16 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.QUEUE_GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.QUEUE_GENERATE_THUMBNAILS>): Promise<JobStatus> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination, {
-            isVisible: true,
-            withDeleted: true,
-            withArchived: true,
-          })
-        : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
-    });
+    const thumbJobs: JobItem[] = [];
+    for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
+      const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
 
-    for await (const assets of assetPagination) {
-      const jobs: JobItem[] = [];
-
-      for (const asset of assets) {
-        const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
-
-        if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
-          jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
-          continue;
-        }
+      if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
+        thumbJobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
+        continue;
       }
-
-      await this.jobRepository.queueAll(jobs);
     }
+    await this.jobRepository.queueAll(thumbJobs);
 
     const jobs: JobItem[] = [];
 
@@ -135,7 +121,7 @@ export class MediaService extends BaseService {
   @OnJob({ name: JobName.MIGRATE_ASSET, queue: QueueName.MIGRATION })
   async handleAssetMigration({ id }: JobOf<JobName.MIGRATE_ASSET>): Promise<JobStatus> {
     const { image } = await this.getConfig({ withCache: true });
-    const [asset] = await this.assetRepository.getByIds([id], { files: true });
+    const asset = await this.assetJobRepository.getForMigrationJob(id);
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -150,7 +136,7 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
   async handleGenerateThumbnails({ id }: JobOf<JobName.GENERATE_THUMBNAILS>): Promise<JobStatus> {
-    const asset = await this.assetRepository.getById(id, { exifInfo: true, files: true });
+    const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
       return JobStatus.FAILED;
@@ -227,7 +213,13 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private async generateImageThumbnails(asset: AssetEntity) {
+  private async generateImageThumbnails(asset: {
+    id: string;
+    ownerId: string;
+    originalFileName: string;
+    originalPath: string;
+    exifInfo: Exif;
+  }) {
     const { image } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
@@ -300,7 +292,7 @@ export class MediaService extends BaseService {
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 
-  private async generateVideoThumbnails(asset: AssetEntity) {
+  private async generateVideoThumbnails(asset: ThumbnailPathEntity & { originalPath: string }) {
     const { image, ffmpeg } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
@@ -529,8 +521,8 @@ export class MediaService extends BaseService {
     return name !== VideoContainer.MP4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 
-  isSRGB(asset: AssetEntity): boolean {
-    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo ?? {};
+  isSRGB(asset: { exifInfo: Exif }): boolean {
+    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo;
     if (colorspace || profileDescription) {
       return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
     } else if (bitsPerSample) {

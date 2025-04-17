@@ -1,15 +1,8 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import { Tag } from 'src/database';
+import { AssetFace, AssetFile, AssetJobStatus, columns, Exif, Stack, Tag, User } from 'src/database';
 import { DB } from 'src/db';
-import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
-import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { StackEntity } from 'src/entities/stack.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
@@ -20,14 +13,14 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 export class AssetEntity {
   id!: string;
   deviceAssetId!: string;
-  owner!: UserEntity;
+  owner!: User;
   ownerId!: string;
   libraryId?: string | null;
   deviceId!: string;
   type!: AssetType;
   status!: AssetStatus;
   originalPath!: string;
-  files!: AssetFileEntity[];
+  files!: AssetFile[];
   thumbhash!: Buffer | null;
   encodedVideoPath!: string | null;
   createdAt!: Date;
@@ -48,31 +41,26 @@ export class AssetEntity {
   livePhotoVideoId!: string | null;
   originalFileName!: string;
   sidecarPath!: string | null;
-  exifInfo?: ExifEntity;
+  exifInfo?: Exif;
   tags?: Tag[];
   sharedLinks!: SharedLinkEntity[];
-  albums?: AlbumEntity[];
-  faces!: AssetFaceEntity[];
+  faces!: AssetFace[];
   stackId?: string | null;
-  stack?: StackEntity | null;
-  jobStatus?: AssetJobStatusEntity;
+  stack?: Stack | null;
+  jobStatus?: AssetJobStatus;
   duplicateId!: string | null;
 }
 
-export type AssetEntityPlaceholder = AssetEntity & {
-  fileCreatedAt: Date | null;
-  fileModifiedAt: Date | null;
-  localDateTime: Date | null;
-};
-
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
-  return qb.leftJoin('exif', 'assets.id', 'exif.assetId').select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
+  return qb
+    .leftJoin('exif', 'assets.id', 'exif.assetId')
+    .select((eb) => eb.fn.toJson(eb.table('exif')).$castTo<Exif | null>().as('exifInfo'));
 }
 
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .innerJoin('exif', 'assets.id', 'exif.assetId')
-    .select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
+    .select((eb) => eb.fn.toJson(eb.table('exif')).$castTo<Exif>().as('exifInfo'));
 }
 
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
@@ -85,7 +73,7 @@ export function withFaces(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?:
   return jsonArrayFrom(
     eb
       .selectFrom('asset_faces')
-      .selectAll()
+      .selectAll('asset_faces')
       .whereRef('asset_faces.assetId', '=', 'assets.id')
       .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
   ).as('faces');
@@ -95,37 +83,26 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   return jsonArrayFrom(
     eb
       .selectFrom('asset_files')
-      .selectAll('asset_files')
+      .select(columns.assetFiles)
       .whereRef('asset_files.assetId', '=', 'assets.id')
       .$if(!!type, (qb) => qb.where('asset_files.type', '=', type!)),
   ).as('files');
 }
 
 export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
-  return eb
-    .selectFrom('asset_faces')
-    .leftJoin('person', 'person.id', 'asset_faces.personId')
-    .whereRef('asset_faces.assetId', '=', 'assets.id')
-    .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null))
-    .select((eb) =>
-      eb
-        .fn('jsonb_agg', [
-          eb
-            .case()
-            .when('person.id', 'is not', null)
-            .then(
-              eb.fn('jsonb_insert', [
-                eb.fn('to_jsonb', [eb.table('asset_faces')]),
-                sql`'{person}'::text[]`,
-                eb.fn('to_jsonb', [eb.table('person')]),
-              ]),
-            )
-            .else(eb.fn('to_jsonb', [eb.table('asset_faces')]))
-            .end(),
-        ])
-        .as('faces'),
-    )
-    .as('faces');
+  return jsonArrayFrom(
+    eb
+      .selectFrom('asset_faces')
+      .leftJoinLateral(
+        (eb) =>
+          eb.selectFrom('person').selectAll('person').whereRef('asset_faces.personId', '=', 'person.id').as('person'),
+        (join) => join.onTrue(),
+      )
+      .selectAll('asset_faces')
+      .select((eb) => eb.table('person').as('person'))
+      .whereRef('asset_faces.assetId', '=', 'assets.id')
+      .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
+  ).as('faces');
 }
 
 export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[]) {
@@ -168,39 +145,11 @@ export function withLibrary(eb: ExpressionBuilder<DB, 'assets'>) {
   );
 }
 
-export function withAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, { albumId }: { albumId?: string }) {
-  return qb
-    .select((eb) =>
-      jsonArrayFrom(
-        eb
-          .selectFrom('albums')
-          .selectAll()
-          .innerJoin('albums_assets_assets', (join) =>
-            join
-              .onRef('albums.id', '=', 'albums_assets_assets.albumsId')
-              .onRef('assets.id', '=', 'albums_assets_assets.assetsId'),
-          )
-          .whereRef('albums.id', '=', 'albums_assets_assets.albumsId')
-          .$if(!!albumId, (qb) => qb.where('albums.id', '=', asUuid(albumId!))),
-      ).as('albums'),
-    )
-    .$if(!!albumId, (qb) =>
-      qb.where((eb) =>
-        eb.exists((eb) =>
-          eb
-            .selectFrom('albums_assets_assets')
-            .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
-            .where('albums_assets_assets.albumsId', '=', asUuid(albumId!)),
-        ),
-      ),
-    );
-}
-
 export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
   return jsonArrayFrom(
     eb
       .selectFrom('tags')
-      .selectAll('tags')
+      .select(columns.tag)
       .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
       .whereRef('assets.id', '=', 'tag_asset.assetsId'),
   ).as('tags');
@@ -317,8 +266,5 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null))
-    .where('assets.fileCreatedAt', 'is not', null)
-    .where('assets.fileModifiedAt', 'is not', null)
-    .where('assets.localDateTime', 'is not', null);
+    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
 }

@@ -4,7 +4,18 @@ The Immich mobile app is a Flutter-based solution leveraging the Isar Database f
 
 ## Setup
 
-You must set up Flutter toolchain in your machine before you can perform any of the development.
+1. Setup Flutter toolchain using FVM.
+2. Run `flutter pub get` to install the dependencies.
+3. Run `make translation` to generate the translation file.
+4. Run `fvm flutter run` to start the app.
+
+## Translation
+
+To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then, from the `mobile/` directory, run
+
+```bash
+make translation
+```
 
 ## Immich-Flutter Directory Structure
 
@@ -15,6 +26,7 @@ Below are the directory inside the `lib` directory:
 - `extensions`: Extensions enhancing various existing functionalities within the app, such as asset_extensions.dart, string_extensions.dart, and more.
 
 - `module_template`: Provides a template structure for different modules within the app, including subdivisions like models, providers, services, UI, and views.
+
   - `models`: Placeholder for storing module-specific models.
   - `providers`: Section to define module-specific Riverpod providers.
   - `services`: Houses services tailored to the module's functionality.

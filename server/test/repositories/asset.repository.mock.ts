@@ -11,10 +11,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     upsertJobStatus: vitest.fn(),
     getByDayOfYear: vitest.fn(),
     getByIds: vitest.fn().mockResolvedValue([]),
-    getAssetForSearchDuplicatesJob: vitest.fn(),
-    getAssetForSidecarWriteJob: vitest.fn(),
     getByIdsWithAllRelations: vitest.fn().mockResolvedValue([]),
-    getByAlbumId: vitest.fn(),
     getByDeviceIds: vitest.fn(),
     getByUserId: vitest.fn(),
     getById: vitest.fn(),
@@ -47,8 +44,5 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     detectOfflineExternalAssets: vitest.fn(),
     filterNewExternalAssetPaths: vitest.fn(),
     updateByLibraryId: vitest.fn(),
-    streamStorageTemplateAssets: vitest.fn(),
-    getStorageTemplateAsset: vitest.fn(),
-    streamDeletedAssets: vitest.fn(),
   };
 };

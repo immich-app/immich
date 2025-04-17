@@ -184,7 +184,9 @@
   ]}
 />
 {#if imageError}
-  <BrokenAsset class="text-xl" />
+  <div class="h-full w-full">
+    <BrokenAsset class="text-xl h-full w-full" />
+  </div>
 {/if}
 <!-- svelte-ignore a11y_missing_attribute -->
 <img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
