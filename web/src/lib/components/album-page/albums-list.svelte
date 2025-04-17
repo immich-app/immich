@@ -37,11 +37,11 @@
     locale,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
-  import { userInteraction } from '$lib/stores/user.svelte';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
+  import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 
   interface Props {
     ownedAlbums?: AlbumResponseDto[];
@@ -293,20 +293,6 @@
     await Promise.allSettled(albumsToRemove.map((album) => handleDeleteAlbum(album)));
   };
 
-  const updateAlbumInfo = (album: AlbumResponseDto) => {
-    ownedAlbums[ownedAlbums.findIndex(({ id }) => id === album.id)] = album;
-    sharedAlbums[sharedAlbums.findIndex(({ id }) => id === album.id)] = album;
-  };
-
-  const updateRecentAlbumInfo = (album: AlbumResponseDto) => {
-    for (const cachedAlbum of userInteraction.recentAlbums || []) {
-      if (cachedAlbum.id === album.id) {
-        Object.assign(cachedAlbum, { ...cachedAlbum, ...album });
-        break;
-      }
-    }
-  };
-
   const successEditAlbumInfo = (album: AlbumResponseDto) => {
     albumToEdit = null;
 
@@ -321,8 +307,7 @@
       },
     });
 
-    updateAlbumInfo(album);
-    updateRecentAlbumInfo(album);
+    albumListingStore.updateAlbumLocally(album);
   };
 
   const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
@@ -336,7 +321,7 @@
           albumUsers,
         },
       });
-      updateAlbumInfo(album);
+      albumListingStore.updateAlbumLocally(album);
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_album_users'));
     } finally {
@@ -347,7 +332,7 @@
   const handleSharedLinkCreated = (album: AlbumResponseDto) => {
     album.shared = true;
     album.hasSharedLink = true;
-    updateAlbumInfo(album);
+    albumListingStore.updateAlbumLocally(album);
   };
 
   const openShareModal = () => {
