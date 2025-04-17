@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:immich_mobile/providers/image/cache/thumbnail_image_cache_manager.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
@@ -16,10 +18,14 @@ class ImmichLocalThumbnailProvider
   final int height;
   final int width;
 
+  /// The image cache manager
+  final CacheManager? cacheManager;
+
   ImmichLocalThumbnailProvider({
     required this.asset,
     this.height = 256,
     this.width = 256,
+    this.cacheManager,
   }) : assert(asset.local != null, 'Only usable when asset.local is set');
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
@@ -36,11 +42,10 @@ class ImmichLocalThumbnailProvider
     ImmichLocalThumbnailProvider key,
     ImageDecoderCallback decode,
   ) {
-    final chunkEvents = StreamController<ImageChunkEvent>();
+    final cache = cacheManager ?? ThumbnailImageCacheManager();
     return MultiImageStreamCompleter(
-      codec: _codec(key.asset, decode, chunkEvents),
+      codec: _codec(key.asset, cache, decode),
       scale: 1.0,
-      chunkEvents: chunkEvents.stream,
       informationCollector: () sync* {
         yield ErrorDescription(asset.fileName);
       },
@@ -50,34 +55,30 @@ class ImmichLocalThumbnailProvider
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
     Asset key,
+    CacheManager cache,
     ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
-    // Load a small thumbnail
-    final thumbBytes = await asset.local?.thumbnailDataWithSize(
-      const ThumbnailSize.square(32),
-      quality: 75,
-    );
-    if (thumbBytes != null) {
-      final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
+    final cacheKey = '${key.id}_${width}x$height';
+    final file = await cache.getFileFromCache(cacheKey);
+    if (file?.file.existsSync() == true) {
+      final bytes = await file!.file.readAsBytes();
+      final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
       final codec = await decode(buffer);
       yield codec;
-    } else {
-      debugPrint("Loading thumb for ${asset.fileName} failed");
+      return;
     }
 
-    final normalThumbBytes =
+    final thumbnailBytes =
         await asset.local?.thumbnailDataWithSize(ThumbnailSize(width, height));
-    if (normalThumbBytes == null) {
+    if (thumbnailBytes == null) {
       throw StateError(
         "Loading thumb for local photo ${asset.fileName} failed",
       );
     }
-    final buffer = await ui.ImmutableBuffer.fromUint8List(normalThumbBytes);
+    final buffer = await ui.ImmutableBuffer.fromUint8List(thumbnailBytes);
     final codec = await decode(buffer);
     yield codec;
-
-    chunkEvents.close();
+    await cache.putFile(cacheKey, thumbnailBytes);
   }
 
   @override
