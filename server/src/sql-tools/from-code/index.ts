@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import { processCheckConstraints } from 'src/sql-tools/from-code/processors/check-constraint.processor';
-import { processColumnIndexes } from 'src/sql-tools/from-code/processors/column-index.processor';
 import { processColumns } from 'src/sql-tools/from-code/processors/column.processor';
 import { processConfigurationParameters } from 'src/sql-tools/from-code/processors/configuration-parameter.processor';
 import { processDatabases } from 'src/sql-tools/from-code/processors/database.processor';
@@ -36,14 +35,21 @@ const processors: Processor[] = [
   processUniqueConstraints,
   processCheckConstraints,
   processPrimaryKeyConstraints,
-  processIndexes,
-  processColumnIndexes,
   processForeignKeyConstraints,
+  processIndexes,
   processTriggers,
 ];
 
-export const schemaFromCode = () => {
+export type SchemaFromCodeOptions = {
+  /** automatically create indexes on foreign key columns */
+  createForeignKeyIndexes?: boolean;
+};
+export const schemaFromCode = (options: SchemaFromCodeOptions = {}) => {
   if (!initialized) {
+    const globalOptions = {
+      createForeignKeyIndexes: options.createForeignKeyIndexes ?? true,
+    };
+
     const builder: SchemaBuilder = {
       name: 'postgres',
       schemaName: 'public',
@@ -58,7 +64,7 @@ export const schemaFromCode = () => {
     const items = getRegisteredItems();
 
     for (const processor of processors) {
-      processor(builder, items);
+      processor(builder, items, globalOptions);
     }
 
     schema = { ...builder, tables: builder.tables.map(({ metadata: _, ...table }) => table) };

@@ -3,7 +3,6 @@ export { schemaFromCode } from 'src/sql-tools/from-code';
 export * from 'src/sql-tools/from-code/decorators/after-delete.decorator';
 export * from 'src/sql-tools/from-code/decorators/before-update.decorator';
 export * from 'src/sql-tools/from-code/decorators/check.decorator';
-export * from 'src/sql-tools/from-code/decorators/column-index.decorator';
 export * from 'src/sql-tools/from-code/decorators/column.decorator';
 export * from 'src/sql-tools/from-code/decorators/configuration-parameter.decorator';
 export * from 'src/sql-tools/from-code/decorators/create-date-column.decorator';

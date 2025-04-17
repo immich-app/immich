@@ -3,7 +3,6 @@ import { Permission } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   ForeignKeyColumn,
   PrimaryGeneratedColumn,
@@ -35,7 +34,6 @@ export class APIKeyTable {
   @Column({ array: true, type: 'character varying' })
   permissions!: Permission[];
 
-  @ColumnIndex({ name: 'IDX_api_keys_update_id' })
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_api_keys_update_id' })
   updateId?: string;
 }

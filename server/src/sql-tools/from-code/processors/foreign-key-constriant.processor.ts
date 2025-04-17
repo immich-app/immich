@@ -1,7 +1,7 @@
 import { onMissingColumn, resolveColumn } from 'src/sql-tools/from-code/processors/column.processor';
 import { onMissingTable, resolveTable } from 'src/sql-tools/from-code/processors/table.processor';
 import { Processor } from 'src/sql-tools/from-code/processors/type';
-import { asForeignKeyConstraintName, asRelationKeyConstraintName } from 'src/sql-tools/helpers';
+import { asKey } from 'src/sql-tools/helpers';
 import { DatabaseActionType, DatabaseConstraintType } from 'src/sql-tools/types';
 
 export const processForeignKeyConstraints: Processor = (builder, items) => {
@@ -46,7 +46,7 @@ export const processForeignKeyConstraints: Processor = (builder, items) => {
       synchronize: options.synchronize ?? true,
     });
 
-    if (options.unique) {
+    if (options.unique || options.uniqueConstraintName) {
       table.constraints.push({
         name: options.uniqueConstraintName || asRelationKeyConstraintName(table.name, columnNames),
         tableName: table.name,
@@ -57,3 +57,6 @@ export const processForeignKeyConstraints: Processor = (builder, items) => {
     }
   }
 };
+
+const asForeignKeyConstraintName = (table: string, columns: string[]) => asKey('FK_', table, columns);
+const asRelationKeyConstraintName = (table: string, columns: string[]) => asKey('REL_', table, columns);

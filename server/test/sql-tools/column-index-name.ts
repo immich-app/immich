@@ -2,11 +2,11 @@ import { Column, DatabaseSchema, Table } from 'src/sql-tools';
 
 @Table()
 export class Table1 {
-  @Column({ index: true })
+  @Column({ indexName: 'IDX_test' })
   column1!: string;
 }
 
-export const description = 'should create a column with an index';
+export const description = 'should create a column with an index if a name is provided';
 export const schema: DatabaseSchema = {
   name: 'postgres',
   schemaName: 'public',
@@ -30,7 +30,7 @@ export const schema: DatabaseSchema = {
       ],
       indexes: [
         {
-          name: 'IDX_50c4f9905061b1e506d38a2a38',
+          name: 'IDX_test',
           columnNames: ['column1'],
           tableName: 'table1',
           unique: false,
