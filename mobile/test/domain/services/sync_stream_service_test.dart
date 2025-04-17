@@ -408,10 +408,7 @@ void main() {
       await future;
 
       verify(
-        () => mockSyncApiRepo.getSyncEvents([
-          SyncRequestType.usersV1,
-          SyncRequestType.partnersV1,
-        ]),
+        () => mockSyncApiRepo.getSyncEvents(),
       ).called(1);
     });
 
