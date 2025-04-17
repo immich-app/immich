@@ -35,9 +35,9 @@ We recommend setting up nightly, monitored backups of the database as well as th
 The database dumps do **NOT** contain any pictures or videos, only metadata. They are only usable with a copy of the other files in `UPLOAD_LOCATION` as outlined below.
 :::
 
-For disaster-recovery purposes, Immich will automatically create database dumps. The dumps are stored in `UPLOAD_LOCATION/backups`.  
-Please be sure to make your own, independent backup of the database together with the asset folders as noted below.  
-You can adjust the schedule and amount of kept database dumps in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).  
+For disaster-recovery purposes, Immich will automatically create database dumps. The dumps are stored in `UPLOAD_LOCATION/backups`.
+Please be sure to make your own, independent backup of the database together with the asset folders as noted below.
+You can adjust the schedule and amount of kept database dumps in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).
 By default, Immich will keep the last 14 database dumps and create a new dump every day at 2:00 AM.
 
 #### Trigger Dump
