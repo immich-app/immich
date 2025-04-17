@@ -12,7 +12,12 @@ class UploadRepository implements IUploadRepository {
   @override
   void Function(TaskProgressUpdate)? onTaskProgress;
 
+  final taskQueue = MemoryTaskQueue();
+
   UploadRepository() {
+    // taskQueue.minInterval = const Duration(milliseconds: 5);
+    // taskQueue.maxConcurrent = 2;
+    FileDownloader().addTaskQueue(taskQueue);
     FileDownloader().registerCallbacks(
       group: uploadGroup,
       taskStatusCallback: (update) => onUploadStatus?.call(update),
@@ -21,8 +26,8 @@ class UploadRepository implements IUploadRepository {
   }
 
   @override
-  Future<bool> upload(UploadTask task) {
-    return FileDownloader().enqueue(task);
+  void enqueue(UploadTask task) {
+    taskQueue.add(task);
   }
 
   @override

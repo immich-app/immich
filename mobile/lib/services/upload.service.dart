@@ -42,19 +42,27 @@ class UploadService {
     return FileDownloader().cancelTaskWithId(id);
   }
 
-  Future<void> upload(File file) async {
+  Future<void> upload(
+    File file, {
+    Map<String, String>? fields,
+    String? originalFileName,
+    String? deviceAssetId,
+  }) async {
     final task = await _buildUploadTask(
-      hash(file.path).toString(),
+      deviceAssetId ?? hash(file.path).toString(),
       file,
+      fields: fields,
+      originalFileName: originalFileName,
     );
 
-    await _uploadRepository.upload(task);
+    _uploadRepository.enqueue(task);
   }
 
   Future<UploadTask> _buildUploadTask(
     String id,
     File file, {
     Map<String, String>? fields,
+    String? originalFileName,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -66,9 +74,8 @@ class UploadService {
     final stats = await file.stat();
     final fileCreatedAt = stats.changed;
     final fileModifiedAt = stats.modified;
-
     final fieldsMap = {
-      'filename': filename,
+      'filename': originalFileName ?? filename,
       'deviceAssetId': id,
       'deviceId': deviceId,
       'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
@@ -78,15 +85,13 @@ class UploadService {
       if (fields != null) ...fields,
     };
 
-    return UploadTask(
+    return UploadTask.fromFile(
+      file: file,
       taskId: id,
       httpRequestMethod: 'POST',
       url: url,
       headers: headers,
-      filename: filename,
       fields: fieldsMap,
-      baseDirectory: baseDirectory,
-      directory: directory,
       fileField: 'assetData',
       group: uploadGroup,
       updates: Updates.statusAndProgress,

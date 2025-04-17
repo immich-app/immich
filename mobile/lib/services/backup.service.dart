@@ -28,6 +28,7 @@ import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/services/upload.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
@@ -43,6 +44,7 @@ final backupServiceProvider = Provider(
     ref.watch(fileMediaRepositoryProvider),
     ref.watch(assetRepositoryProvider),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(uploadServiceProvider),
   ),
 );
 
@@ -56,6 +58,7 @@ class BackupService {
   final IFileMediaRepository _fileMediaRepository;
   final IAssetRepository _assetRepository;
   final IAssetMediaRepository _assetMediaRepository;
+  final UploadService _uploadService;
 
   BackupService(
     this._apiService,
@@ -65,6 +68,7 @@ class BackupService {
     this._fileMediaRepository,
     this._assetRepository,
     this._assetMediaRepository,
+    this._uploadService,
   );
 
   Future<List<String>?> getDeviceBackupAsset() async {
@@ -247,6 +251,42 @@ class BackupService {
         return a.asset.fileCreatedAt.compareTo(b.asset.fileCreatedAt);
       },
     );
+  }
+
+  uploadAssets(
+    Iterable<BackupCandidate> assets,
+  ) async {
+    final hasPermission = await _checkPermissions();
+    if (!hasPermission) {
+      return false;
+    }
+
+    List<BackupCandidate> candidates = assets.toList();
+    for (final candidate in candidates) {
+      final Asset asset = candidate.asset;
+      File? file;
+      File? livePhotoFile;
+      file = await asset.local!.originFile.timeout(const Duration(seconds: 5));
+
+      if (asset.local!.isLivePhoto) {
+        livePhotoFile = await asset.local!.originFileWithSubtype
+            .timeout(const Duration(seconds: 5));
+      }
+
+      if (file != null) {
+        String? originalFileName =
+            await _assetMediaRepository.getOriginalFilename(asset.localId!) ??
+                asset.fileName;
+
+        await _uploadService.upload(
+          file,
+          originalFileName: originalFileName,
+          deviceAssetId: asset.localId,
+        );
+      }
+
+      break;
+    }
   }
 
   Future<bool> backupAsset(
