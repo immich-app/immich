@@ -7,8 +7,6 @@ export type ForeignKeyColumnOptions = ColumnBaseOptions & {
   onUpdate?: Action;
   onDelete?: Action;
   constraintName?: string;
-  unique?: boolean;
-  uniqueConstraintName?: string;
 };
 
 export const ForeignKeyColumn = (target: () => object, options: ForeignKeyColumnOptions): PropertyDecorator => {

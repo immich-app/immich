@@ -3,7 +3,6 @@ import { AssetFileType } from 'src/enum';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   ForeignKeyColumn,
   PrimaryGeneratedColumn,
@@ -19,8 +18,11 @@ export class AssetFileTable {
   @PrimaryGeneratedColumn()
   id!: string;
 
-  @ColumnIndex('IDX_asset_files_assetId')
-  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @ForeignKeyColumn(() => AssetTable, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    indexName: 'IDX_asset_files_assetId',
+  })
   assetId?: string;
 
   @CreateDateColumn()
@@ -35,7 +37,6 @@ export class AssetFileTable {
   @Column()
   path!: string;
 
-  @ColumnIndex('IDX_asset_files_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_asset_files_update_id' })
   updateId?: string;
 }
