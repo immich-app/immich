@@ -20,6 +20,19 @@ class BackgroundSyncManager {
     }
     _userSyncTask?.cancel();
     _userSyncTask = null;
+
+    if (_assetSyncTask != null) {
+      futures.add(_assetSyncTask!.future);
+    }
+    _assetSyncTask?.cancel();
+    _assetSyncTask = null;
+
+    if (_exifSyncTask != null) {
+      futures.add(_exifSyncTask!.future);
+    }
+    _exifSyncTask?.cancel();
+    _exifSyncTask = null;
+
     return Future.wait(futures);
   }
 
