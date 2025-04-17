@@ -204,6 +204,13 @@ export class JobService extends BaseService {
         error?.stack,
         JSON.stringify(job.data),
       );
+      if (job.name === JobName.GENERATE_THUMBNAILS) {
+        // if failed thumbnail generation, still show the asset in the UI
+        const [asset] = await this.assetRepository.getByIdsWithAllRelations([job.data.id]);
+        if (asset) {
+          this.eventRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
+        } 
+      }
     } finally {
       this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
     }
@@ -280,6 +287,7 @@ export class JobService extends BaseService {
       }
 
       case JobName.GENERATE_THUMBNAILS: {
+
         if (!item.data.notify && item.data.source !== 'upload') {
           break;
         }
