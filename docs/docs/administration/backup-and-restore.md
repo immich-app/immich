@@ -49,7 +49,7 @@ This dumps will count towards the last `X` dumps that will be kept based on your
 
 #### Restoring
 
-We hope to make restoring simpler in future versions, for now you can find the database dumps in the `UPLOAD_LOCATION/backups` folder on your host.  
+We hope to make restoring simpler in future versions, for now you can find the database dumps in the `UPLOAD_LOCATION/backups` folder on your host.
 Then please follow the steps in the following section for restoring the database.
 
 ### Manual Backup and Restore
