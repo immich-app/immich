@@ -7,78 +7,33 @@ import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
 
 class BackgroundSyncManager {
-  Cancelable<void>? _userSyncTask;
-  Cancelable<void>? _assetSyncTask;
-  Cancelable<void>? _exifSyncTask;
+  Cancelable<void>? _syncTask;
 
   BackgroundSyncManager();
 
   Future<void> cancel() {
     final futures = <Future>[];
-    if (_userSyncTask != null) {
-      futures.add(_userSyncTask!.future);
-    }
-    _userSyncTask?.cancel();
-    _userSyncTask = null;
 
-    if (_assetSyncTask != null) {
-      futures.add(_assetSyncTask!.future);
+    if (_syncTask != null) {
+      futures.add(_syncTask!.future);
     }
-    _assetSyncTask?.cancel();
-    _assetSyncTask = null;
-
-    if (_exifSyncTask != null) {
-      futures.add(_exifSyncTask!.future);
-    }
-    _exifSyncTask?.cancel();
-    _exifSyncTask = null;
+    _syncTask?.cancel();
+    _syncTask = null;
 
     return Future.wait(futures);
   }
 
-  Future<void> syncUsers() {
-    if (_userSyncTask != null) {
-      return _userSyncTask!.future;
+  Future<void> sync() {
+    if (_syncTask != null) {
+      return _syncTask!.future;
     }
 
-    _userSyncTask = runInIsolateGentle(
-      computation: (ref) => ref.read(syncStreamServiceProvider).syncUsers(),
+    _syncTask = runInIsolateGentle(
+      computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
     );
-    _userSyncTask!.whenComplete(() {
-      _userSyncTask = null;
+    _syncTask!.whenComplete(() {
+      _syncTask = null;
     });
-    return _userSyncTask!.future;
-  }
-
-  Future<void> syncAssets() {
-    if (_assetSyncTask != null) {
-      return _assetSyncTask!.future;
-    }
-
-    _assetSyncTask = runInIsolateGentle(
-      computation: (ref) => ref.read(syncStreamServiceProvider).syncAssets(),
-    );
-
-    _assetSyncTask!.whenComplete(() {
-      _assetSyncTask = null;
-    });
-
-    return _assetSyncTask!.future;
-  }
-
-  Future<void> syncExif() {
-    if (_exifSyncTask != null) {
-      return _exifSyncTask!.future;
-    }
-
-    _exifSyncTask = runInIsolateGentle(
-      computation: (ref) => ref.read(syncStreamServiceProvider).syncExif(),
-    );
-
-    _exifSyncTask!.whenComplete(() {
-      _exifSyncTask = null;
-    });
-
-    return _exifSyncTask!.future;
+    return _syncTask!.future;
   }
 }

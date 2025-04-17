@@ -182,13 +182,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
         if (kDebugMode)
           IconButton(
-            onPressed: () {
-              Future.wait([
-                ref.read(backgroundSyncProvider).syncUsers(),
-                ref.read(backgroundSyncProvider).syncAssets(),
-                ref.read(backgroundSyncProvider).syncExif(),
-              ]);
-            },
+            onPressed: () => ref.read(backgroundSyncProvider).sync(),
             icon: const Icon(Icons.sync),
           ),
         if (showUploadButton)

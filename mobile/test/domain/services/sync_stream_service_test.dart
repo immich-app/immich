@@ -73,7 +73,7 @@ void main() {
 
   // Helper to trigger sync and add events to the stream
   Future<void> triggerSyncAndEmit(List<SyncEvent> events) async {
-    final future = sut.syncUsers(); // Start listening
+    final future = sut.sync(); // Start listening
     await Future.delayed(Duration.zero); // Allow listener to attach
     if (!streamController.isClosed) {
       streamController.add(events);
@@ -104,7 +104,7 @@ void main() {
       when(() => mockSyncApiRepo.getSyncEvents(any()))
           .thenAnswer((_) => Stream.error(Exception("Stream Error")));
       // Should complete gracefully without throwing
-      await expectLater(sut.syncUsers(), throwsException);
+      await expectLater(sut.sync(), throwsException);
       verifyNever(() => mockSyncApiRepo.ack(any())); // No ack on stream error
     });
 
@@ -112,7 +112,7 @@ void main() {
       final apiException = Exception("API Error");
       when(() => mockSyncApiRepo.getSyncEvents(any())).thenThrow(apiException);
       // Should rethrow the exception from the initial call
-      await expectLater(sut.syncUsers(), throwsA(apiException));
+      await expectLater(sut.sync(), throwsA(apiException));
       verifyNever(() => mockSyncApiRepo.ack(any()));
     });
 
@@ -175,7 +175,7 @@ void main() {
     });
 
     test("does not process or ack when stream emits an empty list", () async {
-      final future = sut.syncUsers();
+      final future = sut.sync();
       streamController.add([]); // Emit empty list
       await streamController.close();
       await future; // Wait for completion
@@ -213,7 +213,7 @@ void main() {
       final batch1 = SyncStreamStub.userEvents;
       final batch2 = SyncStreamStub.partnerEvents;
 
-      final syncFuture = sut.syncUsers();
+      final syncFuture = sut.sync();
       await pumpEventQueue();
 
       streamController.add(batch1);
@@ -283,7 +283,7 @@ void main() {
           return true;
         });
 
-        final syncFuture = sut.syncUsers();
+        final syncFuture = sut.sync();
         await pumpEventQueue(times: 30);
 
         streamController.add(SyncStreamStub.userEvents);
@@ -331,7 +331,7 @@ void main() {
         return true;
       });
 
-      final syncFuture = sut.syncUsers();
+      final syncFuture = sut.sync();
       // Allow listener to attach
       // This is necessary to ensure the stream is ready to receive events
       await Future.delayed(Duration.zero);
@@ -358,7 +358,7 @@ void main() {
     });
 
     test("processes events in the defined _kSyncTypeOrder", () async {
-      final future = sut.syncUsers();
+      final future = sut.sync();
       await pumpEventQueue();
       if (!streamController.isClosed) {
         final events = [
@@ -403,7 +403,7 @@ void main() {
   group("syncUsers", () {
     test("calls getSyncEvents with correct types", () async {
       // Need to close the stream for the future to complete
-      final future = sut.syncUsers();
+      final future = sut.sync();
       await streamController.close();
       await future;
 

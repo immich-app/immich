@@ -99,8 +99,7 @@ class SyncStreamService {
     return false;
   }
 
-  Future<void> _syncEvent(List<SyncRequestType> types) {
-    _logger.info("Syncing Events: $types");
+  Future<void> _syncEvent() {
     final streamCompleter = Completer();
     bool shouldComplete = false;
     // the onDone callback might fire before the events are processed
@@ -109,7 +108,7 @@ class SyncStreamService {
     Completer? mutex;
     StreamSubscription? subscription;
     try {
-      subscription = _syncApiRepository.getSyncEvents(types).listen(
+      subscription = _syncApiRepository.getSyncEvents().listen(
         (events) async {
           if (events.isEmpty) {
             _logger.warning("Received empty sync events");
@@ -176,7 +175,6 @@ class SyncStreamService {
             if (acks.isNotEmpty) {
               await _syncApiRepository.ack(acks.values.toList());
             }
-            _logger.info("$types events processed");
           } catch (error, stack) {
             _logger.warning("Error handling sync events", error, stack);
           } finally {
@@ -190,7 +188,7 @@ class SyncStreamService {
           }
         },
         onError: (error, stack) {
-          _logger.warning("Error in sync stream for $types", error, stack);
+          _logger.warning("Error in sync stream", error, stack);
           // Do not proceed if the stream errors
           if (!streamCompleter.isCompleted) {
             // ignore: avoid-missing-completer-stack-trace
@@ -198,7 +196,6 @@ class SyncStreamService {
           }
         },
         onDone: () {
-          _logger.info("$types stream done");
           if (mutex == null && !streamCompleter.isCompleted) {
             streamCompleter.complete();
           } else {
@@ -220,13 +217,5 @@ class SyncStreamService {
     });
   }
 
-  Future<void> syncUsers() =>
-      _syncEvent([SyncRequestType.usersV1, SyncRequestType.partnersV1]);
-
-  Future<void> syncAssets() =>
-      _syncEvent([SyncRequestType.assetsV1, SyncRequestType.partnerAssetsV1]);
-
-  Future<void> syncExif() => _syncEvent(
-        [SyncRequestType.assetExifsV1, SyncRequestType.partnerAssetExifsV1],
-      );
+  Future<void> sync() => _syncEvent();
 }

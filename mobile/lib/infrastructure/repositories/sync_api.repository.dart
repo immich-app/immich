@@ -17,8 +17,19 @@ class SyncApiRepository implements ISyncApiRepository {
       : _batchSize = batchSize;
 
   @override
-  Stream<List<SyncEvent>> getSyncEvents(List<SyncRequestType> type) {
-    return _getSyncStream(SyncStreamDto(types: type));
+  Stream<List<SyncEvent>> getSyncEvents() {
+    return _getSyncStream(
+      SyncStreamDto(
+        types: [
+          SyncRequestType.usersV1,
+          SyncRequestType.partnersV1,
+          SyncRequestType.assetsV1,
+          SyncRequestType.partnerAssetsV1,
+          SyncRequestType.assetExifsV1,
+          SyncRequestType.partnerAssetExifsV1,
+        ],
+      ),
+    );
   }
 
   @override
