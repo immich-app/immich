@@ -25,13 +25,12 @@ It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so
 
 ### Automatic Database Dumps
 
-:::danger
-The automatic database dumps are provided as a "last resort" recovery method in the event of damage to the Postgres database files.
-There is **NO** monitoring for these dumps and you will **NOT** be notified if they are unsuccessful. They are not recommended for production use.
-We recommend setting up nightly, monitored backups of the database as well as the Immich assets using the instructions in the `Manual Backup` section below.
+:::warning
+The automatic database dumps can be used to restore the database in the event of damage to the Postgres database files.
+There is no monitoring for these dumps and you will not be notified if they are unsuccessful.
 :::
 
-:::danger
+:::caution
 The database dumps do **NOT** contain any pictures or videos, only metadata. They are only usable with a copy of the other files in `UPLOAD_LOCATION` as outlined below.
 :::
 
