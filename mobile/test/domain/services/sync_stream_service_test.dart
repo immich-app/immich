@@ -42,7 +42,7 @@ void main() {
     );
 
     // Default stream setup - emits one batch and closes
-    when(() => mockSyncApiRepo.getSyncEvents(any()))
+    when(() => mockSyncApiRepo.getSyncEvents())
         .thenAnswer((_) => streamController.stream);
 
     // Default ack setup
@@ -101,7 +101,7 @@ void main() {
     );
 
     test("completes successfully when stream emits an error", () async {
-      when(() => mockSyncApiRepo.getSyncEvents(any()))
+      when(() => mockSyncApiRepo.getSyncEvents())
           .thenAnswer((_) => Stream.error(Exception("Stream Error")));
       // Should complete gracefully without throwing
       await expectLater(sut.sync(), throwsException);
@@ -110,7 +110,7 @@ void main() {
 
     test("throws when initial getSyncEvents call fails", () async {
       final apiException = Exception("API Error");
-      when(() => mockSyncApiRepo.getSyncEvents(any())).thenThrow(apiException);
+      when(() => mockSyncApiRepo.getSyncEvents()).thenThrow(apiException);
       // Should rethrow the exception from the initial call
       await expectLater(sut.sync(), throwsA(apiException));
       verifyNever(() => mockSyncApiRepo.ack(any()));
