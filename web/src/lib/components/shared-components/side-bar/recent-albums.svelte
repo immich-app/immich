@@ -1,29 +1,22 @@
 <script lang="ts">
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
+  import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  let albums: AlbumResponseDto[] = $state([]);
-
   onMount(async () => {
-    if (userInteraction.recentAlbums) {
-      albums = userInteraction.recentAlbums;
-      return;
-    }
     try {
-      const allAlbums = await getAllAlbums({});
-      albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
-      userInteraction.recentAlbums = albums;
+      await albumListingStore.ensureLoaded();
     } catch (error) {
       handleError(error, $t('failed_to_load_assets'));
     }
   });
 </script>
 
-{#each albums as album (album.id)}
+{#each albumListingStore.recentAlbums as album (album.id)}
   <a
     href={'/albums/' + album.id}
     title={album.albumName}

@@ -13,10 +13,16 @@ describe('RecentAlbums component', () => {
       albumFactory.build({ updatedAt: '2024-01-09T00:00:00Z' }),
     ];
 
-    sdkMock.getAllAlbums.mockResolvedValueOnce([...albums]);
+    sdkMock.getAllAlbums.mockImplementation(async ({ shared }) => {
+      if (shared) {
+        return [];
+      }
+      return [...albums];
+    });
     render(RecentAlbums);
+    await tick();
 
-    expect(sdkMock.getAllAlbums).toBeCalledTimes(1);
+    expect(sdkMock.getAllAlbums).toBeCalledTimes(2);
     await tick();
 
     const links = screen.getAllByRole('link');

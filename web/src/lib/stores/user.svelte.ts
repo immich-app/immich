@@ -7,14 +7,12 @@ import type {
 } from '@immich/sdk';
 
 interface UserInteractions {
-  recentAlbums?: AlbumResponseDto[];
   versions?: ServerVersionHistoryResponseDto[];
   aboutInfo?: ServerAboutResponseDto;
   serverInfo?: ServerStorageResponseDto;
 }
 
 const defaultUserInteraction: UserInteractions = {
-  recentAlbums: undefined,
   versions: undefined,
   aboutInfo: undefined,
   serverInfo: undefined,
