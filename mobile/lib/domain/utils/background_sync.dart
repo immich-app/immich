@@ -8,6 +8,8 @@ import 'package:worker_manager/worker_manager.dart';
 
 class BackgroundSyncManager {
   Cancelable<void>? _userSyncTask;
+  Cancelable<void>? _assetSyncTask;
+  Cancelable<void>? _exifSyncTask;
 
   BackgroundSyncManager();
 
@@ -33,5 +35,37 @@ class BackgroundSyncManager {
       _userSyncTask = null;
     });
     return _userSyncTask!.future;
+  }
+
+  Future<void> syncAssets() {
+    if (_assetSyncTask != null) {
+      return _assetSyncTask!.future;
+    }
+
+    _assetSyncTask = runInIsolateGentle(
+      computation: (ref) => ref.read(syncStreamServiceProvider).syncAssets(),
+    );
+
+    _assetSyncTask!.whenComplete(() {
+      _assetSyncTask = null;
+    });
+
+    return _assetSyncTask!.future;
+  }
+
+  Future<void> syncExif() {
+    if (_exifSyncTask != null) {
+      return _exifSyncTask!.future;
+    }
+
+    _exifSyncTask = runInIsolateGentle(
+      computation: (ref) => ref.read(syncStreamServiceProvider).syncExif(),
+    );
+
+    _exifSyncTask!.whenComplete(() {
+      _exifSyncTask = null;
+    });
+
+    return _exifSyncTask!.future;
   }
 }

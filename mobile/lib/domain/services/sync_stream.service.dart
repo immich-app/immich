@@ -65,6 +65,31 @@ class SyncStreamService {
       if (type == SyncEntityType.userDeleteV1) {
         return await _syncStreamRepository.deleteUsersV1(data.cast());
       }
+
+      if (type == SyncEntityType.assetV1) {
+        return await _syncStreamRepository.updateAssetsV1(data.cast());
+      }
+
+      if (type == SyncEntityType.assetDeleteV1) {
+        return await _syncStreamRepository.deleteAssetsV1(data.cast());
+      }
+
+      if (type == SyncEntityType.assetExifV1) {
+        return await _syncStreamRepository.updateAssetsExifV1(data.cast());
+      }
+
+      if (type == SyncEntityType.partnerAssetV1) {
+        return await _syncStreamRepository.updatePartnerAssetsV1(data.cast());
+      }
+
+      if (type == SyncEntityType.partnerAssetDeleteV1) {
+        return await _syncStreamRepository.deletePartnerAssetsV1(data.cast());
+      }
+
+      if (type == SyncEntityType.partnerAssetExifV1) {
+        return await _syncStreamRepository
+            .updatePartnerAssetsExifV1(data.cast());
+      }
     } catch (error, stack) {
       _logger.severe("Error processing sync data for $type", error, stack);
       return false;
@@ -197,4 +222,11 @@ class SyncStreamService {
 
   Future<void> syncUsers() =>
       _syncEvent([SyncRequestType.usersV1, SyncRequestType.partnersV1]);
+
+  Future<void> syncAssets() =>
+      _syncEvent([SyncRequestType.assetsV1, SyncRequestType.partnerAssetsV1]);
+
+  Future<void> syncExif() => _syncEvent(
+        [SyncRequestType.assetExifsV1, SyncRequestType.partnerAssetExifsV1],
+      );
 }

@@ -110,4 +110,10 @@ const _kResponseMap = <SyncEntityType, Function(dynamic)>{
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,
   SyncEntityType.partnerDeleteV1: SyncPartnerDeleteV1.fromJson,
+  SyncEntityType.assetV1: SyncAssetV1.fromJson,
+  SyncEntityType.assetDeleteV1: SyncAssetDeleteV1.fromJson,
+  SyncEntityType.assetExifV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.partnerAssetV1: SyncAssetV1.fromJson,
+  SyncEntityType.partnerAssetDeleteV1: SyncAssetDeleteV1.fromJson,
+  SyncEntityType.partnerAssetExifV1: SyncAssetExifV1.fromJson,
 };

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
@@ -100,5 +101,44 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
       _logger.severe('Error while processing SyncPartnerV1', e, s);
       return false;
     }
+  }
+
+  // Assets
+  @override
+  Future<bool> updateAssetsV1(Iterable<SyncAssetV1> data) async {
+    debugPrint("updateAssetsV1 - ${data.length}");
+    return true;
+  }
+
+  @override
+  Future<bool> deleteAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
+    debugPrint("deleteAssetsV1 - ${data.length}");
+    return true;
+  }
+
+  // Partner Assets
+  @override
+  Future<bool> updatePartnerAssetsV1(Iterable<SyncAssetV1> data) async {
+    debugPrint("updatePartnerAssetsV1 - ${data.length}");
+    return true;
+  }
+
+  @override
+  Future<bool> deletePartnerAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
+    debugPrint("deletePartnerAssetsV1 - ${data.length}");
+    return true;
+  }
+
+  // EXIF
+  @override
+  Future<bool> updateAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
+    debugPrint("updateAssetsExifV1 - ${data.length}");
+    return true;
+  }
+
+  @override
+  Future<bool> updatePartnerAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
+    debugPrint("updatePartnerAssetsExifV1 - ${data.length}");
+    return true;
   }
 }
