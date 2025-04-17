@@ -284,8 +284,6 @@ class BackupService {
           deviceAssetId: asset.localId,
         );
       }
-
-      break;
     }
   }
 

@@ -85,13 +85,15 @@ class UploadService {
       if (fields != null) ...fields,
     };
 
-    return UploadTask.fromFile(
-      file: file,
+    return UploadTask(
       taskId: id,
       httpRequestMethod: 'POST',
       url: url,
       headers: headers,
+      filename: filename,
       fields: fieldsMap,
+      baseDirectory: baseDirectory,
+      directory: directory,
       fileField: 'assetData',
       group: uploadGroup,
       updates: Updates.statusAndProgress,

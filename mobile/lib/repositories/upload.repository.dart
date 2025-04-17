@@ -15,8 +15,8 @@ class UploadRepository implements IUploadRepository {
   final taskQueue = MemoryTaskQueue();
 
   UploadRepository() {
-    // taskQueue.minInterval = const Duration(milliseconds: 5);
-    // taskQueue.maxConcurrent = 2;
+    taskQueue.minInterval = const Duration(milliseconds: 5);
+    taskQueue.maxConcurrent = 5;
     FileDownloader().addTaskQueue(taskQueue);
     FileDownloader().registerCallbacks(
       group: uploadGroup,
