@@ -209,7 +209,7 @@ export class JobService extends BaseService {
         const [asset] = await this.assetRepository.getByIdsWithAllRelations([job.data.id]);
         if (asset) {
           this.eventRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
-        } 
+        }
       }
     } finally {
       this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
@@ -287,7 +287,6 @@ export class JobService extends BaseService {
       }
 
       case JobName.GENERATE_THUMBNAILS: {
-
         if (!item.data.notify && item.data.source !== 'upload') {
           break;
         }
