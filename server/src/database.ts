@@ -263,6 +263,24 @@ export type AssetJobStatus = Selectable<DatabaseAssetJobStatus> & {
 const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
 
 export const columns = {
+  asset: [
+    'assets.id',
+    'assets.checksum',
+    'assets.deviceAssetId',
+    'assets.deviceId',
+    'assets.fileCreatedAt',
+    'assets.fileModifiedAt',
+    'assets.isExternal',
+    'assets.isVisible',
+    'assets.libraryId',
+    'assets.livePhotoVideoId',
+    'assets.localDateTime',
+    'assets.originalFileName',
+    'assets.originalPath',
+    'assets.ownerId',
+    'assets.sidecarPath',
+    'assets.type',
+  ],
   assetFiles: ['asset_files.id', 'asset_files.path', 'asset_files.type'],
   authUser: [
     'users.id',

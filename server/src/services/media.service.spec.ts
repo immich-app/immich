@@ -2,7 +2,6 @@ import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import {
   AssetFileType,
   AssetPathType,
@@ -249,6 +248,7 @@ describe(MediaService.name, () => {
     });
 
     it('should skip thumbnail generation if asset not found', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(void 0);
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
@@ -256,7 +256,7 @@ describe(MediaService.name, () => {
     });
 
     it('should skip thumbnail generation if asset type is unknown', async () => {
-      mocks.asset.getById.mockResolvedValue({ ...assetStub.image, type: 'foo' } as never as AssetEntity);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({ ...assetStub.image, type: 'foo' as AssetType });
 
       await expect(sut.handleGenerateThumbnails({ id: assetStub.image.id })).resolves.toBe(JobStatus.SKIPPED);
       expect(mocks.media.probe).not.toHaveBeenCalled();
@@ -266,14 +266,14 @@ describe(MediaService.name, () => {
 
     it('should skip video thumbnail generation if no video stream', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.noVideoStreams);
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await expect(sut.handleGenerateThumbnails({ id: assetStub.video.id })).rejects.toThrowError();
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalledWith();
     });
 
     it('should skip invisible assets', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.livePhotoMotionAsset);
 
       expect(await sut.handleGenerateThumbnails({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
 
@@ -283,7 +283,7 @@ describe(MediaService.name, () => {
 
     it('should delete previous preview if different path', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.WEBP } } });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -291,7 +291,7 @@ describe(MediaService.name, () => {
     });
 
     it('should generate P3 thumbnails for a wide gamut image', async () => {
-      mocks.asset.getById.mockResolvedValue({
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
         ...assetStub.image,
         exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as Exif,
       });
@@ -359,7 +359,7 @@ describe(MediaService.name, () => {
 
     it('should generate a thumbnail for a video', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
@@ -394,7 +394,7 @@ describe(MediaService.name, () => {
 
     it('should tonemap thumbnail for hdr video', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
@@ -432,7 +432,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { twoPass: true, maxBitrate: '5000k' },
       });
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -453,7 +453,7 @@ describe(MediaService.name, () => {
     });
     it('should not skip intra frames for MTS file', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamMTS);
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -471,7 +471,7 @@ describe(MediaService.name, () => {
     it('should use scaling divisible by 2 even when using quick sync', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV } });
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -487,7 +487,7 @@ describe(MediaService.name, () => {
 
     it.each(Object.values(ImageFormat))('should generate an image preview in %s format', async (format) => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { preview: { format } } });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
@@ -532,7 +532,7 @@ describe(MediaService.name, () => {
 
     it.each(Object.values(ImageFormat))('should generate an image thumbnail in %s format', async (format) => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format } } });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.jpeg`;
@@ -577,7 +577,7 @@ describe(MediaService.name, () => {
 
     it('should delete previous thumbnail if different path', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.WEBP } } });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -588,7 +588,7 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue(true);
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -605,7 +605,7 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue(true);
       mocks.media.getImageDimensions.mockResolvedValue({ width: 1000, height: 1000 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -621,7 +621,7 @@ describe(MediaService.name, () => {
 
     it('should resize original image if embedded image not found', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -636,7 +636,7 @@ describe(MediaService.name, () => {
 
     it('should resize original image if embedded image extraction is not enabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: false } });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -653,7 +653,7 @@ describe(MediaService.name, () => {
     it('should process invalid images if enabled', async () => {
       vi.stubEnv('IMMICH_PROCESS_INVALID_IMAGES', 'true');
 
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -689,7 +689,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: true } });
       mocks.media.extract.mockResolvedValue(true);
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -719,7 +719,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
       mocks.media.extract.mockResolvedValue(true);
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -760,7 +760,7 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue(true);
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
-      mocks.asset.getById.mockResolvedValue(assetStub.imageHif);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -788,7 +788,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
       mocks.media.extract.mockResolvedValue(true);
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -814,7 +814,7 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue(true);
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
-      mocks.asset.getById.mockResolvedValue(assetStub.imageHif);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 

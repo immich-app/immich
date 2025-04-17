@@ -27,7 +27,7 @@ import { getKyselyConfig } from 'src/utils/database';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
-const middleware = [
+export const middleware = [
   FileUploadInterceptor,
   { provide: APP_FILTER, useClass: GlobalExceptionFilter },
   { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },

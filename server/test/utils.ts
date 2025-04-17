@@ -93,13 +93,17 @@ export const automock = <T>(
       continue;
     }
 
-    const label = `${Dependency.name}.${property}`;
-    // console.log(`Automocking ${label}`);
+    try {
+      const label = `${Dependency.name}.${property}`;
+      // console.log(`Automocking ${label}`);
 
-    const target = instance[property as keyof T];
-    if (typeof target === 'function') {
-      mock[property] = mockFn(label, { strict });
-      continue;
+      const target = instance[property as keyof T];
+      if (typeof target === 'function') {
+        mock[property] = mockFn(label, { strict });
+        continue;
+      }
+    } catch {
+      // noop
     }
   }
 
