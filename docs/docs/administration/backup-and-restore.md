@@ -43,7 +43,7 @@ By default, Immich will keep the last 14 database dumps and create a new dump ev
 #### Trigger Dump
 
 You are able to trigger a database dump in the [admin job status page](http://my.immich.app/admin/jobs-status).
-Visit the page, open the "Create job" modal from the top right, select "Backup Database" and click "Confirm".
+Visit the page, open the "Create job" modal from the top right, select "Create Database Dump" and click "Confirm".
 A job will run and trigger a dump, you can verify this worked correctly by checking the logs or the `backups/` folder.
 This dumps will count towards the last `X` dumps that will be kept based on your settings.
 
