@@ -17,8 +17,6 @@ class ImmichLocalThumbnailProvider
   final Asset asset;
   final int height;
   final int width;
-
-  /// The image cache manager
   final CacheManager? cacheManager;
 
   ImmichLocalThumbnailProvider({
