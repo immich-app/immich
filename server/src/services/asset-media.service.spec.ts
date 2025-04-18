@@ -9,10 +9,10 @@ import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType, AssetStatus, AssetType, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
+import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -820,8 +820,8 @@ describe(AssetMediaService.name, () => {
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
       mocks.asset.getByChecksums.mockResolvedValue([
-        { id: 'asset-1', checksum: file1 } as AssetEntity,
-        { id: 'asset-2', checksum: file2 } as AssetEntity,
+        { id: 'asset-1', checksum: file1, deletedAt: null },
+        { id: 'asset-2', checksum: file2, deletedAt: null },
       ]);
 
       await expect(
@@ -857,7 +857,7 @@ describe(AssetMediaService.name, () => {
       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
-      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1 } as AssetEntity]);
+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1, deletedAt: null }]);
 
       await expect(
         sut.bulkUploadCheck(authStub.admin, {

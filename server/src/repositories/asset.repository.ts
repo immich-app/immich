@@ -6,11 +6,16 @@ import { Stack } from 'src/database';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
+import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
 import {
-  AssetEntity,
+  anyUuid,
+  asUuid,
   hasPeople,
+  removeUndefinedKeys,
   searchAssetBuilder,
   truncatedDate,
+  unnest,
   withExif,
   withFaces,
   withFacesAndPeople,
@@ -20,10 +25,7 @@ import {
   withSmartSearch,
   withTagId,
   withTags,
-} from 'src/entities/asset.entity';
-import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
-import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
-import { anyUuid, asUuid, removeUndefinedKeys, unnest } from 'src/utils/database';
+} from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
@@ -127,8 +129,6 @@ export interface AssetGetByChecksumOptions {
   checksum: Buffer;
   libraryId?: string;
 }
-
-export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
 export interface GetByIdsRelations {
   exifInfo?: boolean;
@@ -493,13 +493,13 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.BUFFER]] })
-  getByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
+  getByChecksums(userId: string, checksums: Buffer[]) {
     return this.db
       .selectFrom('assets')
       .select(['id', 'checksum', 'deletedAt'])
       .where('ownerId', '=', asUuid(userId))
       .where('checksum', 'in', checksums)
-      .execute() as any as Promise<AssetEntity[]>;
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
