@@ -299,51 +299,15 @@ export class AssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
-  async getByIds(
-    ids: string[],
-    { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {},
-  ): Promise<AssetEntity[]> {
-    const res = await this.db
-      .selectFrom('assets')
-      .selectAll('assets')
-      .where('assets.id', '=', anyUuid(ids))
-      .$if(!!exifInfo, withExif)
-      .$if(!!faces, (qb) =>
-        qb.select((eb) =>
-          faces?.person ? withFacesAndPeople(eb, faces.withDeleted) : withFaces(eb, faces?.withDeleted),
-        ),
-      )
-      .$if(!!files, (qb) => qb.select(withFiles))
-      .$if(!!library, (qb) => qb.select(withLibrary))
-      .$if(!!owner, (qb) => qb.select(withOwner))
-      .$if(!!smartSearch, withSmartSearch)
-      .$if(!!stack, (qb) =>
-        qb
-          .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
-          .$if(!stack!.assets, (qb) => qb.select((eb) => eb.fn.toJson(eb.table('asset_stack')).as('stack')))
-          .$if(!!stack!.assets, (qb) =>
-            qb
-              .leftJoinLateral(
-                (eb) =>
-                  eb
-                    .selectFrom('assets as stacked')
-                    .selectAll('asset_stack')
-                    .select((eb) => eb.fn('array_agg', [eb.table('stacked')]).as('assets'))
-                    .whereRef('stacked.stackId', '=', 'asset_stack.id')
-                    .whereRef('stacked.id', '!=', 'asset_stack.primaryAssetId')
-                    .where('stacked.deletedAt', 'is', null)
-                    .where('stacked.isArchived', '=', false)
-                    .groupBy('asset_stack.id')
-                    .as('stacked_assets'),
-                (join) => join.on('asset_stack.id', 'is not', null),
-              )
-              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack')),
-          ),
-      )
-      .$if(!!tags, (qb) => qb.select(withTags))
-      .execute();
-
-    return res as any as AssetEntity[];
+  getByIds(ids: string[]): Promise<AssetEntity[]> {
+    return (
+      this.db
+        //
+        .selectFrom('assets')
+        .selectAll('assets')
+        .where('assets.id', '=', anyUuid(ids))
+        .execute() as Promise<AssetEntity[]>
+    );
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
