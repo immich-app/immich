@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:photo_manager/photo_manager.dart' show ThumbnailSize;
+import 'package:logging/logging.dart';
 
 /// The local image provider for an asset
 /// Only viable
@@ -18,6 +19,7 @@ class ImmichLocalThumbnailProvider
   final int height;
   final int width;
   final CacheManager? cacheManager;
+  final Logger log = Logger("ImmichLocalThumbnailProvider");
 
   ImmichLocalThumbnailProvider({
     required this.asset,
@@ -66,7 +68,7 @@ class ImmichLocalThumbnailProvider
         yield codec;
         return;
       } catch (error) {
-        debugPrint("Loading of thumbnail failed: ${error.toString()}");
+        log.severe('Found thumbnail in cache, but loading it failed', error);
       }
     }
 
