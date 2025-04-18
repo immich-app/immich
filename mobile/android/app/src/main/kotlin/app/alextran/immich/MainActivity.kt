@@ -8,6 +8,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         flutterEngine.plugins.add(BackgroundServicePlugin())
+        flutterEngine.plugins.add(HttpSSLOptionsPlugin())
         // No need to set up method channel here as it's now handled in the plugin
     }
 }
