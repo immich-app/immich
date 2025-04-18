@@ -84,8 +84,8 @@ export class JobRepository {
   }
 
   startWorkers() {
-    const { bull } = this.configRepository.getEnv();
-    for (const queueName of Object.values(QueueName)) {
+    const { bull, workers } = this.configRepository.getEnv();
+    for (const queueName of workers.queues) {
       this.logger.debug(`Starting worker for queue: ${queueName}`);
       this.workers[queueName] = new Worker(
         queueName,

@@ -116,6 +116,14 @@ export class EnvDto {
 
   @IsString()
   @Optional()
+  IMMICH_MICROSERVICES_QUEUES_INCLUDE?: string;
+
+  @IsString()
+  @Optional()
+  IMMICH_MICROSERVICES_QUEUES_EXCLUDE?: string;
+
+  @IsString()
+  @Optional()
   IMMICH_WORKERS_INCLUDE?: string;
 
   @IsString()

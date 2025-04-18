@@ -13,6 +13,7 @@ import {
   QueueCleanType,
   QueueName,
 } from 'src/enum';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { ArgOf, ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { ConcurrentQueueName, JobItem } from 'src/types';
@@ -51,10 +52,13 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 
 @Injectable()
 export class JobService extends BaseService {
+  
   @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
   onConfigInit({ newConfig: config }: ArgOf<'config.init'>) {
     this.logger.debug(`Updating queue concurrency settings`);
-    for (const queueName of Object.values(QueueName)) {
+
+    const { workers: { queues } } = new ConfigRepository().getEnv();
+    for (const queueName of queues) {
       let concurrency = 1;
       if (this.isConcurrentQueue(queueName)) {
         concurrency = config.job[queueName].concurrency;
