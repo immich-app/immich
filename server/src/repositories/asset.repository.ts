@@ -498,6 +498,7 @@ export class AssetRepository {
         .selectAll('assets')
         .$call(withExif)
         .$call((qb) => qb.select(withFacesAndPeople))
+        .$if(true, (qb) => withAlbums(qb, {}))
         .executeTakeFirst() as Promise<AssetEntity>;
     }
 

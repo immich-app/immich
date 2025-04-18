@@ -57,6 +57,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
         .where('assets.deletedAt', 'is', null)
+        .where('assets.isVisible', '=', true)
         .orderBy('assets.fileCreatedAt', 'desc')
         .as('asset'),
     )
@@ -262,6 +263,10 @@ export class AlbumRepository {
     await this.addAssets(this.db, albumId, assetIds);
   }
 
+  async addAssetIdToAlbums(albumIds: string[], assetId: string): Promise<void> {
+    await this.addAssetToAlbums(this.db, albumIds, assetId);
+  }
+
   create(album: Insertable<Albums>, assetIds: string[], albumUsers: AlbumUserCreateDto[]): Promise<AlbumEntity> {
     return this.db.transaction().execute(async (tx) => {
       const newAlbum = await tx.insertInto('albums').values(album).returning('albums.id').executeTakeFirst();
@@ -319,6 +324,18 @@ export class AlbumRepository {
     await db
       .insertInto('albums_assets_assets')
       .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
+      .execute();
+  }
+
+  @Chunked({ paramIndex: 1, chunkSize: 30_000 })
+  private async addAssetToAlbums(db: Kysely<DB>, albumIds: string[], assetId: string): Promise<void> {
+    if (albumIds.length === 0) {
+      return;
+    }
+
+    await db
+      .insertInto('albums_assets_assets')
+      .values(albumIds.map((albumId) => ({ albumsId: albumId, assetsId: assetId })))
       .execute();
   }
 
