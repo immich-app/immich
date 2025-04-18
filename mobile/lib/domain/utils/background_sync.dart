@@ -2,12 +2,13 @@
 
 import 'dart:async';
 
-import 'package:immich_mobile/providers/infrastructure/sync_stream.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
 
 class BackgroundSyncManager {
   Cancelable<void>? _userSyncTask;
+  Cancelable<void>? _deviceAlbumSyncTask;
 
   BackgroundSyncManager();
 
@@ -21,6 +22,20 @@ class BackgroundSyncManager {
     return Future.wait(futures);
   }
 
+  // No need to cancel the task, as it can also be run when the user logs out
+  Future<void> syncDeviceAlbums() {
+    if (_deviceAlbumSyncTask != null) {
+      return _deviceAlbumSyncTask!.future;
+    }
+
+    _deviceAlbumSyncTask = runInIsolateGentle(
+      computation: (ref) => ref.read(syncServiceProvider).syncLocalAlbums(),
+    );
+    return _deviceAlbumSyncTask!.whenComplete(() {
+      _deviceAlbumSyncTask = null;
+    });
+  }
+
   Future<void> syncUsers() {
     if (_userSyncTask != null) {
       return _userSyncTask!.future;
@@ -29,9 +44,9 @@ class BackgroundSyncManager {
     _userSyncTask = runInIsolateGentle(
       computation: (ref) => ref.read(syncStreamServiceProvider).syncUsers(),
     );
-    _userSyncTask!.whenComplete(() {
-      _userSyncTask = null;
-    });
-    return _userSyncTask!.future;
+    return _userSyncTask!
+      ..whenComplete(() {
+        _userSyncTask = null;
+      });
   }
 }
