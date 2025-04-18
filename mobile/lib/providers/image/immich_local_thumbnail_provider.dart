@@ -59,11 +59,11 @@ class ImmichLocalThumbnailProvider
     ImageDecoderCallback decode,
   ) async* {
     final cacheKey = '${key.id}_${width}x$height';
-    final file = await cache.getFileFromCache(cacheKey);
-    if (file != null) {
+    final fileFromCache = await cache.getFileFromCache(cacheKey);
+    if (fileFromCache != null) {
       try {
-        final bytes = await file.file.readAsBytes();
-        final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
+        final buffer =
+            await ui.ImmutableBuffer.fromFilePath(fileFromCache.file.path);
         final codec = await decode(buffer);
         yield codec;
         return;
