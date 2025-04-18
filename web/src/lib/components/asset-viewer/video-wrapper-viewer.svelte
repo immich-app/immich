@@ -8,7 +8,6 @@
     projectionType: string | null | undefined;
     cacheKey: string | null;
     loopVideo: boolean;
-    onClose?: () => void;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -21,7 +20,6 @@
     cacheKey,
     loopVideo,
     onPreviousAsset,
-    onClose,
     onNextAsset,
     onVideoEnded,
     onVideoStarted,
@@ -31,14 +29,5 @@
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
   <VideoPanoramaViewer {assetId} />
 {:else}
-  <VideoNativeViewer
-    {loopVideo}
-    {cacheKey}
-    {assetId}
-    {onPreviousAsset}
-    {onNextAsset}
-    {onVideoEnded}
-    {onVideoStarted}
-    {onClose}
-  />
+  <VideoNativeViewer {loopVideo} {cacheKey} {assetId} {onPreviousAsset} {onNextAsset} {onVideoEnded} {onVideoStarted} />
 {/if}

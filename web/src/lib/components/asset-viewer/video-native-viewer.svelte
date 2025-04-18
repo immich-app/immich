@@ -1,16 +1,18 @@
 <script lang="ts">
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
-  import { onDestroy, onMount } from 'svelte';
   import { swipe } from 'svelte-gestures';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import 'vidstack/bundle';
+  import type { MediaPlayerElement } from 'vidstack/elements';
+  import type { MediaVolumeChangeEvent, MediaAutoPlayFailEvent } from 'vidstack';
+  import { tick } from 'svelte';
 
   interface Props {
     assetId: string;
@@ -20,7 +22,6 @@
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
     onVideoStarted?: () => void;
-    onClose?: () => void;
   }
 
   let {
@@ -31,55 +32,18 @@
     onNextAsset = () => {},
     onVideoEnded = () => {},
     onVideoStarted = () => {},
-    onClose = () => {},
   }: Props = $props();
 
-  let videoPlayer: HTMLVideoElement | undefined = $state();
-  let isLoading = $state(true);
-  let assetFileUrl = $state('');
+  let player: MediaPlayerElement | undefined = $state();
+  let assetFileUrl = $derived(getAssetPlaybackUrl({ id: assetId, cacheKey }));
+  let videoElement = $derived(player?.querySelector('video') as HTMLVideoElement);
+
   let forceMuted = $state(false);
-  let isScrubbing = $state(false);
+  let containerWidth = $state(0);
+  let containerHeight = $state(0);
 
-  onMount(() => {
-    if (videoPlayer) {
-      assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
-      forceMuted = false;
-      videoPlayer.load();
-    }
-  });
-
-  onDestroy(() => {
-    if (videoPlayer) {
-      videoPlayer.src = '';
-    }
-  });
-
-  const handleCanPlay = async (video: HTMLVideoElement) => {
-    try {
-      if (!video.paused && !isScrubbing) {
-        await video.play();
-        onVideoStarted();
-      }
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
-        await tryForceMutedPlay(video);
-        return;
-      }
-
-      handleError(error, $t('errors.unable_to_play_video'));
-    } finally {
-      isLoading = false;
-    }
-  };
-
-  const tryForceMutedPlay = async (video: HTMLVideoElement) => {
-    try {
-      video.muted = true;
-      await handleCanPlay(video);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_play_video'));
-    }
-  };
+  const streamType = 'on-demand';
+  const logLevel: 'silent' | 'error' | 'warn' | 'info' | 'debug' = 'silent';
 
   const onSwipe = (event: SwipeCustomEvent) => {
     if (event.detail.direction === 'left') {
@@ -90,12 +54,9 @@
     }
   };
 
-  let containerWidth = $state(0);
-  let containerHeight = $state(0);
-
   $effect(() => {
     if (isFaceEditMode.value) {
-      videoPlayer?.pause();
+      void player?.pause();
     }
   });
 </script>
@@ -105,43 +66,61 @@
   class="flex h-full select-none place-content-center place-items-center"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
+  use:swipe={() => ({})}
+  onswipe={onSwipe}
 >
-  <video
-    bind:this={videoPlayer}
+  {// vidstack is missing some types for svelte5 event syntax: onauto-play-fail
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  /* @ts-ignore */ void 0}
+  <media-player
+    class="h-full w-full"
+    bind:this={player}
+    src={assetFileUrl}
+    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+    {logLevel}
+    {streamType}
     loop={$loopVideoPreference && loopVideo}
-    autoplay
-    playsinline
-    controls
-    class="h-full object-contain"
-    use:swipe={() => ({})}
-    onswipe={onSwipe}
-    oncanplay={(e) => handleCanPlay(e.currentTarget)}
-    onended={onVideoEnded}
-    onvolumechange={(e) => {
-      if (!forceMuted) {
-        $videoViewerMuted = e.currentTarget.muted;
+    autoPlay
+    playsInline
+    muted={forceMuted || $videoViewerMuted}
+    onauto-play-fail={async (e: MediaAutoPlayFailEvent) => {
+      if (e.detail.error.name === 'NotAllowedError') {
+        forceMuted = true;
+        try {
+          await tick();
+          await player?.play();
+        } catch (error) {
+          handleError(error, $t('errors.unable_to_play_video'));
+        }
       }
     }}
-    onseeking={() => (isScrubbing = true)}
-    onseeked={() => (isScrubbing = false)}
-    onplaying={(e) => {
-      e.currentTarget.focus();
+    onvolume-change={(e: MediaVolumeChangeEvent) => {
+      if (forceMuted && !e.detail.muted && e.detail.volume > 0) {
+        forceMuted = false;
+      }
+      if (!forceMuted) {
+        $videoViewerVolume = e.detail.volume;
+        $videoViewerMuted = e.detail.muted;
+      }
     }}
-    onclose={() => onClose()}
-    muted={forceMuted || $videoViewerMuted}
-    bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
-    src={assetFileUrl}
+    onended={onVideoEnded}
+    onstarted={() => {
+      if (!forceMuted) {
+        player!.volume = $videoViewerVolume;
+        player!.muted = $videoViewerMuted;
+      }
+      onVideoStarted();
+    }}
   >
-  </video>
-
-  {#if isLoading}
-    <div class="absolute flex place-content-center place-items-center">
-      <LoadingSpinner />
-    </div>
-  {/if}
-
+    <media-provider>
+      <media-poster
+        class="vds-poster"
+        src={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+      ></media-poster>
+    </media-provider>
+    <media-video-layout noScrubGesture smallWhen="never"></media-video-layout>
+  </media-player>
   {#if isFaceEditMode.value}
-    <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
+    <FaceEditor htmlElement={videoElement} {containerWidth} {containerHeight} {assetId} />
   {/if}
 </div>

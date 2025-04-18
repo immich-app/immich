@@ -20,10 +20,7 @@
     "editor.tabSize": 2
   },
   "svelte.enable-ts-plugin": true,
-  "eslint.validate": [
-    "javascript",
-    "svelte"
-  ],
+  "eslint.validate": ["javascript", "svelte"],
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "[dart]": {
     "editor.formatOnSave": true,
@@ -34,12 +31,11 @@
     "editor.wordBasedSuggestions": "off",
     "editor.defaultFormatter": "Dart-Code.dart-code"
   },
-  "cSpell.words": [
-    "immich"
-  ],
+  "cSpell.words": ["immich"],
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.ts": "${capture}.spec.ts,${capture}.mock.ts",
     "*.dart": "${capture}.g.dart,${capture}.gr.dart,${capture}.drift.dart"
-  }
+  },
+  "html.customData": ["../web/node_modules/vidstack/vscode.html-data.json"]
 }

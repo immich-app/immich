@@ -496,7 +496,6 @@
             loopVideo={true}
             onPreviousAsset={() => navigateAsset('previous')}
             onNextAsset={() => navigateAsset('next')}
-            onClose={closeViewer}
             onVideoEnded={() => navigateAsset()}
             onVideoStarted={handleVideoStarted}
           />
@@ -541,7 +540,6 @@
             loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
             onPreviousAsset={() => navigateAsset('previous')}
             onNextAsset={() => navigateAsset('next')}
-            onClose={closeViewer}
             onVideoEnded={() => navigateAsset()}
             onVideoStarted={handleVideoStarted}
           />

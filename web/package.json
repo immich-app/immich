@@ -50,7 +50,8 @@
     "svelte-i18n": "^4.0.1",
     "svelte-maplibre": "^1.0.0",
     "svelte-persisted-store": "^0.12.0",
-    "thumbhash": "^0.1.1"
+    "thumbhash": "^0.1.1",
+    "vidstack": "^1.12.13"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
