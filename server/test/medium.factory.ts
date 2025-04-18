@@ -13,9 +13,11 @@ import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EmailRepository } from 'src/repositories/email.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
@@ -42,10 +44,12 @@ type RepositoriesTypes = {
   config: ConfigRepository;
   crypto: CryptoRepository;
   database: DatabaseRepository;
+  email: EmailRepository;
   job: JobRepository;
   user: UserRepository;
   logger: LoggingRepository;
   memory: MemoryRepository;
+  notification: NotificationRepository;
   partner: PartnerRepository;
   person: PersonRepository;
   search: SearchRepository;
@@ -142,6 +146,11 @@ export const getRepository = <K extends keyof RepositoriesTypes>(key: K, db: Kys
       return new DatabaseRepository(db, new LoggingRepository(undefined, configRepo), configRepo);
     }
 
+    case 'email': {
+      const logger = new LoggingRepository(undefined, new ConfigRepository());
+      return new EmailRepository(logger);
+    }
+
     case 'logger': {
       const configMock = { getEnv: () => ({ noColor: false }) };
       return new LoggingRepository(undefined, configMock as ConfigRepository);
@@ -149,6 +158,10 @@ export const getRepository = <K extends keyof RepositoriesTypes>(key: K, db: Kys
 
     case 'memory': {
       return new MemoryRepository(db);
+    }
+
+    case 'notification': {
+      return new NotificationRepository(db);
     }
 
     case 'partner': {
@@ -221,6 +234,10 @@ const getRepositoryMock = <K extends keyof RepositoryMocks>(key: K) => {
       });
     }
 
+    case 'email': {
+      return automock(EmailRepository, { args: [{ setContext: () => {} }] });
+    }
+
     case 'job': {
       return automock(JobRepository, { args: [undefined, undefined, undefined, { setContext: () => {} }] });
     }
@@ -232,6 +249,10 @@ const getRepositoryMock = <K extends keyof RepositoryMocks>(key: K) => {
 
     case 'memory': {
       return automock(MemoryRepository);
+    }
+
+    case 'notification': {
+      return automock(NotificationRepository);
     }
 
     case 'partner': {
@@ -284,7 +305,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.crypto || getRepositoryMock('crypto'),
     repositories.database || getRepositoryMock('database'),
     repositories.downloadRepository,
-    repositories.email,
+    repositories.email || getRepositoryMock('email'),
     repositories.event,
     repositories.job || getRepositoryMock('job'),
     repositories.library,
@@ -294,6 +315,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.memory || getRepositoryMock('memory'),
     repositories.metadata,
     repositories.move,
+    repositories.notification || getRepositoryMock('notification'),
     repositories.oauth,
     repositories.partner || getRepositoryMock('partner'),
     repositories.person || getRepositoryMock('person'),

@@ -3,7 +3,6 @@ import { defaults, SystemConfig } from 'src/config';
 import { AlbumUser } from 'src/database';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
-import { EmailTemplate } from 'src/repositories/email.repository';
 import { NotificationService } from 'src/services/notification.service';
 import { INotifyAlbumUpdateJob } from 'src/types';
 import { albumStub } from 'test/fixtures/album.stub';
@@ -238,82 +237,6 @@ describe(NotificationService.name, () => {
     it('should send connected clients an event', () => {
       sut.onStacksDelete({ stackIds: ['stack-id'], userId: 'user-id' });
       expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
-    });
-  });
-
-  describe('sendTestEmail', () => {
-    it('should throw error if user could not be found', async () => {
-      await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).rejects.toThrow('User not found');
-    });
-
-    it('should throw error if smtp validation fails', async () => {
-      mocks.user.get.mockResolvedValue(userStub.admin);
-      mocks.email.verifySmtp.mockRejectedValue('');
-
-      await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).rejects.toThrow(
-        'Failed to verify SMTP configuration',
-      );
-    });
-
-    it('should send email to default domain', async () => {
-      mocks.user.get.mockResolvedValue(userStub.admin);
-      mocks.email.verifySmtp.mockResolvedValue(true);
-      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.email.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
-
-      await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).resolves.not.toThrow();
-      expect(mocks.email.renderEmail).toHaveBeenCalledWith({
-        template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
-      });
-      expect(mocks.email.sendEmail).toHaveBeenCalledWith(
-        expect.objectContaining({
-          subject: 'Test email from Immich',
-          smtp: configs.smtpTransport.notifications.smtp.transport,
-        }),
-      );
-    });
-
-    it('should send email to external domain', async () => {
-      mocks.user.get.mockResolvedValue(userStub.admin);
-      mocks.email.verifySmtp.mockResolvedValue(true);
-      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.systemMetadata.get.mockResolvedValue({ server: { externalDomain: 'https://demo.immich.app' } });
-      mocks.email.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
-
-      await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).resolves.not.toThrow();
-      expect(mocks.email.renderEmail).toHaveBeenCalledWith({
-        template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'https://demo.immich.app', displayName: userStub.admin.name },
-      });
-      expect(mocks.email.sendEmail).toHaveBeenCalledWith(
-        expect.objectContaining({
-          subject: 'Test email from Immich',
-          smtp: configs.smtpTransport.notifications.smtp.transport,
-        }),
-      );
-    });
-
-    it('should send email with replyTo', async () => {
-      mocks.user.get.mockResolvedValue(userStub.admin);
-      mocks.email.verifySmtp.mockResolvedValue(true);
-      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.email.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
-
-      await expect(
-        sut.sendTestEmail('', { ...configs.smtpTransport.notifications.smtp, replyTo: 'demo@immich.app' }),
-      ).resolves.not.toThrow();
-      expect(mocks.email.renderEmail).toHaveBeenCalledWith({
-        template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
-      });
-      expect(mocks.email.sendEmail).toHaveBeenCalledWith(
-        expect.objectContaining({
-          subject: 'Test email from Immich',
-          smtp: configs.smtpTransport.notifications.smtp.transport,
-          replyTo: 'demo@immich.app',
-        }),
-      );
     });
   });
 
