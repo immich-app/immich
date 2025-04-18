@@ -100,6 +100,12 @@ String parameterToString(dynamic value) {
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
   }
+  if (value is NotificationLevel) {
+    return NotificationLevelTypeTransformer().encode(value).toString();
+  }
+  if (value is NotificationType) {
+    return NotificationTypeTypeTransformer().encode(value).toString();
+  }
   if (value is PartnerDirection) {
     return PartnerDirectionTypeTransformer().encode(value).toString();
   }

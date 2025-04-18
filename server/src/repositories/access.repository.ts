@@ -279,6 +279,26 @@ class AuthDeviceAccess {
   }
 }
 
+class NotificationAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, notificationIds: Set<string>) {
+    if (notificationIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('notifications')
+      .select('notifications.id')
+      .where('notifications.id', 'in', [...notificationIds])
+      .where('notifications.userId', '=', userId)
+      .execute()
+      .then((stacks) => new Set(stacks.map((stack) => stack.id)));
+  }
+}
+
 class StackAccess {
   constructor(private db: Kysely<DB>) {}
 
@@ -426,6 +446,7 @@ export class AccessRepository {
   asset: AssetAccess;
   authDevice: AuthDeviceAccess;
   memory: MemoryAccess;
+  notification: NotificationAccess;
   person: PersonAccess;
   partner: PartnerAccess;
   stack: StackAccess;
@@ -438,6 +459,7 @@ export class AccessRepository {
     this.asset = new AssetAccess(db);
     this.authDevice = new AuthDeviceAccess(db);
     this.memory = new MemoryAccess(db);
+    this.notification = new NotificationAccess(db);
     this.person = new PersonAccess(db);
     this.partner = new PartnerAccess(db);
     this.stack = new StackAccess(db);

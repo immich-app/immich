@@ -206,6 +206,141 @@
         ]
       }
     },
+    "/admin/notifications": {
+      "post": {
+        "operationId": "createNotification",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications (Admin)"
+        ]
+      }
+    },
+    "/admin/notifications/templates/{name}": {
+      "post": {
+        "operationId": "getNotificationTemplate",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications (Admin)"
+        ]
+      }
+    },
+    "/admin/notifications/test-email": {
+      "post": {
+        "operationId": "sendTestEmail",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfigSmtpDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestEmailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications (Admin)"
+        ]
+      }
+    },
     "/admin/users": {
       "get": {
         "operationId": "searchUsersAdmin",
@@ -3485,24 +3620,15 @@
         ]
       }
     },
-    "/notifications/templates/{name}": {
-      "post": {
-        "operationId": "getNotificationTemplate",
-        "parameters": [
-          {
-            "name": "name",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+    "/notifications": {
+      "delete": {
+        "operationId": "deleteNotifications",
+        "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TemplateDto"
+                "$ref": "#/components/schemas/NotificationDeleteAllDto"
               }
             }
           },
@@ -3510,10 +3636,70 @@
         },
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "get": {
+        "operationId": "getNotifications",
+        "parameters": [
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "level",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/NotificationLevel"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/NotificationType"
+            }
+          },
+          {
+            "name": "unread",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TemplateResponseDto"
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -3534,17 +3720,133 @@
         "tags": [
           "Notifications"
         ]
-      }
-    },
-    "/notifications/test-email": {
-      "post": {
-        "operationId": "sendTestEmail",
+      },
+      "put": {
+        "operationId": "updateNotifications",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SystemConfigSmtpDto"
+                "$ref": "#/components/schemas/NotificationUpdateAllDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/{id}": {
+      "delete": {
+        "operationId": "deleteNotification",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "get": {
+        "operationId": "getNotification",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "put": {
+        "operationId": "updateNotification",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationUpdateDto"
               }
             }
           },
@@ -3555,7 +3857,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TestEmailResponseDto"
+                  "$ref": "#/components/schemas/NotificationDto"
                 }
               }
             },
@@ -10341,6 +10643,152 @@
         },
         "type": "object"
       },
+      "NotificationCreateDto": {
+        "properties": {
+          "data": {
+            "type": "object"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "level": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationLevel"
+              }
+            ]
+          },
+          "readAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "NotificationDeleteAllDto": {
+        "properties": {
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
+      "NotificationDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "level": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationLevel"
+              }
+            ]
+          },
+          "readAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "level",
+          "title",
+          "type"
+        ],
+        "type": "object"
+      },
+      "NotificationLevel": {
+        "enum": [
+          "success",
+          "error",
+          "warning",
+          "info"
+        ],
+        "type": "string"
+      },
+      "NotificationType": {
+        "enum": [
+          "JobFailed",
+          "BackupFailed",
+          "SystemMessage",
+          "Custom"
+        ],
+        "type": "string"
+      },
+      "NotificationUpdateAllDto": {
+        "properties": {
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "readAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
+      "NotificationUpdateDto": {
+        "properties": {
+          "readAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "OAuthAuthorizeResponseDto": {
         "properties": {
           "url": {
@@ -10603,6 +11051,10 @@
           "memory.read",
           "memory.update",
           "memory.delete",
+          "notification.create",
+          "notification.read",
+          "notification.update",
+          "notification.delete",
           "partner.create",
           "partner.read",
           "partner.update",

@@ -14,6 +14,7 @@ import { SystemConfig } from 'src/config';
 import { EventConfig } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { NotificationDto } from 'src/dtos/notification.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { ImmichWorker, MetadataKey, QueueName } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -64,6 +65,7 @@ type EventMap = {
   'assets.restore': [{ assetIds: string[]; userId: string }];
 
   'job.start': [QueueName, JobItem];
+  'job.failed': [{ job: JobItem; error: Error | any }];
 
   // session events
   'session.delete': [{ sessionId: string }];
@@ -104,6 +106,7 @@ export interface ClientEventMap {
   on_server_version: [ServerVersionResponseDto];
   on_config_update: [];
   on_new_release: [ReleaseNotification];
+  on_notification: [NotificationDto];
   on_session_delete: [string];
 }
 
