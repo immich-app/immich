@@ -311,4 +311,5 @@ export const factory = {
     sidecarWrite: assetSidecarWriteFactory,
   },
   uuid: newUuid,
+  date: newDate,
 };

@@ -18,6 +18,7 @@ import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { DownloadRepository } from 'src/repositories/download.repository';
+import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
@@ -124,6 +125,7 @@ export type ServiceOverrides = {
   crypto: CryptoRepository;
   database: DatabaseRepository;
   downloadRepository: DownloadRepository;
+  email: EmailRepository;
   event: EventRepository;
   job: JobRepository;
   library: LibraryRepository;
@@ -190,6 +192,7 @@ export const newTestService = <T extends BaseService>(
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),
+    email: automock(EmailRepository, { args: [loggerMock] }),
     // eslint-disable-next-line no-sparse-arrays
     event: automock(EventRepository, { args: [, , loggerMock], strict: false }),
     job: newJobRepositoryMock(),
@@ -201,7 +204,7 @@ export const newTestService = <T extends BaseService>(
     memory: automock(MemoryRepository),
     metadata: newMetadataRepositoryMock(),
     move: automock(MoveRepository, { strict: false }),
-    notification: automock(NotificationRepository, { args: [loggerMock] }),
+    notification: automock(NotificationRepository),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
     person: newPersonRepositoryMock(),
@@ -240,6 +243,7 @@ export const newTestService = <T extends BaseService>(
     overrides.crypto || (mocks.crypto as As<CryptoRepository>),
     overrides.database || (mocks.database as As<DatabaseRepository>),
     overrides.downloadRepository || (mocks.downloadRepository as As<DownloadRepository>),
+    overrides.email || (mocks.email as As<EmailRepository>),
     overrides.event || (mocks.event as As<EventRepository>),
     overrides.job || (mocks.job as As<JobRepository>),
     overrides.library || (mocks.library as As<LibraryRepository>),

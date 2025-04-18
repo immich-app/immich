@@ -145,8 +145,15 @@ Class | Method | HTTP request | Description
 *MemoriesApi* | [**removeMemoryAssets**](doc//MemoriesApi.md#removememoryassets) | **DELETE** /memories/{id}/assets | 
 *MemoriesApi* | [**searchMemories**](doc//MemoriesApi.md#searchmemories) | **GET** /memories | 
 *MemoriesApi* | [**updateMemory**](doc//MemoriesApi.md#updatememory) | **PUT** /memories/{id} | 
-*NotificationsApi* | [**getNotificationTemplate**](doc//NotificationsApi.md#getnotificationtemplate) | **POST** /notifications/templates/{name} | 
-*NotificationsApi* | [**sendTestEmail**](doc//NotificationsApi.md#sendtestemail) | **POST** /notifications/test-email | 
+*NotificationsApi* | [**deleteNotification**](doc//NotificationsApi.md#deletenotification) | **DELETE** /notifications/{id} | 
+*NotificationsApi* | [**deleteNotifications**](doc//NotificationsApi.md#deletenotifications) | **DELETE** /notifications | 
+*NotificationsApi* | [**getNotification**](doc//NotificationsApi.md#getnotification) | **GET** /notifications/{id} | 
+*NotificationsApi* | [**getNotifications**](doc//NotificationsApi.md#getnotifications) | **GET** /notifications | 
+*NotificationsApi* | [**updateNotification**](doc//NotificationsApi.md#updatenotification) | **PUT** /notifications/{id} | 
+*NotificationsApi* | [**updateNotifications**](doc//NotificationsApi.md#updatenotifications) | **PUT** /notifications | 
+*NotificationsAdminApi* | [**createNotification**](doc//NotificationsAdminApi.md#createnotification) | **POST** /admin/notifications | 
+*NotificationsAdminApi* | [**getNotificationTemplate**](doc//NotificationsAdminApi.md#getnotificationtemplate) | **POST** /admin/notifications/templates/{name} | 
+*NotificationsAdminApi* | [**sendTestEmail**](doc//NotificationsAdminApi.md#sendtestemail) | **POST** /admin/notifications/test-email | 
 *OAuthApi* | [**finishOAuth**](doc//OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
 *OAuthApi* | [**linkOAuthAccount**](doc//OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
 *OAuthApi* | [**redirectOAuthToMobile**](doc//OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 
@@ -361,6 +368,13 @@ Class | Method | HTTP request | Description
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [MetadataSearchDto](doc//MetadataSearchDto.md)
+ - [NotificationCreateDto](doc//NotificationCreateDto.md)
+ - [NotificationDeleteAllDto](doc//NotificationDeleteAllDto.md)
+ - [NotificationDto](doc//NotificationDto.md)
+ - [NotificationLevel](doc//NotificationLevel.md)
+ - [NotificationType](doc//NotificationType.md)
+ - [NotificationUpdateAllDto](doc//NotificationUpdateAllDto.md)
+ - [NotificationUpdateDto](doc//NotificationUpdateDto.md)
  - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
