@@ -1,6 +1,6 @@
 name: Docs deploy
 on:
-  workflow_run:
+  workflow_run: # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
     workflows: ['Docs build']
     types:
       - completed
@@ -115,22 +115,22 @@ jobs:
       - name: Load parameters
         id: parameters
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        env:
+          PARAM_JSON: ${{ needs.checks.outputs.parameters }}
         with:
           script: |
-            const json = `${{ needs.checks.outputs.parameters }}`;
-            const parameters = JSON.parse(json);
+            const parameters = JSON.parse(process.env.PARAM_JSON);
             core.setOutput("event", parameters.event);
             core.setOutput("name", parameters.name);
             core.setOutput("shouldDeploy", parameters.shouldDeploy);
 
-      - run: |
-          echo "Starting docs deployment for ${{ steps.parameters.outputs.event }} ${{ steps.parameters.outputs.name }}"
-
       - name: Download artifact
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        env:
+          ARTIFACT_JSON: ${{ needs.checks.outputs.artifact }}
         with:
           script: |
-            let artifact = ${{ needs.checks.outputs.artifact }};
+            let artifact = JSON.parse(process.env.ARTIFACT_JSON);
             let download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,

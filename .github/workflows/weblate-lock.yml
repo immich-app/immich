@@ -57,4 +57,5 @@ jobs:
         run: exit 1
       - name: All jobs passed or skipped
         if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
         run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"

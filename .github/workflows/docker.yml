@@ -224,7 +224,7 @@ jobs:
             BUILD_SOURCE_COMMIT=${{ github.sha }}
 
       - name: Export digest
-        run: |
+        run: | # zizmor: ignore[template-injection]
           mkdir -p ${{ runner.temp }}/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
@@ -426,7 +426,7 @@ jobs:
             BUILD_SOURCE_COMMIT=${{ github.sha }}
 
       - name: Export digest
-        run: |
+        run: | # zizmor: ignore[template-injection]
           mkdir -p ${{ runner.temp }}/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
@@ -535,6 +535,7 @@ jobs:
         run: exit 1
       - name: All jobs passed or skipped
         if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
         run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
 
   success-check-ml:
@@ -549,4 +550,5 @@ jobs:
         run: exit 1
       - name: All jobs passed or skipped
         if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
         run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
