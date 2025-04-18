@@ -60,16 +60,22 @@ class ImmichLocalThumbnailProvider
   ) async* {
     final cacheKey = '${key.id}_${width}x$height';
     final file = await cache.getFileFromCache(cacheKey);
-    if (file?.file.existsSync() == true) {
-      final bytes = await file!.file.readAsBytes();
-      final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
-      final codec = await decode(buffer);
-      yield codec;
-      return;
+    if (file != null) {
+      try {
+        final bytes = await file.file.readAsBytes();
+        final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
+        final codec = await decode(buffer);
+        yield codec;
+        return;
+      } catch (error) {
+        debugPrint("Loading of thumbnail failed: ${error.toString()}");
+      }
     }
 
-    final thumbnailBytes =
-        await asset.local?.thumbnailDataWithSize(ThumbnailSize(width, height));
+    final thumbnailBytes = await asset.local?.thumbnailDataWithSize(
+      ThumbnailSize(width, height),
+      quality: 80,
+    );
     if (thumbnailBytes == null) {
       throw StateError(
         "Loading thumb for local photo ${asset.fileName} failed",
