@@ -47,7 +47,10 @@ jobs:
         uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
 
       - name: Bump version
-        run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
+        env:
+          SERVER_BUMP: ${{ inputs.serverBump }}
+          MOBILE_BUMP: ${{ inputs.mobileBump }}
+        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
 
       - name: Commit and tag
         id: push-tag
