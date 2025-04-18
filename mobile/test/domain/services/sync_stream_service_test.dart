@@ -36,7 +36,6 @@ void main() {
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
 
   successHandler(Invocation _) async => true;
-  failureHandler(Invocation _) async => false;
 
   setUp(() {
     mockSyncStreamRepo = MockSyncStreamRepository();
@@ -130,71 +129,6 @@ void main() {
       verifyNever(() => mockAbortCallbackWrapper());
     });
 
-    test(
-      "sends ack for successful updates if handler throws exception",
-      () async {
-        final repoError = Exception("Repo Error");
-        when(() => mockSyncStreamRepo.updateUsersV1(any()))
-            .thenThrow(repoError);
-
-        final events = [
-          SyncStreamStub.userDeleteV1,
-          SyncStreamStub.userV1Admin,
-          SyncStreamStub.partnerDeleteV1,
-        ];
-
-        await simulateEvents(events);
-
-        verifyInOrder([
-          () => mockSyncStreamRepo.deleteUsersV1(any()),
-          () => mockSyncApiRepo.ack(["2"]),
-          () => mockSyncStreamRepo.updateUsersV1(any()),
-        ]);
-
-        verifyNever(() => mockSyncStreamRepo.deletePartnerV1(any()));
-        verify(() => mockAbortCallbackWrapper()).called(1);
-      },
-    );
-
-    test("aborts and stops processing if handler returns false", () async {
-      when(() => mockSyncStreamRepo.updateUsersV1(any()))
-          .thenAnswer(failureHandler);
-
-      final events = [
-        SyncStreamStub.userDeleteV1,
-        SyncStreamStub.userV1Admin,
-        SyncStreamStub.partnerDeleteV1,
-      ];
-
-      await simulateEvents(events);
-
-      verifyInOrder([
-        () => mockSyncStreamRepo.deleteUsersV1(any()),
-        () => mockSyncApiRepo.ack(["2"]),
-        () => mockSyncStreamRepo.updateUsersV1(any()),
-      ]);
-
-      verifyNever(() => mockSyncStreamRepo.deletePartnerV1(any()));
-      verify(() => mockAbortCallbackWrapper()).called(1);
-    });
-
-    test("sends no ack if all handlers fail (return false)", () async {
-      when(() => mockSyncStreamRepo.deleteUsersV1(any()))
-          .thenAnswer(failureHandler);
-
-      final events = [
-        SyncStreamStub.userDeleteV1,
-        SyncStreamStub.userV1Admin,
-      ];
-
-      await simulateEvents(events);
-
-      verify(() => mockSyncStreamRepo.deleteUsersV1(any())).called(1);
-      verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
-      verify(() => mockAbortCallbackWrapper()).called(1);
-      verifyNever(() => mockSyncApiRepo.ack(any()));
-    });
-
     test("does not process or ack when event list is empty", () async {
       await simulateEvents([]);
 
@@ -225,7 +159,6 @@ void main() {
 
       when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer((_) async {
         when(() => cancellationChecker()).thenReturn(true);
-        return true;
       });
 
       await handleEventsCallback(events, mockAbortCallbackWrapper.call);
@@ -245,21 +178,21 @@ void main() {
         final cancellationChecker = _MockCancellationWrapper();
         when(() => cancellationChecker()).thenReturn(false);
 
-        sut = SyncStreamService(
-          syncApiRepository: mockSyncApiRepo,
-          syncStreamRepository: mockSyncStreamRepo,
-          cancelChecker: cancellationChecker.call,
-        );
-        await sut.sync();
-
-        final processingCompleter = Completer<bool>();
+        final processingCompleter = Completer<void>();
         bool handler1Started = false;
-
         when(() => mockSyncStreamRepo.deleteUsersV1(any()))
             .thenAnswer((_) async {
           handler1Started = true;
           return processingCompleter.future;
         });
+
+        sut = SyncStreamService(
+          syncApiRepository: mockSyncApiRepo,
+          syncStreamRepository: mockSyncStreamRepo,
+          cancelChecker: cancellationChecker.call,
+        );
+
+        await sut.sync();
 
         final events = [
           SyncStreamStub.userDeleteV1,
@@ -277,30 +210,13 @@ void main() {
         when(() => cancellationChecker()).thenReturn(true);
         await pumpEventQueue();
 
-        processingCompleter.complete(true);
+        processingCompleter.complete();
         await processingFuture;
-
-        verify(() => mockAbortCallbackWrapper()).called(1);
 
         verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
 
         verify(() => mockSyncApiRepo.ack(["2"])).called(1);
       },
     );
-
-    test("aborts when ack call throws an exception", () async {
-      when(() => mockSyncApiRepo.ack(any())).thenThrow(Exception("Ack Error"));
-      final events = [
-        SyncStreamStub.userDeleteV1,
-        SyncStreamStub.userV1Admin,
-      ];
-
-      await simulateEvents(events);
-
-      verify(() => mockSyncStreamRepo.deleteUsersV1(any())).called(1);
-      verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
-      verify(() => mockSyncApiRepo.ack(any())).called(1);
-      verify(() => mockAbortCallbackWrapper()).called(1);
-    });
   });
 }
