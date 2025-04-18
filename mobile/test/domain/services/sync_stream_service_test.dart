@@ -99,15 +99,16 @@ void main() {
 
         await simulateEvents(events);
 
-        verify(() => mockSyncStreamRepo.deleteUsersV1(any())).called(1);
-        verify(() => mockSyncStreamRepo.updateUsersV1(any())).called(1);
-        verify(() => mockSyncStreamRepo.deletePartnerV1(any())).called(1);
-        verify(() => mockSyncStreamRepo.updatePartnerV1(any())).called(1);
-
-        verify(
-          () => mockSyncApiRepo
-              .ack(any(that: containsAllInOrder(["2", "5", "4", "3"]))),
-        ).called(1);
+        verifyInOrder([
+          () => mockSyncStreamRepo.deleteUsersV1(any()),
+          () => mockSyncApiRepo.ack(["2"]),
+          () => mockSyncStreamRepo.updateUsersV1(any()),
+          () => mockSyncApiRepo.ack(["5"]),
+          () => mockSyncStreamRepo.deletePartnerV1(any()),
+          () => mockSyncApiRepo.ack(["4"]),
+          () => mockSyncStreamRepo.updatePartnerV1(any()),
+          () => mockSyncApiRepo.ack(["3"]),
+        ]);
         verifyNever(() => mockAbortCallbackWrapper());
       },
     );
@@ -120,12 +121,12 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockSyncStreamRepo.deleteUsersV1(any())).called(1);
-      verify(() => mockSyncStreamRepo.updateUsersV1(any())).called(1);
-
-      verify(
-        () => mockSyncApiRepo.ack(any(that: containsAllInOrder(["2", "1"]))),
-      ).called(1);
+      verifyInOrder([
+        () => mockSyncStreamRepo.deleteUsersV1(any()),
+        () => mockSyncApiRepo.ack(["2"]),
+        () => mockSyncStreamRepo.updateUsersV1(any()),
+        () => mockSyncApiRepo.ack(["1"]),
+      ]);
       verifyNever(() => mockAbortCallbackWrapper());
     });
 
@@ -144,13 +145,14 @@ void main() {
 
         await simulateEvents(events);
 
-        verify(() => mockSyncStreamRepo.deleteUsersV1(any())).called(1);
-        verify(() => mockSyncStreamRepo.updateUsersV1(any())).called(1);
+        verifyInOrder([
+          () => mockSyncStreamRepo.deleteUsersV1(any()),
+          () => mockSyncApiRepo.ack(["2"]),
+          () => mockSyncStreamRepo.updateUsersV1(any()),
+        ]);
+
         verifyNever(() => mockSyncStreamRepo.deletePartnerV1(any()));
-
         verify(() => mockAbortCallbackWrapper()).called(1);
-
-        verify(() => mockSyncApiRepo.ack(["2"])).called(1);
       },
     );
 
@@ -166,13 +168,14 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockSyncStreamRepo.deleteUsersV1(any())).called(1);
-      verify(() => mockSyncStreamRepo.updateUsersV1(any())).called(1);
+      verifyInOrder([
+        () => mockSyncStreamRepo.deleteUsersV1(any()),
+        () => mockSyncApiRepo.ack(["2"]),
+        () => mockSyncStreamRepo.updateUsersV1(any()),
+      ]);
+
       verifyNever(() => mockSyncStreamRepo.deletePartnerV1(any()));
-
       verify(() => mockAbortCallbackWrapper()).called(1);
-
-      verify(() => mockSyncApiRepo.ack(["2"])).called(1);
     });
 
     test("sends no ack if all handlers fail (return false)", () async {
@@ -295,10 +298,8 @@ void main() {
       await simulateEvents(events);
 
       verify(() => mockSyncStreamRepo.deleteUsersV1(any())).called(1);
-      verify(() => mockSyncStreamRepo.updateUsersV1(any())).called(1);
-
+      verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
       verify(() => mockSyncApiRepo.ack(any())).called(1);
-
       verify(() => mockAbortCallbackWrapper()).called(1);
     });
   });

@@ -57,65 +57,60 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
-    List<String> acksToSend = [];
-    try {
-      SyncEntityType? currentBatchType;
-      String? currentBatchAck;
-      // ignore: avoid-dynamic
-      List<dynamic> currentBatchData = [];
+  bool get isCancelled => _cancelChecker?.call() ?? false;
 
+  Future<bool> _processBatch(List<SyncEvent> batch) async {
+    if (batch.isEmpty) {
+      return true;
+    }
+
+    final type = batch.first.type;
+    if (await _handleSyncData(type, batch.map((e) => e.data))) {
+      await _syncApiRepository.ack([batch.last.ack]);
+      return true;
+    }
+
+    _logger.warning("Failed to process sync data for $type");
+    return false;
+  }
+
+  Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
+    bool shouldAbort = false;
+    try {
+      List<SyncEvent> items = [];
       for (final event in events) {
-        if (_cancelChecker?.call() ?? false) {
+        if (isCancelled) {
           _logger.warning("Sync stream cancelled");
-          // Clear the current batch data to avoid processing it
-          currentBatchData.clear();
-          abort();
+          shouldAbort = true;
           break;
         }
 
-        if (event.type == currentBatchType) {
-          currentBatchData.add(event.data);
-          currentBatchAck = event.ack;
+        if (event.type == items.firstOrNull?.type) {
+          items.add(event);
           continue;
         }
 
-        if (currentBatchData.isNotEmpty) {
-          if (await _handleSyncData(currentBatchType!, currentBatchData)) {
-            acksToSend.add(currentBatchAck!);
-          } else {
-            _logger
-                .warning("Failed to process sync data for $currentBatchType");
-            abort();
-            currentBatchData.clear();
-            break;
-          }
+        if (!await _processBatch(items)) {
+          _logger
+              .warning("Failed to process sync data for ${items.first.type}");
+          shouldAbort = true;
+          break;
         }
 
-        currentBatchType = event.type;
-        currentBatchData = [event.data];
-        currentBatchAck = event.ack;
+        items = [event];
       }
 
-      if (currentBatchData.isNotEmpty) {
-        if (await _handleSyncData(currentBatchType!, currentBatchData)) {
-          acksToSend.add(currentBatchAck!);
-        } else {
-          _logger.warning("Failed to process sync data for $currentBatchType");
-          abort();
-        }
+      if (!shouldAbort && !await _processBatch(items)) {
+        _logger.warning(
+          "Failed to process sync data for ${items.firstOrNull?.type}",
+        );
+        shouldAbort = true;
       }
     } catch (e, s) {
       _logger.severe("Error processing sync events", e, s);
-      abort();
+      shouldAbort = true;
     }
-
-    try {
-      if (acksToSend.isNotEmpty) {
-        await _syncApiRepository.ack(acksToSend);
-      }
-    } catch (e, s) {
-      _logger.severe("Error sending acks", e, s);
+    if (shouldAbort) {
       abort();
     }
   }
