@@ -266,8 +266,8 @@ const milestones: Item[] = [
   withRelease({
     icon: mdiDatabaseOutline,
     iconColor: 'brown',
-    title: 'Automatic database backups',
-    description: 'Database backups are now integrated into the Immich server',
+    title: 'Automatic database dumps',
+    description: 'Database dumps are now integrated into the Immich server',
     release: 'v1.120.0',
   }),
   {
