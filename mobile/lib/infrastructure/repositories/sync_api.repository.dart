@@ -25,6 +25,7 @@ class SyncApiRepository implements ISyncApiRepository {
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
   }) async {
+    // ignore: avoid-unused-assignment
     final stopwatch = Stopwatch()..start();
     final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
@@ -59,6 +60,11 @@ class SyncApiRepository implements ISyncApiRepository {
 
     bool shouldAbort = false;
 
+    void abort() {
+      _logger.warning("Abort requested, stopping sync stream");
+      shouldAbort = true;
+    }
+
     try {
       final response =
           await client.send(request).timeout(const Duration(seconds: 20));
@@ -73,7 +79,6 @@ class SyncApiRepository implements ISyncApiRepository {
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {
         if (shouldAbort) {
-          _logger.warning("aborting stream");
           break;
         }
 
@@ -86,7 +91,7 @@ class SyncApiRepository implements ISyncApiRepository {
           continue;
         }
 
-        await onData(_parseSyncResponse(lines), () => shouldAbort = true);
+        await onData(_parseSyncResponse(lines), abort);
         lines.clear();
       }
     } catch (error, stack) {
@@ -96,7 +101,7 @@ class SyncApiRepository implements ISyncApiRepository {
       return Future.error(error, stack);
     } finally {
       if (lines.isNotEmpty && !shouldAbort) {
-        await onData(_parseSyncResponse(lines), () => shouldAbort = true);
+        await onData(_parseSyncResponse(lines), abort);
       }
       client.close();
     }
