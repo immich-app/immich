@@ -12,33 +12,21 @@ import 'package:openapi/api.dart';
 class SyncApiRepository implements ISyncApiRepository {
   final Logger _logger = Logger('SyncApiRepository');
   final ApiService _api;
-  final int _batchSize;
-  SyncApiRepository(this._api, {int batchSize = kSyncEventBatchSize})
-      : _batchSize = batchSize;
-
-  @override
-  Stream<List<SyncEvent>> getSyncEvents() {
-    return _getSyncStream(
-      SyncStreamDto(
-        types: [
-          SyncRequestType.usersV1,
-          SyncRequestType.partnersV1,
-          SyncRequestType.assetsV1,
-          SyncRequestType.partnerAssetsV1,
-          SyncRequestType.assetExifsV1,
-          SyncRequestType.partnerAssetExifsV1,
-        ],
-      ),
-    );
-  }
+  SyncApiRepository(this._api);
 
   @override
   Future<void> ack(List<String> data) {
     return _api.syncApi.sendSyncAck(SyncAckSetDto(acks: data));
   }
 
-  Stream<List<SyncEvent>> _getSyncStream(SyncStreamDto dto) async* {
-    final client = http.Client();
+  @override
+  Future<void> streamChanges(
+    Function(List<SyncEvent>, Function() abort) onData, {
+    int batchSize = kSyncEventBatchSize,
+    http.Client? httpClient,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
     final headers = {
@@ -53,13 +41,27 @@ class SyncApiRepository implements ISyncApiRepository {
 
     final request = http.Request('POST', Uri.parse(endpoint));
     request.headers.addAll(headers);
-    request.body = jsonEncode(dto.toJson());
+    request.body = jsonEncode(
+      SyncStreamDto(
+        types: [
+          SyncRequestType.usersV1,
+          SyncRequestType.partnersV1,
+          SyncRequestType.assetsV1,
+          SyncRequestType.partnerAssetsV1,
+          SyncRequestType.assetExifsV1,
+          SyncRequestType.partnerAssetExifsV1,
+        ],
+      ).toJson(),
+    );
 
     String previousChunk = '';
     List<String> lines = [];
 
+    bool shouldAbort = false;
+
     try {
-      final response = await client.send(request);
+      final response =
+          await client.send(request).timeout(const Duration(seconds: 20));
 
       if (response.statusCode != 200) {
         final errorBody = await response.stream.bytesToString();
@@ -70,24 +72,37 @@ class SyncApiRepository implements ISyncApiRepository {
       }
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {
+        if (shouldAbort) {
+          _logger.warning("aborting stream");
+          break;
+        }
+
         previousChunk += chunk;
         final parts = previousChunk.toString().split('\n');
         previousChunk = parts.removeLast();
         lines.addAll(parts);
 
-        if (lines.length < _batchSize) {
+        if (lines.length < batchSize) {
           continue;
         }
 
-        yield _parseSyncResponse(lines);
+        await onData(_parseSyncResponse(lines), () => shouldAbort = true);
         lines.clear();
       }
+    } catch (error, stack) {
+      _logger.severe("error processing stream", error, stack);
+      // ignore: avoid-unused-assignment
+      shouldAbort = true;
+      return Future.error(error, stack);
     } finally {
-      if (lines.isNotEmpty) {
-        yield _parseSyncResponse(lines);
+      if (lines.isNotEmpty && !shouldAbort) {
+        await onData(_parseSyncResponse(lines), () => shouldAbort = true);
       }
       client.close();
     }
+    stopwatch.stop();
+    _logger
+        .info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 
   List<SyncEvent> _parseSyncResponse(List<String> lines) {
