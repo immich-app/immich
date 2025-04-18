@@ -16,7 +16,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   DriftSyncStreamRepository(super.db) : _db = db;
 
   @override
-  Future<bool> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
+  Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
       await _db.batch((batch) {
         for (final user in data) {
@@ -26,15 +26,14 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
           );
         }
       });
-      return true;
-    } catch (e, s) {
-      _logger.severe('Error while processing SyncUserDeleteV1', e, s);
-      return false;
+    } catch (error, stack) {
+      _logger.severe('Error while processing SyncUserDeleteV1', error, stack);
+      rethrow;
     }
   }
 
   @override
-  Future<bool> updateUsersV1(Iterable<SyncUserV1> data) async {
+  Future<void> updateUsersV1(Iterable<SyncUserV1> data) async {
     try {
       await _db.batch((batch) {
         for (final user in data) {
@@ -50,15 +49,14 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
           );
         }
       });
-      return true;
-    } catch (e, s) {
-      _logger.severe('Error while processing SyncUserV1', e, s);
-      return false;
+    } catch (error, stack) {
+      _logger.severe('Error while processing SyncUserV1', error, stack);
+      rethrow;
     }
   }
 
   @override
-  Future<bool> deletePartnerV1(Iterable<SyncPartnerDeleteV1> data) async {
+  Future<void> deletePartnerV1(Iterable<SyncPartnerDeleteV1> data) async {
     try {
       await _db.batch((batch) {
         for (final partner in data) {
@@ -71,15 +69,14 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
           );
         }
       });
-      return true;
     } catch (e, s) {
       _logger.severe('Error while processing SyncPartnerDeleteV1', e, s);
-      return false;
+      rethrow;
     }
   }
 
   @override
-  Future<bool> updatePartnerV1(Iterable<SyncPartnerV1> data) async {
+  Future<void> updatePartnerV1(Iterable<SyncPartnerV1> data) async {
     try {
       await _db.batch((batch) {
         for (final partner in data) {
@@ -96,49 +93,42 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
           );
         }
       });
-      return true;
     } catch (e, s) {
       _logger.severe('Error while processing SyncPartnerV1', e, s);
-      return false;
+      rethrow;
     }
   }
 
   // Assets
   @override
-  Future<bool> updateAssetsV1(Iterable<SyncAssetV1> data) async {
+  Future<void> updateAssetsV1(Iterable<SyncAssetV1> data) async {
     debugPrint("updateAssetsV1 - ${data.length}");
-    return true;
   }
 
   @override
-  Future<bool> deleteAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
+  Future<void> deleteAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
     debugPrint("deleteAssetsV1 - ${data.length}");
-    return true;
   }
 
   // Partner Assets
   @override
-  Future<bool> updatePartnerAssetsV1(Iterable<SyncAssetV1> data) async {
+  Future<void> updatePartnerAssetsV1(Iterable<SyncAssetV1> data) async {
     debugPrint("updatePartnerAssetsV1 - ${data.length}");
-    return true;
   }
 
   @override
-  Future<bool> deletePartnerAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
+  Future<void> deletePartnerAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
     debugPrint("deletePartnerAssetsV1 - ${data.length}");
-    return true;
   }
 
   // EXIF
   @override
-  Future<bool> updateAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
+  Future<void> updateAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
     debugPrint("updateAssetsExifV1 - ${data.length}");
-    return true;
   }
 
   @override
-  Future<bool> updatePartnerAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
+  Future<void> updatePartnerAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
     debugPrint("updatePartnerAssetsExifV1 - ${data.length}");
-    return true;
   }
 }

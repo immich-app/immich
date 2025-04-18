@@ -23,7 +23,41 @@ class SyncStreamService {
         _syncStreamRepository = syncStreamRepository,
         _cancelChecker = cancelChecker;
 
-  Future<bool> _handleSyncData(
+  bool get isCancelled => _cancelChecker?.call() ?? false;
+
+  Future<void> sync() => _syncApiRepository.streamChanges(_handleEvents);
+
+  Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
+    List<SyncEvent> items = [];
+    for (final event in events) {
+      if (isCancelled) {
+        _logger.warning("Sync stream cancelled");
+        abort();
+        return;
+      }
+
+      if (event.type != items.firstOrNull?.type) {
+        await _processBatch(items);
+      }
+
+      items.add(event);
+    }
+
+    await _processBatch(items);
+  }
+
+  Future<void> _processBatch(List<SyncEvent> batch) async {
+    if (batch.isEmpty) {
+      return;
+    }
+
+    final type = batch.first.type;
+    await _handleSyncData(type, batch.map((e) => e.data));
+    await _syncApiRepository.ack([batch.last.ack]);
+    batch.clear();
+  }
+
+  Future<void> _handleSyncData(
     SyncEntityType type,
     // ignore: avoid-dynamic
     Iterable<dynamic> data,
@@ -53,67 +87,6 @@ class SyncStreamService {
         return _syncStreamRepository.updatePartnerAssetsExifV1(data.cast());
       default:
         _logger.warning("Unknown sync data type: $type");
-        return false;
     }
   }
-
-  bool get isCancelled => _cancelChecker?.call() ?? false;
-
-  Future<bool> _processBatch(List<SyncEvent> batch) async {
-    if (batch.isEmpty) {
-      return true;
-    }
-
-    final type = batch.first.type;
-    if (await _handleSyncData(type, batch.map((e) => e.data))) {
-      await _syncApiRepository.ack([batch.last.ack]);
-      return true;
-    }
-
-    _logger.warning("Failed to process sync data for $type");
-    return false;
-  }
-
-  Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
-    bool shouldAbort = false;
-    try {
-      List<SyncEvent> items = [];
-      for (final event in events) {
-        if (isCancelled) {
-          _logger.warning("Sync stream cancelled");
-          shouldAbort = true;
-          break;
-        }
-
-        if (event.type == items.firstOrNull?.type) {
-          items.add(event);
-          continue;
-        }
-
-        if (!await _processBatch(items)) {
-          _logger
-              .warning("Failed to process sync data for ${items.first.type}");
-          shouldAbort = true;
-          break;
-        }
-
-        items = [event];
-      }
-
-      if (!shouldAbort && !await _processBatch(items)) {
-        _logger.warning(
-          "Failed to process sync data for ${items.firstOrNull?.type}",
-        );
-        shouldAbort = true;
-      }
-    } catch (e, s) {
-      _logger.severe("Error processing sync events", e, s);
-      shouldAbort = true;
-    }
-    if (shouldAbort) {
-      abort();
-    }
-  }
-
-  Future<void> sync() => _syncApiRepository.streamChanges(_handleEvents);
 }

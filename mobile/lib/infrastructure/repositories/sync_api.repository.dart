@@ -35,9 +35,8 @@ class SyncApiRepository implements ISyncApiRepository {
       'Accept': 'application/jsonlines+json',
     };
 
-    final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
-    await _api.applyToParams(queryParams, headerParams);
+    await _api.applyToParams([], headerParams);
     headers.addAll(headerParams);
 
     final request = http.Request('POST', Uri.parse(endpoint));
@@ -91,18 +90,17 @@ class SyncApiRepository implements ISyncApiRepository {
           continue;
         }
 
-        await onData(_parseSyncResponse(lines), abort);
+        await onData(_parseLines(lines), abort);
         lines.clear();
+      }
+
+      if (lines.isNotEmpty && !shouldAbort) {
+        await onData(_parseLines(lines), abort);
       }
     } catch (error, stack) {
       _logger.severe("error processing stream", error, stack);
-      // ignore: avoid-unused-assignment
-      shouldAbort = true;
       return Future.error(error, stack);
     } finally {
-      if (lines.isNotEmpty && !shouldAbort) {
-        await onData(_parseSyncResponse(lines), abort);
-      }
       client.close();
     }
     stopwatch.stop();
@@ -110,7 +108,7 @@ class SyncApiRepository implements ISyncApiRepository {
         .info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 
-  List<SyncEvent> _parseSyncResponse(List<String> lines) {
+  List<SyncEvent> _parseLines(List<String> lines) {
     final List<SyncEvent> data = [];
 
     for (final line in lines) {
