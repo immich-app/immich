@@ -62,6 +62,10 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
 
   @Optional()
   duplicateId?: string | null;
+
+  @Optional()
+  @IsInt()
+  dateTimeRelative?: number;
 }
 
 export class UpdateAssetDto extends UpdateAssetBase {

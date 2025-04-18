@@ -4,15 +4,24 @@
   import Combobox, { type ComboBoxOption } from './combobox.svelte';
   import DateInput from '../elements/date-input.svelte';
   import { t } from 'svelte-i18n';
+  import Checkbox from '../elements/checkbox.svelte';
+  import DurationInput from '../elements/duration-input.svelte';
 
   interface Props {
     initialDate?: DateTime;
     initialTimeZone?: string;
+    withDuration?: boolean;
     onCancel: () => void;
-    onConfirm: (date: string) => void;
+    onConfirm: (date: string, duration: number) => void;
   }
 
-  let { initialDate = DateTime.now(), initialTimeZone = '', onCancel, onConfirm }: Props = $props();
+  let {
+    initialDate = DateTime.now(),
+    initialTimeZone = '',
+    withDuration = true,
+    onCancel,
+    onConfirm,
+  }: Props = $props();
 
   type ZoneOption = {
     /**
@@ -37,7 +46,7 @@
     offsetMinutes: number;
 
     /**
-     * True iff the date is valid
+     * True if the date is valid
      *
      * Dates may be invalid for various reasons, for example setting a day that does not exist (30 Feb 2024).
      * Due to daylight saving time, 2:30am is invalid for Europe/Berlin on Mar 31 2024.The two following local times
@@ -50,6 +59,10 @@
      */
     valid: boolean;
   };
+
+  let showRelative = $state(false);
+
+  let selectedDuration = $state(0);
 
   const knownTimezones = Intl.supportedValuesOf('timeZone');
 
@@ -120,7 +133,7 @@
   const handleConfirm = () => {
     const value = date.toISO();
     if (value) {
-      onConfirm(value);
+      onConfirm(value, selectedDuration);
     }
   };
 
@@ -144,20 +157,33 @@
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   {#snippet promptSnippet()}
-    <div class="flex flex-col text-left gap-2">
-      <div class="flex flex-col">
-        <label for="datetime">{$t('date_and_time')}</label>
-        <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
+    {#if withDuration}
+      <div class="flex flex-col text-right">
+        <Checkbox id="relative-time-checkbox" label="Relative" bind:checked={showRelative} />
       </div>
-      <div>
-        <Combobox
-          bind:selectedOption
-          label={$t('timezone')}
-          options={timezones}
-          placeholder={$t('search_timezone')}
-          onSelect={(option) => handleOnSelect(option)}
-        />
-      </div>
+    {/if}
+    <div class="flex flex-col text-left">
+      {#if !showRelative}
+        <div class="flex flex-col">
+          <label for="datetime">{$t('date_and_time')}</label>
+          <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
+        </div>
+        <div>
+          <Combobox
+            bind:selectedOption
+            label={$t('timezone')}
+            options={timezones}
+            placeholder={$t('search_timezone')}
+            onSelect={(option) => handleOnSelect(option)}
+          />
+        </div>
+      {/if}
+      {#if showRelative}
+        <div class="flex flex-col">
+          <label for="relativedatetime">Relative timespan</label>
+          <DurationInput class="immich-form-input" id="relativedatetime" bind:value={selectedDuration} />
+        </div>
+      {/if}
     </div>
   {/snippet}
 </ConfirmDialog>
