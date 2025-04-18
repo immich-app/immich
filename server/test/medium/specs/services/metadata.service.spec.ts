@@ -118,7 +118,7 @@ describe(MetadataService.name, () => {
       process.env.TZ = serverTimeZone ?? undefined;
 
       const { filePath } = await createTestFile(exifData);
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({ id: 'asset-1', originalPath: filePath } as never);
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({ id: 'asset-1', originalPath: filePath } as any);
 
       await sut.handleMetadataExtraction({ id: 'asset-1' });
 

@@ -5,7 +5,6 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { AssetStack, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { asUuid } from 'src/utils/database';
 
 export interface StackSearch {
@@ -36,9 +35,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>, withTags = false) 
       .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
       .where('assets.deletedAt', 'is', null)
       .whereRef('assets.stackId', '=', 'asset_stack.id'),
-  )
-    .$castTo<AssetEntity[]>()
-    .as('assets');
+  ).as('assets');
 };
 
 @Injectable()

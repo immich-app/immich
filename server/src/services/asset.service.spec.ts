@@ -1,8 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { mapAsset } from 'src/dtos/asset-response.dto';
+import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
@@ -35,7 +34,7 @@ describe(AssetService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  const mockGetById = (assets: AssetEntity[]) => {
+  const mockGetById = (assets: MapAsset[]) => {
     mocks.asset.getById.mockImplementation((assetId) => Promise.resolve(assets.find((asset) => asset.id === assetId)));
   };
 
@@ -608,7 +607,7 @@ describe(AssetService.name, () => {
       mocks.asset.getById.mockResolvedValue({
         ...assetStub.primaryImage,
         stack: { ...assetStub.primaryImage.stack, assets: assetStub.primaryImage.stack!.assets.slice(0, 2) },
-      } as AssetEntity);
+      });
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
