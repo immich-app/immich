@@ -5,9 +5,8 @@ import { randomUUID } from 'node:crypto';
 import { DB, Exif } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { searchAssetBuilder } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType } from 'src/enum';
-import { anyUuid, asUuid } from 'src/utils/database';
+import { anyUuid, asUuid, searchAssetBuilder } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
 
 export interface SearchResult<T> {
