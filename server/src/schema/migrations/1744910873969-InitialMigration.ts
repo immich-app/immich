@@ -1,10 +1,29 @@
 import { Kysely, sql } from 'kysely';
 import { DatabaseExtension } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
+const lastMigrationSql = sql<{ name: string }>`SELECT "name" FROM "migrations" ORDER BY "timestamp" DESC LIMIT 1;`;
+const tableExists = sql<{ result: string | null }>`select to_regclass('migrations') as "result"`;
+const logger = LoggingRepository.create();
 
 export async function up(db: Kysely<any>): Promise<void> {
+  const { rows } = await tableExists.execute(db);
+  const hasTypeOrmMigrations = !!rows[0]?.result;
+  if (hasTypeOrmMigrations) {
+    const {
+      rows: [lastMigration],
+    } = await lastMigrationSql.execute(db);
+    if (lastMigration?.name !== 'AddMissingIndex1744910873956') {
+      throw new Error(
+        'Invalid upgrade path. For more information, see https://immich.app/errors#typeorm-upgrade',
+      );
+    }
+    logger.log('Database has up to date TypeORM migrations, skipping initial Kysely migration');
+    return;
+  }
+
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`.execute(db);
   await sql`CREATE EXTENSION IF NOT EXISTS "unaccent";`.execute(db);
   await sql`CREATE EXTENSION IF NOT EXISTS "cube";`.execute(db);
