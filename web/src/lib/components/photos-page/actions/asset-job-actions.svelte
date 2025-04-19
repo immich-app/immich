@@ -6,9 +6,10 @@
   } from '$lib/components/shared-components/notification/notification';
   import { getAssetJobIcon, getAssetJobMessage, getAssetJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetJobName, AssetTypeEnum, runAssetJobs } from '@immich/sdk';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { isTimelineAsset } from '$lib/utils/timeline-util';
+  import { AssetJobName, AssetTypeEnum, runAssetJobs, type AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     jobs?: AssetJobName[];
@@ -19,7 +20,11 @@
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  let isAllVideos = $derived([...getOwnedAssets()].every((asset) => asset.type === AssetTypeEnum.Video));
+  let isAllVideos = $derived(
+    [...getOwnedAssets()].every((asset) =>
+      isTimelineAsset(asset) ? asset.isVideo : (asset as AssetResponseDto).type === AssetTypeEnum.Video,
+    ),
+  );
 
   const handleRunJob = async (name: AssetJobName) => {
     try {

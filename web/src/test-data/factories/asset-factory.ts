@@ -1,3 +1,4 @@
+import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { faker } from '@faker-js/faker';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
@@ -24,4 +25,21 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   checksum: Sync.each(() => faker.string.alphanumeric(28)),
   isOffline: Sync.each(() => faker.datatype.boolean()),
   hasMetadata: Sync.each(() => faker.datatype.boolean()),
+});
+
+export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
+  id: Sync.each(() => faker.string.uuid()),
+  ratio: Sync.each(() => faker.number.int()),
+  ownerId: Sync.each(() => faker.string.uuid()),
+  thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
+  localDateTime: Sync.each(() => faker.date.past().toISOString()),
+  isFavorite: Sync.each(() => faker.datatype.boolean()),
+  isArchived: false,
+  isTrashed: false,
+  isImage: true,
+  isVideo: false,
+  duration: '0:00:00.00000',
+  stack: null,
+  projectionType: null,
+  livePhotoVideoId: Sync.each(() => faker.string.uuid()),
 });

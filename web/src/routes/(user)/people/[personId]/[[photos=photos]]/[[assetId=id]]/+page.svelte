@@ -33,20 +33,14 @@
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
-  import {
-    getPersonStatistics,
-    mergePerson,
-    searchPerson,
-    updatePerson,
-    type AssetResponseDto,
-    type PersonResponseDto,
-  } from '@immich/sdk';
+  import { getPersonStatistics, mergePerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     mdiAccountBoxOutline,
     mdiAccountMultipleCheckOutline,
@@ -59,11 +53,10 @@
     mdiHeartOutline,
     mdiPlus,
   } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { locale } from '$lib/stores/preferences.store';
-  import { DateTime } from 'luxon';
 
   interface Props {
     data: PageData;
@@ -78,7 +71,7 @@
   $effect(() => void assetStore.updateOptions({ isArchived: false, personId: data.person.id }));
   onDestroy(() => assetStore.destroy());
 
-  const assetInteraction = new AssetInteraction();
+  const assetInteraction = new AssetInteraction<TimelineAsset>();
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
@@ -202,7 +195,7 @@
     data = { ...data, person };
   };
 
-  const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
+  const handleSelectFeaturePhoto = async (asset: TimelineAsset) => {
     if (viewMode !== PersonPageViewMode.SELECT_PERSON) {
       return;
     }

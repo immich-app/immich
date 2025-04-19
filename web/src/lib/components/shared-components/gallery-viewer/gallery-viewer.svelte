@@ -1,31 +1,32 @@
 <script lang="ts">
-  import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
   import { goto } from '$app/navigation';
+  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
+  import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
+  import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-  import ShowShortcuts from '../show-shortcuts.svelte';
-  import Portal from '../portal/portal.svelte';
-  import { handlePromiseError } from '$lib/utils';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { debounce } from 'lodash-es';
-  import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+  import Portal from '../portal/portal.svelte';
+  import ShowShortcuts from '../show-shortcuts.svelte';
 
   interface Props {
     assets: AssetResponseDto[];
-    assetInteraction: AssetInteraction;
+    assetInteraction: AssetInteraction<AssetResponseDto>;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
     viewport: Viewport;
@@ -481,18 +482,18 @@
         >
           <Thumbnail
             readonly={disableAssetSelect}
-            onClick={(asset) => {
+            onClick={() => {
               if (assetInteraction.selectionActive) {
                 handleSelectAssets(asset);
                 return;
               }
               void viewAssetHandler(asset);
             }}
-            onSelect={(asset) => handleSelectAssets(asset)}
+            onSelect={() => handleSelectAssets(asset)}
             onMouseEvent={() => assetMouseEventHandler(asset)}
             handleFocus={() => assetOnFocusHandler(asset)}
             {showArchiveIcon}
-            {asset}
+            asset={toTimelineAsset(asset)}
             selected={assetInteraction.hasSelectedAsset(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
             focussed={assetInteraction.isFocussedAsset(asset.id)}

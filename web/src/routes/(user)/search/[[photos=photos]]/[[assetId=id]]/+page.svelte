@@ -63,7 +63,7 @@
   let scrollY = $state(0);
   let scrollYHistory = 0;
 
-  const assetInteraction = new AssetInteraction();
+  const assetInteraction = new AssetInteraction<AssetResponseDto>();
 
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));

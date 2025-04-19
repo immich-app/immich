@@ -1,10 +1,21 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetBucket, assetsSnapshot, AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import {
+    AssetBucket,
+    assetsSnapshot,
+    AssetStore,
+    isSelectingAllAssets,
+    type TimelineAsset,
+  } from '$lib/stores/assets-store.svelte';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -13,19 +24,14 @@
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
+  import { getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onMount, type Snippet } from 'svelte';
+  import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
-  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
-  import { page } from '$app/stores';
-  import type { UpdatePayload } from 'vite';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -35,7 +41,7 @@
      additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
     assetStore: AssetStore;
-    assetInteraction: AssetInteraction;
+    assetInteraction: AssetInteraction<TimelineAsset>;
     removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.FAVORITE | AssetAction.UNFAVORITE | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
@@ -43,7 +49,7 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
-    onSelect?: (asset: AssetResponseDto) => void;
+    onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     children?: Snippet;
     empty?: Snippet;
@@ -352,7 +358,7 @@
     }
   };
 
-  const handleSelectAsset = (asset: AssetResponseDto) => {
+  const handleSelectAsset = (asset: TimelineAsset) => {
     if (!assetStore.albumAssets.has(asset.id)) {
       assetInteraction.selectAsset(asset);
     }
@@ -363,7 +369,8 @@
 
     if (previousAsset) {
       const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
-      assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
+      const asset = await getAssetInfo({ id: previousAsset.id });
+      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
 
@@ -375,7 +382,8 @@
 
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
-      assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
+      const asset = await getAssetInfo({ id: nextAsset.id });
+      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
 
@@ -387,14 +395,14 @@
 
     if (randomAsset) {
       const preloadAsset = await assetStore.getNextAsset(randomAsset);
-      assetViewingStore.setAsset(randomAsset, preloadAsset ? [preloadAsset] : []);
+      const asset = await getAssetInfo({ id: randomAsset.id });
+      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
+      return asset;
     }
-
-    return randomAsset;
   };
 
-  const handleClose = async ({ asset }: { asset: AssetResponseDto }) => {
+  const handleClose = async (asset: { id: string }) => {
     assetViewingStore.showAssetViewer(false);
     showSkeleton = true;
     $gridScrollTarget = { at: asset.id };
@@ -410,7 +418,7 @@
       case AssetAction.ARCHIVE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        (await handleNext()) || (await handlePrevious()) || (await handleClose({ asset: action.asset }));
+        (await handleNext()) || (await handlePrevious()) || (await handleClose(action.asset));
 
         // delete after find the next one
         assetStore.removeAssets([action.asset.id]);
@@ -439,7 +447,7 @@
     }
   };
 
-  let lastAssetMouseEvent: AssetResponseDto | null = $state(null);
+  let lastAssetMouseEvent: TimelineAsset | null = $state(null);
 
   let shiftKeyIsDown = $state(false);
 
@@ -469,14 +477,14 @@
     }
   };
 
-  const handleSelectAssetCandidates = (asset: AssetResponseDto | null) => {
+  const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
     if (asset) {
       selectAssetCandidates(asset);
     }
     lastAssetMouseEvent = asset;
   };
 
-  const handleGroupSelect = (assetStore: AssetStore, group: string, assets: AssetResponseDto[]) => {
+  const handleGroupSelect = (assetStore: AssetStore, group: string, assets: TimelineAsset[]) => {
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
@@ -496,7 +504,7 @@
     }
   };
 
-  const handleSelectAssets = async (asset: AssetResponseDto) => {
+  const handleSelectAssets = async (asset: TimelineAsset) => {
     if (!asset) {
       return;
     }
@@ -579,7 +587,7 @@
     assetInteraction.setAssetSelectionStart(deselect ? null : asset);
   };
 
-  const selectAssetCandidates = (endAsset: AssetResponseDto) => {
+  const selectAssetCandidates = (endAsset: TimelineAsset) => {
     if (!shiftKeyIsDown) {
       return;
     }

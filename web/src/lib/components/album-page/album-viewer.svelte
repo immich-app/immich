@@ -1,25 +1,25 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { handlePromiseError } from '$lib/utils';
+  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
-  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
+  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
+  import { onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import AssetGrid from '../photos-page/asset-grid.svelte';
-  import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
-  import { shortcut } from '$lib/actions/shortcut';
-  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
-  import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from './album-summary.svelte';
-  import { t } from 'svelte-i18n';
-  import { onDestroy } from 'svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -36,7 +36,7 @@
   $effect(() => void assetStore.updateOptions({ albumId: album.id, order: album.order }));
   onDestroy(() => assetStore.destroy());
 
-  const assetInteraction = new AssetInteraction();
+  const assetInteraction = new AssetInteraction<TimelineAsset>();
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {

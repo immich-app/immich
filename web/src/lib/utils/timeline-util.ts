@@ -1,8 +1,10 @@
-import type { AssetBucket } from '$lib/stores/assets-store.svelte';
+import type { BaseInteractionAsset } from '$lib/stores/asset-interaction.svelte';
+import type { AssetBucket, TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
+import { getAssetRatio } from '$lib/utils/asset-utils';
 import { type CommonJustifiedLayout } from '$lib/utils/layout-utils';
 
-import type { AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { memoize } from 'lodash-es';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { get } from 'svelte/store';
@@ -105,3 +107,30 @@ export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): strin
   date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
 export const formatDateGroupTitle = memoize(formatGroupTitle);
+
+export const toTimelineAsset = (unknownAsset: BaseInteractionAsset): TimelineAsset => {
+  if (isTimelineAsset(unknownAsset)) {
+    return unknownAsset;
+  }
+  const assetResponse = unknownAsset as AssetResponseDto;
+  const { width, height } = getAssetRatio(assetResponse);
+  const ratio = width / height;
+  return {
+    id: assetResponse.id,
+    ownerId: assetResponse.ownerId,
+    ratio,
+    thumbhash: assetResponse.thumbhash,
+    localDateTime: assetResponse.localDateTime,
+    isFavorite: assetResponse.isFavorite,
+    isArchived: assetResponse.isArchived,
+    isTrashed: assetResponse.isTrashed,
+    isVideo: assetResponse.type == AssetTypeEnum.Video,
+    isImage: assetResponse.type == AssetTypeEnum.Image,
+    stack: assetResponse.stack || null,
+    duration: assetResponse.duration || null,
+    projectionType: assetResponse.exifInfo?.projectionType || null,
+    livePhotoVideoId: assetResponse.livePhotoVideoId || null,
+  };
+};
+export const isTimelineAsset = (arg: BaseInteractionAsset): arg is TimelineAsset =>
+  (arg as TimelineAsset).ratio !== undefined;

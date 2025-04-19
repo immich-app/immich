@@ -73,7 +73,7 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
   // need to include padding in the viewport for gallery
   const galleryViewport: Viewport = $derived({ height: viewport.height, width: viewport.width - 32 });
-  const assetInteraction = new AssetInteraction();
+  const assetInteraction = new AssetInteraction<AssetResponseDto>();
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
   const asHref = (asset: AssetResponseDto) => `?${QueryParameter.ID}=${asset.id}`;
