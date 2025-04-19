@@ -18,12 +18,14 @@
 
   let isShowChangeDate = $state(false);
 
-  const handleConfirm = async (dateTimeOriginal: string) => {
+  const handleConfirm = async (dateTimeOriginal: string, duration: number) => {
     isShowChangeDate = false;
     const ids = getSelectedAssets(getOwnedAssets(), $user);
 
     try {
-      await updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal } });
+      await (duration
+        ? updateAssets({ assetBulkUpdateDto: { ids, dateTimeRelative: duration } })
+        : updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_date'));
     }
