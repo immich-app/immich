@@ -165,6 +165,7 @@ export class AlbumRepository {
               .whereRef('album_users.albumsId', '=', 'albums.id')
               .where((eb) => eb.or([eb('albums.ownerId', '=', ownerId), eb('album_users.usersId', '=', ownerId)])),
           ),
+          eb('albums.isPublicInInstance', '=', true),
           eb.exists(
             eb
               .selectFrom('shared_links')
@@ -191,6 +192,7 @@ export class AlbumRepository {
       .selectAll('albums')
       .where('albums.ownerId', '=', ownerId)
       .where('albums.deletedAt', 'is', null)
+      .where('albums.isPublicInInstance', '=', false)
       .where((eb) =>
         eb.not(
           eb.exists(
