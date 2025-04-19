@@ -213,10 +213,9 @@ export class AssetRepository {
     ids: string[],
     delta: number,
   ): Promise<{ assetId: string; dateTimeOriginal: Date | null }[]> {
-    const deltaStr = delta + '';
     return await this.db
       .updateTable('exif')
-      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + INTERVAL '${sql.raw(deltaStr)} minute'` })
+      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${delta + ' minute'}::interval` })
       .where('assetId', 'in', ids)
       .returning(['assetId', 'dateTimeOriginal'])
       .execute();
