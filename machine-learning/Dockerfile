@@ -65,7 +65,8 @@ RUN if [ "$DEVICE" = "rocm" ]; then \
 
 FROM python:3.11-slim-bookworm@sha256:49d73c49616929b0a4f37c50fee0056eb4b0f15de624591e8d9bf84b4dfdd3ce AS prod-cpu
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
+ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
+    MACHINE_LEARNING_MODEL_ARENA=false
 
 FROM python:3.11-slim-bookworm@sha256:49d73c49616929b0a4f37c50fee0056eb4b0f15de624591e8d9bf84b4dfdd3ce AS prod-openvino
 
@@ -82,7 +83,8 @@ RUN apt-get update && \
 
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
+ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
+    MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq libcudnn9-cuda-12 && \
@@ -98,7 +100,8 @@ FROM rocm/dev-ubuntu-22.04:6.3.4-complete@sha256:1f7e92ca7e3a3785680473329ed1091
 FROM prod-cpu AS prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn \
-    LD_PRELOAD=/usr/lib/libmimalloc.so.2
+    LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
+    MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd libgomp1 && \
     rm -rf /var/lib/apt/lists/* && \
@@ -118,7 +121,8 @@ COPY --from=builder-armnn \
 
 FROM prod-cpu AS prod-rknn
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
+ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
+    MACHINE_LEARNING_MODEL_ARENA=false
 
 ADD --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/v2.3.0/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so /usr/lib/
 
