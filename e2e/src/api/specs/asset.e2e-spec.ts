@@ -953,6 +953,28 @@ describe('/asset', () => {
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
+
+    it('should update date time original relatively', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ ids: [user1Assets[0].id], dateTimeRelative: -1441 });
+
+      expect(body).toEqual({});
+      expect(status).toEqual(204);
+
+      const result = await request(app)
+        .get(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send();
+
+      expect(result.body).toMatchObject({
+        id: user1Assets[0].id,
+        exifInfo: expect.objectContaining({
+          dateTimeOriginal: '2023-11-19T01:10:00+00:00',
+        }),
+      });
+    });
   });
 
   describe('POST /assets', () => {
