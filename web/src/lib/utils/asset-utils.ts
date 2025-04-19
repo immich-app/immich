@@ -3,7 +3,7 @@ import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
 import type { InterpolationValues } from '$lib/components/i18n/format-message';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
-import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+import type { AssetInteraction, BaseInteractionAsset } from '$lib/stores/asset-interaction.svelte';
 import { assetsSnapshot, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
 import { downloadManager } from '$lib/stores/download-store.svelte';
 import { preferences } from '$lib/stores/user.store';
@@ -364,7 +364,7 @@ export const getAssetType = (type: AssetTypeEnum) => {
   }
 };
 
-export const getSelectedAssets = (assets: AssetResponseDto[], user: UserResponseDto | null): string[] => {
+export const getSelectedAssets = (assets: BaseInteractionAsset[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
 
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
@@ -383,7 +383,7 @@ export type StackResponse = {
   toDeleteIds: string[];
 };
 
-export const stackAssets = async (assets: AssetResponseDto[], showNotification = true): Promise<StackResponse> => {
+export const stackAssets = async (assets: { id: string }[], showNotification = true): Promise<StackResponse> => {
   if (assets.length < 2) {
     return { stack: undefined, toDeleteIds: [] };
   }
@@ -403,9 +403,9 @@ export const stackAssets = async (assets: AssetResponseDto[], showNotification =
       });
     }
 
-    for (const [index, asset] of assets.entries()) {
-      asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length, primaryAssetId: asset.id } : null;
-    }
+    // for (const [index, asset] of assets.entries()) {
+    //   asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length, primaryAssetId: asset.id } : null;
+    // }
 
     return {
       stack,
@@ -467,7 +467,10 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
   }
 };
 
-export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: AssetInteraction) => {
+export const selectAllAssets = async (
+  assetStore: AssetStore,
+  assetInteraction: AssetInteraction<BaseInteractionAsset>,
+) => {
   if (get(isSelectingAllAssets)) {
     // Selection is already ongoing
     return;
@@ -495,7 +498,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: 
   }
 };
 
-export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
+export const cancelMultiselect = (assetInteraction: AssetInteraction<BaseInteractionAsset>) => {
   isSelectingAllAssets.set(false);
   assetInteraction.clearMultiselect();
 };
@@ -523,7 +526,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
   return asset;
 };
 
-export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean) => {
+export const archiveAssets = async (assets: { id: string }[], archive: boolean) => {
   const isArchived = archive;
   const ids = assets.map(({ id }) => id);
   const $t = get(t);
@@ -533,9 +536,9 @@ export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean
       await updateAssets({ assetBulkUpdateDto: { ids, isArchived } });
     }
 
-    for (const asset of assets) {
-      asset.isArchived = isArchived;
-    }
+    // for (const asset of assets) {
+    //   asset.isArchived = isArchived;
+    // }
 
     notificationController.show({
       message: isArchived

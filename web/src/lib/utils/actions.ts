@@ -1,20 +1,20 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
-import type { AssetStore } from '$lib/stores/assets-store.svelte';
+import type { AssetStore, TimelineAsset } from '$lib/stores/assets-store.svelte';
 import type { StackResponse } from '$lib/utils/asset-utils';
-import { deleteAssets as deleteBulk, type AssetResponseDto } from '@immich/sdk';
+import { deleteAssets as deleteBulk } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
 export type OnDelete = (assetIds: string[]) => void;
 export type OnRestore = (ids: string[]) => void;
-export type OnLink = (assets: { still: AssetResponseDto; motion: AssetResponseDto }) => void;
-export type OnUnlink = (assets: { still: AssetResponseDto; motion: AssetResponseDto }) => void;
+export type OnLink = (assets: { still: TimelineAsset; motion: TimelineAsset }) => void;
+export type OnUnlink = (assets: { still: TimelineAsset; motion: TimelineAsset }) => void;
 export type OnAddToAlbum = (ids: string[], albumId: string) => void;
 export type OnArchive = (ids: string[], isArchived: boolean) => void;
 export type OnFavorite = (ids: string[], favorite: boolean) => void;
 export type OnStack = (result: StackResponse) => void;
-export type OnUnstack = (assets: AssetResponseDto[]) => void;
+export type OnUnstack = (assets: TimelineAsset[]) => void;
 
 export const deleteAssets = async (force: boolean, onAssetDelete: OnDelete, ids: string[]) => {
   const $t = get(t);
@@ -64,11 +64,11 @@ export function updateStackedAssetInTimeline(assetStore: AssetStore, { stack, to
  * @param assetStore - The asset store to update.
  * @param assets - The array of asset response DTOs to update in the asset store.
  */
-export function updateUnstackedAssetInTimeline(assetStore: AssetStore, assets: AssetResponseDto[]) {
+export function updateUnstackedAssetInTimeline(assetStore: AssetStore, assets: TimelineAsset[]) {
   assetStore.updateAssetOperation(
     assets.map((asset) => asset.id),
     (asset) => {
-      asset.stack = undefined;
+      asset.stack = null;
       return { remove: false };
     },
   );

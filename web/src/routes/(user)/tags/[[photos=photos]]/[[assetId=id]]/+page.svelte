@@ -17,14 +17,14 @@
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { Button, HStack, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { onDestroy } from 'svelte';
 
   interface Props {
     data: PageData;
@@ -35,7 +35,7 @@
   let pathSegments = $derived(data.path ? data.path.split('/') : []);
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
 
-  const assetInteraction = new AssetInteraction();
+  const assetInteraction = new AssetInteraction<TimelineAsset>();
 
   const buildMap = (tags: TagResponseDto[]) => {
     return Object.fromEntries(tags.map((tag) => [tag.value, tag]));

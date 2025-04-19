@@ -5,11 +5,11 @@ import { readonly, writable } from 'svelte/store';
 
 function createAssetViewingStore() {
   const viewingAssetStoreState = writable<AssetResponseDto>();
-  const preloadAssets = writable<AssetResponseDto[]>([]);
+  const preloadAssets = writable<{ id: string }[]>([]);
   const viewState = writable<boolean>(false);
   const gridScrollTarget = writable<AssetGridRouteSearchParams | null | undefined>();
 
-  const setAsset = (asset: AssetResponseDto, assetsToPreload: AssetResponseDto[] = []) => {
+  const setAsset = (asset: AssetResponseDto, assetsToPreload: { id: string }[] = []) => {
     preloadAssets.set(assetsToPreload);
     viewingAssetStoreState.set(asset);
     viewState.set(true);

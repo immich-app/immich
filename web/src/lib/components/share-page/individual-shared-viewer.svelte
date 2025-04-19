@@ -7,7 +7,7 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { addSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
+  import { addSharedLinkAssets, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
@@ -31,7 +31,7 @@
   let { sharedLink = $bindable(), isOwned }: Props = $props();
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
-  const assetInteraction = new AssetInteraction();
+  const assetInteraction = new AssetInteraction<AssetResponseDto>();
 
   let assets = $derived(sharedLink.assets);
 

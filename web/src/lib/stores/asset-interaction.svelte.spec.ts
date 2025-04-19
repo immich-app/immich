@@ -1,10 +1,10 @@
-import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+import { AssetInteraction, type BaseInteractionAsset } from '$lib/stores/asset-interaction.svelte';
 import { resetSavedUser, user } from '$lib/stores/user.store';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 
 describe('AssetInteraction', () => {
-  let assetInteraction: AssetInteraction;
+  let assetInteraction: AssetInteraction<BaseInteractionAsset>;
 
   beforeEach(() => {
     assetInteraction = new AssetInteraction();

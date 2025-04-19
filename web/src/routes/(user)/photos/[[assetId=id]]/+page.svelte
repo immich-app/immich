@@ -22,7 +22,7 @@
   import { AssetAction } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import {
@@ -32,7 +32,7 @@
     type OnUnlink,
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { AssetTypeEnum } from '@immich/sdk';
+
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -42,7 +42,7 @@
   void assetStore.updateOptions({ isArchived: false, withStacked: true, withPartners: true });
   onDestroy(() => assetStore.destroy());
 
-  const assetInteraction = new AssetInteraction();
+  const assetInteraction = new AssetInteraction<TimelineAsset>();
 
   let selectedAssets = $derived(assetInteraction.selectedAssets);
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);
@@ -50,8 +50,8 @@
     const isLivePhoto = selectedAssets.length === 1 && !!selectedAssets[0].livePhotoVideoId;
     const isLivePhotoCandidate =
       selectedAssets.length === 2 &&
-      selectedAssets.some((asset) => asset.type === AssetTypeEnum.Image) &&
-      selectedAssets.some((asset) => asset.type === AssetTypeEnum.Video);
+      selectedAssets.some((asset) => asset.isImage) &&
+      selectedAssets.some((asset) => asset.isVideo);
 
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });

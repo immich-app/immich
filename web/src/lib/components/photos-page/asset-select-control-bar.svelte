@@ -4,8 +4,8 @@
 
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.
-    getAssets: () => AssetResponseDto[]; // All assets includes partners' assets
-    getOwnedAssets: () => AssetResponseDto[]; // Only assets owned by the user
+    getAssets: () => BaseInteractionAsset[]; // All assets includes partners' assets
+    getOwnedAssets: () => BaseInteractionAsset[]; // Only assets owned by the user
     clearSelect: () => void;
   }
 
@@ -14,13 +14,13 @@
 </script>
 
 <script lang="ts">
-  import type { AssetResponseDto } from '@immich/sdk';
+  import type { BaseInteractionAsset } from '$lib/stores/asset-interaction.svelte';
   import { mdiClose } from '@mdi/js';
-  import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import type { Snippet } from 'svelte';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
   interface Props {
-    assets: AssetResponseDto[];
+    assets: BaseInteractionAsset[];
     clearSelect: () => void;
     ownerId?: string | undefined;
     children?: Snippet;

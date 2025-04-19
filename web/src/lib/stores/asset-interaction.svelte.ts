@@ -1,19 +1,27 @@
 import { user } from '$lib/stores/user.store';
-import type { AssetResponseDto, UserAdminResponseDto } from '@immich/sdk';
+import type { AssetStackResponseDto, UserAdminResponseDto } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import { fromStore } from 'svelte/store';
 
-export class AssetInteraction {
-  selectedAssets = $state<AssetResponseDto[]>([]);
+export type BaseInteractionAsset = {
+  id: string;
+  isTrashed: boolean;
+  isArchived: boolean;
+  isFavorite: boolean;
+  ownerId: string;
+  stack?: AssetStackResponseDto | null | undefined;
+};
+export class AssetInteraction<T extends BaseInteractionAsset> {
+  selectedAssets = $state<T[]>([]);
   hasSelectedAsset(assetId: string) {
     return this.selectedAssets.some((asset) => asset.id === assetId);
   }
   selectedGroup = new SvelteSet<string>();
-  assetSelectionCandidates = $state<AssetResponseDto[]>([]);
+  assetSelectionCandidates = $state<T[]>([]);
   hasSelectionCandidate(assetId: string) {
     return this.assetSelectionCandidates.some((asset) => asset.id === assetId);
   }
-  assetSelectionStart = $state<AssetResponseDto | null>(null);
+  assetSelectionStart = $state<T | null>(null);
   focussedAssetId = $state<string | null>(null);
   selectionActive = $derived(this.selectedAssets.length > 0);
 
@@ -25,13 +33,13 @@ export class AssetInteraction {
   isAllFavorite = $derived(this.selectedAssets.every((asset) => asset.isFavorite));
   isAllUserOwned = $derived(this.selectedAssets.every((asset) => asset.ownerId === this.userId));
 
-  selectAsset(asset: AssetResponseDto) {
+  selectAsset(asset: T) {
     if (!this.hasSelectedAsset(asset.id)) {
       this.selectedAssets.push(asset);
     }
   }
 
-  selectAssets(assets: AssetResponseDto[]) {
+  selectAssets(assets: T[]) {
     for (const asset of assets) {
       this.selectAsset(asset);
     }
@@ -52,11 +60,11 @@ export class AssetInteraction {
     this.selectedGroup.delete(group);
   }
 
-  setAssetSelectionStart(asset: AssetResponseDto | null) {
+  setAssetSelectionStart(asset: T | null) {
     this.assetSelectionStart = asset;
   }
 
-  setAssetSelectionCandidates(assets: AssetResponseDto[]) {
+  setAssetSelectionCandidates(assets: T[]) {
     this.assetSelectionCandidates = assets;
   }
 

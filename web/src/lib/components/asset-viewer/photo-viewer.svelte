@@ -10,7 +10,7 @@
   import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { type SwipeCustomEvent, swipe } from 'svelte-gestures';
@@ -24,7 +24,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    preloadAssets?: AssetResponseDto[] | undefined;
+    preloadAssets?: { id: string }[] | undefined;
     element?: HTMLDivElement | undefined;
     haveFadeTransition?: boolean;
     sharedLink?: SharedLinkResponseDto | undefined;
@@ -68,12 +68,10 @@
     $boundingBoxesArray = [];
   });
 
-  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: AssetResponseDto[]) => {
+  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: { id: string }[]) => {
     for (const preloadAsset of preloadAssets || []) {
-      if (preloadAsset.type === AssetTypeEnum.Image) {
-        let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
-      }
+      let img = new Image();
+      img.src = getAssetUrl(preloadAsset.id, targetSize, null);
     }
   };
 
