@@ -309,6 +309,22 @@ class TestOrtSession:
         assert session.sess_options.inter_op_num_threads == 2
         assert session.sess_options.intra_op_num_threads == 4
 
+    def test_uses_arena_if_enabled(self, mocker: MockerFixture) -> None:
+        mock_settings = mocker.patch("immich_ml.sessions.ort.settings", autospec=True)
+        mock_settings.model_arena = True
+
+        session = OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"])
+
+        assert session.sess_options.enable_cpu_mem_arena
+
+    def test_does_not_use_arena_if_disabled(self, mocker: MockerFixture) -> None:
+        mock_settings = mocker.patch("immich_ml.sessions.ort.settings", autospec=True)
+        mock_settings.model_arena = False
+
+        session = OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"])
+
+        assert not session.sess_options.enable_cpu_mem_arena
+
     def test_sets_sess_options_kwarg(self) -> None:
         sess_options = ort.SessionOptions()
         session = OrtSession(

@@ -123,7 +123,7 @@ class OrtSession:
     @property
     def _sess_options_default(self) -> ort.SessionOptions:
         sess_options = ort.SessionOptions()
-        sess_options.enable_cpu_mem_arena = False
+        sess_options.enable_cpu_mem_arena = settings.model_arena
 
         # avoid thread contention between models
         if settings.model_inter_op_threads > 0:
