@@ -4,9 +4,8 @@
   import Combobox, { type ComboBoxOption } from './combobox.svelte';
   import DateInput from '../elements/date-input.svelte';
   import { t } from 'svelte-i18n';
-  import Checkbox from '../elements/checkbox.svelte';
   import DurationInput from '../elements/duration-input.svelte';
-  import SettingSwitch from './settings/setting-switch.svelte';
+  import { Field, Switch } from '@immich/ui';
 
   interface Props {
     initialDate?: DateTime;
@@ -160,7 +159,9 @@
   {#snippet promptSnippet()}
     {#if withDuration}
       <div class="mb-5">
-        <SettingSwitch bind:checked={showRelative} title="Change date by offset" />
+        <Field label="Change date by offset">
+          <Switch bind:checked={showRelative} />
+        </Field>
       </div>
     {/if}
     <div class="flex flex-col text-left min-h-[140px]">
