@@ -6,15 +6,15 @@ import {
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
-  UpdateAlbumDto,
-  UpdateAlbumUserDto,
   mapAlbum,
+  MapAlbumDto,
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
+  UpdateAlbumDto,
+  UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumEntity } from 'src/entities/album.entity';
 import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
@@ -39,7 +39,7 @@ export class AlbumService extends BaseService {
   async getAll({ user: { id: ownerId } }: AuthDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
-    let albums: AlbumEntity[];
+    let albums: MapAlbumDto[];
     if (assetId) {
       albums = await this.albumRepository.getByAssetId(ownerId, assetId);
     } else if (shared === true) {

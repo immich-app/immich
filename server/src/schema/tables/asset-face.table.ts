@@ -8,10 +8,21 @@ import { Column, DeleteDateColumn, ForeignKeyColumn, Index, PrimaryGeneratedColu
 @Index({ name: 'IDX_asset_faces_assetId_personId', columns: ['assetId', 'personId'] })
 @Index({ columns: ['personId', 'assetId'] })
 export class AssetFaceTable {
-  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @ForeignKeyColumn(() => AssetTable, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    // [assetId, personId] is the PK constraint
+    index: false,
+  })
   assetId!: string;
 
-  @ForeignKeyColumn(() => PersonTable, { onDelete: 'SET NULL', onUpdate: 'CASCADE', nullable: true })
+  @ForeignKeyColumn(() => PersonTable, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+    nullable: true,
+    // [personId, assetId] makes this redundant
+    index: false,
+  })
   personId!: string | null;
 
   @Column({ default: 0, type: 'integer' })
