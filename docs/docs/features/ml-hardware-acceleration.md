@@ -42,7 +42,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 - The GPU must have compute capability 5.2 or greater.
 - The server must have the official NVIDIA driver installed.
-- The installed driver must be >= 535 (it must support CUDA 12.2).
+- The installed driver must be >= 545 (it must support CUDA 12.3).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
 #### ROCm
