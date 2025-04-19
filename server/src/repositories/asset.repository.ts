@@ -763,6 +763,7 @@ export class AssetRepository {
         'assets.id as id',
         'assets.ownerId',
         'assets.status',
+        'deletedAt',
         'type',
         'duration',
         'isFavorite',
@@ -773,7 +774,6 @@ export class AssetRepository {
       ])
       .leftJoin('exif', 'assets.id', 'exif.assetId')
       .select(['exif.exifImageHeight as height', 'exifImageWidth as width', 'exif.orientation', 'exif.projectionType'])
-      .select(sql<boolean>`('assets.deletedAt' IS NOT NULL)`.as('isTrashed'))
       .$if(!!options.albumId, (qb) =>
         qb
           .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
@@ -815,7 +815,6 @@ export class AssetRepository {
         qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
       )
       .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
-      // .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
       .$if(!!options.tagId, (qb) => qb.where((eb) => withTagId(options.tagId!, eb.ref('assets.id'))))
       .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
       .where('assets.isVisible', '=', true)
@@ -861,7 +860,7 @@ export class AssetRepository {
       bucketAssets.ratio.push(round(width / height, 2));
       bucketAssets.isArchived.push(item.isArchived ? 1 : 0);
       bucketAssets.isFavorite.push(item.isFavorite ? 1 : 0);
-      bucketAssets.isTrashed.push(item.isTrashed ? 1 : 0);
+      bucketAssets.isTrashed.push(item.deletedAt === null ? 0 : 1);
       bucketAssets.thumbhash.push(item.thumbhash ? hexOrBufferToBase64(item.thumbhash) : 0);
       bucketAssets.localDateTime.push(item.localDateTime);
       bucketAssets.stack.push(this.mapStack(item.stack) || 0);

@@ -28,9 +28,7 @@ export class TimelineService extends BaseService {
     if (dto.pageSize === 0) {
       throw new BadRequestException('pageSize must not be 0');
     }
-    const a = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions, { skip: page, take: size });
-    console.log(a);
-    return a;
+    return await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions, { skip: page, take: size });
   }
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
