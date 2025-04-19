@@ -7,6 +7,15 @@ on:
       ref:
         required: false
         type: string
+    secrets:
+      KEY_JKS:
+        required: true
+      ALIAS:
+        required: true
+      ANDROID_KEY_PASSWORD:
+        required: true
+      ANDROID_STORE_PASSWORD:
+        required: true
   pull_request:
   push:
     branches: [main]
@@ -15,14 +24,21 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   pre-job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       should_run: ${{ steps.found_paths.outputs.mobile == 'true' || steps.should_force.outputs.should_force == 'true' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - id: found_paths
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
@@ -38,22 +54,17 @@ jobs:
   build-sign-android:
     name: Build and sign Android
     needs: pre-job
+    permissions:
+      contents: read
     # Skip when PR from a fork
     if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && needs.pre-job.outputs.should_run == 'true' }}
     runs-on: macos-14
 
     steps:
-      - name: Determine ref
-        id: get-ref
-        run: |
-          input_ref="${{ inputs.ref }}"
-          github_ref="${{ github.sha }}"
-          ref="${input_ref:-$github_ref}"
-          echo "ref=$ref" >> $GITHUB_OUTPUT
-
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
-          ref: ${{ steps.get-ref.outputs.ref }}
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
 
       - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
         with:
