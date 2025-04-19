@@ -13,32 +13,32 @@ part of openapi.api;
 class TimeBucketResponseDto {
   /// Returns a new [TimeBucketResponseDto] instance.
   TimeBucketResponseDto({
-    required this.count,
-    required this.timeBucket,
+    required this.bucketAssets,
+    required this.hasNextPage,
   });
 
-  int count;
+  TimeBucketAssetResponseDto bucketAssets;
 
-  String timeBucket;
+  bool hasNextPage;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TimeBucketResponseDto &&
-    other.count == count &&
-    other.timeBucket == timeBucket;
+    other.bucketAssets == bucketAssets &&
+    other.hasNextPage == hasNextPage;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (count.hashCode) +
-    (timeBucket.hashCode);
+    (bucketAssets.hashCode) +
+    (hasNextPage.hashCode);
 
   @override
-  String toString() => 'TimeBucketResponseDto[count=$count, timeBucket=$timeBucket]';
+  String toString() => 'TimeBucketResponseDto[bucketAssets=$bucketAssets, hasNextPage=$hasNextPage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'count'] = this.count;
-      json[r'timeBucket'] = this.timeBucket;
+      json[r'bucketAssets'] = this.bucketAssets;
+      json[r'hasNextPage'] = this.hasNextPage;
     return json;
   }
 
@@ -51,8 +51,8 @@ class TimeBucketResponseDto {
       final json = value.cast<String, dynamic>();
 
       return TimeBucketResponseDto(
-        count: mapValueOfType<int>(json, r'count')!,
-        timeBucket: mapValueOfType<String>(json, r'timeBucket')!,
+        bucketAssets: TimeBucketAssetResponseDto.fromJson(json[r'bucketAssets'])!,
+        hasNextPage: mapValueOfType<bool>(json, r'hasNextPage')!,
       );
     }
     return null;
@@ -100,8 +100,8 @@ class TimeBucketResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'count',
-    'timeBucket',
+    'bucketAssets',
+    'hasNextPage',
   };
 }
 

@@ -15,6 +15,7 @@
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetJobName,
     AssetTypeEnum,
@@ -52,7 +53,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    preloadAssets?: AssetResponseDto[];
+    preloadAssets?: { id: string }[];
     showNavigation?: boolean;
     withStacked?: boolean;
     isShared?: boolean;
@@ -62,7 +63,7 @@
     onAction?: OnAction | undefined;
     reactions?: ActivityResponseDto[];
     showCloseButton?: boolean;
-    onClose: (dto: { asset: AssetResponseDto }) => void;
+    onClose: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
     onRandom: () => Promise<AssetResponseDto | undefined>;
@@ -267,7 +268,7 @@
   };
 
   const closeViewer = () => {
-    onClose({ asset });
+    onClose(asset);
   };
 
   const closeEditor = () => {
@@ -605,8 +606,8 @@
               imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
               brokenAssetClass="text-xs"
               dimmed={stackedAsset.id !== asset.id}
-              asset={stackedAsset}
-              onClick={(stackedAsset) => {
+              asset={toTimelineAsset(stackedAsset)}
+              onClick={() => {
                 asset = stackedAsset;
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}

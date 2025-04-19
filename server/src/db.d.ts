@@ -153,7 +153,7 @@ export interface Assets {
   isVisible: Generated<boolean>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
-  localDateTime: Timestamp | null;
+  localDateTime: Timestamp;
   originalFileName: string;
   originalPath: string;
   ownerId: string;

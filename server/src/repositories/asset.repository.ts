@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Selectable, UpdateResult, Updateable, sql } from 'kysely';
-import { isEmpty, isUndefined, omitBy } from 'lodash';
+import { isEmpty, isUndefined, omitBy, round } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
@@ -24,6 +24,10 @@ import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src
 import { anyUuid, asUuid, removeUndefinedKeys, unnest } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
+
+import { TimeBucketAssets } from 'src/services/timeline.service.types';
+import { isFlipped } from 'src/utils/asset.util';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -710,7 +714,13 @@ export class AssetRepository {
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
                 .where('albums_assets_assets.albumsId', '=', asUuid(options.albumId!)),
             )
-            .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+            // .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+            .$if(!!options.personId, (qb) =>
+              qb.innerJoin(
+                () => hasPeople([options.personId!]),
+                (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
+              ),
+            )
             .$if(!!options.withStacked, (qb) =>
               qb
                 .leftJoin('asset_stack', (join) =>
@@ -727,7 +737,8 @@ export class AssetRepository {
             .$if(options.isDuplicate !== undefined, (qb) =>
               qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
             )
-            .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+            // .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+            .$if(!!options.tagId, (qb) => qb.where((eb) => withTagId(options.tagId!, eb.ref('assets.id')))),
         )
         .selectFrom('assets')
         .select('timeBucket')
@@ -744,17 +755,37 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH, withStacked: true }] })
-  async getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
-    return this.db
+  async getTimeBucket(timeBucket: string, options: TimeBucketOptions, pagination: PaginationOptions) {
+    const paginate = pagination.skip! >= 1 && pagination.take >= 1;
+    const query = this.db
       .selectFrom('assets')
-      .selectAll('assets')
-      .$call(withExif)
+      .select([
+        'assets.id as id',
+        'assets.ownerId',
+        'assets.status',
+        'type',
+        'duration',
+        'isFavorite',
+        'isArchived',
+        'thumbhash',
+        'localDateTime',
+        'livePhotoVideoId',
+      ])
+      .leftJoin('exif', 'assets.id', 'exif.assetId')
+      .select(['exif.exifImageHeight as height', 'exifImageWidth as width', 'exif.orientation', 'exif.projectionType'])
+      .select(sql<boolean>`('assets.deletedAt' IS NOT NULL)`.as('isTrashed'))
       .$if(!!options.albumId, (qb) =>
         qb
           .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
           .where('albums_assets_assets.albumsId', '=', options.albumId!),
       )
-      .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+      // .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+      .$if(!!options.personId, (qb) =>
+        qb.innerJoin(
+          () => hasPeople([options.personId!]),
+          (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
+        ),
+      )
       .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
       .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
       .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
@@ -784,12 +815,79 @@ export class AssetRepository {
         qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
       )
       .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
-      .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+      // .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+      .$if(!!options.tagId, (qb) => qb.where((eb) => withTagId(options.tagId!, eb.ref('assets.id'))))
       .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
       .where('assets.isVisible', '=', true)
       .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
       .orderBy('assets.localDateTime', options.order ?? 'desc')
-      .execute() as any as Promise<AssetEntity[]>;
+      .$if(paginate, (qb) => qb.offset(pagination.skip!))
+      .$if(paginate, (qb) => qb.limit(pagination.take + 1));
+
+    const items = await query.execute();
+
+    const hasNextPage = paginate && items.length > pagination.take;
+    if (paginate) {
+      items.splice(pagination.take);
+    }
+
+    const bucketAssets: TimeBucketAssets = {
+      id: [],
+      ownerId: [],
+      ratio: [],
+      isFavorite: [],
+      isArchived: [],
+      isTrashed: [],
+      isVideo: [],
+      isImage: [],
+      thumbhash: [],
+      localDateTime: [],
+      stack: [],
+      duration: [],
+      projectionType: [],
+      livePhotoVideoId: [],
+    };
+    for (const item of items) {
+      let width = item.width!;
+      let height = item.height!;
+      if (isFlipped(item.orientation)) {
+        const w = item.width!;
+        const h = item.height!;
+        height = w;
+        width = h;
+      }
+      bucketAssets.id.push(item.id);
+      bucketAssets.ownerId.push(item.ownerId);
+      bucketAssets.ratio.push(round(width / height, 2));
+      bucketAssets.isArchived.push(item.isArchived ? 1 : 0);
+      bucketAssets.isFavorite.push(item.isFavorite ? 1 : 0);
+      bucketAssets.isTrashed.push(item.isTrashed ? 1 : 0);
+      bucketAssets.thumbhash.push(item.thumbhash ? hexOrBufferToBase64(item.thumbhash) : 0);
+      bucketAssets.localDateTime.push(item.localDateTime);
+      bucketAssets.stack.push(this.mapStack(item.stack) || 0);
+      bucketAssets.duration.push(item.duration || 0);
+      bucketAssets.projectionType.push(item.projectionType || 0);
+      bucketAssets.livePhotoVideoId.push(item.livePhotoVideoId || 0);
+      bucketAssets.isImage.push(item.type === AssetType.IMAGE ? 1 : 0);
+      bucketAssets.isVideo.push(item.type === AssetType.VIDEO ? 1 : 0);
+    }
+
+    return {
+      bucketAssets,
+      hasNextPage,
+    };
+  }
+
+  mapStack(entity?: { id: string | null; primaryAssetId: string | null; assetCount: string | number | bigint | null }) {
+    if (!entity) {
+      return;
+    }
+
+    return {
+      id: entity.id!,
+      primaryAssetId: entity.primaryAssetId!,
+      assetCount: entity.assetCount as number,
+    };
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

@@ -1,4 +1,12 @@
-import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
+import {
+  DeduplicateJoinsPlugin,
+  Expression,
+  expressionBuilder,
+  ExpressionBuilder,
+  Kysely,
+  SelectQueryBuilder,
+  sql,
+} from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { AssetFace, AssetFile, AssetJobStatus, columns, Exif, Stack, Tag, User } from 'src/database';
 import { DB } from 'src/db';
@@ -105,19 +113,30 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDele
   ).as('faces');
 }
 
-export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[]) {
-  return qb.innerJoin(
-    (eb) =>
-      eb
-        .selectFrom('asset_faces')
-        .select('assetId')
-        .where('personId', '=', anyUuid(personIds!))
-        .where('deletedAt', 'is', null)
-        .groupBy('assetId')
-        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
-        .as('has_people'),
-    (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
-  );
+// export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[]) {
+//   return qb.innerJoin(
+//     (eb) =>
+//       eb
+//         .selectFrom('asset_faces')
+//         .select('assetId')
+//         .where('personId', '=', anyUuid(personIds!))
+//         .where('deletedAt', 'is', null)
+//         .groupBy('assetId')
+//         .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+//         .as('has_people'),
+//     (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
+//   );
+// }
+export function hasPeople(personIds: string[]) {
+  const eb = expressionBuilder<DB, never>();
+  return eb
+    .selectFrom('asset_faces')
+    .select('assetId')
+    .where('personId', '=', anyUuid(personIds!))
+    .where('deletedAt', 'is', null)
+    .groupBy('assetId')
+    .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+    .as('has_people');
 }
 
 export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: string[]) {
@@ -159,15 +178,25 @@ export function truncatedDate<O>(size: TimeBucketSize) {
   return sql<O>`date_trunc(${size}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
 }
 
-export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: string) {
-  return qb.where((eb) =>
-    eb.exists(
-      eb
-        .selectFrom('tags_closure')
-        .innerJoin('tag_asset', 'tag_asset.tagsId', 'tags_closure.id_descendant')
-        .whereRef('tag_asset.assetsId', '=', 'assets.id')
-        .where('tags_closure.id_ancestor', '=', tagId),
-    ),
+// export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: string) {
+//   return qb.where((eb) =>
+//     eb.exists(
+//       eb
+//         .selectFrom('tags_closure')
+//         .innerJoin('tag_asset', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+//         .whereRef('tag_asset.assetsId', '=', 'assets.id')
+//         .where('tags_closure.id_ancestor', '=', tagId),
+//     ),
+//   );
+// }
+export function withTagId(tagId: string, assetId: Expression<string>) {
+  const eb = expressionBuilder<DB, never>();
+  return eb.exists(
+    eb
+      .selectFrom('tags_closure')
+      .innerJoin('tag_asset', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+      .whereRef('tag_asset.assetsId', '=', assetId)
+      .where('tags_closure.id_ancestor', '=', tagId),
   );
 }
 
@@ -177,94 +206,106 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.isArchived ??= options.withArchived ? undefined : false;
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
-  return kysely
-    .withPlugin(joinDeduplicationPlugin)
-    .selectFrom('assets')
-    .selectAll('assets')
-    .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
-    .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
-    .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
-    .$if(!!options.createdAfter, (qb) => qb.where('assets.createdAt', '>=', options.createdAfter!))
-    .$if(!!options.updatedBefore, (qb) => qb.where('assets.updatedAt', '<=', options.updatedBefore!))
-    .$if(!!options.updatedAfter, (qb) => qb.where('assets.updatedAt', '>=', options.updatedAfter!))
-    .$if(!!options.trashedBefore, (qb) => qb.where('assets.deletedAt', '<=', options.trashedBefore!))
-    .$if(!!options.trashedAfter, (qb) => qb.where('assets.deletedAt', '>=', options.trashedAfter!))
-    .$if(!!options.takenBefore, (qb) => qb.where('assets.fileCreatedAt', '<=', options.takenBefore!))
-    .$if(!!options.takenAfter, (qb) => qb.where('assets.fileCreatedAt', '>=', options.takenAfter!))
-    .$if(options.city !== undefined, (qb) =>
-      qb
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .where('exif.city', options.city === null ? 'is' : '=', options.city!),
-    )
-    .$if(options.state !== undefined, (qb) =>
-      qb
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .where('exif.state', options.state === null ? 'is' : '=', options.state!),
-    )
-    .$if(options.country !== undefined, (qb) =>
-      qb
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .where('exif.country', options.country === null ? 'is' : '=', options.country!),
-    )
-    .$if(options.make !== undefined, (qb) =>
-      qb
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .where('exif.make', options.make === null ? 'is' : '=', options.make!),
-    )
-    .$if(options.model !== undefined, (qb) =>
-      qb
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .where('exif.model', options.model === null ? 'is' : '=', options.model!),
-    )
-    .$if(options.lensModel !== undefined, (qb) =>
-      qb
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .where('exif.lensModel', options.lensModel === null ? 'is' : '=', options.lensModel!),
-    )
-    .$if(options.rating !== undefined, (qb) =>
-      qb
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .where('exif.rating', options.rating === null ? 'is' : '=', options.rating!),
-    )
-    .$if(!!options.checksum, (qb) => qb.where('assets.checksum', '=', options.checksum!))
-    .$if(!!options.deviceAssetId, (qb) => qb.where('assets.deviceAssetId', '=', options.deviceAssetId!))
-    .$if(!!options.deviceId, (qb) => qb.where('assets.deviceId', '=', options.deviceId!))
-    .$if(!!options.id, (qb) => qb.where('assets.id', '=', asUuid(options.id!)))
-    .$if(!!options.libraryId, (qb) => qb.where('assets.libraryId', '=', asUuid(options.libraryId!)))
-    .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-    .$if(!!options.encodedVideoPath, (qb) => qb.where('assets.encodedVideoPath', '=', options.encodedVideoPath!))
-    .$if(!!options.originalPath, (qb) =>
-      qb.where(sql`f_unaccent(assets."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
-    )
-    .$if(!!options.originalFileName, (qb) =>
-      qb.where(
-        sql`f_unaccent(assets."originalFileName")`,
-        'ilike',
-        sql`'%' || f_unaccent(${options.originalFileName}) || '%'`,
-      ),
-    )
-    .$if(!!options.description, (qb) =>
-      qb
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .where(sql`f_unaccent(exif.description)`, 'ilike', sql`'%' || f_unaccent(${options.description}) || '%'`),
-    )
-    .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
-    .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
-    .$if(options.isOffline !== undefined, (qb) => qb.where('assets.isOffline', '=', options.isOffline!))
-    .$if(options.isVisible !== undefined, (qb) => qb.where('assets.isVisible', '=', options.isVisible!))
-    .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
-    .$if(options.isEncoded !== undefined, (qb) =>
-      qb.where('assets.encodedVideoPath', options.isEncoded ? 'is not' : 'is', null),
-    )
-    .$if(options.isMotion !== undefined, (qb) =>
-      qb.where('assets.livePhotoVideoId', options.isMotion ? 'is not' : 'is', null),
-    )
-    .$if(!!options.isNotInAlbum, (qb) =>
-      qb.where((eb) =>
-        eb.not(eb.exists((eb) => eb.selectFrom('albums_assets_assets').whereRef('assetsId', '=', 'assets.id'))),
-      ),
-    )
-    .$if(!!options.withExif, withExifInner)
-    .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
+  return (
+    kysely
+      .withPlugin(joinDeduplicationPlugin)
+      .selectFrom('assets')
+      .selectAll('assets')
+      .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
+      // .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
+      .$if(!!options.personIds && options.personIds.length > 0, (qb) =>
+        qb.innerJoin(
+          () => hasPeople(options.personIds!),
+          (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
+        ),
+      )
+      .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
+      .$if(!!options.createdAfter, (qb) => qb.where('assets.createdAt', '>=', options.createdAfter!))
+      .$if(!!options.updatedBefore, (qb) => qb.where('assets.updatedAt', '<=', options.updatedBefore!))
+      .$if(!!options.updatedAfter, (qb) => qb.where('assets.updatedAt', '>=', options.updatedAfter!))
+      .$if(!!options.trashedBefore, (qb) => qb.where('assets.deletedAt', '<=', options.trashedBefore!))
+      .$if(!!options.trashedAfter, (qb) => qb.where('assets.deletedAt', '>=', options.trashedAfter!))
+      .$if(!!options.takenBefore, (qb) => qb.where('assets.fileCreatedAt', '<=', options.takenBefore!))
+      .$if(!!options.takenAfter, (qb) => qb.where('assets.fileCreatedAt', '>=', options.takenAfter!))
+      .$if(options.city !== undefined, (qb) =>
+        qb
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .where('exif.city', options.city === null ? 'is' : '=', options.city!),
+      )
+      .$if(options.state !== undefined, (qb) =>
+        qb
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .where('exif.state', options.state === null ? 'is' : '=', options.state!),
+      )
+      .$if(options.country !== undefined, (qb) =>
+        qb
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .where('exif.country', options.country === null ? 'is' : '=', options.country!),
+      )
+      .$if(options.make !== undefined, (qb) =>
+        qb
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .where('exif.make', options.make === null ? 'is' : '=', options.make!),
+      )
+      .$if(options.model !== undefined, (qb) =>
+        qb
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .where('exif.model', options.model === null ? 'is' : '=', options.model!),
+      )
+      .$if(options.lensModel !== undefined, (qb) =>
+        qb
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .where('exif.lensModel', options.lensModel === null ? 'is' : '=', options.lensModel!),
+      )
+      .$if(options.rating !== undefined, (qb) =>
+        qb
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .where('exif.rating', options.rating === null ? 'is' : '=', options.rating!),
+      )
+      .$if(!!options.checksum, (qb) => qb.where('assets.checksum', '=', options.checksum!))
+      .$if(!!options.deviceAssetId, (qb) => qb.where('assets.deviceAssetId', '=', options.deviceAssetId!))
+      .$if(!!options.deviceId, (qb) => qb.where('assets.deviceId', '=', options.deviceId!))
+      .$if(!!options.id, (qb) => qb.where('assets.id', '=', asUuid(options.id!)))
+      .$if(!!options.libraryId, (qb) => qb.where('assets.libraryId', '=', asUuid(options.libraryId!)))
+      .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
+      .$if(!!options.encodedVideoPath, (qb) => qb.where('assets.encodedVideoPath', '=', options.encodedVideoPath!))
+      .$if(!!options.originalPath, (qb) =>
+        qb.where(
+          sql`f_unaccent(assets."originalPath")`,
+          'ilike',
+          sql`'%' || f_unaccent(${options.originalPath}) || '%'`,
+        ),
+      )
+      .$if(!!options.originalFileName, (qb) =>
+        qb.where(
+          sql`f_unaccent(assets."originalFileName")`,
+          'ilike',
+          sql`'%' || f_unaccent(${options.originalFileName}) || '%'`,
+        ),
+      )
+      .$if(!!options.description, (qb) =>
+        qb
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .where(sql`f_unaccent(exif.description)`, 'ilike', sql`'%' || f_unaccent(${options.description}) || '%'`),
+      )
+      .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
+      .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
+      .$if(options.isOffline !== undefined, (qb) => qb.where('assets.isOffline', '=', options.isOffline!))
+      .$if(options.isVisible !== undefined, (qb) => qb.where('assets.isVisible', '=', options.isVisible!))
+      .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
+      .$if(options.isEncoded !== undefined, (qb) =>
+        qb.where('assets.encodedVideoPath', options.isEncoded ? 'is not' : 'is', null),
+      )
+      .$if(options.isMotion !== undefined, (qb) =>
+        qb.where('assets.livePhotoVideoId', options.isMotion ? 'is not' : 'is', null),
+      )
+      .$if(!!options.isNotInAlbum, (qb) =>
+        qb.where((eb) =>
+          eb.not(eb.exists((eb) => eb.selectFrom('albums_assets_assets').whereRef('assetsId', '=', 'assets.id'))),
+        ),
+      )
+      .$if(!!options.withExif, withExifInner)
+      .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
+      .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null))
+  );
 }
