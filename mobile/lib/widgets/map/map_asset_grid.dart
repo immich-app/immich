@@ -46,12 +46,39 @@ class MapAssetGrid extends HookConsumerWidget {
     final gridScrollThrottler =
         useThrottler(interval: const Duration(milliseconds: 300));
 
+    // Add a cache for assets we've already loaded
+    final assetCache = useRef<Map<String, Asset>>({});
+
     void handleMapEvents(MapEvent event) async {
       if (event is MapAssetsInBoundsUpdated) {
-        assetsInBounds.value = await ref
-            .read(dbProvider)
-            .assets
-            .getAllByRemoteId(event.assetRemoteIds);
+        final assetIds = event.assetRemoteIds;
+        final missingIds = <String>[];
+        final currentAssets = <Asset>[];
+
+        for (final id in assetIds) {
+          final asset = assetCache.value[id];
+          if (asset != null) {
+            currentAssets.add(asset);
+          } else {
+            missingIds.add(id);
+          }
+        }
+
+        // Only fetch missing assets
+        if (missingIds.isNotEmpty) {
+          final newAssets =
+              await ref.read(dbProvider).assets.getAllByRemoteId(missingIds);
+
+          // Add new assets to cache and current list
+          for (final asset in newAssets) {
+            if (asset.remoteId != null) {
+              assetCache.value[asset.remoteId!] = asset;
+              currentAssets.add(asset);
+            }
+          }
+        }
+
+        assetsInBounds.value = currentAssets;
         return;
       }
     }
