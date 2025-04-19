@@ -8,7 +8,7 @@
   import { preferences, user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteProfileImage, updateMyPreferences, type UserAvatarColor } from '@immich/sdk';
-  import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
+  import { mdiCog, mdiLogout, mdiPencil, mdiWrench, mdiCreditCard } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { NotificationType, notificationController } from '../notification/notification';
@@ -95,6 +95,20 @@
           <div class="flex place-content-center place-items-center text-center gap-2 px-2">
             <Icon path={mdiWrench} size="18" ariaHidden />
             {$t('administration')}
+          </div>
+        </Button>
+        <Button
+          href="https://pixelunion.chargebeeportal.com"
+          onclick={onClose}
+          color="dark-gray"
+          target
+          size="sm"
+          shadow={false}
+          border
+        >
+          <div class="flex place-content-center place-items-center text-center gap-2 px-2">
+            <Icon path={mdiCreditCard} size="18" ariaHidden />
+            Billing
           </div>
         </Button>
       {/if}
