@@ -180,6 +180,7 @@ class TestOrtSession:
     CUDA_EP_OUT_OF_ORDER = ["CPUExecutionProvider", "CUDAExecutionProvider"]
     TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
     ROCM_EP = ["ROCMExecutionProvider", "CPUExecutionProvider"]
+    COREML_EP = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
 
     @pytest.mark.providers(CPU_EP)
     def test_sets_cpu_provider(self, providers: list[str]) -> None:
@@ -224,6 +225,12 @@ class TestOrtSession:
         session = OrtSession("ViT-B-32__openai")
 
         assert session.providers == self.ROCM_EP
+
+    @pytest.mark.providers(COREML_EP)
+    def test_uses_coreml(self, providers: list[str]) -> None:
+        session = OrtSession("ViT-B-32__openai")
+
+        assert session.providers == self.COREML_EP
 
     def test_sets_provider_kwarg(self) -> None:
         providers = ["CUDAExecutionProvider"]
