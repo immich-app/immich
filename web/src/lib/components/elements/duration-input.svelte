@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { t } from 'svelte-i18n';
+
   interface Props {
     value: number;
     class?: string;
@@ -46,12 +48,19 @@
   <button type="button" class="w-8 text-xl font-bold" onclick={toggleSign} title="Toggle sign">
     {sign >= 0 ? '+' : '-'}
   </button>
-  <input type="number" min="0" placeholder="Days" class="immich-form-input w-1/3" bind:value={days} oninput={update} />
+  <input
+    type="number"
+    min="0"
+    placeholder={$t('days')}
+    class="immich-form-input w-1/3"
+    bind:value={days}
+    oninput={update}
+  />
   <input
     type="number"
     min="0"
     max="23"
-    placeholder="Hours"
+    placeholder={$t('hours')}
     class="immich-form-input w-1/3"
     bind:value={hours}
     oninput={update}
@@ -60,7 +69,7 @@
     type="number"
     min="0"
     max="59"
-    placeholder="Minutes"
+    placeholder={$t('minutes')}
     class="immich-form-input w-1/3"
     bind:value={minutes}
     oninput={update}

@@ -159,7 +159,7 @@
   {#snippet promptSnippet()}
     {#if withDuration}
       <div class="mb-5">
-        <Field label="Change date by offset">
+        <Field label={$t('edit_date_and_time_by_offset')}>
           <Switch bind:checked={showRelative} />
         </Field>
       </div>
@@ -182,7 +182,7 @@
       </div>
       <div style="display: {showRelative ? 'block' : 'none'}">
         <div class="flex flex-col">
-          <label for="relativedatetime">Offset</label>
+          <label for="relativedatetime">{$t('offset')}</label>
           <DurationInput class="immich-form-input" id="relativedatetime" bind:value={selectedDuration} />
         </div>
       </div>
