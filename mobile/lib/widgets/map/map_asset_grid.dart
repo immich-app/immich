@@ -46,12 +46,37 @@ class MapAssetGrid extends HookConsumerWidget {
     final gridScrollThrottler =
         useThrottler(interval: const Duration(milliseconds: 300));
 
+    // Add a cache for assets we've already loaded
+    final assetCache = useRef<Map<String, Asset>>({});
+
     void handleMapEvents(MapEvent event) async {
       if (event is MapAssetsInBoundsUpdated) {
-        assetsInBounds.value = await ref
-            .read(dbProvider)
-            .assets
-            .getAllByRemoteId(event.assetRemoteIds);
+        // Find which assets we need to fetch from the database
+        final assetIds = event.assetRemoteIds;
+        final cachedIds = assetCache.value.keys.toSet();
+        final missingIds =
+            assetIds.where((id) => !cachedIds.contains(id)).toList();
+
+        // Only query the database for assets we haven't seen before
+        if (missingIds.isNotEmpty) {
+          final newAssets =
+              await ref.read(dbProvider).assets.getAllByRemoteId(missingIds);
+
+          // Add new assets to our cache
+          for (final asset in newAssets) {
+            if (asset.remoteId != null) {
+              assetCache.value[asset.remoteId!] = asset;
+            }
+          }
+        }
+
+        // Filter assets from cache that are in the current bounds
+        final currentAssets = assetIds
+            .where((id) => assetCache.value.containsKey(id))
+            .map((id) => assetCache.value[id]!)
+            .toList();
+
+        assetsInBounds.value = currentAssets;
         return;
       }
     }
