@@ -1,7 +1,5 @@
 import { createHash } from 'node:crypto';
 import { ColumnValue } from 'src/sql-tools/from-code/decorators/column.decorator';
-import { TriggerOptions } from 'src/sql-tools/from-code/decorators/trigger.decorator';
-import { FunctionOptions } from 'src/sql-tools/from-code/register-function';
 import {
   Comparer,
   DatabaseColumn,
@@ -18,25 +16,6 @@ export const asSnakeCase = (name: string): string => name.replaceAll(/([a-z])([A
 // match TypeORM
 export const asKey = (prefix: string, tableName: string, values: string[]) =>
   (prefix + sha1(`${tableName}_${values.toSorted().join('_')}`)).slice(0, 30);
-export const asPrimaryKeyConstraintName = (table: string, columns: string[]) => asKey('PK_', table, columns);
-export const asForeignKeyConstraintName = (table: string, columns: string[]) => asKey('FK_', table, columns);
-export const asTriggerName = (table: string, trigger: TriggerOptions) =>
-  asKey('TR_', table, [...trigger.actions, trigger.scope, trigger.timing, trigger.functionName]);
-export const asRelationKeyConstraintName = (table: string, columns: string[]) => asKey('REL_', table, columns);
-export const asUniqueConstraintName = (table: string, columns: string[]) => asKey('UQ_', table, columns);
-export const asCheckConstraintName = (table: string, expression: string) => asKey('CHK_', table, [expression]);
-export const asIndexName = (table: string, columns: string[] | undefined, where: string | undefined) => {
-  const items: string[] = [];
-  for (const columnName of columns ?? []) {
-    items.push(columnName);
-  }
-
-  if (where) {
-    items.push(where);
-  }
-
-  return asKey('IDX_', table, items);
-};
 
 export const asOptions = <T extends { name?: string }>(options: string | T): T => {
   if (typeof options === 'string') {
@@ -44,40 +23,6 @@ export const asOptions = <T extends { name?: string }>(options: string | T): T =
   }
 
   return options;
-};
-
-export const asFunctionExpression = (options: FunctionOptions) => {
-  const name = options.name;
-  const sql: string[] = [
-    `CREATE OR REPLACE FUNCTION ${name}(${(options.arguments || []).join(', ')})`,
-    `RETURNS ${options.returnType}`,
-  ];
-
-  const flags = [
-    options.parallel ? `PARALLEL ${options.parallel.toUpperCase()}` : undefined,
-    options.strict ? 'STRICT' : undefined,
-    options.behavior ? options.behavior.toUpperCase() : undefined,
-    `LANGUAGE ${options.language ?? 'SQL'}`,
-  ].filter((x) => x !== undefined);
-
-  if (flags.length > 0) {
-    sql.push(flags.join(' '));
-  }
-
-  if ('return' in options) {
-    sql.push(`  RETURN ${options.return}`);
-  }
-
-  if ('body' in options) {
-    sql.push(
-      //
-      `AS $$`,
-      '  ' + options.body.trim(),
-      `$$;`,
-    );
-  }
-
-  return sql.join('\n  ').trim();
 };
 
 export const sha1 = (value: string) => createHash('sha1').update(value).digest('hex');

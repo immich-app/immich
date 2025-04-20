@@ -4,6 +4,8 @@ on:
   pull_request_target:
     types: [opened, labeled, unlabeled, synchronize]
 
+permissions: {}
+
 jobs:
   validate-release-label:
     runs-on: ubuntu-latest

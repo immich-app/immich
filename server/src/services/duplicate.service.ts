@@ -68,7 +68,7 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
+    const previewFile = getAssetFile(asset.files || [], AssetFileType.PREVIEW);
     if (!previewFile) {
       this.logger.warn(`Asset ${id} is missing preview image`);
       return JobStatus.FAILED;

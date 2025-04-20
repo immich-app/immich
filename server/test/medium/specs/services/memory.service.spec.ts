@@ -39,9 +39,12 @@ describe(MemoryService.name, () => {
     it('should create a memory from an asset', async () => {
       const { sut, repos, getRepository } = createSut();
 
-      const now = DateTime.fromObject({ year: 2025, month: 2, day: 25 }, { zone: 'utc' });
+      const now = DateTime.fromObject({ year: 2025, month: 2, day: 25 }, { zone: 'utc' }) as DateTime<true>;
       const user = mediumFactory.userInsert();
-      const asset = mediumFactory.assetInsert({ ownerId: user.id, localDateTime: now.minus({ years: 1 }).toISO() });
+      const asset = mediumFactory.assetInsert({
+        ownerId: user.id,
+        localDateTime: now.minus({ years: 1 }).toISO(),
+      });
       const jobStatus = mediumFactory.assetJobStatusInsert({ assetId: asset.id });
 
       const userRepo = getRepository('user');
@@ -86,7 +89,7 @@ describe(MemoryService.name, () => {
     it('should not generate a memory twice for the same day', async () => {
       const { sut, repos, getRepository } = createSut();
 
-      const now = DateTime.fromObject({ year: 2025, month: 2, day: 20 }, { zone: 'utc' });
+      const now = DateTime.fromObject({ year: 2025, month: 2, day: 20 }, { zone: 'utc' }) as DateTime<true>;
 
       const assetRepo = getRepository('asset');
       const memoryRepo = getRepository('memory');

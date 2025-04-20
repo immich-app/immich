@@ -143,8 +143,8 @@ export interface Assets {
   duplicateId: string | null;
   duration: string | null;
   encodedVideoPath: Generated<string | null>;
-  fileCreatedAt: Timestamp | null;
-  fileModifiedAt: Timestamp | null;
+  fileCreatedAt: Timestamp;
+  fileModifiedAt: Timestamp;
   id: Generated<string>;
   isArchived: Generated<boolean>;
   isExternal: Generated<boolean>;

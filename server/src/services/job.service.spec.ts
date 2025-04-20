@@ -285,9 +285,9 @@ describe(JobService.name, () => {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
         if (item.name === JobName.GENERATE_THUMBNAILS && item.data.source === 'upload') {
           if (item.data.id === 'asset-live-image') {
-            mocks.asset.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoStillAsset]);
+            mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([assetStub.livePhotoStillAsset as any]);
           } else {
-            mocks.asset.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+            mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([assetStub.livePhotoMotionAsset as any]);
           }
         }
 

@@ -1,9 +1,8 @@
-import { Column, ColumnIndex, DatabaseSchema, Table } from 'src/sql-tools';
+import { Column, DatabaseSchema, Table } from 'src/sql-tools';
 
 @Table()
 export class Table1 {
-  @ColumnIndex()
-  @Column()
+  @Column({ index: true })
   column1!: string;
 }
 

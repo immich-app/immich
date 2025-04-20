@@ -1,7 +1,12 @@
-import 'package:immich_mobile/domain/models/sync/sync_event.model.dart';
+import 'package:http/http.dart' as http;
+import 'package:immich_mobile/domain/models/sync_event.model.dart';
 
 abstract interface class ISyncApiRepository {
-  Future<void> ack(String data);
+  Future<void> ack(List<String> data);
 
-  Stream<List<SyncEvent>> watchUserSyncEvent();
+  Future<void> streamChanges(
+    Function(List<SyncEvent>, Function() abort) onData, {
+    int batchSize,
+    http.Client? httpClient,
+  });
 }

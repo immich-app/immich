@@ -1,5 +1,4 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { ASSET_CHECKSUM_CONSTRAINT } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType } from 'src/enum';
 import { assets_status_enum } from 'src/schema/enums';
 import { assets_delete_audit } from 'src/schema/functions';
@@ -9,7 +8,6 @@ import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Column,
-  ColumnIndex,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
@@ -18,6 +16,7 @@ import {
   Table,
   UpdateDateColumn,
 } from 'src/sql-tools';
+import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 
 @Table('assets')
 @UpdatedAtTrigger('assets_updated_at')
@@ -78,8 +77,7 @@ export class AssetTable {
   @Column()
   originalPath!: string;
 
-  @ColumnIndex('idx_asset_file_created_at')
-  @Column({ type: 'timestamp with time zone' })
+  @Column({ type: 'timestamp with time zone', indexName: 'idx_asset_file_created_at' })
   fileCreatedAt!: Date;
 
   @Column({ type: 'timestamp with time zone' })
@@ -94,8 +92,7 @@ export class AssetTable {
   @Column({ type: 'character varying', nullable: true, default: '' })
   encodedVideoPath!: string | null;
 
-  @Column({ type: 'bytea' })
-  @ColumnIndex()
+  @Column({ type: 'bytea', index: true })
   checksum!: Buffer; // sha1 checksum
 
   @Column({ type: 'boolean', default: true })
@@ -113,8 +110,7 @@ export class AssetTable {
   @Column({ type: 'boolean', default: false })
   isArchived!: boolean;
 
-  @Column()
-  @ColumnIndex()
+  @Column({ index: true })
   originalFileName!: string;
 
   @Column({ nullable: true })
@@ -141,14 +137,12 @@ export class AssetTable {
   @ForeignKeyColumn(() => StackTable, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   stackId?: string | null;
 
-  @ColumnIndex('IDX_assets_duplicateId')
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'uuid', nullable: true, indexName: 'IDX_assets_duplicateId' })
   duplicateId!: string | null;
 
   @Column({ enum: assets_status_enum, default: AssetStatus.ACTIVE })
   status!: AssetStatus;
 
-  @ColumnIndex('IDX_assets_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_assets_update_id' })
   updateId?: string;
 }
