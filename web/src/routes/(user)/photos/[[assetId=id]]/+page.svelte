@@ -22,7 +22,7 @@
   import { AssetAction } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import {
@@ -42,7 +42,7 @@
   void assetStore.updateOptions({ isArchived: false, withStacked: true, withPartners: true });
   onDestroy(() => assetStore.destroy());
 
-  const assetInteraction = new AssetInteraction<TimelineAsset>();
+  const assetInteraction = new AssetInteraction();
 
   let selectedAssets = $derived(assetInteraction.selectedAssets);
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);

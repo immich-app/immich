@@ -1,4 +1,3 @@
-import type { BaseInteractionAsset } from '$lib/stores/asset-interaction.svelte';
 import type { AssetBucket, TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
@@ -108,7 +107,7 @@ export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): strin
 
 export const formatDateGroupTitle = memoize(formatGroupTitle);
 
-export const toTimelineAsset = (unknownAsset: BaseInteractionAsset): TimelineAsset => {
+export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): TimelineAsset => {
   if (isTimelineAsset(unknownAsset)) {
     return unknownAsset;
   }
@@ -132,5 +131,5 @@ export const toTimelineAsset = (unknownAsset: BaseInteractionAsset): TimelineAss
     livePhotoVideoId: assetResponse.livePhotoVideoId || null,
   };
 };
-export const isTimelineAsset = (arg: BaseInteractionAsset): arg is TimelineAsset =>
+export const isTimelineAsset = (arg: AssetResponseDto | TimelineAsset): arg is TimelineAsset =>
   (arg as TimelineAsset).ratio !== undefined;

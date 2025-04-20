@@ -66,7 +66,7 @@
     onClose: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
-    onRandom: () => Promise<AssetResponseDto | undefined>;
+    onRandom: () => Promise<{ id: string } | undefined>;
     copyImage?: () => Promise<void>;
   }
 
@@ -89,7 +89,7 @@
     copyImage = $bindable(),
   }: Props = $props();
 
-  const { setAsset } = assetViewingStore;
+  const { setAssetId } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
@@ -210,7 +210,7 @@
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
-        slideshowHistory.queue(asset);
+        slideshowHistory.queue(toTimelineAsset(asset));
         handlePromiseError(handlePlaySlideshow());
       } else if (value === SlideshowState.StopSlideshow) {
         handlePromiseError(handleStopSlideshow());
@@ -220,7 +220,7 @@
     shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
       if (value === SlideshowNavigation.Shuffle) {
         slideshowHistory.reset();
-        slideshowHistory.queue(asset);
+        slideshowHistory.queue(toTimelineAsset(asset));
       }
     });
 
@@ -335,8 +335,7 @@
   let assetViewerHtmlElement = $state<HTMLElement>();
 
   const slideshowHistory = new SlideshowHistory((asset) => {
-    setAsset(asset);
-    $restartSlideshowProgress = true;
+    handlePromiseError(setAssetId(asset.id).then(() => ($restartSlideshowProgress = true)));
   });
 
   const handleVideoStarted = () => {

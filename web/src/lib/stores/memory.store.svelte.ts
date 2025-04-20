@@ -1,12 +1,7 @@
+import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { asLocalTimeISO } from '$lib/utils/date-time';
-import {
-  type AssetResponseDto,
-  deleteMemory,
-  type MemoryResponseDto,
-  removeMemoryAssets,
-  searchMemories,
-  updateMemory,
-} from '@immich/sdk';
+import { toTimelineAsset } from '$lib/utils/timeline-util';
+import { deleteMemory, type MemoryResponseDto, removeMemoryAssets, searchMemories, updateMemory } from '@immich/sdk';
 import { DateTime } from 'luxon';
 
 type MemoryIndex = {
@@ -16,7 +11,7 @@ type MemoryIndex = {
 
 export type MemoryAsset = MemoryIndex & {
   memory: MemoryResponseDto;
-  asset: AssetResponseDto;
+  asset: TimelineAsset;
   previousMemory?: MemoryResponseDto;
   previous?: MemoryAsset;
   next?: MemoryAsset;
@@ -36,7 +31,7 @@ class MemoryStoreSvelte {
           memoryIndex,
           previousMemory: this.memories[memoryIndex - 1],
           nextMemory: this.memories[memoryIndex + 1],
-          asset,
+          asset: toTimelineAsset(asset),
           assetIndex,
           previous,
         };

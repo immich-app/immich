@@ -27,8 +27,8 @@
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
-  import type { AssetResponseDto } from '@immich/sdk';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -47,7 +47,7 @@
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
   let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree).sort());
 
-  const assetInteraction = new AssetInteraction<AssetResponseDto>();
+  const assetInteraction = new AssetInteraction();
 
   onMount(async () => {
     await foldersStore.fetchUniquePaths();
@@ -83,7 +83,7 @@
       return;
     }
 
-    assetInteraction.selectAssets(data.pathAssets);
+    assetInteraction.selectAssets(data.pathAssets.map((a) => toTimelineAsset(a)));
   };
 </script>
 

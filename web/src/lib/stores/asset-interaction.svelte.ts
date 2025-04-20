@@ -1,27 +1,20 @@
+import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { user } from '$lib/stores/user.store';
-import type { AssetStackResponseDto, UserAdminResponseDto } from '@immich/sdk';
+import type { UserAdminResponseDto } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import { fromStore } from 'svelte/store';
 
-export type BaseInteractionAsset = {
-  id: string;
-  isTrashed: boolean;
-  isArchived: boolean;
-  isFavorite: boolean;
-  ownerId: string;
-  stack?: AssetStackResponseDto | null | undefined;
-};
-export class AssetInteraction<T extends BaseInteractionAsset> {
-  selectedAssets = $state<T[]>([]);
+export class AssetInteraction {
+  selectedAssets = $state<TimelineAsset[]>([]);
   hasSelectedAsset(assetId: string) {
     return this.selectedAssets.some((asset) => asset.id === assetId);
   }
   selectedGroup = new SvelteSet<string>();
-  assetSelectionCandidates = $state<T[]>([]);
+  assetSelectionCandidates = $state<TimelineAsset[]>([]);
   hasSelectionCandidate(assetId: string) {
     return this.assetSelectionCandidates.some((asset) => asset.id === assetId);
   }
-  assetSelectionStart = $state<T | null>(null);
+  assetSelectionStart = $state<TimelineAsset | null>(null);
   focussedAssetId = $state<string | null>(null);
   selectionActive = $derived(this.selectedAssets.length > 0);
 
@@ -33,13 +26,13 @@ export class AssetInteraction<T extends BaseInteractionAsset> {
   isAllFavorite = $derived(this.selectedAssets.every((asset) => asset.isFavorite));
   isAllUserOwned = $derived(this.selectedAssets.every((asset) => asset.ownerId === this.userId));
 
-  selectAsset(asset: T) {
+  selectAsset(asset: TimelineAsset) {
     if (!this.hasSelectedAsset(asset.id)) {
       this.selectedAssets.push(asset);
     }
   }
 
-  selectAssets(assets: T[]) {
+  selectAssets(assets: TimelineAsset[]) {
     for (const asset of assets) {
       this.selectAsset(asset);
     }
@@ -60,11 +53,11 @@ export class AssetInteraction<T extends BaseInteractionAsset> {
     this.selectedGroup.delete(group);
   }
 
-  setAssetSelectionStart(asset: T | null) {
+  setAssetSelectionStart(asset: TimelineAsset | null) {
     this.assetSelectionStart = asset;
   }
 
-  setAssetSelectionCandidates(assets: T[]) {
+  setAssetSelectionCandidates(assets: TimelineAsset[]) {
     this.assetSelectionCandidates = assets;
   }
 

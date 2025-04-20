@@ -37,8 +37,16 @@ export function getThumbnailSize(assetCount: number, viewWidth: number): number 
   return 300;
 }
 
+export const getAltTextForTimelineAsset = () => {
+  // TODO: implement this in a performant way
+  return '';
+};
+
 export const getAltText = derived(t, ($t) => {
-  return (asset: AssetResponseDto) => {
+  return (asset: AssetResponseDto | null | undefined) => {
+    if (!asset) {
+      return '';
+    }
     if (asset.exifInfo?.description) {
       return asset.exifInfo.description;
     }
