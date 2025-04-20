@@ -19,7 +19,7 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { handlePromiseError } from '$lib/utils';
+  import { getKey, handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -369,7 +369,7 @@
 
     if (previousAsset) {
       const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
-      const asset = await getAssetInfo({ id: previousAsset.id });
+      const asset = await getAssetInfo({ id: previousAsset.id, key: getKey() });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
@@ -382,7 +382,7 @@
 
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
-      const asset = await getAssetInfo({ id: nextAsset.id });
+      const asset = await getAssetInfo({ id: nextAsset.id, key: getKey() });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
@@ -395,7 +395,7 @@
 
     if (randomAsset) {
       const preloadAsset = await assetStore.getNextAsset(randomAsset);
-      const asset = await getAssetInfo({ id: randomAsset.id });
+      const asset = await getAssetInfo({ id: randomAsset.id, key: getKey() });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
       return asset;

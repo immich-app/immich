@@ -1,3 +1,4 @@
+import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { derived } from 'svelte/store';
@@ -37,7 +38,7 @@ export function getThumbnailSize(assetCount: number, viewWidth: number): number 
   return 300;
 }
 
-export const getAltTextForTimelineAsset = () => {
+export const getAltTextForTimelineAsset = (_: TimelineAsset) => {
   // TODO: implement this in a performant way
   return '';
 };

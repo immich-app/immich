@@ -1175,7 +1175,7 @@ export class AssetStore {
     await this.initTask.waitUntilCompletion();
     let bucket = this.#findBucketForAsset(id);
     if (!bucket) {
-      const asset = toTimelineAsset(await getAssetInfo({ id }));
+      const asset = toTimelineAsset(await getAssetInfo({ id, key: getKey() }));
       if (!asset || this.isExcluded(asset)) {
         return;
       }

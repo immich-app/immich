@@ -21,6 +21,7 @@
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getFocusable } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
+  import { getAltTextForTimelineAsset } from '$lib/utils/thumbnail-util';
   import { TUNABLES } from '$lib/utils/tunables';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
@@ -372,7 +373,7 @@
         class={imageClass}
         {brokenAssetClass}
         url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
-        altText="todo"
+        altText={getAltTextForTimelineAsset(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
         curve={selected}
