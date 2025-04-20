@@ -12,6 +12,7 @@ import {
   anyUuid,
   asUuid,
   hasPeople,
+  hasPeopleNoJoin,
   removeUndefinedKeys,
   searchAssetBuilder,
   truncatedDate,
@@ -24,6 +25,7 @@ import {
   withOwner,
   withSmartSearch,
   withTagId,
+  withTagIdNoWhere,
   withTags,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
@@ -781,6 +783,92 @@ export class AssetRepository {
         )
         .execute()
     );
+  }
+
+  // this is a placeholder - this will be the replacement for getTimeBucket
+  // this is to show you why I needed to make the changes to
+  // hasPeople() (extracted into hasPeopleNoJoin()) and withTagId() (extracted into withTagIdNoWhere())
+  async getLightTimeBucket(timeBucket: string, options: TimeBucketOptions, pagination: PaginationOptions) {
+    const paginate = pagination.skip! >= 1 && pagination.take >= 1;
+    const query = this.db
+      .selectFrom('assets')
+      .select([
+        'assets.id as id',
+        'assets.ownerId',
+        'assets.status',
+        'deletedAt',
+        'type',
+        'duration',
+        'isFavorite',
+        'isArchived',
+        'thumbhash',
+        'localDateTime',
+        'livePhotoVideoId',
+      ])
+      .leftJoin('exif', 'assets.id', 'exif.assetId')
+      .select(['exif.exifImageHeight as height', 'exifImageWidth as width', 'exif.orientation', 'exif.projectionType'])
+      .$if(!!options.albumId, (qb) =>
+        qb
+          .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
+          .where('albums_assets_assets.albumsId', '=', options.albumId!),
+      )
+
+      // .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+
+      // the above doens't work, since the hasPeople() helper expects all of the colums from the 'asset' table
+      // as context. The fix is to use an expression builder instead, and perform the join outside the helper
+
+      .$if(!!options.personId, (qb) =>
+        qb.innerJoin(
+          () => hasPeopleNoJoin([options.personId!]),
+          (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
+        ),
+      )
+      .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
+      .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
+      .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
+      .$if(!!options.withStacked, (qb) =>
+        qb
+          .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
+          .where((eb) =>
+            eb.or([eb('asset_stack.primaryAssetId', '=', eb.ref('assets.id')), eb('assets.stackId', 'is', null)]),
+          )
+          .leftJoinLateral(
+            (eb) =>
+              eb
+                .selectFrom('assets as stacked')
+                .selectAll('asset_stack')
+                .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
+                .whereRef('stacked.stackId', '=', 'asset_stack.id')
+                .where('stacked.deletedAt', 'is', null)
+                .where('stacked.isArchived', '=', false)
+                .groupBy('asset_stack.id')
+                .as('stacked_assets'),
+            (join) => join.on('asset_stack.id', 'is not', null),
+          )
+          .select((eb) => eb.fn.toJson(eb.table('stacked_assets').$castTo<Stack | null>()).as('stack')),
+      )
+      .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
+      .$if(options.isDuplicate !== undefined, (qb) =>
+        qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
+      )
+      .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
+
+      // .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+
+      // the above doens't work, since the hasPeople() helper expects all of the colums from the 'asset' table
+      // as context. The fix is to use an expression builder instead, and perform the join outside the helper
+
+      .$if(!!options.tagId, (qb) => qb.where((eb) => withTagIdNoWhere(options.tagId!, eb.ref('assets.id'))))
+
+      .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+      .where('assets.isVisible', '=', true)
+      .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
+      .orderBy('assets.localDateTime', options.order ?? 'desc')
+      .$if(paginate, (qb) => qb.offset(pagination.skip!))
+      .$if(paginate, (qb) => qb.limit(pagination.take + 1));
+
+    return await query.execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })

@@ -1,6 +1,7 @@
 import {
   DeduplicateJoinsPlugin,
   Expression,
+  expressionBuilder,
   ExpressionBuilder,
   ExpressionWrapper,
   Kysely,
@@ -180,18 +181,19 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDele
 }
 
 export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[]) {
-  return qb.innerJoin(
-    (eb) =>
-      eb
-        .selectFrom('asset_faces')
-        .select('assetId')
-        .where('personId', '=', anyUuid(personIds!))
-        .where('deletedAt', 'is', null)
-        .groupBy('assetId')
-        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
-        .as('has_people'),
-    (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
-  );
+  return qb.innerJoin(hasPeopleNoJoin(personIds), (join) => join.onRef('has_people.assetId', '=', 'assets.id'));
+}
+
+export function hasPeopleNoJoin(personIds: string[]) {
+  const eb = expressionBuilder<DB, never>();
+  return eb
+    .selectFrom('asset_faces')
+    .select('assetId')
+    .where('personId', '=', anyUuid(personIds!))
+    .where('deletedAt', 'is', null)
+    .groupBy('assetId')
+    .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+    .as('has_people');
 }
 
 export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: string[]) {
@@ -236,16 +238,20 @@ export function truncatedDate<O>(size: TimeBucketSize) {
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: string) {
-  return qb.where((eb) =>
-    eb.exists(
-      eb
-        .selectFrom('tags_closure')
-        .innerJoin('tag_asset', 'tag_asset.tagsId', 'tags_closure.id_descendant')
-        .whereRef('tag_asset.assetsId', '=', 'assets.id')
-        .where('tags_closure.id_ancestor', '=', tagId),
-    ),
+  return qb.where((eb) => withTagIdNoWhere(tagId, eb.ref('assets.id')));
+}
+
+export function withTagIdNoWhere(tagId: string, assetId: Expression<string>) {
+  const eb = expressionBuilder<DB, never>();
+  return eb.exists(
+    eb
+      .selectFrom('tags_closure')
+      .innerJoin('tag_asset', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+      .whereRef('tag_asset.assetsId', '=', assetId)
+      .where('tags_closure.id_ancestor', '=', tagId),
   );
 }
+
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 
