@@ -44,9 +44,8 @@ class BackgroundSyncManager {
     _userSyncTask = runInIsolateGentle(
       computation: (ref) => ref.read(syncStreamServiceProvider).syncUsers(),
     );
-    return _userSyncTask!
-      ..whenComplete(() {
-        _userSyncTask = null;
-      });
+    return _userSyncTask!.whenComplete(() {
+      _userSyncTask = null;
+    });
   }
 }
