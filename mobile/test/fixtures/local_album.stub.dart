@@ -22,4 +22,14 @@ abstract final class LocalAlbumStub {
         backupSelection: BackupSelection.selected,
         isAll: true,
       );
+
+  static LocalAlbum get album3 => LocalAlbum(
+        id: "album3",
+        name: "Album 3",
+        updatedAt: DateTime(2020),
+        assetCount: 20,
+        thumbnailId: "123",
+        backupSelection: BackupSelection.excluded,
+        isAll: false,
+      );
 }

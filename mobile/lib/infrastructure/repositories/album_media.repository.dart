@@ -36,41 +36,24 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
       );
 
   @override
-  Future<List<LocalAlbum>> getAll({
-    withModifiedTime = false,
-    withAssetCount = false,
-    withAssetTitle = false,
-  }) async {
-    final filter = withModifiedTime || withAssetTitle
-        ? _getAlbumFilter(
-            withAssetTitle: withAssetTitle,
-            withModifiedTime: withModifiedTime,
-          )
-
-        // Use an AdvancedCustomFilter to get all albums faster
-        : AdvancedCustomFilter(
-            orderBy: [OrderByItem.asc(CustomColumns.base.id)],
-          );
-
-    final entities = await PhotoManager.getAssetPathList(
-      hasAll: true,
-      filterOption: filter,
+  Future<List<LocalAlbum>> getAll() {
+    final filter = AdvancedCustomFilter(
+      orderBy: [OrderByItem.asc(CustomColumns.base.id)],
     );
-    return entities.toDtoList(withAssetCount: withAssetCount);
+
+    return PhotoManager.getAssetPathList(hasAll: true, filterOption: filter)
+        .then((e) => e.toDtoList());
   }
 
   @override
   Future<List<asset.LocalAsset>> getAssetsForAlbum(
     String albumId, {
-    withModifiedTime = false,
-    withAssetTitle = true,
     DateTimeFilter? updateTimeCond,
   }) async {
     final assetPathEntity = await AssetPathEntity.obtainPathFromProperties(
       id: albumId,
       optionGroup: _getAlbumFilter(
-        withAssetTitle: withAssetTitle,
-        withModifiedTime: withModifiedTime,
+        withAssetTitle: true,
         updateTimeCond: updateTimeCond,
       ),
     );
@@ -91,38 +74,31 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
   @override
   Future<LocalAlbum> refresh(
     String albumId, {
-    withModifiedTime = false,
-    withAssetCount = false,
-    withAssetTitle = false,
-  }) async =>
-      (await AssetPathEntity.obtainPathFromProperties(
+    bool withModifiedTime = true,
+    bool withAssetCount = true,
+  }) =>
+      AssetPathEntity.obtainPathFromProperties(
         id: albumId,
-        optionGroup: _getAlbumFilter(
-          withAssetTitle: withAssetTitle,
-          withModifiedTime: withModifiedTime,
-        ),
-      ))
-          .toDto(withAssetCount: withAssetCount);
+        optionGroup: _getAlbumFilter(withModifiedTime: withModifiedTime),
+      ).then((a) => a.toDto(withAssetCount: withAssetCount));
 }
 
 extension on AssetEntity {
-  Future<asset.LocalAsset> toDto() async {
-    return asset.LocalAsset(
-      localId: id,
-      name: title ?? await titleAsync,
-      type: switch (type) {
-        AssetType.other => asset.AssetType.other,
-        AssetType.image => asset.AssetType.image,
-        AssetType.video => asset.AssetType.video,
-        AssetType.audio => asset.AssetType.audio,
-      },
-      createdAt: createDateTime,
-      updatedAt: modifiedDateTime,
-      width: width,
-      height: height,
-      durationInSeconds: duration,
-    );
-  }
+  Future<asset.LocalAsset> toDto() async => asset.LocalAsset(
+        localId: id,
+        name: title ?? await titleAsync,
+        type: switch (type) {
+          AssetType.other => asset.AssetType.other,
+          AssetType.image => asset.AssetType.image,
+          AssetType.video => asset.AssetType.video,
+          AssetType.audio => asset.AssetType.audio,
+        },
+        createdAt: createDateTime,
+        updatedAt: modifiedDateTime,
+        width: width,
+        height: height,
+        durationInSeconds: duration,
+      );
 }
 
 extension on List<AssetEntity> {

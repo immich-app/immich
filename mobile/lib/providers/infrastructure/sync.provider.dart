@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/services/sync.service.dart';
+import 'package:immich_mobile/domain/services/device_sync.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
@@ -9,8 +9,8 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 
-final syncServiceProvider = Provider(
-  (ref) => SyncService(
+final deviceSyncServiceProvider = Provider(
+  (ref) => DeviceSyncService(
     albumMediaRepository: ref.watch(albumMediaRepositoryProvider),
     localAlbumRepository: ref.watch(localAlbumRepository),
     localAssetRepository: ref.watch(localAssetProvider),

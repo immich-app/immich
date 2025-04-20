@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-unsafe-collection-methods
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
@@ -7,7 +5,7 @@ import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_asset.interface.dart';
 import 'package:immich_mobile/domain/models/asset/asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
-import 'package:immich_mobile/domain/services/sync.service.dart';
+import 'package:immich_mobile/domain/services/device_sync.service.dart';
 import 'package:immich_mobile/utils/nullable_value.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -19,18 +17,16 @@ void main() {
   late IAlbumMediaRepository mockAlbumMediaRepo;
   late ILocalAlbumRepository mockLocalAlbumRepo;
   late ILocalAssetRepository mockLocalAssetRepo;
-  late SyncService sut;
+  late DeviceSyncService sut;
 
-  Future<T> mockTransaction<T>(Future<T> Function() action) async {
-    return await action();
-  }
+  Future<T> mockTransaction<T>(Future<T> Function() action) => action();
 
   setUp(() {
     mockAlbumMediaRepo = MockAlbumMediaRepository();
     mockLocalAlbumRepo = MockLocalAlbumRepository();
     mockLocalAssetRepo = MockLocalAssetRepository();
 
-    sut = SyncService(
+    sut = DeviceSyncService(
       albumMediaRepository: mockAlbumMediaRepo,
       localAlbumRepository: mockLocalAlbumRepo,
       localAssetRepository: mockLocalAssetRepo,
@@ -40,6 +36,7 @@ void main() {
     registerFallbackValue(LocalAssetStub.image1);
     registerFallbackValue(SortLocalAlbumsBy.id);
     registerFallbackValue(<LocalAsset>[]);
+    registerFallbackValue(<String>[]);
 
     when(() => mockAlbumMediaRepo.getAll()).thenAnswer((_) async => []);
     when(() => mockLocalAlbumRepo.getAll(sortBy: any(named: 'sortBy')))
@@ -54,16 +51,9 @@ void main() {
         .thenAnswer((_) async => true);
     when(() => mockLocalAlbumRepo.getAssetsForAlbum(any()))
         .thenAnswer((_) async => []);
-    when(() => mockLocalAssetRepo.get(any())).thenAnswer(
-      (_) async => LocalAssetStub.image1,
-    );
-    when(
-      () => mockAlbumMediaRepo.refresh(
-        any(),
-        withModifiedTime: any(named: 'withModifiedTime'),
-        withAssetCount: any(named: 'withAssetCount'),
-      ),
-    ).thenAnswer(
+    when(() => mockLocalAssetRepo.get(any()))
+        .thenAnswer((_) async => LocalAssetStub.image1);
+    when(() => mockAlbumMediaRepo.refresh(any())).thenAnswer(
       (inv) async =>
           LocalAlbumStub.album1.copyWith(id: inv.positionalArguments.first),
     );
@@ -83,76 +73,45 @@ void main() {
     );
   });
 
-  group('syncLocalAlbums', () {
-    test('should return false when no albums exist', () async {
-      final result = await sut.syncLocalAlbums();
-      expect(result, isFalse);
+  group('syncAlbums', () {
+    test('should return when no albums exist', () async {
+      await sut.syncAlbums();
       verify(() => mockAlbumMediaRepo.getAll()).called(1);
       verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
           .called(1);
       verifyNever(() => mockLocalAlbumRepo.insert(any(), any()));
       verifyNever(() => mockLocalAlbumRepo.delete(any()));
-      verifyNever(
-        () => mockAlbumMediaRepo.refresh(
-          any(),
-          withModifiedTime: any(named: 'withModifiedTime'),
-          withAssetCount: any(named: 'withAssetCount'),
-        ),
-      );
+      verifyNever(() => mockAlbumMediaRepo.refresh(any()));
     });
 
-    test('should call addLocalAlbum for new device albums', () async {
+    test('should call addAlbum for new device albums', () async {
       final deviceAlbums = [LocalAlbumStub.album1, LocalAlbumStub.album2];
       when(() => mockAlbumMediaRepo.getAll())
           .thenAnswer((_) async => deviceAlbums);
       when(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
           .thenAnswer((_) async => []);
 
-      when(
-        () => mockAlbumMediaRepo.refresh(
-          deviceAlbums.first.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).thenAnswer(
-        (_) async => deviceAlbums.first
-            .copyWith(updatedAt: DateTime(2024), assetCount: 1),
-      );
-      when(
-        () => mockAlbumMediaRepo.refresh(
-          deviceAlbums[1].id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).thenAnswer(
-        (_) async =>
-            deviceAlbums[1].copyWith(updatedAt: DateTime(2024), assetCount: 0),
-      );
+      final refreshedAlbum1 =
+          deviceAlbums.first.copyWith(updatedAt: DateTime(2024), assetCount: 1);
+      final refreshedAlbum2 =
+          deviceAlbums[1].copyWith(updatedAt: DateTime(2024), assetCount: 0);
+
+      when(() => mockAlbumMediaRepo.refresh(deviceAlbums.first.id))
+          .thenAnswer((_) async => refreshedAlbum1);
+      when(() => mockAlbumMediaRepo.refresh(deviceAlbums[1].id))
+          .thenAnswer((_) async => refreshedAlbum2);
 
       when(() => mockAlbumMediaRepo.getAssetsForAlbum(deviceAlbums.first.id))
           .thenAnswer((_) async => [LocalAssetStub.image1]);
 
-      final result = await sut.syncLocalAlbums();
+      await sut.syncAlbums();
 
-      expect(result, isTrue);
       verify(() => mockAlbumMediaRepo.getAll()).called(1);
       verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
           .called(1);
-      // Verify addLocalAlbum logic was triggered twice
-      verify(
-        () => mockAlbumMediaRepo.refresh(
-          deviceAlbums.first.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).called(1);
-      verify(
-        () => mockAlbumMediaRepo.refresh(
-          deviceAlbums[1].id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).called(1);
+
+      verify(() => mockAlbumMediaRepo.refresh(deviceAlbums.first.id)).called(1);
+      verify(() => mockAlbumMediaRepo.refresh(deviceAlbums[1].id)).called(1);
       verify(() => mockAlbumMediaRepo.getAssetsForAlbum(deviceAlbums.first.id))
           .called(1);
       verifyNever(
@@ -162,38 +121,29 @@ void main() {
       verifyNever(() => mockLocalAlbumRepo.delete(any()));
     });
 
-    test('should call removeLocalAlbum for albums only in DB', () async {
+    test('should call removeAlbum for albums only in DB', () async {
       final dbAlbums = [LocalAlbumStub.album1, LocalAlbumStub.album2];
       when(() => mockAlbumMediaRepo.getAll()).thenAnswer((_) async => []);
       when(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
           .thenAnswer((_) async => dbAlbums);
 
-      final result = await sut.syncLocalAlbums();
+      await sut.syncAlbums();
 
-      expect(result, isTrue);
       verify(() => mockAlbumMediaRepo.getAll()).called(1);
       verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
           .called(1);
       verify(() => mockLocalAlbumRepo.delete(dbAlbums.first.id)).called(1);
       verify(() => mockLocalAlbumRepo.delete(dbAlbums[1].id)).called(1);
       verifyNever(() => mockLocalAlbumRepo.insert(any(), any()));
-      verifyNever(
-        () => mockAlbumMediaRepo.refresh(
-          any(),
-          withModifiedTime: any(named: 'withModifiedTime'),
-          withAssetCount: any(named: 'withAssetCount'),
-        ),
-      );
+      verifyNever(() => mockAlbumMediaRepo.refresh(any()));
     });
 
     test(
-      'should call syncLocalAlbum for albums in both DB and device',
+      'should call updateAlbum for albums in both DB and device',
       () async {
         final commonAlbum = LocalAlbumStub.album1;
         final deviceAlbums = [commonAlbum];
-        final dbAlbums = [
-          commonAlbum.copyWith(updatedAt: DateTime(2023)),
-        ]; // Different updatedAt to trigger sync
+        final dbAlbums = [commonAlbum.copyWith(updatedAt: DateTime(2023))];
         when(() => mockAlbumMediaRepo.getAll())
             .thenAnswer((_) async => deviceAlbums);
         when(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
@@ -201,34 +151,23 @@ void main() {
 
         final refreshedAlbum =
             commonAlbum.copyWith(updatedAt: DateTime(2024), assetCount: 1);
-        when(
-          () => mockAlbumMediaRepo.refresh(
-            commonAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).thenAnswer((_) async => refreshedAlbum);
+        when(() => mockAlbumMediaRepo.refresh(commonAlbum.id))
+            .thenAnswer((_) async => refreshedAlbum);
 
         when(() => mockAlbumMediaRepo.getAssetsForAlbum(commonAlbum.id))
             .thenAnswer((_) async => [LocalAssetStub.image1]);
         when(() => mockLocalAlbumRepo.getAssetsForAlbum(commonAlbum.id))
-            .thenAnswer((_) async => []);
+            .thenAnswer((_) async => []); // DB has no assets initially
 
-        final result = await sut.syncLocalAlbums();
+        await sut.syncAlbums();
 
-        expect(result, isTrue);
         verify(() => mockAlbumMediaRepo.getAll()).called(1);
         verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
             .called(1);
 
-        verify(
-          () => mockAlbumMediaRepo.refresh(
-            commonAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).called(1);
+        verify(() => mockAlbumMediaRepo.refresh(commonAlbum.id)).called(1);
 
+        // Verify fullSync path was likely taken
         verify(() => mockAlbumMediaRepo.getAssetsForAlbum(commonAlbum.id))
             .called(1);
         verify(() => mockLocalAlbumRepo.getAssetsForAlbum(commonAlbum.id))
@@ -239,51 +178,77 @@ void main() {
       },
     );
 
+    test('should handle a mix of add, remove, and update', () async {
+      final albumToRemove = LocalAlbumStub.album1.copyWith(id: "remove_me");
+      final albumToUpdate = LocalAlbumStub.album2.copyWith(id: "update_me");
+      final albumToAdd = LocalAlbumStub.album3.copyWith(id: "add_me");
+
+      final dbAlbums = [
+        albumToRemove,
+        albumToUpdate.copyWith(updatedAt: DateTime(2023)),
+      ];
+      final deviceAlbums = [albumToUpdate, albumToAdd];
+
+      when(() => mockAlbumMediaRepo.getAll())
+          .thenAnswer((_) async => deviceAlbums);
+      when(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
+          .thenAnswer((_) async => dbAlbums);
+
+      final refreshedUpdateAlbum =
+          albumToUpdate.copyWith(updatedAt: DateTime(2024), assetCount: 0);
+      when(() => mockAlbumMediaRepo.refresh(albumToUpdate.id))
+          .thenAnswer((_) async => refreshedUpdateAlbum);
+
+      final refreshedAddAlbum =
+          albumToAdd.copyWith(updatedAt: DateTime(2024), assetCount: 1);
+      when(() => mockAlbumMediaRepo.refresh(albumToAdd.id))
+          .thenAnswer((_) async => refreshedAddAlbum);
+      when(() => mockAlbumMediaRepo.getAssetsForAlbum(albumToAdd.id))
+          .thenAnswer((_) async => [LocalAssetStub.image1]);
+
+      await sut.syncAlbums();
+
+      verify(() => mockAlbumMediaRepo.getAll()).called(1);
+      verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
+          .called(1);
+
+      verify(() => mockLocalAlbumRepo.delete(albumToRemove.id)).called(1);
+
+      verify(() => mockAlbumMediaRepo.refresh(albumToAdd.id)).called(1);
+      verify(() => mockAlbumMediaRepo.getAssetsForAlbum(albumToAdd.id))
+          .called(1);
+      verify(
+        () => mockLocalAlbumRepo.insert(
+          any(that: predicate<LocalAlbum>((a) => a.id == albumToAdd.id)),
+          any(),
+        ),
+      ).called(1);
+
+      verify(() => mockAlbumMediaRepo.refresh(albumToUpdate.id)).called(1);
+      verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(albumToUpdate.id));
+      verify(() => mockLocalAlbumRepo.getAssetsForAlbum(albumToUpdate.id))
+          .called(1);
+      verify(
+        () => mockLocalAlbumRepo.update(
+          any(that: predicate<LocalAlbum>((a) => a.id == albumToUpdate.id)),
+        ),
+      ).called(1);
+    });
+
     test('should handle errors during repository calls', () async {
       when(() => mockAlbumMediaRepo.getAll())
           .thenThrow(Exception("Device error"));
 
-      final result = await sut.syncLocalAlbums();
+      await sut.syncAlbums();
 
-      expect(result, isFalse);
       verify(() => mockAlbumMediaRepo.getAll()).called(1);
       verifyNever(
         () => mockLocalAlbumRepo.getAll(sortBy: any(named: 'sortBy')),
       );
     });
-
-    test('should handle errors during diff callbacks', () async {
-      final deviceAlbums = [LocalAlbumStub.album1];
-      when(() => mockAlbumMediaRepo.getAll())
-          .thenAnswer((_) async => deviceAlbums);
-      when(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
-          .thenAnswer((_) async => []);
-      when(
-        () => mockAlbumMediaRepo.refresh(
-          any(),
-          withModifiedTime: any(named: 'withModifiedTime'),
-          withAssetCount: any(named: 'withAssetCount'),
-        ),
-      ).thenThrow(Exception("Refresh error"));
-
-      final result = await sut.syncLocalAlbums();
-
-      expect(result, isTrue);
-      verify(() => mockAlbumMediaRepo.getAll()).called(1);
-      verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
-          .called(1);
-      verify(
-        () => mockAlbumMediaRepo.refresh(
-          deviceAlbums.first.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).called(1);
-      verifyNever(() => mockLocalAlbumRepo.insert(any(), any()));
-    });
   });
 
-  group('addLocalAlbum', () {
+  group('addAlbum', () {
     test(
       'refreshes, gets assets, sets thumbnail, and inserts for non-empty album',
       () async {
@@ -299,25 +264,14 @@ void main() {
           ),
         ];
 
-        when(
-          () => mockAlbumMediaRepo.refresh(
-            newAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).thenAnswer((_) async => refreshedAlbum);
+        when(() => mockAlbumMediaRepo.refresh(newAlbum.id))
+            .thenAnswer((_) async => refreshedAlbum);
         when(() => mockAlbumMediaRepo.getAssetsForAlbum(newAlbum.id))
             .thenAnswer((_) async => assets);
 
-        await sut.addLocalAlbum(newAlbum);
+        await sut.addAlbum(newAlbum);
 
-        verify(
-          () => mockAlbumMediaRepo.refresh(
-            newAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).called(1);
+        verify(() => mockAlbumMediaRepo.refresh(newAlbum.id)).called(1);
         verify(() => mockAlbumMediaRepo.getAssetsForAlbum(newAlbum.id))
             .called(1);
 
@@ -342,23 +296,12 @@ void main() {
         final refreshedAlbum =
             newAlbum.copyWith(updatedAt: DateTime(2024), assetCount: 0);
 
-        when(
-          () => mockAlbumMediaRepo.refresh(
-            newAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).thenAnswer((_) async => refreshedAlbum);
+        when(() => mockAlbumMediaRepo.refresh(newAlbum.id))
+            .thenAnswer((_) async => refreshedAlbum);
 
-        await sut.addLocalAlbum(newAlbum);
+        await sut.addAlbum(newAlbum);
 
-        verify(
-          () => mockAlbumMediaRepo.refresh(
-            newAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).called(1);
+        verify(() => mockAlbumMediaRepo.refresh(newAlbum.id)).called(1);
         verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(newAlbum.id));
 
         final captured =
@@ -373,161 +316,43 @@ void main() {
         expect(capturedAssets, isEmpty);
       },
     );
-
-    test('handles error during refresh', () async {
-      final newAlbum = LocalAlbumStub.album1;
-      when(
-        () => mockAlbumMediaRepo.refresh(
-          any(),
-          withModifiedTime: any(named: 'withModifiedTime'),
-          withAssetCount: any(named: 'withAssetCount'),
-        ),
-      ).thenThrow(Exception("Refresh failed"));
-
-      await sut.addLocalAlbum(newAlbum);
-
-      verify(
-        () => mockAlbumMediaRepo.refresh(
-          newAlbum.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).called(1);
-      verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(any()));
-      verifyNever(() => mockLocalAlbumRepo.insert(any(), any()));
-    });
-
-    test('handles error during getAssetsForAlbum', () async {
-      final newAlbum = LocalAlbumStub.album1.copyWith(assetCount: 0);
-      final refreshedAlbum =
-          newAlbum.copyWith(updatedAt: DateTime(2024), assetCount: 2);
-
-      when(
-        () => mockAlbumMediaRepo.refresh(
-          newAlbum.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).thenAnswer((_) async => refreshedAlbum);
-      when(() => mockAlbumMediaRepo.getAssetsForAlbum(newAlbum.id))
-          .thenThrow(Exception("Get assets failed"));
-
-      await sut.addLocalAlbum(newAlbum);
-
-      verify(
-        () => mockAlbumMediaRepo.refresh(
-          newAlbum.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).called(1);
-      verify(() => mockAlbumMediaRepo.getAssetsForAlbum(newAlbum.id)).called(1);
-      verifyNever(() => mockLocalAlbumRepo.insert(any(), any()));
-    });
   });
 
-  group('removeLocalAlbum', () {
+  group('removeAlbum', () {
     test('calls localAlbumRepository.delete', () async {
       final albumToDelete = LocalAlbumStub.album1;
-      await sut.removeLocalAlbum(albumToDelete);
-      verify(() => mockLocalAlbumRepo.delete(albumToDelete.id)).called(1);
-    });
-
-    test('handles error during delete', () async {
-      final albumToDelete = LocalAlbumStub.album1;
-      when(() => mockLocalAlbumRepo.delete(any()))
-          .thenThrow(Exception("Delete failed"));
-
-      await expectLater(sut.removeLocalAlbum(albumToDelete), completes);
+      await sut.removeAlbum(albumToDelete);
       verify(() => mockLocalAlbumRepo.delete(albumToDelete.id)).called(1);
     });
   });
 
-  group('syncLocalAlbum', () {
+  group('updateAlbum', () {
     final dbAlbum = LocalAlbumStub.album1.copyWith(
       updatedAt: DateTime(2024, 1, 1),
       assetCount: 1,
-      backupSelection: BackupSelection.selected,
     );
 
-    test('returns false if refresh shows no changes', () async {
-      final refreshedAlbum = dbAlbum; // Same updatedAt and assetCount
-      when(
-        () => mockAlbumMediaRepo.refresh(
-          dbAlbum.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).thenAnswer((_) async => refreshedAlbum);
+    test('returns early if refresh shows no changes', () async {
+      final refreshedAlbum = dbAlbum;
+      when(() => mockAlbumMediaRepo.refresh(dbAlbum.id))
+          .thenAnswer((_) async => refreshedAlbum);
 
-      final result = await sut.syncLocalAlbum(dbAlbum, LocalAlbumStub.album1);
+      final result = await sut.updateAlbum(dbAlbum, LocalAlbumStub.album1);
 
-      expect(result, isFalse);
-      verify(
-        () => mockAlbumMediaRepo.refresh(
-          dbAlbum.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).called(1);
+      expect(result, false);
+      verify(() => mockAlbumMediaRepo.refresh(dbAlbum.id)).called(1);
       verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(any()));
       verifyNever(() => mockLocalAlbumRepo.getAssetsForAlbum(any()));
       verifyNever(() => mockLocalAlbumRepo.transaction<void>(any()));
     });
 
-    test(
-      'updates metadata and returns true for empty albums with no changes needed',
-      () async {
-        final emptyDbAlbum =
-            dbAlbum.copyWith(updatedAt: DateTime(2024, 1, 1), assetCount: 0);
-        final refreshedEmptyAlbum = emptyDbAlbum.copyWith(
-          updatedAt: DateTime(2024, 1, 2),
-        );
-
-        when(
-          () => mockAlbumMediaRepo.refresh(
-            emptyDbAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).thenAnswer((_) async => refreshedEmptyAlbum);
-
-        final result =
-            await sut.syncLocalAlbum(emptyDbAlbum, LocalAlbumStub.album1);
-
-        expect(result, isTrue);
-        verify(
-          () => mockAlbumMediaRepo.refresh(
-            emptyDbAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).called(1);
-        verify(
-          () => mockLocalAlbumRepo.update(
-            refreshedEmptyAlbum.copyWith(
-              backupSelection: emptyDbAlbum.backupSelection,
-            ),
-          ),
-        ).called(1);
-        verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(any()));
-        verifyNever(() => mockLocalAlbumRepo.getAssetsForAlbum(any()));
-        verifyNever(() => mockLocalAlbumRepo.transaction<void>(any()));
-      },
-    );
-
-    test('calls tryFastSync and returns true if it succeeds', () async {
+    test('calls checkAddition and returns true if it succeeds', () async {
       final refreshedAlbum = dbAlbum.copyWith(
         updatedAt: DateTime(2024, 1, 2),
         assetCount: 2,
-      ); // Time and count increased
-      when(
-        () => mockAlbumMediaRepo.refresh(
-          dbAlbum.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).thenAnswer((_) async => refreshedAlbum);
+      );
+      when(() => mockAlbumMediaRepo.refresh(dbAlbum.id))
+          .thenAnswer((_) async => refreshedAlbum);
 
       final newAsset = LocalAssetStub.image2.copyWith(localId: "new_asset");
       when(
@@ -536,23 +361,21 @@ void main() {
           updateTimeCond: any(named: 'updateTimeCond'),
         ),
       ).thenAnswer((_) async => [newAsset]);
+      final dbAlbumNoThumb = dbAlbum.copyWith(thumbnailId: null);
 
-      final result = await sut.syncLocalAlbum(dbAlbum, LocalAlbumStub.album1);
+      final result =
+          await sut.updateAlbum(dbAlbumNoThumb, LocalAlbumStub.album1);
 
       expect(result, isTrue);
-      verify(
-        () => mockAlbumMediaRepo.refresh(
-          dbAlbum.id,
-          withModifiedTime: true,
-          withAssetCount: true,
-        ),
-      ).called(1);
+      verify(() => mockAlbumMediaRepo.refresh(dbAlbum.id)).called(1);
+
       verify(
         () => mockAlbumMediaRepo.getAssetsForAlbum(
           dbAlbum.id,
           updateTimeCond: any(named: 'updateTimeCond'),
         ),
       ).called(1);
+      verifyNever(() => mockLocalAssetRepo.get(any()));
 
       verify(() => mockLocalAlbumRepo.transaction<void>(any())).called(1);
       verify(() => mockLocalAlbumRepo.addAssets(dbAlbum.id, [newAsset]))
@@ -561,31 +384,30 @@ void main() {
         () => mockLocalAlbumRepo.update(
           any(
             that: predicate<LocalAlbum>(
-              (a) => a.id == dbAlbum.id && a.assetCount == 2,
+              (a) =>
+                  a.id == dbAlbum.id &&
+                  a.assetCount == 2 &&
+                  a.thumbnailId == newAsset.localId,
             ),
           ),
         ),
       ).called(1);
-      verifyNever(() => mockLocalAlbumRepo.removeAssets(any(), any()));
+      verify(() => mockLocalAlbumRepo.removeAssets(any(), any(that: isEmpty)))
+          .called(1);
 
       verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id));
       verifyNever(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id));
     });
 
     test(
-      'calls fullSync and returns true if tryFastSync returns false',
+      'calls fullSync and returns true if checkAddition returns false',
       () async {
         final refreshedAlbum = dbAlbum.copyWith(
           updatedAt: DateTime(2024, 1, 2),
           assetCount: 0,
-        ); // Count decreased -> fast sync fails
-        when(
-          () => mockAlbumMediaRepo.refresh(
-            dbAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).thenAnswer((_) async => refreshedAlbum);
+        );
+        when(() => mockAlbumMediaRepo.refresh(dbAlbum.id))
+            .thenAnswer((_) async => refreshedAlbum);
 
         when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id))
             .thenAnswer((_) async => []);
@@ -593,29 +415,23 @@ void main() {
           (_) async => [LocalAssetStub.image1],
         );
 
-        final result = await sut.syncLocalAlbum(dbAlbum, LocalAlbumStub.album1);
+        final result = await sut.updateAlbum(dbAlbum, LocalAlbumStub.album1);
 
         expect(result, isTrue);
-        verify(
-          () => mockAlbumMediaRepo.refresh(
-            dbAlbum.id,
-            withModifiedTime: true,
-            withAssetCount: true,
-          ),
-        ).called(1);
-        // Verify tryFastSync path was attempted but failed (no getAssetsForAlbum with timeCond)
+        verify(() => mockAlbumMediaRepo.refresh(dbAlbum.id)).called(1);
         verifyNever(
           () => mockAlbumMediaRepo.getAssetsForAlbum(
             dbAlbum.id,
             updateTimeCond: any(named: 'updateTimeCond'),
           ),
         );
-        // Verify fullSync path was taken
+
         verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id));
         verify(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id))
             .called(1);
-        // Verify _handleUpdate was called via fullSync
-        verifyNever(() => mockLocalAlbumRepo.addAssets(any(), any()));
+        verify(() => mockLocalAlbumRepo.transaction<void>(any())).called(1);
+        verify(() => mockLocalAlbumRepo.addAssets(any(), any(that: isEmpty)))
+            .called(1);
         verify(
           () => mockLocalAlbumRepo.update(
             any(
@@ -635,31 +451,62 @@ void main() {
       },
     );
 
-    test('handles error during refresh', () async {
+    test('handles error during checkAddition', () async {
+      final refreshedAlbum = dbAlbum.copyWith(
+        updatedAt: DateTime(2024, 1, 2),
+        assetCount: 2,
+      );
+      when(() => mockAlbumMediaRepo.refresh(dbAlbum.id))
+          .thenAnswer((_) async => refreshedAlbum);
       when(
-        () => mockAlbumMediaRepo.refresh(
-          any(),
-          withModifiedTime: any(named: 'withModifiedTime'),
-          withAssetCount: any(named: 'withAssetCount'),
+        () => mockAlbumMediaRepo.getAssetsForAlbum(
+          dbAlbum.id,
+          updateTimeCond: any(named: 'updateTimeCond'),
         ),
-      ).thenThrow(Exception("Refresh failed"));
+      ).thenThrow(Exception("checkAddition failed"));
 
-      final result = await sut.syncLocalAlbum(dbAlbum, LocalAlbumStub.album1);
+      when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id))
+          .thenAnswer((_) async => []);
+      when(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id))
+          .thenAnswer((_) async => []);
+
+      final result = await sut.updateAlbum(dbAlbum, LocalAlbumStub.album1);
 
       expect(result, isTrue);
+      verify(() => mockAlbumMediaRepo.refresh(dbAlbum.id)).called(1);
       verify(
-        () => mockAlbumMediaRepo.refresh(
+        () => mockAlbumMediaRepo.getAssetsForAlbum(
           dbAlbum.id,
-          withModifiedTime: true,
-          withAssetCount: true,
+          updateTimeCond: any(named: 'updateTimeCond'),
         ),
-      ).called(1);
-      verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(any()));
+      ).called(2); // One for checkAddition, one for fullSync
+      verify(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id)).called(1);
+    });
+
+    test('handles error during fullSync', () async {
+      final refreshedAlbum = dbAlbum.copyWith(
+        updatedAt: DateTime(2024, 1, 2),
+        assetCount: 1,
+      );
+      when(() => mockAlbumMediaRepo.refresh(dbAlbum.id))
+          .thenAnswer((_) async => refreshedAlbum);
+      when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id))
+          .thenThrow(Exception("fullSync failed"));
+
+      final result = await sut.updateAlbum(
+        dbAlbum,
+        LocalAlbumStub.album1.copyWith(assetCount: 2),
+      );
+
+      expect(result, isTrue);
+      verify(() => mockAlbumMediaRepo.refresh(dbAlbum.id)).called(1);
+      verify(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id));
+      verifyNever(() => mockLocalAlbumRepo.getAssetsForAlbum(any()));
       verifyNever(() => mockLocalAlbumRepo.transaction<void>(any()));
     });
   });
 
-  group('tryFastSync', () {
+  group('checkAddition', () {
     final dbAlbum = LocalAlbumStub.album1.copyWith(
       updatedAt: DateTime(2024, 1, 1, 10, 0, 0),
       assetCount: 1,
@@ -687,9 +534,9 @@ void main() {
           localId: "thumb1",
           createdAt: DateTime(2024, 1, 1, 9, 0, 0),
         ),
-      ); // Old thumb is older
+      );
 
-      final result = await sut.tryFastSync(dbAlbum, refreshedAlbum);
+      final result = await sut.checkAddition(dbAlbum, refreshedAlbum);
 
       expect(result, isTrue);
       verify(
@@ -709,12 +556,13 @@ void main() {
                   a.id == dbAlbum.id &&
                   a.assetCount == 2 &&
                   a.updatedAt == refreshedAlbum.updatedAt &&
-                  a.thumbnailId == newAsset.localId, // Thumbnail updated
+                  a.thumbnailId == newAsset.localId,
             ),
           ),
         ),
       ).called(1);
-      verifyNever(() => mockLocalAlbumRepo.removeAssets(any(), any()));
+      verify(() => mockLocalAlbumRepo.removeAssets(any(), any(that: isEmpty)))
+          .called(1);
     });
 
     test('returns true and keeps old thumbnail if newer', () async {
@@ -734,9 +582,9 @@ void main() {
           localId: "thumb1",
           createdAt: DateTime(2024, 1, 1, 9, 0, 0),
         ),
-      ); // Old thumb is newer
+      );
 
-      final result = await sut.tryFastSync(dbAlbum, refreshedAlbum);
+      final result = await sut.checkAddition(dbAlbum, refreshedAlbum);
 
       expect(result, isTrue);
       verify(
@@ -756,30 +604,56 @@ void main() {
                   a.id == dbAlbum.id &&
                   a.assetCount == 2 &&
                   a.updatedAt == refreshedAlbum.updatedAt &&
-                  a.thumbnailId == "thumb1", // Thumbnail NOT updated
+                  a.thumbnailId == "thumb1",
             ),
           ),
         ),
       ).called(1);
     });
 
-    test('returns false if updatedAt is not after', () async {
-      final notUpdatedAlbum =
-          refreshedAlbum.copyWith(updatedAt: dbAlbum.updatedAt); // Same time
-      final result = await sut.tryFastSync(dbAlbum, notUpdatedAlbum);
-      expect(result, isFalse);
-      verifyNever(
+    test('returns true and sets new thumbnail if db thumb is null', () async {
+      final dbAlbumNoThumb = dbAlbum.copyWith(thumbnailId: null);
+      final newAsset = LocalAssetStub.image2.copyWith(
+        localId: "asset2",
+        createdAt: DateTime(2024, 1, 1, 10, 30, 0),
+      );
+      when(
         () => mockAlbumMediaRepo.getAssetsForAlbum(
-          any(),
+          dbAlbum.id,
           updateTimeCond: any(named: 'updateTimeCond'),
         ),
-      );
-      verifyNever(() => mockLocalAlbumRepo.transaction<void>(any()));
+      ).thenAnswer((_) async => [newAsset]);
+
+      final result = await sut.checkAddition(dbAlbumNoThumb, refreshedAlbum);
+
+      expect(result, isTrue);
+      verify(
+        () => mockAlbumMediaRepo.getAssetsForAlbum(
+          dbAlbum.id,
+          updateTimeCond: any(named: 'updateTimeCond'),
+        ),
+      ).called(1);
+      verifyNever(() => mockLocalAssetRepo.get(any()));
+      verify(() => mockLocalAlbumRepo.addAssets(dbAlbum.id, [newAsset]))
+          .called(1);
+      verify(
+        () => mockLocalAlbumRepo.update(
+          any(
+            that: predicate<LocalAlbum>(
+              (a) =>
+                  a.id == dbAlbum.id &&
+                  a.assetCount == 2 &&
+                  a.updatedAt == refreshedAlbum.updatedAt &&
+                  a.thumbnailId == newAsset.localId,
+            ),
+          ),
+        ),
+      ).called(1);
     });
 
     test('returns false if assetCount decreased', () async {
       final decreasedCountAlbum = refreshedAlbum.copyWith(assetCount: 0);
-      final result = await sut.tryFastSync(dbAlbum, decreasedCountAlbum);
+      final result = await sut.checkAddition(dbAlbum, decreasedCountAlbum);
       expect(result, isFalse);
       verifyNever(
         () => mockAlbumMediaRepo.getAssetsForAlbum(
@@ -793,7 +667,7 @@ void main() {
     test('returns false if assetCount is same', () async {
       final sameCountAlbum =
           refreshedAlbum.copyWith(assetCount: dbAlbum.assetCount);
-      final result = await sut.tryFastSync(dbAlbum, sameCountAlbum);
+      final result = await sut.checkAddition(dbAlbum, sameCountAlbum);
       expect(result, isFalse);
       verifyNever(
         () => mockAlbumMediaRepo.getAssetsForAlbum(
@@ -811,7 +685,7 @@ void main() {
           updateTimeCond: any(named: 'updateTimeCond'),
         ),
       ).thenAnswer((_) async => []);
-      final result = await sut.tryFastSync(dbAlbum, refreshedAlbum);
+      final result = await sut.checkAddition(dbAlbum, refreshedAlbum);
       expect(result, isFalse);
       verify(
         () => mockAlbumMediaRepo.getAssetsForAlbum(
@@ -833,27 +707,7 @@ void main() {
           updateTimeCond: any(named: 'updateTimeCond'),
         ),
       ).thenAnswer((_) async => newAssets);
-      final result = await sut.tryFastSync(dbAlbum, mismatchCountAlbum);
-      expect(result, isFalse);
-      verify(
-        () => mockAlbumMediaRepo.getAssetsForAlbum(
-          dbAlbum.id,
-          updateTimeCond: any(named: 'updateTimeCond'),
-        ),
-      ).called(1);
-      verifyNever(() => mockLocalAlbumRepo.transaction<void>(any()));
-    });
-
-    test('handles error during getAssetsForAlbum', () async {
-      when(
-        () => mockAlbumMediaRepo.getAssetsForAlbum(
-          dbAlbum.id,
-          updateTimeCond: any(named: 'updateTimeCond'),
-        ),
-      ).thenThrow(Exception("Get assets failed"));
-
-      final result = await sut.tryFastSync(dbAlbum, refreshedAlbum);
-
+      final result = await sut.checkAddition(dbAlbum, mismatchCountAlbum);
       expect(result, isFalse);
       verify(
         () => mockAlbumMediaRepo.getAssetsForAlbum(
@@ -876,28 +730,44 @@ void main() {
       assetCount: 2,
     );
 
-    final dbAsset1 = LocalAssetStub.image1
-        .copyWith(localId: "asset1", updatedAt: DateTime(2024));
+    final dbAsset1 = LocalAssetStub.image1.copyWith(
+      localId: "asset1",
+      createdAt: DateTime(2024),
+      updatedAt: DateTime(2024),
+    );
     final dbAsset2 = LocalAssetStub.image2.copyWith(
       localId: "asset2",
+      createdAt: DateTime(2024),
       updatedAt: DateTime(2024),
     ); // To be deleted
-    final deviceAsset1 = LocalAssetStub.image1
-        .copyWith(localId: "asset1", updatedAt: DateTime(2025)); // Updated
-    final deviceAsset3 = LocalAssetStub.video1
-        .copyWith(localId: "asset3", updatedAt: DateTime(2024)); // Added
+    final deviceAsset1 = LocalAssetStub.image1.copyWith(
+      localId: "asset1",
+      createdAt: DateTime(2024),
+      updatedAt: DateTime(2025),
+    ); // Updated
+    final deviceAsset3 = LocalAssetStub.video1.copyWith(
+      localId: "asset3",
+      createdAt: DateTime(2024),
+      updatedAt: DateTime(2024),
+    ); // Added
 
     test('handles empty device album -> deletes all DB assets', () async {
       final emptyRefreshedAlbum = refreshedAlbum.copyWith(assetCount: 0);
+      when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id))
+          .thenAnswer((_) async => []);
       when(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id))
           .thenAnswer((_) async => [dbAsset1, dbAsset2]);
 
       final result = await sut.fullSync(dbAlbum, emptyRefreshedAlbum);
 
       expect(result, isTrue);
-      verifyNever(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id));
+      verifyNever(
+        () => mockAlbumMediaRepo.getAssetsForAlbum(emptyRefreshedAlbum.id),
+      );
       verify(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id)).called(1);
-      verifyNever(() => mockLocalAlbumRepo.addAssets(any(), any()));
+      verify(() => mockLocalAlbumRepo.transaction<void>(any())).called(1);
+      verify(() => mockLocalAlbumRepo.addAssets(any(), any(that: isEmpty)))
+          .called(1);
       verify(
         () => mockLocalAlbumRepo.update(
           any(
@@ -906,7 +776,7 @@ void main() {
                   a.id == dbAlbum.id &&
                   a.assetCount == 0 &&
                   a.updatedAt == emptyRefreshedAlbum.updatedAt &&
-                  a.thumbnailId == null, // Thumbnail cleared
+                  a.thumbnailId == null,
             ),
           ),
         ),
@@ -922,6 +792,8 @@ void main() {
         thumbnailId: const NullableValue.empty(),
       );
       final deviceAssets = [deviceAsset1, deviceAsset3];
+
+      deviceAssets.sort((a, b) => a.createdAt.compareTo(b.createdAt));
       final refreshedWithAssets =
           refreshedAlbum.copyWith(assetCount: deviceAssets.length);
 
@@ -936,6 +808,7 @@ void main() {
       verify(() => mockAlbumMediaRepo.getAssetsForAlbum(emptyDbAlbum.id))
           .called(1);
       verifyNever(() => mockLocalAlbumRepo.getAssetsForAlbum(emptyDbAlbum.id));
+      verify(() => mockLocalAlbumRepo.transaction<void>(any())).called(1);
       verify(() => mockLocalAlbumRepo.addAssets(emptyDbAlbum.id, deviceAssets))
           .called(1);
       verify(
@@ -951,27 +824,31 @@ void main() {
           ),
         ),
       ).called(1);
-      verifyNever(() => mockLocalAlbumRepo.removeAssets(any(), any()));
+      verify(() => mockLocalAlbumRepo.removeAssets(any(), any(that: isEmpty)))
+          .called(1);
     });
 
     test('handles mix of additions, updates, and deletions', () async {
-      final currentRefreshedAlbum = refreshedAlbum.copyWith(
-        assetCount: 2,
-      ); // asset1 updated, asset3 added, asset2 deleted
+      final currentRefreshedAlbum = refreshedAlbum.copyWith(assetCount: 2);
+      final deviceAssets = [deviceAsset1, deviceAsset3];
+      deviceAssets.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      final dbAssets = [dbAsset1, dbAsset2];
+      dbAssets.sort((a, b) => a.localId.compareTo(b.localId));
+
       when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id)).thenAnswer(
-        (_) async => [deviceAsset1, deviceAsset3],
-      ); // Device has asset1 (updated), asset3 (new)
+        (_) async => deviceAssets,
+      );
       when(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id)).thenAnswer(
-        (_) async => [dbAsset1, dbAsset2],
-      ); // DB has asset1 (old), asset2 (to delete)
+        (_) async => dbAssets,
+      );
 
       final result = await sut.fullSync(dbAlbum, currentRefreshedAlbum);
 
       expect(result, isTrue);
       verify(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id)).called(1);
       verify(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id)).called(1);
+      verify(() => mockLocalAlbumRepo.transaction<void>(any())).called(1);
 
-      // Verify assets to upsert (updated asset1, new asset3)
       verify(
         () => mockLocalAlbumRepo.addAssets(
           dbAlbum.id,
@@ -989,7 +866,6 @@ void main() {
         ),
       ).called(1);
 
-      // Verify metadata update (thumbnail should be asset1 as it's first in sorted device list)
       verify(
         () => mockLocalAlbumRepo.update(
           any(
@@ -998,26 +874,25 @@ void main() {
                   a.id == dbAlbum.id &&
                   a.assetCount == 2 &&
                   a.updatedAt == currentRefreshedAlbum.updatedAt &&
-                  a.thumbnailId == "asset1",
+                  a.thumbnailId == deviceAssets.first.localId,
             ),
           ),
         ),
       ).called(1);
 
-      // Verify assets to delete (asset2)
       verify(() => mockLocalAlbumRepo.removeAssets(dbAlbum.id, ["asset2"]))
           .called(1);
     });
 
-    test('handles no asset changes, only metadata update', () async {
+    test('handles identical assets, resulting in no DB changes', () async {
       final currentRefreshedAlbum = refreshedAlbum.copyWith(
         updatedAt: DateTime(2025),
-        assetCount: 1,
-      ); // Only updatedAt changed
-      final dbAssets = [dbAsset1];
-      final deviceAssets = [
-        dbAsset1,
-      ]; // Assets are identical based on _assetsEqual
+        assetCount: 2,
+      );
+      final dbAssets = [dbAsset1, dbAsset2];
+      final deviceAssets = [dbAsset1, dbAsset2];
+      deviceAssets.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      dbAssets.sort((a, b) => a.localId.compareTo(b.localId));
 
       when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id))
           .thenAnswer((_) async => deviceAssets);
@@ -1029,50 +904,22 @@ void main() {
       expect(result, isTrue);
       verify(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id)).called(1);
       verify(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id)).called(1);
-      // Transaction is NOT called because _handleUpdate isn't called if lists are empty
       verifyNever(() => mockLocalAlbumRepo.transaction<void>(any()));
-      // Only metadata update is called directly
+      verifyNever(() => mockLocalAlbumRepo.addAssets(any(), any()));
+      verifyNever(() => mockLocalAlbumRepo.removeAssets(any(), any()));
       verify(
         () => mockLocalAlbumRepo.update(
           any(
             that: predicate<LocalAlbum>(
               (a) =>
                   a.id == dbAlbum.id &&
-                  a.assetCount == 1 &&
+                  a.assetCount == 2 &&
                   a.updatedAt == currentRefreshedAlbum.updatedAt &&
-                  a.thumbnailId == "asset1", // Thumbnail remains
+                  a.thumbnailId == deviceAssets.first.localId,
             ),
           ),
         ),
       ).called(1);
-      verifyNever(() => mockLocalAlbumRepo.addAssets(any(), any()));
-      verifyNever(() => mockLocalAlbumRepo.removeAssets(any(), any()));
-    });
-
-    test('handles error during getAssetsForAlbum (device)', () async {
-      when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id))
-          .thenThrow(Exception("Get device assets failed"));
-
-      final result = await sut.fullSync(dbAlbum, refreshedAlbum);
-
-      expect(result, isFalse);
-      verify(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id)).called(1);
-      verifyNever(() => mockLocalAlbumRepo.getAssetsForAlbum(any()));
-      verifyNever(() => mockLocalAlbumRepo.transaction<void>(any()));
-    });
-
-    test('handles error during getAssetsForAlbum (db)', () async {
-      when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id))
-          .thenAnswer((_) async => [deviceAsset1]);
-      when(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id))
-          .thenThrow(Exception("Get db assets failed"));
-
-      final result = await sut.fullSync(dbAlbum, refreshedAlbum);
-
-      expect(result, isFalse);
-      verify(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id)).called(1);
-      verify(() => mockLocalAlbumRepo.getAssetsForAlbum(dbAlbum.id)).called(1);
-      verifyNever(() => mockLocalAlbumRepo.transaction<void>(any()));
     });
   });
 }

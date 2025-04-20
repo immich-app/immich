@@ -29,7 +29,7 @@ class BackgroundSyncManager {
     }
 
     _deviceAlbumSyncTask = runInIsolateGentle(
-      computation: (ref) => ref.read(syncServiceProvider).syncLocalAlbums(),
+      computation: (ref) => ref.read(deviceSyncServiceProvider).syncAlbums(),
     );
     return _deviceAlbumSyncTask!.whenComplete(() {
       _deviceAlbumSyncTask = null;
