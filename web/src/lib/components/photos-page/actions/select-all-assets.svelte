@@ -1,6 +1,6 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import type { AssetInteraction, BaseInteractionAsset } from '$lib/stores/asset-interaction.svelte';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { type AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { cancelMultiselect, selectAllAssets } from '$lib/utils/asset-utils';
   import { mdiSelectAll, mdiSelectRemove } from '@mdi/js';
@@ -8,7 +8,7 @@
 
   interface Props {
     assetStore: AssetStore;
-    assetInteraction: AssetInteraction<BaseInteractionAsset>;
+    assetInteraction: AssetInteraction;
   }
 
   let { assetStore, assetInteraction }: Props = $props();

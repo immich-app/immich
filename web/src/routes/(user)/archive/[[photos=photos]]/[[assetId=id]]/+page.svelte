@@ -14,7 +14,7 @@
 
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -29,7 +29,7 @@
   void assetStore.updateOptions({ isArchived: true });
   onDestroy(() => assetStore.destroy());
 
-  const assetInteraction = new AssetInteraction<TimelineAsset>();
+  const assetInteraction = new AssetInteraction();
 
   const handleEscape = () => {
     if (assetInteraction.selectionActive) {

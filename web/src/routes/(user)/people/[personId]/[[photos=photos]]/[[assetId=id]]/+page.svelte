@@ -71,7 +71,7 @@
   $effect(() => void assetStore.updateOptions({ isArchived: false, personId: data.person.id }));
   onDestroy(() => assetStore.destroy());
 
-  const assetInteraction = new AssetInteraction<TimelineAsset>();
+  const assetInteraction = new AssetInteraction();
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);

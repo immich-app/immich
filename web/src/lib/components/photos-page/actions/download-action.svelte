@@ -3,8 +3,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { getKey } from '$lib/utils';
   import { downloadArchive, downloadFile } from '$lib/utils/asset-utils';
-  import { isTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
+  import { getAssetInfo } from '@immich/sdk';
   import { mdiCloudDownloadOutline, mdiFileDownloadOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
@@ -23,10 +22,7 @@
     const assets = [...getAssets()];
     if (assets.length === 1) {
       clearSelect();
-      let asset: AssetResponseDto = assets[0] as AssetResponseDto;
-      if (isTimelineAsset(assets[0])) {
-        asset = await getAssetInfo({ id: assets[0].id, key: getKey() });
-      }
+      let asset = await getAssetInfo({ id: assets[0].id, key: getKey() });
       await downloadFile(asset);
       return;
     }

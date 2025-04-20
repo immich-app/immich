@@ -3,8 +3,13 @@ import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
 import type { InterpolationValues } from '$lib/components/i18n/format-message';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
-import type { AssetInteraction, BaseInteractionAsset } from '$lib/stores/asset-interaction.svelte';
-import { assetsSnapshot, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
+import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+import {
+  assetsSnapshot,
+  isSelectingAllAssets,
+  type AssetStore,
+  type TimelineAsset,
+} from '$lib/stores/assets-store.svelte';
 import { downloadManager } from '$lib/stores/download-store.svelte';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, withError } from '$lib/utils';
@@ -364,7 +369,7 @@ export const getAssetType = (type: AssetTypeEnum) => {
   }
 };
 
-export const getSelectedAssets = (assets: BaseInteractionAsset[], user: UserResponseDto | null): string[] => {
+export const getSelectedAssets = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
 
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
@@ -467,10 +472,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
   }
 };
 
-export const selectAllAssets = async (
-  assetStore: AssetStore,
-  assetInteraction: AssetInteraction<BaseInteractionAsset>,
-) => {
+export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: AssetInteraction) => {
   if (get(isSelectingAllAssets)) {
     // Selection is already ongoing
     return;
@@ -498,7 +500,7 @@ export const selectAllAssets = async (
   }
 };
 
-export const cancelMultiselect = (assetInteraction: AssetInteraction<BaseInteractionAsset>) => {
+export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
   isSelectingAllAssets.set(false);
   assetInteraction.clearMultiselect();
 };

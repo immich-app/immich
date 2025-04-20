@@ -17,7 +17,7 @@
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { Button, HStack, Text } from '@immich/ui';
@@ -35,7 +35,7 @@
   let pathSegments = $derived(data.path ? data.path.split('/') : []);
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
 
-  const assetInteraction = new AssetInteraction<TimelineAsset>();
+  const assetInteraction = new AssetInteraction();
 
   const buildMap = (tags: TagResponseDto[]) => {
     return Object.fromEntries(tags.map((tag) => [tag.value, tag]));

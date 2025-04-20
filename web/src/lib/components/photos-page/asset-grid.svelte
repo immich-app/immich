@@ -41,7 +41,7 @@
      additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
     assetStore: AssetStore;
-    assetInteraction: AssetInteraction<TimelineAsset>;
+    assetInteraction: AssetInteraction;
     removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.FAVORITE | AssetAction.UNFAVORITE | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;

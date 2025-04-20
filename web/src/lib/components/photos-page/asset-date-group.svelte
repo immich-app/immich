@@ -11,7 +11,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { getDateLocaleString } from '$lib/utils/timeline-util';
 
-  import type { AssetInteraction, BaseInteractionAsset } from '$lib/stores/asset-interaction.svelte';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { fly, scale } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
@@ -29,7 +29,7 @@
     showArchiveIcon: boolean;
     bucket: AssetBucket;
     assetStore: AssetStore;
-    assetInteraction: AssetInteraction<BaseInteractionAsset>;
+    assetInteraction: AssetInteraction;
 
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
     onSelectAssets: (asset: TimelineAsset) => void;

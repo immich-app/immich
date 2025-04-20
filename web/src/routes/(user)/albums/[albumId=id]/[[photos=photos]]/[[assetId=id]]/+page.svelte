@@ -38,7 +38,7 @@
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -107,8 +107,8 @@
   let reactions: ActivityResponseDto[] = $state([]);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
 
-  const assetInteraction = new AssetInteraction<TimelineAsset>();
-  const timelineInteraction = new AssetInteraction<TimelineAsset>();
+  const assetInteraction = new AssetInteraction();
+  const timelineInteraction = new AssetInteraction();
 
   afterNavigate(({ from }) => {
     let url: string | undefined = from?.url?.pathname;
