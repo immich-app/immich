@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
 
 @RoutePage()
@@ -42,47 +42,12 @@ class PeopleCollectionPage extends HookConsumerWidget {
           appBar: AppBar(
             automaticallyImplyLeading: search.value == null,
             title: search.value != null
-                ? TextField(
+                ? SearchField(
                     focusNode: formFocus,
                     onTapOutside: (_) => formFocus.unfocus(),
                     onChanged: (value) => search.value = value,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.only(left: 24),
-                      filled: true,
-                      fillColor: context.primaryColor.withValues(alpha: 0.1),
-                      hintStyle: context.textTheme.bodyLarge?.copyWith(
-                        color: context.themeData.colorScheme.onSurfaceSecondary,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide(
-                          color: context.colorScheme.surfaceContainerHighest,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide(
-                          color: context.colorScheme.surfaceContainerHighest,
-                        ),
-                      ),
-                      disabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide(
-                          color: context.colorScheme.surfaceContainerHighest,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide(
-                          color: context.colorScheme.primary.withAlpha(150),
-                        ),
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search_rounded,
-                        color: context.colorScheme.primary,
-                      ),
-                      hintText: 'filter_people'.tr(),
-                    ),
+                    filled: true,
+                    hintText: 'filter_people'.tr(),
                     autofocus: true,
                   )
                 : Text('people'.tr()),

@@ -82,7 +82,7 @@ from
 where
   "assets"."id" = any ($1::uuid[])
 
--- AssetRepository.getByIdsWithAllRelations
+-- AssetRepository.getByIdsWithAllRelationsButStacks
 select
   "assets".*,
   (
@@ -127,28 +127,13 @@ select
           "assets"."id" = "tag_asset"."assetsId"
       ) as agg
   ) as "tags",
-  to_json("exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
+  to_json("exif") as "exifInfo"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
   left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
-  left join lateral (
-    select
-      "asset_stack".*,
-      array_agg("stacked") as "assets"
-    from
-      "assets" as "stacked"
-    where
-      "stacked"."stackId" = "asset_stack"."id"
-      and "stacked"."id" != "asset_stack"."primaryAssetId"
-      and "stacked"."deletedAt" is null
-      and "stacked"."isArchived" = $1
-    group by
-      "asset_stack"."id"
-  ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."id" = any ($2::uuid[])
+  "assets"."id" = any ($1::uuid[])
 
 -- AssetRepository.deleteAll
 delete from "assets"

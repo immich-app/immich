@@ -50,12 +50,8 @@ const asFunctionExpression = (options: FunctionOptions) => {
   }
 
   if ('body' in options) {
-    sql.push(
-      //
-      `AS $$`,
-      '  ' + options.body.trim(),
-      `$$;`,
-    );
+    const body = options.body;
+    sql.push(...(body.includes('\n') ? [`AS $$`, '  ' + body.trim(), `$$;`] : [`AS $$${body}$$;`]));
   }
 
   return sql.join('\n  ').trim();

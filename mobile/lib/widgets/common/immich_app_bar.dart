@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -178,6 +179,12 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               child: action,
             ),
           ),
+        if (kDebugMode)
+          if (kDebugMode)
+            IconButton(
+              icon: const Icon(Icons.science_rounded),
+              onPressed: () => context.pushRoute(const FeatInDevRoute()),
+            ),
         if (showUploadButton)
           Padding(
             padding: const EdgeInsets.only(right: 20),

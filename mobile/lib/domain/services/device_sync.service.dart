@@ -25,7 +25,7 @@ class DeviceSyncService {
         _localAlbumRepository = localAlbumRepository,
         _localAssetRepository = localAssetRepository;
 
-  Future<void> syncAlbums() async {
+  Future<void> sync() async {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
       // The deviceAlbums will not have the updatedAt field

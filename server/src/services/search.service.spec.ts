@@ -39,13 +39,36 @@ describe(SearchService.name, () => {
     });
   });
 
+  describe('searchPlaces', () => {
+    it('should search places', async () => {
+      mocks.search.searchPlaces.mockResolvedValue([
+        {
+          id: 42,
+          name: 'my place',
+          latitude: 420,
+          longitude: 69,
+          admin1Code: null,
+          admin1Name: null,
+          admin2Code: null,
+          admin2Name: null,
+          alternateNames: null,
+          countryCode: 'US',
+          modificationDate: new Date(),
+        },
+      ]);
+
+      await sut.searchPlaces({ name: 'place' });
+      expect(mocks.search.searchPlaces).toHaveBeenCalledWith('place');
+    });
+  });
+
   describe('getExploreData', () => {
     it('should get assets by city and tag', async () => {
       mocks.asset.getAssetIdByCity.mockResolvedValue({
         fieldName: 'exifInfo.city',
         items: [{ value: 'test-city', data: assetStub.withLocation.id }],
       });
-      mocks.asset.getByIdsWithAllRelations.mockResolvedValue([assetStub.withLocation]);
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([assetStub.withLocation]);
       const expectedResponse = [
         { fieldName: 'exifInfo.city', items: [{ value: 'test-city', data: mapAsset(assetStub.withLocation) }] },
       ];

@@ -73,9 +73,9 @@ void main() {
     );
   });
 
-  group('syncAlbums', () {
+  group('sync', () {
     test('should return when no albums exist', () async {
-      await sut.syncAlbums();
+      await sut.sync();
       verify(() => mockAlbumMediaRepo.getAll()).called(1);
       verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
           .called(1);
@@ -104,7 +104,7 @@ void main() {
       when(() => mockAlbumMediaRepo.getAssetsForAlbum(deviceAlbums.first.id))
           .thenAnswer((_) async => [LocalAssetStub.image1]);
 
-      await sut.syncAlbums();
+      await sut.sync();
 
       verify(() => mockAlbumMediaRepo.getAll()).called(1);
       verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
@@ -127,7 +127,7 @@ void main() {
       when(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
           .thenAnswer((_) async => dbAlbums);
 
-      await sut.syncAlbums();
+      await sut.sync();
 
       verify(() => mockAlbumMediaRepo.getAll()).called(1);
       verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
@@ -159,7 +159,7 @@ void main() {
         when(() => mockLocalAlbumRepo.getAssetsForAlbum(commonAlbum.id))
             .thenAnswer((_) async => []); // DB has no assets initially
 
-        await sut.syncAlbums();
+        await sut.sync();
 
         verify(() => mockAlbumMediaRepo.getAll()).called(1);
         verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
@@ -206,7 +206,7 @@ void main() {
       when(() => mockAlbumMediaRepo.getAssetsForAlbum(albumToAdd.id))
           .thenAnswer((_) async => [LocalAssetStub.image1]);
 
-      await sut.syncAlbums();
+      await sut.sync();
 
       verify(() => mockAlbumMediaRepo.getAll()).called(1);
       verify(() => mockLocalAlbumRepo.getAll(sortBy: SortLocalAlbumsBy.id))
@@ -239,7 +239,7 @@ void main() {
       when(() => mockAlbumMediaRepo.getAll())
           .thenThrow(Exception("Device error"));
 
-      await sut.syncAlbums();
+      await sut.sync();
 
       verify(() => mockAlbumMediaRepo.getAll()).called(1);
       verifyNever(

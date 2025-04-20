@@ -9,12 +9,12 @@ final _features = [
   _Features(
     name: 'Sync Local',
     icon: Icons.photo_album_rounded,
-    onTap: (ref) => ref.read(backgroundSyncProvider).syncDeviceAlbums(),
+    onTap: (ref) => ref.read(backgroundSyncProvider).syncLocal(),
   ),
   _Features(
     name: 'Sync Remote',
     icon: Icons.refresh_rounded,
-    onTap: (ref) => ref.read(backgroundSyncProvider).syncUsers(),
+    onTap: (ref) => ref.read(backgroundSyncProvider).syncRemote(),
   ),
 ];
 
