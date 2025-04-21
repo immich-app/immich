@@ -34,6 +34,7 @@ class PlacesCollectionPage extends HookConsumerWidget {
     final formFocus = useFocusNode();
     final ValueNotifier<String?> search = useState(null);
     final filterType = useState(FilterType.name);
+    final isAscending = useState(true); // Add state for sort order
 
     return Scaffold(
       appBar: AppBar(
@@ -80,13 +81,13 @@ class PlacesCollectionPage extends HookConsumerWidget {
                 ),
               ),
             ),
-            if (currentLocation != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Row(
-                  spacing: 8.0,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Row(
+                spacing: 8.0,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (currentLocation != null) ...[
                     Text('sort_places_by'.tr()),
                     Align(
                       alignment: Alignment.centerLeft,
@@ -125,8 +126,17 @@ class PlacesCollectionPage extends HookConsumerWidget {
                       ),
                     ),
                   ],
-                ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.swap_vert,
+                    ),
+                    onPressed: () {
+                      isAscending.value = !isAscending.value;
+                    },
+                  ),
+                ],
               ),
+            ),
           ],
           places.when(
             data: (places) {
@@ -136,26 +146,41 @@ class PlacesCollectionPage extends HookConsumerWidget {
                       .toLowerCase()
                       .contains(search.value!.toLowerCase());
                 }).toList();
-              } else if (filterType.value == FilterType.distance &&
-                  currentLocation != null) {
-                // Sort places by distance when filterType is distance and search is null
+              } else {
+                // Sort based on the selected filter type
                 places = List.from(places);
-                places.sort((a, b) {
-                  final double distanceA = calculateDistance(
-                    currentLocation!.latitude,
-                    currentLocation!.longitude,
-                    a.latitude,
-                    a.longitude,
-                  );
-                  final double distanceB = calculateDistance(
-                    currentLocation!.latitude,
-                    currentLocation!.longitude,
-                    b.latitude,
-                    b.longitude,
-                  );
 
-                  return distanceA.compareTo(distanceB);
-                });
+                if (filterType.value == FilterType.distance &&
+                    currentLocation != null) {
+                  // Sort places by distance
+                  places.sort((a, b) {
+                    final double distanceA = calculateDistance(
+                      currentLocation!.latitude,
+                      currentLocation!.longitude,
+                      a.latitude,
+                      a.longitude,
+                    );
+                    final double distanceB = calculateDistance(
+                      currentLocation!.latitude,
+                      currentLocation!.longitude,
+                      b.latitude,
+                      b.longitude,
+                    );
+
+                    return isAscending.value
+                        ? distanceA.compareTo(distanceB)
+                        : distanceB.compareTo(distanceA);
+                  });
+                } else {
+                  // Sort places by name
+                  places.sort(
+                    (a, b) => isAscending.value
+                        ? a.label.toLowerCase().compareTo(b.label.toLowerCase())
+                        : b.label
+                            .toLowerCase()
+                            .compareTo(a.label.toLowerCase()),
+                  );
+                }
               }
               return ListView.builder(
                 shrinkWrap: true,
