@@ -67,7 +67,7 @@
 </script>
 
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
-  <div
+  <nav
     id="asset-selection-app-bar"
     class={[
       'grid',
@@ -95,5 +95,5 @@
     <div class="mr-4 flex place-items-center gap-1 justify-self-end">
       {@render trailing?.()}
     </div>
-  </div>
+  </nav>
 </div>
