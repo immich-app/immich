@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -103,11 +103,8 @@ class MapUtils {
       }
 
       Position currentUserLocation = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 0,
-          timeLimit: Duration(seconds: 5),
-        ),
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
       );
       return (currentUserLocation, null);
     } catch (error, stack) {
