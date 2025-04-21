@@ -326,6 +326,7 @@ export const columns = {
   syncAsset: [
     'id',
     'ownerId',
+    'originalFileName',
     'thumbhash',
     'checksum',
     'fileCreatedAt',
