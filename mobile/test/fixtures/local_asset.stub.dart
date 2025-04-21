@@ -1,10 +1,10 @@
-import 'package:immich_mobile/domain/models/asset/asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
 abstract final class LocalAssetStub {
   const LocalAssetStub();
 
   static LocalAsset get image1 => LocalAsset(
-        localId: "image1",
+        id: "image1",
         name: "image1.jpg",
         checksum: "image1-checksum",
         type: AssetType.image,
@@ -16,7 +16,7 @@ abstract final class LocalAssetStub {
       );
 
   static LocalAsset get image2 => LocalAsset(
-        localId: "image2",
+        id: "image2",
         name: "image2.jpg",
         checksum: "image2-checksum",
         type: AssetType.image,
@@ -28,7 +28,7 @@ abstract final class LocalAssetStub {
       );
 
   static LocalAsset get video1 => LocalAsset(
-        localId: "video1",
+        id: "video1",
         name: "video1.mov",
         checksum: "video1-checksum",
         type: AssetType.video,

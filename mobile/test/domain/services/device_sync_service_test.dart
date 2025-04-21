@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_asset.interface.dart';
-import 'package:immich_mobile/domain/models/asset/asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/domain/services/device_sync.service.dart';
 import 'package:immich_mobile/utils/nullable_value.dart';
@@ -257,9 +257,9 @@ void main() {
             newAlbum.copyWith(updatedAt: DateTime(2024), assetCount: 2);
         final assets = [
           LocalAssetStub.image1
-              .copyWith(localId: "asset1", createdAt: DateTime(2024, 1, 1)),
+              .copyWith(id: "asset1", createdAt: DateTime(2024, 1, 1)),
           LocalAssetStub.image2.copyWith(
-            localId: "asset2",
+            id: "asset2",
             createdAt: DateTime(2024, 1, 2),
           ),
         ];
@@ -284,7 +284,7 @@ void main() {
         expect(capturedAlbum.id, newAlbum.id);
         expect(capturedAlbum.assetCount, refreshedAlbum.assetCount);
         expect(capturedAlbum.updatedAt, refreshedAlbum.updatedAt);
-        expect(capturedAlbum.thumbnailId, assets.first.localId);
+        expect(capturedAlbum.thumbnailId, assets.first.id);
         expect(listEquals(capturedAssets, assets), isTrue);
       },
     );
@@ -354,7 +354,7 @@ void main() {
       when(() => mockAlbumMediaRepo.refresh(dbAlbum.id))
           .thenAnswer((_) async => refreshedAlbum);
 
-      final newAsset = LocalAssetStub.image2.copyWith(localId: "new_asset");
+      final newAsset = LocalAssetStub.image2.copyWith(id: "new_asset");
       when(
         () => mockAlbumMediaRepo.getAssetsForAlbum(
           dbAlbum.id,
@@ -387,7 +387,7 @@ void main() {
               (a) =>
                   a.id == dbAlbum.id &&
                   a.assetCount == 2 &&
-                  a.thumbnailId == newAsset.localId,
+                  a.thumbnailId == newAsset.id,
             ),
           ),
         ),
@@ -446,7 +446,7 @@ void main() {
         ).called(1);
         verify(
           () => mockLocalAlbumRepo
-              .removeAssets(dbAlbum.id, [LocalAssetStub.image1.localId]),
+              .removeAssets(dbAlbum.id, [LocalAssetStub.image1.id]),
         ).called(1);
       },
     );
@@ -519,7 +519,7 @@ void main() {
 
     test('returns true and updates assets/metadata on success', () async {
       final newAsset = LocalAssetStub.image2.copyWith(
-        localId: "asset2",
+        id: "asset2",
         createdAt: DateTime(2024, 1, 1, 10, 30, 0),
       );
       when(
@@ -531,7 +531,7 @@ void main() {
 
       when(() => mockLocalAssetRepo.get("thumb1")).thenAnswer(
         (_) async => LocalAssetStub.image1.copyWith(
-          localId: "thumb1",
+          id: "thumb1",
           createdAt: DateTime(2024, 1, 1, 9, 0, 0),
         ),
       );
@@ -556,7 +556,7 @@ void main() {
                   a.id == dbAlbum.id &&
                   a.assetCount == 2 &&
                   a.updatedAt == refreshedAlbum.updatedAt &&
-                  a.thumbnailId == newAsset.localId,
+                  a.thumbnailId == newAsset.id,
             ),
           ),
         ),
@@ -567,7 +567,7 @@ void main() {
 
     test('returns true and keeps old thumbnail if newer', () async {
       final newAsset = LocalAssetStub.image2.copyWith(
-        localId: "asset2",
+        id: "asset2",
         createdAt: DateTime(2024, 1, 1, 8, 0, 0),
       );
       when(
@@ -579,7 +579,7 @@ void main() {
 
       when(() => mockLocalAssetRepo.get("thumb1")).thenAnswer(
         (_) async => LocalAssetStub.image1.copyWith(
-          localId: "thumb1",
+          id: "thumb1",
           createdAt: DateTime(2024, 1, 1, 9, 0, 0),
         ),
       );
@@ -614,7 +614,7 @@ void main() {
     test('returns true and sets new thumbnail if db thumb is null', () async {
       final dbAlbumNoThumb = dbAlbum.copyWith(thumbnailId: null);
       final newAsset = LocalAssetStub.image2.copyWith(
-        localId: "asset2",
+        id: "asset2",
         createdAt: DateTime(2024, 1, 1, 10, 30, 0),
       );
       when(
@@ -644,7 +644,7 @@ void main() {
                   a.id == dbAlbum.id &&
                   a.assetCount == 2 &&
                   a.updatedAt == refreshedAlbum.updatedAt &&
-                  a.thumbnailId == newAsset.localId,
+                  a.thumbnailId == newAsset.id,
             ),
           ),
         ),
@@ -731,22 +731,22 @@ void main() {
     );
 
     final dbAsset1 = LocalAssetStub.image1.copyWith(
-      localId: "asset1",
+      id: "asset1",
       createdAt: DateTime(2024),
       updatedAt: DateTime(2024),
     );
     final dbAsset2 = LocalAssetStub.image2.copyWith(
-      localId: "asset2",
+      id: "asset2",
       createdAt: DateTime(2024),
       updatedAt: DateTime(2024),
     ); // To be deleted
     final deviceAsset1 = LocalAssetStub.image1.copyWith(
-      localId: "asset1",
+      id: "asset1",
       createdAt: DateTime(2024),
       updatedAt: DateTime(2025),
     ); // Updated
     final deviceAsset3 = LocalAssetStub.video1.copyWith(
-      localId: "asset3",
+      id: "asset3",
       createdAt: DateTime(2024),
       updatedAt: DateTime(2024),
     ); // Added
@@ -819,7 +819,7 @@ void main() {
                   a.id == emptyDbAlbum.id &&
                   a.assetCount == deviceAssets.length &&
                   a.updatedAt == refreshedWithAssets.updatedAt &&
-                  a.thumbnailId == deviceAssets.first.localId,
+                  a.thumbnailId == deviceAssets.first.id,
             ),
           ),
         ),
@@ -833,7 +833,7 @@ void main() {
       final deviceAssets = [deviceAsset1, deviceAsset3];
       deviceAssets.sort((a, b) => a.createdAt.compareTo(b.createdAt));
       final dbAssets = [dbAsset1, dbAsset2];
-      dbAssets.sort((a, b) => a.localId.compareTo(b.localId));
+      dbAssets.sort((a, b) => a.id.compareTo(b.id));
 
       when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id)).thenAnswer(
         (_) async => deviceAssets,
@@ -857,10 +857,10 @@ void main() {
               return list.length == 2 &&
                   list.any(
                     (a) =>
-                        a.localId == "asset1" &&
+                        a.id == "asset1" &&
                         a.updatedAt == deviceAsset1.updatedAt,
                   ) &&
-                  list.any((a) => a.localId == "asset3");
+                  list.any((a) => a.id == "asset3");
             }),
           ),
         ),
@@ -874,7 +874,7 @@ void main() {
                   a.id == dbAlbum.id &&
                   a.assetCount == 2 &&
                   a.updatedAt == currentRefreshedAlbum.updatedAt &&
-                  a.thumbnailId == deviceAssets.first.localId,
+                  a.thumbnailId == deviceAssets.first.id,
             ),
           ),
         ),
@@ -892,7 +892,7 @@ void main() {
       final dbAssets = [dbAsset1, dbAsset2];
       final deviceAssets = [dbAsset1, dbAsset2];
       deviceAssets.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-      dbAssets.sort((a, b) => a.localId.compareTo(b.localId));
+      dbAssets.sort((a, b) => a.id.compareTo(b.id));
 
       when(() => mockAlbumMediaRepo.getAssetsForAlbum(dbAlbum.id))
           .thenAnswer((_) async => deviceAssets);
@@ -915,7 +915,7 @@ void main() {
                   a.id == dbAlbum.id &&
                   a.assetCount == 2 &&
                   a.updatedAt == currentRefreshedAlbum.updatedAt &&
-                  a.thumbnailId == deviceAssets.first.localId,
+                  a.thumbnailId == deviceAssets.first.id,
             ),
           ),
         ),

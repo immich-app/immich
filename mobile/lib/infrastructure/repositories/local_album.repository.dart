@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
-import 'package:immich_mobile/domain/models/asset/asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
@@ -137,10 +137,8 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       id: localAlbum.id,
       name: localAlbum.name,
       updatedAt: Value(localAlbum.updatedAt),
-      assetCount: Value(localAlbum.assetCount),
       thumbnailId: Value.absentIfNull(localAlbum.thumbnailId),
       backupSelection: localAlbum.backupSelection,
-      isAll: Value(localAlbum.isAll),
     );
 
     return _db.localAlbumEntity
@@ -160,7 +158,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         _db.localAlbumAssetEntity,
         assets.map(
           (a) => LocalAlbumAssetEntityCompanion.insert(
-            assetId: a.localId,
+            assetId: a.id,
             albumId: albumId,
           ),
         ),
@@ -223,7 +221,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
             width: Value.absentIfNull(a.width),
             height: Value.absentIfNull(a.height),
             durationInSeconds: Value.absentIfNull(a.durationInSeconds),
-            localId: a.localId,
+            localId: a.id,
             checksum: Value.absentIfNull(a.checksum),
           ),
         ),

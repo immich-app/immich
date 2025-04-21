@@ -10,12 +10,10 @@ class LocalAlbumEntity extends Table with DriftDefaultsMixin {
   TextColumn get id => text()();
   TextColumn get name => text()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  IntColumn get assetCount => integer().withDefault(const Constant(0))();
   TextColumn get thumbnailId => text()
       .nullable()
       .references(LocalAssetEntity, #localId, onDelete: KeyAction.setNull)();
   IntColumn get backupSelection => intEnum<BackupSelection>()();
-  BoolColumn get isAll => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -30,7 +28,6 @@ extension LocalAlbumEntityX on LocalAlbumEntityData {
       assetCount: assetCount,
       thumbnailId: thumbnailId,
       backupSelection: backupSelection,
-      isAll: isAll,
     );
   }
 }
