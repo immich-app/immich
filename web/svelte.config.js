@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import dotenv from 'dotenv';
 
@@ -14,10 +14,7 @@ const config = {
   },
   preprocess: vitePreprocess(),
   kit: {
-    adapter: adapter({
-      fallback: 'index.html',
-      precompress: true,
-    }),
+    adapter: adapter(),
     alias: {
       $lib: 'src/lib',
       '$lib/*': 'src/lib/*',

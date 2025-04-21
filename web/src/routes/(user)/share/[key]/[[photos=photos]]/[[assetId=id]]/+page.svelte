@@ -15,6 +15,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { tick } from 'svelte';
+  import { browser } from '$app/environment';
 
   interface Props {
     data: PageData;
@@ -57,41 +58,45 @@
   <title>{title}</title>
   <meta name="description" content={description} />
 </svelte:head>
-{#if passwordRequired}
-  <header>
-    <ControlAppBar showBackButton={false}>
-      {#snippet leading()}
-        <ImmichLogoSmallLink />
-      {/snippet}
+{#if browser}
+  {#if passwordRequired}
+    <header>
+      <ControlAppBar showBackButton={false}>
+        {#snippet leading()}
+          <ImmichLogoSmallLink />
+        {/snippet}
 
-      {#snippet trailing()}
-        <ThemeButton />
-      {/snippet}
-    </ControlAppBar>
-  </header>
-  <main
-    class="relative h-dvh overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
-  >
-    <div class="flex flex-col items-center justify-center mt-20">
-      <div class="text-2xl font-bold text-immich-primary dark:text-immich-dark-primary">{$t('password_required')}</div>
-      <div class="mt-4 text-lg text-immich-primary dark:text-immich-dark-primary">
-        {$t('sharing_enter_password')}
+        {#snippet trailing()}
+          <ThemeButton />
+        {/snippet}
+      </ControlAppBar>
+    </header>
+    <main
+      class="relative h-dvh overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+    >
+      <div class="flex flex-col items-center justify-center mt-20">
+        <div class="text-2xl font-bold text-immich-primary dark:text-immich-dark-primary">
+          {$t('password_required')}
+        </div>
+        <div class="mt-4 text-lg text-immich-primary dark:text-immich-dark-primary">
+          {$t('sharing_enter_password')}
+        </div>
+        <div class="mt-4">
+          <form class="flex gap-x-2" novalidate {onsubmit}>
+            <PasswordField autocomplete="off" bind:password placeholder="Password" />
+            <Button type="submit">{$t('submit')}</Button>
+          </form>
+        </div>
       </div>
-      <div class="mt-4">
-        <form class="flex gap-x-2" novalidate {onsubmit}>
-          <PasswordField autocomplete="off" bind:password placeholder="Password" />
-          <Button type="submit">{$t('submit')}</Button>
-        </form>
-      </div>
+    </main>
+  {/if}
+
+  {#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}
+    <AlbumViewer {sharedLink} />
+  {/if}
+  {#if !passwordRequired && sharedLink?.type == SharedLinkType.Individual}
+    <div class="immich-scrollbar">
+      <IndividualSharedViewer {sharedLink} {isOwned} />
     </div>
-  </main>
-{/if}
-
-{#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}
-  <AlbumViewer {sharedLink} />
-{/if}
-{#if !passwordRequired && sharedLink?.type == SharedLinkType.Individual}
-  <div class="immich-scrollbar">
-    <IndividualSharedViewer {sharedLink} {isOwned} />
-  </div>
+  {/if}
 {/if}
