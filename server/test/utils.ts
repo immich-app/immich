@@ -18,6 +18,7 @@ import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { DownloadRepository } from 'src/repositories/download.repository';
+import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
@@ -28,7 +29,6 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
-import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -124,6 +124,7 @@ export type ServiceOverrides = {
   crypto: CryptoRepository;
   database: DatabaseRepository;
   downloadRepository: DownloadRepository;
+  email: EmailRepository;
   event: EventRepository;
   job: JobRepository;
   library: LibraryRepository;
@@ -134,7 +135,6 @@ export type ServiceOverrides = {
   memory: MemoryRepository;
   metadata: MetadataRepository;
   move: MoveRepository;
-  notification: NotificationRepository;
   oauth: OAuthRepository;
   partner: PartnerRepository;
   person: PersonRepository;
@@ -190,6 +190,7 @@ export const newTestService = <T extends BaseService>(
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),
+    email: automock(EmailRepository, { args: [loggerMock] }),
     // eslint-disable-next-line no-sparse-arrays
     event: automock(EventRepository, { args: [, , loggerMock], strict: false }),
     job: newJobRepositoryMock(),
@@ -201,7 +202,6 @@ export const newTestService = <T extends BaseService>(
     memory: automock(MemoryRepository),
     metadata: newMetadataRepositoryMock(),
     move: automock(MoveRepository, { strict: false }),
-    notification: automock(NotificationRepository, { args: [loggerMock] }),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
     person: newPersonRepositoryMock(),
@@ -240,6 +240,7 @@ export const newTestService = <T extends BaseService>(
     overrides.crypto || (mocks.crypto as As<CryptoRepository>),
     overrides.database || (mocks.database as As<DatabaseRepository>),
     overrides.downloadRepository || (mocks.downloadRepository as As<DownloadRepository>),
+    overrides.email || (mocks.email as As<EmailRepository>),
     overrides.event || (mocks.event as As<EventRepository>),
     overrides.job || (mocks.job as As<JobRepository>),
     overrides.library || (mocks.library as As<LibraryRepository>),
@@ -249,7 +250,6 @@ export const newTestService = <T extends BaseService>(
     overrides.memory || (mocks.memory as As<MemoryRepository>),
     overrides.metadata || (mocks.metadata as As<MetadataRepository>),
     overrides.move || (mocks.move as As<MoveRepository>),
-    overrides.notification || (mocks.notification as As<NotificationRepository>),
     overrides.oauth || (mocks.oauth as As<OAuthRepository>),
     overrides.partner || (mocks.partner as As<PartnerRepository>),
     overrides.person || (mocks.person as As<PersonRepository>),
