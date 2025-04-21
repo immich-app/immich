@@ -148,7 +148,8 @@
     "unplugin-swc": "^1.4.5",
     "utimes": "^5.2.1",
     "vite-tsconfig-paths": "^5.0.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "jsdom": "^26.1.0"
   },
   "volta": {
     "node": "22.14.0"
