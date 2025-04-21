@@ -118,6 +118,9 @@ class PlacesCollectionPage extends HookConsumerWidget {
                           },
                           isExpanded: false,
                           underline: const SizedBox(),
+                          style: const TextStyle(
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
