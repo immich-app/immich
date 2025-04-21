@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
@@ -12,6 +13,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/map_utils.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 import 'package:immich_mobile/widgets/common/user_avatar.dart';
@@ -297,32 +299,34 @@ class LocalAlbumsCollectionCard extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
+              SizedBox(
                 height: size,
                 width: size,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [
-                      context.colorScheme.primary.withAlpha(30),
-                      context.colorScheme.primary.withAlpha(25),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                    gradient: LinearGradient(
+                      colors: [
+                        context.colorScheme.primary.withAlpha(30),
+                        context.colorScheme.primary.withAlpha(25),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                   ),
-                ),
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  padding: const EdgeInsets.all(12),
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: albums.take(4).map((album) {
-                    return AlbumThumbnailCard(
-                      album: album,
-                      showTitle: false,
-                    );
-                  }).toList(),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    padding: const EdgeInsets.all(12),
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: albums.take(4).map((album) {
+                      return AlbumThumbnailCard(
+                        album: album,
+                        showTitle: false,
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
               Padding(
@@ -353,43 +357,66 @@ class PlacesCollectionCard extends StatelessWidget {
         final widthFactor = isTablet ? 0.25 : 0.5;
         final size = context.width * widthFactor - 20.0;
 
-        return GestureDetector(
-          onTap: () => context.pushRoute(const PlacesCollectionRoute()),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: size,
-                width: size,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: context.colorScheme.secondaryContainer.withAlpha(100),
-                ),
-                child: IgnorePointer(
-                  child: MapThumbnail(
-                    zoom: 8,
-                    centre: const LatLng(
-                      21.44950,
-                      -157.91959,
-                    ),
-                    showAttribution: false,
-                    themeMode:
-                        context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'places'.tr(),
-                  style: context.textTheme.titleSmall?.copyWith(
-                    color: context.colorScheme.onSurface,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
+        return FutureBuilder<(Position?, LocationPermission?)>(
+          future: MapUtils.checkPermAndGetLocation(
+            context: context,
+            silent: true,
           ),
+          builder: (context, snapshot) {
+            var position = snapshot.data?.$1;
+            return GestureDetector(
+              onTap: () => context.pushRoute(
+                PlacesCollectionRoute(
+                  currentLocation: position != null
+                      ? LatLng(position.latitude, position.longitude)
+                      : null,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: size,
+                    width: size,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20)),
+                        color: context.colorScheme.secondaryContainer
+                            .withAlpha(100),
+                      ),
+                      child: IgnorePointer(
+                        child: snapshot.connectionState ==
+                                ConnectionState.waiting
+                            ? const Center(child: CircularProgressIndicator())
+                            : MapThumbnail(
+                                zoom: 8,
+                                centre: LatLng(
+                                  position?.latitude ?? 21.44950,
+                                  position?.longitude ?? -157.91959,
+                                ),
+                                showAttribution: false,
+                                themeMode: context.isDarkTheme
+                                    ? ThemeMode.dark
+                                    : ThemeMode.light,
+                              ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'places'.tr(),
+                      style: context.textTheme.titleSmall?.copyWith(
+                        color: context.colorScheme.onSurface,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
