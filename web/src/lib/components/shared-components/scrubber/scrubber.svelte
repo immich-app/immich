@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import type { AssetStore, LiteBucket } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { getFocusable } from '$lib/utils/focus-util';
+  import { getTabbable } from '$lib/utils/focus-util';
   import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
   import { mdiPlay } from '@mdi/js';
   import { clamp } from 'lodash-es';
@@ -376,7 +376,7 @@
     if (forward || backward) {
       event.preventDefault();
 
-      const focusable = getFocusable(document);
+      const focusable = getTabbable(document.body);
       if (scrollBar) {
         const index = focusable.indexOf(scrollBar);
         if (index !== -1) {
