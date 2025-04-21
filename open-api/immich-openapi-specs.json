@@ -8884,21 +8884,6 @@
         ],
         "type": "string"
       },
-      "AvatarResponse": {
-        "properties": {
-          "color": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserAvatarColor"
-              }
-            ]
-          }
-        },
-        "required": [
-          "color"
-        ],
-        "type": "object"
-      },
       "AvatarUpdate": {
         "properties": {
           "color": {
@@ -13621,6 +13606,14 @@
       },
       "UserAdminCreateDto": {
         "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
           "email": {
             "format": "email",
             "type": "string"
@@ -13763,6 +13756,14 @@
       },
       "UserAdminUpdateDto": {
         "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
           "email": {
             "format": "email",
             "type": "string"
@@ -13826,9 +13827,6 @@
       },
       "UserPreferencesResponseDto": {
         "properties": {
-          "avatar": {
-            "$ref": "#/components/schemas/AvatarResponse"
-          },
           "download": {
             "$ref": "#/components/schemas/DownloadResponse"
           },
@@ -13858,7 +13856,6 @@
           }
         },
         "required": [
-          "avatar",
           "download",
           "emailNotifications",
           "folders",
@@ -13952,6 +13949,14 @@
       },
       "UserUpdateMeDto": {
         "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
           "email": {
             "format": "email",
             "type": "string"
