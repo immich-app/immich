@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
+import 'package:immich_mobile/domain/models/asset/asset.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
+import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
@@ -99,36 +101,144 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  // Assets
-  @override
-  Future<void> updateAssetsV1(Iterable<SyncAssetV1> data) async {
-    debugPrint("updateAssetsV1 - ${data.length}");
-  }
-
   @override
   Future<void> deleteAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
-    debugPrint("deleteAssetsV1 - ${data.length}");
+    try {
+      await _deleteAssetsV1(data);
+    } catch (e, s) {
+      _logger.severe('Error while processing deleteAssetsV1', e, s);
+      rethrow;
+    }
   }
 
-  // Partner Assets
   @override
-  Future<void> updatePartnerAssetsV1(Iterable<SyncAssetV1> data) async {
-    debugPrint("updatePartnerAssetsV1 - ${data.length}");
+  Future<void> updateAssetsV1(Iterable<SyncAssetV1> data) async {
+    try {
+      await _updateAssetsV1(data);
+    } catch (e, s) {
+      _logger.severe('Error while processing updateAssetsV1', e, s);
+      rethrow;
+    }
   }
 
   @override
   Future<void> deletePartnerAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
-    debugPrint("deletePartnerAssetsV1 - ${data.length}");
+    try {
+      await _deleteAssetsV1(data);
+    } catch (e, s) {
+      _logger.severe('Error while processing deletePartnerAssetsV1', e, s);
+      rethrow;
+    }
   }
 
-  // EXIF
+  @override
+  Future<void> updatePartnerAssetsV1(Iterable<SyncAssetV1> data) async {
+    try {
+      await _updateAssetsV1(data);
+    } catch (e, s) {
+      _logger.severe('Error while processing updatePartnerAssetsV1', e, s);
+      rethrow;
+    }
+  }
+
   @override
   Future<void> updateAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
-    debugPrint("updateAssetsExifV1 - ${data.length}");
+    try {
+      await _updateAssetExifV1(data);
+    } catch (e, s) {
+      _logger.severe('Error while processing updateAssetsExifV1', e, s);
+      rethrow;
+    }
   }
 
   @override
   Future<void> updatePartnerAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
-    debugPrint("updatePartnerAssetsExifV1 - ${data.length}");
+    try {
+      await _updateAssetExifV1(data);
+    } catch (e, s) {
+      _logger.severe('Error while processing updatePartnerAssetsExifV1', e, s);
+      rethrow;
+    }
   }
+
+  Future<void> _updateAssetsV1(Iterable<SyncAssetV1> data) =>
+      _db.batch((batch) {
+        for (final asset in data) {
+          final companion = RemoteAssetEntityCompanion(
+            name: const Value(''), // TODO: Needed from the server
+            type: Value(asset.type.toAssetType()),
+            createdAt: Value.absentIfNull(asset.fileCreatedAt),
+            updatedAt: Value.absentIfNull(asset.fileModifiedAt),
+            durationInSeconds: const Value(0),
+            checksum: Value(asset.checksum),
+            isFavorite: Value(asset.isFavorite),
+            ownerId: Value(asset.ownerId.toUuidByte()),
+            localDateTime: Value(asset.localDateTime),
+            thumbhash: Value(asset.thumbhash),
+            deletedAt: Value(asset.deletedAt),
+          );
+
+          batch.insert(
+            _db.remoteAssetEntity,
+            companion.copyWith(remoteId: Value(asset.id.toUuidByte())),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+
+  Future<void> _deleteAssetsV1(Iterable<SyncAssetDeleteV1> assets) =>
+      _db.batch((batch) {
+        for (final asset in assets) {
+          batch.delete(
+            _db.remoteAssetEntity,
+            RemoteAssetEntityCompanion(
+              remoteId: Value(asset.assetId.toUuidByte()),
+            ),
+          );
+        }
+      });
+
+  Future<void> _updateAssetExifV1(Iterable<SyncAssetExifV1> data) =>
+      _db.batch((batch) {
+        for (final exif in data) {
+          final companion = ExifEntityCompanion(
+            city: Value(exif.city),
+            state: Value(exif.state),
+            country: Value(exif.country),
+            dateTimeOriginal: Value(exif.dateTimeOriginal),
+            description: Value(exif.description),
+            height: Value(exif.exifImageHeight),
+            width: Value(exif.exifImageWidth),
+            exposureTime: Value(exif.exposureTime),
+            fNumber: Value(exif.fNumber),
+            fileSize: Value(exif.fileSizeInByte),
+            focalLength: Value(exif.focalLength),
+            latitude: Value(exif.latitude),
+            longitude: Value(exif.longitude),
+            iso: Value(exif.iso),
+            make: Value(exif.make),
+            model: Value(exif.model),
+            orientation: Value(exif.orientation),
+            timeZone: Value(exif.timeZone),
+            rating: Value(exif.rating),
+            projectionType: Value(exif.projectionType),
+          );
+
+          batch.insert(
+            _db.exifEntity,
+            companion.copyWith(assetId: Value(exif.assetId.toUuidByte())),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+}
+
+extension on SyncAssetV1TypeEnum {
+  AssetType toAssetType() => switch (this) {
+        SyncAssetV1TypeEnum.IMAGE => AssetType.image,
+        SyncAssetV1TypeEnum.VIDEO => AssetType.video,
+        SyncAssetV1TypeEnum.AUDIO => AssetType.audio,
+        SyncAssetV1TypeEnum.OTHER => AssetType.other,
+        _ => throw Exception('Unknown SyncAssetV1TypeEnum value: $this'),
+      };
 }

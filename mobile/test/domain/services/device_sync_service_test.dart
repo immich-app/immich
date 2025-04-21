@@ -361,7 +361,8 @@ void main() {
           updateTimeCond: any(named: 'updateTimeCond'),
         ),
       ).thenAnswer((_) async => [newAsset]);
-      final dbAlbumNoThumb = dbAlbum.copyWith(thumbnailId: null);
+      final dbAlbumNoThumb =
+          dbAlbum.copyWith(thumbnailId: const NullableValue.absent());
 
       final result =
           await sut.updateAlbum(dbAlbumNoThumb, LocalAlbumStub.album1);
@@ -612,7 +613,8 @@ void main() {
     });
 
     test('returns true and sets new thumbnail if db thumb is null', () async {
-      final dbAlbumNoThumb = dbAlbum.copyWith(thumbnailId: null);
+      final dbAlbumNoThumb =
+          dbAlbum.copyWith(thumbnailId: const NullableValue.empty());
       final newAsset = LocalAssetStub.image2.copyWith(
         localId: "asset2",
         createdAt: DateTime(2024, 1, 1, 10, 30, 0),

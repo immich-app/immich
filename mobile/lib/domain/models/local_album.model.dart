@@ -32,7 +32,7 @@ class LocalAlbum {
     String? name,
     DateTime? updatedAt,
     int? assetCount,
-    NullableValue<String>? thumbnailId,
+    NullableValue<String> thumbnailId = const NullableValue.absent(),
     BackupSelection? backupSelection,
     bool? isAll,
   }) {
@@ -41,7 +41,7 @@ class LocalAlbum {
       name: name ?? this.name,
       updatedAt: updatedAt ?? this.updatedAt,
       assetCount: assetCount ?? this.assetCount,
-      thumbnailId: thumbnailId?.getOrDefault(this.thumbnailId),
+      thumbnailId: thumbnailId.getOrDefault(this.thumbnailId),
       backupSelection: backupSelection ?? this.backupSelection,
       isAll: isAll ?? this.isAll,
     );

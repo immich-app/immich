@@ -8,6 +8,9 @@ class NullableValue<T> {
   const NullableValue._(this._value, {bool present = false})
       : _present = present;
 
+  /// Creates an instance without value
+  const NullableValue.absent() : this._(null, present: false);
+
   /// Forces the value to be null
   const NullableValue.empty() : this._(null, present: true);
 

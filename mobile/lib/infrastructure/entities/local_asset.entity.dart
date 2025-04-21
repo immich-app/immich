@@ -12,6 +12,10 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   TextColumn get checksum => text().nullable()();
 
+  IntColumn get width => integer().nullable()();
+
+  IntColumn get height => integer().nullable()();
+
   @override
   Set<Column> get primaryKey => {localId};
 }

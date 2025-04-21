@@ -14,11 +14,11 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder
   required i2.AssetType type,
   i0.Value<DateTime> createdAt,
   i0.Value<DateTime> updatedAt,
-  i0.Value<int?> width,
-  i0.Value<int?> height,
   i0.Value<int?> durationInSeconds,
   required String localId,
   i0.Value<String?> checksum,
+  i0.Value<int?> width,
+  i0.Value<int?> height,
 });
 typedef $$LocalAssetEntityTableUpdateCompanionBuilder
     = i1.LocalAssetEntityCompanion Function({
@@ -26,11 +26,11 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder
   i0.Value<i2.AssetType> type,
   i0.Value<DateTime> createdAt,
   i0.Value<DateTime> updatedAt,
-  i0.Value<int?> width,
-  i0.Value<int?> height,
   i0.Value<int?> durationInSeconds,
   i0.Value<String> localId,
   i0.Value<String?> checksum,
+  i0.Value<int?> width,
+  i0.Value<int?> height,
 });
 
 class $$LocalAssetEntityTableFilterComposer
@@ -56,12 +56,6 @@ class $$LocalAssetEntityTableFilterComposer
   i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get width => $composableBuilder(
-      column: $table.width, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<int> get height => $composableBuilder(
-      column: $table.height, builder: (column) => i0.ColumnFilters(column));
-
   i0.ColumnFilters<int> get durationInSeconds => $composableBuilder(
       column: $table.durationInSeconds,
       builder: (column) => i0.ColumnFilters(column));
@@ -71,6 +65,12 @@ class $$LocalAssetEntityTableFilterComposer
 
   i0.ColumnFilters<String> get checksum => $composableBuilder(
       column: $table.checksum, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<int> get width => $composableBuilder(
+      column: $table.width, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<int> get height => $composableBuilder(
+      column: $table.height, builder: (column) => i0.ColumnFilters(column));
 }
 
 class $$LocalAssetEntityTableOrderingComposer
@@ -96,12 +96,6 @@ class $$LocalAssetEntityTableOrderingComposer
       column: $table.updatedAt,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get width => $composableBuilder(
-      column: $table.width, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<int> get height => $composableBuilder(
-      column: $table.height, builder: (column) => i0.ColumnOrderings(column));
-
   i0.ColumnOrderings<int> get durationInSeconds => $composableBuilder(
       column: $table.durationInSeconds,
       builder: (column) => i0.ColumnOrderings(column));
@@ -111,6 +105,12 @@ class $$LocalAssetEntityTableOrderingComposer
 
   i0.ColumnOrderings<String> get checksum => $composableBuilder(
       column: $table.checksum, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<int> get width => $composableBuilder(
+      column: $table.width, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<int> get height => $composableBuilder(
+      column: $table.height, builder: (column) => i0.ColumnOrderings(column));
 }
 
 class $$LocalAssetEntityTableAnnotationComposer
@@ -134,12 +134,6 @@ class $$LocalAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get width =>
-      $composableBuilder(column: $table.width, builder: (column) => column);
-
-  i0.GeneratedColumn<int> get height =>
-      $composableBuilder(column: $table.height, builder: (column) => column);
-
   i0.GeneratedColumn<int> get durationInSeconds => $composableBuilder(
       column: $table.durationInSeconds, builder: (column) => column);
 
@@ -148,6 +142,12 @@ class $$LocalAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumn<String> get checksum =>
       $composableBuilder(column: $table.checksum, builder: (column) => column);
+
+  i0.GeneratedColumn<int> get width =>
+      $composableBuilder(column: $table.width, builder: (column) => column);
+
+  i0.GeneratedColumn<int> get height =>
+      $composableBuilder(column: $table.height, builder: (column) => column);
 }
 
 class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
@@ -183,44 +183,44 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<i2.AssetType> type = const i0.Value.absent(),
             i0.Value<DateTime> createdAt = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            i0.Value<int?> width = const i0.Value.absent(),
-            i0.Value<int?> height = const i0.Value.absent(),
             i0.Value<int?> durationInSeconds = const i0.Value.absent(),
             i0.Value<String> localId = const i0.Value.absent(),
             i0.Value<String?> checksum = const i0.Value.absent(),
+            i0.Value<int?> width = const i0.Value.absent(),
+            i0.Value<int?> height = const i0.Value.absent(),
           }) =>
               i1.LocalAssetEntityCompanion(
             name: name,
             type: type,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            width: width,
-            height: height,
             durationInSeconds: durationInSeconds,
             localId: localId,
             checksum: checksum,
+            width: width,
+            height: height,
           ),
           createCompanionCallback: ({
             required String name,
             required i2.AssetType type,
             i0.Value<DateTime> createdAt = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            i0.Value<int?> width = const i0.Value.absent(),
-            i0.Value<int?> height = const i0.Value.absent(),
             i0.Value<int?> durationInSeconds = const i0.Value.absent(),
             required String localId,
             i0.Value<String?> checksum = const i0.Value.absent(),
+            i0.Value<int?> width = const i0.Value.absent(),
+            i0.Value<int?> height = const i0.Value.absent(),
           }) =>
               i1.LocalAssetEntityCompanion.insert(
             name: name,
             type: type,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            width: width,
-            height: height,
             durationInSeconds: durationInSeconds,
             localId: localId,
             checksum: checksum,
+            width: width,
+            height: height,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -282,18 +282,6 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           type: i0.DriftSqlType.dateTime,
           requiredDuringInsert: false,
           defaultValue: i4.currentDateAndTime);
-  static const i0.VerificationMeta _widthMeta =
-      const i0.VerificationMeta('width');
-  @override
-  late final i0.GeneratedColumn<int> width = i0.GeneratedColumn<int>(
-      'width', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
-  static const i0.VerificationMeta _heightMeta =
-      const i0.VerificationMeta('height');
-  @override
-  late final i0.GeneratedColumn<int> height = i0.GeneratedColumn<int>(
-      'height', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
   static const i0.VerificationMeta _durationInSecondsMeta =
       const i0.VerificationMeta('durationInSeconds');
   @override
@@ -312,17 +300,29 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
   late final i0.GeneratedColumn<String> checksum = i0.GeneratedColumn<String>(
       'checksum', aliasedName, true,
       type: i0.DriftSqlType.string, requiredDuringInsert: false);
+  static const i0.VerificationMeta _widthMeta =
+      const i0.VerificationMeta('width');
+  @override
+  late final i0.GeneratedColumn<int> width = i0.GeneratedColumn<int>(
+      'width', aliasedName, true,
+      type: i0.DriftSqlType.int, requiredDuringInsert: false);
+  static const i0.VerificationMeta _heightMeta =
+      const i0.VerificationMeta('height');
+  @override
+  late final i0.GeneratedColumn<int> height = i0.GeneratedColumn<int>(
+      'height', aliasedName, true,
+      type: i0.DriftSqlType.int, requiredDuringInsert: false);
   @override
   List<i0.GeneratedColumn> get $columns => [
         name,
         type,
         createdAt,
         updatedAt,
-        width,
-        height,
         durationInSeconds,
         localId,
-        checksum
+        checksum,
+        width,
+        height
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -349,14 +349,6 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
-    if (data.containsKey('width')) {
-      context.handle(
-          _widthMeta, width.isAcceptableOrUnknown(data['width']!, _widthMeta));
-    }
-    if (data.containsKey('height')) {
-      context.handle(_heightMeta,
-          height.isAcceptableOrUnknown(data['height']!, _heightMeta));
-    }
     if (data.containsKey('duration_in_seconds')) {
       context.handle(
           _durationInSecondsMeta,
@@ -372,6 +364,14 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     if (data.containsKey('checksum')) {
       context.handle(_checksumMeta,
           checksum.isAcceptableOrUnknown(data['checksum']!, _checksumMeta));
+    }
+    if (data.containsKey('width')) {
+      context.handle(
+          _widthMeta, width.isAcceptableOrUnknown(data['width']!, _widthMeta));
+    }
+    if (data.containsKey('height')) {
+      context.handle(_heightMeta,
+          height.isAcceptableOrUnknown(data['height']!, _heightMeta));
     }
     return context;
   }
@@ -392,16 +392,16 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           i0.DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      width: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}width']),
-      height: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}height']),
       durationInSeconds: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.int, data['${effectivePrefix}duration_in_seconds']),
       localId: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}local_id'])!,
       checksum: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}checksum']),
+      width: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}width']),
+      height: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}height']),
     );
   }
 
@@ -424,21 +424,21 @@ class LocalAssetEntityData extends i0.DataClass
   final i2.AssetType type;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final int? width;
-  final int? height;
   final int? durationInSeconds;
   final String localId;
   final String? checksum;
+  final int? width;
+  final int? height;
   const LocalAssetEntityData(
       {required this.name,
       required this.type,
       required this.createdAt,
       required this.updatedAt,
-      this.width,
-      this.height,
       this.durationInSeconds,
       required this.localId,
-      this.checksum});
+      this.checksum,
+      this.width,
+      this.height});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -449,18 +449,18 @@ class LocalAssetEntityData extends i0.DataClass
     }
     map['created_at'] = i0.Variable<DateTime>(createdAt);
     map['updated_at'] = i0.Variable<DateTime>(updatedAt);
-    if (!nullToAbsent || width != null) {
-      map['width'] = i0.Variable<int>(width);
-    }
-    if (!nullToAbsent || height != null) {
-      map['height'] = i0.Variable<int>(height);
-    }
     if (!nullToAbsent || durationInSeconds != null) {
       map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds);
     }
     map['local_id'] = i0.Variable<String>(localId);
     if (!nullToAbsent || checksum != null) {
       map['checksum'] = i0.Variable<String>(checksum);
+    }
+    if (!nullToAbsent || width != null) {
+      map['width'] = i0.Variable<int>(width);
+    }
+    if (!nullToAbsent || height != null) {
+      map['height'] = i0.Variable<int>(height);
     }
     return map;
   }
@@ -474,11 +474,11 @@ class LocalAssetEntityData extends i0.DataClass
           .fromJson(serializer.fromJson<int>(json['type'])),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      width: serializer.fromJson<int?>(json['width']),
-      height: serializer.fromJson<int?>(json['height']),
       durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
       localId: serializer.fromJson<String>(json['localId']),
       checksum: serializer.fromJson<String?>(json['checksum']),
+      width: serializer.fromJson<int?>(json['width']),
+      height: serializer.fromJson<int?>(json['height']),
     );
   }
   @override
@@ -490,11 +490,11 @@ class LocalAssetEntityData extends i0.DataClass
           .toJson<int>(i1.$LocalAssetEntityTable.$convertertype.toJson(type)),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'width': serializer.toJson<int?>(width),
-      'height': serializer.toJson<int?>(height),
       'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
       'localId': serializer.toJson<String>(localId),
       'checksum': serializer.toJson<String?>(checksum),
+      'width': serializer.toJson<int?>(width),
+      'height': serializer.toJson<int?>(height),
     };
   }
 
@@ -503,23 +503,23 @@ class LocalAssetEntityData extends i0.DataClass
           i2.AssetType? type,
           DateTime? createdAt,
           DateTime? updatedAt,
-          i0.Value<int?> width = const i0.Value.absent(),
-          i0.Value<int?> height = const i0.Value.absent(),
           i0.Value<int?> durationInSeconds = const i0.Value.absent(),
           String? localId,
-          i0.Value<String?> checksum = const i0.Value.absent()}) =>
+          i0.Value<String?> checksum = const i0.Value.absent(),
+          i0.Value<int?> width = const i0.Value.absent(),
+          i0.Value<int?> height = const i0.Value.absent()}) =>
       i1.LocalAssetEntityData(
         name: name ?? this.name,
         type: type ?? this.type,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
-        width: width.present ? width.value : this.width,
-        height: height.present ? height.value : this.height,
         durationInSeconds: durationInSeconds.present
             ? durationInSeconds.value
             : this.durationInSeconds,
         localId: localId ?? this.localId,
         checksum: checksum.present ? checksum.value : this.checksum,
+        width: width.present ? width.value : this.width,
+        height: height.present ? height.value : this.height,
       );
   LocalAssetEntityData copyWithCompanion(i1.LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -527,13 +527,13 @@ class LocalAssetEntityData extends i0.DataClass
       type: data.type.present ? data.type.value : this.type,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      width: data.width.present ? data.width.value : this.width,
-      height: data.height.present ? data.height.value : this.height,
       durationInSeconds: data.durationInSeconds.present
           ? data.durationInSeconds.value
           : this.durationInSeconds,
       localId: data.localId.present ? data.localId.value : this.localId,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
+      width: data.width.present ? data.width.value : this.width,
+      height: data.height.present ? data.height.value : this.height,
     );
   }
 
@@ -544,18 +544,18 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('width: $width, ')
-          ..write('height: $height, ')
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('localId: $localId, ')
-          ..write('checksum: $checksum')
+          ..write('checksum: $checksum, ')
+          ..write('width: $width, ')
+          ..write('height: $height')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(name, type, createdAt, updatedAt, width,
-      height, durationInSeconds, localId, checksum);
+  int get hashCode => Object.hash(name, type, createdAt, updatedAt,
+      durationInSeconds, localId, checksum, width, height);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -564,11 +564,11 @@ class LocalAssetEntityData extends i0.DataClass
           other.type == this.type &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.width == this.width &&
-          other.height == this.height &&
           other.durationInSeconds == this.durationInSeconds &&
           other.localId == this.localId &&
-          other.checksum == this.checksum);
+          other.checksum == this.checksum &&
+          other.width == this.width &&
+          other.height == this.height);
 }
 
 class LocalAssetEntityCompanion
@@ -577,32 +577,32 @@ class LocalAssetEntityCompanion
   final i0.Value<i2.AssetType> type;
   final i0.Value<DateTime> createdAt;
   final i0.Value<DateTime> updatedAt;
-  final i0.Value<int?> width;
-  final i0.Value<int?> height;
   final i0.Value<int?> durationInSeconds;
   final i0.Value<String> localId;
   final i0.Value<String?> checksum;
+  final i0.Value<int?> width;
+  final i0.Value<int?> height;
   const LocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
-    this.width = const i0.Value.absent(),
-    this.height = const i0.Value.absent(),
     this.durationInSeconds = const i0.Value.absent(),
     this.localId = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
+    this.width = const i0.Value.absent(),
+    this.height = const i0.Value.absent(),
   });
   LocalAssetEntityCompanion.insert({
     required String name,
     required i2.AssetType type,
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
-    this.width = const i0.Value.absent(),
-    this.height = const i0.Value.absent(),
     this.durationInSeconds = const i0.Value.absent(),
     required String localId,
     this.checksum = const i0.Value.absent(),
+    this.width = const i0.Value.absent(),
+    this.height = const i0.Value.absent(),
   })  : name = i0.Value(name),
         type = i0.Value(type),
         localId = i0.Value(localId);
@@ -611,22 +611,22 @@ class LocalAssetEntityCompanion
     i0.Expression<int>? type,
     i0.Expression<DateTime>? createdAt,
     i0.Expression<DateTime>? updatedAt,
-    i0.Expression<int>? width,
-    i0.Expression<int>? height,
     i0.Expression<int>? durationInSeconds,
     i0.Expression<String>? localId,
     i0.Expression<String>? checksum,
+    i0.Expression<int>? width,
+    i0.Expression<int>? height,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
       if (type != null) 'type': type,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (width != null) 'width': width,
-      if (height != null) 'height': height,
       if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
       if (localId != null) 'local_id': localId,
       if (checksum != null) 'checksum': checksum,
+      if (width != null) 'width': width,
+      if (height != null) 'height': height,
     });
   }
 
@@ -635,21 +635,21 @@ class LocalAssetEntityCompanion
       i0.Value<i2.AssetType>? type,
       i0.Value<DateTime>? createdAt,
       i0.Value<DateTime>? updatedAt,
-      i0.Value<int?>? width,
-      i0.Value<int?>? height,
       i0.Value<int?>? durationInSeconds,
       i0.Value<String>? localId,
-      i0.Value<String?>? checksum}) {
+      i0.Value<String?>? checksum,
+      i0.Value<int?>? width,
+      i0.Value<int?>? height}) {
     return i1.LocalAssetEntityCompanion(
       name: name ?? this.name,
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      width: width ?? this.width,
-      height: height ?? this.height,
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       localId: localId ?? this.localId,
       checksum: checksum ?? this.checksum,
+      width: width ?? this.width,
+      height: height ?? this.height,
     );
   }
 
@@ -669,12 +669,6 @@ class LocalAssetEntityCompanion
     if (updatedAt.present) {
       map['updated_at'] = i0.Variable<DateTime>(updatedAt.value);
     }
-    if (width.present) {
-      map['width'] = i0.Variable<int>(width.value);
-    }
-    if (height.present) {
-      map['height'] = i0.Variable<int>(height.value);
-    }
     if (durationInSeconds.present) {
       map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds.value);
     }
@@ -683,6 +677,12 @@ class LocalAssetEntityCompanion
     }
     if (checksum.present) {
       map['checksum'] = i0.Variable<String>(checksum.value);
+    }
+    if (width.present) {
+      map['width'] = i0.Variable<int>(width.value);
+    }
+    if (height.present) {
+      map['height'] = i0.Variable<int>(height.value);
     }
     return map;
   }
@@ -694,11 +694,11 @@ class LocalAssetEntityCompanion
           ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('width: $width, ')
-          ..write('height: $height, ')
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('localId: $localId, ')
-          ..write('checksum: $checksum')
+          ..write('checksum: $checksum, ')
+          ..write('width: $width, ')
+          ..write('height: $height')
           ..write(')'))
         .toString();
   }

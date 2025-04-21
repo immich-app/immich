@@ -2,6 +2,8 @@ part of 'asset.model.dart';
 
 class LocalAsset extends Asset {
   final String localId;
+  final int? width;
+  final int? height;
 
   const LocalAsset({
     required this.localId,
@@ -10,8 +12,8 @@ class LocalAsset extends Asset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
-    super.width,
-    super.height,
+    this.width,
+    this.height,
     super.durationInSeconds,
   });
 
@@ -33,7 +35,10 @@ class LocalAsset extends Asset {
   bool operator ==(Object other) {
     if (other is! LocalAsset) return false;
     if (identical(this, other)) return true;
-    return super == other && localId == other.localId;
+    return super == other &&
+        localId == other.localId &&
+        width == other.width &&
+        height == other.height;
   }
 
   @override
@@ -48,9 +53,9 @@ class LocalAsset extends Asset {
     AssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
-    int? width,
-    int? height,
-    int? durationInSeconds,
+    NullableValue<int> width = const NullableValue.absent(),
+    NullableValue<int> height = const NullableValue.absent(),
+    NullableValue<int> durationInSeconds = const NullableValue.absent(),
   }) {
     return LocalAsset(
       localId: localId ?? this.localId,
@@ -59,9 +64,9 @@ class LocalAsset extends Asset {
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      width: width ?? this.width,
-      height: height ?? this.height,
-      durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+      width: width.getOrDefault(this.width),
+      height: height.getOrDefault(this.height),
+      durationInSeconds: durationInSeconds.getOrDefault(this.durationInSeconds),
     );
   }
 }

@@ -12,8 +12,6 @@ class MergedAsset extends Asset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
-    super.width,
-    super.height,
     super.durationInSeconds,
   });
 
@@ -26,8 +24,6 @@ class MergedAsset extends Asset {
    type: $type,
    createdAt: $createdAt,
    updatedAt: $updatedAt,
-   width: ${width ?? "<NA>"},
-   height: ${height ?? "<NA>"},
    durationInSeconds: ${durationInSeconds ?? "<NA>"}
  }''';
   }
