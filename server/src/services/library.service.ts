@@ -18,7 +18,6 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AssetSyncResult } from 'src/repositories/library.repository';
@@ -467,7 +466,7 @@ export class LibraryService extends BaseService {
 
   @OnJob({ name: JobName.LIBRARY_SYNC_ASSETS, queue: QueueName.LIBRARY })
   async handleSyncAssets(job: JobOf<JobName.LIBRARY_SYNC_ASSETS>): Promise<JobStatus> {
-    const assets = await this.assetRepository.getByIds(job.assetIds);
+    const assets = await this.assetJobRepository.getForSyncAssets(job.assetIds);
 
     const assetIdsToOffline: string[] = [];
     const trashedAssetIdsToOffline: string[] = [];
@@ -561,7 +560,16 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private checkExistingAsset(asset: AssetEntity, stat: Stats | null): AssetSyncResult {
+  private checkExistingAsset(
+    asset: {
+      isOffline: boolean;
+      libraryId: string | null;
+      originalPath: string;
+      status: AssetStatus;
+      fileModifiedAt: Date;
+    },
+    stat: Stats | null,
+  ): AssetSyncResult {
     if (!stat) {
       // File not found on disk or permission error
       if (asset.isOffline) {

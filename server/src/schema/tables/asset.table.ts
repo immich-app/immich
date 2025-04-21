@@ -1,5 +1,4 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { ASSET_CHECKSUM_CONSTRAINT } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType } from 'src/enum';
 import { assets_status_enum } from 'src/schema/enums';
 import { assets_delete_audit } from 'src/schema/functions';
@@ -17,6 +16,7 @@ import {
   Table,
   UpdateDateColumn,
 } from 'src/sql-tools';
+import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 
 @Table('assets')
 @UpdatedAtTrigger('assets_updated_at')

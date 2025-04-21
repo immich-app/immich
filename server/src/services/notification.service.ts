@@ -2,8 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AssetFileType, JobName, JobStatus, QueueName } from 'src/enum';
+import { EmailTemplate } from 'src/repositories/email.repository';
 import { ArgOf } from 'src/repositories/event.repository';
-import { EmailTemplate } from 'src/repositories/notification.repository';
 import { BaseService } from 'src/services/base.service';
 import { EmailImageAttachment, IEntityJob, INotifyAlbumUpdateJob, JobItem, JobOf } from 'src/types';
 import { getFilenameExtension } from 'src/utils/file';
@@ -28,7 +28,7 @@ export class NotificationService extends BaseService {
         newConfig.notifications.smtp.enabled &&
         !isEqualObject(oldConfig.notifications.smtp, newConfig.notifications.smtp)
       ) {
-        await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
+        await this.emailRepository.verifySmtp(newConfig.notifications.smtp.transport);
       }
     } catch (error: Error | any) {
       this.logger.error(`Failed to validate SMTP configuration: ${error}`, error?.stack);
@@ -138,13 +138,13 @@ export class NotificationService extends BaseService {
     }
 
     try {
-      await this.notificationRepository.verifySmtp(dto.transport);
+      await this.emailRepository.verifySmtp(dto.transport);
     } catch (error) {
       throw new BadRequestException('Failed to verify SMTP configuration', { cause: error });
     }
 
     const { server } = await this.getConfig({ withCache: false });
-    const { html, text } = await this.notificationRepository.renderEmail({
+    const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
         baseUrl: getExternalDomain(server),
@@ -152,7 +152,7 @@ export class NotificationService extends BaseService {
       },
       customTemplate: tempTemplate!,
     });
-    const { messageId } = await this.notificationRepository.sendEmail({
+    const { messageId } = await this.emailRepository.sendEmail({
       to: user.email,
       subject: 'Test email from Immich',
       html,
@@ -172,7 +172,7 @@ export class NotificationService extends BaseService {
 
     switch (name) {
       case EmailTemplate.WELCOME: {
-        const { html: _welcomeHtml } = await this.notificationRepository.renderEmail({
+        const { html: _welcomeHtml } = await this.emailRepository.renderEmail({
           template: EmailTemplate.WELCOME,
           data: {
             baseUrl: getExternalDomain(server),
@@ -187,7 +187,7 @@ export class NotificationService extends BaseService {
         break;
       }
       case EmailTemplate.ALBUM_UPDATE: {
-        const { html: _updateAlbumHtml } = await this.notificationRepository.renderEmail({
+        const { html: _updateAlbumHtml } = await this.emailRepository.renderEmail({
           template: EmailTemplate.ALBUM_UPDATE,
           data: {
             baseUrl: getExternalDomain(server),
@@ -203,7 +203,7 @@ export class NotificationService extends BaseService {
       }
 
       case EmailTemplate.ALBUM_INVITE: {
-        const { html } = await this.notificationRepository.renderEmail({
+        const { html } = await this.emailRepository.renderEmail({
           template: EmailTemplate.ALBUM_INVITE,
           data: {
             baseUrl: getExternalDomain(server),
@@ -235,7 +235,7 @@ export class NotificationService extends BaseService {
     }
 
     const { server, templates } = await this.getConfig({ withCache: true });
-    const { html, text } = await this.notificationRepository.renderEmail({
+    const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
         baseUrl: getExternalDomain(server),
@@ -280,7 +280,7 @@ export class NotificationService extends BaseService {
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server, templates } = await this.getConfig({ withCache: false });
-    const { html, text } = await this.notificationRepository.renderEmail({
+    const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
         baseUrl: getExternalDomain(server),
@@ -339,7 +339,7 @@ export class NotificationService extends BaseService {
         continue;
       }
 
-      const { html, text } = await this.notificationRepository.renderEmail({
+      const { html, text } = await this.emailRepository.renderEmail({
         template: EmailTemplate.ALBUM_UPDATE,
         data: {
           baseUrl: getExternalDomain(server),
@@ -374,7 +374,7 @@ export class NotificationService extends BaseService {
     }
 
     const { to, subject, html, text: plain } = data;
-    const response = await this.notificationRepository.sendEmail({
+    const response = await this.emailRepository.sendEmail({
       to,
       subject,
       html,

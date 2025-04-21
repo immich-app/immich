@@ -74,9 +74,19 @@ export class MyConsoleLogger extends ConsoleLogger {
 export class LoggingRepository {
   private logger: MyConsoleLogger;
 
-  constructor(@Inject(ClsService) cls: ClsService | undefined, configRepository: ConfigRepository) {
-    const { noColor } = configRepository.getEnv();
+  constructor(
+    @Inject(ClsService) cls: ClsService | undefined,
+    @Inject(ConfigRepository) configRepository: ConfigRepository | undefined,
+  ) {
+    let noColor = false;
+    if (configRepository) {
+      noColor = configRepository.getEnv().noColor;
+    }
     this.logger = new MyConsoleLogger(cls, { context: LoggingRepository.name, color: !noColor });
+  }
+
+  static create() {
+    return new LoggingRepository(undefined, undefined);
   }
 
   setAppName(name: string): void {
