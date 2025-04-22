@@ -38,22 +38,23 @@ class ImmichLocalThumbnailProvider
   ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(decode, chunkEvents),
+      codec: _codec(key.asset, decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
       informationCollector: () sync* {
-        yield ErrorDescription(asset.fileName);
+        yield ErrorDescription(key.asset.fileName);
       },
     );
   }
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
+    Asset assetData,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
-    final thumbBytes =
-        await asset.local?.thumbnailDataWithSize(ThumbnailSize(width, height));
+    final thumbBytes = await assetData.local
+        ?.thumbnailDataWithSize(ThumbnailSize(width, height));
     if (thumbBytes == null) {
       chunkEvents.close();
       throw StateError(
