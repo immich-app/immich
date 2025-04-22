@@ -85,7 +85,7 @@
     "image_quality": "Kvalitet",
     "image_resolution": "Oppløsning",
     "image_resolution_description": "Høyere oppløsninger kan bevare flere detaljer, men det tar lengre tid å kode, har større filstørrelser og kan redusere appresponsen.",
-    "image_settings": "Bildeinnstilliinger",
+    "image_settings": "Bildeinnstillinger",
     "image_settings_description": "Administrer kvalitet og oppløsning på genererte bilder",
     "image_thumbnail_description": "Små miniatyrbilder med strippet metadata, brukt når du ser på grupper av bilder som hovedtidslinjen",
     "image_thumbnail_quality_description": "Miniatyrbildekvalitet fra 1-100. Høyere er bedre, men produserer større filer og kan redusere appens respons.",
