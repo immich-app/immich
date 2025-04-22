@@ -16,7 +16,7 @@ class RecentlyAddedPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('recently_added_page_title').tr(),
+        title: const Text('recently_taken_page_title').tr(),
         leading: IconButton(
           onPressed: () => context.maybePop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
