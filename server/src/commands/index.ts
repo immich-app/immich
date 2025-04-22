@@ -3,6 +3,7 @@ import { DisableOAuthLogin, EnableOAuthLogin } from 'src/commands/oauth-login';
 import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from 'src/commands/password-login';
 import { PromptPasswordQuestions, ResetAdminPasswordCommand } from 'src/commands/reset-admin-password.command';
 import { VersionCommand } from 'src/commands/version.command';
+import { AddJobsApiKeyCommand } from 'src/commands/add-jobs-api-key.command';
 
 export const commands = [
   ResetAdminPasswordCommand,
@@ -13,4 +14,5 @@ export const commands = [
   DisableOAuthLogin,
   ListUsersCommand,
   VersionCommand,
+  AddJobsApiKeyCommand,
 ];

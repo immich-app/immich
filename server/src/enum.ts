@@ -167,6 +167,11 @@ export enum Permission {
   ADMIN_USER_READ = 'admin.user.read',
   ADMIN_USER_UPDATE = 'admin.user.update',
   ADMIN_USER_DELETE = 'admin.user.delete',
+
+  JOBS_READ = 'jobs.read',
+  JOBS_CREATE = 'jobs.create',
+  JOBS_UPDATE = 'jobs.update',
+  JOBS_DELETE = 'jobs.delete',
 }
 
 export enum SharedLinkType {
