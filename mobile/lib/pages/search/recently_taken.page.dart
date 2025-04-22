@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/providers/search/recently_added_asset.provider.dart';
+import 'package:immich_mobile/providers/search/recently_taken_asset.provider.dart';
 
 @RoutePage()
-class RecentlyAddedPage extends HookConsumerWidget {
-  const RecentlyAddedPage({super.key});
+class RecentlyTakenPage extends HookConsumerWidget {
+  const RecentlyTakenPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final recents = ref.watch(recentlyAddedAssetProvider);
+    final recents = ref.watch(recentlyTakenAssetProvider);
 
     return Scaffold(
       appBar: AppBar(

@@ -1351,20 +1351,20 @@ class PlacesCollectionRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [RecentlyAddedPage]
-class RecentlyAddedRoute extends PageRouteInfo<void> {
-  const RecentlyAddedRoute({List<PageRouteInfo>? children})
+/// [RecentlyTakenPage]
+class RecentlyTakenRoute extends PageRouteInfo<void> {
+  const RecentlyTakenRoute({List<PageRouteInfo>? children})
       : super(
-          RecentlyAddedRoute.name,
+          RecentlyTakenRoute.name,
           initialChildren: children,
         );
 
-  static const String name = 'RecentlyAddedRoute';
+  static const String name = 'RecentlyTakenRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const RecentlyAddedPage();
+      return const RecentlyTakenPage();
     },
   );
 }

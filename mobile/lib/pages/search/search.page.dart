@@ -846,7 +846,7 @@ class QuickLinkList extends StatelessWidget {
             title: 'recently_taken'.tr(),
             icon: Icons.schedule_outlined,
             isTop: true,
-            onTap: () => context.pushRoute(const RecentlyAddedRoute()),
+            onTap: () => context.pushRoute(const RecentlyTakenRoute()),
           ),
           QuickLink(
             title: 'videos'.tr(),
