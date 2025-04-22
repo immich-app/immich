@@ -576,6 +576,7 @@ export class MetadataService extends BaseService {
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
 
         await this.handleMetadataExtraction({ id: motionAsset.id });
+        await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: motionAsset.id } });
       }
 
       this.logger.debug(`Finished motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);

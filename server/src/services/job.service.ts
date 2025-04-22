@@ -297,8 +297,6 @@ export class JobService extends BaseService {
 
         if (asset.type === AssetType.VIDEO) {
           jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
-        } else if (asset.livePhotoVideoId) {
-          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
         }
 
         await this.jobRepository.queueAll(jobs);
