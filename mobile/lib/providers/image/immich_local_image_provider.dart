@@ -106,12 +106,12 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is ImmichLocalImageProvider) {
-      return asset.id == other.asset.id;
+      return asset == other.asset;
     }
 
     return false;
   }
 
   @override
-  int get hashCode => asset.id.hashCode;
+  int get hashCode => asset.hashCode;
 }
