@@ -38,7 +38,7 @@ class ImmichLocalThumbnailProvider
   ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(key.asset, decode, chunkEvents),
+      codec: _codec(decode, chunkEvents),
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
       informationCollector: () sync* {
@@ -49,35 +49,25 @@ class ImmichLocalThumbnailProvider
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
-    Asset key,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
-    // Load a small thumbnail
-    final thumbBytes = await asset.local?.thumbnailDataWithSize(
-      const ThumbnailSize.square(32),
-      quality: 75,
-    );
-    if (thumbBytes != null) {
-      final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
-      final codec = await decode(buffer);
-      yield codec;
-    } else {
-      debugPrint("Loading thumb for ${asset.fileName} failed");
-    }
-
-    final normalThumbBytes =
+    final thumbBytes =
         await asset.local?.thumbnailDataWithSize(ThumbnailSize(width, height));
-    if (normalThumbBytes == null) {
+    if (thumbBytes == null) {
+      chunkEvents.close();
       throw StateError(
         "Loading thumb for local photo ${asset.fileName} failed",
       );
     }
-    final buffer = await ui.ImmutableBuffer.fromUint8List(normalThumbBytes);
-    final codec = await decode(buffer);
-    yield codec;
 
-    chunkEvents.close();
+    try {
+      final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
+      final codec = await decode(buffer);
+      yield codec;
+    } finally {
+      chunkEvents.close();
+    }
   }
 
   @override
