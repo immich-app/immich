@@ -63,9 +63,12 @@ class GalleryViewerPage extends HookConsumerWidget {
     final loadAsset = renderList.loadAsset;
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
 
-    // This key is to prevent the video player from being re-initialized during
-    // hero animation or device rotation.
-    final videoPlayerKey = useMemoized(() => GlobalKey());
+    final videoPlayerKeys = useRef<Map<int, GlobalKey>>({});
+
+    GlobalKey getVideoPlayerKey(int id) {
+      videoPlayerKeys.value.putIfAbsent(id, () => GlobalKey());
+      return videoPlayerKeys.value[id]!;
+    }
 
     Future<void> precacheNextImage(int index) async {
       if (!context.mounted) {
@@ -243,7 +246,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           width: context.width,
           height: context.height,
           child: NativeVideoViewerPage(
-            key: videoPlayerKey,
+            key: getVideoPlayerKey(asset.id),
             asset: asset,
             image: Image(
               key: ValueKey(asset),
