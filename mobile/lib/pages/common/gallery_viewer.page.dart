@@ -65,9 +65,9 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     final videoPlayerKeys = useRef<Map<int, GlobalKey>>({});
 
-    GlobalKey getVideoPlayerKey(Asset asset) {
-      videoPlayerKeys.value.putIfAbsent(asset.id, () => GlobalKey());
-      return videoPlayerKeys.value[asset.id]!;
+    GlobalKey getVideoPlayerKey(int id) {
+      videoPlayerKeys.value.putIfAbsent(id, () => GlobalKey());
+      return videoPlayerKeys.value[id]!;
     }
 
     Future<void> precacheNextImage(int index) async {
@@ -246,7 +246,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           width: context.width,
           height: context.height,
           child: NativeVideoViewerPage(
-            key: getVideoPlayerKey(asset),
+            key: getVideoPlayerKey(asset.id),
             asset: asset,
             image: Image(
               key: ValueKey(asset),
