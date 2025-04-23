@@ -20,12 +20,14 @@ class ImmichLocalThumbnailProvider
   final int width;
   final CacheManager? cacheManager;
   final Logger log = Logger("ImmichLocalThumbnailProvider");
+  final String? userId;
 
   ImmichLocalThumbnailProvider({
     required this.asset,
     this.height = 256,
     this.width = 256,
     this.cacheManager,
+    this.userId,
   }) : assert(asset.local != null, 'Only usable when asset.local is set');
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
@@ -58,7 +60,7 @@ class ImmichLocalThumbnailProvider
     CacheManager cache,
     ImageDecoderCallback decode,
   ) async* {
-    final cacheKey = '${assetData.ownerId}-${assetData.id}-${width}x$height';
+    final cacheKey = '$userId-${assetData.id}-${width}x$height';
     final fileFromCache = await cache.getFileFromCache(cacheKey);
     if (fileFromCache != null) {
       try {
