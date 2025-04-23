@@ -533,7 +533,7 @@
   "backup_controller_page_backup_sub": "Fotografies i vídeos copiats",
   "backup_controller_page_created": "Creat el: {}",
   "backup_controller_page_desc_backup": "Activeu la còpia de seguretat per pujar automàticament els nous elements al servidor en obrir l'aplicació.",
-  "backup_controller_page_excluded": "Exclosos:",
+  "backup_controller_page_excluded": "Exclosos: ",
   "backup_controller_page_failed": "Fallats ({})",
   "backup_controller_page_filename": "Nom de l'arxiu: {} [{}]",
   "backup_controller_page_id": "ID: {}",
