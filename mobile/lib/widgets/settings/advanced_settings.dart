@@ -74,7 +74,7 @@ class AdvancedSettings extends HookConsumerWidget {
                 if (value) {
                   final result = await ref
                       .read(localFilesManagerRepositoryProvider)
-                      .requestManageStoragePermission();
+                      .requestManageMediaPermission();
                   manageLocalMediaAndroid.value = result;
                 }
               },
