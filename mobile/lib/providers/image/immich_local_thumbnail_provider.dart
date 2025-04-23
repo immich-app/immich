@@ -73,11 +73,13 @@ class ImmichLocalThumbnailProvider
 
   @override
   bool operator ==(Object other) {
-    if (other is! ImmichLocalThumbnailProvider) return false;
     if (identical(this, other)) return true;
-    return asset == other.asset;
+    if (other is ImmichLocalThumbnailProvider) {
+      return asset.id == other.asset.id && asset.localId == other.asset.localId;
+    }
+    return false;
   }
 
   @override
-  int get hashCode => asset.hashCode;
+  int get hashCode => Object.hash(asset.id, asset.localId);
 }
