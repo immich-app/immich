@@ -40,8 +40,8 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: 'Lightroom Immich Plugin: lrc-immich-plugin',
-    description: 'Another Lightroom plugin to publish or export photos from Lightroom to Immich.',
-    url: 'https://github.com/bmachek/lrc-immich-plugin',
+    description: 'Another Lightroom plugin to publish or export photos from Lightroom to Immich. As well as importing from Immich to Lightroom.',
+    url: 'https://blog.fokuspunk.de/lrc-immich-plugin/',
   },
   {
     title: 'Immich Duplicate Finder',
