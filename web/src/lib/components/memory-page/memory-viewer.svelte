@@ -460,15 +460,13 @@
                     transition:fade
                   ></video>
                 {:else}
-                  {#await currentMemoryAssetFull then asset}
-                    <img
-                      class="h-full w-full rounded-2xl object-contain transition-all"
-                      src={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
-                      alt={$getAltText(asset)}
-                      draggable="false"
-                      transition:fade
-                    />
-                  {/await}
+                  <img
+                    class="h-full w-full rounded-2xl object-contain transition-all"
+                    src={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
+                    alt={$getAltText(current.asset)}
+                    draggable="false"
+                    transition:fade
+                  />
                 {/if}
               </div>
             {/key}
