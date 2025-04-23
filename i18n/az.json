@@ -525,6 +525,7 @@
   "backup_controller_page_background_is_on": "",
   "backup_controller_page_background_turn_off": "",
   "backup_controller_page_background_turn_on": "",
+  "backup_controller_page_background_wifi": "",
   "backup_controller_page_backup": "",
   "backup_controller_page_backup_selected": "",
   "backup_controller_page_backup_sub": "",
@@ -816,6 +817,7 @@
   "enabled": "",
   "end_date": "",
   "enqueued": "",
+  "enter_wifi_name": "",
   "error": "",
   "error_change_sort_album": "",
   "error_delete_face": "",
@@ -1906,9 +1908,11 @@
   "warning": "",
   "week": "",
   "welcome": "",
+  "wifi_name": "",
   "year": "",
   "years_ago": "",
   "yes": "",
   "you_dont_have_any_shared_links": "",
+  "your_wifi_name": "",
   "zoom_image": ""
 }
