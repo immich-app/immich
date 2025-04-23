@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.131.3
+ * 1.132.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -687,12 +687,16 @@ export type TestEmailResponseDto = {
     messageId: string;
 };
 export type OAuthConfigDto = {
+    codeChallenge?: string;
     redirectUri: string;
+    state?: string;
 };
 export type OAuthAuthorizeResponseDto = {
     url: string;
 };
 export type OAuthCallbackDto = {
+    codeVerifier?: string;
+    state?: string;
     url: string;
 };
 export type PartnerResponseDto = {
@@ -2318,26 +2322,26 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getNotificationTemplate({ name, templateDto }: {
+export function getNotificationTemplateAdmin({ name, templateDto }: {
     name: string;
     templateDto: TemplateDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: TemplateResponseDto;
-    }>(`/notifications/templates/${encodeURIComponent(name)}`, oazapfts.json({
+    }>(`/notifications/admin/templates/${encodeURIComponent(name)}`, oazapfts.json({
         ...opts,
         method: "POST",
         body: templateDto
     })));
 }
-export function sendTestEmail({ systemConfigSmtpDto }: {
+export function sendTestEmailAdmin({ systemConfigSmtpDto }: {
     systemConfigSmtpDto: SystemConfigSmtpDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: TestEmailResponseDto;
-    }>("/notifications/test-email", oazapfts.json({
+    }>("/notifications/admin/test-email", oazapfts.json({
         ...opts,
         method: "POST",
         body: systemConfigSmtpDto

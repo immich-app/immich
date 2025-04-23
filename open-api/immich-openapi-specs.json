@@ -3485,9 +3485,9 @@
         ]
       }
     },
-    "/notifications/templates/{name}": {
+    "/notifications/admin/templates/{name}": {
       "post": {
-        "operationId": "getNotificationTemplate",
+        "operationId": "getNotificationTemplateAdmin",
         "parameters": [
           {
             "name": "name",
@@ -3532,13 +3532,13 @@
           }
         ],
         "tags": [
-          "Notifications"
+          "Notifications (Admin)"
         ]
       }
     },
-    "/notifications/test-email": {
+    "/notifications/admin/test-email": {
       "post": {
-        "operationId": "sendTestEmail",
+        "operationId": "sendTestEmailAdmin",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -3574,7 +3574,7 @@
           }
         ],
         "tags": [
-          "Notifications"
+          "Notifications (Admin)"
         ]
       }
     },
@@ -7656,7 +7656,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.131.3",
+    "version": "1.132.1",
     "contact": {}
   },
   "tags": [],
@@ -10354,6 +10354,12 @@
       },
       "OAuthCallbackDto": {
         "properties": {
+          "codeVerifier": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
           "url": {
             "type": "string"
           }
@@ -10365,7 +10371,13 @@
       },
       "OAuthConfigDto": {
         "properties": {
+          "codeChallenge": {
+            "type": "string"
+          },
           "redirectUri": {
+            "type": "string"
+          },
+          "state": {
             "type": "string"
           }
         },

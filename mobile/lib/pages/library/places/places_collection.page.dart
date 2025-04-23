@@ -19,7 +19,8 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
 class PlacesCollectionPage extends HookConsumerWidget {
-  const PlacesCollectionPage({super.key});
+  const PlacesCollectionPage({super.key, this.currentLocation});
+  final LatLng? currentLocation;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final places = ref.watch(getAllPlacesProvider);
@@ -58,12 +59,14 @@ class PlacesCollectionPage extends HookConsumerWidget {
                 height: 200,
                 width: context.width,
                 child: MapThumbnail(
-                  onTap: (_, __) => context.pushRoute(const MapRoute()),
+                  onTap: (_, __) => context
+                      .pushRoute(MapRoute(initialLocation: currentLocation)),
                   zoom: 8,
-                  centre: const LatLng(
-                    21.44950,
-                    -157.91959,
-                  ),
+                  centre: currentLocation ??
+                      const LatLng(
+                        21.44950,
+                        -157.91959,
+                      ),
                   showAttribution: false,
                   themeMode:
                       context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,

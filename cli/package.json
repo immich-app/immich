@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.2.61",
+  "version": "2.2.63",
   "description": "Command Line Interface (CLI) for Immich",
   "type": "module",
   "exports": "./dist/index.js",
@@ -21,7 +21,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/micromatch": "^4.0.9",
     "@types/mock-fs": "^4.13.1",
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.14.1",
     "@vitest/coverage-v8": "^3.0.0",
     "byte-size": "^9.0.0",
     "cli-progress": "^3.12.0",

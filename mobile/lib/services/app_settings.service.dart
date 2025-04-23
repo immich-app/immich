@@ -61,7 +61,6 @@ enum AppSettingsEnum<T> {
     0,
   ),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
-  manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
   logLevel<int>(StoreKey.logLevel, null, 5), // Level.INFO = 5
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
