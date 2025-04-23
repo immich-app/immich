@@ -12,7 +12,7 @@
   import { SettingInputFieldType } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { sendTestEmail, type SystemConfigDto } from '@immich/sdk';
+  import { sendTestEmailAdmin, type SystemConfigDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -40,7 +40,7 @@
     isSending = true;
 
     try {
-      await sendTestEmail({
+      await sendTestEmailAdmin({
         systemConfigSmtpDto: {
           enabled: config.notifications.smtp.enabled,
           transport: {

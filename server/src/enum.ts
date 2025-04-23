@@ -8,6 +8,8 @@ export enum ImmichCookie {
   AUTH_TYPE = 'immich_auth_type',
   IS_AUTHENTICATED = 'immich_is_authenticated',
   SHARED_LINK_TOKEN = 'immich_shared_link_token',
+  OAUTH_STATE = 'immich_oauth_state',
+  OAUTH_CODE_VERIFIER = 'immich_oauth_code_verifier',
 }
 
 export enum ImmichHeader {
@@ -405,6 +407,8 @@ export enum DatabaseExtension {
 export enum BootstrapEventPriority {
   // Database service should be initialized before anything else, most other services need database access
   DatabaseService = -200,
+  // Other services may need to queue jobs on bootstrap.
+  JobService = -190,
   // Initialise config after other bootstrap services, stop other services from using config on bootstrap
   SystemConfig = 100,
 }

@@ -1,13 +1,11 @@
 import 'dart:io';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
@@ -27,8 +25,6 @@ class AdvancedSettings extends HookConsumerWidget {
 
     final advancedTroubleshooting =
         useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
-    final manageLocalMediaAndroid =
-        useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
     final allowSelfSignedSSLCert =
@@ -44,45 +40,12 @@ class AdvancedSettings extends HookConsumerWidget {
           LogService.I.setlogLevel(Level.LEVELS[levelId.value].toLogLevel()),
     );
 
-    Future<bool> checkAndroidVersion() async {
-      if (Platform.isAndroid) {
-        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        int sdkVersion = androidInfo.version.sdkInt;
-        return sdkVersion >= 30;
-      }
-      return false;
-    }
-
     final advancedSettings = [
       SettingsSwitchListTile(
         enabled: true,
         valueNotifier: advancedTroubleshooting,
         title: "advanced_settings_troubleshooting_title".tr(),
         subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
-      ),
-      FutureBuilder<bool>(
-        future: checkAndroidVersion(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data == true) {
-            return SettingsSwitchListTile(
-              enabled: true,
-              valueNotifier: manageLocalMediaAndroid,
-              title: "advanced_settings_sync_remote_deletions_title".tr(),
-              subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
-              onChanged: (value) async {
-                if (value) {
-                  final result = await ref
-                      .read(localFilesManagerRepositoryProvider)
-                      .requestManageStoragePermission();
-                  manageLocalMediaAndroid.value = result;
-                }
-              },
-            );
-          } else {
-            return const SizedBox.shrink();
-          }
-        },
       ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(args: [logLevel]),

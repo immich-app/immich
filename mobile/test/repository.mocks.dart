@@ -10,7 +10,6 @@ import 'package:immich_mobile/interfaces/auth_api.interface.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
-import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
 import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:mocktail/mocktail.dart';
@@ -42,9 +41,6 @@ class MockAuthApiRepository extends Mock implements IAuthApiRepository {}
 
 class MockAuthRepository extends Mock implements IAuthRepository {}
 
-class MockPartnerRepository extends Mock implements IPartnerRepository {}
-
 class MockPartnerApiRepository extends Mock implements IPartnerApiRepository {}
 
-class MockLocalFilesManagerRepository extends Mock
-    implements ILocalFilesManager {}
+class MockPartnerRepository extends Mock implements IPartnerRepository {}
