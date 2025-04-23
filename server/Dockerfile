@@ -7,6 +7,7 @@ COPY server/package.json server/package-lock.json ./
 COPY server/patches ./patches
 RUN ln -s /usr/local/lib/libvips-cpp.so /usr/local/lib/libvips-cpp.so.8.16.1
 RUN ln -s /usr/local/lib/libvips.so /usr/local/lib/libvips.so.8.16.1
+ENV SHARP_FORCE_GLOBAL_LIBVIPS=true
 RUN npm ci && \
     # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
     # they're marked as optional dependencies, so we need to copy them manually after pruning
@@ -50,7 +51,8 @@ FROM ghcr.io/immich-app/base-server-prod:202504081114@sha256:8353bcbdb4e6579300a
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
     NVIDIA_DRIVER_CAPABILITIES=all \
-    NVIDIA_VISIBLE_DEVICES=all
+    NVIDIA_VISIBLE_DEVICES=all \
+    SHARP_FORCE_GLOBAL_LIBVIPS=true
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
