@@ -57,12 +57,6 @@ class ImmichRemoteImageProvider
         AppSettingsEnum.loadOriginal.defaultValue,
       );
 
-  /// Whether to load the preview thumbnail first or not
-  bool get _loadPreview => Store.get(
-        AppSettingsEnum.loadPreview.storeKey,
-        AppSettingsEnum.loadPreview.defaultValue,
-      );
-
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
     ImmichRemoteImageProvider key,
