@@ -13,37 +13,58 @@ part of openapi.api;
 class OAuthCallbackDto {
   /// Returns a new [OAuthCallbackDto] instance.
   OAuthCallbackDto({
+    this.codeVerifier,
+    this.state,
     required this.url,
-    required this.state,
-    required this.codeVerifier,
   });
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? codeVerifier;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? state;
+
   String url;
-  String state;
-  String codeVerifier;
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is OAuthCallbackDto &&
-          other.url == url &&
-          other.state == state &&
-          other.codeVerifier == codeVerifier;
+  bool operator ==(Object other) => identical(this, other) || other is OAuthCallbackDto &&
+    other.codeVerifier == codeVerifier &&
+    other.state == state &&
+    other.url == url;
 
   @override
   int get hashCode =>
-      // ignore: unnecessary_parenthesis
-      (url.hashCode) + (state.hashCode) + (codeVerifier.hashCode);
+    // ignore: unnecessary_parenthesis
+    (codeVerifier == null ? 0 : codeVerifier!.hashCode) +
+    (state == null ? 0 : state!.hashCode) +
+    (url.hashCode);
 
   @override
-  String toString() =>
-      'OAuthCallbackDto[url=$url, state=$state, codeVerifier=$codeVerifier]';
+  String toString() => 'OAuthCallbackDto[codeVerifier=$codeVerifier, state=$state, url=$url]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    json[r'url'] = this.url;
-    json[r'state'] = this.state;
-    json[r'codeVerifier'] = this.codeVerifier;
+    if (this.codeVerifier != null) {
+      json[r'codeVerifier'] = this.codeVerifier;
+    } else {
+    //  json[r'codeVerifier'] = null;
+    }
+    if (this.state != null) {
+      json[r'state'] = this.state;
+    } else {
+    //  json[r'state'] = null;
+    }
+      json[r'url'] = this.url;
     return json;
   }
 
@@ -56,18 +77,15 @@ class OAuthCallbackDto {
       final json = value.cast<String, dynamic>();
 
       return OAuthCallbackDto(
+        codeVerifier: mapValueOfType<String>(json, r'codeVerifier'),
+        state: mapValueOfType<String>(json, r'state'),
         url: mapValueOfType<String>(json, r'url')!,
-        state: mapValueOfType<String>(json, r'state')!,
-        codeVerifier: mapValueOfType<String>(json, r'codeVerifier')!,
       );
     }
     return null;
   }
 
-  static List<OAuthCallbackDto> listFromJson(
-    dynamic json, {
-    bool growable = false,
-  }) {
+  static List<OAuthCallbackDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <OAuthCallbackDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -95,19 +113,13 @@ class OAuthCallbackDto {
   }
 
   // maps a json object with a list of OAuthCallbackDto-objects as value to a dart map
-  static Map<String, List<OAuthCallbackDto>> mapListFromJson(
-    dynamic json, {
-    bool growable = false,
-  }) {
+  static Map<String, List<OAuthCallbackDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<OAuthCallbackDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = OAuthCallbackDto.listFromJson(
-          entry.value,
-          growable: growable,
-        );
+        map[entry.key] = OAuthCallbackDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;
@@ -116,7 +128,6 @@ class OAuthCallbackDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'url',
-    'state',
-    'codeVerifier',
   };
 }
+

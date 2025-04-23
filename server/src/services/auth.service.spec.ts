@@ -772,9 +772,13 @@ describe(AuthService.name, () => {
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
         profileImagePath: `upload/profile/${user.id}/${fileId}.jpg`,
@@ -796,9 +800,13 @@ describe(AuthService.name, () => {
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.update).not.toHaveBeenCalled();
       expect(mocks.oauth.getProfilePicture).not.toHaveBeenCalled();
