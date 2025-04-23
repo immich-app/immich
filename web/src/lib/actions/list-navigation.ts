@@ -26,7 +26,7 @@ export const listNavigation: Action<HTMLElement, HTMLElement | undefined> = (
 
     const element = children.at(newIndex);
     if (element instanceof HTMLElement) {
-      // element.focus();
+      element.focus();
     }
   };
 
