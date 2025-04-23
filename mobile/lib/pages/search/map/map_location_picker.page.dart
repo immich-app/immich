@@ -46,7 +46,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
 
     Future<void> getCurrentLocation() async {
       var (currentLocation, _) =
-          await MapUtils.checkPermAndGetLocation(context);
+          await MapUtils.checkPermAndGetLocation(context: context);
 
       if (currentLocation == null) {
         return;

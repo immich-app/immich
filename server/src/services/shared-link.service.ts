@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { SharedLink } from 'src/database';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -11,7 +12,6 @@ import {
   SharedLinkResponseDto,
   SharedLinkSearchDto,
 } from 'src/dtos/shared-link.dto';
-import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
@@ -98,7 +98,7 @@ export class SharedLinkService extends BaseService {
 
   async remove(auth: AuthDto, id: string): Promise<void> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
-    await this.sharedLinkRepository.remove(sharedLink);
+    await this.sharedLinkRepository.remove(sharedLink.id);
   }
 
   // TODO: replace `userId` with permissions and access control checks
@@ -182,7 +182,7 @@ export class SharedLinkService extends BaseService {
     const config = await this.getConfig({ withCache: true });
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets.length || 0;
+    const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets?.length || 0;
     const imagePath = assetId
       ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
       : '/feature-panel.png';
@@ -194,11 +194,11 @@ export class SharedLinkService extends BaseService {
     };
   }
 
-  private mapToSharedLink(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
+  private mapToSharedLink(sharedLink: SharedLink, { withExif }: { withExif: boolean }) {
     return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithoutMetadata(sharedLink);
   }
 
-  private validateAndRefreshToken(sharedLink: SharedLinkEntity, dto: SharedLinkPasswordDto): string {
+  private validateAndRefreshToken(sharedLink: SharedLink, dto: SharedLinkPasswordDto): string {
     const token = this.cryptoRepository.hashSha256(`${sharedLink.id}-${sharedLink.password}`);
     const sharedLinkTokens = dto.token?.split(',') || [];
     if (sharedLink.password !== dto.password && !sharedLinkTokens.includes(token)) {

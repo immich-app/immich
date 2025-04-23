@@ -2,7 +2,6 @@ import { Stats } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
@@ -119,7 +118,7 @@ describe(MetadataService.name, () => {
       process.env.TZ = serverTimeZone ?? undefined;
 
       const { filePath } = await createTestFile(exifData);
-      mocks.asset.getByIds.mockResolvedValue([{ id: 'asset-1', originalPath: filePath } as AssetEntity]);
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({ id: 'asset-1', originalPath: filePath } as any);
 
       await sut.handleMetadataExtraction({ id: 'asset-1' });
 

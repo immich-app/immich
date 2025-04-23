@@ -351,7 +351,6 @@ class BackupService {
           );
 
           baseRequest.headers.addAll(ApiService.getRequestHeaders());
-          baseRequest.headers["Transfer-Encoding"] = "chunked";
           baseRequest.fields['deviceAssetId'] = asset.localId!;
           baseRequest.fields['deviceId'] = deviceId;
           baseRequest.fields['fileCreatedAt'] =

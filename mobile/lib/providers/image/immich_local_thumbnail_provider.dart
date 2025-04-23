@@ -42,51 +42,44 @@ class ImmichLocalThumbnailProvider
       scale: 1.0,
       chunkEvents: chunkEvents.stream,
       informationCollector: () sync* {
-        yield ErrorDescription(asset.fileName);
+        yield ErrorDescription(key.asset.fileName);
       },
     );
   }
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
-    Asset key,
+    Asset assetData,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
-    // Load a small thumbnail
-    final thumbBytes = await asset.local?.thumbnailDataWithSize(
-      const ThumbnailSize.square(32),
-      quality: 75,
-    );
-    if (thumbBytes != null) {
-      final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
-      final codec = await decode(buffer);
-      yield codec;
-    } else {
-      debugPrint("Loading thumb for ${asset.fileName} failed");
-    }
-
-    final normalThumbBytes =
-        await asset.local?.thumbnailDataWithSize(ThumbnailSize(width, height));
-    if (normalThumbBytes == null) {
+    final thumbBytes = await assetData.local
+        ?.thumbnailDataWithSize(ThumbnailSize(width, height));
+    if (thumbBytes == null) {
+      chunkEvents.close();
       throw StateError(
         "Loading thumb for local photo ${asset.fileName} failed",
       );
     }
-    final buffer = await ui.ImmutableBuffer.fromUint8List(normalThumbBytes);
-    final codec = await decode(buffer);
-    yield codec;
 
-    chunkEvents.close();
+    try {
+      final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
+      final codec = await decode(buffer);
+      yield codec;
+    } finally {
+      chunkEvents.close();
+    }
   }
 
   @override
   bool operator ==(Object other) {
-    if (other is! ImmichLocalThumbnailProvider) return false;
     if (identical(this, other)) return true;
-    return asset == other.asset;
+    if (other is ImmichLocalThumbnailProvider) {
+      return asset.id == other.asset.id && asset.localId == other.asset.localId;
+    }
+    return false;
   }
 
   @override
-  int get hashCode => asset.hashCode;
+  int get hashCode => Object.hash(asset.id, asset.localId);
 }

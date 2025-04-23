@@ -6,7 +6,7 @@
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplate } from '@immich/sdk';
+  import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiEyeOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -25,7 +25,7 @@
   const getTemplate = async (name: string, template: string) => {
     try {
       loadingPreview = true;
-      const result = await getNotificationTemplate({ name, templateDto: { template } });
+      const result = await getNotificationTemplateAdmin({ name, templateDto: { template } });
       htmlPreview = result.html;
     } catch (error) {
       handleError(error, 'Could not load template.');

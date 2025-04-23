@@ -1,5 +1,4 @@
 import { register } from 'src/sql-tools/from-code/register';
-import { asFunctionExpression } from 'src/sql-tools/helpers';
 import { ColumnType, DatabaseFunction } from 'src/sql-tools/types';
 
 export type FunctionOptions = {
@@ -26,4 +25,34 @@ export const registerFunction = (options: FunctionOptions) => {
   register({ type: 'function', item });
 
   return item;
+};
+
+const asFunctionExpression = (options: FunctionOptions) => {
+  const name = options.name;
+  const sql: string[] = [
+    `CREATE OR REPLACE FUNCTION ${name}(${(options.arguments || []).join(', ')})`,
+    `RETURNS ${options.returnType}`,
+  ];
+
+  const flags = [
+    options.parallel ? `PARALLEL ${options.parallel.toUpperCase()}` : undefined,
+    options.strict ? 'STRICT' : undefined,
+    options.behavior ? options.behavior.toUpperCase() : undefined,
+    `LANGUAGE ${options.language ?? 'SQL'}`,
+  ].filter((x) => x !== undefined);
+
+  if (flags.length > 0) {
+    sql.push(flags.join(' '));
+  }
+
+  if ('return' in options) {
+    sql.push(`  RETURN ${options.return}`);
+  }
+
+  if ('body' in options) {
+    const body = options.body;
+    sql.push(...(body.includes('\n') ? [`AS $$`, '  ' + body.trim(), `$$;`] : [`AS $$${body}$$;`]));
+  }
+
+  return sql.join('\n  ').trim();
 };

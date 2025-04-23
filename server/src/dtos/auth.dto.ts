@@ -3,11 +3,11 @@ import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import { ImmichCookie } from 'src/enum';
-import { toEmail } from 'src/validation';
+import { Optional, toEmail } from 'src/validation';
 
 export type CookieResponse = {
   isSecure: boolean;
-  values: Array<{ key: ImmichCookie; value: string }>;
+  values: Array<{ key: ImmichCookie; value: string | null }>;
 };
 
 export class AuthDto {
@@ -87,12 +87,28 @@ export class OAuthCallbackDto {
   @IsString()
   @ApiProperty()
   url!: string;
+
+  @Optional()
+  @IsString()
+  state?: string;
+
+  @Optional()
+  @IsString()
+  codeVerifier?: string;
 }
 
 export class OAuthConfigDto {
   @IsNotEmpty()
   @IsString()
   redirectUri!: string;
+
+  @Optional()
+  @IsString()
+  state?: string;
+
+  @Optional()
+  @IsString()
+  codeChallenge?: string;
 }
 
 export class OAuthAuthorizeResponseDto {

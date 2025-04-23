@@ -76,6 +76,7 @@ import {
   mdiWeb,
   mdiDatabaseOutline,
   mdiLinkEdit,
+  mdiTagFaces,
   mdiMovieOpenPlayOutline,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
@@ -83,6 +84,8 @@ import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
+  'v1.130.0': new Date(2025, 2, 25),
+  'v1.127.0': new Date(2025, 1, 26),
   'v1.122.0': new Date(2024, 11, 5),
   'v1.120.0': new Date(2024, 10, 6),
   'v1.114.0': new Date(2024, 8, 6),
@@ -242,6 +245,21 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
+  withRelease({
+    icon: mdiFolderMultiple,
+    iconColor: 'brown',
+    title: 'Folders view in the mobile app',
+    description: 'Browse your photos and videos in their folder structure inside the mobile app',
+    release: 'v1.130.0',
+  }),
+  withRelease({
+    icon: mdiTagFaces,
+    iconColor: 'teal',
+    title: 'Manual face tagging',
+    description:
+      'Manually tag or remove faces in photos and videos, even when automatic detection misses or misidentifies them.',
+    release: 'v1.127.0',
+  }),
   {
     icon: mdiStar,
     iconColor: 'gold',
@@ -266,8 +284,8 @@ const milestones: Item[] = [
   withRelease({
     icon: mdiDatabaseOutline,
     iconColor: 'brown',
-    title: 'Automatic database backups',
-    description: 'Database backups are now integrated into the Immich server',
+    title: 'Automatic database dumps',
+    description: 'Database dumps are now integrated into the Immich server',
     release: 'v1.120.0',
   }),
   {
@@ -300,7 +318,7 @@ const milestones: Item[] = [
   withRelease({
     icon: mdiFolderMultiple,
     iconColor: 'brown',
-    title: 'Folders',
+    title: 'Folders view',
     description: 'Browse your photos and videos in their folder structure',
     release: 'v1.113.0',
   }),

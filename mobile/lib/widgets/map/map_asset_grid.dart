@@ -46,12 +46,39 @@ class MapAssetGrid extends HookConsumerWidget {
     final gridScrollThrottler =
         useThrottler(interval: const Duration(milliseconds: 300));
 
+    // Add a cache for assets we've already loaded
+    final assetCache = useRef<Map<String, Asset>>({});
+
     void handleMapEvents(MapEvent event) async {
       if (event is MapAssetsInBoundsUpdated) {
-        assetsInBounds.value = await ref
-            .read(dbProvider)
-            .assets
-            .getAllByRemoteId(event.assetRemoteIds);
+        final assetIds = event.assetRemoteIds;
+        final missingIds = <String>[];
+        final currentAssets = <Asset>[];
+
+        for (final id in assetIds) {
+          final asset = assetCache.value[id];
+          if (asset != null) {
+            currentAssets.add(asset);
+          } else {
+            missingIds.add(id);
+          }
+        }
+
+        // Only fetch missing assets
+        if (missingIds.isNotEmpty) {
+          final newAssets =
+              await ref.read(dbProvider).assets.getAllByRemoteId(missingIds);
+
+          // Add new assets to cache and current list
+          for (final asset in newAssets) {
+            if (asset.remoteId != null) {
+              assetCache.value[asset.remoteId!] = asset;
+              currentAssets.add(asset);
+            }
+          }
+        }
+
+        assetsInBounds.value = currentAssets;
         return;
       }
     }
@@ -124,7 +151,7 @@ class MapAssetGrid extends HookConsumerWidget {
             alignment: Alignment.bottomCenter,
             child: FractionallySizedBox(
               // Place it just below the drag handle
-              heightFactor: 0.80,
+              heightFactor: 0.87,
               child: assetsInBounds.value.isNotEmpty
                   ? ref
                       .watch(assetsTimelineProvider(assetsInBounds.value))
@@ -251,8 +278,18 @@ class _MapSheetDragRegion extends StatelessWidget {
                 const SizedBox(height: 15),
                 const CustomDraggingHandle(),
                 const SizedBox(height: 15),
-                Text(assetsInBoundsText, style: context.textTheme.bodyLarge),
-                const Divider(height: 35),
+                Center(
+                  child: Text(
+                    assetsInBoundsText,
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: context.textTheme.displayLarge?.color
+                          ?.withValues(alpha: 0.75),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
               ],
             ),
             ValueListenableBuilder(
@@ -260,14 +297,14 @@ class _MapSheetDragRegion extends StatelessWidget {
               builder: (_, value, __) => Visibility(
                 visible: value != null,
                 child: Positioned(
-                  right: 15,
-                  top: 15,
+                  right: 18,
+                  top: 24,
                   child: IconButton(
                     icon: Icon(
                       Icons.map_outlined,
                       color: context.textTheme.displayLarge?.color,
                     ),
-                    iconSize: 20,
+                    iconSize: 24,
                     tooltip: 'Zoom to bounds',
                     onPressed: () => onZoomToAsset?.call(value!),
                   ),

@@ -15,6 +15,14 @@ describe(MemoryService.name, () => {
     expect(sut).toBeDefined();
   });
 
+  describe('onMemoryCleanup', () => {
+    it('should clean up memories', async () => {
+      mocks.memory.cleanup.mockResolvedValue([]);
+      await sut.onMemoriesCleanup();
+      expect(mocks.memory.cleanup).toHaveBeenCalled();
+    });
+  });
+
   describe('search', () => {
     it('should search memories', async () => {
       const [userId] = newUuids();
