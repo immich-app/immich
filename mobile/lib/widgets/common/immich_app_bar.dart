@@ -1,11 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -177,6 +179,11 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               padding: const EdgeInsets.only(right: 16),
               child: action,
             ),
+          ),
+        if (kDebugMode)
+          IconButton(
+            onPressed: () => ref.read(backgroundSyncProvider).sync(),
+            icon: const Icon(Icons.sync),
           ),
         if (showUploadButton)
           Padding(

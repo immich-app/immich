@@ -15,13 +15,15 @@ export type ColumnBaseOptions = {
   synchronize?: boolean;
   storage?: ColumnStorage;
   identity?: boolean;
+  index?: boolean;
+  indexName?: string;
+  unique?: boolean;
+  uniqueConstraintName?: string;
 };
 
 export type ColumnOptions = ColumnBaseOptions & {
   enum?: DatabaseEnum;
   array?: boolean;
-  unique?: boolean;
-  uniqueConstraintName?: string;
 };
 
 export const Column = (options: string | ColumnOptions = {}): PropertyDecorator => {

@@ -2,7 +2,6 @@ import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   ForeignKeyColumn,
   PrimaryGeneratedColumn,
@@ -35,7 +34,6 @@ export class SessionTable {
   @Column({ default: '' })
   deviceOS!: string;
 
-  @ColumnIndex('IDX_sessions_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_sessions_update_id' })
   updateId!: string;
 }

@@ -64,12 +64,13 @@ class MapUtils {
         'features': markers.map(_addFeature).toList(),
       };
 
-  static Future<(Position?, LocationPermission?)> checkPermAndGetLocation(
-    BuildContext context,
-  ) async {
+  static Future<(Position?, LocationPermission?)> checkPermAndGetLocation({
+    required BuildContext context,
+    bool silent = false,
+  }) async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
+      if (!serviceEnabled && !silent) {
         showDialog(
           context: context,
           builder: (context) => _LocationServiceDisabledDialog(),
@@ -80,7 +81,7 @@ class MapUtils {
       LocationPermission permission = await Geolocator.checkPermission();
       bool shouldRequestPermission = false;
 
-      if (permission == LocationPermission.denied) {
+      if (permission == LocationPermission.denied && !silent) {
         shouldRequestPermission = await showDialog(
           context: context,
           builder: (context) => _LocationPermissionDisabledDialog(),
@@ -94,15 +95,19 @@ class MapUtils {
           permission == LocationPermission.deniedForever) {
         // Open app settings only if you did not request for permission before
         if (permission == LocationPermission.deniedForever &&
-            !shouldRequestPermission) {
+            !shouldRequestPermission &&
+            !silent) {
           await Geolocator.openAppSettings();
         }
         return (null, LocationPermission.deniedForever);
       }
 
       Position currentUserLocation = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
-        timeLimit: const Duration(seconds: 5),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 0,
+          timeLimit: Duration(seconds: 5),
+        ),
       );
       return (currentUserLocation, null);
     } catch (error, stack) {

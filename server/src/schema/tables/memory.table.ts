@@ -3,7 +3,6 @@ import { MemoryType } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
@@ -55,7 +54,6 @@ export class MemoryTable<T extends MemoryType = MemoryType> {
   @Column({ type: 'timestamp with time zone', nullable: true })
   hideAt?: Date;
 
-  @ColumnIndex('IDX_memories_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_memories_update_id' })
   updateId?: string;
 }

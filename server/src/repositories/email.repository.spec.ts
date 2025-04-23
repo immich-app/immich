@@ -1,13 +1,13 @@
+import { EmailRenderRequest, EmailRepository, EmailTemplate } from 'src/repositories/email.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { EmailRenderRequest, EmailTemplate, NotificationRepository } from 'src/repositories/notification.repository';
 import { automock } from 'test/utils';
 
-describe(NotificationRepository.name, () => {
-  let sut: NotificationRepository;
+describe(EmailRepository.name, () => {
+  let sut: EmailRepository;
 
   beforeEach(() => {
     // eslint-disable-next-line no-sparse-arrays
-    sut = new NotificationRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
+    sut = new EmailRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 
   describe('renderEmail', () => {

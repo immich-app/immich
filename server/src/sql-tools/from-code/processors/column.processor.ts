@@ -1,8 +1,8 @@
 import { ColumnOptions } from 'src/sql-tools/from-code/decorators/column.decorator';
 import { onMissingTable, resolveTable } from 'src/sql-tools/from-code/processors/table.processor';
 import { Processor, SchemaBuilder } from 'src/sql-tools/from-code/processors/type';
-import { asMetadataKey, asUniqueConstraintName, fromColumnValue } from 'src/sql-tools/helpers';
-import { DatabaseColumn, DatabaseConstraintType } from 'src/sql-tools/types';
+import { asMetadataKey, fromColumnValue } from 'src/sql-tools/helpers';
+import { DatabaseColumn } from 'src/sql-tools/types';
 
 export const processColumns: Processor = (builder, items) => {
   for (const {
@@ -54,16 +54,6 @@ export const processColumns: Processor = (builder, items) => {
     writeMetadata(object, propertyName, { name: column.name, options });
 
     table.columns.push(column);
-
-    if (type === 'column' && !options.primary && options.unique) {
-      table.constraints.push({
-        type: DatabaseConstraintType.UNIQUE,
-        name: options.uniqueConstraintName || asUniqueConstraintName(table.name, [column.name]),
-        tableName: table.name,
-        columnNames: [column.name],
-        synchronize: options.synchronize ?? true,
-      });
-    }
   }
 };
 

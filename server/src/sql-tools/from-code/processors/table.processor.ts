@@ -6,6 +6,13 @@ export const processTables: Processor = (builder, items) => {
   for (const {
     item: { options, object },
   } of items.filter((item) => item.type === 'table')) {
+    const test = readMetadata(object);
+    if (test) {
+      throw new Error(
+        `Table ${test.name} has already been registered. Does ${object.name} have two @Table() decorators?`,
+      );
+    }
+
     const tableName = options.name || asSnakeCase(object.name);
 
     writeMetadata(object, { name: tableName, options });
