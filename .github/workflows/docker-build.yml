@@ -3,7 +3,9 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - ml-image  # 👈 Change this to your desired branch
+      - ml-image
+
+  workflow_dispatch:
 
 jobs:
   build-and-push:
