@@ -27,7 +27,7 @@
     if (targetEl) {
       const element = getTabbable(targetEl)[0];
       if (element) {
-        element.focus();
+        // element.focus();
       }
     }
   };

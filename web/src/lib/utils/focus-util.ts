@@ -13,10 +13,19 @@ export const getTabbable = (container: Element, includeContainer: boolean = fals
   tabbable(container, { ...defaultOpts, includeContainer });
 
 export const focusNext = (selector: (element: HTMLElement | SVGElement) => boolean, forwardDirection: boolean) => {
-  const focusElements = focusable(document.body);
+  const focusElements = focusable(document.body, { includeContainer: true });
   const current = document.activeElement as HTMLElement;
   const index = focusElements.indexOf(current);
-
+  if (index === -1) {
+    for (const element of focusElements) {
+      if (selector(element)) {
+        element.focus();
+        return;
+      }
+    }
+    focusElements[0].focus();
+    return;
+  }
   if (forwardDirection) {
     let i = index + 1;
     while (i !== index) {
@@ -34,7 +43,7 @@ export const focusNext = (selector: (element: HTMLElement | SVGElement) => boole
     }
   } else {
     let i = index - 1;
-    while (i !== index) {
+    while (i !== index && i >= 0) {
       const next = focusElements[i];
       if (!isTabbable(next) || !selector(next)) {
         if (i === 0) {

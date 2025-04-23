@@ -70,13 +70,12 @@ export function focusTrap(container: HTMLElement, options?: Options) {
     update(newOptions?: Options) {
       options = newOptions;
       if (withDefaults(options).active) {
-        setInitialFocus();
+        void setInitialFocus();
       }
     },
     destroy() {
       destroyShortcuts?.();
       if (triggerElement instanceof HTMLElement) {
-        console.log('destroy triggerElement', triggerElement.textContent);
         triggerElement.focus();
       }
     },

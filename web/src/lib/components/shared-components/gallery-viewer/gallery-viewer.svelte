@@ -417,10 +417,6 @@
     }
   };
 
-  const assetOnFocusHandler = (asset: AssetResponseDto) => {
-    assetInteraction.focussedAssetId = asset.id;
-  };
-
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
 
@@ -490,12 +486,10 @@
             }}
             onSelect={(asset) => handleSelectAssets(asset)}
             onMouseEvent={() => assetMouseEventHandler(asset)}
-            handleFocus={() => assetOnFocusHandler(asset)}
             {showArchiveIcon}
             {asset}
             selected={assetInteraction.hasSelectedAsset(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            focussed={assetInteraction.isFocussedAsset(asset.id)}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />

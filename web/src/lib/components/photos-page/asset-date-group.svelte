@@ -19,6 +19,7 @@
   import { flip } from 'svelte/animate';
 
   import { uploadAssetsStore } from '$lib/stores/upload';
+  import { onDestroy } from 'svelte';
 
   let { isUploading } = uploadAssetsStore;
 

@@ -46,7 +46,6 @@
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
-    handleFocus?: (() => void) | undefined;
   }
 
   let {
@@ -65,7 +64,6 @@
     onClick = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
-    handleFocus = undefined,
     imageClass = '',
     brokenAssetClass = '',
     dimmed = false,
@@ -177,18 +175,42 @@
 </script>
 
 <div
-  data-asset={asset.id}
   class={[
     'focus-visible:outline-none flex overflow-hidden',
     disabled ? 'bg-gray-300' : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20',
   ]}
   style:width="{width}px"
   style:height="{height}px"
+  onmouseenter={onMouseEnter}
+  onmouseleave={onMouseLeave}
+  use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
+  onkeydown={(evt) => {
+    if (evt.key === 'Enter') {
+      callClickHandlers();
+    }
+    if (evt.key === 'x') {
+      onSelect?.(asset);
+    }
+    if (document.activeElement === element && evt.key === 'Escape') {
+      focusNext((element) => element.dataset.thumbnailFocusContainer === undefined, true);
+    }
+  }}
+  onclick={handleClick}
+  bind:this={element}
+  data-asset={asset.id}
+  data-thumbnail-focus-container
+  tabindex={0}
+  role="link"
 >
+  <!-- Outline on focus -->
+  <div
+    class={['absolute z-40 size-full outline-4 -outline-offset-4 outline-immich-primary', { 'rounded-xl': selected }]}
+    data-outline
+  ></div>
   {#if (!loaded || thumbError) && asset.thumbhash}
     <canvas
       use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-      class="absolute object-cover"
+      class="absolute object-cover z-30"
       style:width="{width}px"
       style:height="{height}px"
       out:fade={{ duration: THUMBHASH_FADE_DURATION }}
@@ -202,29 +224,9 @@
       slow: ??ms
       -->
   <div
-    class={['group absolute  top-[0px] bottom-[0px]', { 'curstor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    class={['group absolute top-[0px] bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
-    onmouseenter={onMouseEnter}
-    onmouseleave={onMouseLeave}
-    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
-    onkeydown={(evt) => {
-      if (evt.key === 'Enter') {
-        callClickHandlers();
-      }
-      if (evt.key === 'x') {
-        onSelect?.(asset);
-      }
-      if (document.activeElement === element && evt.key === 'Escape') {
-        focusNext((element) => element.dataset.thumbnailFocusContainer === undefined, true);
-      }
-    }}
-    onclick={handleClick}
-    bind:this={element}
-    onfocus={handleFocus}
-    data-thumbnail-focus-container
-    tabindex={0}
-    role="link"
   >
     <!-- Select asset button  -->
     {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
@@ -246,7 +248,6 @@
         class={['absolute z-20 p-2 focus:outline-none', { 'cursor-not-allowed': disabled }]}
         role="checkbox"
         tabindex={-1}
-        onfocus={handleFocus}
         aria-checked={selected}
         {disabled}
       >
@@ -285,13 +286,6 @@
         {#if dimmed && !mouseOver}
           <div id="a" class={['absolute h-full w-full z-30  bg-gray-700/40', { 'rounded-xl': selected }]}></div>
         {/if}
-        <!-- Outline on focus -->
-        <div
-          class={[
-            'absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary',
-            { 'rounded-xl': selected },
-          ]}
-        ></div>
 
         <!-- Favorite asset star -->
         {#if !isSharedLink() && asset.isFavorite}
@@ -371,3 +365,9 @@
     {/if}
   </div>
 </div>
+
+<style>
+  [data-asset]:focus > [data-outline] {
+    outline-style: solid;
+  }
+</style>
