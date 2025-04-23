@@ -1,71 +1,69 @@
-name: Docker
+name: Custom Immich Build
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ml-feature]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  packages: write
+    inputs:
+      tag:
+        description: 'Tag to use for images (e.g., test-feature)'
+        required: true
+        type: string
 
 jobs:
-  build_and_push:
-    name: Build and Push immich-server
+  build-server:
     runs-on: ubuntu-latest
-
+    env:
+      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.0.0
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.2.0
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate docker image tags
-        id: metadata
-        uses: docker/metadata-action@v5
-        with:
-          flavor: |
-            latest=false
-          images: |
-            name=ghcr.io/${{ github.repository_owner }}/immich-server
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=ref,event=tag
-
-      - name: Determine build cache output
-        id: cache-target
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
-          else
-            echo "cache-to=type=registry,mode=max,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:immich-server" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build and push image
-        uses: docker/build-push-action@v5.3.0
+      - name: Build and push server image
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: server/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:immich-server
-          cache-to: ${{ steps.cache-target.outputs.cache-to }}
+          tags: ghcr.io/${{ github.repository_owner }}/immich-server:pr-${{ github.event.inputs.tag }}
+
+  build-ml:
+    runs-on: ubuntu-latest
+    env:
+      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
+    strategy:
+      matrix:
+        include:
+          - device: cpu
+            suffix: ""
+            dockerfile: machine-learning/Dockerfile
+          - device: cuda
+            suffix: "-cuda"
+            dockerfile: machine-learning/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push ML image
+        uses: docker/build-push-action@v6
+        with:
+          context: machine-learning
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64
+          push: true
           build-args: |
-            DEVICE=cpu
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
+            DEVICE=${{ matrix.device }}
+          tags: ghcr.io/${{ github.repository_owner }}/immich-machine-learning:pr-${{ github.event.inputs.tag }}${{ matrix.suffix }}
