@@ -76,7 +76,7 @@
     <div class="inline-block" use:resizeObserver={({ width }) => (innerWidth = width)}>
       {#each memoryStore.memories as memory (memory.id)}
         <a
-          class="memory-card relative mr-8 last:mr-0 inline-block aspect-[3/4] md:aspect-[4/3] max-md:h-[150px] xl:aspect-video h-[215px] rounded-xl"
+          class="memory-card relative mr-2 md:mr-4 last:mr-0 inline-block aspect-[3/4] md:aspect-[4/3] max-md:h-[150px] xl:aspect-video h-[215px] rounded-xl"
           href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
         >
           <img

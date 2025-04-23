@@ -12,18 +12,21 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  packages: write
+permissions: {}
 
 jobs:
   pre-job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_ml: ${{ steps.found_paths.outputs.machine-learning == 'true' || steps.should_force.outputs.should_force == 'true' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
       - id: found_paths
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
@@ -45,6 +48,9 @@ jobs:
   retag_ml:
     name: Re-Tag ML
     needs: pre-job
+    permissions:
+      contents: read
+      packages: write
     if: ${{ needs.pre-job.outputs.should_run_ml == 'false' && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     strategy:
@@ -58,18 +64,22 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Re-tag image
+        env:
+          REGISTRY_NAME: 'ghcr.io'
+          REPOSITORY: ${{ github.repository_owner }}/immich-machine-learning
+          TAG_OLD: main${{ matrix.suffix }}
+          TAG_PR: ${{ github.event.number == 0 && github.ref_name || format('pr-{0}', github.event.number) }}${{ matrix.suffix }}
+          TAG_COMMIT: commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}${{ matrix.suffix }}
         run: |
-          REGISTRY_NAME="ghcr.io"
-          REPOSITORY=${{ github.repository_owner }}/immich-machine-learning
-          TAG_OLD=main${{ matrix.suffix }}
-          TAG_PR=${{ github.event.number == 0 && github.ref_name ||  format('pr-{0}', github.event.number)  }}${{ matrix.suffix }}
-          TAG_COMMIT=commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}${{ matrix.suffix }}
-          docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_PR $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
-          docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_COMMIT $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
+          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_PR}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
+          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_COMMIT}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
 
   retag_server:
     name: Re-Tag Server
     needs: pre-job
+    permissions:
+      contents: read
+      packages: write
     if: ${{ needs.pre-job.outputs.should_run_server == 'false' && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     strategy:
@@ -83,18 +93,22 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Re-tag image
+        env:
+          REGISTRY_NAME: 'ghcr.io'
+          REPOSITORY: ${{ github.repository_owner }}/immich-server
+          TAG_OLD: main${{ matrix.suffix }}
+          TAG_PR: ${{ github.event.number == 0 && github.ref_name || format('pr-{0}', github.event.number) }}${{ matrix.suffix }}
+          TAG_COMMIT: commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}${{ matrix.suffix }}
         run: |
-          REGISTRY_NAME="ghcr.io"
-          REPOSITORY=${{ github.repository_owner }}/immich-server
-          TAG_OLD=main${{ matrix.suffix }}
-          TAG_PR=${{ github.event.number == 0 && github.ref_name ||  format('pr-{0}', github.event.number)  }}${{ matrix.suffix }}
-          TAG_COMMIT=commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}${{ matrix.suffix }}
-          docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_PR $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
-          docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_COMMIT $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
+          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_PR}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
+          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_COMMIT}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
 
   build_and_push_ml:
     name: Build and Push ML
     needs: pre-job
+    permissions:
+      contents: read
+      packages: write
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
     runs-on: ${{ matrix.runner }}
     env:
@@ -148,6 +162,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
@@ -161,11 +177,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate cache key suffix
+        env:
+          REF: ${{ github.ref_name }}
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
           else
-            echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
+            SUFFIX=$(echo "${REF}" | sed 's/[^a-zA-Z0-9]/-/g')
+            echo "CACHE_KEY_SUFFIX=${SUFFIX}" >> $GITHUB_ENV
           fi
 
       - name: Generate cache target
@@ -175,7 +194,7 @@ jobs:
             # Essentially just ignore the cache output (forks can't write to registry cache)
             echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
           else
-            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
+            echo "cache-to=type=registry,ref=${GHCR_REPO}-build-cache:${PLATFORM_PAIR}-${{ matrix.device }}-${CACHE_KEY_SUFFIX},mode=max,compression=zstd" >> $GITHUB_OUTPUT
           fi
 
       - name: Generate docker image tags
@@ -205,7 +224,7 @@ jobs:
             BUILD_SOURCE_COMMIT=${{ github.sha }}
 
       - name: Export digest
-        run: |
+        run: | # zizmor: ignore[template-injection]
           mkdir -p ${{ runner.temp }}/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
@@ -221,6 +240,10 @@ jobs:
   merge_ml:
     name: Merge & Push ML
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      packages: write
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' && !github.event.pull_request.head.repo.fork }}
     env:
       GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
@@ -308,15 +331,16 @@ jobs:
           fi
 
           TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-          SOURCE_ARGS=$(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
-
-          echo "docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS"
+          SOURCE_ARGS=$(printf "${GHCR_REPO}@sha256:%s " *)
 
           docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS
 
   build_and_push_server:
     name: Build and Push Server
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     env:
@@ -340,6 +364,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
@@ -353,11 +379,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate cache key suffix
+        env:
+          REF: ${{ github.ref_name }}
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
           else
-            echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
+            SUFFIX=$(echo "${REF}" | sed 's/[^a-zA-Z0-9]/-/g')
+            echo "CACHE_KEY_SUFFIX=${SUFFIX}" >> $GITHUB_ENV
           fi
 
       - name: Generate cache target
@@ -367,7 +396,7 @@ jobs:
             # Essentially just ignore the cache output (forks can't write to registry cache)
             echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
           else
-            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
+            echo "cache-to=type=registry,ref=${GHCR_REPO}-build-cache:${PLATFORM_PAIR}-${CACHE_KEY_SUFFIX},mode=max,compression=zstd" >> $GITHUB_OUTPUT
           fi
 
       - name: Generate docker image tags
@@ -397,7 +426,7 @@ jobs:
             BUILD_SOURCE_COMMIT=${{ github.sha }}
 
       - name: Export digest
-        run: |
+        run: | # zizmor: ignore[template-injection]
           mkdir -p ${{ runner.temp }}/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
@@ -413,6 +442,10 @@ jobs:
   merge_server:
     name: Merge & Push Server
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      packages: write
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' && !github.event.pull_request.head.repo.fork }}
     env:
       GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
@@ -486,15 +519,14 @@ jobs:
           fi
 
           TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-          SOURCE_ARGS=$(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
-
-          echo "docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS"
+          SOURCE_ARGS=$(printf "${GHCR_REPO}@sha256:%s " *)
 
           docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS
 
   success-check-server:
     name: Docker Build & Push Server Success
     needs: [merge_server, retag_server]
+    permissions: {}
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -503,11 +535,13 @@ jobs:
         run: exit 1
       - name: All jobs passed or skipped
         if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
         run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
 
   success-check-ml:
     name: Docker Build & Push ML Success
     needs: [merge_ml, retag_ml]
+    permissions: {}
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -516,4 +550,5 @@ jobs:
         run: exit 1
       - name: All jobs passed or skipped
         if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
         run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"

@@ -5,7 +5,7 @@ import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-const { name, email, password } = signupDto.admin;
+const { email, password } = signupDto.admin;
 
 describe(`/auth/admin-sign-up`, () => {
   beforeEach(async () => {
@@ -13,33 +13,6 @@ describe(`/auth/admin-sign-up`, () => {
   });
 
   describe('POST /auth/admin-sign-up', () => {
-    const invalid = [
-      {
-        should: 'require an email address',
-        data: { name, password },
-      },
-      {
-        should: 'require a password',
-        data: { name, email },
-      },
-      {
-        should: 'require a name',
-        data: { email, password },
-      },
-      {
-        should: 'require a valid email',
-        data: { name, email: 'immich', password },
-      },
-    ];
-
-    for (const { should, data } of invalid) {
-      it(`should ${should}`, async () => {
-        const { status, body } = await request(app).post('/auth/admin-sign-up').send(data);
-        expect(status).toEqual(400);
-        expect(body).toEqual(errorDto.badRequest());
-      });
-    }
-
     it(`should sign up the admin`, async () => {
       const { status, body } = await request(app).post('/auth/admin-sign-up').send(signupDto.admin);
       expect(status).toBe(201);
@@ -55,14 +28,6 @@ describe(`/auth/admin-sign-up`, () => {
         ...signupResponseDto.admin,
         email: 'admin@local',
       });
-    });
-
-    it('should transform email to lower case', async () => {
-      const { status, body } = await request(app)
-        .post('/auth/admin-sign-up')
-        .send({ ...signupDto.admin, email: 'aDmIn@IMMICH.cloud' });
-      expect(status).toEqual(201);
-      expect(body).toEqual(signupResponseDto.admin);
     });
 
     it('should not allow a second admin to sign up', async () => {

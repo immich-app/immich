@@ -264,7 +264,7 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should skip assets without a resize path', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.noResizePath]);
+      mocks.assetJob.getForClipEncoding.mockResolvedValue({ ...assetStub.noResizePath, files: [] });
 
       expect(await sut.handleEncodeClip({ id: assetStub.noResizePath.id })).toEqual(JobStatus.FAILED);
 
@@ -274,6 +274,7 @@ describe(SmartInfoService.name, () => {
 
     it('should save the returned objects', async () => {
       mocks.machineLearning.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
+      mocks.assetJob.getForClipEncoding.mockResolvedValue({ ...assetStub.image, files: [assetStub.image.files[1]] });
 
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.SUCCESS);
 
@@ -286,7 +287,10 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should skip invisible assets', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+      mocks.assetJob.getForClipEncoding.mockResolvedValue({
+        ...assetStub.livePhotoMotionAsset,
+        files: [assetStub.image.files[1]],
+      });
 
       expect(await sut.handleEncodeClip({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
 
@@ -295,7 +299,7 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should fail if asset could not be found', async () => {
-      mocks.asset.getByIds.mockResolvedValue([]);
+      mocks.assetJob.getForClipEncoding.mockResolvedValue(void 0);
 
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.FAILED);
 
@@ -306,6 +310,7 @@ describe(SmartInfoService.name, () => {
     it('should wait for database', async () => {
       mocks.machineLearning.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
       mocks.database.isBusy.mockReturnValue(true);
+      mocks.assetJob.getForClipEncoding.mockResolvedValue({ ...assetStub.image, files: [assetStub.image.files[1]] });
 
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.SUCCESS);
 

@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
@@ -418,6 +419,7 @@ class TagAccess {
   }
 }
 
+@Injectable()
 export class AccessRepository {
   activity: ActivityAccess;
   album: AlbumAccess;

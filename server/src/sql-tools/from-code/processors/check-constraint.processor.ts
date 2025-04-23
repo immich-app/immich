@@ -1,6 +1,6 @@
 import { onMissingTable, resolveTable } from 'src/sql-tools/from-code/processors/table.processor';
 import { Processor } from 'src/sql-tools/from-code/processors/type';
-import { asCheckConstraintName } from 'src/sql-tools/helpers';
+import { asKey } from 'src/sql-tools/helpers';
 import { DatabaseConstraintType } from 'src/sql-tools/types';
 
 export const processCheckConstraints: Processor = (builder, items) => {
@@ -24,3 +24,5 @@ export const processCheckConstraints: Processor = (builder, items) => {
     });
   }
 };
+
+const asCheckConstraintName = (table: string, expression: string) => asKey('CHK_', table, [expression]);

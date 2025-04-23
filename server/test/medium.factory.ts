@@ -34,7 +34,7 @@ import { Mocked } from 'vitest';
 const sha256 = (value: string) => createHash('sha256').update(value).digest('base64');
 
 // type Repositories = Omit<ServiceOverrides, 'access' | 'telemetry'>;
-type Repositories = {
+type RepositoriesTypes = {
   activity: ActivityRepository;
   album: AlbumRepository;
   asset: AssetRepository;
@@ -54,22 +54,22 @@ type Repositories = {
   systemMetadata: SystemMetadataRepository;
   versionHistory: VersionHistoryRepository;
 };
-type RepositoryMocks = { [K in keyof Repositories]: Mocked<RepositoryInterface<Repositories[K]>> };
-type RepositoryOptions = Partial<{ [K in keyof Repositories]: 'mock' | 'real' }>;
+type RepositoryMocks = { [K in keyof RepositoriesTypes]: Mocked<RepositoryInterface<RepositoriesTypes[K]>> };
+type RepositoryOptions = Partial<{ [K in keyof RepositoriesTypes]: 'mock' | 'real' }>;
 
 type ContextRepositoryMocks<R extends RepositoryOptions> = {
-  [K in keyof Repositories as R[K] extends 'mock' ? K : never]: Mocked<RepositoryInterface<Repositories[K]>>;
+  [K in keyof RepositoriesTypes as R[K] extends 'mock' ? K : never]: Mocked<RepositoryInterface<RepositoriesTypes[K]>>;
 };
 
 type ContextRepositories<R extends RepositoryOptions> = {
-  [K in keyof Repositories as R[K] extends 'real' ? K : never]: Repositories[K];
+  [K in keyof RepositoriesTypes as R[K] extends 'real' ? K : never]: RepositoriesTypes[K];
 };
 
 export type Context<R extends RepositoryOptions, S extends BaseService> = {
   sut: S;
   mocks: ContextRepositoryMocks<R>;
   repos: ContextRepositories<R>;
-  getRepository<T extends keyof Repositories>(key: T): Repositories[T];
+  getRepository<T extends keyof RepositoriesTypes>(key: T): RepositoriesTypes[T];
 };
 
 export const newMediumService = <R extends RepositoryOptions, S extends BaseService>(
@@ -79,7 +79,7 @@ export const newMediumService = <R extends RepositoryOptions, S extends BaseServ
     repos: R;
   },
 ): Context<R, S> => {
-  const repos: Partial<Repositories> = {};
+  const repos: Partial<RepositoriesTypes> = {};
   const mocks: Partial<RepositoryMocks> = {};
 
   const loggerMock = getRepositoryMock('logger') as Mocked<LoggingRepository>;
@@ -88,7 +88,7 @@ export const newMediumService = <R extends RepositoryOptions, S extends BaseServ
 
   for (const [_key, type] of Object.entries(options.repos)) {
     if (type === 'real') {
-      const key = _key as keyof Repositories;
+      const key = _key as keyof RepositoriesTypes;
       repos[key] = getRepository(key, options.database) as any;
       continue;
     }
@@ -100,7 +100,7 @@ export const newMediumService = <R extends RepositoryOptions, S extends BaseServ
     }
   }
 
-  const makeRepository = <K extends keyof Repositories>(key: K) => {
+  const makeRepository = <K extends keyof RepositoriesTypes>(key: K) => {
     return repos[key] || getRepository(key, options.database);
   };
 
@@ -115,7 +115,7 @@ export const newMediumService = <R extends RepositoryOptions, S extends BaseServ
   } as Context<R, S>;
 };
 
-export const getRepository = <K extends keyof Repositories>(key: K, db: Kysely<DB>) => {
+export const getRepository = <K extends keyof RepositoriesTypes>(key: K, db: Kysely<DB>) => {
   switch (key) {
     case 'activity': {
       return new ActivityRepository(db);
@@ -189,10 +189,10 @@ export const getRepository = <K extends keyof Repositories>(key: K, db: Kysely<D
   }
 };
 
-const getRepositoryMock = <K extends keyof Repositories>(key: K) => {
+const getRepositoryMock = <K extends keyof RepositoryMocks>(key: K) => {
   switch (key) {
     case 'activity': {
-      return automock(ActivityRepository);
+      return automock(ActivityRepository) as Mocked<RepositoryInterface<ActivityRepository>>;
     }
 
     case 'album': {
@@ -284,6 +284,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.crypto || getRepositoryMock('crypto'),
     repositories.database || getRepositoryMock('database'),
     repositories.downloadRepository,
+    repositories.email,
     repositories.event,
     repositories.job || getRepositoryMock('job'),
     repositories.library,
@@ -293,7 +294,6 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.memory || getRepositoryMock('memory'),
     repositories.metadata,
     repositories.move,
-    repositories.notification,
     repositories.oauth,
     repositories.partner || getRepositoryMock('partner'),
     repositories.person || getRepositoryMock('person'),

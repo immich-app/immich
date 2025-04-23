@@ -21,13 +21,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-root
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   bump_version:
     runs-on: ubuntu-latest
-
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
-
+    permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
       - name: Generate a token
         id: generate-token
@@ -40,12 +41,16 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: true
 
       - name: Install uv
-        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
 
       - name: Bump version
-        run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
+        env:
+          SERVER_BUMP: ${{ inputs.serverBump }}
+          MOBILE_BUMP: ${{ inputs.mobileBump }}
+        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
 
       - name: Commit and tag
         id: push-tag
@@ -59,14 +64,22 @@ jobs:
   build_mobile:
     uses: ./.github/workflows/build-mobile.yml
     needs: bump_version
-    secrets: inherit
+    permissions:
+      contents: read
+    secrets:
+      KEY_JKS: ${{ secrets.KEY_JKS }}
+      ALIAS: ${{ secrets.ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
     with:
       ref: ${{ needs.bump_version.outputs.ref }}
 
   prepare_release:
     runs-on: ubuntu-latest
     needs: build_mobile
-
+    permissions:
+      actions: read # To download the app artifact
+      # No content permissions are needed because it uses the app-token
     steps:
       - name: Generate a token
         id: generate-token
@@ -79,6 +92,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: false
 
       - name: Download APK
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
@@ -86,10 +100,11 @@ jobs:
           name: release-apk-signed
 
       - name: Create draft release
-        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2
         with:
           draft: true
           tag_name: ${{ env.IMMICH_VERSION }}
+          token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true
           body_path: misc/release/notes.tmpl
           files: |

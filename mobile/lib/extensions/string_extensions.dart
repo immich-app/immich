@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:uuid/parsing.dart';
+
 extension StringExtension on String {
   String capitalize() {
     return split(" ")
@@ -28,4 +32,9 @@ extension DurationExtension on String {
   int toInt() {
     return int.parse(this);
   }
+}
+
+extension UUIDExtension on String {
+  Uint8List toUuidByte({bool shouldValidate = false}) =>
+      UuidParsing.parseAsByteList(this, validate: shouldValidate);
 }

@@ -82,27 +82,31 @@ from
 where
   "assets"."id" = any ($1::uuid[])
 
--- AssetRepository.getByIdsWithAllRelations
+-- AssetRepository.getByIdsWithAllRelationsButStacks
 select
   "assets".*,
   (
     select
-      jsonb_agg(
-        case
-          when "person"."id" is not null then jsonb_insert(
-            to_jsonb("asset_faces"),
-            '{person}'::text[],
-            to_jsonb("person")
-          )
-          else to_jsonb("asset_faces")
-        end
-      ) as "faces"
+      coalesce(json_agg(agg), '[]')
     from
-      "asset_faces"
-      left join "person" on "person"."id" = "asset_faces"."personId"
-    where
-      "asset_faces"."assetId" = "assets"."id"
-      and "asset_faces"."deletedAt" is null
+      (
+        select
+          "asset_faces".*,
+          "person" as "person"
+        from
+          "asset_faces"
+          left join lateral (
+            select
+              "person".*
+            from
+              "person"
+            where
+              "asset_faces"."personId" = "person"."id"
+          ) as "person" on true
+        where
+          "asset_faces"."assetId" = "assets"."id"
+          and "asset_faces"."deletedAt" is null
+      ) as agg
   ) as "faces",
   (
     select
@@ -123,28 +127,13 @@ select
           "assets"."id" = "tag_asset"."assetsId"
       ) as agg
   ) as "tags",
-  to_json("exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
+  to_json("exif") as "exifInfo"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
   left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
-  left join lateral (
-    select
-      "asset_stack".*,
-      array_agg("stacked") as "assets"
-    from
-      "assets" as "stacked"
-    where
-      "stacked"."stackId" = "asset_stack"."id"
-      and "stacked"."id" != "asset_stack"."primaryAssetId"
-      and "stacked"."deletedAt" is null
-      and "stacked"."isArchived" = $1
-    group by
-      "asset_stack"."id"
-  ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."id" = any ($2::uuid[])
+  "assets"."id" = any ($1::uuid[])
 
 -- AssetRepository.deleteAll
 delete from "assets"

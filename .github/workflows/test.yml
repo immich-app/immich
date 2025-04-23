@@ -9,9 +9,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   pre-job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       should_run_web: ${{ steps.found_paths.outputs.web == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
@@ -25,6 +29,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - id: found_paths
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
@@ -58,6 +65,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./server
@@ -65,6 +74,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -95,6 +106,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_cli == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./cli
@@ -102,6 +115,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -136,6 +151,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_cli == 'true' }}
     runs-on: windows-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./cli
@@ -143,6 +160,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -165,11 +184,13 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
-  web-unit-tests:
-    name: Test & Lint Web
+  web-lint:
+    name: Lint Web
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_web == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: mich
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./web
@@ -177,6 +198,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -191,7 +214,7 @@ jobs:
         run: npm ci
 
       - name: Run linter
-        run: npm run lint
+        run: npm run lint:p
         if: ${{ !cancelled() }}
 
       - name: Run formatter
@@ -201,6 +224,35 @@ jobs:
       - name: Run svelte checks
         run: npm run check:svelte
         if: ${{ !cancelled() }}
+
+  web-unit-tests:
+    name: Test Web
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_web == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: './web/.nvmrc'
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install
+        run: npm ci
 
       - name: Run tsc
         run: npm run check:typescript
@@ -215,6 +267,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./e2e
@@ -222,6 +276,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -254,6 +310,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./server
@@ -261,6 +319,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -279,6 +339,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_server_cli == 'true' }}
     runs-on: mich
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./e2e
@@ -287,6 +349,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
+          persist-credentials: false
           submodules: 'recursive'
 
       - name: Setup Node
@@ -321,6 +384,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_web == 'true' }}
     runs-on: mich
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./e2e
@@ -329,6 +394,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
+          persist-credentials: false
           submodules: 'recursive'
 
       - name: Setup Node
@@ -362,8 +428,13 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_mobile == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2
         with:
@@ -378,13 +449,18 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./machine-learning
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - name: Install uv
-        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
       - uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
         # with:
@@ -411,6 +487,8 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs['should_run_.github'] == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./.github
@@ -418,6 +496,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -434,22 +514,31 @@ jobs:
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
           ignore_paths: >-
             **/open-api/**
-            **/openapi/**
+            **/openapi**
             **/node_modules/**
 
   generated-api-up-to-date:
     name: OpenAPI Clients
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -476,14 +565,18 @@ jobs:
 
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated files not up to date!"
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
   generated-typeorm-migrations-up-to-date:
     name: TypeORM Checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       postgres:
         image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
@@ -505,6 +598,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -521,7 +616,7 @@ jobs:
         run: npm run migrations:run
 
       - name: Test npm run schema:reset command works
-        run: npm run typeorm:schema:reset
+        run: npm run schema:reset
 
       - name: Generate new migrations
         continue-on-error: true
@@ -535,9 +630,11 @@ jobs:
             server/src
       - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated migration files not up to date!"
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          echo "Changed files: ${CHANGED_FILES}"
           cat ./src/*-TestMigration.ts
           exit 1
 
@@ -555,9 +652,11 @@ jobs:
 
       - name: Verify SQL files have not changed
         if: steps.verify-changed-sql-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-sql-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated SQL files not up to date!"
-          echo "Changed files: ${{ steps.verify-changed-sql-files.outputs.changed_files }}"
+          echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
   # mobile-integration-tests:
