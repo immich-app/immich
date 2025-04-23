@@ -529,6 +529,7 @@
   "backup_controller_page_background_is_on": "",
   "backup_controller_page_background_turn_off": "",
   "backup_controller_page_background_turn_on": "",
+  "backup_controller_page_background_wifi": "",
   "backup_controller_page_backup": "",
   "backup_controller_page_backup_selected": "",
   "backup_controller_page_backup_sub": "",
@@ -820,6 +821,7 @@
   "enabled": "இயக்கப்பட்டது",
   "end_date": "இறுதி தேதி",
   "enqueued": "",
+  "enter_wifi_name": "",
   "error": "பிழை",
   "error_change_sort_album": "",
   "error_delete_face": "",
@@ -1916,9 +1918,11 @@
   "week": "வாரம்",
   "welcome": "வரவேற்கிறோம்",
   "welcome_to_immich": "இம்மிச்சிற்கு வருக",
+  "wifi_name": "",
   "year": "ஆண்டு",
   "years_ago": "{ஆண்டுகள், பன்மை, ஒன்று {# ஆண்டு} மற்ற {# ஆண்டுகள்}}} முன்பு",
   "yes": "ஆம்",
   "you_dont_have_any_shared_links": "உங்களிடம் பகிரப்பட்ட இணைப்புகள் எதுவும் இல்லை",
+  "your_wifi_name": "",
   "zoom_image": "பெரிதாக்க படம்"
 }
