@@ -8,11 +8,7 @@ COPY server/patches ./patches
 RUN ln -s /usr/local/lib/libvips-cpp.so /usr/local/lib/libvips-cpp.so.8.16.1
 RUN ln -s /usr/local/lib/libvips.so /usr/local/lib/libvips.so.8.16.1
 ENV SHARP_FORCE_GLOBAL_LIBVIPS=true
-RUN npm ci && \
-    # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
-    # they're marked as optional dependencies, so we need to copy them manually after pruning
-    rm -rf node_modules/@img/sharp-libvips* && \
-    rm -rf node_modules/@img/sharp-linuxmusl-x64
+RUN npm ci
 ENV PATH="${PATH}:/usr/src/app/bin" \
     IMMICH_ENV=development \
     NVIDIA_DRIVER_CAPABILITIES=all \
