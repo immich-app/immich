@@ -64,6 +64,8 @@ jobs:
   build_mobile:
     uses: ./.github/workflows/build-mobile.yml
     needs: bump_version
+    permissions:
+      contents: read
     secrets:
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
