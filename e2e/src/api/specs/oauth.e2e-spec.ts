@@ -142,7 +142,7 @@ describe(`/oauth`, () => {
     it(`should throw an error if the state mismatches`, async () => {
       const callbackParams = await loginWithOAuth('oauth-auto-register');
       const { state } = await loginWithOAuth('oauth-auto-register');
-      const { status, body } = await request(app)
+      const { status } = await request(app)
         .post('/oauth/callback')
         .send({ ...callbackParams, state });
       expect(status).toBeGreaterThanOrEqual(400);
