@@ -60,7 +60,8 @@ class ImmichLocalThumbnailProvider
     CacheManager cache,
     ImageDecoderCallback decode,
   ) async* {
-    final cacheKey = '$userId-${assetData.id}-${width}x$height';
+    final cacheKey =
+        '$userId${assetData.localId}${assetData.checksum}$width$height';
     final fileFromCache = await cache.getFileFromCache(cacheKey);
     if (fileFromCache != null) {
       try {
