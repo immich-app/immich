@@ -22,6 +22,7 @@
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { debounce } from 'lodash-es';
   import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+  import { focusNext } from '$lib/utils/focus-util';
 
   interface Props {
     assets: AssetResponseDto[];
@@ -259,25 +260,8 @@
     }
   };
 
-  const focusNextAsset = () => {
-    if (assetInteraction.focussedAssetId === null && assets.length > 0) {
-      assetInteraction.focussedAssetId = assets[0].id;
-    } else if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
-      if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
-        assetInteraction.focussedAssetId = assets[currentIndex + 1].id;
-      }
-    }
-  };
-
-  const focusPreviousAsset = () => {
-    if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
-      if (currentIndex >= 1) {
-        assetInteraction.focussedAssetId = assets[currentIndex - 1].id;
-      }
-    }
-  };
+  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let shortcutList = $derived(
     (() => {
