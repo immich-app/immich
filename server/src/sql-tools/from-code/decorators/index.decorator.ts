@@ -1,8 +1,13 @@
-import { ColumnIndexOptions } from 'src/sql-tools/from-code/decorators/column-index.decorator';
 import { register } from 'src/sql-tools/from-code/register';
 import { asOptions } from 'src/sql-tools/helpers';
 
-export type IndexOptions = ColumnIndexOptions & {
+export type IndexOptions = {
+  name?: string;
+  unique?: boolean;
+  expression?: string;
+  using?: string;
+  with?: string;
+  where?: string;
   columns?: string[];
   synchronize?: boolean;
 };

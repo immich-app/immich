@@ -5,7 +5,6 @@ import { users_delete_audit } from 'src/schema/functions';
 import {
   AfterDeleteTrigger,
   Column,
-  ColumnIndex,
   CreateDateColumn,
   DeleteDateColumn,
   Index,
@@ -77,7 +76,6 @@ export class UserTable {
   @Column({ type: 'timestamp with time zone', default: () => 'now()' })
   profileChangedAt!: Generated<Timestamp>;
 
-  @ColumnIndex({ name: 'IDX_users_update_id' })
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_users_update_id' })
   updateId!: Generated<string>;
 }
