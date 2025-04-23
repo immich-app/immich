@@ -4,8 +4,6 @@ on:
 
 permissions: {}
 
-permissions: {}
-
 jobs:
   labeler:
     permissions:
