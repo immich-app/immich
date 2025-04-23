@@ -184,8 +184,49 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
+  web-lint:
+    name: Lint Web
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_web == 'true' }}
+    runs-on: mich
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: './web/.nvmrc'
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint:p
+        if: ${{ !cancelled() }}
+
+      - name: Run formatter
+        run: npm run format
+        if: ${{ !cancelled() }}
+
+      - name: Run svelte checks
+        run: npm run check:svelte
+        if: ${{ !cancelled() }}
+
   web-unit-tests:
-    name: Test & Lint Web
+    name: Test Web
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_web == 'true' }}
     runs-on: ubuntu-latest
@@ -212,18 +253,6 @@ jobs:
 
       - name: Run npm install
         run: npm ci
-
-      - name: Run linter
-        run: npm run lint
-        if: ${{ !cancelled() }}
-
-      - name: Run formatter
-        run: npm run format
-        if: ${{ !cancelled() }}
-
-      - name: Run svelte checks
-        run: npm run check:svelte
-        if: ${{ !cancelled() }}
 
       - name: Run tsc
         run: npm run check:typescript
