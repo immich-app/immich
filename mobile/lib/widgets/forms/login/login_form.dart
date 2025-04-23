@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:crypto/crypto.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -203,13 +206,32 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
+    String generateRandomString(int length) {
+      final random = Random.secure();
+      return base64Url
+          .encode(List<int>.generate(32, (i) => random.nextInt(256)));
+    }
+
+    Future<String> generatePKCECodeChallenge(String codeVerifier) async {
+      var bytes = utf8.encode(codeVerifier);
+      var digest = sha256.convert(bytes);
+      return base64Url.encode(digest.bytes).replaceAll('=', '');
+    }
+
     oAuthLogin() async {
       var oAuthService = ref.watch(oAuthServiceProvider);
       String? oAuthServerUrl;
 
+      final state = generateRandomString(32);
+      final codeVerifier = generateRandomString(64);
+      final codeChallenge = await generatePKCECodeChallenge(codeVerifier);
+
       try {
-        oAuthServerUrl = await oAuthService
-            .getOAuthServerUrl(sanitizeUrl(serverEndpointController.text));
+        oAuthServerUrl = await oAuthService.getOAuthServerUrl(
+          sanitizeUrl(serverEndpointController.text),
+          state,
+          codeChallenge,
+        );
 
         isLoading.value = true;
 
@@ -230,8 +252,11 @@ class LoginForm extends HookConsumerWidget {
 
       if (oAuthServerUrl != null) {
         try {
-          final loginResponseDto =
-              await oAuthService.oAuthLogin(oAuthServerUrl);
+          final loginResponseDto = await oAuthService.oAuthLogin(
+            oAuthServerUrl,
+            state,
+            codeVerifier,
+          );
 
           if (loginResponseDto == null) {
             return;
