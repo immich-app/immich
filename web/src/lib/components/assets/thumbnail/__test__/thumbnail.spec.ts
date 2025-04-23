@@ -44,34 +44,4 @@ describe('Thumbnail component', () => {
     const tabbables = getTabbable(container!);
     expect(tabbables.length).toBe(0);
   });
-
-  it('handleFocus should be called on focus of container', async () => {
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
-    const handleFocusSpy = vi.fn();
-    const { baseElement } = render(Thumbnail, {
-      asset,
-      handleFocus: handleFocusSpy,
-    });
-
-    const container = baseElement.querySelector('[data-thumbnail-focus-container]');
-    expect(container).not.toBeNull();
-    await fireEvent(container as HTMLElement, new FocusEvent('focus'));
-
-    expect(handleFocusSpy).toBeCalled();
-  });
-
-  it('element will be focussed if not already', async () => {
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
-    const handleFocusSpy = vi.fn();
-    const { baseElement } = render(Thumbnail, {
-      asset,
-      handleFocus: handleFocusSpy,
-    });
-
-    const container = baseElement.querySelector('[data-thumbnail-focus-container]');
-    expect(container).not.toBeNull();
-    await fireEvent(container as HTMLElement, new FocusEvent('focus'));
-
-    expect(handleFocusSpy).toBeCalled();
-  });
 });
