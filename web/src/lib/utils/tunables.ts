@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+
 function getBoolean(string: string | null, fallback: boolean) {
   if (string === null) {
     return fallback;
@@ -11,13 +12,11 @@ function getNumber(string: string | null, fallback: number) {
   }
   return Number.parseInt(string);
 }
-
 const storage = browser
   ? localStorage
   : {
       getItem: () => null,
     };
-
 export const TUNABLES = {
   LAYOUT: {
     WASM: getBoolean(storage.getItem('LAYOUT.WASM'), false),

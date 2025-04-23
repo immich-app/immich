@@ -15,7 +15,6 @@ import {
   getTimeBucket,
   getTimeBuckets,
   TimeBucketSize,
-  type AssetResponseDto,
   type AssetStackResponseDto,
 } from '@immich/sdk';
 import { clamp, debounce, isEqual, throttle } from 'lodash-es';
@@ -85,6 +84,11 @@ export type TimelineAsset = {
   duration: string | null;
   projectionType: string | null;
   livePhotoVideoId: string | null;
+  text: {
+    city: string | null;
+    country: string | null;
+    people: string[];
+  };
 };
 class IntersectingAsset {
   // --- public ---
@@ -1089,7 +1093,7 @@ export class AssetStore {
       );
       if (bucketResponse) {
         if (this.#options.timelineAlbumId) {
-          const bucketAssets = await getTimeBucket(
+          const albumAssets = await getTimeBucket(
             {
               albumId: this.#options.timelineAlbumId,
               timeBucket: bucketDate,
@@ -1098,7 +1102,7 @@ export class AssetStore {
             },
             { signal },
           );
-          for (const { id } of bucketAssets) {
+          for (const { id } of albumAssets) {
             this.albumAssets.add(id);
           }
         }

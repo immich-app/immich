@@ -1,5 +1,4 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { derived } from 'svelte/store';
 import { fromLocalDateTime } from './timeline-util';
@@ -44,24 +43,18 @@ export const getAltTextForTimelineAsset = (_: TimelineAsset) => {
 };
 
 export const getAltText = derived(t, ($t) => {
-  return (asset: AssetResponseDto | null | undefined) => {
-    if (!asset) {
-      return '';
-    }
-    if (asset.exifInfo?.description) {
-      return asset.exifInfo.description;
-    }
-
+  return (asset: TimelineAsset) => {
     const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
-    const hasPlace = !!asset.exifInfo?.city && !!asset.exifInfo?.country;
-    const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
+    const { city, country, people: names } = asset.text;
+    const hasPlace = city && country;
+
     const peopleCount = names.length;
-    const isVideo = asset.type === AssetTypeEnum.Video;
+    const isVideo = asset.isVideo;
 
     const values = {
       date,
-      city: asset.exifInfo?.city,
-      country: asset.exifInfo?.country,
+      city,
+      country,
       person1: names[0],
       person2: names[1],
       person3: names[2],

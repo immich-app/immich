@@ -1,26 +1,27 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
   import { type SwipeCustomEvent, swipe } from 'svelte-gestures';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { handleError } from '$lib/utils/handle-error';
-  import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -194,7 +195,7 @@
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  <img style="display:none" src={imageLoaderUrl} alt={$getAltText(asset)} {onload} {onerror} />
+  <img style="display:none" src={imageLoaderUrl} alt="" {onload} {onerror} />
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
       <LoadingSpinner />
@@ -210,7 +211,7 @@
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img
           src={assetFileUrl}
-          alt={$getAltText(asset)}
+          alt=""
           class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
           draggable="false"
         />
@@ -218,7 +219,7 @@
       <img
         bind:this={$photoViewerImgElement}
         src={assetFileUrl}
-        alt={$getAltText(asset)}
+        alt={$getAltText(toTimelineAsset(asset))}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"
