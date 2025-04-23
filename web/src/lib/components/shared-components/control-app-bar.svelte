@@ -77,8 +77,7 @@
       appBarBorder,
       'mx-2 my-2 place-items-center rounded-lg p-2 max-md:p-0 transition-all',
       tailwindClasses,
-      'bg-immich-gray dark:bg-immich-dark-gray',
-      forceDark && 'bg-immich-dark-gray text-white',
+      forceDark ? 'bg-immich-dark-gray text-white' : 'bg-immich-gray dark:bg-immich-dark-gray',
     ]}
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">

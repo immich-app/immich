@@ -249,7 +249,11 @@
       >
         {#snippet children({ feature }: { feature: Feature<Geometry, GeoJsonProperties> })}
           {#if useLocationPin}
-            <Icon path={mdiMapMarker} size="50px" class="dark:text-immich-dark-primary text-immich-primary" />
+            <Icon
+              path={mdiMapMarker}
+              size="50px"
+              class="dark:text-immich-dark-primary text-immich-primary -translate-y-[50%]"
+            />
           {:else}
             <img
               src={getAssetThumbnailUrl(feature.properties?.id)}

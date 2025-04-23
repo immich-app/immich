@@ -1,20 +1,17 @@
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
-import { Column, ColumnIndex, CreateDateColumn, Table } from 'src/sql-tools';
+import { Column, CreateDateColumn, Table } from 'src/sql-tools';
 
 @Table('partners_audit')
 export class PartnerAuditTable {
   @PrimaryGeneratedUuidV7Column()
   id!: string;
 
-  @ColumnIndex('IDX_partners_audit_shared_by_id')
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', indexName: 'IDX_partners_audit_shared_by_id' })
   sharedById!: string;
 
-  @ColumnIndex('IDX_partners_audit_shared_with_id')
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', indexName: 'IDX_partners_audit_shared_with_id' })
   sharedWithId!: string;
 
-  @ColumnIndex('IDX_partners_audit_deleted_at')
-  @CreateDateColumn({ default: () => 'clock_timestamp()' })
+  @CreateDateColumn({ default: () => 'clock_timestamp()', indexName: 'IDX_partners_audit_deleted_at' })
   deletedAt!: Date;
 }

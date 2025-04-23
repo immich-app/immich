@@ -2,7 +2,6 @@ import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   ForeignKeyColumn,
   PrimaryGeneratedColumn,
@@ -18,7 +17,12 @@ export class TagTable {
   @PrimaryGeneratedColumn()
   id!: string;
 
-  @ForeignKeyColumn(() => UserTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  @ForeignKeyColumn(() => UserTable, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    // [userId, value] makes this redundant
+    index: false,
+  })
   userId!: string;
 
   @Column()
@@ -36,7 +40,6 @@ export class TagTable {
   @ForeignKeyColumn(() => TagTable, { nullable: true, onDelete: 'CASCADE' })
   parentId?: string;
 
-  @ColumnIndex('IDX_tags_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_tags_update_id' })
   updateId!: string;
 }

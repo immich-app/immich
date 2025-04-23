@@ -35,6 +35,7 @@ linter:
 analyzer:
   exclude:
     - openapi/**
+    - build/**
     - lib/generated_plugin_registrant.dart
     - lib/**/*.g.dart
     - lib/**/*.drift.dart
@@ -92,6 +93,9 @@ custom_lint:
       allowed:
         # required / wanted
         - lib/repositories/*_api.repository.dart
+        - lib/domain/models/sync_event.model.dart
+        - lib/{domain,infrastructure}/**/sync_stream.*
+        - lib/{domain,infrastructure}/**/sync_api.*
         - lib/infrastructure/repositories/*_api.repository.dart
         - lib/infrastructure/utils/*.converter.dart
         # acceptable exceptions for the time being
@@ -144,7 +148,9 @@ dart_code_metrics:
     - avoid-global-state
     - avoid-inverted-boolean-checks
     - avoid-late-final-reassignment
-    - avoid-local-functions
+    - avoid-local-functions:
+        exclude:
+          - test/**.dart
     - avoid-negated-conditions
     - avoid-nested-streams-and-futures
     - avoid-referencing-subclasses

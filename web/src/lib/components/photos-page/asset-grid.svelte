@@ -26,12 +26,11 @@
   import type { UpdatePayload } from 'vite';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { focusNext } from '$lib/utils/focus-util';
 
   import SelectDate from '$lib/components/shared-components/select-date.svelte';
   import { DateTime } from 'luxon';
   import {
-    focusNextAsset,
-    focusPreviousAsset,
     setFocusTo as setFocusToInit,
     setFocusToAsset as setFocusAssetInit,
   } from '$lib/components/photos-page/actions/focus-actions';
@@ -621,6 +620,9 @@
       e.preventDefault();
     }
   };
+
+  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);

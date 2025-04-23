@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
+import { Asset } from 'src/database';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
@@ -20,13 +21,13 @@ import {
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType, CacheControl, JobName, Permission, StorageFolder } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
 import { UploadFile } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
 import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
+import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
@@ -212,7 +213,7 @@ export class AssetMediaService extends BaseService {
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
 
-    const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files);
+    const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files ?? []);
     let filepath = previewFile?.path;
     if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
       filepath = thumbnailFile.path;
@@ -375,7 +376,7 @@ export class AssetMediaService extends BaseService {
    * Uses only vital properties excluding things like: stacks, faces, smart search info, etc,
    * and then queues a METADATA_EXTRACTION job.
    */
-  private async createCopy(asset: AssetEntity): Promise<AssetEntity> {
+  private async createCopy(asset: Omit<Asset, 'id'>) {
     const created = await this.assetRepository.create({
       ownerId: asset.ownerId,
       originalPath: asset.originalPath,
@@ -398,12 +399,7 @@ export class AssetMediaService extends BaseService {
     return created;
   }
 
-  private async create(
-    ownerId: string,
-    dto: AssetMediaCreateDto,
-    file: UploadFile,
-    sidecarFile?: UploadFile,
-  ): Promise<AssetEntity> {
+  private async create(ownerId: string, dto: AssetMediaCreateDto, file: UploadFile, sidecarFile?: UploadFile) {
     const asset = await this.assetRepository.create({
       ownerId,
       libraryId: null,
@@ -444,7 +440,7 @@ export class AssetMediaService extends BaseService {
     }
   }
 
-  private async findOrFail(id: string): Promise<AssetEntity> {
+  private async findOrFail(id: string) {
     const asset = await this.assetRepository.getById(id, { files: true });
     if (!asset) {
       throw new NotFoundException('Asset not found');

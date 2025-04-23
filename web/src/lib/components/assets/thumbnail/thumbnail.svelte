@@ -120,18 +120,30 @@
   };
 
   let timer: ReturnType<typeof setTimeout>;
-  const clearLongPressTimer = () => clearTimeout(timer);
+
+  const preventContextMenu = (evt: Event) => evt.preventDefault();
+  let disposeables: (() => void)[] = [];
+
+  const clearLongPressTimer = () => {
+    clearTimeout(timer);
+    for (const dispose of disposeables) {
+      dispose();
+    }
+    disposeables = [];
+  };
 
   let startX: number = 0;
   let startY: number = 0;
   function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
     let didPress = false;
-    const start = (evt: TouchEvent) => {
-      startX = evt.changedTouches[0].clientX;
-      startY = evt.changedTouches[0].clientY;
+    const start = (evt: PointerEvent) => {
+      startX = evt.clientX;
+      startY = evt.clientY;
       didPress = false;
       timer = setTimeout(() => {
         onLongPress();
+        element.addEventListener('contextmenu', preventContextMenu, { once: true });
+        disposeables.push(() => element.removeEventListener('contextmenu', preventContextMenu));
         didPress = true;
       }, 350);
     };
@@ -143,13 +155,13 @@
       e.preventDefault();
     };
     element.addEventListener('click', click);
-    element.addEventListener('touchstart', start, true);
-    element.addEventListener('touchend', clearLongPressTimer, true);
+    element.addEventListener('pointerdown', start, true);
+    element.addEventListener('pointerup', clearLongPressTimer, true);
     return {
       destroy: () => {
         element.removeEventListener('click', click);
-        element.removeEventListener('touchstart', start, true);
-        element.removeEventListener('touchend', clearLongPressTimer, true);
+        element.removeEventListener('pointerdown', start, true);
+        element.removeEventListener('pointerup', clearLongPressTimer, true);
       },
     };
   }
@@ -227,6 +239,26 @@
     class={['group absolute top-[0px] bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
+    onmouseenter={onMouseEnter}
+    onmouseleave={onMouseLeave}
+    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
+    onkeydown={(evt) => {
+      if (evt.key === 'Enter') {
+        callClickHandlers();
+      }
+      if (evt.key === 'x') {
+        onSelect?.(asset);
+      }
+      if (document.activeElement === element && evt.key === 'Escape') {
+        focusNext((element) => element.dataset.thumbnailFocusContainer === undefined, true);
+      }
+    }}
+    onclick={handleClick}
+    bind:this={element}
+    onfocus={handleFocus}
+    data-thumbnail-focus-container
+    tabindex={0}
+    role="link"
   >
     <!-- Select asset button  -->
     {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}

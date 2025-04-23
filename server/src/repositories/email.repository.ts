@@ -98,9 +98,9 @@ export type SendEmailResponse = {
 };
 
 @Injectable()
-export class NotificationRepository {
+export class EmailRepository {
   constructor(private logger: LoggingRepository) {
-    this.logger.setContext(NotificationRepository.name);
+    this.logger.setContext(EmailRepository.name);
   }
 
   verifySmtp(options: SmtpOptions): Promise<true> {

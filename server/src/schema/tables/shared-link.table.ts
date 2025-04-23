@@ -1,15 +1,7 @@
 import { SharedLinkType } from 'src/enum';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { UserTable } from 'src/schema/tables/user.table';
-import {
-  Column,
-  ColumnIndex,
-  CreateDateColumn,
-  ForeignKeyColumn,
-  PrimaryGeneratedColumn,
-  Table,
-  Unique,
-} from 'src/sql-tools';
+import { Column, CreateDateColumn, ForeignKeyColumn, PrimaryGeneratedColumn, Table, Unique } from 'src/sql-tools';
 
 @Table('shared_links')
 @Unique({ name: 'UQ_sharedlink_key', columns: ['key'] })
@@ -23,8 +15,7 @@ export class SharedLinkTable {
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   userId!: string;
 
-  @ColumnIndex('IDX_sharedlink_key')
-  @Column({ type: 'bytea' })
+  @Column({ type: 'bytea', indexName: 'IDX_sharedlink_key' })
   key!: Buffer; // use to access the inidividual asset
 
   @Column()
@@ -39,8 +30,12 @@ export class SharedLinkTable {
   @Column({ type: 'boolean', default: false })
   allowUpload!: boolean;
 
-  @ColumnIndex('IDX_sharedlink_albumId')
-  @ForeignKeyColumn(() => AlbumTable, { nullable: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @ForeignKeyColumn(() => AlbumTable, {
+    nullable: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    indexName: 'IDX_sharedlink_albumId',
+  })
   albumId!: string;
 
   @Column({ type: 'boolean', default: true })
