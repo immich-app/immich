@@ -73,26 +73,32 @@ export class ServerInfoRepository {
     }
   }
 
+  buildVersions?: ServerBuildVersions;
+
   async getBuildVersions(): Promise<ServerBuildVersions> {
-    const { nodeVersion, resourcePaths } = this.configRepository.getEnv();
+    if (!this.buildVersions) {
+      const { nodeVersion, resourcePaths } = this.configRepository.getEnv();
 
-    const [nodejsOutput, ffmpegOutput, magickOutput] = await Promise.all([
-      maybeFirstLine('node --version'),
-      maybeFirstLine('ffmpeg -version'),
-      maybeFirstLine('convert --version'),
-    ]);
+      const [nodejsOutput, ffmpegOutput, magickOutput] = await Promise.all([
+        maybeFirstLine('node --version'),
+        maybeFirstLine('ffmpeg -version'),
+        maybeFirstLine('convert --version'),
+      ]);
 
-    const lockfile = await readFile(resourcePaths.lockFile)
-      .then((buffer) => JSON.parse(buffer.toString()))
-      .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
+      const lockfile = await readFile(resourcePaths.lockFile)
+        .then((buffer) => JSON.parse(buffer.toString()))
+        .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
 
-    return {
-      nodejs: nodejsOutput || nodeVersion || '',
-      exiftool: await exiftool.version(),
-      ffmpeg: getLockfileVersion('ffmpeg', lockfile) || ffmpegOutput.replaceAll('ffmpeg version', '') || '',
-      libvips: getLockfileVersion('libvips', lockfile) || sharp.versions.vips,
-      imagemagick:
-        getLockfileVersion('imagemagick', lockfile) || magickOutput.replaceAll('Version: ImageMagick ', '') || '',
-    };
+      this.buildVersions = {
+        nodejs: nodejsOutput || nodeVersion || '',
+        exiftool: await exiftool.version(),
+        ffmpeg: getLockfileVersion('ffmpeg', lockfile) || ffmpegOutput.replaceAll('ffmpeg version', '') || '',
+        libvips: getLockfileVersion('libvips', lockfile) || sharp.versions.vips,
+        imagemagick:
+          getLockfileVersion('imagemagick', lockfile) || magickOutput.replaceAll('Version: ImageMagick ', '') || '',
+      };
+    }
+
+    return this.buildVersions;
   }
 }
