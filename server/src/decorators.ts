@@ -11,7 +11,8 @@ import { setUnion } from 'src/utils/set';
 const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
   Column({ ...options, type: 'uuid', nullable: false, default: () => `${immich_uuid_v7.name}()` });
 
-export const UpdateIdColumn = () => GeneratedUuidV7Column();
+export const UpdateIdColumn = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
+  GeneratedUuidV7Column(options);
 
 export const PrimaryGeneratedUuidV7Column = () => GeneratedUuidV7Column({ primary: true });
 

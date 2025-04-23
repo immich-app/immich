@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, NotNull, sql, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
+import { columns, Exif } from 'src/database';
 import { Albums, DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
-import { AlbumEntity } from 'src/entities/album.entity';
 
 export interface AlbumAssetCount {
   albumId: string;
@@ -21,9 +20,9 @@ export interface AlbumInfoOptions {
 }
 
 const withOwner = (eb: ExpressionBuilder<DB, 'albums'>) => {
-  return jsonObjectFrom(eb.selectFrom('users').select(columns.user).whereRef('users.id', '=', 'albums.ownerId')).as(
-    'owner',
-  );
+  return jsonObjectFrom(eb.selectFrom('users').select(columns.user).whereRef('users.id', '=', 'albums.ownerId'))
+    .$notNull()
+    .as('owner');
 };
 
 const withAlbumUsers = (eb: ExpressionBuilder<DB, 'albums'>) => {
@@ -32,12 +31,14 @@ const withAlbumUsers = (eb: ExpressionBuilder<DB, 'albums'>) => {
       .selectFrom('albums_shared_users_users as album_users')
       .select('album_users.role')
       .select((eb) =>
-        jsonObjectFrom(eb.selectFrom('users').select(columns.user).whereRef('users.id', '=', 'album_users.usersId')).as(
-          'user',
-        ),
+        jsonObjectFrom(eb.selectFrom('users').select(columns.user).whereRef('users.id', '=', 'album_users.usersId'))
+          .$notNull()
+          .as('user'),
       )
       .whereRef('album_users.albumsId', '=', 'albums.id'),
-  ).as('albumUsers');
+  )
+    .$notNull()
+    .as('albumUsers');
 };
 
 const withSharedLink = (eb: ExpressionBuilder<DB, 'albums'>) => {
@@ -53,7 +54,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .selectFrom('assets')
         .selectAll('assets')
         .leftJoin('exif', 'assets.id', 'exif.assetId')
-        .select((eb) => eb.table('exif').as('exifInfo'))
+        .select((eb) => eb.table('exif').$castTo<Exif>().as('exifInfo'))
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
         .where('assets.deletedAt', 'is', null)
@@ -69,7 +70,7 @@ export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, { withAssets: true }] })
-  async getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | undefined> {
+  async getById(id: string, options: AlbumInfoOptions) {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
@@ -79,11 +80,12 @@ export class AlbumRepository {
       .select(withAlbumUsers)
       .select(withSharedLink)
       .$if(options.withAssets, (eb) => eb.select(withAssets))
-      .executeTakeFirst() as Promise<AlbumEntity | undefined>;
+      .$narrowType<{ assets: NotNull }>()
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  async getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
+  async getByAssetId(ownerId: string, assetId: string) {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
@@ -105,7 +107,7 @@ export class AlbumRepository {
       .select(withOwner)
       .select(withAlbumUsers)
       .orderBy('albums.createdAt', 'desc')
-      .execute() as unknown as Promise<AlbumEntity[]>;
+      .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
@@ -134,7 +136,7 @@ export class AlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getOwned(ownerId: string): Promise<AlbumEntity[]> {
+  async getOwned(ownerId: string) {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
@@ -144,14 +146,14 @@ export class AlbumRepository {
       .where('albums.ownerId', '=', ownerId)
       .where('albums.deletedAt', 'is', null)
       .orderBy('albums.createdAt', 'desc')
-      .execute() as unknown as Promise<AlbumEntity[]>;
+      .execute();
   }
 
   /**
    * Get albums shared with and shared by owner.
    */
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getShared(ownerId: string): Promise<AlbumEntity[]> {
+  async getShared(ownerId: string) {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
@@ -176,14 +178,14 @@ export class AlbumRepository {
       .select(withOwner)
       .select(withSharedLink)
       .orderBy('albums.createdAt', 'desc')
-      .execute() as unknown as Promise<AlbumEntity[]>;
+      .execute();
   }
 
   /**
    * Get albums of owner that are _not_ shared
    */
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getNotShared(ownerId: string): Promise<AlbumEntity[]> {
+  async getNotShared(ownerId: string) {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
@@ -203,7 +205,7 @@ export class AlbumRepository {
       )
       .select(withOwner)
       .orderBy('albums.createdAt', 'desc')
-      .execute() as unknown as Promise<AlbumEntity[]>;
+      .execute();
   }
 
   async restoreAll(userId: string): Promise<void> {
@@ -262,7 +264,7 @@ export class AlbumRepository {
     await this.addAssets(this.db, albumId, assetIds);
   }
 
-  create(album: Insertable<Albums>, assetIds: string[], albumUsers: AlbumUserCreateDto[]): Promise<AlbumEntity> {
+  create(album: Insertable<Albums>, assetIds: string[], albumUsers: AlbumUserCreateDto[]) {
     return this.db.transaction().execute(async (tx) => {
       const newAlbum = await tx.insertInto('albums').values(album).returning('albums.id').executeTakeFirst();
 
@@ -290,11 +292,12 @@ export class AlbumRepository {
         .select(withOwner)
         .select(withAssets)
         .select(withAlbumUsers)
-        .executeTakeFirst() as unknown as Promise<AlbumEntity>;
+        .$narrowType<{ assets: NotNull }>()
+        .executeTakeFirstOrThrow();
     });
   }
 
-  update(id: string, album: Updateable<Albums>): Promise<AlbumEntity> {
+  update(id: string, album: Updateable<Albums>) {
     return this.db
       .updateTable('albums')
       .set(album)
@@ -303,7 +306,7 @@ export class AlbumRepository {
       .returning(withOwner)
       .returning(withSharedLink)
       .returning(withAlbumUsers)
-      .executeTakeFirst() as unknown as Promise<AlbumEntity>;
+      .executeTakeFirstOrThrow();
   }
 
   async delete(id: string): Promise<void> {

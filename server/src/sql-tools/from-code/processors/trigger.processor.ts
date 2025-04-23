@@ -1,6 +1,7 @@
+import { TriggerOptions } from 'src/sql-tools/from-code/decorators/trigger.decorator';
 import { onMissingTable, resolveTable } from 'src/sql-tools/from-code/processors/table.processor';
 import { Processor } from 'src/sql-tools/from-code/processors/type';
-import { asTriggerName } from 'src/sql-tools/helpers';
+import { asKey } from 'src/sql-tools/helpers';
 
 export const processTriggers: Processor = (builder, items) => {
   for (const {
@@ -26,3 +27,6 @@ export const processTriggers: Processor = (builder, items) => {
     });
   }
 };
+
+const asTriggerName = (table: string, trigger: TriggerOptions) =>
+  asKey('TR_', table, [...trigger.actions, trigger.scope, trigger.timing, trigger.functionName]);

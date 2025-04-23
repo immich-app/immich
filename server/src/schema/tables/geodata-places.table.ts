@@ -1,6 +1,6 @@
 import { Column, Index, PrimaryColumn, Table } from 'src/sql-tools';
 
-@Table({ name: 'geodata_places' })
+@Table({ name: 'geodata_places', synchronize: false })
 @Index({
   name: 'idx_geodata_places_alternate_names',
   using: 'gin',
@@ -26,11 +26,10 @@ import { Column, Index, PrimaryColumn, Table } from 'src/sql-tools';
   synchronize: false,
 })
 @Index({
-  name: 'idx_geodata_places_gist_earthcoord',
+  name: 'IDX_geodata_gist_earthcoord',
   expression: 'll_to_earth_public(latitude, longitude)',
   synchronize: false,
 })
-@Table({ name: 'idx_geodata_places', synchronize: false })
 export class GeodataPlacesTable {
   @PrimaryColumn({ type: 'integer' })
   id!: number;

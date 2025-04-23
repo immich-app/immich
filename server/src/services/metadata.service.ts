@@ -271,7 +271,7 @@ export class MetadataService extends BaseService {
     ];
 
     if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset as unknown as Asset, exifTags, dates, stats));
+      promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats));
     }
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {

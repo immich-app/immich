@@ -2,8 +2,7 @@ import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { withExif } from 'src/entities/asset.entity';
-import { asUuid } from 'src/utils/database';
+import { asUuid, withExif } from 'src/utils/database';
 
 export class ViewRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}

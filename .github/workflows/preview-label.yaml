@@ -4,6 +4,8 @@ on:
   pull_request:
     types: [labeled, closed]
 
+permissions: {}
+
 jobs:
   comment-status:
     runs-on: ubuntu-latest

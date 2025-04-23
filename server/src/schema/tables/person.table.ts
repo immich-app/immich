@@ -4,7 +4,6 @@ import { UserTable } from 'src/schema/tables/user.table';
 import {
   Check,
   Column,
-  ColumnIndex,
   CreateDateColumn,
   ForeignKeyColumn,
   PrimaryGeneratedColumn,
@@ -49,7 +48,6 @@ export class PersonTable {
   @Column({ type: 'character varying', nullable: true, default: null })
   color?: string | null;
 
-  @ColumnIndex('IDX_person_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_person_update_id' })
   updateId!: string;
 }

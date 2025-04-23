@@ -1,11 +1,10 @@
-import { AlbumEntity } from 'src/entities/album.entity';
 import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
 export const albumStub = {
-  empty: Object.freeze<AlbumEntity>({
+  empty: Object.freeze({
     id: 'album-1',
     albumName: 'Empty album',
     description: '',
@@ -21,8 +20,9 @@ export const albumStub = {
     albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
+    updateId: '42',
   }),
-  sharedWithUser: Object.freeze<AlbumEntity>({
+  sharedWithUser: Object.freeze({
     id: 'album-2',
     albumName: 'Empty album shared with user',
     description: '',
@@ -43,8 +43,9 @@ export const albumStub = {
     ],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
+    updateId: '42',
   }),
-  sharedWithMultiple: Object.freeze<AlbumEntity>({
+  sharedWithMultiple: Object.freeze({
     id: 'album-3',
     albumName: 'Empty album shared with users',
     description: '',
@@ -69,8 +70,9 @@ export const albumStub = {
     ],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
+    updateId: '42',
   }),
-  sharedWithAdmin: Object.freeze<AlbumEntity>({
+  sharedWithAdmin: Object.freeze({
     id: 'album-3',
     albumName: 'Empty album shared with admin',
     description: '',
@@ -91,8 +93,9 @@ export const albumStub = {
     ],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
+    updateId: '42',
   }),
-  oneAsset: Object.freeze<AlbumEntity>({
+  oneAsset: Object.freeze({
     id: 'album-4',
     albumName: 'Album with one asset',
     description: '',
@@ -108,8 +111,9 @@ export const albumStub = {
     albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
+    updateId: '42',
   }),
-  twoAssets: Object.freeze<AlbumEntity>({
+  twoAssets: Object.freeze({
     id: 'album-4a',
     albumName: 'Album with two assets',
     description: '',
@@ -125,8 +129,9 @@ export const albumStub = {
     albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
+    updateId: '42',
   }),
-  emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
+  emptyWithValidThumbnail: Object.freeze({
     id: 'album-5',
     albumName: 'Empty album with valid thumbnail',
     description: '',
@@ -142,5 +147,6 @@ export const albumStub = {
     albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
+    updateId: '42',
   }),
 };
