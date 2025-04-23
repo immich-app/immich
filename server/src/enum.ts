@@ -8,6 +8,8 @@ export enum ImmichCookie {
   AUTH_TYPE = 'immich_auth_type',
   IS_AUTHENTICATED = 'immich_is_authenticated',
   SHARED_LINK_TOKEN = 'immich_shared_link_token',
+  OAUTH_STATE = 'immich_oauth_state',
+  OAUTH_CODE_VERIFIER = 'immich_oauth_code_verifier',
 }
 
 export enum ImmichHeader {

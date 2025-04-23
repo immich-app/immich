@@ -10354,6 +10354,12 @@
       },
       "OAuthCallbackDto": {
         "properties": {
+          "codeVerifier": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
           "url": {
             "type": "string"
           }
@@ -10365,7 +10371,13 @@
       },
       "OAuthConfigDto": {
         "properties": {
+          "codeChallenge": {
+            "type": "string"
+          },
           "redirectUri": {
+            "type": "string"
+          },
+          "state": {
             "type": "string"
           }
         },
