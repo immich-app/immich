@@ -1,40 +1,25 @@
 package app.alextran.immich
 
-import android.content.ContentResolver
-import android.content.ContentUris
-import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
-import android.provider.Settings
 import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.embedding.engine.plugins.activity.ActivityAware
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry
 import java.security.MessageDigest
 import java.io.FileInputStream
 import kotlinx.coroutines.*
 
 /**
- * Android plugin for Dart `BackgroundService` and file trash operations
+ * Android plugin for Dart `BackgroundService`
+ *
+ * Receives messages/method calls from the foreground Dart side to manage
+ * the background service, e.g. start (enqueue), stop (cancel)
  */
-class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware, PluginRegistry.ActivityResultListener {
+class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
   private var methodChannel: MethodChannel? = null
-  private var fileTrashChannel: MethodChannel? = null
   private var context: Context? = null
-  private var pendingResult: Result? = null
-  private val PERMISSION_REQUEST_CODE = 1001
-  private var activityBinding: ActivityPluginBinding? = null
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     onAttachedToEngine(binding.applicationContext, binding.binaryMessenger)
@@ -44,10 +29,6 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     context = ctx
     methodChannel = MethodChannel(messenger, "immich/foregroundChannel")
     methodChannel?.setMethodCallHandler(this)
-
-    // Add file trash channel
-    fileTrashChannel = MethodChannel(messenger, "file_trash")
-    fileTrashChannel?.setMethodCallHandler(this)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -57,14 +38,11 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
   private fun onDetachedFromEngine() {
     methodChannel?.setMethodCallHandler(null)
     methodChannel = null
-    fileTrashChannel?.setMethodCallHandler(null)
-    fileTrashChannel = null
   }
 
-  override fun onMethodCall(call: MethodCall, result: Result) {
+  override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
     val ctx = context!!
     when (call.method) {
-      // Existing BackgroundService methods
       "enable" -> {
         val args = call.arguments<ArrayList<*>>()!!
         ctx.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
@@ -136,180 +114,10 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
         }
       }
 
-      // File Trash methods moved from MainActivity
-      "moveToTrash" -> {
-        val fileName = call.argument<String>("fileName")
-        if (fileName != null) {
-          if (hasManageStoragePermission()) {
-            val success = moveToTrash(fileName)
-            result.success(success)
-          } else {
-            result.error("PERMISSION_DENIED", "Storage permission required", null)
-          }
-        } else {
-          result.error("INVALID_NAME", "The file name is not specified.", null)
-        }
-      }
-
-      "restoreFromTrash" -> {
-        val fileName = call.argument<String>("fileName")
-        if (fileName != null) {
-          if (hasManageStoragePermission()) {
-            val success = untrashImage(fileName)
-            result.success(success)
-          } else {
-            result.error("PERMISSION_DENIED", "Storage permission required", null)
-          }
-        } else {
-          result.error("INVALID_NAME", "The file name is not specified.", null)
-        }
-      }
-
-      "requestManageStoragePermission" -> {
-        if (!hasManageStoragePermission()) {
-          requestManageStoragePermission(result)
-        } else {
-          Log.e("Manage storage permission", "Permission already granted")
-          result.success(true)
-        }
-      }
-
       else -> result.notImplemented()
     }
-  }
-
-  // File Trash methods moved from MainActivity
-  private fun hasManageStoragePermission(): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      Environment.isExternalStorageManager()
-    } else {
-      true
-    }
-  }
-
-  private fun requestManageStoragePermission(result: Result) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      pendingResult = result // Store the result callback
-      val activity = activityBinding?.activity ?: return
-
-      val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-      intent.data = Uri.parse("package:${activity.packageName}")
-      activity.startActivityForResult(intent, PERMISSION_REQUEST_CODE)
-    } else {
-      result.success(true)
-    }
-  }
-
-  private fun moveToTrash(fileName: String): Boolean {
-    val contentResolver = context?.contentResolver ?: return false
-    val uri = getFileUri(fileName)
-    Log.e("FILE_URI", uri.toString())
-    return uri?.let { moveToTrash(it) } ?: false
-  }
-
-  private fun moveToTrash(contentUri: Uri): Boolean {
-    val contentResolver = context?.contentResolver ?: return false
-    return try {
-      val values = ContentValues().apply {
-        put(MediaStore.MediaColumns.IS_TRASHED, 1) // Move to trash
-      }
-      val updated = contentResolver.update(contentUri, values, null, null)
-      updated > 0
-    } catch (e: Exception) {
-      Log.e("TrashError", "Error moving to trash", e)
-      false
-    }
-  }
-
-  private fun getFileUri(fileName: String): Uri? {
-    val contentResolver = context?.contentResolver ?: return null
-    val contentUri = MediaStore.Files.getContentUri("external")
-    val projection = arrayOf(MediaStore.Images.Media._ID)
-    val selection = "${MediaStore.Images.Media.DISPLAY_NAME} = ?"
-    val selectionArgs = arrayOf(fileName)
-    var fileUri: Uri? = null
-
-    contentResolver.query(contentUri, projection, selection, selectionArgs, null)?.use { cursor ->
-      if (cursor.moveToFirst()) {
-        val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID))
-        fileUri = ContentUris.withAppendedId(contentUri, id)
-      }
-    }
-    return fileUri
-  }
-
-  private fun untrashImage(name: String): Boolean {
-    val contentResolver = context?.contentResolver ?: return false
-    val uri = getTrashedFileUri(contentResolver, name)
-    Log.e("FILE_URI", uri.toString())
-    return uri?.let { untrashImage(it) } ?: false
-  }
-
-  private fun untrashImage(contentUri: Uri): Boolean {
-    val contentResolver = context?.contentResolver ?: return false
-    return try {
-      val values = ContentValues().apply {
-        put(MediaStore.MediaColumns.IS_TRASHED, 0) // Restore file
-      }
-      val updated = contentResolver.update(contentUri, values, null, null)
-      updated > 0
-    } catch (e: Exception) {
-      Log.e("TrashError", "Error restoring file", e)
-      false
-    }
-  }
-
-  private fun getTrashedFileUri(contentResolver: ContentResolver, fileName: String): Uri? {
-    val contentUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)
-    val projection = arrayOf(MediaStore.Files.FileColumns._ID)
-
-    val queryArgs = Bundle().apply {
-      putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.Files.FileColumns.DISPLAY_NAME} = ?")
-      putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(fileName))
-      putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
-    }
-
-    contentResolver.query(contentUri, projection, queryArgs, null)?.use { cursor ->
-      if (cursor.moveToFirst()) {
-        val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID))
-        return ContentUris.withAppendedId(contentUri, id)
-      }
-    }
-    return null
-  }
-
-  // ActivityAware implementation
-  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    activityBinding = binding
-    binding.addActivityResultListener(this)
-  }
-
-  override fun onDetachedFromActivityForConfigChanges() {
-    activityBinding?.removeActivityResultListener(this)
-    activityBinding = null
-  }
-
-  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    activityBinding = binding
-    binding.addActivityResultListener(this)
-  }
-
-  override fun onDetachedFromActivity() {
-    activityBinding?.removeActivityResultListener(this)
-    activityBinding = null
-  }
-
-  // ActivityResultListener implementation
-  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-    if (requestCode == PERMISSION_REQUEST_CODE) {
-      val granted = hasManageStoragePermission()
-      pendingResult?.success(granted)
-      pendingResult = null
-      return true
-    }
-    return false
   }
 }
 
 private const val TAG = "BackgroundServicePlugin"
-private const val BUFFER_SIZE = 2 * 1024 * 1024
+private const val BUFFER_SIZE = 2 * 1024 * 1024;
