@@ -59,6 +59,8 @@ COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
 COPY server/start*.sh ./
 COPY "docker/scripts/get-cpus.sh" ./
+RUN ln -s /usr/local/lib/libvips-cpp.so /usr/local/lib/libvips-cpp.so.8.16.1
+RUN ln -s /usr/local/lib/libvips.so /usr/local/lib/libvips.so.8.16.1
 RUN npm install -g @immich/cli && npm cache clean --force
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
