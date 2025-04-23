@@ -688,12 +688,16 @@ export type TestEmailResponseDto = {
 };
 export type OAuthConfigDto = {
     redirectUri: string;
+    state?: string;
+    codeChallenge?: string;
 };
 export type OAuthAuthorizeResponseDto = {
     url: string;
 };
 export type OAuthCallbackDto = {
     url: string;
+    state?: string;
+    codeVerifier?: string;
 };
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;

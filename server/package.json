@@ -77,7 +77,7 @@
     "nestjs-kysely": "^1.1.0",
     "nestjs-otel": "^6.0.0",
     "nodemailer": "^6.9.13",
-    "openid-client": "^5.4.3",
+    "openid-client": "^6.3.3",
     "pg": "^8.11.3",
     "picomatch": "^4.0.2",
     "react": "^19.0.0",

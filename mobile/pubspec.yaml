@@ -22,6 +22,7 @@ dependencies:
   collection: ^1.18.0
   connectivity_plus: ^6.1.3
   crop_image: ^1.0.16
+  crypto: ^3.0.6
   device_info_plus: ^11.3.3
   dynamic_color: ^1.7.0
   easy_image_viewer: ^1.5.1
