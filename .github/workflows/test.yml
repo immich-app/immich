@@ -338,13 +338,16 @@ jobs:
     name: End-to-End Tests (Server & CLI)
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_server_cli == 'true' }}
-    runs-on: mich
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
     defaults:
       run:
         working-directory: ./e2e
-
+    strategy:
+      matrix:
+        runner: [mich, ubuntu-24.04-arm]
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -383,12 +386,15 @@ jobs:
     name: End-to-End Tests (Web)
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_web == 'true' }}
-    runs-on: mich
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
     defaults:
       run:
         working-directory: ./e2e
+    strategy:
+      matrix:
+        runner: [mich, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
