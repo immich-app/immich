@@ -32,7 +32,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: server.Dockerfile
+          context: ./server
+          file: ./server/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/immich-server:ml-image
+          tags: ghcr.io/${{ github.repository_owner }}/immich-server:ml-feature
+
