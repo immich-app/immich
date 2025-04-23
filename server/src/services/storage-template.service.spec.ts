@@ -194,7 +194,7 @@ describe(StorageTemplateService.name, () => {
       sut.onConfigInit({ newConfig: config });
 
       mocks.user.get.mockResolvedValue(user);
-      mocks.asset.getStorageTemplateAsset.mockResolvedValueOnce(asset);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(asset);
       mocks.album.getByAssetId.mockResolvedValueOnce([album]);
       mocks.album.getMetadataForIds.mockResolvedValueOnce([
         {
@@ -227,7 +227,7 @@ describe(StorageTemplateService.name, () => {
       sut.onConfigInit({ newConfig: config });
 
       mocks.user.get.mockResolvedValue(user);
-      mocks.asset.getStorageTemplateAsset.mockResolvedValueOnce(asset);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(asset);
 
       expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
 

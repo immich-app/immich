@@ -115,7 +115,7 @@
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.14.1",
     "@types/nodemailer": "^6.4.14",
     "@types/picomatch": "^3.0.0",
     "@types/pngjs": "^6.0.5",
@@ -147,7 +147,8 @@
     "unplugin-swc": "^1.4.5",
     "utimes": "^5.2.1",
     "vite-tsconfig-paths": "^5.0.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "jsdom": "^26.1.0"
   },
   "volta": {
     "node": "22.14.0"
