@@ -8,6 +8,10 @@ on:
         required: true
         type: string
 
+permissions: # Add this block
+  contents: read # Default, but good to be explicit
+  packages: write # This is the crucial permission for pushing to GHCR
+  
 jobs:
   build-server:
     runs-on: ubuntu-latest
