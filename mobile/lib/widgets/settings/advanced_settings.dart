@@ -49,7 +49,7 @@ class AdvancedSettings extends HookConsumerWidget {
         DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
         int sdkVersion = androidInfo.version.sdkInt;
-        return sdkVersion >= 30;
+        return sdkVersion >= 31;
       }
       return false;
     }

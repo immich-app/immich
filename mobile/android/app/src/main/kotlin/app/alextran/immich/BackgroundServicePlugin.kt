@@ -23,6 +23,7 @@ import io.flutter.plugin.common.PluginRegistry
 import java.security.MessageDigest
 import java.io.FileInputStream
 import kotlinx.coroutines.*
+import androidx.core.net.toUri
 
 /**
  * Android plugin for Dart `BackgroundService` and file trash operations
@@ -33,7 +34,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
   private var fileTrashChannel: MethodChannel? = null
   private var context: Context? = null
   private var pendingResult: Result? = null
-  private val PERMISSION_REQUEST_CODE = 1001
+  private val permissionRequestCode = 1001
   private var activityBinding: ActivityPluginBinding? = null
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -144,7 +145,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
             val success = moveToTrash(fileName)
             result.success(success)
           } else {
-            result.error("PERMISSION_DENIED", "Storage permission required", null)
+            result.error("PERMISSION_DENIED", "Media permission required", null)
           }
         } else {
           result.error("INVALID_NAME", "The file name is not specified.", null)
@@ -155,10 +156,10 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
         val fileName = call.argument<String>("fileName")
         if (fileName != null) {
           if (hasManageStoragePermission()) {
-            val success = untrashImage(fileName)
+            val success = unTrashImage(fileName)
             result.success(success)
           } else {
-            result.error("PERMISSION_DENIED", "Storage permission required", null)
+            result.error("PERMISSION_DENIED", "Media permission required", null)
           }
         } else {
           result.error("INVALID_NAME", "The file name is not specified.", null)
@@ -167,7 +168,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
 
       "requestManageStoragePermission" -> {
         if (!hasManageStoragePermission()) {
-          requestManageStoragePermission(result)
+          requestManageMediaPermission(result)
         } else {
           Log.e("Manage storage permission", "Permission already granted")
           result.success(true)
@@ -178,33 +179,31 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     }
   }
 
-  // File Trash methods moved from MainActivity
   private fun hasManageStoragePermission(): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      Environment.isExternalStorageManager()
-    } else {
-      true
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      MediaStore.canManageMedia(context!!);
+    } else  {
+      false
     }
   }
 
-  private fun requestManageStoragePermission(result: Result) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+  private fun requestManageMediaPermission(result: Result) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
       pendingResult = result // Store the result callback
       val activity = activityBinding?.activity ?: return
 
-      val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-      intent.data = Uri.parse("package:${activity.packageName}")
-      activity.startActivityForResult(intent, PERMISSION_REQUEST_CODE)
+      val intent = Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA)
+      intent.data = "package:${activity.packageName}".toUri()
+      activity.startActivityForResult(intent, permissionRequestCode)
     } else {
-      result.success(true)
+      result.success(false)
     }
   }
 
   private fun moveToTrash(fileName: String): Boolean {
-    val contentResolver = context?.contentResolver ?: return false
     val uri = getFileUri(fileName)
     Log.e("FILE_URI", uri.toString())
-    return uri?.let { moveToTrash(it) } ?: false
+    return uri?.let { moveToTrash(it) } == true
   }
 
   private fun moveToTrash(contentUri: Uri): Boolean {
@@ -238,14 +237,13 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     return fileUri
   }
 
-  private fun untrashImage(name: String): Boolean {
-    val contentResolver = context?.contentResolver ?: return false
-    val uri = getTrashedFileUri(contentResolver, name)
+  private fun unTrashImage(name: String): Boolean {
+    val uri = getTrashedFileUri(name)
     Log.e("FILE_URI", uri.toString())
-    return uri?.let { untrashImage(it) } ?: false
+    return uri?.let { unTrashImage(it) } == true
   }
 
-  private fun untrashImage(contentUri: Uri): Boolean {
+  private fun unTrashImage(contentUri: Uri): Boolean {
     val contentResolver = context?.contentResolver ?: return false
     return try {
       val values = ContentValues().apply {
@@ -259,7 +257,8 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     }
   }
 
-  private fun getTrashedFileUri(contentResolver: ContentResolver, fileName: String): Uri? {
+  private fun getTrashedFileUri(fileName: String): Uri? {
+    val contentResolver = context?.contentResolver ?:  return null
     val contentUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)
     val projection = arrayOf(MediaStore.Files.FileColumns._ID)
 
@@ -301,7 +300,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
 
   // ActivityResultListener implementation
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-    if (requestCode == PERMISSION_REQUEST_CODE) {
+    if (requestCode == permissionRequestCode) {
       val granted = hasManageStoragePermission()
       pendingResult?.success(granted)
       pendingResult = null
