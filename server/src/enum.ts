@@ -407,6 +407,8 @@ export enum DatabaseExtension {
 export enum BootstrapEventPriority {
   // Database service should be initialized before anything else, most other services need database access
   DatabaseService = -200,
+  // Other services may need to queue jobs on bootstrap.
+  JobService = -190,
   // Initialise config after other bootstrap services, stop other services from using config on bootstrap
   SystemConfig = 100,
 }
