@@ -231,45 +231,62 @@ export class MediaService extends BaseService {
     // prevents this extra "enabled" from leaking into fullsizeOptions later
     const { enabled: imageFullsizeEnabled, ...imageFullsizeConfig } = image.fullsize;
 
-    const shouldConvertFullsize = imageFullsizeEnabled && !mimeTypes.isWebSupportedImage(asset.originalFileName);
     const shouldExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
-    const decodeOptions: DecodeToBufferOptions = { colorspace, processInvalidImages, size: image.preview.size };
 
-    let useExtracted = false;
-    let decodeInputPath: string = asset.originalPath;
-    // Converted or extracted image from non-web-supported formats (e.g. RAW)
-    let fullsizePath: string | undefined;
-
-    if (shouldConvertFullsize) {
-      // unset size to decode fullsize image
-      decodeOptions.size = undefined;
-      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.fullsize.format);
-    }
-
+    // This will be our input source for the decode operation
+    let thumbSourcePath = asset.originalPath;
+    let extractedPath: string | undefined;
+    // Handle embedded preview extraction for RAW files
     if (shouldExtractEmbedded) {
-      // For RAW files, try extracting embedded preview first
-      // Assume extracted image from RAW always in JPEG format, as implied from the `jpgFromRaw` tag name
-      const extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, ImageFormat.JPEG);
-      const didExtract = await this.mediaRepository.extract(asset.originalPath, extractedPath);
-      useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.preview.size));
+      // Tentatively assume JPEG format for extraction, in most cases this will be correct and saves IO
+      // but in case of a different format returned (like JXL), we will rename it later
+      const extractedFormatTentative = ImageFormat.JPEG;
+      extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, extractedFormatTentative);
+      this.storageCore.ensureFolders(extractedPath);
 
-      if (useExtracted) {
-        if (shouldConvertFullsize) {
-          // skip re-encoding and directly use extracted as fullsize preview
-          // as usually the extracted image is already heavily compressed, no point doing lossy conversion again
-          fullsizePath = extractedPath;
+      // Try to extract embedded preview
+      const extractedFormat = await this.mediaRepository.extract(asset.originalPath, extractedPath);
+
+      if (extractedFormat !== null) {
+        if (extractedFormat !== extractedFormatTentative) {
+          // rename the extracted file to the correct format if it differs
+          const extractedPathCorrectExt = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, extractedFormat);
+          await this.storageRepository.rename(extractedPath, extractedPathCorrectExt);
+          extractedPath = extractedPathCorrectExt;
         }
-        // use this as origin of preview and thumbnail
-        decodeInputPath = extractedPath;
-        if (asset.exifInfo) {
-          // write essential orientation and colorspace EXIF for correct fullsize preview and subsequent processing
-          const exif = { orientation: asset.exifInfo.orientation, colorspace: asset.exifInfo.colorspace };
-          await this.mediaRepository.writeExif(exif, extractedPath);
+
+        if (await this.shouldUseExtractedImage(extractedPath, image.preview.size)) {
+          // Extracted image is large enough as a base of our thumbnail generation
+          thumbSourcePath = extractedPath;
+
+          // Write essential EXIF data for correct preview processing
+          if (asset.exifInfo) {
+            const exif = { orientation: asset.exifInfo.orientation, colorspace: asset.exifInfo.colorspace };
+            await this.mediaRepository.writeExif(exif, thumbSourcePath);
+          }
+        } else {
+          // not good enough, drop it and use the original
+          await this.storageRepository.unlink(extractedPath);
+          extractedPath = undefined;
+          thumbSourcePath = asset.originalPath;
         }
       }
     }
 
-    const { info, data } = await this.mediaRepository.decodeImage(decodeInputPath, decodeOptions);
+    // a new fullsize image should be returned if the original is not web-friendly
+    const shouldReturnFullsize = imageFullsizeEnabled && !mimeTypes.isWebSupportedImage(asset.originalPath);
+    // thumbSourcePath is either the original image or the extracted one
+    const shouldConvertFullsize = shouldReturnFullsize && !mimeTypes.isWebSupportedImage(thumbSourcePath);
+
+    // Decode the source image (original or extracted)
+    const decodeOptions: DecodeToBufferOptions = {
+      colorspace,
+      processInvalidImages,
+      // unlimited size for fullsize, or cap to preview size
+      size: shouldConvertFullsize ? undefined : image.preview.size,
+      orientation: Number(asset.exifInfo.orientation),
+    };
+    const { info, data } = await this.mediaRepository.decodeImage(thumbSourcePath, decodeOptions);
 
     const thumbnailOptions = { colorspace, processInvalidImages, raw: info };
     const promises = [
@@ -278,14 +295,24 @@ export class MediaService extends BaseService {
       this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewPath),
     ];
 
-    // did not extract a usable image from RAW
-    if (fullsizePath && !useExtracted) {
-      const fullsizeOptions: GenerateThumbnailOptions = {
-        ...imageFullsizeConfig,
-        ...thumbnailOptions,
-        size: undefined,
-      };
-      promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
+    // additionally, return a fullsize image if required
+    let fullsizePath: string | undefined;
+    if (shouldReturnFullsize) {
+      if (shouldConvertFullsize) {
+        // convert a new fullsize image from the same source as the thumbnail
+        fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.fullsize.format);
+        const fullsizeOptions: GenerateThumbnailOptions = {
+          ...imageFullsizeConfig,
+          ...thumbnailOptions,
+          size: undefined,
+        };
+        promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
+        // drop the extracted image if we don't need it anymore
+        extractedPath && (await this.storageRepository.unlink(extractedPath));
+      } else {
+        // or just use the extracted image
+        fullsizePath = extractedPath;
+      }
     }
     const outputs = await Promise.all(promises);
 

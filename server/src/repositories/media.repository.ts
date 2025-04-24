@@ -7,7 +7,7 @@ import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Exif } from 'src/database';
-import { Colorspace, LogLevel } from 'src/enum';
+import { Colorspace, ImageFormat, LogLevel } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
@@ -42,28 +42,50 @@ export class MediaRepository {
     this.logger.setContext(MediaRepository.name);
   }
 
-  async extract(input: string, output: string): Promise<boolean> {
+  /**
+   *
+   * @param input file path to the input image
+   * @param output where to write the extracted image
+   * @returns ImageFormat if succeeded, or null if failed
+   */
+  async extract(input: string, output: string): Promise<ImageFormat | null> {
+    // remove existing output file if it exists
+    // as exiftool-vendored does not support overwriting via "-w!" flag
+    // and throws "1 files could not be read" error when the output file exists
+    await fs.unlink(output).catch(() => null);
+
+    // attempts are ordered by quality of the extracted image
+    // TODO: query the largest embedded image and its format from EXIF IFDs and extract that directly
+
     try {
-      // remove existing output file if it exists
-      // as exiftool-vendored does not support overwriting via "-w!" flag
-      // and throws "1 files could not be read" error when the output file exists
-      await fs.unlink(output).catch(() => null);
       await exiftool.extractBinaryTag('JpgFromRaw2', input, output);
-    } catch {
-      try {
-        this.logger.debug('Extracting JPEG from RAW image:', input);
-        await exiftool.extractJpgFromRaw(input, output);
-      } catch (error: any) {
-        this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
-        try {
-          await exiftool.extractPreview(input, output);
-        } catch (error: any) {
-          this.logger.debug('Could not extract preview from image', error.message);
-          return false;
-        }
-      }
+      return ImageFormat.JPEG;
+    } catch (error: any) {
+      this.logger.debug('Could not extract JpgFromRaw2 from image, trying JPEG from RAW next', error.message);
     }
-    return true;
+
+    try {
+      this.logger.debug('Extracting JPEG from RAW image:', input);
+      await exiftool.extractJpgFromRaw(input, output);
+      return ImageFormat.JPEG;
+    } catch (error: any) {
+      this.logger.debug('Could not extract JPEG from image, trying PreviewJXL next', error.message);
+    }
+
+    try {
+      await exiftool.extractBinaryTag('PreviewJXL', input, output);
+      return ImageFormat.JXL;
+    } catch (error: any) {
+      this.logger.debug('Could not extract PreviewJXL from image, trying preview next', error.message);
+    }
+
+    try {
+      await exiftool.extractPreview(input, output);
+      return ImageFormat.JPEG;
+    } catch (error: any) {
+      this.logger.debug('Could not extract preview from image', error.message);
+      return null;
+    }
   }
 
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {

@@ -330,6 +330,7 @@ export enum Colorspace {
 export enum ImageFormat {
   JPEG = 'jpeg',
   WEBP = 'webp',
+  JXL = 'jxl',
 }
 
 export enum LogLevel {
