@@ -134,6 +134,12 @@
 
   let startX: number = 0;
   let startY: number = 0;
+
+  // As of iOS17, there is a preference for long press speed, which is not available for mobile web.
+  // The defaults are as follows:
+  //   fast: 200ms
+  //   default: 500ms
+  //   slow: ??ms
   function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
     let didPress = false;
     const start = (evt: PointerEvent) => {
@@ -216,7 +222,10 @@
 >
   <!-- Outline on focus -->
   <div
-    class={['absolute z-40 size-full outline-4 -outline-offset-4 outline-immich-primary', { 'rounded-xl': selected }]}
+    class={[
+      'pointer-events-none absolute z-40 size-full outline-4 -outline-offset-4 outline-immich-primary',
+      { 'rounded-xl': selected },
+    ]}
     data-outline
   ></div>
   {#if (!loaded || thumbError) && asset.thumbhash}
@@ -229,35 +238,10 @@
     ></canvas>
   {/if}
 
-  <!-- as of iOS17, there is a preference for long press speed, which is not available for mobile web.
-      The defaults are as follows:
-      fast: 200ms
-      default: 500ms
-      slow: ??ms
-      -->
   <div
     class={['group absolute top-[0px] bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
-    onmouseenter={onMouseEnter}
-    onmouseleave={onMouseLeave}
-    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
-    onkeydown={(evt) => {
-      if (evt.key === 'Enter') {
-        callClickHandlers();
-      }
-      if (evt.key === 'x') {
-        onSelect?.(asset);
-      }
-      if (document.activeElement === element && evt.key === 'Escape') {
-        focusNext((element) => element.dataset.thumbnailFocusContainer === undefined, true);
-      }
-    }}
-    onclick={handleClick}
-    bind:this={element}
-    data-thumbnail-focus-container
-    tabindex={0}
-    role="link"
   >
     <!-- Select asset button  -->
     {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
