@@ -13,33 +13,57 @@ import {
 } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { parse } from 'pg-connection-string';
 import postgres, { Notice } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
 import { DB } from 'src/db';
 import { AssetFileType } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
+import { DatabaseConnectionParams } from 'src/types';
 
 type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
 
-export type PostgresConnectionConfig = {
-  host?: string;
-  password?: string;
-  user?: string;
-  port?: number;
-  database?: string;
-  max?: number;
-  client_encoding?: string;
-  ssl?: Ssl;
-  application_name?: string;
-  fallback_application_name?: string;
-  options?: string;
-};
-
-export const isValidSsl = (ssl?: string | boolean | object): ssl is Ssl =>
+const isValidSsl = (ssl?: string | boolean | object): ssl is Ssl =>
   typeof ssl !== 'string' || ssl === 'require' || ssl === 'allow' || ssl === 'prefer' || ssl === 'verify-full';
 
-export const getKyselyConfig = (options: PostgresConnectionConfig): KyselyConfig => {
+export const asPostgresConnectionConfig = (params: DatabaseConnectionParams) => {
+  if (params.connectionType === 'parts') {
+    return {
+      host: params.host,
+      port: params.port,
+      username: params.username,
+      password: params.password,
+      database: params.database,
+      ssl: undefined,
+    };
+  }
+
+  const { host, port, user, password, database, ...rest } = parse(params.url);
+  let ssl: Ssl | undefined;
+  if (rest.ssl) {
+    if (!isValidSsl(rest.ssl)) {
+      throw new Error(`Invalid ssl option: ${rest.ssl}`);
+    }
+    ssl = rest.ssl;
+  }
+
+  return {
+    host: host ?? undefined,
+    port: port ? Number(port) : undefined,
+    username: user,
+    password,
+    database: database ?? undefined,
+    ssl,
+  };
+};
+
+export const getKyselyConfig = (
+  params: DatabaseConnectionParams,
+  options: Partial<postgres.Options<Record<string, postgres.PostgresType>>> = {},
+): KyselyConfig => {
+  const config = asPostgresConnectionConfig(params);
+
   return {
     dialect: new PostgresJSDialect({
       postgres: postgres({
@@ -66,6 +90,12 @@ export const getKyselyConfig = (options: PostgresConnectionConfig): KyselyConfig
         connection: {
           TimeZone: 'UTC',
         },
+        host: config.host,
+        port: config.port,
+        username: config.username,
+        password: config.password,
+        database: config.database,
+        ssl: config.ssl,
         ...options,
       }),
     }),
