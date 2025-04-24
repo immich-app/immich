@@ -19,7 +19,7 @@ platform :ios do
   desc "iOS Release"
   lane :release do
     increment_version_number(
-      version_number: "1.131.3"
+      version_number: "1.132.1"
     )
     increment_build_number(
       build_number: latest_testflight_build_number + 1,

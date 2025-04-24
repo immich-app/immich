@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.131.3
+ * 1.132.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -687,17 +687,17 @@ export type TestEmailResponseDto = {
     messageId: string;
 };
 export type OAuthConfigDto = {
+    codeChallenge?: string;
     redirectUri: string;
     state?: string;
-    codeChallenge?: string;
 };
 export type OAuthAuthorizeResponseDto = {
     url: string;
 };
 export type OAuthCallbackDto = {
-    url: string;
-    state?: string;
     codeVerifier?: string;
+    state?: string;
+    url: string;
 };
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;
