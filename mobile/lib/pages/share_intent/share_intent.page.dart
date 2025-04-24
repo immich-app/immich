@@ -18,7 +18,7 @@ class ShareIntentPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentEndpoint = Store.get(StoreKey.serverEndpoint);
+    final currentEndpoint = getServerUrl() ?? '--';
     final candidates = ref.watch(shareIntentUploadProvider);
     final isUploaded = useState(false);
 
