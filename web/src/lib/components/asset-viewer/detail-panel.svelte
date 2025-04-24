@@ -296,7 +296,7 @@
     {#if dateTime}
       <button
         type="button"
-        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
+        class="flex w-full text-start justify-between place-items-start gap-4 py-4"
         onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
         class:hover:dark:text-immich-dark-primary={isOwner}

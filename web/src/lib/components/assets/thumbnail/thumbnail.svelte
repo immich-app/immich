@@ -332,20 +332,20 @@
 
         <!-- Favorite asset star -->
         {#if !isSharedLink() && asset.isFavorite}
-          <div class="absolute bottom-2 left-2 z-10">
+          <div class="absolute bottom-2 start-2 z-10">
             <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if !isSharedLink() && showArchiveIcon && asset.isArchived}
-          <div class={['absolute left-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+          <div class={['absolute start-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
-          <div class="absolute right-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
-            <span class="pr-2 pt-2">
+          <div class="absolute end-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
               <Icon path={mdiRotate360} size="24" />
             </span>
           </div>
@@ -356,10 +356,10 @@
           <div
             class={[
               'absolute z-10 flex place-items-center gap-1 text-xs font-medium text-white',
-              asset.type == AssetTypeEnum.Image && !asset.livePhotoVideoId ? 'top-0 right-0' : 'top-7 right-1',
+              asset.type == AssetTypeEnum.Image && !asset.livePhotoVideoId ? 'top-0 end-0' : 'top-7 end-1',
             ]}
           >
-            <span class="pr-2 pt-2 flex place-items-center gap-1">
+            <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
               <Icon path={mdiCameraBurst} size="24" />
             </span>

@@ -308,13 +308,13 @@
   };
 </script>
 
-<div class="absolute left-0 top-0">
-  <canvas bind:this={canvasEl} id="face-editor" class="absolute top-0 left-0"></canvas>
+<div class="absolute start-0 top-0">
+  <canvas bind:this={canvasEl} id="face-editor" class="absolute top-0 start-0"></canvas>
 
   <div
     id="face-selector"
     bind:this={faceSelectorEl}
-    class="absolute top-[calc(50%-250px)] left-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800"
+    class="absolute top-[calc(50%-250px)] start-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800"
   >
     <p class="text-center text-sm">Select a person to tag</p>
 
@@ -329,7 +329,7 @@
             <button
               onclick={() => tagFace(person)}
               type="button"
-              class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
+              class="w-full flex place-items-center gap-2 rounded-lg ps-1 pe-4 py-2 hover:bg-immich-primary/25"
             >
               <ImageThumbnail
                 curve

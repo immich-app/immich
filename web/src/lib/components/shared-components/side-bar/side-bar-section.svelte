@@ -35,7 +35,7 @@
   tabindex="-1"
   class="immich-scrollbar relative z-10 w-0 sidebar:w-[16rem] overflow-y-auto overflow-x-hidden bg-immich-bg pt-8 transition-all duration-200 dark:bg-immich-dark-bg"
   class:shadow-2xl={isExpanded}
-  class:dark:border-r-immich-dark-gray={isExpanded}
+  class:dark:border-e-immich-dark-gray={isExpanded}
   class:border-r={isExpanded}
   class:w-[min(100vw,16rem)]={sidebarStore.isOpen}
   data-testid="sidebar-parent"
@@ -43,7 +43,7 @@
   use:clickOutside={{ onOutclick: closeSidebar, onEscape: closeSidebar }}
   use:focusTrap={{ active: isExpanded }}
 >
-  <div class="pr-6 flex flex-col gap-1 h-max min-h-full">
+  <div class="pe-6 flex flex-col gap-1 h-max min-h-full">
     {@render children?.()}
   </div>
 </section>

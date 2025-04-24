@@ -147,7 +147,7 @@
                   : ''}"
                 onclick={() => handleUseSuggested(place.latitude, place.longitude)}
               >
-                <p class="ml-4 text-sm text-gray-700 dark:text-gray-100 truncate">
+                <p class="ms-4 text-sm text-gray-700 dark:text-gray-100 truncate">
                   {getLocation(place.name, place.admin1name, place.admin2name)}
                 </p>
               </button>
@@ -189,7 +189,7 @@
         {/await}
       </div>
 
-      <div class="grid sm:grid-cols-2 gap-4 text-sm text-left mt-4">
+      <div class="grid sm:grid-cols-2 gap-4 text-sm text-start mt-4">
         <CoordinatesInput
           lat={point ? point.lat : assetLat}
           lng={point ? point.lng : assetLng}

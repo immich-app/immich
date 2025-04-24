@@ -16,14 +16,14 @@
 {#if downloadStore.isDownloading}
   <div
     transition:fly={{ x: -100, duration: 350 }}
-    class="fixed bottom-10 left-2 z-[10000] max-h-[270px] w-[315px] rounded-2xl border bg-immich-bg p-4 text-sm shadow-sm"
+    class="fixed bottom-10 start-2 z-[10000] max-h-[270px] w-[315px] rounded-2xl border bg-immich-bg p-4 text-sm shadow-sm"
   >
     <p class="mb-2 text-xs text-gray-500">{$t('downloading').toUpperCase()}</p>
     <div class="my-2 mb-2 flex max-h-[200px] flex-col overflow-y-auto text-sm">
       {#each Object.keys(downloadStore.assets) as downloadKey (downloadKey)}
         {@const download = downloadStore.assets[downloadKey]}
         <div class="mb-2 flex place-items-center" transition:slide>
-          <div class="w-full pr-10">
+          <div class="w-full pe-10">
             <div class="flex place-items-center justify-between gap-2 text-xs font-medium">
               <p class="truncate">■ {downloadKey}</p>
               {#if download.total}
@@ -41,7 +41,7 @@
               </p>
             </div>
           </div>
-          <div class="absolute right-2">
+          <div class="absolute end-2">
             <CircleIconButton
               title={$t('close')}
               onclick={() => abort(downloadKey, download)}

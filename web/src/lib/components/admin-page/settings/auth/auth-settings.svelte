@@ -76,13 +76,13 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={(e) => e.preventDefault()}>
-      <div class="ml-4 mt-4 flex flex-col">
+      <div class="ms-4 mt-4 flex flex-col">
         <SettingAccordion
           key="oauth"
           title={$t('admin.oauth_settings')}
           subtitle={$t('admin.oauth_settings_description')}
         >
-          <div class="ml-4 mt-4 flex flex-col gap-4">
+          <div class="ms-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
               <FormatMessage key="admin.oauth_settings_more_details">
                 {#snippet children({ message })}
@@ -243,8 +243,8 @@
           title={$t('admin.password_settings')}
           subtitle={$t('admin.password_settings_description')}
         >
-          <div class="ml-4 mt-4 flex flex-col gap-4">
-            <div class="ml-4 mt-4 flex flex-col">
+          <div class="ms-4 mt-4 flex flex-col gap-4">
+            <div class="ms-4 mt-4 flex flex-col">
               <SettingSwitch
                 title={$t('admin.password_enable_description')}
                 {disabled}
