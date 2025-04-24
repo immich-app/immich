@@ -238,17 +238,17 @@ export class MediaService extends BaseService {
     let extractedPath: string | undefined;
     // Handle embedded preview extraction for RAW files
     if (shouldExtractEmbedded) {
-      // Tentatively assume JPEG format for extraction, in most cases this will be correct and saves IO
-      // but in case of a different format returned (like JXL), we will rename it later
-      const extractedFormatTentative = ImageFormat.JPEG;
-      extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, extractedFormatTentative);
+      // Assume JPEG format for extraction as it is commonly correct and saves IO.
+      // If a different format is returned (e.g., JXL), it will be renamed later.
+      const assumedExtractedFormat = ImageFormat.JPEG;
+      extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, assumedExtractedFormat);
       this.storageCore.ensureFolders(extractedPath);
 
       // Try to extract embedded preview
       const extractedFormat = await this.mediaRepository.extract(asset.originalPath, extractedPath);
 
       if (extractedFormat !== null) {
-        if (extractedFormat !== extractedFormatTentative) {
+        if (extractedFormat !== assumedExtractedFormat) {
           // rename the extracted file to the correct format if it differs
           const extractedPathCorrectExt = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, extractedFormat);
           await this.storageRepository.rename(extractedPath, extractedPathCorrectExt);
