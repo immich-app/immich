@@ -97,10 +97,7 @@ export class NotificationDeleteAllDto {
 export type MapNotification = {
   id: string;
   createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
   updateId?: string;
-  userId: string;
   level: NotificationLevel;
   type: NotificationType;
   data: any | null;

@@ -20,7 +20,14 @@ where
 
 -- NotificationRepository.search
 select
-  "notifications".*
+  "id",
+  "createdAt",
+  "level",
+  "type",
+  "title",
+  "description",
+  "data",
+  "readAt"
 from
   "notifications"
 where
@@ -31,7 +38,14 @@ order by
 
 -- NotificationRepository.search (unread)
 select
-  "notifications".*
+  "id",
+  "createdAt",
+  "level",
+  "type",
+  "title",
+  "description",
+  "data",
+  "readAt"
 from
   "notifications"
 where

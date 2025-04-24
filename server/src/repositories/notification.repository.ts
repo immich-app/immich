@@ -1,6 +1,7 @@
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
 import { DB, Notifications } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { NotificationSearchDto } from 'src/dtos/notification.dto';
@@ -38,7 +39,7 @@ export class NotificationRepository {
   search(userId: string, dto: NotificationSearchDto) {
     return this.db
       .selectFrom('notifications')
-      .selectAll('notifications')
+      .select(columns.notification)
       .where((qb) =>
         qb.and({
           userId,
@@ -54,13 +55,17 @@ export class NotificationRepository {
   }
 
   create(notification: Insertable<Notifications>) {
-    return this.db.insertInto('notifications').values(notification).returningAll().executeTakeFirstOrThrow();
+    return this.db
+      .insertInto('notifications')
+      .values(notification)
+      .returning(columns.notification)
+      .executeTakeFirstOrThrow();
   }
 
   get(id: string) {
     return this.db
       .selectFrom('notifications')
-      .selectAll('notifications')
+      .select(columns.notification)
       .where('id', '=', id)
       .where('deletedAt', 'is not', null)
       .executeTakeFirst();
@@ -72,7 +77,7 @@ export class NotificationRepository {
       .set(notification)
       .where('deletedAt', 'is', null)
       .where('id', '=', id)
-      .returningAll()
+      .returning(columns.notification)
       .executeTakeFirstOrThrow();
   }
 
