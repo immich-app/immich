@@ -15,6 +15,7 @@ import {
   getTimeBucket,
   getTimeBuckets,
   TimeBucketSize,
+  type AssetResponseDto,
   type AssetStackResponseDto,
 } from '@immich/sdk';
 import { clamp, debounce, isEqual, throttle } from 'lodash-es';
