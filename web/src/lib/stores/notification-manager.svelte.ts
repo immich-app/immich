@@ -1,10 +1,14 @@
+import { eventManager } from '$lib/stores/event-manager.svelte';
 import { getNotifications, updateNotification, updateNotifications, type NotificationDto } from '@immich/sdk';
 
 class NotificationStore {
   notifications = $state<NotificationDto[]>([]);
 
   constructor() {
+    // TODO replace this with an `auth.login` event
     this.refresh().catch(() => {});
+
+    eventManager.on('auth.logout', () => this.clear());
   }
 
   get hasUnread() {
@@ -24,6 +28,10 @@ class NotificationStore {
     const ids = this.notifications.map(({ id }) => id);
     this.notifications = [];
     await updateNotifications({ notificationUpdateAllDto: { ids, readAt: new Date().toISOString() } });
+  };
+
+  clear = () => {
+    this.notifications = [];
   };
 }
 
