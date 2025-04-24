@@ -42,4 +42,9 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   stack: null,
   projectionType: null,
   livePhotoVideoId: Sync.each(() => faker.string.uuid()),
+  text: Sync.each(() => ({
+    city: faker.location.city(),
+    country: faker.location.country(),
+    people: [faker.person.fullName()],
+  })),
 });
