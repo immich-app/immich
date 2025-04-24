@@ -6816,20 +6816,29 @@
             }
           },
           {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
             "schema": {
               "format": "uuid",
               "type": "string"
-            }
-          },
-          {
-            "name": "size",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/TimeBucketSize"
             }
           },
           {
@@ -6880,10 +6889,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/TimeBucketResponseDto"
                 }
               }
             },
@@ -6969,14 +6975,6 @@
             }
           },
           {
-            "name": "size",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/TimeBucketSize"
-            }
-          },
-          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -7017,7 +7015,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/TimeBucketResponseDto"
+                    "$ref": "#/components/schemas/TimeBucketsResponseDto"
                   },
                   "type": "array"
                 }
@@ -13405,7 +13403,170 @@
         ],
         "type": "object"
       },
+      "TimeBucketAssetResponseDto": {
+        "properties": {
+          "duration": {
+            "default": [],
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "id": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isArchived": {
+            "default": [],
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "isFavorite": {
+            "default": [],
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "isImage": {
+            "default": [],
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "isTrashed": {
+            "default": [],
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "isVideo": {
+            "default": [],
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "livePhotoVideoId": {
+            "default": [],
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "localDateTime": {
+            "default": [],
+            "items": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ownerId": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "projectionType": {
+            "default": [],
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "ratio": {
+            "default": [],
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "stack": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/TimelineStackResponseDto"
+            },
+            "type": "array"
+          },
+          "thumbhash": {
+            "default": [],
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "duration",
+          "id",
+          "isArchived",
+          "isFavorite",
+          "isImage",
+          "isTrashed",
+          "isVideo",
+          "livePhotoVideoId",
+          "localDateTime",
+          "ownerId",
+          "projectionType",
+          "ratio",
+          "stack",
+          "thumbhash"
+        ],
+        "type": "object"
+      },
       "TimeBucketResponseDto": {
+        "properties": {
+          "bucketAssets": {
+            "$ref": "#/components/schemas/TimeBucketAssetResponseDto"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "bucketAssets",
+          "hasNextPage"
+        ],
+        "type": "object"
+      },
+      "TimeBucketsResponseDto": {
         "properties": {
           "count": {
             "type": "integer"
@@ -13420,12 +13581,24 @@
         ],
         "type": "object"
       },
-      "TimeBucketSize": {
-        "enum": [
-          "DAY",
-          "MONTH"
+      "TimelineStackResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "number"
+          },
+          "id": {
+            "type": "string"
+          },
+          "primaryAssetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "id",
+          "primaryAssetId"
         ],
-        "type": "string"
+        "type": "object"
       },
       "ToneMapping": {
         "enum": [

@@ -13,6 +13,7 @@ import {
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetStatus, AssetType } from 'src/enum';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 
 export class SanitizedAssetResponseDto {
@@ -138,15 +139,6 @@ const mapStack = (entity: { stack?: Stack | null }) => {
     primaryAssetId: entity.stack.primaryAssetId,
     assetCount: entity.stack.assetCount ?? entity.stack.assets.length + 1,
   };
-};
-
-// if an asset is jsonified in the DB before being returned, its buffer fields will be hex-encoded strings
-export const hexOrBufferToBase64 = (encoded: string | Buffer) => {
-  if (typeof encoded === 'string') {
-    return Buffer.from(encoded.slice(2), 'hex').toString('base64');
-  }
-
-  return encoded.toString('base64');
 };
 
 export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): AssetResponseDto {

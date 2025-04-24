@@ -12,6 +12,7 @@ import {
   anyUuid,
   asUuid,
   hasPeople,
+  hasPeopleNoJoin,
   removeUndefinedKeys,
   searchAssetBuilder,
   truncatedDate,
@@ -24,6 +25,7 @@ import {
   withOwner,
   withSmartSearch,
   withTagId,
+  withTagIdNoWhere,
   withTags,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
@@ -80,7 +82,6 @@ export interface AssetBuilderOptions {
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
-  size: TimeBucketSize;
   order?: AssetOrder;
 }
 
@@ -637,7 +638,7 @@ export class AssetRepository {
         .with('assets', (qb) =>
           qb
             .selectFrom('assets')
-            .select(truncatedDate<Date>(options.size).as('timeBucket'))
+            .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
             .where('assets.isVisible', '=', true)
@@ -679,18 +680,39 @@ export class AssetRepository {
     );
   }
 
-  @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH, withStacked: true }] })
-  async getTimeBucket(timeBucket: string, options: TimeBucketOptions) {
-    return this.db
+  @GenerateSql({
+    params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH, withStacked: true }, { skip: -1, take: 1000 }],
+  })
+  async getTimeBucket(timeBucket: string, options: TimeBucketOptions, pagination: PaginationOptions) {
+    const paginate = pagination.skip! >= 1 && pagination.take >= 1;
+    const query = this.db
       .selectFrom('assets')
-      .selectAll('assets')
-      .$call(withExif)
+      .select([
+        'assets.id as id',
+        'assets.ownerId',
+        'assets.status',
+        'deletedAt',
+        'type',
+        'duration',
+        'isFavorite',
+        'isArchived',
+        'thumbhash',
+        'localDateTime',
+        'livePhotoVideoId',
+      ])
+      .leftJoin('exif', 'assets.id', 'exif.assetId')
+      .select(['exif.exifImageHeight as height', 'exifImageWidth as width', 'exif.orientation', 'exif.projectionType'])
       .$if(!!options.albumId, (qb) =>
         qb
           .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
           .where('albums_assets_assets.albumsId', '=', options.albumId!),
       )
-      .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+      .$if(!!options.personId, (qb) =>
+        qb.innerJoin(
+          () => hasPeopleNoJoin([options.personId!]),
+          (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
+        ),
+      )
       .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
       .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
       .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
@@ -720,12 +742,15 @@ export class AssetRepository {
         qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
       )
       .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
-      .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+      .$if(!!options.tagId, (qb) => qb.where((eb) => withTagIdNoWhere(options.tagId!, eb.ref('assets.id'))))
       .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
       .where('assets.isVisible', '=', true)
-      .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
+      .where(truncatedDate(TimeBucketSize.MONTH), '=', timeBucket.replace(/^[+-]/, ''))
       .orderBy('assets.localDateTime', options.order ?? 'desc')
-      .execute();
+      .$if(paginate, (qb) => qb.offset(pagination.skip!))
+      .$if(paginate, (qb) => qb.limit(pagination.take + 1));
+
+    return await query.execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
