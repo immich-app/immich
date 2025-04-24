@@ -1,30 +1,30 @@
 import { getNotifications, updateNotification, updateNotifications, type NotificationDto } from '@immich/sdk';
 
-const notifications = $state<{ value: NotificationDto[] }>({
-  value: [],
-});
+class NotificationStore {
+  notifications = $state<NotificationDto[]>([]);
 
-const refresh = async () => {
-  notifications.value = await getNotifications({ unread: true });
-};
+  constructor() {
+    this.refresh().catch(() => {});
+  }
 
-const markAsRead = async (id: string) => {
-  notifications.value = notifications.value.filter((notification) => notification.id !== id);
-  console.log(notifications);
-  console.log($state.snapshot(notifications));
-  await updateNotification({ id, notificationUpdateDto: { readAt: new Date().toISOString() } });
-};
+  get hasUnread() {
+    return this.notifications.length > 0;
+  }
 
-const markAllAsRead = async () => {
-  const ids = notifications.value.map(({ id }) => id);
-  notifications.value = [];
-  await updateNotifications({ notificationUpdateAllDto: { ids, readAt: new Date().toISOString() } });
-};
+  refresh = async () => {
+    this.notifications = await getNotifications({ unread: true });
+  };
 
-export const notificationManager = {
-  refresh,
-  markAsRead,
-  markAllAsRead,
-  hasUnread: () => notifications.value.length > 0,
-  notifications,
-};
+  markAsRead = async (id: string) => {
+    this.notifications = this.notifications.filter((notification) => notification.id !== id);
+    await updateNotification({ id, notificationUpdateDto: { readAt: new Date().toISOString() } });
+  };
+
+  markAllAsRead = async () => {
+    const ids = this.notifications.map(({ id }) => id);
+    this.notifications = [];
+    await updateNotifications({ notificationUpdateAllDto: { ids, readAt: new Date().toISOString() } });
+  };
+}
+
+export const notificationManager = new NotificationStore();

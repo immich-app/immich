@@ -40,7 +40,7 @@
   let shouldShowHelpPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
-  const hasUnreadNotifications = $derived(notificationManager.notifications.value.length > 0);
+  const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
 
   let info: ServerAboutResponseDto | undefined = $state();
 
@@ -158,7 +158,7 @@
         >
           <IconButton
             shape="round"
-            color="secondary"
+            color={hasUnreadNotifications ? 'primary' : 'secondary'}
             variant="ghost"
             size="medium"
             icon={hasUnreadNotifications ? mdiBellBadge : mdiBellOutline}
