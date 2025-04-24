@@ -17,6 +17,7 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
+// ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart'; // Added import
 
 const int targetVersion = 10;
