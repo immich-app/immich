@@ -59,10 +59,10 @@ export class MapRepository {
     const geodataDate = await readFile(resourcePaths.geodata.dateFile, 'utf8');
 
     // TODO move to service init
-    const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
-    if (geocodingMetadata?.lastUpdate === geodataDate) {
-      return;
-    }
+    // const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
+    // if (geocodingMetadata?.lastUpdate === geodataDate) {
+    //   return;
+    // }
 
     await Promise.all([this.importGeodata(), this.importNaturalEarthCountries()]);
 
@@ -245,6 +245,8 @@ export class MapRepository {
     let count = 0;
 
     let futures = [];
+    let previousLine = '';
+    let previousData = {};
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
       if ((lineSplit[7] === 'PPLX' && lineSplit[8] !== 'AU') || lineSplit[7] === 'PPLH') {
@@ -264,6 +266,14 @@ export class MapRepository {
         admin1Name: admin1Map.get(`${lineSplit[8]}.${lineSplit[10]}`) ?? null,
         admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`) ?? null,
       };
+      if (geoData.id === 1059) {
+        this.logger.log('previous line: ' + previousLine);
+        this.logger.log('previous data: ');
+        this.logger.log(JSON.stringify(previousData, null, 2));
+        this.logger.log('line: ' + line);
+        this.logger.log('current data: ');
+        this.logger.log(JSON.stringify(geoData, null, 2));
+      }
       bufferGeodata.push(geoData);
       if (bufferGeodata.length >= 5000) {
         const curLength = bufferGeodata.length;
@@ -286,6 +296,8 @@ export class MapRepository {
           futures = [];
         }
       }
+      previousLine = line;
+      previousData = geoData;
     }
 
     await this.db.insertInto('geodata_places').values(bufferGeodata).execute();
