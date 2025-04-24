@@ -4,7 +4,9 @@ import { eventManager } from '$lib/stores/event-manager.svelte';
 import { logout } from '@immich/sdk';
 
 class AuthManager {
-  async logout(redirectUri?: string) {
+  async logout() {
+    let redirectUri;
+
     try {
       const response = await logout();
       if (response.redirectUri) {

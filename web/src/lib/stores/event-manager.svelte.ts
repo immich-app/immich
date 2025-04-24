@@ -17,11 +17,11 @@ class EventManager<EventMap extends Record<string, unknown[]>> {
   }
 
   off<K extends keyof EventMap>(key: K, listener: Listener<EventMap, K>) {
-    if (!this.listeners[key]) {
-      return;
+    if (this.listeners[key]) {
+      this.listeners[key] = this.listeners[key].filter((item) => item.listener !== listener);
     }
 
-    this.listeners[key] = this.listeners[key].filter((item) => item.listener !== listener);
+    return this;
   }
 
   emit<T extends keyof EventMap>(key: T, ...params: EventMap[T]) {
@@ -44,12 +44,11 @@ class EventManager<EventMap extends Record<string, unknown[]>> {
 
     this.listeners[key].push({ listener, once });
 
-    return () => this.off(key, listener);
+    return this;
   }
 }
 
 export const eventManager = new EventManager<{
   'user.login': [];
   'auth.logout': [];
-  'session.delete': [];
 }>();

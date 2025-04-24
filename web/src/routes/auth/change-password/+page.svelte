@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { resetSavedUser, user } from '$lib/stores/user.store';
-  import { logout, updateMyUser } from '@immich/sdk';
+  import { authManager } from '$lib/stores/auth-manager.svelte';
+  import { user } from '$lib/stores/user.store';
+  import { updateMyUser } from '@immich/sdk';
   import { Alert, Button, Field, HelperText, PasswordInput, Stack, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -25,9 +24,7 @@
     }
 
     await updateMyUser({ userUpdateMeDto: { password } });
-    await goto(AppRoute.AUTH_LOGIN);
-    resetSavedUser();
-    await logout();
+    await authManager.logout();
   };
 </script>
 
