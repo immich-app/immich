@@ -114,18 +114,7 @@
 />
 
 <div class="pt-4 rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-[54rem] mx-auto mb-16">
-  <div class="flex flex-wrap gap-1 place-items-center place-content-center px-4 pt-4">
-    {#each assets as asset (asset.id)}
-      <DuplicateAsset
-        {asset}
-        {onSelectAsset}
-        isSelected={selectedAssetIds.has(asset.id)}
-        onViewAsset={(asset) => setAsset(asset)}
-      />
-    {/each}
-  </div>
-
-  <div class="flex flex-wrap gap-y-6 mt-10 mb-4 px-6 w-full place-content-end justify-between">
+  <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
       <button
@@ -173,6 +162,17 @@
         <Icon path={mdiImageMultipleOutline} size="20" />{$t('stack')}
       </Button>
     </div>
+  </div>
+
+  <div class="flex flex-wrap gap-1 mb-4 place-items-center place-content-center px-4 pt-4">
+    {#each assets as asset (asset.id)}
+      <DuplicateAsset
+        {asset}
+        {onSelectAsset}
+        isSelected={selectedAssetIds.has(asset.id)}
+        onViewAsset={(asset) => setAsset(asset)}
+      />
+    {/each}
   </div>
 </div>
 
