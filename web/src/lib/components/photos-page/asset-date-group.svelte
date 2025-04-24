@@ -15,11 +15,8 @@
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { scale } from 'svelte/transition';
-
   import { flip } from 'svelte/animate';
-
   import { uploadAssetsStore } from '$lib/stores/upload';
-  import { onDestroy } from 'svelte';
 
   let { isUploading } = uploadAssetsStore;
 

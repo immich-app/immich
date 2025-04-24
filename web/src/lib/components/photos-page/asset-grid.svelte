@@ -14,7 +14,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
-  import { onMount, tick, type Snippet } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
@@ -27,7 +27,6 @@
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { focusNext } from '$lib/utils/focus-util';
-
   import SelectDate from '$lib/components/shared-components/select-date.svelte';
   import { DateTime } from 'luxon';
   import {
