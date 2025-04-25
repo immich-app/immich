@@ -2,12 +2,8 @@ name: 'Multi-runner container image build'
 on:
   workflow_call:
     inputs:
-      ghcr-repo:
-        description: 'GitHub Container Registry repository'
-        type: string
-        required: true
-      dockerhub-repo:
-        description: 'Docker Hub repository'
+      image:
+        description: 'Name of the image'
         type: string
         required: true
       context:
@@ -16,10 +12,6 @@ on:
         required: true
       dockerfile:
         description: 'Path to Dockerfile'
-        type: string
-        required: true
-      artifact-key-base:
-        description: 'Base key for artifact name'
         type: string
         required: true
       tag-suffix:
@@ -37,7 +29,6 @@ on:
       platforms:
         description: 'Platforms to build for'
         type: string
-        default: 'linux/amd64,linux/arm64'
       runner-mapping:
         description: 'Mapping from platforms to runners'
         type: string
@@ -47,18 +38,23 @@ on:
       DOCKERHUB_TOKEN:
         required: false
 
+env:
+  GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.image }}
+  DOCKERHUB_IMAGE: altran1502/${{ inputs.image }}
+
 jobs:
   matrix:
     name: 'Generate matrix'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+      key: ${{ steps.artifact-key.outputs.base }}
     steps:
       - name: Generate build matrix
         id: matrix
         shell: bash
         env:
-          PLATFORMS: ${{ inputs.platforms }}
+          PLATFORMS: ${{ inputs.platforms || 'linux/amd64,linux/arm64' }}
           RUNNER_MAPPING: ${{ inputs.runner-mapping || '{"linux/amd64":"ubuntu-latest","linux/arm64":"ubuntu-24.04-arm"}' }}
         run: |
           matrix=$(jq -R -c \
@@ -67,6 +63,21 @@ jobs:
             <<< "${PLATFORMS}")
           echo "${matrix}"
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+
+      - name: Determine artifact key
+        id: artifact-key
+        shell: bash
+        env:
+          IMAGE: ${{ inputs.image }}
+          SUFFIX: ${{ inputs.tag-suffix }}
+        run: |
+          if [[ -n "${SUFFIX}" ]]; then
+              base="${IMAGE}-${SUFFIX}-digests"
+          else
+              base="${IMAGE}-digests"
+          fi
+          echo "${base}"
+          echo "base=${base}" >> $GITHUB_OUTPUT
 
   build:
     needs: matrix
@@ -88,14 +99,14 @@ jobs:
         with:
           context: ${{ inputs.context }}
           dockerfile: ${{ inputs.dockerfile }}
-          ghcr-repo: ${{ inputs.ghcr-repo }}
+          image: ${{ env.GHCR_IMAGE }}
           ghcr-token: ${{ secrets.GITHUB_TOKEN }}
           platform: ${{ matrix.platform }}
-          artifact-key-base: ${{ inputs.artifact-key-base }}
+          artifact-key-base: ${{ needs.matrix.outputs.key }}
           build-args: ${{ inputs.build-args }}
 
   merge:
-    needs: build
+    needs: [ matrix, build ]
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.head.repo.fork }}
     permissions:
@@ -107,7 +118,7 @@ jobs:
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
         with:
           path: ${{ runner.temp }}/digests
-          pattern: ${{ inputs.artifact-key-base }}-*
+          pattern: ${{ needs.matrix.outputs.key }}-*
           merge-multiple: true
 
       - name: Login to Docker Hub
@@ -136,10 +147,10 @@ jobs:
           flavor: |
             # Disable latest tag
             latest=false
-            suffix=${{ inputs.tag-suffix }}
+            suffix=-${{ inputs.tag-suffix }}
           images: |
-            name=${{ inputs.ghcr-repo }}
-            name=${{ inputs.dockerhub-repo }},enable=${{ inputs.dockerhub-push }}
+            name=${{ env.GHCR_IMAGE }}
+            name=${{ env.DOCKERHUB_IMAGE }},enable=${{ inputs.dockerhub-push }}
           tags: |
             # Tag with branch name
             type=ref,event=branch
@@ -153,8 +164,6 @@ jobs:
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
-        env:
-          GHCR_REPO: ${{ inputs.ghcr-repo }}
         run: |
           # Process annotations
           declare -a ANNOTATIONS=()
@@ -171,6 +180,6 @@ jobs:
           fi
 
           TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-          SOURCE_ARGS=$(printf "${GHCR_REPO}@sha256:%s " *)
+          SOURCE_ARGS=$(printf "${GHCR_IMAGE}@sha256:%s " *)
 
           docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS

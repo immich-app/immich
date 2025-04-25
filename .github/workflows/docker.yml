@@ -133,14 +133,12 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     with:
-      ghcr-repo: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
-      dockerhub-repo: altran1502/immich-machine-learning
+      image: immich-machine-learning
       context: machine-learning
       dockerfile: machine-learning/Dockerfile
       platforms: ${{ matrix.platforms }}
       runner-mapping: ${{ matrix.runner-mapping }}
-      artifact-key-base: ml-digests-${{ matrix.device }}
-      tag-suffix: ${{ matrix.tag-suffix || format('-{0}', matrix.device) }}
+      tag-suffix: ${{ matrix.tag-suffix || matrix.device }}
       dockerhub-push: ${{ github.event_name == 'release' }}
       build-args: |
         DEVICE=${{ matrix.device }}
@@ -158,11 +156,9 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     with:
-      ghcr-repo: ghcr.io/${{ github.repository_owner }}/immich-server
-      dockerhub-repo: altran1502/immich-server
+      image: immich-server
       context: .
       dockerfile: server/Dockerfile
-      artifact-key-base: server-digests
       dockerhub-push: ${{ github.event_name == 'release' }}
       build-args: |
         DEVICE=cpu
