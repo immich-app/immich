@@ -47,9 +47,13 @@ class Asset {
             : remote.stack?.primaryAssetId,
         stackCount = remote.stack?.assetCount ?? 0,
         stackId = remote.stack?.id,
-        thumbhash = remote.thumbhash,
-        people = remote.people {
-    altText = getAltText(exifInfo, fileCreatedAt, type, people.map((p) => p.name).toList());
+        thumbhash = remote.thumbhash {
+    altText = getAltText(
+      exifInfo,
+      fileCreatedAt,
+      type,
+      remote.people.map((p) => p.name).toList(),
+    );
   }
 
   Asset({
@@ -76,8 +80,7 @@ class Asset {
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
-    this.people = const [],
-    this.altText,
+    this.altText = "test",
   });
 
   @ignore
@@ -179,8 +182,6 @@ class Asset {
   String? stackPrimaryAssetId;
 
   int stackCount;
-
-  List<PersonWithFacesResponseDto> people;
 
   String? altText;
 

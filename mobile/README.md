@@ -17,29 +17,46 @@ To add a new translation text, enter the key-value pair in the `i18n/en.json` in
 make translation
 ```
 
+## Isar models
+
+Isar generates serialization code for the entities in `lib/entities`. 
+If you change the properties of an entitiy class, run `dart run build_runner build` to re-generate these classes.
+
 ## Immich-Flutter Directory Structure
 
-Below are the directory inside the `lib` directory:
+Below are the directories inside the `lib` directory:
 
 - `constants`: Store essential constants utilized across the application, like colors and locale.
 
+- 'domain': This directory contains the domain layer of Immich. The domain layer is responsible for the business logic of the app.
+
+- 'entities': Data structures, similar to `models`. Unlike models, entities are stored in the on-device database.
+
 - `extensions`: Extensions enhancing various existing functionalities within the app, such as asset_extensions.dart, string_extensions.dart, and more.
 
-- `module_template`: Provides a template structure for different modules within the app, including subdivisions like models, providers, services, UI, and views.
+- 'infrastructure': The infrastructure layer is responsible for the implementation details of the app. It includes data sources, APIs, and other external dependencies.
 
-  - `models`: Placeholder for storing module-specific models.
-  - `providers`: Section to define module-specific Riverpod providers.
-  - `services`: Houses services tailored to the module's functionality.
-  - `ui`: Contains UI components and widgets for the module.
-  - `views`: Placeholder for module-specific views.
+- 'interfaces': Consists of Dart interface files defining APIs and contracts.
 
-- `modules`: Organizes different functional modules of the app, each containing subdivisions for models, providers, services, UI, and views. This structure promotes modular development and scalability.
+- 'mixins': .
+
+- `models`: Data structures, similar to `entities`. Unlike entities, models are ephemeral and only kept in memory.
+
+- 'pages': .
+ 
+- `providers`: Section to define module-specific Riverpod providers.
+
+- 'repositories': .
 
 - `routing`: Includes guards like auth_guard.dart, backup_permission_guard.dart, and routers like router.dart and router.gr.dart for streamlined navigation and permission management.
 
-- `shared`: cache, models, providers, services, ui, views: Encapsulates shared functionalities, such as caching mechanisms, common models, providers, services, UI components, and views accessible across the application.
+- `services`: Houses services tailored to the module's functionality.
+
+- `theme`: .
 
 - `utils`: A collection of utility classes and functions catering to different app functionalities, including async_mutex.dart, bytes_units.dart, debounce.dart, migration.dart, and more.
+
+- 'widgets': .
 
 ## Immich Architectural Pattern
 
