@@ -84,8 +84,12 @@ class ImmichThumbnail extends HookConsumerWidget {
         .watch(assetPeopleNotifierProvider(asset!))
         .value
         ?.where((p) => !p.isHidden);
-    final assetAltText = getAltText(asset!.exifInfo, asset!.fileCreatedAt,
-        asset!.type, people?.map((p) => p.name).toList() ?? []);
+    final assetAltText = getAltText(
+      asset!.exifInfo,
+      asset!.fileCreatedAt,
+      asset!.type,
+      people?.map((p) => p.name).toList() ?? [],
+    );
 
     return Semantics(
       label: assetAltText,
