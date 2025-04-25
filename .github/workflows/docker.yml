@@ -40,6 +40,8 @@ jobs:
               - 'machine-learning/**'
             workflow:
               - '.github/workflows/docker.yml'
+              - '.github/workflows/multi-runner-build.yml'
+              - '.github/actions/image-build'
 
       - name: Check if we should force jobs to run
         id: should_force
