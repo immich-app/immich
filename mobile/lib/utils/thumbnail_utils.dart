@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:intl/message_format.dart';
 
 String getAltText(
   ExifInfo? exifInfo,
@@ -13,7 +14,8 @@ String getAltText(
   }
   final (template, args) =
       getAltTextTemplate(exifInfo, fileCreatedAt, type, peopleNames);
-  return template.tr(namedArgs: args);
+  // easy_localization doesn't support the select-operation in strings, so we need an additional formatting step.
+  return MessageFormat(template.tr(namedArgs: args)).format(args);
 }
 
 (String, Map<String, String>) getAltTextTemplate(
