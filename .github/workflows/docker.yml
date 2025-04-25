@@ -103,296 +103,73 @@ jobs:
           docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_PR}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
           docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_COMMIT}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
 
-  build_and_push_ml:
+  machine-learning:
     name: Build and Push ML
     needs: pre-job
-    permissions:
-      contents: read
-      packages: write
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
-    runs-on: ${{ matrix.runner }}
     strategy:
-      # Prevent a failure in one image from stopping the other builds
       fail-fast: false
-      matrix:
-        include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-            device: cpu
-
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
-            device: cpu
-
-          - platform: linux/amd64
-            runner: ubuntu-latest
-            device: cuda
-            suffix: -cuda
-
-          - platform: linux/amd64
-            runner: mich
-            device: rocm
-            suffix: -rocm
-
-          - platform: linux/amd64
-            runner: ubuntu-latest
-            device: openvino
-            suffix: -openvino
-
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
-            device: armnn
-            suffix: -armnn
-
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
-            device: rknn
-            suffix: -rknn
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          persist-credentials: false
-
-      - uses: ./.github/actions/image-build
-        with:
-          context: machine-learning
-          dockerfile: machine-learning/Dockerfile
-          ghcr-repo: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
-          ghcr-token: ${{ secrets.GITHUB_TOKEN }}
-          platform: ${{ matrix.platform }}
-          artifact-key-base: ml-digests-${{ matrix.device }}
-          build-args: |
-            DEVICE=${{ matrix.device }}
-            BUILD_ID=${{ github.run_id }}
-            BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
-            BUILD_SOURCE_REF=${{ github.ref_name }}
-            BUILD_SOURCE_COMMIT=${{ github.sha }}
-
-  merge_ml:
-    name: Merge & Push ML
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read
-      packages: write
-    if: ${{ needs.pre-job.outputs.should_run_ml == 'true' && !github.event.pull_request.head.repo.fork }}
-    env:
-      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
-      DOCKER_REPO: altran1502/immich-machine-learning
-    strategy:
       matrix:
         include:
           - device: cpu
+            tag-suffix: ''
           - device: cuda
-            suffix: -cuda
-          - device: rocm
-            suffix: -rocm
+            platforms: linux/amd64
           - device: openvino
-            suffix: -openvino
+            platforms: linux/amd64
           - device: armnn
-            suffix: -armnn
+            platforms: linux/arm64
           - device: rknn
-            suffix: -rknn
-    needs:
-      - build_and_push_ml
-    steps:
-      - name: Download digests
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
-        with:
-          path: ${{ runner.temp }}/digests
-          pattern: ml-digests-${{ matrix.device }}-*
-          merge-multiple: true
-
-      - name: Login to Docker Hub
-        if: ${{ github.event_name == 'release' }}
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Login to GHCR
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
-
-      - name: Generate docker image tags
-        id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
-        env:
-          DOCKER_METADATA_PR_HEAD_SHA: 'true'
-        with:
-          flavor: |
-            # Disable latest tag
-            latest=false
-            suffix=${{ matrix.suffix }}
-          images: |
-            name=${{ env.GHCR_REPO }}
-            name=${{ env.DOCKER_REPO }},enable=${{ github.event_name == 'release' }}
-          tags: |
-            # Tag with branch name
-            type=ref,event=branch
-            # Tag with pr-number
-            type=ref,event=pr
-            # Tag with long commit sha hash
-            type=sha,format=long,prefix=commit-
-            # Tag with git tag on release
-            type=ref,event=tag
-            type=raw,value=release,enable=${{ github.event_name == 'release' }}
-
-      - name: Create manifest list and push
-        working-directory: ${{ runner.temp }}/digests
-        run: |
-          # Process annotations
-          declare -a ANNOTATIONS=()
-          if [[ -n "$DOCKER_METADATA_OUTPUT_JSON" ]]; then
-            while IFS= read -r annotation; do
-              # Extract key and value by removing the manifest: prefix
-              if [[ "$annotation" =~ ^manifest:(.+)=(.+)$ ]]; then
-                key="${BASH_REMATCH[1]}"
-                value="${BASH_REMATCH[2]}"
-                # Use array to properly handle arguments with spaces
-                ANNOTATIONS+=(--annotation "index:$key=$value")
-              fi
-            done < <(jq -r '.annotations[]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
-          fi
-
-          TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-          SOURCE_ARGS=$(printf "${GHCR_REPO}@sha256:%s " *)
-
-          docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS
-
-  build_and_push_server:
-    name: Build and Push Server
-    runs-on: ${{ matrix.runner }}
-    permissions:
-      contents: read
-      packages: write
-    needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          persist-credentials: false
-
-      - uses: ./.github/actions/image-build
-        with:
-          context: .
-          dockerfile: server/Dockerfile
-          ghcr-repo: ghcr.io/${{ github.repository_owner }}/immich-server
-          ghcr-token: ${{ secrets.GITHUB_TOKEN }}
-          platform: ${{ matrix.platform }}
-          artifact-key-base: server-digests-${{ matrix.device }}
-          build-args: |
-            DEVICE=cpu
-            BUILD_ID=${{ github.run_id }}
-            BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
-            BUILD_SOURCE_REF=${{ github.ref_name }}
-            BUILD_SOURCE_COMMIT=${{ github.sha }}
-
-  merge_server:
-    name: Merge & Push Server
-    runs-on: ubuntu-latest
+            platforms: linux/arm64
+          - device: rocm
+            platforms: linux/amd64
+            runner-mapping: '{"linux/amd64": "mich"}'
+    uses: ./.github/workflows/multi-runner-build.yml
     permissions:
       contents: read
       actions: read
       packages: write
-    if: ${{ needs.pre-job.outputs.should_run_server == 'true' && !github.event.pull_request.head.repo.fork }}
-    env:
-      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
-      DOCKER_REPO: altran1502/immich-server
-    needs:
-      - build_and_push_server
-    steps:
-      - name: Download digests
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
-        with:
-          path: ${{ runner.temp }}/digests
-          pattern: server-digests-*
-          merge-multiple: true
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    with:
+      ghcr-repo: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
+      dockerhub-repo: altran1502/immich-machine-learning
+      context: machine-learning
+      dockerfile: machine-learning/Dockerfile
+      platforms: ${{ matrix.platforms }}
+      runner-mapping: ${{ matrix.runner-mapping }}
+      artifact-key-base: ml-digests-${{ matrix.device }}
+      tag-suffix: ${{ matrix.tag-suffix || format('-{0}', matrix.device) }}
+      dockerhub-push: ${{ github.event_name == 'release' }}
+      build-args: |
+        DEVICE=${{ matrix.device }}
 
-      - name: Login to Docker Hub
-        if: ${{ github.event_name == 'release' }}
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Login to GHCR
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
-
-      - name: Generate docker image tags
-        id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
-        env:
-          DOCKER_METADATA_PR_HEAD_SHA: 'true'
-        with:
-          flavor: |
-            # Disable latest tag
-            latest=false
-            suffix=${{ matrix.suffix }}
-          images: |
-            name=${{ env.GHCR_REPO }}
-            name=${{ env.DOCKER_REPO }},enable=${{ github.event_name == 'release' }}
-          tags: |
-            # Tag with branch name
-            type=ref,event=branch
-            # Tag with pr-number
-            type=ref,event=pr
-            # Tag with long commit sha hash
-            type=sha,format=long,prefix=commit-
-            # Tag with git tag on release
-            type=ref,event=tag
-            type=raw,value=release,enable=${{ github.event_name == 'release' }}
-
-      - name: Create manifest list and push
-        working-directory: ${{ runner.temp }}/digests
-        run: |
-          # Process annotations
-          declare -a ANNOTATIONS=()
-          if [[ -n "$DOCKER_METADATA_OUTPUT_JSON" ]]; then
-            while IFS= read -r annotation; do
-              # Extract key and value by removing the manifest: prefix
-              if [[ "$annotation" =~ ^manifest:(.+)=(.+)$ ]]; then
-                key="${BASH_REMATCH[1]}"
-                value="${BASH_REMATCH[2]}"
-                # Use array to properly handle arguments with spaces
-                ANNOTATIONS+=(--annotation "index:$key=$value")
-              fi
-            done < <(jq -r '.annotations[]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
-          fi
-
-          TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-          SOURCE_ARGS=$(printf "${GHCR_REPO}@sha256:%s " *)
-
-          docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS
+  server:
+    name: Build and Push Server
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
+    uses: ./.github/workflows/multi-runner-build.yml
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    with:
+      ghcr-repo: ghcr.io/${{ github.repository_owner }}/immich-server
+      dockerhub-repo: altran1502/immich-server
+      context: .
+      dockerfile: server/Dockerfile
+      artifact-key-base: server-digests
+      dockerhub-push: ${{ github.event_name == 'release' }}
+      build-args: |
+        DEVICE=cpu
 
   success-check-server:
     name: Docker Build & Push Server Success
-    needs: [merge_server, retag_server]
+    needs: [server, retag_server]
     permissions: {}
     runs-on: ubuntu-latest
     if: always()
@@ -407,7 +184,7 @@ jobs:
 
   success-check-ml:
     name: Docker Build & Push ML Success
-    needs: [merge_ml, retag_ml]
+    needs: [machine-learning, retag_ml]
     permissions: {}
     runs-on: ubuntu-latest
     if: always()

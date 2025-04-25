@@ -95,7 +95,12 @@ runs:
           type=registry,ref=${{ inputs.ghcr-repo }}-build-cache:${{ steps.cache-target.outputs.cache-key-base }}-${{ env.CACHE_KEY_SUFFIX }}
           type=registry,ref=${{ inputs.ghcr-repo }}-build-cache:${{ steps.cache-target.outputs.cache-key-base }}-main
         outputs: type=image,"name=${{ inputs.ghcr-repo }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
-        build-args: ${{ inputs.build-args }}
+        build-args: |
+          BUILD_ID=${{ github.run_id }}
+          BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.meta.outputs.tags }}
+          BUILD_SOURCE_REF=${{ github.ref_name }}
+          BUILD_SOURCE_COMMIT=${{ github.sha }}
+          ${{ inputs.build-args }}
 
     - name: Export digest
       shell: bash
