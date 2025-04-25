@@ -6,12 +6,15 @@ import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
     as entity;
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
+import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart' show AssetEntity;
+
+import '../utils/thumbnail_utils.dart';
 
 part 'asset.entity.g.dart';
 
@@ -45,7 +48,9 @@ class Asset {
             : remote.stack?.primaryAssetId,
         stackCount = remote.stack?.assetCount ?? 0,
         stackId = remote.stack?.id,
-        thumbhash = remote.thumbhash;
+        thumbhash = remote.thumbhash {
+    altText = getAltText(exifInfo);
+  }
 
   Asset({
     this.id = Isar.autoIncrement,
@@ -90,6 +95,7 @@ class Asset {
         title: fileName,
       );
     }
+    getAllPeople(ref)
     return _local;
   }
 
@@ -172,6 +178,8 @@ class Asset {
   String? stackPrimaryAssetId;
 
   int stackCount;
+
+  String? altText;
 
   /// Returns null if the asset has no sync access to the exif info
   @ignore
@@ -574,12 +582,16 @@ enum AssetState {
 extension AssetsHelper on IsarCollection<Asset> {
   Future<int> deleteAllByRemoteId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value(0) : remote(ids).deleteAll();
+
   Future<int> deleteAllByLocalId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value(0) : local(ids).deleteAll();
+
   Future<List<Asset>> getAllByRemoteId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value([]) : remote(ids).findAll();
+
   Future<List<Asset>> getAllByLocalId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value([]) : local(ids).findAll();
+
   Future<Asset?> getByRemoteId(String id) =>
       where().remoteIdEqualTo(id).findFirst();
 
@@ -587,6 +599,7 @@ extension AssetsHelper on IsarCollection<Asset> {
     Iterable<String> ids,
   ) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));
+
   QueryBuilder<Asset, Asset, QAfterWhereClause> local(
     Iterable<String> ids,
   ) {

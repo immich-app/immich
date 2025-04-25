@@ -77,18 +77,21 @@ class ImmichThumbnail extends HookConsumerWidget {
       );
     }
 
-    return OctoImage.fromSet(
-      placeholderFadeInDuration: Duration.zero,
-      fadeInDuration: Duration.zero,
-      fadeOutDuration: const Duration(milliseconds: 100),
-      octoSet: blurHashOrPlaceholder(blurhash),
-      image: ImmichThumbnail.imageProvider(
-        asset: asset,
-        userId: userId,
+    return Semantics(
+      label: asset?.altText,
+      child: OctoImage.fromSet(
+        placeholderFadeInDuration: Duration.zero,
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: const Duration(milliseconds: 100),
+        octoSet: blurHashOrPlaceholder(blurhash),
+        image: ImmichThumbnail.imageProvider(
+          asset: asset,
+          userId: userId,
+        ),
+        width: width,
+        height: height,
+        fit: fit,
       ),
-      width: width,
-      height: height,
-      fit: fit,
     );
   }
 }
