@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
@@ -74,27 +74,39 @@ Future<void> _migrateDeviceAsset(Isar db) async {
 
   final PermissionState ps = await PhotoManager.requestPermissionExtend();
   if (!ps.hasAccess) {
-    debugPrint(
-      "[MIGRATION] Photo library permission not granted. Skipping device asset migration.",
-    );
+    if (kDebugMode) {
+      debugPrint(
+        "[MIGRATION] Photo library permission not granted. Skipping device asset migration.",
+      );
+    }
+
     return;
   }
 
-  // Get the main album (usually "Recents" or "All Photos")
+  List<_DeviceAsset> localAssets = [];
   final List<AssetPathEntity> paths =
       await PhotoManager.getAssetPathList(onlyAll: true);
+
   if (paths.isEmpty) {
-    return;
+    localAssets = (await db.assets
+            .where()
+            .anyOf(ids, (query, id) => query.localIdEqualTo(id.assetId))
+            .findAll())
+        .map(
+          (a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt),
+        )
+        .toList();
+  } else {
+    final AssetPathEntity albumWithAll = paths.first;
+    final int assetCount = await albumWithAll.assetCountAsync;
+
+    final List<AssetEntity> allDeviceAssets =
+        await albumWithAll.getAssetListRange(start: 0, end: assetCount);
+
+    localAssets = allDeviceAssets
+        .map((a) => _DeviceAsset(assetId: a.id, dateTime: a.modifiedDateTime))
+        .toList();
   }
-  final AssetPathEntity albumWithAll = paths.first;
-  final int assetCount = await albumWithAll.assetCountAsync;
-
-  final List<AssetEntity> allDeviceAssets =
-      await albumWithAll.getAssetListRange(start: 0, end: assetCount);
-
-  final localAssets = allDeviceAssets
-      .map((a) => _DeviceAsset(assetId: a.id, dateTime: a.modifiedDateTime))
-      .toList();
 
   debugPrint("[MIGRATION] Device Asset Ids length - ${ids.length}");
   debugPrint("[MIGRATION] Local Asset Ids length - ${localAssets.length}");
@@ -116,19 +128,27 @@ Future<void> _migrateDeviceAsset(Isar db) async {
       return false;
     },
     onlyFirst: (deviceAsset) {
-      debugPrint(
-        '[MIGRATION] DeviceAsset not found in local assets: ${deviceAsset.assetId}',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          '[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}',
+        );
+      }
     },
     onlySecond: (asset) {
-      debugPrint(
-        '[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          '[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}',
+        );
+      }
     },
   );
-  debugPrint(
-    "[MIGRATION] Total number of device assets migrated - ${toAdd.length}",
-  );
+
+  if (kDebugMode) {
+    debugPrint(
+      "[MIGRATION] Total number of device assets migrated - ${toAdd.length}",
+    );
+  }
+
   await db.writeTxn(() async {
     await db.deviceAssetEntitys.putAll(toAdd);
   });
