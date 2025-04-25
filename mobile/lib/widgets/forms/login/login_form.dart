@@ -223,6 +223,9 @@ class LoginForm extends HookConsumerWidget {
       return List<int>.generate(length, (i) => random.nextInt(256));
     }
 
+    /// Per specification, the code verifier must be 43-128 characters long
+    /// and consist of characters [A-Z, a-z, 0-9, "-", ".", "_", "~"]
+    /// https://datatracker.ietf.org/doc/html/rfc7636#section-4.1
     String randomCodeVerifier() {
       return base64Url.encode(randomBytes(42));
     }
@@ -238,9 +241,7 @@ class LoginForm extends HookConsumerWidget {
       String? oAuthServerUrl;
 
       final state = generateRandomString(32);
-      // Per specification, the code verifier must be 43-128 characters long
-      // and consist of characters [A-Z, a-z, 0-9, "-", ".", "_", "~"]
-      // https://datatracker.ietf.org/doc/html/rfc7636#section-4.1
+
       final codeVerifier = randomCodeVerifier();
       final codeChallenge = await generatePKCECodeChallenge(codeVerifier);
 
