@@ -13,8 +13,6 @@ import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart' show AssetEntity;
 
-import '../utils/thumbnail_utils.dart';
-
 part 'asset.entity.g.dart';
 
 /// Asset (online or local)
@@ -47,14 +45,7 @@ class Asset {
             : remote.stack?.primaryAssetId,
         stackCount = remote.stack?.assetCount ?? 0,
         stackId = remote.stack?.id,
-        thumbhash = remote.thumbhash {
-    altText = getAltText(
-      exifInfo,
-      fileCreatedAt,
-      type,
-      remote.people.map((p) => p.name).toList(),
-    );
-  }
+        thumbhash = remote.thumbhash;
 
   Asset({
     this.id = Isar.autoIncrement,
@@ -80,7 +71,6 @@ class Asset {
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
-    this.altText = "test",
   });
 
   @ignore
@@ -182,8 +172,6 @@ class Asset {
   String? stackPrimaryAssetId;
 
   int stackCount;
-
-  String? altText;
 
   /// Returns null if the asset has no sync access to the exif info
   @ignore
