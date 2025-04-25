@@ -105,7 +105,7 @@ export class OAuthRepository {
     signingAlgorithm,
   }: OAuthConfig) {
     try {
-      const { allowInsecureRequests, discovery } = await import('openid-client');
+      const { allowInsecureRequests, discovery, ClientSecretBasic } = await import('openid-client');
       return await discovery(
         new URL(issuerUrl),
         clientId,
@@ -116,7 +116,7 @@ export class OAuthRepository {
           id_token_signed_response_alg: signingAlgorithm,
           timeout: 30_000,
         },
-        undefined,
+        ClientSecretBasic(clientSecret),
         { execute: [allowInsecureRequests] },
       );
     } catch (error: any | AggregateError) {
