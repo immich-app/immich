@@ -3726,7 +3726,8 @@ export enum Colorspace {
 }
 export enum ImageFormat {
     Jpeg = "jpeg",
-    Webp = "webp"
+    Webp = "webp",
+    Jxl = "jxl"
 }
 export enum LogLevel {
     Verbose = "verbose",
