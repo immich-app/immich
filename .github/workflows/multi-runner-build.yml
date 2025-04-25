@@ -72,7 +72,7 @@ jobs:
           SUFFIX: ${{ inputs.tag-suffix }}
         run: |
           if [[ -n "${SUFFIX}" ]]; then
-              base="${IMAGE}-${SUFFIX}-digests"
+              base="${IMAGE}${SUFFIX}-digests"
           else
               base="${IMAGE}-digests"
           fi
@@ -106,7 +106,7 @@ jobs:
           build-args: ${{ inputs.build-args }}
 
   merge:
-    needs: [ matrix, build ]
+    needs: [matrix, build]
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.head.repo.fork }}
     permissions:
@@ -147,7 +147,7 @@ jobs:
           flavor: |
             # Disable latest tag
             latest=false
-            suffix=-${{ inputs.tag-suffix }}
+            suffix=${{ inputs.tag-suffix }}
           images: |
             name=${{ env.GHCR_IMAGE }}
             name=${{ env.DOCKERHUB_IMAGE }},enable=${{ inputs.dockerhub-push }}

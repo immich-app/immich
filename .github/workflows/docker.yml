@@ -116,14 +116,19 @@ jobs:
           - device: cpu
             tag-suffix: ''
           - device: cuda
+            tag-suffix: '-cuda'
             platforms: linux/amd64
           - device: openvino
+            tag-suffix: '-openvino'
             platforms: linux/amd64
           - device: armnn
+            tag-suffix: '-armnn'
             platforms: linux/arm64
           - device: rknn
+            tag-suffix: '-rknn'
             platforms: linux/arm64
           - device: rocm
+            tag-suffix: '-rocm'
             platforms: linux/amd64
             runner-mapping: '{"linux/amd64": "mich"}'
     uses: ./.github/workflows/multi-runner-build.yml
@@ -140,7 +145,7 @@ jobs:
       dockerfile: machine-learning/Dockerfile
       platforms: ${{ matrix.platforms }}
       runner-mapping: ${{ matrix.runner-mapping }}
-      tag-suffix: ${{ matrix.tag-suffix || matrix.device }}
+      tag-suffix: ${{ matrix.tag-suffix }}
       dockerhub-push: ${{ github.event_name == 'release' }}
       build-args: |
         DEVICE=${{ matrix.device }}
