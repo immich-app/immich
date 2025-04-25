@@ -218,14 +218,13 @@ class LoginForm extends HookConsumerWidget {
       );
     }
 
-    List<int> generateRandomBytes(int length) {
+    List<int> randomBytes(int length) {
       final random = Random.secure();
       return List<int>.generate(length, (i) => random.nextInt(256));
     }
 
-    String generateCodeVerifier() {
-      final bytes = generateRandomBytes(32);
-      return base64Url.encode(bytes).replaceAll('=', '');
+    String randomCodeVerifier() {
+      return base64Url.encode(randomBytes(42));
     }
 
     Future<String> generatePKCECodeChallenge(String codeVerifier) async {
@@ -242,7 +241,7 @@ class LoginForm extends HookConsumerWidget {
       // Per specification, the code verifier must be 43-128 characters long
       // and consist of characters [A-Z, a-z, 0-9, "-", ".", "_", "~"]
       // https://datatracker.ietf.org/doc/html/rfc7636#section-4.1
-      final codeVerifier = generateCodeVerifier();
+      final codeVerifier = randomCodeVerifier();
       final codeChallenge = await generatePKCECodeChallenge(codeVerifier);
 
       try {
