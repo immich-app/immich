@@ -574,16 +574,12 @@ enum AssetState {
 extension AssetsHelper on IsarCollection<Asset> {
   Future<int> deleteAllByRemoteId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value(0) : remote(ids).deleteAll();
-
   Future<int> deleteAllByLocalId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value(0) : local(ids).deleteAll();
-
   Future<List<Asset>> getAllByRemoteId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value([]) : remote(ids).findAll();
-
   Future<List<Asset>> getAllByLocalId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value([]) : local(ids).findAll();
-
   Future<Asset?> getByRemoteId(String id) =>
       where().remoteIdEqualTo(id).findFirst();
 
@@ -591,7 +587,6 @@ extension AssetsHelper on IsarCollection<Asset> {
     Iterable<String> ids,
   ) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));
-
   QueryBuilder<Asset, Asset, QAfterWhereClause> local(
     Iterable<String> ids,
   ) {
