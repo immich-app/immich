@@ -4,7 +4,7 @@ import Layout from '@theme/Layout';
 import { discordPath, discordViewBox } from '@site/src/components/svg-paths';
 import ThemedImage from '@theme/ThemedImage';
 import Icon from '@mdi/react';
-import { mdiAndroid } from '@mdi/js';
+
 function HomepageHeader() {
   return (
     <header>
@@ -37,7 +37,7 @@ function HomepageHeader() {
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-9 gap-4 ">
           <Link
             className="flex place-items-center place-content-center py-3 px-8 border bg-immich-primary dark:bg-immich-dark-primary rounded-xl no-underline hover:no-underline text-white hover:text-gray-50 dark:text-immich-dark-bg font-bold uppercase"
-            to="docs/overview/introduction"
+            to="docs/overview/quick-start"
           >
             Get started
           </Link>
@@ -119,7 +119,7 @@ export default function Home(): JSX.Element {
       <HomepageHeader />
       <div className="flex flex-col place-items-center text-center place-content-center dark:bg-immich-dark-bg py-8">
         <p>This project is available under GNU AGPL v3 license.</p>
-        <p className="text-xs">Privacy should not be a luxury</p>
+        <p className="text-sm">Privacy should not be a luxury</p>
       </div>
     </Layout>
   );

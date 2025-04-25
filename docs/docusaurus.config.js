@@ -95,7 +95,7 @@ const config = {
             position: 'right',
           },
           {
-            to: '/docs/overview/introduction',
+            to: '/docs/overview/welcome',
             position: 'right',
             label: 'Docs',
           },
@@ -134,7 +134,7 @@ const config = {
             items: [
               {
                 label: 'Welcome',
-                to: '/docs/overview/introduction',
+                to: '/docs/overview/welcome',
               },
               {
                 label: 'Installation',
