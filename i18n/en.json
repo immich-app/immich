@@ -420,6 +420,8 @@
   "album_viewer_appbar_share_to": "Share To",
   "album_viewer_page_share_add_users": "Add users",
   "album_with_link_access": "Let anyone with the link see photos and people in this album.",
+  "is_album_public_in_instance": "Is album public in instance",
+  "is_album_public_in_instance_description": "If enabled, this album will be visible to all users in the instance",
   "albums": "Albums",
   "albums_count": "{count, plural, one {{count, number} Album} other {{count, number} Albums}}",
   "all": "All",

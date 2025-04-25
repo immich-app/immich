@@ -11,6 +11,7 @@
     AlbumUserRole,
     getAllSharedLinks,
     searchUsers,
+    updateAlbumInfo,
     type AlbumResponseDto,
     type AlbumUserAddDto,
     type SharedLinkResponseDto,
@@ -21,6 +22,8 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { user } from '$lib/stores/user.store';
 
   interface Props {
     album: AlbumResponseDto;
@@ -73,6 +76,15 @@
     } else {
       selectedUsers[user.id].role = role;
     }
+  };
+
+  const handleTogglePublicInInstance = () => {
+    updateAlbumInfo({
+      id: album.id,
+      updateAlbumDto: {
+        isPublicInInstance: !album.isPublicInInstance,
+      },
+    });
   };
 </script>
 
@@ -165,8 +177,29 @@
         >
       </div>
     {/if}
+    <hr class="my-4" />
+
+    <!-- if is album author -->
+    {#if album.ownerId === $user.id}
+      <Stack gap={6} class="px-4">
+        <SettingSwitch
+          title={$t('is_album_public_in_instance')}
+          subtitle={$t('is_album_public_in_instance_description')}
+          bind:checked={album.isPublicInInstance}
+          onToggle={handleTogglePublicInInstance}
+        />
+      </Stack>
+    {/if}
 
     <hr class="my-4" />
+
+    {#if sharedLinks.length > 0}
+      <div class="flex justify-between items-center">
+        <Text>{$t('shared_links')}</Text>
+        <Link href={AppRoute.SHARED_LINKS} class="text-sm">{$t('view_all')}</Link>
+      </div>
+      <hr class="my-4" />
+    {/if}
 
     <Stack gap={6}>
       {#if sharedLinks.length > 0}
