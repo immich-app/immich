@@ -111,11 +111,6 @@ jobs:
       packages: write
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
     runs-on: ${{ matrix.runner }}
-    env:
-      image: immich-machine-learning
-      context: machine-learning
-      file: machine-learning/Dockerfile
-      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
     strategy:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
@@ -155,87 +150,25 @@ jobs:
             suffix: -rknn
 
     steps:
-      - name: Prepare
-        run: |
-          platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
-
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+      - uses: ./.github/actions/image-build
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate cache key suffix
-        env:
-          REF: ${{ github.ref_name }}
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
-          else
-            SUFFIX=$(echo "${REF}" | sed 's/[^a-zA-Z0-9]/-/g')
-            echo "CACHE_KEY_SUFFIX=${SUFFIX}" >> $GITHUB_ENV
-          fi
-
-      - name: Generate cache target
-        id: cache-target
-        run: |
-          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            # Essentially just ignore the cache output (forks can't write to registry cache)
-            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
-          else
-            echo "cache-to=type=registry,ref=${GHCR_REPO}-build-cache:${PLATFORM_PAIR}-${{ matrix.device }}-${CACHE_KEY_SUFFIX},mode=max,compression=zstd" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate docker image tags
-        id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
-        env:
-          DOCKER_METADATA_PR_HEAD_SHA: 'true'
-
-      - name: Build and push image
-        id: build
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
-        with:
-          context: ${{ env.context }}
-          file: ${{ env.file }}
-          platforms: ${{ matrix.platforms }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-to: ${{ steps.cache-target.outputs.cache-to }}
-          cache-from: |
-            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }}
-            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-main
-          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
+          context: machine-learning
+          dockerfile: machine-learning/Dockerfile
+          ghcr-repo: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
+          ghcr-token: ${{ secrets.GITHUB_TOKEN }}
+          platform: ${{ matrix.platform }}
+          artifact-key-base: ml-digests-${{ matrix.device }}
           build-args: |
             DEVICE=${{ matrix.device }}
             BUILD_ID=${{ github.run_id }}
             BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
             BUILD_SOURCE_REF=${{ github.ref_name }}
             BUILD_SOURCE_COMMIT=${{ github.sha }}
-
-      - name: Export digest
-        run: | # zizmor: ignore[template-injection]
-          mkdir -p ${{ runner.temp }}/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "${{ runner.temp }}/digests/${digest#sha256:}"
-
-      - name: Upload digest
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: ml-digests-${{ matrix.device }}-${{ env.PLATFORM_PAIR }}
-          path: ${{ runner.temp }}/digests/*
-          if-no-files-found: error
-          retention-days: 1
 
   merge_ml:
     name: Merge & Push ML
@@ -343,11 +276,6 @@ jobs:
       packages: write
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
-    env:
-      image: immich-server
-      context: .
-      file: server/Dockerfile
-      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
     strategy:
       fail-fast: false
       matrix:
@@ -356,88 +284,27 @@ jobs:
             runner: ubuntu-latest
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
-    steps:
-      - name: Prepare
-        run: |
-          platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
+    steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+      - uses: ./.github/actions/image-build
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate cache key suffix
-        env:
-          REF: ${{ github.ref_name }}
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
-          else
-            SUFFIX=$(echo "${REF}" | sed 's/[^a-zA-Z0-9]/-/g')
-            echo "CACHE_KEY_SUFFIX=${SUFFIX}" >> $GITHUB_ENV
-          fi
-
-      - name: Generate cache target
-        id: cache-target
-        run: |
-          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            # Essentially just ignore the cache output (forks can't write to registry cache)
-            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
-          else
-            echo "cache-to=type=registry,ref=${GHCR_REPO}-build-cache:${PLATFORM_PAIR}-${CACHE_KEY_SUFFIX},mode=max,compression=zstd" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate docker image tags
-        id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
-        env:
-          DOCKER_METADATA_PR_HEAD_SHA: 'true'
-
-      - name: Build and push image
-        id: build
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
-        with:
-          context: ${{ env.context }}
-          file: ${{ env.file }}
-          platforms: ${{ matrix.platform }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-to: ${{ steps.cache-target.outputs.cache-to }}
-          cache-from: |
-            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }}
-            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-main
-          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
+          context: .
+          dockerfile: server/Dockerfile
+          ghcr-repo: ghcr.io/${{ github.repository_owner }}/immich-server
+          ghcr-token: ${{ secrets.GITHUB_TOKEN }}
+          platform: ${{ matrix.platform }}
+          artifact-key-base: server-digests-${{ matrix.device }}
           build-args: |
             DEVICE=cpu
             BUILD_ID=${{ github.run_id }}
             BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
             BUILD_SOURCE_REF=${{ github.ref_name }}
             BUILD_SOURCE_COMMIT=${{ github.sha }}
-
-      - name: Export digest
-        run: | # zizmor: ignore[template-injection]
-          mkdir -p ${{ runner.temp }}/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "${{ runner.temp }}/digests/${digest#sha256:}"
-
-      - name: Upload digest
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: server-digests-${{ env.PLATFORM_PAIR }}
-          path: ${{ runner.temp }}/digests/*
-          if-no-files-found: error
-          retention-days: 1
 
   merge_server:
     name: Merge & Push Server
