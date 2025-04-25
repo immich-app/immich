@@ -284,7 +284,7 @@ export class MediaService extends BaseService {
       processInvalidImages,
       // unlimited size for fullsize, or cap to preview size
       size: shouldConvertFullsize ? undefined : image.preview.size,
-      orientation: Number(asset.exifInfo.orientation),
+      orientation: asset.exifInfo.orientation ? undefined : Number(asset.exifInfo.orientation),
     };
     const { info, data } = await this.mediaRepository.decodeImage(thumbSourcePath, decodeOptions);
 
