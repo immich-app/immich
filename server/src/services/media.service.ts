@@ -308,7 +308,10 @@ export class MediaService extends BaseService {
         };
         promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
         // drop the extracted image if we don't need it anymore
-        extractedPath && (await this.storageRepository.unlink(extractedPath));
+        if (extractedPath) {
+          await this.storageRepository.unlink(extractedPath);
+          extractedPath = undefined;
+        }
       } else {
         // or just use the extracted image
         fullsizePath = extractedPath;
