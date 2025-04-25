@@ -50,12 +50,6 @@ export class SmartInfoService extends BaseService {
         return;
       }
 
-      const { isPaused } = await this.jobRepository.getQueueStatus(QueueName.SMART_SEARCH);
-      if (!isPaused) {
-        await this.jobRepository.pause(QueueName.SMART_SEARCH);
-      }
-      await this.jobRepository.waitForQueueCompletion(QueueName.SMART_SEARCH);
-
       if (dimSizeChange) {
         this.logger.log(
           `Dimension size of model ${newConfig.machineLearning.clip.modelName} is ${dimSize}, but database expects ${dbDimSize}.`,
@@ -67,9 +61,8 @@ export class SmartInfoService extends BaseService {
         await this.searchRepository.deleteAllSearchEmbeddings();
       }
 
-      if (!isPaused) {
-        await this.jobRepository.resume(QueueName.SMART_SEARCH);
-      }
+      // TODO: A job to reindex all assets should be scheduled, though user
+      // confirmation should probably be requested before doing that.
     });
   }
 
@@ -124,6 +117,13 @@ export class SmartInfoService extends BaseService {
     if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
       this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
       await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
+    }
+
+    const newConfig = await this.getConfig({ withCache: true });
+    if (machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
+      // Skip the job if the the model has changed since the embedding was
+      // generated.
+      return JobStatus.SKIPPED;
     }
 
     await this.searchRepository.upsert(asset.id, embedding);

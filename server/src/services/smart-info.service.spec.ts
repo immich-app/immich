@@ -58,10 +58,6 @@ describe(SmartInfoService.name, () => {
       expect(mocks.search.getDimensionSize).not.toHaveBeenCalled();
       expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
       expect(mocks.search.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
-      expect(mocks.job.getQueueStatus).not.toHaveBeenCalled();
-      expect(mocks.job.pause).not.toHaveBeenCalled();
-      expect(mocks.job.waitForQueueCompletion).not.toHaveBeenCalled();
-      expect(mocks.job.resume).not.toHaveBeenCalled();
     });
 
     it('should return if model and DB dimension size are equal', async () => {
@@ -72,38 +68,15 @@ describe(SmartInfoService.name, () => {
       expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
       expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
       expect(mocks.search.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
-      expect(mocks.job.getQueueStatus).not.toHaveBeenCalled();
-      expect(mocks.job.pause).not.toHaveBeenCalled();
-      expect(mocks.job.waitForQueueCompletion).not.toHaveBeenCalled();
-      expect(mocks.job.resume).not.toHaveBeenCalled();
     });
 
     it('should update DB dimension size if model and DB have different values', async () => {
       mocks.search.getDimensionSize.mockResolvedValue(768);
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.onConfigInit({ newConfig: systemConfigStub.machineLearningEnabled as SystemConfig });
 
       expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
       expect(mocks.search.setDimensionSize).toHaveBeenCalledWith(512);
-      expect(mocks.job.getQueueStatus).toHaveBeenCalledTimes(1);
-      expect(mocks.job.pause).toHaveBeenCalledTimes(1);
-      expect(mocks.job.waitForQueueCompletion).toHaveBeenCalledTimes(1);
-      expect(mocks.job.resume).toHaveBeenCalledTimes(1);
-    });
-
-    it('should skip pausing and resuming queue if already paused', async () => {
-      mocks.search.getDimensionSize.mockResolvedValue(768);
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: true });
-
-      await sut.onConfigInit({ newConfig: systemConfigStub.machineLearningEnabled as SystemConfig });
-
-      expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
-      expect(mocks.search.setDimensionSize).toHaveBeenCalledWith(512);
-      expect(mocks.job.getQueueStatus).toHaveBeenCalledTimes(1);
-      expect(mocks.job.pause).not.toHaveBeenCalled();
-      expect(mocks.job.waitForQueueCompletion).toHaveBeenCalledTimes(1);
-      expect(mocks.job.resume).not.toHaveBeenCalled();
     });
   });
 
@@ -120,10 +93,6 @@ describe(SmartInfoService.name, () => {
       expect(mocks.search.getDimensionSize).not.toHaveBeenCalled();
       expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
       expect(mocks.search.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
-      expect(mocks.job.getQueueStatus).not.toHaveBeenCalled();
-      expect(mocks.job.pause).not.toHaveBeenCalled();
-      expect(mocks.job.waitForQueueCompletion).not.toHaveBeenCalled();
-      expect(mocks.job.resume).not.toHaveBeenCalled();
     });
 
     it('should return if model and DB dimension size are equal', async () => {
@@ -141,15 +110,10 @@ describe(SmartInfoService.name, () => {
       expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
       expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
       expect(mocks.search.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
-      expect(mocks.job.getQueueStatus).not.toHaveBeenCalled();
-      expect(mocks.job.pause).not.toHaveBeenCalled();
-      expect(mocks.job.waitForQueueCompletion).not.toHaveBeenCalled();
-      expect(mocks.job.resume).not.toHaveBeenCalled();
     });
 
     it('should update DB dimension size if model and DB have different values', async () => {
       mocks.search.getDimensionSize.mockResolvedValue(512);
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.onConfigUpdate({
         newConfig: {
@@ -162,15 +126,10 @@ describe(SmartInfoService.name, () => {
 
       expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
       expect(mocks.search.setDimensionSize).toHaveBeenCalledWith(768);
-      expect(mocks.job.getQueueStatus).toHaveBeenCalledTimes(1);
-      expect(mocks.job.pause).toHaveBeenCalledTimes(1);
-      expect(mocks.job.waitForQueueCompletion).toHaveBeenCalledTimes(1);
-      expect(mocks.job.resume).toHaveBeenCalledTimes(1);
     });
 
     it('should clear embeddings if old and new models are different', async () => {
       mocks.search.getDimensionSize.mockResolvedValue(512);
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.onConfigUpdate({
         newConfig: {
@@ -184,31 +143,6 @@ describe(SmartInfoService.name, () => {
       expect(mocks.search.deleteAllSearchEmbeddings).toHaveBeenCalled();
       expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
       expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
-      expect(mocks.job.getQueueStatus).toHaveBeenCalledTimes(1);
-      expect(mocks.job.pause).toHaveBeenCalledTimes(1);
-      expect(mocks.job.waitForQueueCompletion).toHaveBeenCalledTimes(1);
-      expect(mocks.job.resume).toHaveBeenCalledTimes(1);
-    });
-
-    it('should skip pausing and resuming queue if already paused', async () => {
-      mocks.search.getDimensionSize.mockResolvedValue(512);
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: true });
-
-      await sut.onConfigUpdate({
-        newConfig: {
-          machineLearning: { clip: { modelName: 'ViT-B-32__openai', enabled: true }, enabled: true },
-        } as SystemConfig,
-        oldConfig: {
-          machineLearning: { clip: { modelName: 'ViT-B-16__openai', enabled: true }, enabled: true },
-        } as SystemConfig,
-      });
-
-      expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
-      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
-      expect(mocks.job.getQueueStatus).toHaveBeenCalledTimes(1);
-      expect(mocks.job.pause).not.toHaveBeenCalled();
-      expect(mocks.job.waitForQueueCompletion).toHaveBeenCalledTimes(1);
-      expect(mocks.job.resume).not.toHaveBeenCalled();
     });
   });
 
