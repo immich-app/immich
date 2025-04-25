@@ -685,8 +685,10 @@ describe(MediaService.name, () => {
       vi.unstubAllEnvs();
     });
 
-    it('should generate full-size preview using embedded JPEG from RAW images when extractEmbedded is true', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: true } });
+    it('should extract full-size JPEG preview from RAW', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.WEBP }, extractEmbedded: true },
+      });
       mocks.media.extract.mockResolvedValue(ImageFormat.JPEG);
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
@@ -698,9 +700,54 @@ describe(MediaService.name, () => {
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
+        size: 1440, // capped to preview size as fullsize conversion is skipped
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        fullsizeBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          size: 1440,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      );
+    });
+
+    it('should convert full-size WEBP preview from JXL preview of RAW', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.WEBP }, extractEmbedded: true },
+      });
+      mocks.media.extract.mockResolvedValue(ImageFormat.JXL);
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      // param of media.extract() is not the final extracted path when extracted is not a JPEG
+      const extractedPath = mocks.media.extract.mock.lastCall?.[1].toString().replace('.jpeg', '.jxl');
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedPath, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        fullsizeBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.WEBP,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.webp',
+      );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         fullsizeBuffer,
         {
