@@ -64,10 +64,13 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   Icons.face_outlined,
                   size: widgetSize,
                 )
-              : UserCircleAvatar(
-                  radius: 17,
-                  size: 31,
-                  user: user,
+              : Semantics(
+                  label: "logged_in_as".tr(namedArgs: {"user": user.name}),
+                  child: UserCircleAvatar(
+                    radius: 17,
+                    size: 31,
+                    user: user,
+                  ),
                 ),
         ),
       );

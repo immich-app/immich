@@ -20,7 +20,11 @@ make translation
 ## Isar models
 
 Isar generates serialization code for the entities in `lib/entities`. 
-If you change the properties of an entitiy class, run `dart run build_runner build` to re-generate these classes.
+If you change the properties of an entitiy class, from the `mobile/` directory, run
+
+```bash
+make build
+```
 
 ## Immich-Flutter Directory Structure
 
