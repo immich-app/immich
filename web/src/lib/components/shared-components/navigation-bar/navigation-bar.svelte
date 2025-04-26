@@ -165,7 +165,7 @@
             onblur={() => (shouldShowAccountInfo = false)}
             onmouseleave={() => (shouldShowAccountInfo = false)}
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
-            aria-label={$t("logged_in_as", {values: {user: $user.name}})}
+            aria-label={$t('logged_in_as', { values: { user: $user.name } })}
           >
             {#key $user}
               <UserAvatar user={$user} size="md" showTitle={false} interactive />
