@@ -75,12 +75,14 @@ class GroupDividerTitle extends HookConsumerWidget {
                 ? Icon(
                     Icons.check_circle_rounded,
                     color: context.primaryColor,
-                    semanticLabel: "unselect_all_in".tr(args: [text]),
+                    semanticLabel:
+                        "unselect_all_in".tr(namedArgs: {"group": text}),
                   )
                 : Icon(
                     Icons.check_circle_outline_rounded,
                     color: context.colorScheme.onSurfaceSecondary,
-                    semanticLabel: "select_all_in".tr(args: [text]),
+                    semanticLabel:
+                        "select_all_in".tr(namedArgs: {"group": text}),
                   ),
           ),
         ],

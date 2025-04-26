@@ -19,6 +19,7 @@
   import { flip } from 'svelte/animate';
 
   import { uploadAssetsStore } from '$lib/stores/upload';
+  import { t } from 'svelte-i18n';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -103,6 +104,7 @@
   const assetOnFocusHandler = (asset: AssetResponseDto) => {
     assetInteraction.focussedAssetId = asset.id;
   };
+
   function filterIntersecting<R extends { intersecting: boolean }>(intersectable: R[]) {
     return intersectable.filter((int) => int.intersecting);
   }
@@ -142,9 +144,11 @@
           onkeydown={() => handleSelectGroup(dateGroup.groupTitle, assetsSnapshot(dateGroup.getAssets()))}
         >
           {#if assetInteraction.selectedGroup.has(dateGroup.groupTitle)}
-            <Icon path={mdiCheckCircle} size="24" color="#4250af" />
+            <Icon path={mdiCheckCircle} size="24" color="#4250af" role="button"
+                  ariaLabel={$t("unselect_all_in", {values: {group: dateGroup.groupTitle} })} />
           {:else}
-            <Icon path={mdiCircleOutline} size="24" color="#757575" />
+            <Icon path={mdiCircleOutline} size="24" color="#757575" role="button"
+                  ariaLabel={$t("select_all_in", {values: {group: dateGroup.groupTitle}})} />
           {/if}
         </div>
       {/if}
