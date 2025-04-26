@@ -121,8 +121,7 @@ export class SmartInfoService extends BaseService {
 
     const newConfig = await this.getConfig({ withCache: true });
     if (machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
-      // Skip the job if the the model has changed since the embedding was
-      // generated.
+      // Skip the job if the the model has changed since the embedding was generated.
       return JobStatus.SKIPPED;
     }
 

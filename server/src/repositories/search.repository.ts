@@ -446,8 +446,8 @@ export class SearchRepository {
   async upsert(assetId: string, embedding: string): Promise<void> {
     await this.db
       .insertInto('smart_search')
-      .values({ assetId: asUuid(assetId), embedding } as any)
-      .onConflict((oc) => oc.column('assetId').doUpdateSet({ embedding } as any))
+      .values({ assetId, embedding })
+      .onConflict((oc) => oc.column('assetId').doUpdateSet((eb) => ({ embedding: eb.ref('excluded.embedding') })))
       .execute();
   }
 
@@ -469,19 +469,21 @@ export class SearchRepository {
     return dimSize;
   }
 
-  setDimensionSize(dimSize: number): Promise<void> {
+  async setDimensionSize(dimSize: number): Promise<void> {
     if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
-    return this.db.transaction().execute(async (trx) => {
-      await sql`truncate ${sql.table('smart_search')}`.execute(trx);
+    // truncate is not mvcc-safe
+    await this.db.transaction().execute(async (trx) => {
+      await sql`lock table ${sql.table('smart_search')} in access exclusive mode`.execute(trx);
+      await sql`delete from ${sql.table('smart_search')}`.execute(trx);
       await trx.schema
         .alterTable('smart_search')
         .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
         .execute();
-      await sql`reindex index clip_index`.execute(trx);
     });
+    await sql`vacuum full smart_search`.execute(this.db);
   }
 
   async deleteAllSearchEmbeddings(): Promise<void> {
