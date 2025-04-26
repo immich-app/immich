@@ -32,15 +32,7 @@ export class TagService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: TagCreateDto) {
-    let parent;
-    if (dto.parentId) {
-      await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [dto.parentId] });
-      parent = await this.tagRepository.get(dto.parentId);
-      if (!parent) {
-        throw new BadRequestException('Tag not found');
-      }
-    }
-
+    const parent = await this.findParent(auth, dto.parentId);
     const userId = auth.user.id;
     const value = parent ? `${parent.value}/${dto.name}` : dto.name;
     const duplicate = await this.tagRepository.getByValue(userId, value);
@@ -57,8 +49,8 @@ export class TagService extends BaseService {
   async update(auth: AuthDto, id: string, dto: TagUpdateDto): Promise<TagResponseDto> {
     await this.requireAccess({ auth, permission: Permission.TAG_UPDATE, ids: [id] });
 
-    const { color } = dto;
-    const tag = await this.tagRepository.update(id, { color });
+    const { value, color } = dto;
+    const tag = await this.tagRepository.update(id, { value, color });
     return mapTag(tag);
   }
 
@@ -144,5 +136,16 @@ export class TagService extends BaseService {
       throw new BadRequestException('Tag not found');
     }
     return tag;
+  }
+
+  private async findParent(auth: AuthDto, parentId?: string | null) {
+    if (parentId) {
+      await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [parentId] });
+      const parent = await this.tagRepository.get(parentId);
+      if (!parent) {
+        throw new BadRequestException('Tag not found');
+      }
+      return parent;
+    }
   }
 }

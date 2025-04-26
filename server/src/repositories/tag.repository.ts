@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql, Updateable } from 'kysely';
+import { Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB, TagAsset, Tags } from 'src/db';
@@ -76,9 +76,38 @@ export class TagRepository {
     return this.db.insertInto('tags').values(tag).returningAll().executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { color: DummyValue.STRING }] })
-  update(id: string, dto: Updateable<Tags>) {
-    return this.db.updateTable('tags').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getChildren(parentId: string) {
+    return await this.db.selectFrom('tags').select(columns.tag).where('parentId', '=', parentId).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { value: DummyValue.STRING, color: DummyValue.STRING }] })
+  async update(id: string, dto: Updateable<Tags>) {
+    let updated: Selectable<Tags>;
+    await this.db.transaction().execute(async (tx) => {
+      updated = await tx.updateTable('tags').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
+
+      if (dto.value) {
+        // propagate value update downstream
+        let i = 0;
+        const queue: { tagId: string; newValue: string | null; }[] = [{tagId: id, newValue: null}];
+        while (i < queue.length) {
+          const { tagId, newValue } = queue[i++];
+          if (newValue) {
+            await tx.updateTable('tags').set({value: newValue}).where('id', '=', tagId).execute();
+          }
+
+          const children = await this.getChildren(tagId);
+          for (const child of children) {
+            const name = child.value.split('/').at(-1) as string;
+            const item = { tagId: child.id, newValue: `${newValue}/${name}` };
+            queue.push(item);
+          }
+        }
+      }
+    });
+    
+    return updated!;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
