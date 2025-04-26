@@ -357,7 +357,7 @@ export class StorageTemplateService extends BaseService {
       assetId: asset.id,
       assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album
-      album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '',
+      album: !albumName || albumName.match(/^\.+$/) ? '' : sanitize(albumName),
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
