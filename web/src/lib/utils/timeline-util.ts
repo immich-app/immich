@@ -87,7 +87,7 @@ export function formatGroupTitle(_date: DateTime): string {
 
   // Last week
   if (date >= today.minus({ days: 6 }) && date < today) {
-    return date.toLocaleString({ weekday: 'long' });
+    return date.toLocaleString({ weekday: 'long' }, {locale: get(locale)});
   }
 
   // This year
@@ -96,11 +96,12 @@ export function formatGroupTitle(_date: DateTime): string {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
-    });
+    }, {locale: get(locale)});
   }
 
   return getDateLocaleString(date);
 }
+
 export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
   date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
