@@ -32,7 +32,6 @@
     viewBox?: string | undefined;
     class?: string;
 
-    'aria-label'?: string | undefined | null;
     'aria-hidden'?: boolean | undefined | null;
     'aria-checked'?: 'true' | 'false' | undefined | null;
     'aria-current'?: 'page' | 'step' | 'location' | 'date' | 'time' | 'true' | 'false' | undefined | null;
