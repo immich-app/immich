@@ -20,7 +20,8 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-
+  import AlbumMap from '$lib/components/album-page/album-map.svelte';
+  
   interface Props {
     sharedLink: SharedLinkResponseDto;
     user?: UserResponseDto | undefined;
@@ -92,6 +93,7 @@
           />
         {/if}
 
+        <AlbumMap {album} />
         <ThemeButton />
       {/snippet}
     </ControlAppBar>
