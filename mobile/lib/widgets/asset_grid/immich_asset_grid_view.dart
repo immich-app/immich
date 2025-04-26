@@ -755,7 +755,7 @@ class _MonthTitle extends StatelessWidget {
       key: Key("month-$title"),
       padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
-        title,
+        toBeginningOfSentenceCase(title, context.locale.languageCode),
         style: const TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.w500,
