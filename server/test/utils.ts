@@ -1,9 +1,9 @@
 import { ClassConstructor } from 'class-transformer';
-import { Kysely, sql } from 'kysely';
+import { Kysely } from 'kysely';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
-import { parse } from 'pg-connection-string';
 import { PNG } from 'pngjs';
+import postgres from 'postgres';
 import { DB } from 'src/db';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -18,6 +18,7 @@ import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { DownloadRepository } from 'src/repositories/download.repository';
+import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
@@ -28,7 +29,6 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
-import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -49,7 +49,7 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
-import { getKyselyConfig } from 'src/utils/database';
+import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
@@ -124,6 +124,7 @@ export type ServiceOverrides = {
   crypto: CryptoRepository;
   database: DatabaseRepository;
   downloadRepository: DownloadRepository;
+  email: EmailRepository;
   event: EventRepository;
   job: JobRepository;
   library: LibraryRepository;
@@ -134,7 +135,6 @@ export type ServiceOverrides = {
   memory: MemoryRepository;
   metadata: MetadataRepository;
   move: MoveRepository;
-  notification: NotificationRepository;
   oauth: OAuthRepository;
   partner: PartnerRepository;
   person: PersonRepository;
@@ -190,6 +190,7 @@ export const newTestService = <T extends BaseService>(
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),
+    email: automock(EmailRepository, { args: [loggerMock] }),
     // eslint-disable-next-line no-sparse-arrays
     event: automock(EventRepository, { args: [, , loggerMock], strict: false }),
     job: newJobRepositoryMock(),
@@ -201,7 +202,6 @@ export const newTestService = <T extends BaseService>(
     memory: automock(MemoryRepository),
     metadata: newMetadataRepositoryMock(),
     move: automock(MoveRepository, { strict: false }),
-    notification: automock(NotificationRepository, { args: [loggerMock] }),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
     person: newPersonRepositoryMock(),
@@ -240,6 +240,7 @@ export const newTestService = <T extends BaseService>(
     overrides.crypto || (mocks.crypto as As<CryptoRepository>),
     overrides.database || (mocks.database as As<DatabaseRepository>),
     overrides.downloadRepository || (mocks.downloadRepository as As<DownloadRepository>),
+    overrides.email || (mocks.email as As<EmailRepository>),
     overrides.event || (mocks.event as As<EventRepository>),
     overrides.job || (mocks.job as As<JobRepository>),
     overrides.library || (mocks.library as As<LibraryRepository>),
@@ -249,7 +250,6 @@ export const newTestService = <T extends BaseService>(
     overrides.memory || (mocks.memory as As<MemoryRepository>),
     overrides.metadata || (mocks.metadata as As<MetadataRepository>),
     overrides.move || (mocks.move as As<MoveRepository>),
-    overrides.notification || (mocks.notification as As<NotificationRepository>),
     overrides.oauth || (mocks.oauth as As<OAuthRepository>),
     overrides.partner || (mocks.partner as As<PartnerRepository>),
     overrides.person || (mocks.person as As<PersonRepository>),
@@ -297,24 +297,20 @@ function* newPngFactory() {
 
 const pngFactory = newPngFactory();
 
+const withDatabase = (url: string, name: string) => url.replace('/immich', `/${name}`);
+
 export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
-  const parsed = parse(process.env.IMMICH_TEST_POSTGRES_URL!);
+  const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;
+  const sql = postgres({
+    ...asPostgresConnectionConfig({ connectionType: 'url', url: withDatabase(testUrl, 'postgres') }),
+    max: 1,
+  });
 
-  const parsedOptions = {
-    ...parsed,
-    ssl: false,
-    host: parsed.host ?? undefined,
-    port: parsed.port ? Number(parsed.port) : undefined,
-    database: parsed.database ?? undefined,
-  };
-
-  const kysely = new Kysely<DB>(getKyselyConfig({ ...parsedOptions, max: 1, database: 'postgres' }));
   const randomSuffix = Math.random().toString(36).slice(2, 7);
   const dbName = `immich_${suffix ?? randomSuffix}`;
+  await sql.unsafe(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`);
 
-  await sql.raw(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`).execute(kysely);
-
-  return new Kysely<DB>(getKyselyConfig({ ...parsedOptions, database: dbName }));
+  return new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: withDatabase(testUrl, dbName) }));
 };
 
 export const newRandomImage = () => {

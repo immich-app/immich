@@ -10,11 +10,13 @@
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
+  import { authManager } from '$lib/stores/auth-manager.svelte';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
-  import { handleLogout } from '$lib/utils/auth';
-  import { getAboutInfo, logout, type ServerAboutResponseDto } from '@immich/sdk';
+  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, IconButton } from '@immich/ui';
   import { mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -23,8 +25,6 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -37,11 +37,6 @@
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowHelpPanel = $state(false);
   let innerWidth: number = $state(0);
-
-  const onLogout = async () => {
-    const { redirectUri } = await logout();
-    await handleLogout(redirectUri);
-  };
 
   let info: ServerAboutResponseDto | undefined = $state();
 
@@ -183,7 +178,7 @@
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel {onLogout} />
+            <AccountInfoPanel onLogout={() => authManager.logout()} />
           {/if}
         </div>
       </section>

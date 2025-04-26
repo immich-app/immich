@@ -7,13 +7,11 @@ import { join } from 'node:path';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
-import { OnEvent } from 'src/decorators';
 import {
   AuthDto,
   ChangePasswordDto,
   LoginCredentialDto,
   LogoutResponseDto,
-  OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
   SignUpDto,
@@ -52,11 +50,6 @@ export type ValidateRequest = {
 
 @Injectable()
 export class AuthService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap' })
-  onBootstrap() {
-    this.oauthRepository.init();
-  }
-
   async login(dto: LoginCredentialDto, details: LoginDetails) {
     const config = await this.getConfig({ withCache: false });
     if (!config.passwordLogin.enabled) {
@@ -176,20 +169,35 @@ export class AuthService extends BaseService {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
   }
 
-  async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
+  async authorize(dto: OAuthConfigDto) {
     const { oauth } = await this.getConfig({ withCache: false });
 
     if (!oauth.enabled) {
       throw new BadRequestException('OAuth is not enabled');
     }
 
-    const url = await this.oauthRepository.authorize(oauth, this.resolveRedirectUri(oauth, dto.redirectUri));
-    return { url };
+    return await this.oauthRepository.authorize(
+      oauth,
+      this.resolveRedirectUri(oauth, dto.redirectUri),
+      dto.state,
+      dto.codeChallenge,
+    );
   }
 
-  async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
+  async callback(dto: OAuthCallbackDto, headers: IncomingHttpHeaders, loginDetails: LoginDetails) {
+    const expectedState = dto.state ?? this.getCookieOauthState(headers);
+    if (!expectedState?.length) {
+      throw new BadRequestException('OAuth state is missing');
+    }
+
+    const codeVerifier = dto.codeVerifier ?? this.getCookieCodeVerifier(headers);
+    if (!codeVerifier?.length) {
+      throw new BadRequestException('OAuth code verifier is missing');
+    }
+
     const { oauth } = await this.getConfig({ withCache: false });
-    const profile = await this.oauthRepository.getProfile(oauth, dto.url, this.resolveRedirectUri(oauth, dto.url));
+    const url = this.resolveRedirectUri(oauth, dto.url);
+    const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
@@ -271,13 +279,19 @@ export class AuthService extends BaseService {
     }
   }
 
-  async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserAdminResponseDto> {
+  async link(auth: AuthDto, dto: OAuthCallbackDto, headers: IncomingHttpHeaders): Promise<UserAdminResponseDto> {
+    const expectedState = dto.state ?? this.getCookieOauthState(headers);
+    if (!expectedState?.length) {
+      throw new BadRequestException('OAuth state is missing');
+    }
+
+    const codeVerifier = dto.codeVerifier ?? this.getCookieCodeVerifier(headers);
+    if (!codeVerifier?.length) {
+      throw new BadRequestException('OAuth code verifier is missing');
+    }
+
     const { oauth } = await this.getConfig({ withCache: false });
-    const { sub: oauthId } = await this.oauthRepository.getProfile(
-      oauth,
-      dto.url,
-      this.resolveRedirectUri(oauth, dto.url),
-    );
+    const { sub: oauthId } = await this.oauthRepository.getProfile(oauth, dto.url, expectedState, codeVerifier);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
@@ -318,6 +332,16 @@ export class AuthService extends BaseService {
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
     return cookies[ImmichCookie.ACCESS_TOKEN] || null;
+  }
+
+  private getCookieOauthState(headers: IncomingHttpHeaders): string | null {
+    const cookies = parse(headers.cookie || '');
+    return cookies[ImmichCookie.OAUTH_STATE] || null;
+  }
+
+  private getCookieCodeVerifier(headers: IncomingHttpHeaders): string | null {
+    const cookies = parse(headers.cookie || '');
+    return cookies[ImmichCookie.OAUTH_CODE_VERIFIER] || null;
   }
 
   async validateSharedLink(key: string | string[]): Promise<AuthDto> {
@@ -399,11 +423,9 @@ export class AuthService extends BaseService {
     { mobileRedirectUri, mobileOverrideEnabled }: { mobileRedirectUri: string; mobileOverrideEnabled: boolean },
     url: string,
   ) {
-    const redirectUri = url.split('?')[0];
-    const isMobile = redirectUri.startsWith('app.immich:/');
-    if (isMobile && mobileOverrideEnabled && mobileRedirectUri) {
-      return mobileRedirectUri;
+    if (mobileOverrideEnabled && mobileRedirectUri) {
+      return url.replace(/app\.immich:\/+oauth-callback/, mobileRedirectUri);
     }
-    return redirectUri;
+    return url;
   }
 }

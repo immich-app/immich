@@ -1,3 +1,4 @@
+import { eventManager } from '$lib/stores/event-manager.svelte';
 import {
   getAssetsByOriginalPath,
   getUniqueOriginalPaths,
@@ -15,6 +16,10 @@ class FoldersStore {
   private initialized = false;
   uniquePaths = $state<string[]>([]);
   assets = $state<AssetCache>({});
+
+  constructor() {
+    eventManager.on('auth.logout', () => this.clearCache());
+  }
 
   async fetchUniquePaths() {
     if (this.initialized) {

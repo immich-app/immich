@@ -598,6 +598,10 @@ describe(MetadataService.name, () => {
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
       expect(mocks.asset.update).toHaveBeenCalledTimes(3);
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: { id: assetStub.livePhotoMotionAsset.id },
+      });
     });
 
     it('should extract the EmbeddedVideo tag from Samsung JPEG motion photos', async () => {
@@ -652,6 +656,10 @@ describe(MetadataService.name, () => {
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
       expect(mocks.asset.update).toHaveBeenCalledTimes(3);
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: { id: assetStub.livePhotoMotionAsset.id },
+      });
     });
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
@@ -706,6 +714,10 @@ describe(MetadataService.name, () => {
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
       expect(mocks.asset.update).toHaveBeenCalledTimes(3);
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: { id: assetStub.livePhotoMotionAsset.id },
+      });
     });
 
     it('should delete old motion photo video assets if they do not match what is extracted', async () => {
