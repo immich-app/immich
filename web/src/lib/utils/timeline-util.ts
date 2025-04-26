@@ -15,7 +15,7 @@ export const fromLocalDateTime = (localDateTime: string) =>
 export const fromDateTimeOriginal = (dateTimeOriginal: string, timeZone: string) =>
   DateTime.fromISO(dateTimeOriginal, { zone: timeZone });
 
-export function formatGroupTitle(_date: DateTime): string {
+function formatGroupTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
   }
@@ -46,7 +46,7 @@ export function formatGroupTitle(_date: DateTime): string {
     }, {locale: get(locale)});
   }
 
-  return getDateLocaleString(date);
+  return getDateLocaleString(date, {locale: get(locale)});
 }
 
 export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
