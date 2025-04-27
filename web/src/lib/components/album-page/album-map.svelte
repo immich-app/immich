@@ -4,12 +4,8 @@
   import { timeToLoadTheMap } from '$lib/constants';
   import {
     getAlbumInfo,
-    getMapMarkers,
-    searchPlaces,
     type AlbumResponseDto,
-    type AssetResponseDto,
     type MapMarkerResponseDto,
-    type PlacesResponseDto,
   } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type Map from '$lib/components/shared-components/map/map.svelte';
@@ -29,9 +25,10 @@
 
   interface Props {
     album: AlbumResponseDto;
+    isInMapView: boolean;
   }
 
-  let { album }: Props = $props();
+  let { album, isInMapView = $bindable(false) }: Props = $props();
   let abortController: AbortController;
   let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
   let viewingAssets: string[] = $state([]);
@@ -43,7 +40,7 @@
   let zoom = $derived(1);
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
 
-  let showMap = $state(false);
+
 
   onMount(async () => {
     mapMarkers = await loadMapMarkers();
@@ -81,28 +78,25 @@
   }
 
   function openMap() {
-    showMap = true;
+    isInMapView = true;
   }
 
   function closeMap() {
-    showMap = false;
+    if(!$showAssetViewer){
+      isInMapView = false;
+    }
   }
 
   async function onViewAssets(assetIds: string[]) {
     viewingAssets = assetIds;
     viewingAssetCursor = 0;
-    console.log('viewingAssets', viewingAssets);
-    console.log('viewingAssetCursor', viewingAssetCursor);
 
     await setAssetId(assetIds[0]);
   }
 
   async function navigateNext() {
-    console.log('viewingAssets', viewingAssets);
-    console.log('viewingAssetCursor', viewingAssetCursor);
     if (viewingAssetCursor < viewingAssets.length - 1) {
       await setAssetId(viewingAssets[++viewingAssetCursor]);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       return true;
     }
     return false;
@@ -113,7 +107,6 @@
     console.log('viewingAssetCursor', viewingAssetCursor);
     if (viewingAssetCursor > 0) {
       await setAssetId(viewingAssets[--viewingAssetCursor]);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       return true;
     }
     console.log('should failed');
@@ -126,14 +119,13 @@
     }
     const index = Math.floor(Math.random() * viewingAssets.length);
     const asset = await setAssetId(viewingAssets[index]);
-    await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
     return asset;
   }
 </script>
 
 <CircleIconButton title={$t('map')} onclick={openMap} icon={mdiMap} />
 
-{#if showMap}
+{#if isInMapView}
   <div use:clickOutside={{ onOutclick: closeMap }}>
     <FullScreenModal title={$t('map')} width="wide" onClose={closeMap}>
       <div class="flex flex-col w-full h-full gap-2">

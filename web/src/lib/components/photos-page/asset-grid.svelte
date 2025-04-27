@@ -43,6 +43,7 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
+    isInMapView?: boolean;
     onSelect?: (asset: AssetResponseDto) => void;
     onEscape?: () => void;
     children?: Snippet;
@@ -62,6 +63,7 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
+    isInMapView = $bindable(false),
     onSelect = () => {},
     onEscape = () => {},
     children,
@@ -372,7 +374,7 @@
 
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAsset($viewingAsset);
-
+    console.log('ici aussi');
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
@@ -395,6 +397,7 @@
   };
 
   const handleClose = async ({ asset }: { asset: AssetResponseDto }) => {
+    console.log('handleClose', asset);
     assetViewingStore.showAssetViewer(false);
     showSkeleton = true;
     $gridScrollTarget = { at: asset.id };
@@ -694,6 +697,11 @@
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });
+
+  $effect(() => {
+    console.log("asset-grid.svelte : Changement de isInMapView", isInMapView);
+  }
+  );
 </script>
 
 <svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
@@ -818,26 +826,28 @@
   </section>
 </section>
 
-<Portal target="body">
-  {#if $showAssetViewer}
-    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+{#if !isInMapView}
+  <Portal target="body">
+    {#if $showAssetViewer}
+      {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
       <AssetViewer
-        {withStacked}
-        asset={$viewingAsset}
-        preloadAssets={$preloadAssets}
-        {isShared}
-        {album}
-        {person}
-        preAction={handlePreAction}
-        onAction={handleAction}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onRandom={handleRandom}
-        onClose={handleClose}
-      />
-    {/await}
-  {/if}
-</Portal>
+      {withStacked}
+      asset={$viewingAsset}
+      preloadAssets={$preloadAssets}
+          {isShared}
+          {album}
+          {person}
+          preAction={handlePreAction}
+          onAction={handleAction}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onRandom={handleRandom}
+          onClose={handleClose}
+        />
+      {/await}
+    {/if}
+  </Portal>
+{/if}
 
 <style>
   #asset-grid {

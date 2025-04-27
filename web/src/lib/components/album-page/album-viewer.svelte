@@ -21,7 +21,7 @@
   import { onDestroy } from 'svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
-  
+
   interface Props {
     sharedLink: SharedLinkResponseDto;
     user?: UserResponseDto | undefined;
@@ -32,6 +32,8 @@
   const album = sharedLink.album as AlbumResponseDto;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
+
+  let isInMapView = $state(false);
 
   const assetStore = new AssetStore();
   $effect(() => void assetStore.updateOptions({ albumId: album.id, order: album.order }));
@@ -92,18 +94,20 @@
             icon={mdiFolderDownloadOutline}
           />
         {/if}
-
-        <AlbumMap {album} />
+        {#if sharedLink.showMetadata}
+          <AlbumMap {album} bind:isInMapView />
+        {/if}
         <ThemeButton />
       {/snippet}
     </ControlAppBar>
   {/if}
 </header>
+<!-- <h1>{isInMapView}</h1> -->
 
 <main
   class="relative h-dvh overflow-hidden bg-immich-bg px-2 md:px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
 >
-  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
+  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction} bind:isInMapView>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
       <h1
