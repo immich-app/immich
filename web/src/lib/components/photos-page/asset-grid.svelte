@@ -696,10 +696,6 @@
     }
   });
 
-  $effect(() => {
-    console.log("asset-grid.svelte : Changement de isInMapView", isInMapView);
-  }
-  );
 </script>
 
 <svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />

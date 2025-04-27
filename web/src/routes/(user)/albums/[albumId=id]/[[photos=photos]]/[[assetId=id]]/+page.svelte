@@ -87,6 +87,7 @@
   import { confirmAlbumDelete } from '$lib/utils/album-utils';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import AlbumMap from '$lib/components/album-page/album-map.svelte';
 
   interface Props {
     data: PageData;
@@ -98,6 +99,8 @@
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
+
+  let isInMapView = $state(false);
 
   let backUrl: string = $state(AppRoute.ALBUMS);
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
@@ -529,6 +532,7 @@
                 icon={mdiShareVariantOutline}
               />
             {/if}
+            <AlbumMap {album} bind:isInMapView />
 
             {#if album.assetCount > 0}
               <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />
@@ -618,6 +622,7 @@
         {showArchiveIcon}
         {onSelect}
         onEscape={handleEscape}
+        bind:isInMapView
       >
         {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
           {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
