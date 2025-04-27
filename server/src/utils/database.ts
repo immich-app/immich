@@ -393,7 +393,8 @@ export function vectorIndexQuery({ vectorExtension, table, indexName }: VectorIn
         USING hnsw (embedding vector_cosine_ops)
         WITH (ef_construction = 300, m = 16)`;
     }
-    default:
+    default: {
       throw new Error(`Unsupported vector extension: '${vectorExtension}'`);
+    }
   }
 }
