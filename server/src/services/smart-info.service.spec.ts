@@ -154,6 +154,7 @@ describe(SmartInfoService.name, () => {
 
       expect(mocks.asset.getAll).not.toHaveBeenCalled();
       expect(mocks.asset.getWithout).not.toHaveBeenCalled();
+      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
     });
 
     it('should queue the assets without clip embeddings', async () => {
@@ -168,7 +169,7 @@ describe(SmartInfoService.name, () => {
         { name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } },
       ]);
       expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.SMART_SEARCH);
-      expect(mocks.search.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
+      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
     });
 
     it('should queue all the assets', async () => {
@@ -183,7 +184,7 @@ describe(SmartInfoService.name, () => {
         { name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } },
       ]);
       expect(mocks.asset.getAll).toHaveBeenCalled();
-      expect(mocks.search.deleteAllSearchEmbeddings).toHaveBeenCalled();
+      expect(mocks.search.setDimensionSize).toHaveBeenCalledExactlyOnceWith(512);
     });
   });
 

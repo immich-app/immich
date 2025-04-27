@@ -74,7 +74,9 @@ export class SmartInfoService extends BaseService {
     }
 
     if (force) {
-      await this.searchRepository.deleteAllSearchEmbeddings();
+      const { dimSize } = getCLIPModelInfo(machineLearning.clip.modelName);
+      // in addition to deleting embeddings, update the dimension size in case it failed earlier
+      await this.searchRepository.setDimensionSize(dimSize);
     }
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
