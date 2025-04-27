@@ -103,13 +103,10 @@
   }
 
   async function navigatePrevious() {
-    console.log('viewingAssets', viewingAssets);
-    console.log('viewingAssetCursor', viewingAssetCursor);
     if (viewingAssetCursor > 0) {
       await setAssetId(viewingAssets[--viewingAssetCursor]);
       return true;
     }
-    console.log('should failed');
     return false;
   }
 
@@ -153,21 +150,23 @@
   </div>
 {/if}
 
-<Portal target="body">
-  {#if $showAssetViewer}
-    {#await import('../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer
-        asset={$viewingAsset}
-        showNavigation={viewingAssets.length > 1}
-        onNext={navigateNext}
-        onPrevious={navigatePrevious}
-        onRandom={navigateRandom}
-        onClose={() => {
-          assetViewingStore.showAssetViewer(false);
-          handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-        }}
-        isShared={false}
-      />
-    {/await}
-  {/if}
-</Portal>
+{#if isInMapView}
+  <Portal target="body">
+    {#if $showAssetViewer}
+      {#await import('../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+        <AssetViewer
+          asset={$viewingAsset}
+          showNavigation={viewingAssets.length > 1}
+          onNext={navigateNext}
+          onPrevious={navigatePrevious}
+          onRandom={navigateRandom}
+          onClose={() => {
+            assetViewingStore.showAssetViewer(false);
+            handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+          }}
+          isShared={false}
+        />
+      {/await}
+    {/if}
+  </Portal>
+{/if}

@@ -374,7 +374,6 @@
 
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAsset($viewingAsset);
-    console.log('ici aussi');
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
@@ -397,7 +396,6 @@
   };
 
   const handleClose = async ({ asset }: { asset: AssetResponseDto }) => {
-    console.log('handleClose', asset);
     assetViewingStore.showAssetViewer(false);
     showSkeleton = true;
     $gridScrollTarget = { at: asset.id };
