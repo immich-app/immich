@@ -12,7 +12,7 @@
   import { LoadingSpinner } from '@immich/ui';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { onDestroy, onMount } from 'svelte';
-  import { mdiMap } from '@mdi/js';
+  import { mdiMapOutline } from '@mdi/js';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -120,7 +120,7 @@
   }
 </script>
 
-<CircleIconButton title={$t('map')} onclick={openMap} icon={mdiMap} />
+<CircleIconButton title={$t('map')} onclick={openMap} icon={mdiMapOutline} />
 
 {#if isInMapView}
   <div use:clickOutside={{ onOutclick: closeMap }}>
