@@ -120,7 +120,6 @@ export class DatabaseRepository {
         await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE vector(${sql.raw(String(dimSize))})`.execute(
           tx,
         );
-        await sql`SET vectors.pgvector_compatibility=on`.execute(tx);
         await sql.raw(vectorIndexQuery({ vectorExtension: this.vectorExtension, table, indexName: index })).execute(tx);
       });
     }
