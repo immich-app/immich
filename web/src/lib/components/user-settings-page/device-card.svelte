@@ -64,7 +64,9 @@
         <span>{DateTime.fromISO(device.updatedAt, { locale: $locale }).toRelativeCalendar(options)}</span>
         <span class="text-xs text-gray-500 dark:text-gray-400"> - </span>
         <span class="text-xs text-gray-500 dark:text-gray-400">
-          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED, {locale: $locale})}
+          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED, {
+            locale: $locale,
+          })}
         </span>
       </div>
     </div>

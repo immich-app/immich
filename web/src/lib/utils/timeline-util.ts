@@ -34,19 +34,22 @@ export function formatGroupTitle(_date: DateTime): string {
 
   // Last week
   if (date >= today.minus({ days: 6 }) && date < today) {
-    return date.toLocaleString({ weekday: 'long' }, {locale: get(locale)});
+    return date.toLocaleString({ weekday: 'long' }, { locale: get(locale) });
   }
 
   // This year
   if (today.hasSame(date, 'year')) {
-    return date.toLocaleString({
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    }, {locale: get(locale)});
+    return date.toLocaleString(
+      {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      },
+      { locale: get(locale) },
+    );
   }
 
-  return getDateLocaleString(date, {locale: get(locale)});
+  return getDateLocaleString(date, { locale: get(locale) });
 }
 
 export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>

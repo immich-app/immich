@@ -178,16 +178,19 @@
               <span
                 class="immich-form-label pb-2 text-xs"
                 id="version-history"
-                title={createdAt.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS, {locale: $locale})}
+                title={createdAt.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS, { locale: $locale })}
               >
                 {$t('version_history_item', {
                   values: {
                     version: item.version,
-                    date: createdAt.toLocaleString({
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    }, {locale: $locale}),
+                    date: createdAt.toLocaleString(
+                      {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      },
+                      { locale: $locale },
+                    ),
                   },
                 })}
               </span>
