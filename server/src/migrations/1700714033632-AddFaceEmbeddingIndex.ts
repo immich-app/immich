@@ -1,4 +1,3 @@
-import { DatabaseExtension } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { vectorIndexQuery } from 'src/utils/database';
 import { MigrationInterface, QueryRunner } from 'typeorm';

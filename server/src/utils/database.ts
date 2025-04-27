@@ -378,7 +378,7 @@ type VectorIndexOptions = { vectorExtension: VectorExtension; table: string; ind
 
 export function vectorIndexQuery({ vectorExtension, table, indexName }: VectorIndexOptions): string {
   switch (vectorExtension) {
-    case DatabaseExtension.VECTORS:
+    case DatabaseExtension.VECTORS: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
         USING vectors (embedding vector_cos_ops) WITH (options = $$
@@ -386,11 +386,13 @@ export function vectorIndexQuery({ vectorExtension, table, indexName }: VectorIn
         m = 16
         ef_construction = 300
         $$)`;
-    case DatabaseExtension.VECTOR:
+    }
+    case DatabaseExtension.VECTOR: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
         USING hnsw (embedding vector_cosine_ops)
         WITH (ef_construction = 300, m = 16)`;
+    }
     default:
       throw new Error(`Unsupported vector extension: '${vectorExtension}'`);
   }
