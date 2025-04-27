@@ -12,10 +12,8 @@
 body {
   font-family: 'Overpass', sans-serif;
   font-optical-sizing: auto;
-  font-size: 1.125rem;
-  /* font-size: 1.125rem;
   ascent-override: 106.25%;
-  size-adjust: 106.25%; */
+  size-adjust: 106.25%;
 }
 
 .breadcrumbs__link {
@@ -83,4 +81,13 @@ div[class*='navbar__items'] > li:has(a[class*='version-switcher-34ab39']) {
 
 code {
   font-weight: 600;
+}
+
+.buy-button {
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  font-family: 'Overpass', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 1px 1px 5px 2px rgba(181, 206, 254, 0.4);
 }
