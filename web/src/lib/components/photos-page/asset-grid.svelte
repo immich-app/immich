@@ -695,7 +695,6 @@
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });
-
 </script>
 
 <svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
@@ -824,10 +823,10 @@
   <Portal target="body">
     {#if $showAssetViewer}
       {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer
-      {withStacked}
-      asset={$viewingAsset}
-      preloadAssets={$preloadAssets}
+        <AssetViewer
+          {withStacked}
+          asset={$viewingAsset}
+          preloadAssets={$preloadAssets}
           {isShared}
           {album}
           {person}

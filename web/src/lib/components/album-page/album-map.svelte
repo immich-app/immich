@@ -2,11 +2,7 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { delay } from '$lib/utils/asset-utils';
   import { timeToLoadTheMap } from '$lib/constants';
-  import {
-    getAlbumInfo,
-    type AlbumResponseDto,
-    type MapMarkerResponseDto,
-  } from '@immich/sdk';
+  import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type Map from '$lib/components/shared-components/map/map.svelte';
   import { LoadingSpinner } from '@immich/ui';
@@ -18,10 +14,6 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { navigate } from '$lib/utils/navigation';
   import { handlePromiseError } from '$lib/utils';
-  interface Point {
-    lng: number;
-    lat: number;
-  }
 
   interface Props {
     album: AlbumResponseDto;
@@ -34,13 +26,10 @@
   let viewingAssets: string[] = $state([]);
   let viewingAssetCursor = 0;
 
-  let showLoadingSpinner = $state(false);
   let mapElement = $state<ReturnType<typeof Map>>();
 
   let zoom = $derived(1);
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
-
-
 
   onMount(async () => {
     mapMarkers = await loadMapMarkers();
@@ -82,7 +71,7 @@
   }
 
   function closeMap() {
-    if(!$showAssetViewer){
+    if (!$showAssetViewer) {
       isInMapView = false;
     }
   }
