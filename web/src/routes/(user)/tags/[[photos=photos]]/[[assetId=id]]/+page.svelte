@@ -75,8 +75,10 @@
 
   let isEditOpen = $state(false);
   let newTagColor = $state('');
+  let newTagName = $state('');
   const handleEdit = () => {
     newTagColor = tag?.color ?? '';
+    newTagName = tag?.name ?? '';
     isEditOpen = true;
   };
 
@@ -86,15 +88,21 @@
   };
 
   const handleSubmit = async () => {
-    if (tag && isEditOpen && newTagColor) {
-      await updateTag({ id: tag.id, tagUpdateDto: { color: newTagColor } });
+    if (tag && isEditOpen && hasChange(tag)) {
+      const tagUpdateDto = { color: newTagColor };
+      if (newTagName !== tag.name) {
+        const tagNames = tag.value.split('/');
+        tagNames[tagNames.length - 1] = newTagName;
+        tag.value = tagUpdateDto.value = tagNames.join('/');
+      }
+      await updateTag({ id: tag.id, tagUpdateDto });
 
       notificationController.show({
         message: $t('tag_updated', { values: { tag: tag.value } }),
         type: NotificationType.Info,
       });
-
-      tags = await getAllTags();
+      
+      await navigateToView(normalizeTreePath(tag.value));
       isEditOpen = false;
     }
 
@@ -138,6 +146,10 @@
   const onsubmit = async (event: Event) => {
     event.preventDefault();
     await handleSubmit();
+  };
+
+  const hasChange = (tag) => {
+     return newTagName !== tag?.name || newTagColor != (tag?.color || '');
   };
 </script>
 
@@ -224,6 +236,11 @@
     <form {onsubmit} autocomplete="off" id="edit-tag-form">
       <div class="my-4 flex flex-col gap-2">
         <SettingInputField
+          inputType={SettingInputFieldType.NAME}
+          label={$t('name').toUpperCase()}
+          bind:value={newTagName}
+        />
+        <SettingInputField
           inputType={SettingInputFieldType.COLOR}
           label={$t('color').toUpperCase()}
           bind:value={newTagColor}
@@ -233,7 +250,7 @@
 
     {#snippet stickyBottom()}
       <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
-      <Button type="submit" fullWidth shape="round" form="edit-tag-form">{$t('save')}</Button>
+      <Button type="submit" fullWidth shape="round" form="edit-tag-form" disabled={isEditOpen && !hasChange(tag)}>{$t('save')}</Button>
     {/snippet}
   </FullScreenModal>
 {/if}

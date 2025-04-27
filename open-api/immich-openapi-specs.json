@@ -13764,6 +13764,9 @@
           "color": {
             "nullable": true,
             "type": "string"
+          },
+          "value": {
+            "type": "string"
           }
         },
         "type": "object"

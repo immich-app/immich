@@ -90,10 +90,10 @@ export class TagRepository {
       if (dto.value) {
         // propagate value update downstream
         let i = 0;
-        const queue: { tagId: string; newValue: string | null; }[] = [{tagId: id, newValue: null}];
+        const queue: { tagId: string; newValue: string }[] = [{tagId: id, newValue: updated.value}];
         while (i < queue.length) {
           const { tagId, newValue } = queue[i++];
-          if (newValue) {
+          if (tagId !== id) {
             await tx.updateTable('tags').set({value: newValue}).where('id', '=', tagId).execute();
           }
 
