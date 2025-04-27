@@ -107,6 +107,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     END;
   $$;`.execute(db);
   if (vectorExtension === DatabaseExtension.VECTORS) {
+    await sql`CREATE EXTENSION IF NOT EXISTS "vectors";`.execute(db);
     await sql`SET search_path TO "$user", public, vectors`.execute(db);
   }
   await sql`CREATE TYPE "assets_status_enum" AS ENUM ('active','trashed','deleted');`.execute(db);
