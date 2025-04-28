@@ -13,6 +13,7 @@ part of openapi.api;
 class UserAdminCreateDto {
   /// Returns a new [UserAdminCreateDto] instance.
   UserAdminCreateDto({
+    this.avatarColor,
     required this.email,
     required this.name,
     this.notify,
@@ -21,6 +22,8 @@ class UserAdminCreateDto {
     this.shouldChangePassword,
     this.storageLabel,
   });
+
+  UserAvatarColor? avatarColor;
 
   String email;
 
@@ -51,6 +54,7 @@ class UserAdminCreateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminCreateDto &&
+    other.avatarColor == avatarColor &&
     other.email == email &&
     other.name == name &&
     other.notify == notify &&
@@ -62,6 +66,7 @@ class UserAdminCreateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email.hashCode) +
     (name.hashCode) +
     (notify == null ? 0 : notify!.hashCode) +
@@ -71,10 +76,15 @@ class UserAdminCreateDto {
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UserAdminCreateDto[email=$email, name=$name, notify=$notify, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UserAdminCreateDto[avatarColor=$avatarColor, email=$email, name=$name, notify=$notify, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.avatarColor != null) {
+      json[r'avatarColor'] = this.avatarColor;
+    } else {
+    //  json[r'avatarColor'] = null;
+    }
       json[r'email'] = this.email;
       json[r'name'] = this.name;
     if (this.notify != null) {
@@ -110,6 +120,7 @@ class UserAdminCreateDto {
       final json = value.cast<String, dynamic>();
 
       return UserAdminCreateDto(
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email')!,
         name: mapValueOfType<String>(json, r'name')!,
         notify: mapValueOfType<bool>(json, r'notify'),

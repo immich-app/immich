@@ -107,7 +107,6 @@ part 'model/asset_stack_response_dto.dart';
 part 'model/asset_stats_response_dto.dart';
 part 'model/asset_type_enum.dart';
 part 'model/audio_codec.dart';
-part 'model/avatar_response.dart';
 part 'model/avatar_update.dart';
 part 'model/bulk_id_response_dto.dart';
 part 'model/bulk_ids_dto.dart';

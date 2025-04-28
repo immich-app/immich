@@ -139,6 +139,19 @@ describe('/users', () => {
         profileChangedAt: expect.anything(),
       });
     });
+
+    it('should update avatar color', async () => {
+      const { status, body } = await request(app)
+        .put(`/users/me`)
+        .send({ avatarColor: 'blue' })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ avatarColor: 'blue' });
+
+      const after = await getMyUser({ headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ avatarColor: 'blue' });
+    });
   });
 
   describe('PUT /users/me/preferences', () => {
@@ -156,19 +169,6 @@ describe('/users', () => {
 
       const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
       expect(after).toMatchObject({ memories: { enabled: false } });
-    });
-
-    it('should update avatar color', async () => {
-      const { status, body } = await request(app)
-        .put(`/users/me/preferences`)
-        .send({ avatar: { color: 'blue' } })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toMatchObject({ avatar: { color: 'blue' } });
-
-      const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
-      expect(after).toMatchObject({ avatar: { color: 'blue' } });
     });
 
     it('should require an integer for download archive size', async () => {

@@ -1,5 +1,5 @@
 import { UserAdmin } from 'src/database';
-import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
+import { UserStatus } from 'src/enum';
 import { authStub } from 'test/fixtures/auth.stub';
 
 export const userStub = {
@@ -12,6 +12,7 @@ export const userStub = {
     storageLabel: 'admin',
     oauthId: '',
     shouldChangePassword: false,
+    avatarColor: null,
     profileImagePath: '',
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
@@ -28,16 +29,12 @@ export const userStub = {
     storageLabel: null,
     oauthId: '',
     shouldChangePassword: false,
+    avatarColor: null,
     profileImagePath: '',
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
-    metadata: [
-      {
-        key: UserMetadataKey.PREFERENCES,
-        value: { avatar: { color: UserAvatarColor.PRIMARY } },
-      },
-    ],
+    metadata: [],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   },
@@ -50,6 +47,7 @@ export const userStub = {
     storageLabel: null,
     oauthId: '',
     shouldChangePassword: false,
+    avatarColor: null,
     profileImagePath: '',
     createdAt: new Date('2021-01-01'),
     deletedAt: null,

@@ -300,7 +300,6 @@ Class | Method | HTTP request | Description
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
- - [AvatarResponse](doc//AvatarResponse.md)
  - [AvatarUpdate](doc//AvatarUpdate.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)

@@ -5,9 +5,9 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
-  import { preferences, user } from '$lib/stores/user.store';
+  import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteProfileImage, updateMyPreferences, type UserAvatarColor } from '@immich/sdk';
+  import { deleteProfileImage, updateMyUser, type UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -30,8 +30,7 @@
         await deleteProfileImage();
       }
 
-      $preferences = await updateMyPreferences({ userPreferencesUpdateDto: { avatar: { color } } });
-      $user = { ...$user, profileImagePath: '', avatarColor: $preferences.avatar.color };
+      $user = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
       isShowSelectAvatar = false;
 
       notificationController.show({

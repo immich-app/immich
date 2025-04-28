@@ -11,7 +11,6 @@ import {
   SyncEntityType,
   SystemMetadataKey,
   TranscodeTarget,
-  UserAvatarColor,
   UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
@@ -485,9 +484,6 @@ export interface UserPreferences {
   tags: {
     enabled: boolean;
     sidebarWeb: boolean;
-  };
-  avatar: {
-    color: UserAvatarColor;
   };
   emailNotifications: {
     enabled: boolean;
