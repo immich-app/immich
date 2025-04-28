@@ -88,7 +88,16 @@
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
 
   $effect(() => {
-    assetStore.rowHeight = maxMd ? 100 : 235;
+    const layoutOptions = maxMd
+      ? {
+          rowHeight: 100,
+          headerHeight: 32,
+        }
+      : {
+          rowHeight: 235,
+          headerHeight: 48,
+        };
+    assetStore.setLayoutOptions(layoutOptions);
   });
 
   const scrollTo = (top: number) => {

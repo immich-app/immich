@@ -35,9 +35,7 @@ export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
   deferInit?: boolean;
 };
-export type AssetStoreLayoutOptions = {
-  rowHeight: number;
-};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateObject(target: any, source: any): boolean {
   if (!target) {
@@ -110,7 +108,6 @@ export class AssetDateGroup {
   readonly date: DateTime;
   readonly dayOfMonth: number;
   intersetingAssets: IntersectingAsset[] = $state([]);
-  dodo: IntersectingAsset[] = $state([]);
 
   height = $state(0);
   width = $state(0);
@@ -547,6 +544,11 @@ export type LiteBucket = {
   bucketDateFormattted: string;
 };
 
+type AssetStoreLayoutOptions = {
+  rowHeight?: number;
+  headerHeight?: number;
+  gap?: number;
+};
 export class AssetStore {
   // --- public ----
   isInitialized = $state(false);
@@ -596,7 +598,7 @@ export class AssetStore {
   #unsubscribers: Unsubscriber[] = [];
 
   #rowHeight = $state(235);
-  #headerHeight = $state(49);
+  #headerHeight = $state(48);
   #gap = $state(12);
 
   #options: AssetStoreOptions = AssetStore.#INIT_OPTIONS;
@@ -608,36 +610,46 @@ export class AssetStore {
 
   constructor() {}
 
-  set headerHeight(value) {
+  setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: AssetStoreLayoutOptions) {
+    let changed = false;
+    changed ||= this.#setHeaderHeight(headerHeight);
+    changed ||= this.#setGap(gap);
+    changed ||= this.#setRowHeight(rowHeight);
+    if (changed) {
+      this.refreshLayout();
+    }
+  }
+
+  #setHeaderHeight(value: number) {
     if (this.#headerHeight == value) {
-      return;
+      return false;
     }
     this.#headerHeight = value;
-    this.refreshLayout();
+    return true;
   }
 
   get headerHeight() {
     return this.#headerHeight;
   }
 
-  set gap(value) {
+  #setGap(value: number) {
     if (this.#gap == value) {
-      return;
+      return false;
     }
     this.#gap = value;
-    this.refreshLayout();
+    return true;
   }
 
   get gap() {
     return this.#gap;
   }
 
-  set rowHeight(value) {
+  #setRowHeight(value: number) {
     if (this.#rowHeight == value) {
-      return;
+      return false;
     }
     this.#rowHeight = value;
-    this.refreshLayout();
+    return true;
   }
 
   get rowHeight() {
