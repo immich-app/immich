@@ -1,10 +1,5 @@
 import { eventManager } from '$lib/stores/event-manager.svelte';
-import type {
-  AlbumResponseDto,
-  ServerAboutResponseDto,
-  ServerStorageResponseDto,
-  ServerVersionHistoryResponseDto,
-} from '@immich/sdk';
+import type { ServerAboutResponseDto, ServerStorageResponseDto, ServerVersionHistoryResponseDto } from '@immich/sdk';
 
 interface UserInteractions {
   versions?: ServerVersionHistoryResponseDto[];
