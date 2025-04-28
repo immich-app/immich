@@ -853,6 +853,7 @@
     "failed_to_keep_this_delete_others": "Failed to keep this asset and delete the other assets",
     "failed_to_load_asset": "Failed to load asset",
     "failed_to_load_assets": "Failed to load assets",
+    "failed_to_load_notifications": "Failed to load notifications",
     "failed_to_load_people": "Failed to load people",
     "failed_to_remove_product_key": "Failed to remove product key",
     "failed_to_stack_assets": "Failed to stack assets",

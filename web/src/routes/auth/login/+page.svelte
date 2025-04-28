@@ -2,15 +2,15 @@
   import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
-  import { login } from '@immich/sdk';
+  import { login, type LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { notificationManager } from '$lib/stores/notification-manager.svelte';
 
   interface Props {
     data: PageData;
@@ -25,10 +25,11 @@
   let loading = $state(false);
   let oauthLoading = $state(true);
 
-  const onSuccess = async () => {
-    await notificationManager.refresh();
+  const onSuccess = async (user: LoginResponseDto) => {
     await goto(AppRoute.PHOTOS, { invalidateAll: true });
+    eventManager.emit('auth.login', user);
   };
+
   const onFirstLogin = async () => await goto(AppRoute.AUTH_CHANGE_PASSWORD);
   const onOnboarding = async () => await goto(AppRoute.AUTH_ONBOARDING);
 
@@ -40,8 +41,8 @@
 
     if (oauth.isCallback(globalThis.location)) {
       try {
-        await oauth.login(globalThis.location);
-        await onSuccess();
+        const user = await oauth.login(globalThis.location);
+        await onSuccess(user);
         return;
       } catch (error) {
         console.error('Error [login-form] [oauth.callback]', error);
@@ -78,7 +79,7 @@
         await onFirstLogin();
         return;
       }
-      await onSuccess();
+      await onSuccess(user);
       return;
     } catch (error) {
       errorMessage = getServerErrorMessage(error) || $t('errors.incorrect_email_or_password');
