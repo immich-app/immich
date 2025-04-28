@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type AlbumResponseDto, getAllAlbums } from '@immich/sdk';
+  import { type AlbumResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import AlbumListItem from '../../asset-viewer/album-list-item.svelte';
   import NewAlbumListItem from './new-album-list-item.svelte';
@@ -12,10 +12,8 @@
     AlbumModalRowType,
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
+  import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 
-  let albums: AlbumResponseDto[] = $state([]);
-  let recentAlbums: AlbumResponseDto[] = $state([]);
-  let loading = $state(true);
   let search = $state('');
   let selectedRowIndex: number = $state(-1);
 
@@ -29,13 +27,13 @@
   let { onNewAlbum, onAlbumClick, shared, onClose }: Props = $props();
 
   onMount(async () => {
-    albums = await getAllAlbums({ shared: shared || undefined });
-    recentAlbums = albums.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? -1 : 1)).slice(0, 3);
-    loading = false;
+    await albumListingStore.ensureLoaded();
   });
 
   const rowConverter = new AlbumModalRowConverter(shared, $albumViewSettings.sortBy, $albumViewSettings.sortOrder);
-  const albumModalRows = $derived(rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex));
+  const albumModalRows = $derived(
+    rowConverter.toModalRows(search, albumListingStore.recentAlbums, albumListingStore.albums, selectedRowIndex),
+  );
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
   const onkeydown = (e: KeyboardEvent) => {
@@ -82,7 +80,7 @@
 
 <FullScreenModal title={shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose}>
   <div class="mb-2 flex max-h-[400px] flex-col">
-    {#if loading}
+    {#if albumListingStore.isLoading}
       <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each { length: 3 } as _}
         <div class="flex animate-pulse gap-4 px-6 py-2">

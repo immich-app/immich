@@ -1,3 +1,4 @@
+import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 import { eventManager } from '$lib/stores/event-manager.svelte';
 import { purchaseStore } from '$lib/stores/purchase.store';
 import { type UserAdminResponseDto, type UserPreferencesResponseDto } from '@immich/sdk';
@@ -14,6 +15,7 @@ export const resetSavedUser = () => {
   user.set(undefined as unknown as UserAdminResponseDto);
   preferences.set(undefined as unknown as UserPreferencesResponseDto);
   purchaseStore.setPurchaseStatus(false);
+  albumListingStore.reset();
 };
 
 eventManager.on('auth.logout', () => resetSavedUser());

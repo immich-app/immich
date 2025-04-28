@@ -1,20 +1,13 @@
 import { eventManager } from '$lib/stores/event-manager.svelte';
-import type {
-  AlbumResponseDto,
-  ServerAboutResponseDto,
-  ServerStorageResponseDto,
-  ServerVersionHistoryResponseDto,
-} from '@immich/sdk';
+import type { ServerAboutResponseDto, ServerStorageResponseDto, ServerVersionHistoryResponseDto } from '@immich/sdk';
 
 interface UserInteractions {
-  recentAlbums?: AlbumResponseDto[];
   versions?: ServerVersionHistoryResponseDto[];
   aboutInfo?: ServerAboutResponseDto;
   serverInfo?: ServerStorageResponseDto;
 }
 
 const defaultUserInteraction: UserInteractions = {
-  recentAlbums: undefined,
   versions: undefined,
   aboutInfo: undefined,
   serverInfo: undefined,

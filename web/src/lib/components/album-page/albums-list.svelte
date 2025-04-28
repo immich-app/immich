@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, type Snippet } from 'svelte';
+  import { fade } from 'svelte/transition';
   import { groupBy } from 'lodash-es';
   import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
@@ -14,6 +15,7 @@
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
@@ -35,11 +37,11 @@
     locale,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
-  import { userInteraction } from '$lib/stores/user.svelte';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
+  import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 
   interface Props {
     ownedAlbums?: AlbumResponseDto[];
@@ -49,6 +51,7 @@
     allowEdit?: boolean;
     showOwner?: boolean;
     albumGroupIds?: string[];
+    isLoading?: boolean;
     empty?: Snippet;
   }
 
@@ -60,6 +63,7 @@
     allowEdit = false,
     showOwner = false,
     albumGroupIds = $bindable([]),
+    isLoading = false,
     empty,
   }: Props = $props();
 
@@ -289,20 +293,6 @@
     await Promise.allSettled(albumsToRemove.map((album) => handleDeleteAlbum(album)));
   };
 
-  const updateAlbumInfo = (album: AlbumResponseDto) => {
-    ownedAlbums[ownedAlbums.findIndex(({ id }) => id === album.id)] = album;
-    sharedAlbums[sharedAlbums.findIndex(({ id }) => id === album.id)] = album;
-  };
-
-  const updateRecentAlbumInfo = (album: AlbumResponseDto) => {
-    for (const cachedAlbum of userInteraction.recentAlbums || []) {
-      if (cachedAlbum.id === album.id) {
-        Object.assign(cachedAlbum, { ...cachedAlbum, ...album });
-        break;
-      }
-    }
-  };
-
   const successEditAlbumInfo = (album: AlbumResponseDto) => {
     albumToEdit = null;
 
@@ -317,8 +307,7 @@
       },
     });
 
-    updateAlbumInfo(album);
-    updateRecentAlbumInfo(album);
+    albumListingStore.updateAlbumLocally(album);
   };
 
   const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
@@ -332,7 +321,7 @@
           albumUsers,
         },
       });
-      updateAlbumInfo(album);
+      albumListingStore.updateAlbumLocally(album);
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_album_users'));
     } finally {
@@ -343,7 +332,7 @@
   const handleSharedLinkCreated = (album: AlbumResponseDto) => {
     album.shared = true;
     album.hasSharedLink = true;
-    updateAlbumInfo(album);
+    albumListingStore.updateAlbumLocally(album);
   };
 
   const openShareModal = () => {
@@ -360,6 +349,12 @@
     showShareByURLModal = false;
   };
 </script>
+
+{#if isLoading}
+  <div class="absolute top-7 right-5 pointer-events-none" in:fade out:fade>
+    <LoadingSpinner />
+  </div>
+{/if}
 
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}
@@ -388,7 +383,7 @@
     <!-- Album Table -->
     <AlbumsTable {groupedAlbums} {albumGroupOption} onShowContextMenu={showAlbumContextMenu} />
   {/if}
-{:else}
+{:else if !isLoading}
   <!-- Empty Message -->
   {@render empty?.()}
 {/if}
