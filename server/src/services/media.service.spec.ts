@@ -1,7 +1,6 @@
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
-import { AssetMediaSize } from 'src/dtos/asset-media.dto';
 import {
   AssetFileType,
   AssetPathType,
@@ -11,6 +10,7 @@ import {
   ImageFormat,
   JobName,
   JobStatus,
+  RawExtractedFormat,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
@@ -231,17 +231,19 @@ describe(MediaService.name, () => {
   describe('handleGenerateThumbnails', () => {
     let rawBuffer: Buffer;
     let fullsizeBuffer: Buffer;
+    let extractedBuffer: Buffer;
     let rawInfo: RawImageInfo;
 
     beforeEach(() => {
       fullsizeBuffer = Buffer.from('embedded image data');
-      rawBuffer = Buffer.from('image data');
+      rawBuffer = Buffer.from('raw image data');
+      extractedBuffer = Buffer.from('embedded image file');
       rawInfo = { width: 100, height: 100, channels: 3 };
-      mocks.media.decodeImage.mockImplementation((path) =>
+      mocks.media.decodeImage.mockImplementation((input) =>
         Promise.resolve(
-          path.includes(AssetMediaSize.FULLSIZE)
-            ? { data: fullsizeBuffer, info: rawInfo as OutputInfo }
-            : { data: rawBuffer, info: rawInfo as OutputInfo },
+          typeof input === 'string'
+            ? { data: rawBuffer, info: rawInfo as OutputInfo } // string implies original file
+            : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
         ),
       );
     });
@@ -584,16 +586,15 @@ describe(MediaService.name, () => {
     });
 
     it('should extract embedded image if enabled and available', async () => {
-      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      const convertedPath = mocks.media.extract.mock.lastCall?.[1].toString();
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(convertedPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
@@ -601,15 +602,12 @@ describe(MediaService.name, () => {
     });
 
     it('should resize original image if embedded image is too small', async () => {
-      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 1000, height: 1000 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
-
-      const extractedPath = mocks.media.extract.mock.lastCall?.[1].toString();
-      expect(extractedPath).toMatch(/-fullsize\.jpeg$/);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
         colorspace: Colorspace.P3,
@@ -665,38 +663,40 @@ describe(MediaService.name, () => {
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
-        expect.objectContaining({ processInvalidImages: true }),
+        expect.objectContaining({ processInvalidImages: false }),
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
-        expect.objectContaining({ processInvalidImages: true }),
+        expect.objectContaining({ processInvalidImages: false }),
         'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
       expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(
         rawBuffer,
-        expect.objectContaining({ processInvalidImages: true }),
+        expect.objectContaining({ processInvalidImages: false }),
       );
 
       expect(mocks.media.getImageDimensions).not.toHaveBeenCalled();
       vi.unstubAllEnvs();
     });
 
-    it('should generate full-size preview using embedded JPEG from RAW images when extractEmbedded is true', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: true } });
-      mocks.media.extract.mockResolvedValue(true);
+    it('should extract full-size JPEG preview from RAW', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.WEBP }, extractEmbedded: true },
+      });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      const extractedPath = mocks.media.extract.mock.lastCall?.[1].toString();
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
+        size: 1440, // capped to preview size as fullsize conversion is skipped
       });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
@@ -714,9 +714,51 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should convert full-size WEBP preview from JXL preview of RAW', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.WEBP }, extractEmbedded: true },
+      });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JXL });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        fullsizeBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.WEBP,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.webp',
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        fullsizeBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          size: 1440,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      );
+    });
+
     it('should generate full-size preview directly from RAW images when extractEmbedded is false', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
-      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
@@ -756,7 +798,7 @@ describe(MediaService.name, () => {
 
     it('should generate full-size preview from non-web-friendly images', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
-      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
@@ -785,7 +827,7 @@ describe(MediaService.name, () => {
 
     it('should skip generating full-size preview for web-friendly images', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
-      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
 
@@ -810,7 +852,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { fullsize: { enabled: true, format: ImageFormat.WEBP, quality: 90 } },
       });
-      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
@@ -2481,48 +2523,39 @@ describe(MediaService.name, () => {
 
   describe('isSRGB', () => {
     it('should return true for srgb colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB' } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ colorspace: 'sRGB' } as Exif)).toEqual(true);
     });
 
     it('should return true for srgb profile description', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB v1.31' } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ profileDescription: 'sRGB v1.31' } as Exif)).toEqual(true);
     });
 
     it('should return true for 8-bit image with no colorspace metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 8 } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ bitsPerSample: 8 } as Exif)).toEqual(true);
     });
 
     it('should return true for image with no colorspace or bit depth metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: {} as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({} as Exif)).toEqual(true);
     });
 
     it('should return false for non-srgb colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'Adobe RGB' } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(false);
+      expect(sut.isSRGB({ colorspace: 'Adobe RGB' } as Exif)).toEqual(false);
     });
 
     it('should return false for non-srgb profile description', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sP3C' } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(false);
+      expect(sut.isSRGB({ profileDescription: 'sP3C' } as Exif)).toEqual(false);
     });
 
     it('should return false for 16-bit image with no colorspace metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 16 } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(false);
+      expect(sut.isSRGB({ bitsPerSample: 16 } as Exif)).toEqual(false);
     });
 
     it('should return true for 16-bit image with sRGB colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB', bitsPerSample: 16 } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ colorspace: 'sRGB', bitsPerSample: 16 } as Exif)).toEqual(true);
     });
 
     it('should return true for 16-bit image with sRGB profile', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB', bitsPerSample: 16 } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ profileDescription: 'sRGB', bitsPerSample: 16 } as Exif)).toEqual(true);
     });
   });
 });
