@@ -595,9 +595,9 @@ export class MetadataService extends BaseService {
   }
 
   private orientRegionInfo(
-    regionInfo: NonNullable<ImmichTags['RegionInfo']>,
+    regionInfo: ImmichTagsWithFaces['RegionInfo'],
     orientation: ExifOrientation | undefined,
-  ): NonNullable<ImmichTags['RegionInfo']> {
+  ): ImmichTagsWithFaces['RegionInfo'] {
     // skip default Orientation
     if (orientation === undefined || orientation === ExifOrientation.Horizontal) {
       return regionInfo;
