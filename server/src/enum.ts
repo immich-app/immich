@@ -330,6 +330,10 @@ export enum Colorspace {
 export enum ImageFormat {
   JPEG = 'jpeg',
   WEBP = 'webp',
+}
+
+export enum RawExtractedFormat {
+  JPEG = 'jpeg',
   JXL = 'jxl',
 }
 

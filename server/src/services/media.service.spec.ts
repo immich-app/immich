@@ -1,7 +1,6 @@
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
-import { AssetMediaSize } from 'src/dtos/asset-media.dto';
 import {
   AssetFileType,
   AssetPathType,
@@ -11,6 +10,7 @@ import {
   ImageFormat,
   JobName,
   JobStatus,
+  RawExtractedFormat,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
@@ -232,17 +232,19 @@ describe(MediaService.name, () => {
   describe('handleGenerateThumbnails', () => {
     let rawBuffer: Buffer;
     let fullsizeBuffer: Buffer;
+    let extractedBuffer: Buffer;
     let rawInfo: RawImageInfo;
 
     beforeEach(() => {
       fullsizeBuffer = Buffer.from('embedded image data');
-      rawBuffer = Buffer.from('image data');
+      rawBuffer = Buffer.from('raw image data');
+      extractedBuffer = Buffer.from('embedded image file');
       rawInfo = { width: 100, height: 100, channels: 3 };
-      mocks.media.decodeImage.mockImplementation((path) =>
+      mocks.media.decodeImage.mockImplementation((input) =>
         Promise.resolve(
-          path.includes(AssetMediaSize.FULLSIZE)
-            ? { data: fullsizeBuffer, info: rawInfo as OutputInfo }
-            : { data: rawBuffer, info: rawInfo as OutputInfo },
+          typeof input === 'string'
+            ? { data: rawBuffer, info: rawInfo as OutputInfo } // string implies original file
+            : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
         ),
       );
     });
@@ -585,16 +587,15 @@ describe(MediaService.name, () => {
     });
 
     it('should extract embedded image if enabled and available', async () => {
-      mocks.media.extract.mockResolvedValue(ImageFormat.JPEG);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      const convertedPath = mocks.media.extract.mock.lastCall?.[1].toString();
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(convertedPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
@@ -602,15 +603,12 @@ describe(MediaService.name, () => {
     });
 
     it('should resize original image if embedded image is too small', async () => {
-      mocks.media.extract.mockResolvedValue(ImageFormat.JPEG);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 1000, height: 1000 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
-
-      const extractedPath = mocks.media.extract.mock.lastCall?.[1].toString();
-      expect(extractedPath).toMatch(/-fullsize\.jpeg$/);
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
         colorspace: Colorspace.P3,
@@ -689,15 +687,14 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { fullsize: { enabled: true, format: ImageFormat.WEBP }, extractEmbedded: true },
       });
-      mocks.media.extract.mockResolvedValue(ImageFormat.JPEG);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      const extractedPath = mocks.media.extract.mock.lastCall?.[1].toString();
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440, // capped to preview size as fullsize conversion is skipped
@@ -722,16 +719,14 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { fullsize: { enabled: true, format: ImageFormat.WEBP }, extractEmbedded: true },
       });
-      mocks.media.extract.mockResolvedValue(ImageFormat.JXL);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JXL });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      // param of media.extract() is not the final extracted path when extracted is not a JPEG
-      const extractedPath = mocks.media.extract.mock.lastCall?.[1].toString().replace('.jpeg', '.jxl');
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
@@ -764,7 +759,7 @@ describe(MediaService.name, () => {
 
     it('should generate full-size preview directly from RAW images when extractEmbedded is false', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
-      mocks.media.extract.mockResolvedValue(ImageFormat.JPEG);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
@@ -804,7 +799,7 @@ describe(MediaService.name, () => {
 
     it('should generate full-size preview from non-web-friendly images', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
-      mocks.media.extract.mockResolvedValue(ImageFormat.JPEG);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
@@ -833,7 +828,7 @@ describe(MediaService.name, () => {
 
     it('should skip generating full-size preview for web-friendly images', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
-      mocks.media.extract.mockResolvedValue(ImageFormat.JPEG);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
 
@@ -858,7 +853,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { fullsize: { enabled: true, format: ImageFormat.WEBP, quality: 90 } },
       });
-      mocks.media.extract.mockResolvedValue(ImageFormat.JPEG);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);

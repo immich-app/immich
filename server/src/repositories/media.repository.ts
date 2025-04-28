@@ -7,7 +7,7 @@ import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Exif } from 'src/database';
-import { Colorspace, ImageFormat, LogLevel } from 'src/enum';
+import { Colorspace, LogLevel, RawExtractedFormat } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
@@ -36,6 +36,11 @@ type ProgressEvent = {
   percent?: number;
 };
 
+export type ExtractResult = {
+  buffer: Buffer;
+  format: RawExtractedFormat;
+};
+
 @Injectable()
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
@@ -45,45 +50,36 @@ export class MediaRepository {
   /**
    *
    * @param input file path to the input image
-   * @param output where to write the extracted image
-   * @returns ImageFormat if succeeded, or null if failed
+   * @returns ExtractResult if succeeded, or null if failed
    */
-  async extract(input: string, output: string): Promise<ImageFormat | null> {
-    // remove existing output file if it exists
-    // as exiftool-vendored does not support overwriting via "-w!" flag
-    // and throws "1 files could not be read" error when the output file exists
-    await fs.unlink(output).catch(() => null);
-
-    // attempts are ordered by quality of the extracted image
-    // TODO: query the largest embedded image and its format from EXIF IFDs and extract that directly
-
+  async extract(input: string): Promise<ExtractResult | null> {
     try {
-      await exiftool.extractBinaryTag('JpgFromRaw2', input, output);
-      return ImageFormat.JPEG;
+      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw2', input);
+      return { buffer, format: RawExtractedFormat.JPEG };
     } catch (error: any) {
-      this.logger.debug('Could not extract JpgFromRaw2 from image, trying JPEG from RAW next', error.message);
+      this.logger.debug('Could not extract JpgFromRaw2 buffer from image, trying JPEG from RAW next', error.message);
     }
 
     try {
-      this.logger.debug('Extracting JPEG from RAW image:', input);
-      await exiftool.extractJpgFromRaw(input, output);
-      return ImageFormat.JPEG;
+      this.logger.debug('Extracting JPEG buffer from RAW image:', input);
+      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw', input);
+      return { buffer, format: RawExtractedFormat.JPEG };
     } catch (error: any) {
-      this.logger.debug('Could not extract JPEG from image, trying PreviewJXL next', error.message);
+      this.logger.debug('Could not extract JPEG buffer from image, trying PreviewJXL next', error.message);
     }
 
     try {
-      await exiftool.extractBinaryTag('PreviewJXL', input, output);
-      return ImageFormat.JXL;
+      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewJXL', input);
+      return { buffer, format: RawExtractedFormat.JXL };
     } catch (error: any) {
-      this.logger.debug('Could not extract PreviewJXL from image, trying preview next', error.message);
+      this.logger.debug('Could not extract PreviewJXL buffer from image, trying PreviewImage next', error.message);
     }
 
     try {
-      await exiftool.extractPreview(input, output);
-      return ImageFormat.JPEG;
+      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewImage', input);
+      return { buffer, format: RawExtractedFormat.JPEG };
     } catch (error: any) {
-      this.logger.debug('Could not extract preview from image', error.message);
+      this.logger.debug('Could not extract preview buffer from image', error.message);
       return null;
     }
   }
@@ -126,7 +122,7 @@ export class MediaRepository {
     }
   }
 
-  decodeImage(input: string, options: DecodeToBufferOptions) {
+  decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
     return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
   }
 
@@ -257,7 +253,7 @@ export class MediaRepository {
     });
   }
 
-  async getImageDimensions(input: string): Promise<ImageDimensions> {
+  async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
     const { width = 0, height = 0 } = await sharp(input).metadata();
     return { width, height };
   }

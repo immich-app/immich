@@ -23,6 +23,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { UpsertFileOptions, WithoutProperty } from 'src/repositories/asset.repository';
+import { ExtractResult } from 'src/repositories/media.repository';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
@@ -231,54 +232,29 @@ export class MediaService extends BaseService {
     // prevents this extra "enabled" from leaking into fullsizeOptions later
     const { enabled: imageFullsizeEnabled, ...imageFullsizeConfig } = image.fullsize;
 
+    // Handle embedded preview extraction for RAW files
+    let extracted: ExtractResult | null = null;
     const shouldExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
 
-    // This will be our input source for the decode operation
-    let thumbSourcePath = asset.originalPath;
-    let extractedPath: string | undefined;
-    // Handle embedded preview extraction for RAW files
     if (shouldExtractEmbedded) {
-      // Assume JPEG format for extraction as it is commonly correct and saves IO.
-      // If a different format is returned (e.g., JXL), it will be renamed later.
-      const assumedExtractedFormat = ImageFormat.JPEG;
-      extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, assumedExtractedFormat);
-      this.storageCore.ensureFolders(extractedPath);
-
-      // Try to extract embedded preview
-      const extractedFormat = await this.mediaRepository.extract(asset.originalPath, extractedPath);
-
-      if (extractedFormat !== null) {
-        if (extractedFormat !== assumedExtractedFormat) {
-          // rename the extracted file to the correct format if it differs
-          const extractedPathCorrectExt = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, extractedFormat);
-          await this.storageRepository.rename(extractedPath, extractedPathCorrectExt);
-          extractedPath = extractedPathCorrectExt;
-        }
-
-        if (await this.shouldUseExtractedImage(extractedPath, image.preview.size)) {
-          // Extracted image is large enough as a base of our thumbnail generation
-          thumbSourcePath = extractedPath;
-
-          // Write essential EXIF data for correct preview processing
-          if (asset.exifInfo) {
-            const exif = { orientation: asset.exifInfo.orientation, colorspace: asset.exifInfo.colorspace };
-            await this.mediaRepository.writeExif(exif, thumbSourcePath);
-          }
-        } else {
-          // not good enough, drop it and use the original
-          await this.storageRepository.unlink(extractedPath);
-          extractedPath = undefined;
-          thumbSourcePath = asset.originalPath;
-        }
+      // Extract embedded preview as buffer
+      extracted = await this.mediaRepository.extract(asset.originalPath);
+      if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, image.preview.size))) {
+        // drop the extracted buffer if it's smaller than the preview size
+        extracted = null;
       }
     }
 
-    // a new fullsize image should be returned if the original is not web-friendly
-    const shouldReturnFullsize = imageFullsizeEnabled && !mimeTypes.isWebSupportedImage(asset.originalPath);
-    // thumbSourcePath is either the original image or the extracted one
-    const shouldConvertFullsize = shouldReturnFullsize && !mimeTypes.isWebSupportedImage(thumbSourcePath);
+    // confirm decoding params
+    const thumbSource: string | Buffer = extracted ? extracted.buffer : asset.originalPath;
 
-    // Decode the source image (original or extracted)
+    const shouldGenerateFullsize = imageFullsizeEnabled && !mimeTypes.isWebSupportedImage(asset.originalPath);
+    const shouldConvertFullsize =
+      shouldGenerateFullsize &&
+      (extracted // extracted or orinal not web friendly
+        ? !mimeTypes.isWebSupportedImage(`stub.${extracted.format}`)
+        : !mimeTypes.isWebSupportedImage(asset.originalPath));
+
     const decodeOptions: DecodeToBufferOptions = {
       colorspace,
       processInvalidImages,
@@ -286,8 +262,11 @@ export class MediaService extends BaseService {
       size: shouldConvertFullsize ? undefined : image.preview.size,
       orientation: asset.exifInfo.orientation ? Number(asset.exifInfo.orientation) : undefined,
     };
-    const { info, data } = await this.mediaRepository.decodeImage(thumbSourcePath, decodeOptions);
 
+    // decode the source image (original or extracted buffer)
+    const { info, data } = await this.mediaRepository.decodeImage(thumbSource, decodeOptions);
+
+    // generate final images
     const thumbnailOptions = { colorspace, processInvalidImages, raw: info };
     const promises = [
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
@@ -295,9 +274,10 @@ export class MediaService extends BaseService {
       this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewPath),
     ];
 
-    // additionally, return a fullsize image if required
     let fullsizePath: string | undefined;
-    if (shouldReturnFullsize) {
+
+    if (shouldGenerateFullsize) {
+      // additionally, create a fullsize image if required
       if (shouldConvertFullsize) {
         // convert a new fullsize image from the same source as the thumbnail
         fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.fullsize.format);
@@ -307,16 +287,34 @@ export class MediaService extends BaseService {
           size: undefined,
         };
         promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
-        // drop the extracted image if we don't need it anymore
-        if (extractedPath) {
-          await this.storageRepository.unlink(extractedPath);
-          extractedPath = undefined;
-        }
       } else {
-        // or just use the extracted image
-        fullsizePath = extractedPath;
+        // save the extracted buffer as fullsize without conversion
+        if (!extracted) {
+          // should not happen as guarded by shouldG
+          throw new Error('Extracted buffer is null, but fullsize generation is required');
+        }
+
+        fullsizePath = StorageCore.getImagePath(
+          asset,
+          AssetPathType.FULLSIZE,
+          // it is OK tor force casting the type, as it can only be jpeg here for now
+          // which is both ImageFormat and RawExtractedFormat
+          extracted.format as unknown as ImageFormat,
+        );
+        this.storageCore.ensureFolders(fullsizePath);
+
+        // Write the buffer to disk with essential EXIF data
+        await this.storageRepository.createOrOverwriteFile(fullsizePath, extracted.buffer);
+        await this.mediaRepository.writeExif(
+          {
+            orientation: asset.exifInfo.orientation,
+            colorspace: asset.exifInfo.colorspace,
+          },
+          fullsizePath,
+        );
       }
     }
+
     const outputs = await Promise.all(promises);
 
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
@@ -580,10 +578,9 @@ export class MediaService extends BaseService {
     }
   }
 
-  private async shouldUseExtractedImage(extractedPath: string, targetSize: number) {
-    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPath);
+  private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
+    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPathOrBuffer);
     const extractedSize = Math.min(width, height);
-
     return extractedSize >= targetSize;
   }
 
