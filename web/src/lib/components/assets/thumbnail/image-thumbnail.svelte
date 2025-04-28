@@ -2,9 +2,11 @@
   import { thumbhash } from '$lib/actions/thumbhash';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
   import type { ClassValue } from 'svelte/elements';
+  import type { ActionReturn } from 'svelte/action';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -59,11 +61,14 @@
     onComplete?.(true);
   };
 
-  function mount(elem: HTMLImageElement) {
+  function mount(elem: HTMLImageElement): ActionReturn {
     if (elem.complete) {
       loaded = true;
       onComplete?.(false);
     }
+    return {
+      destroy: () => cancelImageUrl(url),
+    };
   }
 
   let optionalClasses = $derived(
@@ -101,7 +106,7 @@
 {/if}
 
 {#if hidden}
-  <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+  <div class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
     <Icon {title} path={mdiEyeOffOutline} size="2em" class={hiddenIconClass} />
   </div>
 {/if}

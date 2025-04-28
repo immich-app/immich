@@ -76,7 +76,7 @@
           title={$t('admin.template_email_settings')}
           subtitle={$t('admin.template_settings_description')}
         >
-          <div class="ml-4 mt-4 flex flex-col gap-4">
+          <div class="ms-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
               <FormatMessage key="admin.template_email_if_empty">
                 {$t('admin.template_email_if_empty')}
@@ -102,7 +102,7 @@
                   onclick={() => getTemplate(templateName, config.templates.email[templateKey])}
                   title={$t('admin.template_email_preview')}
                 >
-                  <Icon path={mdiEyeOutline} class="mr-1" />
+                  <Icon path={mdiEyeOutline} class="me-1" />
                   {$t('admin.template_email_preview')}
                 </Button>
               </div>

@@ -65,12 +65,12 @@
       path={mdiChevronDown}
       size="1.2em"
       ariaHidden={true}
-      class="pointer-events-none right-1 relative col-start-1 row-start-1 self-center justify-self-end {disabled
+      class="pointer-events-none end-1 relative col-start-1 row-start-1 self-center justify-self-end {disabled
         ? 'text-immich-bg'
         : 'text-immich-fg dark:text-immich-bg'}"
     />
     <select
-      class="immich-form-input w-full appearance-none row-start-1 col-start-1 !pr-6"
+      class="immich-form-input w-full appearance-none row-start-1 col-start-1 !pe-6"
       {disabled}
       aria-describedby={desc ? `${name}-desc` : undefined}
       {name}

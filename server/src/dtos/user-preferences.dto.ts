@@ -137,11 +137,6 @@ export class UserPreferencesUpdateDto {
   purchase?: PurchaseUpdate;
 }
 
-class AvatarResponse {
-  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
-  color!: UserAvatarColor;
-}
-
 class RatingsResponse {
   enabled: boolean = false;
 }
@@ -195,7 +190,6 @@ export class UserPreferencesResponseDto implements UserPreferences {
   ratings!: RatingsResponse;
   sharedLinks!: SharedLinksResponse;
   tags!: TagsResponse;
-  avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;
   purchase!: PurchaseResponse;

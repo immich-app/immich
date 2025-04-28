@@ -17,7 +17,7 @@
       alt="Immich logo"
     />
     <div
-      class="w-full h-[99%] absolute left-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
+      class="w-full h-[99%] absolute start-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
     ></div>
   </div>
 

@@ -486,7 +486,7 @@
 </header>
 
 <main
-  class="relative h-dvh overflow-hidden bg-immich-bg tall:ml-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  class="relative h-dvh overflow-hidden bg-immich-bg tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
   use:scrollMemoryClearer={{
     routeStartsWith: AppRoute.PEOPLE,
     beforeClear: () => {
@@ -542,7 +542,7 @@
                     heightStyle="3.375rem"
                   />
                   <div
-                    class="flex flex-col justify-center text-left px-4 text-immich-primary dark:text-immich-dark-primary"
+                    class="flex flex-col justify-center text-start px-4 text-immich-primary dark:text-immich-dark-primary"
                   >
                     <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
                     <p class="text-sm text-gray-500 dark:text-immich-gray">
@@ -598,7 +598,7 @@
                         widthStyle="2rem"
                         heightStyle="2rem"
                       />
-                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                      <p class="ms-4 text-gray-700 dark:text-gray-100">{person.name}</p>
                     </button>
                   {/each}
                 </div>

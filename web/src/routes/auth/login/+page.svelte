@@ -10,6 +10,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { notificationManager } from '$lib/stores/notification-manager.svelte';
 
   interface Props {
     data: PageData;
@@ -24,7 +25,10 @@
   let loading = $state(false);
   let oauthLoading = $state(true);
 
-  const onSuccess = async () => await goto(AppRoute.PHOTOS, { invalidateAll: true });
+  const onSuccess = async () => {
+    await notificationManager.refresh();
+    await goto(AppRoute.PHOTOS, { invalidateAll: true });
+  };
   const onFirstLogin = async () => await goto(AppRoute.AUTH_CHANGE_PASSWORD);
   const onOnboarding = async () => await goto(AppRoute.AUTH_ONBOARDING);
 
@@ -132,7 +136,7 @@
           <div class="inline-flex w-full items-center justify-center my-4">
             <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
             <span
-              class="absolute left-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white"
+              class="absolute start-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white"
             >
               {$t('or').toUpperCase()}
             </span>

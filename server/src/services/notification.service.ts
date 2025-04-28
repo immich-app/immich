@@ -1,7 +1,24 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
+import { AuthDto } from 'src/dtos/auth.dto';
+import {
+  mapNotification,
+  NotificationDeleteAllDto,
+  NotificationDto,
+  NotificationSearchDto,
+  NotificationUpdateAllDto,
+  NotificationUpdateDto,
+} from 'src/dtos/notification.dto';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
-import { AssetFileType, JobName, JobStatus, QueueName } from 'src/enum';
+import {
+  AssetFileType,
+  JobName,
+  JobStatus,
+  NotificationLevel,
+  NotificationType,
+  Permission,
+  QueueName,
+} from 'src/enum';
 import { EmailTemplate } from 'src/repositories/email.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
@@ -14,6 +31,80 @@ import { getPreferences } from 'src/utils/preferences';
 @Injectable()
 export class NotificationService extends BaseService {
   private static albumUpdateEmailDelayMs = 300_000;
+
+  async search(auth: AuthDto, dto: NotificationSearchDto): Promise<NotificationDto[]> {
+    const items = await this.notificationRepository.search(auth.user.id, dto);
+    return items.map((item) => mapNotification(item));
+  }
+
+  async updateAll(auth: AuthDto, dto: NotificationUpdateAllDto) {
+    await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NOTIFICATION_UPDATE });
+    await this.notificationRepository.updateAll(dto.ids, {
+      readAt: dto.readAt,
+    });
+  }
+
+  async deleteAll(auth: AuthDto, dto: NotificationDeleteAllDto) {
+    await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NOTIFICATION_DELETE });
+    await this.notificationRepository.deleteAll(dto.ids);
+  }
+
+  async get(auth: AuthDto, id: string) {
+    await this.requireAccess({ auth, ids: [id], permission: Permission.NOTIFICATION_READ });
+    const item = await this.notificationRepository.get(id);
+    if (!item) {
+      throw new BadRequestException('Notification not found');
+    }
+    return mapNotification(item);
+  }
+
+  async update(auth: AuthDto, id: string, dto: NotificationUpdateDto) {
+    await this.requireAccess({ auth, ids: [id], permission: Permission.NOTIFICATION_UPDATE });
+    const item = await this.notificationRepository.update(id, {
+      readAt: dto.readAt,
+    });
+    return mapNotification(item);
+  }
+
+  async delete(auth: AuthDto, id: string) {
+    await this.requireAccess({ auth, ids: [id], permission: Permission.NOTIFICATION_DELETE });
+    await this.notificationRepository.delete(id);
+  }
+
+  @OnJob({ name: JobName.NOTIFICATIONS_CLEANUP, queue: QueueName.BACKGROUND_TASK })
+  async onNotificationsCleanup() {
+    await this.notificationRepository.cleanup();
+  }
+
+  @OnEvent({ name: 'job.failed' })
+  async onJobFailed({ job, error }: ArgOf<'job.failed'>) {
+    const admin = await this.userRepository.getAdmin();
+    if (!admin) {
+      return;
+    }
+
+    this.logger.error(`Unable to run job handler (${job.name}): ${error}`, error?.stack, JSON.stringify(job.data));
+
+    switch (job.name) {
+      case JobName.BACKUP_DATABASE: {
+        const errorMessage = error instanceof Error ? error.message : error;
+        const item = await this.notificationRepository.create({
+          userId: admin.id,
+          type: NotificationType.JobFailed,
+          level: NotificationLevel.Error,
+          title: 'Job Failed',
+          description: `Job ${[job.name]} failed with error: ${errorMessage}`,
+        });
+
+        this.eventRepository.clientSend('on_notification', admin.id, mapNotification(item));
+        break;
+      }
+
+      default: {
+        return;
+      }
+    }
+  }
 
   @OnEvent({ name: 'config.update' })
   onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
@@ -271,7 +362,7 @@ export class NotificationService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { emailNotifications } = getPreferences(recipient.email, recipient.metadata);
+    const { emailNotifications } = getPreferences(recipient.metadata);
 
     if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
       return JobStatus.SKIPPED;
@@ -333,7 +424,7 @@ export class NotificationService extends BaseService {
         continue;
       }
 
-      const { emailNotifications } = getPreferences(user.email, user.metadata);
+      const { emailNotifications } = getPreferences(user.metadata);
 
       if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
         continue;

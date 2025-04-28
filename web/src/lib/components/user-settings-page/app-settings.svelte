@@ -96,8 +96,8 @@
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <div class="ml-4 mt-4 flex flex-col gap-4">
-      <div class="ml-4">
+    <div class="ms-4 mt-4 flex flex-col gap-4">
+      <div class="ms-4">
         <SettingSwitch
           title={$t('theme_selection')}
           subtitle={$t('theme_selection_description')}
@@ -106,7 +106,7 @@
         />
       </div>
 
-      <div class="ml-4">
+      <div class="ms-4">
         <SettingCombobox
           comboboxPlaceholder={$t('language')}
           selectedOption={langOptions.find(({ value }) => value === closestLanguage) || defaultLangOption}
@@ -117,7 +117,7 @@
         />
       </div>
 
-      <div class="ml-4">
+      <div class="ms-4">
         <SettingSwitch
           title={$t('default_locale')}
           subtitle={$t('default_locale_description')}
@@ -128,7 +128,7 @@
         </SettingSwitch>
       </div>
       {#if $locale !== undefined}
-        <div class="ml-4">
+        <div class="ms-4">
           <SettingCombobox
             comboboxPlaceholder={$t('searching_locales')}
             {selectedOption}
@@ -140,7 +140,7 @@
         </div>
       {/if}
 
-      <div class="ml-4">
+      <div class="ms-4">
         <SettingSwitch
           title={$t('display_original_photos')}
           subtitle={$t('display_original_photos_setting_description')}
@@ -148,7 +148,7 @@
           onToggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
         />
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <SettingSwitch
           title={$t('video_hover_setting')}
           subtitle={$t('video_hover_setting_description')}
@@ -156,7 +156,7 @@
           onToggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
         />
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <SettingSwitch
           title={$t('loop_videos')}
           subtitle={$t('loop_videos_description')}
@@ -165,7 +165,7 @@
         />
       </div>
 
-      <div class="ml-4">
+      <div class="ms-4">
         <SettingSwitch
           title={$t('permanent_deletion_warning')}
           subtitle={$t('permanent_deletion_warning_setting_description')}
