@@ -168,18 +168,18 @@ export class MetadataService extends BaseService {
   @OnJob({ name: JobName.QUEUE_METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
   async handleQueueMetadataExtraction(job: JobOf<JobName.QUEUE_METADATA_EXTRACTION>): Promise<JobStatus> {
     const { force } = job;
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.EXIF);
-    });
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } })),
-      );
+    let queue: { name: JobName.METADATA_EXTRACTION; data: { id: string } }[] = [];
+    for await (const asset of this.assetJobRepository.streamForMetadataExtraction(force)) {
+      queue.push({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } });
+
+      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(queue);
+        queue = [];
+      }
     }
 
+    await this.jobRepository.queueAll(queue);
     return JobStatus.SUCCESS;
   }
 

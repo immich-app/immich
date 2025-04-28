@@ -259,6 +259,130 @@ from
 where
   "assets"."id" = $2
 
+-- AssetJobRepository.getForSyncAssets
+select
+  "assets"."id",
+  "assets"."isOffline",
+  "assets"."libraryId",
+  "assets"."originalPath",
+  "assets"."status",
+  "assets"."fileModifiedAt"
+from
+  "assets"
+where
+  "assets"."id" = any ($1::uuid[])
+
+-- AssetJobRepository.getForAssetDeletion
+select
+  "assets"."id",
+  "assets"."isVisible",
+  "assets"."libraryId",
+  "assets"."ownerId",
+  "assets"."livePhotoVideoId",
+  "assets"."sidecarPath",
+  "assets"."encodedVideoPath",
+  "assets"."originalPath",
+  to_json("exif") as "exifInfo",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_faces".*,
+          "person" as "person"
+        from
+          "asset_faces"
+          left join lateral (
+            select
+              "person".*
+            from
+              "person"
+            where
+              "asset_faces"."personId" = "person"."id"
+          ) as "person" on true
+        where
+          "asset_faces"."assetId" = "assets"."id"
+          and "asset_faces"."deletedAt" is null
+      ) as agg
+  ) as "faces",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_files"."id",
+          "asset_files"."path",
+          "asset_files"."type"
+        from
+          "asset_files"
+        where
+          "asset_files"."assetId" = "assets"."id"
+      ) as agg
+  ) as "files",
+  to_json("stacked_assets") as "stack"
+from
+  "assets"
+  left join "exif" on "assets"."id" = "exif"."assetId"
+  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
+  left join lateral (
+    select
+      "asset_stack"."id",
+      "asset_stack"."primaryAssetId",
+      array_agg("stacked") as "assets"
+    from
+      "assets" as "stacked"
+    where
+      "stacked"."deletedAt" is not null
+      and "stacked"."isArchived" = $1
+      and "stacked"."stackId" = "asset_stack"."id"
+    group by
+      "asset_stack"."id"
+  ) as "stacked_assets" on "asset_stack"."id" is not null
+where
+  "assets"."id" = $2
+
+-- AssetJobRepository.streamForVideoConversion
+select
+  "assets"."id"
+from
+  "assets"
+where
+  "assets"."type" = $1
+  and (
+    "assets"."encodedVideoPath" is null
+    or "assets"."encodedVideoPath" = $2
+  )
+  and "assets"."isVisible" = $3
+  and "assets"."deletedAt" is null
+
+-- AssetJobRepository.getForVideoConversion
+select
+  "assets"."id",
+  "assets"."ownerId",
+  "assets"."originalPath",
+  "assets"."encodedVideoPath"
+from
+  "assets"
+where
+  "assets"."id" = $1
+  and "assets"."type" = $2
+
+-- AssetJobRepository.streamForMetadataExtraction
+select
+  "assets"."id"
+from
+  "assets"
+  left join "asset_job_status" on "asset_job_status"."assetId" = "assets"."id"
+where
+  (
+    "asset_job_status"."metadataExtractedAt" is null
+    or "asset_job_status"."assetId" is null
+  )
+  and "assets"."isVisible" = $1
+  and "assets"."deletedAt" is null
+
 -- AssetJobRepository.getForStorageTemplateJob
 select
   "assets"."id",

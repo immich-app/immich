@@ -22,7 +22,7 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { UpsertFileOptions, WithoutProperty } from 'src/repositories/asset.repository';
+import { UpsertFileOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
@@ -330,25 +330,25 @@ export class MediaService extends BaseService {
   async handleQueueVideoConversion(job: JobOf<JobName.QUEUE_VIDEO_CONVERSION>): Promise<JobStatus> {
     const { force } = job;
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination, { type: AssetType.VIDEO })
-        : this.assetRepository.getWithout(pagination, WithoutProperty.ENCODED_VIDEO);
-    });
+    let queue: { name: JobName.VIDEO_CONVERSION; data: { id: string } }[] = [];
+    for await (const asset of this.assetJobRepository.streamForVideoConversion(force)) {
+      queue.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } });
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } })),
-      );
+      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(queue);
+        queue = [];
+      }
     }
+
+    await this.jobRepository.queueAll(queue);
 
     return JobStatus.SUCCESS;
   }
 
   @OnJob({ name: JobName.VIDEO_CONVERSION, queue: QueueName.VIDEO_CONVERSION })
   async handleVideoConversion({ id }: JobOf<JobName.VIDEO_CONVERSION>): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || asset.type !== AssetType.VIDEO) {
+    const asset = await this.assetJobRepository.getForVideoConversion(id);
+    if (!asset) {
       return JobStatus.FAILED;
     }
 
