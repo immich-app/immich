@@ -110,8 +110,8 @@ from
   and "assets"."deletedAt" is null
 where
   "partner"."sharedWithId" = $1
-  and "assets"."isArchived" = $2
-  and "assets"."id" in ($3)
+  and "assets"."visibility" in ($2, $3)
+  and "assets"."id" in ($4)
 
 -- AccessRepository.asset.checkSharedLinkAccess
 select

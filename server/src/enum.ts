@@ -600,3 +600,9 @@ export enum NotificationType {
   SystemMessage = 'SystemMessage',
   Custom = 'Custom',
 }
+
+export enum AssetVisibility {
+  ARCHIVE = 'archive',
+  TIMELINE = 'timeline',
+  HIDDEN = 'hidden',
+}

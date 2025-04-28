@@ -7,7 +7,7 @@ select
   "ownerId",
   "duplicateId",
   "stackId",
-  "isVisible",
+  "visibility",
   "smart_search"."embedding",
   (
     select
@@ -83,7 +83,7 @@ from
   inner join "asset_job_status" on "asset_job_status"."assetId" = "assets"."id"
 where
   "assets"."deletedAt" is null
-  and "assets"."isVisible" = $1
+  and "assets"."visibility" = $1
   and (
     "asset_job_status"."previewAt" is null
     or "asset_job_status"."thumbnailAt" is null
@@ -118,7 +118,7 @@ where
 -- AssetJobRepository.getForGenerateThumbnailJob
 select
   "assets"."id",
-  "assets"."isVisible",
+  "assets"."visibility",
   "assets"."originalFileName",
   "assets"."originalPath",
   "assets"."ownerId",
@@ -155,7 +155,7 @@ select
   "assets"."fileCreatedAt",
   "assets"."fileModifiedAt",
   "assets"."isExternal",
-  "assets"."isVisible",
+  "assets"."visibility",
   "assets"."libraryId",
   "assets"."livePhotoVideoId",
   "assets"."localDateTime",
@@ -197,7 +197,7 @@ where
 -- AssetJobRepository.getForClipEncoding
 select
   "assets"."id",
-  "assets"."isVisible",
+  "assets"."visibility",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -222,7 +222,7 @@ where
 -- AssetJobRepository.getForDetectFacesJob
 select
   "assets"."id",
-  "assets"."isVisible",
+  "assets"."visibility",
   to_json("exif") as "exifInfo",
   (
     select

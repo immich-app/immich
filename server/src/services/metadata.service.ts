@@ -14,6 +14,7 @@ import { AssetFaces, Exif, Person } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   AssetType,
+  AssetVisibility,
   DatabaseLock,
   ExifOrientation,
   ImmichWorker,
@@ -158,7 +159,7 @@ export class MetadataService extends BaseService {
     const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
     await Promise.all([
       this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id }),
-      this.assetRepository.update({ id: motionAsset.id, isVisible: false }),
+      this.assetRepository.update({ id: motionAsset.id, visibility: AssetVisibility.HIDDEN }),
       this.albumRepository.removeAsset(motionAsset.id),
     ]);
 
@@ -525,8 +526,11 @@ export class MetadataService extends BaseService {
         });
 
         // Hide the motion photo video asset if it's not already hidden to prepare for linking
-        if (motionAsset.isVisible) {
-          await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
+        if (motionAsset.visibility === AssetVisibility.TIMELINE) {
+          await this.assetRepository.update({
+            id: motionAsset.id,
+            visibility: AssetVisibility.HIDDEN,
+          });
           this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
         }
       } else {
@@ -542,7 +546,7 @@ export class MetadataService extends BaseService {
           ownerId: asset.ownerId,
           originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
           originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
-          isVisible: false,
+          visibility: AssetVisibility.HIDDEN,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
@@ -784,7 +788,7 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!isSync && (!asset.isVisible || asset.sidecarPath) && !asset.isExternal) {
+    if (!isSync && (asset.visibility === AssetVisibility.HIDDEN || asset.sidecarPath) && !asset.isExternal) {
       return JobStatus.FAILED;
     }
 

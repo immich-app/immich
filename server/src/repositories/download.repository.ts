@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
+import { AssetVisibility } from 'src/enum';
 import { anyUuid } from 'src/utils/database';
 
 const builder = (db: Kysely<DB>) =>
@@ -31,6 +32,9 @@ export class DownloadRepository {
   }
 
   downloadUserId(userId: string) {
-    return builder(this.db).where('assets.ownerId', '=', userId).where('assets.isVisible', '=', true).stream();
+    return builder(this.db)
+      .where('assets.ownerId', '=', userId)
+      .where('assets.visibility', '=', AssetVisibility.TIMELINE)
+      .stream();
   }
 }

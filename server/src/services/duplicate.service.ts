@@ -4,7 +4,7 @@ import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
-import { AssetFileType, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetFileType, AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
@@ -32,7 +32,7 @@ export class DuplicateService extends BaseService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { isVisible: true })
+        ? this.assetRepository.getAll(pagination, { visibility: AssetVisibility.TIMELINE })
         : this.assetRepository.getWithout(pagination, WithoutProperty.DUPLICATE);
     });
 
@@ -63,7 +63,7 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    if (!asset.isVisible) {
+    if (asset.visibility == AssetVisibility.HIDDEN) {
       this.logger.debug(`Asset ${id} is not visible, skipping`);
       return JobStatus.SKIPPED;
     }

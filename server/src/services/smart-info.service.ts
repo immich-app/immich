@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
-import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
@@ -86,7 +86,7 @@ export class SmartInfoService extends BaseService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { isVisible: true })
+        ? this.assetRepository.getAll(pagination, { visibility: AssetVisibility.TIMELINE })
         : this.assetRepository.getWithout(pagination, WithoutProperty.SMART_SEARCH);
     });
 
@@ -111,7 +111,7 @@ export class SmartInfoService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!asset.isVisible) {
+    if (asset.visibility === AssetVisibility.HIDDEN) {
       return JobStatus.SKIPPED;
     }
 

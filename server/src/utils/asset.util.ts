@@ -4,7 +4,7 @@ import { AssetFile } from 'src/database';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileType, AssetType, Permission } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility, Permission } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -150,8 +150,8 @@ export const onBeforeLink = async (
     throw new BadRequestException('Live photo video does not belong to the user');
   }
 
-  if (motionAsset?.isVisible) {
-    await assetRepository.update({ id: livePhotoVideoId, isVisible: false });
+  if (motionAsset && motionAsset.visibility === AssetVisibility.TIMELINE) {
+    await assetRepository.update({ id: livePhotoVideoId, visibility: AssetVisibility.HIDDEN });
     await eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId });
   }
 };
@@ -176,7 +176,7 @@ export const onAfterUnlink = async (
   { asset: assetRepository, event: eventRepository }: AssetHookRepositories,
   { userId, livePhotoVideoId }: { userId: string; livePhotoVideoId: string },
 ) => {
-  await assetRepository.update({ id: livePhotoVideoId, isVisible: true });
+  await assetRepository.update({ id: livePhotoVideoId, visibility: AssetVisibility.TIMELINE });
   await eventRepository.emit('asset.show', { assetId: livePhotoVideoId, userId });
 };
 

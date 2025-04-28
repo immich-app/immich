@@ -107,7 +107,7 @@ select
       (
         select
           "assets"."ownerId",
-          "assets"."isArchived",
+          "assets"."visibility",
           "assets"."fileCreatedAt"
         from
           "assets"
@@ -203,7 +203,7 @@ from
   "asset_faces"
   left join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "asset_faces"."personId" = $1
-  and "assets"."isArchived" = $2
+  and "assets"."visibility" = $2
   and "assets"."deletedAt" is null
 where
   "asset_faces"."deletedAt" is null
@@ -220,7 +220,7 @@ from
   inner join "asset_faces" on "asset_faces"."personId" = "person"."id"
   inner join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "assets"."deletedAt" is null
-  and "assets"."isArchived" = $2
+  and "assets"."visibility" = $2
 where
   "person"."ownerId" = $3
   and "asset_faces"."deletedAt" is null

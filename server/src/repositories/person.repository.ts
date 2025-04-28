@@ -4,7 +4,7 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, SourceType } from 'src/enum';
+import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
 import { removeUndefinedKeys } from 'src/utils/database';
 import { PaginationOptions } from 'src/utils/pagination';
 
@@ -157,7 +157,7 @@ export class PersonRepository {
       .innerJoin('assets', (join) =>
         join
           .onRef('asset_faces.assetId', '=', 'assets.id')
-          .on('assets.isArchived', '=', false)
+          .on('assets.visibility', '!=', AssetVisibility.HIDDEN)
           .on('assets.deletedAt', 'is', null),
       )
       .where('person.ownerId', '=', userId)
@@ -252,7 +252,7 @@ export class PersonRepository {
         jsonObjectFrom(
           eb
             .selectFrom('assets')
-            .select(['assets.ownerId', 'assets.isArchived', 'assets.fileCreatedAt'])
+            .select(['assets.ownerId', 'assets.visibility', 'assets.fileCreatedAt'])
             .whereRef('assets.id', '=', 'asset_faces.assetId'),
         ).as('asset'),
       )
@@ -350,7 +350,7 @@ export class PersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('asset_faces.personId', '=', personId)
-          .on('assets.isArchived', '=', false)
+          .on('assets.visibility', '=', AssetVisibility.TIMELINE)
           .on('assets.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
@@ -373,7 +373,7 @@ export class PersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('assets.deletedAt', 'is', null)
-          .on('assets.isArchived', '=', false),
+          .on('assets.visibility', '=', AssetVisibility.TIMELINE),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['person.id'])).as('total'))
       .select((eb) =>

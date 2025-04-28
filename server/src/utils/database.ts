@@ -280,7 +280,6 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
-  options.isArchived ??= options.withArchived ? undefined : false;
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
   return kysely
     .withPlugin(joinDeduplicationPlugin)
@@ -356,8 +355,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('assets.isOffline', '=', options.isOffline!))
-    .$if(options.isVisible !== undefined, (qb) => qb.where('assets.isVisible', '=', options.isVisible!))
-    .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
+    .$if(options.visibility !== undefined, (qb) => qb.where('assets.visibility', 'in', options.visibility!))
     .$if(options.isEncoded !== undefined, (qb) =>
       qb.where('assets.encodedVideoPath', options.isEncoded ? 'is not' : 'is', null),
     )

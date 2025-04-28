@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { DB, Libraries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
-import { AssetType } from 'src/enum';
+import { AssetType, AssetVisibility } from 'src/enum';
 
 export enum AssetSyncResult {
   DO_NOTHING,
@@ -77,13 +77,17 @@ export class LibraryRepository {
       .select((eb) =>
         eb.fn
           .countAll<number>()
-          .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.isVisible', '=', true)]))
+          .filterWhere((eb) =>
+            eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.visibility', '=', AssetVisibility.TIMELINE)]),
+          )
           .as('photos'),
       )
       .select((eb) =>
         eb.fn
           .countAll<number>()
-          .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.VIDEO), eb('assets.isVisible', '=', true)]))
+          .filterWhere((eb) =>
+            eb.and([eb('assets.type', '=', AssetType.VIDEO), eb('assets.visibility', '=', AssetVisibility.TIMELINE)]),
+          )
           .as('videos'),
       )
       .select((eb) => eb.fn.coalesce((eb) => eb.fn.sum('exif.fileSizeInByte'), eb.val(0)).as('usage'))

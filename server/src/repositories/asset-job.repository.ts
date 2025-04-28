@@ -5,7 +5,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, AssetVisibility } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { anyUuid, asUuid, withExifInner, withFaces, withFiles } from 'src/utils/database';
 
@@ -25,7 +25,7 @@ export class AssetJobRepository {
         'ownerId',
         'duplicateId',
         'stackId',
-        'isVisible',
+        'visibility',
         'smart_search.embedding',
         withFiles(eb, AssetFileType.PREVIEW),
       ])
@@ -61,7 +61,7 @@ export class AssetJobRepository {
       .select(['assets.id', 'assets.thumbhash'])
       .select(withFiles)
       .where('assets.deletedAt', 'is', null)
-      .where('assets.isVisible', '=', true)
+      .where('assets.visibility', '=', AssetVisibility.TIMELINE)
       .$if(!force, (qb) =>
         qb
           // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
@@ -93,7 +93,7 @@ export class AssetJobRepository {
       .selectFrom('assets')
       .select([
         'assets.id',
-        'assets.isVisible',
+        'assets.visibility',
         'assets.originalFileName',
         'assets.originalPath',
         'assets.ownerId',
@@ -130,7 +130,7 @@ export class AssetJobRepository {
   getForClipEncoding(id: string) {
     return this.db
       .selectFrom('assets')
-      .select(['assets.id', 'assets.isVisible'])
+      .select(['assets.id', 'assets.visibility'])
       .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
       .where('assets.id', '=', id)
       .executeTakeFirst();
@@ -140,7 +140,7 @@ export class AssetJobRepository {
   getForDetectFacesJob(id: string) {
     return this.db
       .selectFrom('assets')
-      .select(['assets.id', 'assets.isVisible'])
+      .select(['assets.id', 'assets.visibility'])
       .$call(withExifInner)
       .select((eb) => withFaces(eb, true))
       .select((eb) => withFiles(eb, AssetFileType.PREVIEW))

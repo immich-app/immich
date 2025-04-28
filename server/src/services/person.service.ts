@@ -26,6 +26,7 @@ import {
 } from 'src/dtos/person.dto';
 import {
   AssetType,
+  AssetVisibility,
   CacheControl,
   ImageFormat,
   JobName,
@@ -272,7 +273,7 @@ export class PersonService extends BaseService {
             orderDirection: 'desc',
             withFaces: true,
             withArchived: true,
-            isVisible: true,
+            visibility: AssetVisibility.TIMELINE,
           });
     });
 
@@ -302,7 +303,7 @@ export class PersonService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!asset.isVisible) {
+    if (asset.visibility === AssetVisibility.HIDDEN) {
       return JobStatus.SKIPPED;
     }
 
@@ -490,7 +491,9 @@ export class PersonService extends BaseService {
 
     this.logger.debug(`Face ${id} has ${matches.length} matches`);
 
-    const isCore = matches.length >= machineLearning.facialRecognition.minFaces && !face.asset.isArchived;
+    const isCore =
+      matches.length >= machineLearning.facialRecognition.minFaces &&
+      face.asset.visibility === AssetVisibility.TIMELINE;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core face ${id} for later processing`);
       await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });

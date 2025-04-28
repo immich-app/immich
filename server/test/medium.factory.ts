@@ -5,7 +5,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AssetJobStatus, Assets, DB, FaceSearch, Person, Sessions } from 'src/db';
-import { AssetType, SourceType } from 'src/enum';
+import { AssetType, AssetVisibility, SourceType } from 'src/enum';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
@@ -230,16 +230,37 @@ const getRepositoryMock = <K extends keyof RepositoryMocks>(key: K) => {
 
     case 'database': {
       return automock(DatabaseRepository, {
-        args: [undefined, { setContext: () => {} }, { getEnv: () => ({ database: { vectorExtension: '' } }) }],
+        args: [
+          undefined,
+          {
+            setContext: () => {},
+          },
+          { getEnv: () => ({ database: { vectorExtension: '' } }) },
+        ],
       });
     }
 
     case 'email': {
-      return automock(EmailRepository, { args: [{ setContext: () => {} }] });
+      return automock(EmailRepository, {
+        args: [
+          {
+            setContext: () => {},
+          },
+        ],
+      });
     }
 
     case 'job': {
-      return automock(JobRepository, { args: [undefined, undefined, undefined, { setContext: () => {} }] });
+      return automock(JobRepository, {
+        args: [
+          undefined,
+          undefined,
+          undefined,
+          {
+            setContext: () => {},
+          },
+        ],
+      });
     }
 
     case 'logger': {
@@ -348,11 +369,11 @@ const assetInsert = (asset: Partial<Insertable<Assets>> = {}) => {
     type: AssetType.IMAGE,
     originalPath: '/path/to/something.jpg',
     ownerId: '@immich.cloud',
-    isVisible: true,
     isFavorite: false,
     fileCreatedAt: now,
     fileModifiedAt: now,
     localDateTime: now,
+    visibility: AssetVisibility.TIMELINE,
   };
 
   return {

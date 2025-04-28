@@ -142,7 +142,7 @@ export class AssetService extends BaseService {
     }
 
     if (
-      options.isArchived != undefined ||
+      options.visibility != undefined ||
       options.isFavorite != undefined ||
       options.duplicateId != undefined ||
       options.rating != undefined

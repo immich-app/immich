@@ -1,7 +1,7 @@
 import { goto } from '$app/navigation';
 import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
 import type { InterpolationValues } from '$lib/components/i18n/format-message';
-import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
+import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { assetsSnapshot, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
@@ -14,6 +14,7 @@ import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import {
   addAssetsToAlbum as addAssets,
+  AssetVisibility,
   createStack,
   deleteAssets,
   deleteStacks,
@@ -506,7 +507,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     const data = await updateAsset({
       id: asset.id,
       updateAssetDto: {
-        isArchived: !asset.isArchived,
+        visibility: asset.isArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
       },
     });
 
@@ -530,7 +531,9 @@ export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean
 
   try {
     if (ids.length > 0) {
-      await updateAssets({ assetBulkUpdateDto: { ids, isArchived } });
+      await updateAssets({
+        assetBulkUpdateDto: { ids, visibility: isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline },
+      });
     }
 
     for (const asset of assets) {

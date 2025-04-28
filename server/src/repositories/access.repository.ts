@@ -3,7 +3,7 @@ import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserRole } from 'src/enum';
+import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { asUuid } from 'src/utils/database';
 
 class ActivityAccess {
@@ -199,7 +199,7 @@ class AssetAccess {
       )
       .select('assets.id')
       .where('partner.sharedWithId', '=', userId)
-      .where('assets.isArchived', '=', false)
+      .where('assets.visibility', 'in', [AssetVisibility.TIMELINE, AssetVisibility.HIDDEN])
       .where('assets.id', 'in', [...assetIds])
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));

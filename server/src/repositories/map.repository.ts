@@ -8,7 +8,7 @@ import readLine from 'node:readline';
 import { citiesFile } from 'src/constants';
 import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { SystemMetadataKey } from 'src/enum';
+import { AssetVisibility, SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
@@ -75,9 +75,12 @@ export class MapRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], [DummyValue.UUID]] })
-  getMapMarkers(ownerIds: string[], albumIds: string[], options: MapMarkerSearchOptions = {}) {
-    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
-
+  getMapMarkers(
+    ownerIds: string[],
+    albumIds: string[],
+    { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore }: MapMarkerSearchOptions = {},
+  ) {
+    const visibilities = isArchived ? [AssetVisibility.TIMELINE, AssetVisibility.ARCHIVE] : [AssetVisibility.TIMELINE];
     return this.db
       .selectFrom('assets')
       .innerJoin('exif', (builder) =>
@@ -88,8 +91,7 @@ export class MapRepository {
       )
       .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
       .$narrowType<{ lat: NotNull; lon: NotNull }>()
-      .where('isVisible', '=', true)
-      .$if(isArchived !== undefined, (q) => q.where('isArchived', '=', isArchived!))
+      .where('visibility', 'in', visibilities)
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
       .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!))

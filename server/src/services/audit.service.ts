@@ -127,7 +127,7 @@ export class AuditService extends BaseService {
       `Found ${libraryFiles.size} original files, ${thumbFiles.size} thumbnails, ${videoFiles.size} encoded videos, ${profileFiles.size} profile files`,
     );
     const pagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
-      this.assetRepository.getAll(options, { withDeleted: true, withArchived: true }),
+      this.assetRepository.getAll(options, { withDeleted: true }),
     );
 
     let assetCount = 0;

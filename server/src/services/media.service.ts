@@ -8,6 +8,7 @@ import {
   AssetFileType,
   AssetPathType,
   AssetType,
+  AssetVisibility,
   AudioCodec,
   Colorspace,
   ImageFormat,
@@ -142,7 +143,7 @@ export class MediaService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!asset.isVisible) {
+    if (asset.visibility == AssetVisibility.HIDDEN) {
       this.logger.verbose(`Thumbnail generation skipped for asset ${id}: not visible`);
       return JobStatus.SKIPPED;
     }

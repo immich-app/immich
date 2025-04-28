@@ -14,7 +14,7 @@ from
   and "exif"."latitude" is not null
   and "exif"."longitude" is not null
 where
-  "isVisible" = $1
+  "visibility" in ($1)
   and "deletedAt" is null
   and (
     "ownerId" in ($2)
