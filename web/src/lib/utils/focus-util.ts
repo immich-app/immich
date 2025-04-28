@@ -26,35 +26,14 @@ export const focusNext = (selector: (element: HTMLElement | SVGElement) => boole
     focusElements[0].focus();
     return;
   }
-  if (forwardDirection) {
-    let i = index + 1;
-    while (i !== index) {
-      const next = focusElements[i];
-      if (!isTabbable(next) || !selector(next)) {
-        if (i === focusElements.length - 1) {
-          i = 0;
-        } else {
-          i++;
-        }
-        continue;
-      }
+  const totalElements = focusElements.length;
+  let i = index;
+  do {
+    i = (i + (forwardDirection ? 1 : -1) + totalElements) % totalElements;
+    const next = focusElements[i];
+    if (isTabbable(next) && selector(next)) {
       next.focus();
       break;
     }
-  } else {
-    let i = index - 1;
-    while (i !== index && i >= 0) {
-      const next = focusElements[i];
-      if (!isTabbable(next) || !selector(next)) {
-        if (i === 0) {
-          i = focusElements.length - 1;
-        } else {
-          i--;
-        }
-        continue;
-      }
-      next.focus();
-      break;
-    }
-  }
+  } while (i !== index);
 };
