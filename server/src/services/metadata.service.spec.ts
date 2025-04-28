@@ -39,6 +39,26 @@ const makeFaceTags = (face: Partial<{ Name: string }> = {}) => ({
   },
 });
 
+const makeOrientationFaceTags = (face: Partial<{ Name: string }> = {}, orientation: ImmichTags['Orientation']) => ({
+  Orientation: orientation,
+  RegionInfo: {
+    AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
+    RegionList: [
+      {
+        Type: 'face',
+        Area: {
+          X: 0.1,
+          Y: 0.4,
+          W: 0.2,
+          H: 0.4,
+          Unit: 'normalized',
+        },
+        ...face,
+      },
+    ],
+  },
+});
+
 describe(MetadataService.name, () => {
   let sut: MetadataService;
   let mocks: ServiceMocks;
@@ -1149,6 +1169,104 @@ describe(MetadataService.name, () => {
       );
       expect(mocks.person.updateAll).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalledWith();
+    });
+
+    describe('handleFaceTagOrientation', () => {
+      const orientationTests = [
+        {
+          description: 'undefined',
+          orientation: undefined,
+          expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 20, y2: 60 },
+        },
+        {
+          description: 'Horizontal = 1',
+          orientation: ExifOrientation.Horizontal,
+          expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 20, y2: 60 },
+        },
+        {
+          description: 'MirrorHorizontal = 2',
+          orientation: ExifOrientation.MirrorHorizontal,
+          expected: { imgW: 1000, imgH: 100, x1: 800, x2: 1000, y1: 20, y2: 60 },
+        },
+        {
+          description: 'Rotate180 = 3',
+          orientation: ExifOrientation.Rotate180,
+          expected: { imgW: 1000, imgH: 100, x1: 800, x2: 1000, y1: 40, y2: 80 },
+        },
+        {
+          description: 'MirrorVertical = 4',
+          orientation: ExifOrientation.MirrorVertical,
+          expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 40, y2: 80 },
+        },
+        {
+          description: 'MirrorHorizontalRotate270CW = 5',
+          orientation: ExifOrientation.MirrorHorizontalRotate270CW,
+          expected: { imgW: 100, imgH: 1000, x1: 20, x2: 60, y1: 0, y2: 200 },
+        },
+        {
+          description: 'Rotate90CW = 6',
+          orientation: ExifOrientation.Rotate90CW,
+          expected: { imgW: 100, imgH: 1000, x1: 40, x2: 80, y1: 0, y2: 200 },
+        },
+        {
+          description: 'MirrorHorizontalRotate90CW = 7',
+          orientation: ExifOrientation.MirrorHorizontalRotate90CW,
+          expected: { imgW: 100, imgH: 1000, x1: 40, x2: 80, y1: 800, y2: 1000 },
+        },
+        {
+          description: 'Rotate270CW = 8',
+          orientation: ExifOrientation.Rotate270CW,
+          expected: { imgW: 100, imgH: 1000, x1: 20, x2: 60, y1: 800, y2: 1000 },
+        },
+      ];
+
+      it.each(orientationTests)(
+        'should transform RegionInfo geometry according to exif orientation $description',
+        async ({ orientation, expected }) => {
+          const { imgW, imgH, x1, x2, y1, y2 } = expected;
+
+          mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.primaryImage);
+          mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+          mockReadTags(makeOrientationFaceTags({ Name: personStub.withName.name }, orientation));
+          mocks.person.getDistinctNames.mockResolvedValue([]);
+          mocks.person.createAll.mockResolvedValue([personStub.withName.id]);
+          mocks.person.update.mockResolvedValue(personStub.withName);
+          await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
+          expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.primaryImage.id);
+          expect(mocks.person.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, {
+            withHidden: true,
+          });
+          expect(mocks.person.createAll).toHaveBeenCalledWith([
+            expect.objectContaining({ name: personStub.withName.name }),
+          ]);
+          expect(mocks.person.refreshFaces).toHaveBeenCalledWith(
+            [
+              {
+                id: 'random-uuid',
+                assetId: assetStub.primaryImage.id,
+                personId: 'random-uuid',
+                imageWidth: imgW,
+                imageHeight: imgH,
+                boundingBoxX1: x1,
+                boundingBoxX2: x2,
+                boundingBoxY1: y1,
+                boundingBoxY2: y2,
+                sourceType: SourceType.EXIF,
+              },
+            ],
+            [],
+          );
+          expect(mocks.person.updateAll).toHaveBeenCalledWith([
+            { id: 'random-uuid', ownerId: 'admin-id', faceAssetId: 'random-uuid' },
+          ]);
+          expect(mocks.job.queueAll).toHaveBeenCalledWith([
+            {
+              name: JobName.GENERATE_PERSON_THUMBNAIL,
+              data: { id: personStub.withName.id },
+            },
+          ]);
+        },
+      );
     });
 
     it('should handle invalid modify date', async () => {
