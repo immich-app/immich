@@ -51,6 +51,7 @@ class EventManager<EventMap extends Record<string, unknown[]>> {
 }
 
 export const eventManager = new EventManager<{
+  'app.init': [];
   'user.login': [];
   'auth.login': [LoginResponseDto];
   'auth.logout': [];

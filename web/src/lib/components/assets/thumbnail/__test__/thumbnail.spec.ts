@@ -25,6 +25,7 @@ describe('Thumbnail component', () => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
     vi.mock('$lib/utils/navigation', () => ({
       currentUrlReplaceAssetId: vi.fn(),
+      isSharedLinkRoute: vi.fn().mockReturnValue(false),
     }));
   });
 
