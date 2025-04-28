@@ -836,6 +836,53 @@ class FolderRouteArgs {
 }
 
 /// generated route for
+/// [TagsPage]
+class TagsRoute extends PageRouteInfo<TagsRouteArgs> {
+  TagsRoute({
+    Key? key,
+    TagResponseDto? folder,
+    List<PageRouteInfo>? children,
+  }) : super(
+          TagsRoute.name,
+          args: TagsRouteArgs(
+            key: key,
+            folder: folder,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'TagsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args =
+          data.argsAs<TagsRouteArgs>(orElse: () => const TagsRouteArgs());
+      return TagsPage(
+        key: args.key,
+        tag: args.folder,
+      );
+    },
+  );
+}
+
+class TagsRouteArgs {
+  const TagsRouteArgs({
+    this.key,
+    this.folder,
+  });
+
+  final Key? key;
+
+  final TagResponseDto? folder;
+
+  @override
+  String toString() {
+    return 'TagsRouteArgs{key: $key, folder: $folder}';
+  }
+}
+
+/// generated route for
 /// [GalleryViewerPage]
 class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute({

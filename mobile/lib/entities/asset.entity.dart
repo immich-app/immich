@@ -71,6 +71,7 @@ class Asset {
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
+    this.tags,
   });
 
   @ignore
@@ -166,6 +167,9 @@ class Asset {
 
   @ignore
   ExifInfo? exifInfo;
+
+  @ignore
+  List<TagResponseDto>? tags;
 
   String? stackId;
 

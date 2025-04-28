@@ -141,6 +141,27 @@ class QuickAccessButtons extends ConsumerWidget {
             onTap: () => context.pushRoute(FolderRoute()),
           ),
           ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(20),
+                topRight: const Radius.circular(20),
+                bottomLeft: Radius.circular(partners.isEmpty ? 20 : 0),
+                bottomRight: Radius.circular(partners.isEmpty ? 20 : 0),
+              ),
+            ),
+            leading: const Icon(
+              Icons.sell_outlined,
+              size: 26,
+            ),
+            title: Text(
+              'tags'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onTap: () => context.pushRoute(TagsRoute()),
+          ),
+          ListTile(
             leading: const Icon(
               Icons.group_outlined,
               size: 26,

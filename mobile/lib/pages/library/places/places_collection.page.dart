@@ -118,6 +118,7 @@ class PlaceTile extends StatelessWidget {
         SearchRoute(
           prefilter: SearchFilter(
             people: {},
+            tags: SearchTagsFilter(),
             location: SearchLocationFilter(
               city: name,
             ),

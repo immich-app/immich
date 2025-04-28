@@ -23,6 +23,7 @@ import 'package:immich_mobile/widgets/search/search_filter/media_type_picker.dar
 import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
+import 'package:immich_mobile/widgets/search/search_filter/tag_picker.dart';
 
 @RoutePage()
 class SearchPage extends HookConsumerWidget {
@@ -41,6 +42,7 @@ class SearchPage extends HookConsumerWidget {
         location: prefilter?.location ?? SearchLocationFilter(),
         camera: prefilter?.camera ?? SearchCameraFilter(),
         date: prefilter?.date ?? SearchDateFilter(),
+        tags: prefilter?.tags ?? SearchTagsFilter(),
         display: prefilter?.display ??
             SearchDisplayFilters(
               isNotInAlbum: false,
@@ -59,6 +61,7 @@ class SearchPage extends HookConsumerWidget {
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
     final cameraCurrentFilterWidget = useState<Widget?>(null);
     final locationCurrentFilterWidget = useState<Widget?>(null);
+    final tagCurrentFilterWidget = useState<Widget?>(null);
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
@@ -243,6 +246,57 @@ class SearchPage extends HookConsumerWidget {
                 child: LocationPicker(
                   onSelected: handleOnSelect,
                   filter: filter.value.location,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    showTagSearchPicker() {
+      handleOnSelect(SearchTagsFilter value) {
+        filter.value = filter.value.copyWith(
+          tags: value,
+        );
+
+        tagCurrentFilterWidget.value = Text(
+          value.selectedTags != null
+              ? "${value.selectedTags?.length} tags"
+              : "no_tags",
+          style: context.textTheme.labelLarge,
+        );
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(
+          tags: SearchTagsFilter(),
+        );
+
+        tagCurrentFilterWidget.value = null;
+        search();
+      }
+
+      showFilterBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        isDismissible: true,
+        child: FilterBottomSheetScaffold(
+          title: 'search_filter_tag_title'.tr(),
+          expanded: true,
+          onSearch: search,
+          onClear: handleClear,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Container(
+              padding: EdgeInsets.only(
+                bottom: context.viewInsets.bottom,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TagPicker(
+                  onSelected: handleOnSelect,
+                  filter: filter.value.tags,
                 ),
               ),
             ),
@@ -689,6 +743,12 @@ class SearchPage extends HookConsumerWidget {
                     onTap: showCameraPicker,
                     label: 'camera'.tr(),
                     currentFilter: cameraCurrentFilterWidget.value,
+                  ),
+                  SearchFilterChip(
+                    icon: Icons.sell_outlined,
+                    onTap: showTagSearchPicker,
+                    label: 'tag'.tr(),
+                    currentFilter: tagCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
                     icon: Icons.date_range_outlined,

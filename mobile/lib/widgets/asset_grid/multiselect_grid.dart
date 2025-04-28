@@ -378,6 +378,22 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     }
 
+    void onUpdateTags() async {
+      processing.value = true;
+      try {
+        final remoteAssets = ownedRemoteSelection(
+          localErrorMessage: 'home_page_tags_err_local'.tr(),
+          ownerErrorMessage: 'home_page_tags_err_partner'.tr(),
+        );
+        if (remoteAssets.isNotEmpty) {
+          await handleEditAssetTags(ref, context, remoteAssets.toList());
+        }
+      } finally {
+        processing.value = false;
+        selectionEnabledHook.value = false;
+      }
+    }
+
     void onEditLocation() async {
       try {
         final remoteAssets = ownedRemoteSelection(
@@ -456,6 +472,7 @@ class MultiselectGrid extends HookConsumerWidget {
               onStack: stackEnabled ? onStack : null,
               onEditTime: editEnabled ? onEditTime : null,
               onEditLocation: editEnabled ? onEditLocation : null,
+              onUpdateTags: editEnabled ? onUpdateTags : null,
               unfavorite: unfavorite,
               unarchive: unarchive,
               onRemoveFromAlbum: onRemoveFromAlbum != null

@@ -12,7 +12,9 @@ import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:immich_mobile/widgets/common/share_dialog.dart';
+import 'package:immich_mobile/widgets/common/tag_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:openapi/api.dart';
 
 void handleShareAssets(
   WidgetRef ref,
@@ -93,6 +95,24 @@ Future<void> handleFavoriteAssets(
         gravity: ToastGravity.BOTTOM,
       );
     }
+  }
+}
+
+Future<void> handleRemoveAssetTags(WidgetRef ref, BuildContext context,
+    List<Asset> selection, List<TagResponseDto> tags) async {
+  ref.read(assetServiceProvider).untagAssets(selection.toList(), tags.toList());
+}
+
+Future<void> handleEditAssetTags(
+  WidgetRef ref,
+  BuildContext context,
+  List<Asset> selection,
+) async {
+  final tags = await ref.watch(assetServiceProvider).getAllTags();
+  final selectedTags = await showTagPicker(context: context, tags: tags);
+  if (selectedTags != null) {
+    final tagsToAdd = selectedTags.where((a) => a.id != "new").toList();
+    ref.read(assetServiceProvider).tagAssets(selection.toList(), tagsToAdd);
   }
 }
 
