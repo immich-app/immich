@@ -14,7 +14,7 @@
     {title}
   </div>
   <div
-    class="animate-pulse absolute h-full ml-[10px] mr-[10px]"
+    class="animate-pulse absolute h-full ms-[10px] me-[10px]"
     style:width="calc(100% - 20px)"
     data-skeleton="true"
   ></div>

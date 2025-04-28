@@ -8,9 +8,10 @@
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import NotificationPanel from '$lib/components/shared-components/navigation-bar/notification-panel.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
-  import { authManager } from '$lib/stores/auth-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
@@ -18,13 +19,14 @@
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, IconButton } from '@immich/ui';
-  import { mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
+  import { mdiBellBadge, mdiBellOutline, mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import { notificationManager } from '$lib/stores/notification-manager.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -36,7 +38,9 @@
   let shouldShowAccountInfo = $state(false);
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowHelpPanel = $state(false);
+  let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
+  const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
 
   let info: ServerAboutResponseDto | undefined = $state();
 
@@ -83,8 +87,8 @@
         <ImmichLogo class="max-md:h-[48px] h-[50px]" noText={!mobileDevice.isFullSidebar} />
       </a>
     </div>
-    <div class="flex justify-between gap-4 lg:gap-8 pr-6">
-      <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:block">
+    <div class="flex justify-between gap-4 lg:gap-8 pe-6">
+      <div class="hidden w-full max-w-5xl flex-1 tall:ps-0 sm:block">
         {#if $featureFlags.search}
           <SearchBar grayTheme={true} />
         {/if}
@@ -148,13 +152,34 @@
 
         <div
           use:clickOutside={{
+            onOutclick: () => (shouldShowNotificationPanel = false),
+            onEscape: () => (shouldShowNotificationPanel = false),
+          }}
+        >
+          <IconButton
+            shape="round"
+            color={hasUnreadNotifications ? 'primary' : 'secondary'}
+            variant="ghost"
+            size="medium"
+            icon={hasUnreadNotifications ? mdiBellBadge : mdiBellOutline}
+            onclick={() => (shouldShowNotificationPanel = !shouldShowNotificationPanel)}
+            aria-label={$t('notifications')}
+          />
+
+          {#if shouldShowNotificationPanel}
+            <NotificationPanel />
+          {/if}
+        </div>
+
+        <div
+          use:clickOutside={{
             onOutclick: () => (shouldShowAccountInfoPanel = false),
             onEscape: () => (shouldShowAccountInfoPanel = false),
           }}
         >
           <button
             type="button"
-            class="flex pl-2"
+            class="flex ps-2"
             onmouseover={() => (shouldShowAccountInfo = true)}
             onfocus={() => (shouldShowAccountInfo = true)}
             onblur={() => (shouldShowAccountInfo = false)}
@@ -170,7 +195,7 @@
             <div
               in:fade={{ delay: 500, duration: 150 }}
               out:fade={{ delay: 200, duration: 150 }}
-              class="absolute -bottom-12 right-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+              class="absolute -bottom-12 end-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
             >
               <p>{$user.name}</p>
               <p>{$user.email}</p>

@@ -11,7 +11,6 @@ import {
   SyncEntityType,
   SystemMetadataKey,
   TranscodeTarget,
-  UserAvatarColor,
   UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
@@ -298,6 +297,10 @@ export type JobItem =
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
+
+  // Notifications
+  | { name: JobName.NOTIFICATIONS_CLEANUP; data?: IBaseJob }
+
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
@@ -485,9 +488,6 @@ export interface UserPreferences {
   tags: {
     enabled: boolean;
     sidebarWeb: boolean;
-  };
-  avatar: {
-    color: UserAvatarColor;
   };
   emailNotifications: {
     enabled: boolean;

@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
-import { eventManager } from '$lib/stores/event-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { logout } from '@immich/sdk';
 
 class AuthManager {

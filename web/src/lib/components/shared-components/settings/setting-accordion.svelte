@@ -73,7 +73,7 @@
     type="button"
     aria-expanded={isOpen}
     {onclick}
-    class="flex w-full place-items-center justify-between text-left"
+    class="flex w-full place-items-center justify-between text-start"
   >
     <div>
       <div class="flex gap-2 place-items-center">
@@ -110,7 +110,7 @@
   </button>
 
   {#if isOpen}
-    <ul transition:slide={{ duration: 150 }} class="mb-2 ml-4">
+    <ul transition:slide={{ duration: 150 }} class="mb-2 ms-4">
       {@render children?.()}
     </ul>
   {/if}
