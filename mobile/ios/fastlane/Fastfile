@@ -18,6 +18,9 @@ default_platform(:ios)
 platform :ios do
   desc "iOS Release"
   lane :release do
+    enable_automatic_code_signing(
+      path: "./Runner.xcodeproj",
+    )
     increment_version_number(
       version_number: "1.132.3"
     )
