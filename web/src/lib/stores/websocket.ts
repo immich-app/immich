@@ -1,7 +1,5 @@
-import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/stores/auth-manager.svelte';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
-import { handleLogout } from '$lib/utils/auth';
 import { createEventEmitter } from '$lib/utils/eventemitter';
 import { type AssetResponseDto, type NotificationDto, type ServerVersionResponseDto } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
