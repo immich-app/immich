@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.132.1",
+  "version": "1.132.3",
   "license": "GNU Affero General Public License version 3",
   "type": "module",
   "scripts": {

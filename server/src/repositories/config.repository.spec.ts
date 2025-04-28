@@ -80,21 +80,12 @@ describe('getEnv', () => {
       const { database } = getEnv();
       expect(database).toEqual({
         config: {
-          kysely: expect.objectContaining({
-            host: 'database',
-            port: 5432,
-            database: 'immich',
-            username: 'postgres',
-            password: 'postgres',
-          }),
-          typeorm: expect.objectContaining({
-            type: 'postgres',
-            host: 'database',
-            port: 5432,
-            database: 'immich',
-            username: 'postgres',
-            password: 'postgres',
-          }),
+          connectionType: 'parts',
+          host: 'database',
+          port: 5432,
+          database: 'immich',
+          username: 'postgres',
+          password: 'postgres',
         },
         skipMigrations: false,
         vectorExtension: 'vectors',
@@ -110,88 +101,9 @@ describe('getEnv', () => {
     it('should use DB_URL', () => {
       process.env.DB_URL = 'postgres://postgres1:postgres2@database1:54320/immich';
       const { database } = getEnv();
-      expect(database.config.kysely).toMatchObject({
-        host: 'database1',
-        password: 'postgres2',
-        user: 'postgres1',
-        port: 54_320,
-        database: 'immich',
-      });
-    });
-
-    it('should handle sslmode=require', () => {
-      process.env.DB_URL = 'postgres://postgres1:postgres2@database1:54320/immich?sslmode=require';
-
-      const { database } = getEnv();
-
-      expect(database.config.kysely).toMatchObject({ ssl: {} });
-    });
-
-    it('should handle sslmode=prefer', () => {
-      process.env.DB_URL = 'postgres://postgres1:postgres2@database1:54320/immich?sslmode=prefer';
-
-      const { database } = getEnv();
-
-      expect(database.config.kysely).toMatchObject({ ssl: {} });
-    });
-
-    it('should handle sslmode=verify-ca', () => {
-      process.env.DB_URL = 'postgres://postgres1:postgres2@database1:54320/immich?sslmode=verify-ca';
-
-      const { database } = getEnv();
-
-      expect(database.config.kysely).toMatchObject({ ssl: {} });
-    });
-
-    it('should handle sslmode=verify-full', () => {
-      process.env.DB_URL = 'postgres://postgres1:postgres2@database1:54320/immich?sslmode=verify-full';
-
-      const { database } = getEnv();
-
-      expect(database.config.kysely).toMatchObject({ ssl: {} });
-    });
-
-    it('should handle sslmode=no-verify', () => {
-      process.env.DB_URL = 'postgres://postgres1:postgres2@database1:54320/immich?sslmode=no-verify';
-
-      const { database } = getEnv();
-
-      expect(database.config.kysely).toMatchObject({ ssl: { rejectUnauthorized: false } });
-    });
-
-    it('should handle ssl=true', () => {
-      process.env.DB_URL = 'postgres://postgres1:postgres2@database1:54320/immich?ssl=true';
-
-      const { database } = getEnv();
-
-      expect(database.config.kysely).toMatchObject({ ssl: true });
-    });
-
-    it('should reject invalid ssl', () => {
-      process.env.DB_URL = 'postgres://postgres1:postgres2@database1:54320/immich?ssl=invalid';
-
-      expect(() => getEnv()).toThrowError('Invalid ssl option: invalid');
-    });
-
-    it('should handle socket: URLs', () => {
-      process.env.DB_URL = 'socket:/run/postgresql?db=database1';
-
-      const { database } = getEnv();
-
-      expect(database.config.kysely).toMatchObject({
-        host: '/run/postgresql',
-        database: 'database1',
-      });
-    });
-
-    it('should handle sockets in postgres: URLs', () => {
-      process.env.DB_URL = 'postgres:///database2?host=/path/to/socket';
-
-      const { database } = getEnv();
-
-      expect(database.config.kysely).toMatchObject({
-        host: '/path/to/socket',
-        database: 'database2',
+      expect(database.config).toMatchObject({
+        connectionType: 'url',
+        url: 'postgres://postgres1:postgres2@database1:54320/immich',
       });
     });
   });
