@@ -8,6 +8,7 @@
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import NotificationPanel from '$lib/components/shared-components/navigation-bar/notification-panel.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/stores/auth-manager.svelte';
@@ -18,13 +19,14 @@
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, IconButton } from '@immich/ui';
-  import { mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
+  import { mdiBellBadge, mdiBellOutline, mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import { notificationManager } from '$lib/stores/notification-manager.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -36,7 +38,9 @@
   let shouldShowAccountInfo = $state(false);
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowHelpPanel = $state(false);
+  let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
+  const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
 
   let info: ServerAboutResponseDto | undefined = $state();
 
@@ -144,6 +148,27 @@
             onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
             aria-label={$t('support_and_feedback')}
           />
+        </div>
+
+        <div
+          use:clickOutside={{
+            onOutclick: () => (shouldShowNotificationPanel = false),
+            onEscape: () => (shouldShowNotificationPanel = false),
+          }}
+        >
+          <IconButton
+            shape="round"
+            color={hasUnreadNotifications ? 'primary' : 'secondary'}
+            variant="ghost"
+            size="medium"
+            icon={hasUnreadNotifications ? mdiBellBadge : mdiBellOutline}
+            onclick={() => (shouldShowNotificationPanel = !shouldShowNotificationPanel)}
+            aria-label={$t('notifications')}
+          />
+
+          {#if shouldShowNotificationPanel}
+            <NotificationPanel />
+          {/if}
         </div>
 
         <div

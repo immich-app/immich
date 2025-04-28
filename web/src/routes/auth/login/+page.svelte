@@ -10,6 +10,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { notificationManager } from '$lib/stores/notification-manager.svelte';
 
   interface Props {
     data: PageData;
@@ -24,7 +25,10 @@
   let loading = $state(false);
   let oauthLoading = $state(true);
 
-  const onSuccess = async () => await goto(AppRoute.PHOTOS, { invalidateAll: true });
+  const onSuccess = async () => {
+    await notificationManager.refresh();
+    await goto(AppRoute.PHOTOS, { invalidateAll: true });
+  };
   const onFirstLogin = async () => await goto(AppRoute.AUTH_CHANGE_PASSWORD);
   const onOnboarding = async () => await goto(AppRoute.AUTH_ONBOARDING);
 
