@@ -1,5 +1,6 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
+import type { AlbumResponseDto } from '@immich/sdk';
 import { albumFactory } from '@test-data/factories/album-factory';
 import { render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
@@ -13,11 +14,13 @@ describe('RecentAlbums component', () => {
       albumFactory.build({ updatedAt: '2024-01-09T00:00:00Z' }),
     ];
 
-    sdkMock.getAllAlbums.mockImplementation(async ({ shared }) => {
-      if (shared) {
-        return [];
-      }
-      return [...albums];
+    sdkMock.getAllAlbums.mockImplementation(({ shared }): Promise<AlbumResponseDto[]> => {
+      return new Promise<AlbumResponseDto[]>((res) => {
+        if (shared) {
+          res([]);
+        }
+        res([...albums]);
+      });
     });
     render(RecentAlbums);
     await tick();
