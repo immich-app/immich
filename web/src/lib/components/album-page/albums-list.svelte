@@ -365,11 +365,7 @@
 </script>
 
 {#if isLoading}
-  <div
-    class="absolute flex place-items-center place-content-center top-5 right-5 h-8 pointer-events-none"
-    in:fade
-    out:fade
-  >
+  <div class="absolute top-7 right-5 pointer-events-none" in:fade out:fade>
     <LoadingSpinner />
   </div>
 {/if}
@@ -401,7 +397,7 @@
     <!-- Album Table -->
     <AlbumsTable {groupedAlbums} {albumGroupOption} onShowContextMenu={showAlbumContextMenu} />
   {/if}
-{:else}
+{:else if !isLoading}
   <!-- Empty Message -->
   {@render empty?.()}
 {/if}
