@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type DownloadProgress, downloadManager, downloadStore } from '$lib/stores/download-store.svelte';
+  import { downloadManager, type DownloadProgress } from '$lib/managers/download.manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { fly, slide } from 'svelte/transition';
   import { getByteUnitString } from '../../utils/byte-units';
@@ -13,15 +13,15 @@
   };
 </script>
 
-{#if downloadStore.isDownloading}
+{#if downloadManager.isDownloading}
   <div
     transition:fly={{ x: -100, duration: 350 }}
     class="fixed bottom-10 left-2 z-[10000] max-h-[270px] w-[315px] rounded-2xl border bg-immich-bg p-4 text-sm shadow-sm"
   >
     <p class="mb-2 text-xs text-gray-500">{$t('downloading').toUpperCase()}</p>
     <div class="my-2 mb-2 flex max-h-[200px] flex-col overflow-y-auto text-sm">
-      {#each Object.keys(downloadStore.assets) as downloadKey (downloadKey)}
-        {@const download = downloadStore.assets[downloadKey]}
+      {#each Object.keys(downloadManager.assets) as downloadKey (downloadKey)}
+        {@const download = downloadManager.assets[downloadKey]}
         <div class="mb-2 flex place-items-center" transition:slide>
           <div class="w-full pr-10">
             <div class="flex place-items-center justify-between gap-2 text-xs font-medium">

@@ -2,7 +2,6 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { notificationController } from '$lib/components/shared-components/notification/notification';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getAllPeople, createFace, type PersonResponseDto } from '@immich/sdk';
   import { Button, Input } from '@immich/ui';
@@ -10,6 +9,7 @@
   import { onMount } from 'svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handleError } from '$lib/utils/handle-error';
+  import { faceManager } from '$lib/managers/face.manager.svelte';
 
   interface Props {
     htmlElement: HTMLImageElement | HTMLVideoElement;
@@ -140,7 +140,7 @@
   };
 
   const cancel = () => {
-    isFaceEditMode.value = false;
+    faceManager.isEditMode = false;
   };
 
   const getPeople = async () => {
@@ -303,7 +303,7 @@
     } catch (error) {
       handleError(error, 'Error tagging face');
     } finally {
-      isFaceEditMode.value = false;
+      faceManager.isEditMode = false;
     }
   };
 </script>

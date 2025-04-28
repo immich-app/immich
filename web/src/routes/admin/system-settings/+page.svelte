@@ -22,7 +22,6 @@
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { QueryParameter } from '$lib/constants';
-  import { downloadManager } from '$lib/stores/download-store.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
@@ -53,6 +52,7 @@
   import type { Component } from 'svelte';
   import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
+  import { downloadManager } from '$lib/managers/download.manager.svelte';
 
   interface Props {
     data: PageData;

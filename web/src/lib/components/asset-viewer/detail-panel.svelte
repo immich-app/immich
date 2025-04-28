@@ -46,7 +46,7 @@
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { faceManager } from '$lib/managers/face.manager.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -207,7 +207,7 @@
             padding="1"
             size="20"
             buttonSize="32"
-            onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
+            onclick={() => (faceManager.isEditMode = !faceManager.isEditMode)}
           />
 
           {#if people.length > 0 || unassignedFaces.length > 0}

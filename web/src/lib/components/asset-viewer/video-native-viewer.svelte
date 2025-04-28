@@ -9,8 +9,8 @@
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import { faceManager } from '$lib/managers/face.manager.svelte';
 
   interface Props {
     assetId: string;
@@ -94,7 +94,7 @@
   let containerHeight = $state(0);
 
   $effect(() => {
-    if (isFaceEditMode.value) {
+    if (faceManager.isEditMode) {
       videoPlayer?.pause();
     }
   });
@@ -141,7 +141,7 @@
     </div>
   {/if}
 
-  {#if isFaceEditMode.value}
+  {#if faceManager.isEditMode}
     <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
   {/if}
 </div>

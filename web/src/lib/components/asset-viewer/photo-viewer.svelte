@@ -20,7 +20,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { faceManager } from '$lib/managers/face.manager.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -109,7 +109,7 @@
   };
 
   $effect(() => {
-    if (isFaceEditMode.value && $photoZoomState.currentZoom > 1) {
+    if (faceManager.isEditMode && $photoZoomState.currentZoom > 1) {
       zoomToggle();
     }
   });
@@ -235,7 +235,7 @@
       {/each}
     </div>
 
-    {#if isFaceEditMode.value}
+    {#if faceManager.isEditMode}
       <FaceEditor htmlElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
     {/if}
   {/if}

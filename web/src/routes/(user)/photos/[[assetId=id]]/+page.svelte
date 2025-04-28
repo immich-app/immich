@@ -20,10 +20,10 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
+  import { faceManager } from '$lib/managers/face.manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import {
     updateStackedAssetInTimeline,
@@ -76,7 +76,7 @@
   };
 
   beforeNavigate(() => {
-    isFaceEditMode.value = false;
+    faceManager.isEditMode = false;
   });
 </script>
 

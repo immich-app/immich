@@ -7,7 +7,6 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { downloadManager } from '$lib/stores/download-store.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
@@ -17,6 +16,7 @@
   import { mdiCheckAll, mdiContentCopy, mdiDownload, mdiRefresh, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { downloadManager } from '$lib/managers/download.manager.svelte';
 
   interface Props {
     data: PageData;

@@ -4,7 +4,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
+  import { contextMenuManager } from '$lib/managers/context-menu.manager.svelte';
 
   interface Props {
     title: string;
@@ -60,7 +60,7 @@
     if (isOpen && menuContainer) {
       triggerElement = document.activeElement as HTMLElement;
       menuContainer.focus();
-      $optionClickCallbackStore = closeContextMenu;
+      contextMenuManager.optionClickCallback = closeContextMenu;
     }
   });
 
@@ -77,8 +77,8 @@
         closeDropdown: closeContextMenu,
         container: menuContainer,
         isOpen,
-        selectedId: $selectedIdStore,
-        selectionChanged: (id) => ($selectedIdStore = id),
+        selectedId: contextMenuManager.selectedId,
+        selectionChanged: (id) => (contextMenuManager.selectedId = id),
       }}
       use:shortcuts={[
         {
@@ -96,7 +96,7 @@
           {direction}
           {x}
           {y}
-          ariaActiveDescendant={$selectedIdStore}
+          ariaActiveDescendant={contextMenuManager.selectedId}
           ariaLabel={title}
           bind:menuElement={menuContainer}
           id={menuId}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { shouldIgnoreEvent } from '$lib/actions/shortcut';
-  import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { dragAndDropManager } from '$lib/managers/drag-and-drop.manager.svelte';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { isAlbumsRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
@@ -124,7 +124,8 @@
 
     const filesArray: File[] = Array.from<File>(files);
     if (isShare) {
-      dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
+      dragAndDropManager.isDragging = true;
+      dragAndDropManager.files = filesArray;
     } else {
       await fileUploadHandler(filesArray, albumId);
     }
