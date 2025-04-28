@@ -79,7 +79,7 @@
   };
 
   const sizeClasses: Record<Size, string> = {
-    tiny: 'p-0 ml-2 mr-0 align-top',
+    tiny: 'p-0 ms-2 me-0 align-top',
     icon: 'p-2.5',
     link: 'p-2 font-medium',
     sm: 'px-4 py-2 text-sm font-medium',

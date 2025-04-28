@@ -83,8 +83,8 @@
         <ImmichLogo class="max-md:h-[48px] h-[50px]" noText={!mobileDevice.isFullSidebar} />
       </a>
     </div>
-    <div class="flex justify-between gap-4 lg:gap-8 pr-6">
-      <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:block">
+    <div class="flex justify-between gap-4 lg:gap-8 pe-6">
+      <div class="hidden w-full max-w-5xl flex-1 tall:ps-0 sm:block">
         {#if $featureFlags.search}
           <SearchBar grayTheme={true} />
         {/if}
@@ -154,7 +154,7 @@
         >
           <button
             type="button"
-            class="flex pl-2"
+            class="flex ps-2"
             onmouseover={() => (shouldShowAccountInfo = true)}
             onfocus={() => (shouldShowAccountInfo = true)}
             onblur={() => (shouldShowAccountInfo = false)}
@@ -170,7 +170,7 @@
             <div
               in:fade={{ delay: 500, duration: 150 }}
               out:fade={{ delay: 200, duration: 150 }}
-              class="absolute -bottom-12 right-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+              class="absolute -bottom-12 end-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
             >
               <p>{$user.name}</p>
               <p>{$user.email}</p>

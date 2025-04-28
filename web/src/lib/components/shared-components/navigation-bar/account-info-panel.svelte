@@ -48,7 +48,7 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute right-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute end-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   use:focusTrap
 >
   <div
@@ -56,7 +56,7 @@
   >
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
-      <div class="absolute z-10 bottom-0 right-0 rounded-full w-6 h-6">
+      <div class="absolute z-10 bottom-0 end-0 rounded-full w-6 h-6">
         <CircleIconButton
           color="primary"
           icon={mdiPencil}

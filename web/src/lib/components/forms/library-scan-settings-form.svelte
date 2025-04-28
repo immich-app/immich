@@ -123,7 +123,7 @@
 {/if}
 
 <form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
-  <table class="w-full text-left">
+  <table class="w-full text-start">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each exclusionPatterns as exclusionPattern, listIndex (exclusionPattern)}
         <tr
