@@ -9592,8 +9592,7 @@
       "ImageFormat": {
         "enum": [
           "jpeg",
-          "webp",
-          "jxl"
+          "webp"
         ],
         "type": "string"
       },
