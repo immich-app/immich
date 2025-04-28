@@ -53,6 +53,7 @@ COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
 COPY --from=web /usr/src/app/build /build/www
+COPY --from=web /usr/src/app/node_modules /build/node_modules
 COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
 COPY server/start*.sh ./

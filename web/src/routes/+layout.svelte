@@ -22,6 +22,7 @@
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
   import '../app.css';
+  import { browser } from '$app/environment';
 
   interface Props {
     children?: Snippet;
@@ -42,6 +43,10 @@
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
       theme.value = globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
+    }
+
+    if (!browser) {
+      return;
     }
 
     if (theme.value === Theme.LIGHT) {
