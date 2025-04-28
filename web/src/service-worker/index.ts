@@ -22,7 +22,6 @@ sw.addEventListener('activate', (event) => {
 });
 
 sw.addEventListener('fetch', (event) => {
-  // ignore POST requests etc
   if (event.request.method !== 'GET') {
     return;
   }
@@ -73,18 +72,15 @@ broadcast.onmessage = (event) => {
   if (!event.data) {
     return;
   }
+  const urlstring = event.data.url;
+  const url = new URL(urlstring, event.origin);
   if (event.data.type === 'cancel') {
-    const urlstring = event.data.url;
-    const url = new URL(urlstring, event.origin);
-
     const pending = pendingLoads.get(url.toString());
     if (pending) {
       pending.abort();
       pendingLoads.delete(url.toString());
     }
   } else if (event.data.type === 'preload') {
-    const urlstring = event.data.url;
-    const url = new URL(urlstring, event.origin);
     immichAsset(url);
   }
 };
