@@ -34,7 +34,6 @@
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute, AlbumPageViewMode } from '$lib/constants';
-  import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -87,6 +86,7 @@
   import { confirmAlbumDelete } from '$lib/utils/album-utils';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { activityManager } from '$lib/managers/activity.manager.svelte';
 
   interface Props {
     data: PageData;
@@ -191,7 +191,7 @@
   const getNumberOfComments = async () => {
     try {
       const { comments } = await getActivityStatistics({ albumId: album.id });
-      setNumberOfComments(comments);
+      activityManager.numberOfComments = comments;
     } catch (error) {
       handleError(error, $t('errors.cant_get_number_of_comments'));
     }
@@ -398,7 +398,7 @@
   let albumId = $derived(album.id);
 
   $effect(() => {
-    if (!album.isActivityEnabled && $numberOfComments === 0) {
+    if (!album.isActivityEnabled && activityManager.numberOfComments === 0) {
       isShowActivity = false;
     }
   });
@@ -420,7 +420,9 @@
   let isOwned = $derived($user.id == album.ownerId);
 
   let showActivityStatus = $derived(
-    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0),
+    album.albumUsers.length > 0 &&
+      !$showAssetViewer &&
+      (album.isActivityEnabled || activityManager.numberOfComments > 0),
   );
   let isEditor = $derived(
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
@@ -712,7 +714,7 @@
           <ActivityStatus
             disabled={!album.isActivityEnabled}
             {isLiked}
-            numberOfComments={$numberOfComments}
+            numberOfComments={activityManager.numberOfComments}
             onFavorite={handleFavorite}
             onOpenActivityTab={handleOpenAndCloseActivityTab}
           />
@@ -735,8 +737,8 @@
           albumId={album.id}
           {isLiked}
           bind:reactions
-          onAddComment={() => updateNumberOfComments(1)}
-          onDeleteComment={() => updateNumberOfComments(-1)}
+          onAddComment={() => activityManager.updateNumberOfComments(1)}
+          onDeleteComment={() => activityManager.updateNumberOfComments(-1)}
           onDeleteLike={() => (isLiked = null)}
           onClose={handleOpenAndCloseActivityTab}
         />

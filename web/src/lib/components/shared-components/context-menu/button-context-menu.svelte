@@ -6,7 +6,7 @@
     type Padding,
   } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
+  import { contextMenuManager } from '$lib/managers/context-menu.manager.svelte';
   import {
     getContextMenuPositionFromBoundingRect,
     getContextMenuPositionFromEvent,
@@ -97,7 +97,7 @@
     }
     focusButton();
     isOpen = false;
-    $selectedIdStore = undefined;
+    contextMenuManager.selectedId = undefined;
   };
 
   const handleOptionClick = () => {
@@ -124,7 +124,7 @@
 
   $effect(() => {
     if (isOpen) {
-      $optionClickCallbackStore = handleOptionClick;
+      contextMenuManager.optionClickCallback = handleOptionClick;
     }
   });
 </script>
@@ -139,8 +139,8 @@
     isOpen,
     onEscape,
     openDropdown,
-    selectedId: $selectedIdStore,
-    selectionChanged: (id) => ($selectedIdStore = id),
+    selectedId: contextMenuManager.selectedId,
+    selectionChanged: (id) => (contextMenuManager.selectedId = id),
   }}
   onresize={onResize}
   {...restProps}
@@ -178,7 +178,7 @@
       <ContextMenu
         {...contextMenuPosition}
         {direction}
-        ariaActiveDescendant={$selectedIdStore}
+        ariaActiveDescendant={contextMenuManager.selectedId}
         ariaLabelledBy={buttonId}
         bind:menuElement={menuContainer}
         id={menuId}

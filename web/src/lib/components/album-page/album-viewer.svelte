@@ -1,7 +1,6 @@
 <script lang="ts">
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
@@ -20,6 +19,7 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { dragAndDropManager } from '$lib/managers/drag-and-drop.manager.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -38,10 +38,10 @@
 
   const assetInteraction = new AssetInteraction();
 
-  dragAndDropFilesStore.subscribe((value) => {
-    if (value.isDragging && value.files.length > 0) {
-      handlePromiseError(fileUploadHandler(value.files, album.id));
-      dragAndDropFilesStore.set({ isDragging: false, files: [] });
+  $effect(() => {
+    if (dragAndDropManager.isDragging && dragAndDropManager.files.length > 0) {
+      handlePromiseError(fileUploadHandler(dragAndDropManager.files, album.id));
+      dragAndDropManager.reset();
     }
   });
 </script>

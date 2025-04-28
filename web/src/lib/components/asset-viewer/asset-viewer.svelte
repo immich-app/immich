@@ -5,7 +5,6 @@
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
-  import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -47,6 +46,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
+  import { activityManager } from '$lib/managers/activity.manager.svelte';
 
   type HasAsset = boolean;
 
@@ -137,12 +137,12 @@
 
   const handleAddComment = () => {
     numberOfComments++;
-    updateNumberOfComments(1);
+    activityManager.updateNumberOfComments(1);
   };
 
   const handleRemoveComment = () => {
     numberOfComments--;
-    updateNumberOfComments(-1);
+    activityManager.updateNumberOfComments(-1);
   };
 
   const handleFavorite = async () => {

@@ -1,9 +1,9 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import type { Shortcut } from '$lib/actions/shortcut';
   import { shortcutLabel as computeShortcutLabel, shortcut as bindShortcut } from '$lib/actions/shortcut';
+  import { contextMenuManager } from '$lib/managers/context-menu.manager.svelte';
 
   interface Props {
     text: string;
@@ -29,10 +29,10 @@
 
   let id: string = generateId();
 
-  let isActive = $derived($selectedIdStore === id);
+  let isActive = $derived(contextMenuManager.selectedId === id);
 
   const handleClick = () => {
-    $optionClickCallbackStore?.();
+    contextMenuManager.optionClickCallback?.();
     onClick();
   };
 
@@ -51,8 +51,8 @@
 <li
   {id}
   onclick={handleClick}
-  onmouseover={() => ($selectedIdStore = id)}
-  onmouseleave={() => ($selectedIdStore = undefined)}
+  onmouseover={() => (contextMenuManager.selectedId = id)}
+  onmouseleave={() => (contextMenuManager.selectedId = undefined)}
   class="w-full p-4 text-left text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
     ? activeColor
     : 'bg-slate-100'}"

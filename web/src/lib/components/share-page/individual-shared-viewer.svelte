@@ -2,7 +2,6 @@
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
-  import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { getKey, handlePromiseError } from '$lib/utils';
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -22,6 +21,7 @@
   import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { t } from 'svelte-i18n';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { dragAndDropManager } from '$lib/managers/drag-and-drop.manager.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -35,10 +35,10 @@
 
   let assets = $derived(sharedLink.assets);
 
-  dragAndDropFilesStore.subscribe((value) => {
-    if (value.isDragging && value.files.length > 0) {
-      handlePromiseError(handleUploadAssets(value.files));
-      dragAndDropFilesStore.set({ isDragging: false, files: [] });
+  $effect(() => {
+    if (dragAndDropManager.isDragging && dragAndDropManager.files.length > 0) {
+      handlePromiseError(handleUploadAssets(dragAndDropManager.files));
+      dragAndDropManager.reset();
     }
   });
 
