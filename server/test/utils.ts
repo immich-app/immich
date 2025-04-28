@@ -1,9 +1,9 @@
 import { ClassConstructor } from 'class-transformer';
-import { Kysely, sql } from 'kysely';
+import { Kysely } from 'kysely';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
-import { parse } from 'pg-connection-string';
 import { PNG } from 'pngjs';
+import postgres from 'postgres';
 import { DB } from 'src/db';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -49,7 +49,7 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
-import { getKyselyConfig } from 'src/utils/database';
+import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
@@ -297,24 +297,20 @@ function* newPngFactory() {
 
 const pngFactory = newPngFactory();
 
+const withDatabase = (url: string, name: string) => url.replace('/immich', `/${name}`);
+
 export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
-  const parsed = parse(process.env.IMMICH_TEST_POSTGRES_URL!);
+  const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;
+  const sql = postgres({
+    ...asPostgresConnectionConfig({ connectionType: 'url', url: withDatabase(testUrl, 'postgres') }),
+    max: 1,
+  });
 
-  const parsedOptions = {
-    ...parsed,
-    ssl: false,
-    host: parsed.host ?? undefined,
-    port: parsed.port ? Number(parsed.port) : undefined,
-    database: parsed.database ?? undefined,
-  };
-
-  const kysely = new Kysely<DB>(getKyselyConfig({ ...parsedOptions, max: 1, database: 'postgres' }));
   const randomSuffix = Math.random().toString(36).slice(2, 7);
   const dbName = `immich_${suffix ?? randomSuffix}`;
+  await sql.unsafe(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`);
 
-  await sql.raw(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`).execute(kysely);
-
-  return new Kysely<DB>(getKyselyConfig({ ...parsedOptions, database: dbName }));
+  return new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: withDatabase(testUrl, dbName) }));
 };
 
 export const newRandomImage = () => {
