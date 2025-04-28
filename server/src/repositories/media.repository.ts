@@ -61,7 +61,6 @@ export class MediaRepository {
     }
 
     try {
-      this.logger.debug('Extracting JPEG buffer from RAW image:', input);
       const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw', input);
       return { buffer, format: RawExtractedFormat.JPEG };
     } catch (error: any) {

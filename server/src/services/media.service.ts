@@ -10,11 +10,11 @@ import {
   AssetType,
   AudioCodec,
   Colorspace,
-  ImageFormat,
   JobName,
   JobStatus,
   LogLevel,
   QueueName,
+  RawExtractedFormat,
   StorageFolder,
   TranscodeHWAccel,
   TranscodePolicy,
@@ -23,12 +23,10 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { UpsertFileOptions, WithoutProperty } from 'src/repositories/asset.repository';
-import { ExtractResult } from 'src/repositories/media.repository';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
   DecodeToBufferOptions,
-  GenerateThumbnailOptions,
   JobItem,
   JobOf,
   VideoFormat,
@@ -214,6 +212,29 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
+  private async extractImage(originalPath: string, minSize: number) {
+    let extracted = await this.mediaRepository.extract(originalPath);
+    if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, minSize))) {
+      extracted = null;
+    }
+
+    return extracted;
+  }
+
+  private async decodeImage(thumbSource: string | Buffer, exifInfo: Exif, targetSize?: number) {
+    const { image } = await this.getConfig({ withCache: true });
+    const colorspace = this.isSRGB(exifInfo) ? Colorspace.SRGB : image.colorspace;
+    const decodeOptions: DecodeToBufferOptions = {
+      colorspace,
+      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+      size: targetSize,
+      orientation: exifInfo.orientation ? Number(exifInfo.orientation) : undefined,
+    };
+
+    const { info, data } = await this.mediaRepository.decodeImage(thumbSource, decodeOptions);
+    return { info, data, colorspace };
+  }
+
   private async generateImageThumbnails(asset: {
     id: string;
     ownerId: string;
@@ -226,48 +247,20 @@ export class MediaService extends BaseService {
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
 
-    const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
-    const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-
-    // prevents this extra "enabled" from leaking into fullsizeOptions later
-    const { enabled: imageFullsizeEnabled, ...imageFullsizeConfig } = image.fullsize;
-
     // Handle embedded preview extraction for RAW files
-    let extracted: ExtractResult | null = null;
-    const shouldExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
+    const extractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
+    const extracted = extractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
+    const generateFullsize = image.fullsize.enabled && !mimeTypes.isWebSupportedImage(asset.originalPath);
+    const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
-    if (shouldExtractEmbedded) {
-      // Extract embedded preview as buffer
-      extracted = await this.mediaRepository.extract(asset.originalPath);
-      if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, image.preview.size))) {
-        // drop the extracted buffer if it's smaller than the preview size
-        extracted = null;
-      }
-    }
-
-    // confirm decoding params
-    const thumbSource: string | Buffer = extracted ? extracted.buffer : asset.originalPath;
-
-    const shouldGenerateFullsize = imageFullsizeEnabled && !mimeTypes.isWebSupportedImage(asset.originalPath);
-    const shouldConvertFullsize =
-      shouldGenerateFullsize &&
-      (extracted // extracted or orinal not web friendly
-        ? !mimeTypes.isWebSupportedImage(`stub.${extracted.format}`)
-        : !mimeTypes.isWebSupportedImage(asset.originalPath));
-
-    const decodeOptions: DecodeToBufferOptions = {
-      colorspace,
-      processInvalidImages,
-      // unlimited size for fullsize, or cap to preview size
-      size: shouldConvertFullsize ? undefined : image.preview.size,
-      orientation: asset.exifInfo.orientation ? Number(asset.exifInfo.orientation) : undefined,
-    };
-
-    // decode the source image (original or extracted buffer)
-    const { info, data } = await this.mediaRepository.decodeImage(thumbSource, decodeOptions);
+    const { info, data, colorspace } = await this.decodeImage(
+      extracted ? extracted.buffer : asset.originalPath,
+      asset.exifInfo,
+      convertFullsize ? undefined : image.preview.size,
+    );
 
     // generate final images
-    const thumbnailOptions = { colorspace, processInvalidImages, raw: info };
+    const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info };
     const promises = [
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
       this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailPath),
@@ -276,43 +269,24 @@ export class MediaService extends BaseService {
 
     let fullsizePath: string | undefined;
 
-    if (shouldGenerateFullsize) {
-      // additionally, create a fullsize image if required
-      if (shouldConvertFullsize) {
-        // convert a new fullsize image from the same source as the thumbnail
-        fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.fullsize.format);
-        const fullsizeOptions: GenerateThumbnailOptions = {
-          ...imageFullsizeConfig,
-          ...thumbnailOptions,
-          size: undefined,
-        };
-        promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
-      } else {
-        // save the extracted buffer as fullsize without conversion
-        if (!extracted) {
-          // should not happen as guarded by shouldG
-          throw new Error('Extracted buffer is null, but fullsize generation is required');
-        }
+    if (convertFullsize) {
+      // convert a new fullsize image from the same source as the thumbnail
+      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.fullsize.format);
+      const fullsizeOptions = { format: image.fullsize.format, quality: image.fullsize.quality, ...thumbnailOptions };
+      promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
+    } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.JPEG) {
+      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, extracted.format);
+      this.storageCore.ensureFolders(fullsizePath);
 
-        fullsizePath = StorageCore.getImagePath(
-          asset,
-          AssetPathType.FULLSIZE,
-          // it is OK tor force casting the type, as it can only be jpeg here for now
-          // which is both ImageFormat and RawExtractedFormat
-          extracted.format as unknown as ImageFormat,
-        );
-        this.storageCore.ensureFolders(fullsizePath);
-
-        // Write the buffer to disk with essential EXIF data
-        await this.storageRepository.createOrOverwriteFile(fullsizePath, extracted.buffer);
-        await this.mediaRepository.writeExif(
-          {
-            orientation: asset.exifInfo.orientation,
-            colorspace: asset.exifInfo.colorspace,
-          },
-          fullsizePath,
-        );
-      }
+      // Write the buffer to disk with essential EXIF data
+      await this.storageRepository.createOrOverwriteFile(fullsizePath, extracted.buffer);
+      await this.mediaRepository.writeExif(
+        {
+          orientation: asset.exifInfo.orientation,
+          colorspace: asset.exifInfo.colorspace,
+        },
+        fullsizePath,
+      );
     }
 
     const outputs = await Promise.all(promises);
@@ -549,8 +523,7 @@ export class MediaService extends BaseService {
     return name !== VideoContainer.MP4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 
-  isSRGB(asset: { exifInfo: Exif }): boolean {
-    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo;
+  isSRGB({ colorspace, profileDescription, bitsPerSample }: Exif): boolean {
     if (colorspace || profileDescription) {
       return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
     } else if (bitsPerSample) {

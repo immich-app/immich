@@ -664,19 +664,19 @@ describe(MediaService.name, () => {
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
-        expect.objectContaining({ processInvalidImages: true }),
+        expect.objectContaining({ processInvalidImages: false }),
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
-        expect.objectContaining({ processInvalidImages: true }),
+        expect.objectContaining({ processInvalidImages: false }),
         'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
       expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(
         rawBuffer,
-        expect.objectContaining({ processInvalidImages: true }),
+        expect.objectContaining({ processInvalidImages: false }),
       );
 
       expect(mocks.media.getImageDimensions).not.toHaveBeenCalled();
@@ -2624,48 +2624,39 @@ describe(MediaService.name, () => {
 
   describe('isSRGB', () => {
     it('should return true for srgb colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB' } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ colorspace: 'sRGB' } as Exif)).toEqual(true);
     });
 
     it('should return true for srgb profile description', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB v1.31' } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ profileDescription: 'sRGB v1.31' } as Exif)).toEqual(true);
     });
 
     it('should return true for 8-bit image with no colorspace metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 8 } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ bitsPerSample: 8 } as Exif)).toEqual(true);
     });
 
     it('should return true for image with no colorspace or bit depth metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: {} as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({} as Exif)).toEqual(true);
     });
 
     it('should return false for non-srgb colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'Adobe RGB' } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(false);
+      expect(sut.isSRGB({ colorspace: 'Adobe RGB' } as Exif)).toEqual(false);
     });
 
     it('should return false for non-srgb profile description', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sP3C' } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(false);
+      expect(sut.isSRGB({ profileDescription: 'sP3C' } as Exif)).toEqual(false);
     });
 
     it('should return false for 16-bit image with no colorspace metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 16 } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(false);
+      expect(sut.isSRGB({ bitsPerSample: 16 } as Exif)).toEqual(false);
     });
 
     it('should return true for 16-bit image with sRGB colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB', bitsPerSample: 16 } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ colorspace: 'sRGB', bitsPerSample: 16 } as Exif)).toEqual(true);
     });
 
     it('should return true for 16-bit image with sRGB profile', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB', bitsPerSample: 16 } as Exif };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ profileDescription: 'sRGB', bitsPerSample: 16 } as Exif)).toEqual(true);
     });
   });
 });
