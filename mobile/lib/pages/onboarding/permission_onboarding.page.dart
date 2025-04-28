@@ -44,7 +44,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
               }
             }),
             child: const Text(
-              'grant_permission',
+              'continue',
             ).tr(),
           ),
         ],
