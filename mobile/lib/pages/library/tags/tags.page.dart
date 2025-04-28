@@ -1,4 +1,4 @@
-// ignore_for_file: avoid-local-functions, prefer-single-widget-per-file, arguments-ordering, prefer-trailing-comma, prefer-for-loop-in-children, avoid-redundant-else, unnecessary-trailing-comma
+// ignore_for_file: avoid-local-functions, prefer-single-widget-per-file, arguments-ordering, prefer-trailing-comma, prefer-for-loop-in-children, avoid-redundant-else, unnecessary-trailing-comma, function-always-returns-null
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -27,142 +27,118 @@ import 'package:openapi/api.dart';
 
 @RoutePage()
 class TagsPage extends HookConsumerWidget {
-  final TagResponseDto? tag;
+  final TagResponseDto? initalTag;
 
-  const TagsPage({super.key, this.tag});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tagState = ref.watch(tagsProvider);
-    final currentTag = useState<TagResponseDto?>(tag);
-
-    useEffect(
-      () {
-        if (tag == null) {
-          ref.read(tagsProvider.notifier).fetchTags();
-        }
-        return null;
-      },
-      [],
-    );
-
-    // Update current folder when root structure changes
-    useEffect(
-      () {
-        if (tag != null && tagState.hasValue) {
-          if (tag != null) {
-            currentTag.value = tag;
-          }
-        }
-        return null;
-      },
-      [tagState],
-    );
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(currentTag.value?.name ?? tr("tags")),
-        elevation: 0,
-        centerTitle: false,
-        actions: [],
-      ),
-      body: tagState.when(
-        data: (allTags) {
-          if (tag == null) {
-            return TagsContent(
-              current: null,
-              subtags:
-                  (allTags ?? []).where((x) => x.parentId == null).toList(),
-              tags: allTags,
-            );
-          } else {
-            return TagsContent(
-              current: currentTag.value!,
-              subtags: (allTags ?? [])
-                  .where((x) => x.parentId == currentTag.value!.id)
-                  .toList(),
-              tags: allTags,
-            );
-          }
-        },
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
-        error: (error, stack) {
-          ImmichToast.show(
-            context: context,
-            msg: "failed_to_load_tags".tr(),
-            toastType: ToastType.error,
-          );
-          return Center(child: const Text("failed_to_load_tags").tr());
-        },
-      ),
-    );
-  }
-}
-
-class TagsContent extends HookConsumerWidget {
-  final TagResponseDto? current;
-  final List<TagResponseDto> tags;
-  final List<TagResponseDto> subtags;
-
-  const TagsContent(
-      {super.key, this.current, required this.tags, required this.subtags});
+  const TagsPage({super.key, this.initalTag});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Initial asset fetch
+    final currentTag = useState<TagResponseDto?>(initalTag);
+    final tagsProviderWatcher = ref.watch(tagsProvider);
+
     useEffect(
       () {
-        if (current == null) return;
-        ref.read(tagsRenderListProvider(current!).notifier).fetchAssets();
-        return null;
+        ref.read(tagsProvider.notifier).fetchTags();
+        if (currentTag.value != null) {
+          ref
+              .read(tagsRenderListProvider(currentTag.value).notifier)
+              .fetchAssets();
+        }
       },
-      [current],
+      [tagsProviderWatcher],
     );
+
+    void selectTag(TagResponseDto selectedTag) {
+      currentTag.value = selectedTag;
+      //context.pushRoute(TagsRoute(folder: selectedTag)
+    }
+
+    Widget getDrawerItem(TagResponseDto tag, List<TagResponseDto> allTags) {
+      List<TagResponseDto> subfolders =
+          allTags.where((x) => x.parentId == tag.id).toList();
+      if (subfolders.isEmpty) {
+        return LargeLeadingTile(
+            leading: Icon(Icons.folder, color: context.primaryColor, size: 24),
+            title: Text(
+              tag.name,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            onTap: () => selectTag(tag));
+      } else {
+        return ExpansionTile(
+            leading: Icon(Icons.folder, color: context.primaryColor, size: 24),
+            minTileHeight: 0,
+            title: GestureDetector(
+                onTap: () => selectTag(tag),
+                child: Container(
+                    decoration: const BoxDecoration(color: Colors.transparent),
+                    child: Text(
+                      tag.name,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ))),
+            children: [
+              ...subfolders
+                  .map((subfolder) => getDrawerItem(subfolder, allTags))
+            ]);
+      }
+    }
+
+    ListView getListView(List<TagResponseDto>? allTags) {
+      List<TagResponseDto> tagList = (allTags ?? []);
+      List<TagResponseDto> rootTags =
+          tagList.where((x) => x.parentId == null).toList();
+
+      return ListView(
+        children: [
+          if (rootTags.isNotEmpty)
+            ...rootTags.map((subfolder) => getDrawerItem(subfolder, tagList))
+        ],
+      );
+    }
+
+    Widget buildTagDrawer() {
+      return Drawer(
+          child: tagsProviderWatcher.when(
+              data: (alltags) => getListView(alltags),
+              loading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+              error: (error, stack) {
+                ImmichToast.show(
+                  context: context,
+                  msg: "failed_to_load_tags".tr(),
+                  toastType: ToastType.error,
+                );
+                return Center(child: const Text("failed_to_load_tags").tr());
+              }));
+    }
 
     MultiselectGrid buildMultiselectGrid() {
       return MultiselectGrid(
-        renderListProvider: tagsRenderListProvider(current),
+        renderListProvider: tagsRenderListProvider(currentTag.value),
         favoriteEnabled: true,
         editEnabled: true,
         unfavorite: true,
       );
     }
 
-    ListView buildTagListView() {
-      return ListView(
-        children: [
-          if (subtags.isNotEmpty)
-            ...subtags.map(
-              (subfolder) => LargeLeadingTile(
-                leading: Icon(
-                  Icons.folder,
-                  color: context.primaryColor,
-                  size: 48,
-                ),
-                title: Text(
-                  subfolder.name,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onTap: () => context.pushRoute(TagsRoute(folder: subfolder)),
-              ),
-            )
-        ],
-      );
-    }
-
-    return Column(
-      children: [
-        TagsPath(currentFolder: current, root: tags),
-        Expanded(child: buildTagListView()),
-        Expanded(child: buildMultiselectGrid()),
-      ],
-    );
+    return Scaffold(
+        appBar: AppBar(
+          title: Text(currentTag.value?.name ?? tr("tags")),
+          elevation: 0,
+          centerTitle: false,
+          actions: [],
+        ),
+        drawer: buildTagDrawer(),
+        body: buildMultiselectGrid());
   }
 }
 

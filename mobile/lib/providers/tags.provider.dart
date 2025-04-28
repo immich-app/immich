@@ -3,6 +3,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/tags/root_tag.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/folder.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:logging/logging.dart';
@@ -49,22 +50,26 @@ final tagsProvider =
 
 class TagsRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
   final ApiService _apiService;
+  final AssetRepository _assetRepository;
   final TagResponseDto? _tag;
   final Logger _log = Logger("TagsRenderListNotifier");
 
-  TagsRenderListNotifier(this._apiService, this._tag)
+  TagsRenderListNotifier(this._apiService, this._assetRepository, this._tag)
       : super(const AsyncLoading());
 
   Future<void> fetchAssets() async {
     try {
       if (_tag == null) {
+        state = AsyncData(RenderList.empty());
       } else {
         final results = await _apiService.searchApi
             .searchAssets(MetadataSearchDto(tagIds: [_tag!.id]));
-        final assets =
-            (results?.assets.items ?? []).map((x) => Asset.remote(x)).toList();
+        final resultingIds =
+            (results?.assets.items ?? []).map((x) => x.id).toList();
+        final assets = await _assetRepository.getAllByRemoteId(resultingIds);
         final renderList =
             await RenderList.fromAssets(assets, GroupAssetsBy.none);
+
         state = AsyncData(renderList);
       }
     } catch (e, stack) {
@@ -80,6 +85,7 @@ final tagsRenderListProvider = StateNotifierProvider.family<
     TagResponseDto?>((ref, folder) {
   return TagsRenderListNotifier(
     ref.watch(apiServiceProvider),
+    ref.watch(assetRepositoryProvider),
     folder,
   );
 });

@@ -860,7 +860,7 @@ class TagsRoute extends PageRouteInfo<TagsRouteArgs> {
           data.argsAs<TagsRouteArgs>(orElse: () => const TagsRouteArgs());
       return TagsPage(
         key: args.key,
-        tag: args.folder,
+        initalTag: args.folder,
       );
     },
   );
