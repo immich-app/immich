@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { clickOutside } from '$lib/actions/click-outside';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
+  import type { Snippet } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { slide } from 'svelte/transition';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import type { Snippet } from 'svelte';
-  import { languageManager } from '$lib/stores/language-manager.svelte';
 
   interface Props {
     isVisible?: boolean;

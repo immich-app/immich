@@ -1,5 +1,5 @@
 import { langs } from '$lib/constants';
-import { eventManager } from '$lib/stores/event-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 
 class LanguageManager {
   rtl = $state(false);

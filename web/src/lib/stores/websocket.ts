@@ -1,4 +1,4 @@
-import { authManager } from '$lib/stores/auth-manager.svelte';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import { createEventEmitter } from '$lib/utils/eventemitter';
 import { type AssetResponseDto, type NotificationDto, type ServerVersionResponseDto } from '@immich/sdk';

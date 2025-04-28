@@ -1,4 +1,4 @@
-import { eventManager } from '$lib/stores/event-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { getNotifications, updateNotification, updateNotifications, type NotificationDto } from '@immich/sdk';
 
 class NotificationStore {

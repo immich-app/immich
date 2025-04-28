@@ -6,8 +6,8 @@
     type Padding,
   } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
-  import { languageManager } from '$lib/stores/language-manager.svelte';
   import {
     getContextMenuPositionFromBoundingRect,
     getContextMenuPositionFromEvent,

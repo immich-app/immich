@@ -11,7 +11,7 @@
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import { Theme } from '$lib/constants';
-  import { languageManager } from '$lib/stores/language-manager.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { colorTheme, handleToggleTheme, lang, type ThemeSetting } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
