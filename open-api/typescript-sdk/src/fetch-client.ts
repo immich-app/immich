@@ -64,6 +64,7 @@ export type UserAdminResponseDto = {
     updatedAt: string;
 };
 export type UserAdminCreateDto = {
+    avatarColor?: (UserAvatarColor) | null;
     email: string;
     name: string;
     notify?: boolean;
@@ -76,15 +77,13 @@ export type UserAdminDeleteDto = {
     force?: boolean;
 };
 export type UserAdminUpdateDto = {
+    avatarColor?: (UserAvatarColor) | null;
     email?: string;
     name?: string;
     password?: string;
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
-};
-export type AvatarResponse = {
-    color: UserAvatarColor;
 };
 export type DownloadResponse = {
     archiveSize: number;
@@ -122,7 +121,6 @@ export type TagsResponse = {
     sidebarWeb: boolean;
 };
 export type UserPreferencesResponseDto = {
-    avatar: AvatarResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     folders: FoldersResponse;
@@ -1388,6 +1386,7 @@ export type TrashResponseDto = {
     count: number;
 };
 export type UserUpdateMeDto = {
+    avatarColor?: (UserAvatarColor) | null;
     email?: string;
     name?: string;
     password?: string;

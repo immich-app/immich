@@ -106,7 +106,7 @@
 {/if}
 
 {#if hidden}
-  <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+  <div class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
     <Icon {title} path={mdiEyeOffOutline} size="2em" class={hiddenIconClass} />
   </div>
 {/if}

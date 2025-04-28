@@ -78,7 +78,7 @@
   <LicenseModal onClose={() => (isOpen = false)} />
 {/if}
 
-<div class="license-status pl-4 text-sm">
+<div class="license-status ps-4 text-sm">
   {#if $isPurchased && $preferences.purchase.showSupportBadge}
     <button
       onclick={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
@@ -123,7 +123,7 @@
   {#if showMessage}
     <dialog
       open
-      class="hidden sidebar:block w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
+      class="hidden sidebar:block w-[500px] absolute bottom-[75px] start-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       onmouseover={() => (hoverMessage = true)}
       onmouseleave={() => (hoverMessage = false)}

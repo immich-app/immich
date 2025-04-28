@@ -51,4 +51,5 @@ class EventManager<EventMap extends Record<string, unknown[]>> {
 export const eventManager = new EventManager<{
   'user.login': [];
   'auth.logout': [];
+  'language.change': [{ name: string; code: string; rtl?: boolean }];
 }>();

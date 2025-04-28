@@ -53,6 +53,7 @@ export class UserService extends BaseService {
     const update: Updateable<UserTable> = {
       email: dto.email,
       name: dto.name,
+      avatarColor: dto.avatarColor,
     };
 
     if (dto.password) {
@@ -68,18 +69,16 @@ export class UserService extends BaseService {
 
   async getMyPreferences(auth: AuthDto): Promise<UserPreferencesResponseDto> {
     const metadata = await this.userRepository.getMetadata(auth.user.id);
-    const preferences = getPreferences(auth.user.email, metadata);
-    return mapPreferences(preferences);
+    return mapPreferences(getPreferences(metadata));
   }
 
   async updateMyPreferences(auth: AuthDto, dto: UserPreferencesUpdateDto) {
     const metadata = await this.userRepository.getMetadata(auth.user.id);
-    const current = getPreferences(auth.user.email, metadata);
-    const updated = mergePreferences(current, dto);
+    const updated = mergePreferences(getPreferences(metadata), dto);
 
     await this.userRepository.upsertMetadata(auth.user.id, {
       key: UserMetadataKey.PREFERENCES,
-      value: getPreferencesPartial(auth.user, updated),
+      value: getPreferencesPartial(updated),
     });
 
     return mapPreferences(updated);

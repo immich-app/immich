@@ -82,10 +82,10 @@
   const getAlignClass = (position: 'bottom-left' | 'bottom-right') => {
     switch (position) {
       case 'bottom-left': {
-        return 'left-0';
+        return 'start-0';
       }
       case 'bottom-right': {
-        return 'right-0';
+        return 'end-0';
       }
 
       default: {

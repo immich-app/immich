@@ -101,7 +101,7 @@
       {#if inputType === SettingInputFieldType.COLOR}
         <input
           bind:this={input}
-          class="immich-form-input w-full pb-2 rounded-none mr-1"
+          class="immich-form-input w-full pb-2 rounded-none me-1"
           aria-describedby={description ? `${label}-desc` : undefined}
           aria-labelledby="{label}-label"
           id={label}

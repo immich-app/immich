@@ -35,7 +35,7 @@
     : 'rounded-lg'}  bg-gray-100 p-2 dark:bg-gray-700 border border-gray-200 dark:border-immich-dark-gray"
 >
   <ImageThumbnail circle shadow url={thumbnailData} altText={person.name} widthStyle="2rem" heightStyle="2rem" />
-  <form class="ml-4 flex w-full justify-between gap-16" autocomplete="off" {onsubmit}>
+  <form class="ms-4 flex w-full justify-between gap-16" autocomplete="off" {onsubmit}>
     <SearchPeople
       bind:searchName={name}
       bind:searchedPeopleLocal={suggestedPeople}
