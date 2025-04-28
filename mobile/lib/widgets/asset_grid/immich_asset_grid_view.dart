@@ -786,7 +786,7 @@ class _Title extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GroupDividerTitle(
-      text: title,
+      text: toBeginningOfSentenceCase(title, context.locale.languageCode),
       multiselectEnabled: selectionActive,
       onSelect: () => selectAssets(assets),
       onDeselect: () => deselectAssets(assets),
