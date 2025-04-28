@@ -252,6 +252,13 @@ const milestones: Item[] = [
     description: 'Browse your photos and videos in their folder structure inside the mobile app',
     release: 'v1.130.0',
   }),
+  {
+    icon: mdiStar,
+    iconColor: 'gold',
+    title: '60,000 Stars',
+    description: 'Reached 60K Stars on GitHub!',
+    getDateLabel: withLanguage(new Date(2025, 2, 4)),
+  },
   withRelease({
     icon: mdiTagFaces,
     iconColor: 'teal',
@@ -260,13 +267,6 @@ const milestones: Item[] = [
       'Manually tag or remove faces in photos and videos, even when automatic detection misses or misidentifies them.',
     release: 'v1.127.0',
   }),
-  {
-    icon: mdiStar,
-    iconColor: 'gold',
-    title: '60,000 Stars',
-    description: 'Reached 60K Stars on GitHub!',
-    getDateLabel: withLanguage(new Date(2025, 2, 4)),
-  },
   withRelease({
     icon: mdiLinkEdit,
     iconColor: 'crimson',

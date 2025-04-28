@@ -50,7 +50,7 @@
   };
 </script>
 
-<div class="absolute z-50 top-2 left-2 transition-transform {isFocused ? 'translate-y-0' : '-translate-y-10 sr-only'}">
+<div class="absolute z-50 top-2 start-2 transition-transform {isFocused ? 'translate-y-0' : '-translate-y-10 sr-only'}">
   <Button
     size="sm"
     rounded="none"

@@ -130,12 +130,12 @@
     <div class="flex text-xs text-black">
       <button
         type="button"
-        class="px-4 py-3 flex place-items-center gap-2 rounded-tl-full rounded-bl-full dark:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/90 bg-immich-primary/25 hover:bg-immich-primary/50"
+        class="px-4 py-3 flex place-items-center gap-2 rounded-s-full dark:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/90 bg-immich-primary/25 hover:bg-immich-primary/50"
         onclick={onSelectAll}><Icon path={mdiCheck} size="20" />{$t('select_keep_all')}</button
       >
       <button
         type="button"
-        class="px-4 py-3 flex place-items-center gap-2 rounded-tr-full rounded-br-full dark:bg-immich-dark-primary/50 hover:dark:bg-immich-dark-primary/70 bg-immich-primary hover:bg-immich-primary/80 text-white"
+        class="px-4 py-3 flex place-items-center gap-2 rounded-e-full dark:bg-immich-dark-primary/50 hover:dark:bg-immich-dark-primary/70 bg-immich-primary hover:bg-immich-primary/80 text-white"
         onclick={onSelectNone}><Icon path={mdiTrashCanOutline} size="20" />{$t('select_trash_all')}</button
       >
     </div>
@@ -143,21 +143,11 @@
     <!-- CONFIRM BUTTONS -->
     <div class="flex text-xs text-black">
       {#if trashCount === 0}
-        <Button
-          size="sm"
-          color="primary"
-          class="flex place-items-center rounded-tl-full rounded-bl-full gap-2"
-          onclick={handleResolve}
-        >
+        <Button size="sm" color="primary" class="flex place-items-center rounded-s-full gap-2" onclick={handleResolve}>
           <Icon path={mdiCheck} size="20" />{$t('keep_all')}
         </Button>
       {:else}
-        <Button
-          size="sm"
-          color="red"
-          class="flex place-items-center rounded-tl-full rounded-bl-full gap-2 py-3"
-          onclick={handleResolve}
-        >
+        <Button size="sm" color="red" class="flex place-items-center rounded-s-full gap-2 py-3" onclick={handleResolve}>
           <Icon path={mdiTrashCanOutline} size="20" />{trashCount === assets.length
             ? $t('trash_all')
             : $t('trash_count', { values: { count: trashCount } })}
@@ -166,7 +156,7 @@
       <Button
         size="sm"
         color="primary"
-        class="flex place-items-center rounded-tr-full rounded-br-full  gap-2"
+        class="flex place-items-center rounded-e-full  gap-2"
         onclick={handleStack}
         disabled={selectedAssetIds.size !== 1}
       >

@@ -1,3 +1,4 @@
+import { eventManager } from '$lib/stores/event-manager.svelte';
 import type {
   AlbumResponseDto,
   ServerAboutResponseDto,
@@ -19,8 +20,10 @@ const defaultUserInteraction: UserInteractions = {
   serverInfo: undefined,
 };
 
-export const resetUserInteraction = () => {
+export const userInteraction = $state<UserInteractions>(defaultUserInteraction);
+
+const reset = () => {
   Object.assign(userInteraction, defaultUserInteraction);
 };
 
-export const userInteraction = $state<UserInteractions>(defaultUserInteraction);
+eventManager.on('auth.logout', () => reset());
