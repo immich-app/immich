@@ -11,13 +11,13 @@
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import { Theme } from '$lib/constants';
-  import { languageManager } from '$lib/managers/language-manager.svelte';
-  import { colorTheme, handleToggleTheme, lang, type ThemeSetting } from '$lib/stores/preferences.store';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
-  import { copyToClipboard, setKey } from '$lib/utils';
-  import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
+  import { copyToClipboard } from '$lib/utils';
+  import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { setTranslations } from '@immich/ui';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -67,21 +67,15 @@
     element?.remove();
     // if the browser theme changes, changes the Immich theme too
     globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
-
-    return lang.subscribe((lang) => languageManager.setLanguage(lang));
   });
 
   onDestroy(() => {
     document.removeEventListener('change', handleChangeTheme);
   });
 
-  if (isSharedLinkRoute(page.route?.id)) {
-    setKey(page.params.key);
-  }
+  eventManager.emit('app.init');
 
   beforeNavigate(({ from, to }) => {
-    setKey(isSharedLinkRoute(to?.route.id) ? to?.params?.key : undefined);
-
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
       return;
     }

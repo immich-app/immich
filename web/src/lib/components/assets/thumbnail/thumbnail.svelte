@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -17,15 +17,16 @@
   } from '@mdi/js';
 
   import { thumbhash } from '$lib/actions/thumbhash';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { getFocusable } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
+  import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-  import { onMount } from 'svelte';
-  import { getFocusable } from '$lib/utils/focus-util';
 
   interface Props {
     asset: AssetResponseDto;
@@ -331,13 +332,13 @@
         ></div>
 
         <!-- Favorite asset star -->
-        {#if !isSharedLink() && asset.isFavorite}
+        {#if !authManager.key && asset.isFavorite}
           <div class="absolute bottom-2 start-2 z-10">
             <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
-        {#if !isSharedLink() && showArchiveIcon && asset.isArchived}
+        {#if !authManager.key && showArchiveIcon && asset.isArchived}
           <div class={['absolute start-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>

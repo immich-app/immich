@@ -1,27 +1,27 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { getKey, handlePromiseError } from '$lib/utils';
-  import { downloadArchive } from '$lib/utils/asset-utils';
+  import { handlePromiseError } from '$lib/utils';
+  import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { addSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
+  import { t } from 'svelte-i18n';
+  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
   import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import type { Viewport } from '$lib/stores/assets-store.svelte';
-  import { t } from 'svelte-i18n';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -57,7 +57,7 @@
         assetIdsDto: {
           assetIds: results.filter((id) => !!id) as string[],
         },
-        key: getKey(),
+        key: authManager.key,
       });
 
       const added = data.filter((item) => item.success).length;
