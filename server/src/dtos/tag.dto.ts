@@ -19,7 +19,7 @@ export class TagCreateDto {
 export class TagUpdateDto {
   @IsString()
   @Optional({ emptyToNull: true, nullable: true })
-  value?: string;
+  name?: string;
 
   @Optional({ emptyToNull: true, nullable: true })
   @ValidateHexColor()

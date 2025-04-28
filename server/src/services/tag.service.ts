@@ -34,13 +34,19 @@ export class TagService extends BaseService {
   async create(auth: AuthDto, dto: TagCreateDto) {
     const parent = await this.findParent(auth, dto.parentId);
     const userId = auth.user.id;
-    const value = parent ? `${parent.value}/${dto.name}` : dto.name;
+
+    const { name, color } = dto;
+
+    if (name.includes('/')) {
+      throw new BadRequestException(`Tag name cannot contain slash characters ("/")`);
+    }
+
+    const value = parent ? `${parent.value}/${name}` : name;
     const duplicate = await this.tagRepository.getByValue(userId, value);
     if (duplicate) {
       throw new BadRequestException(`A tag with that name already exists`);
     }
 
-    const { color } = dto;
     const tag = await this.tagRepository.create({ userId, value, color, parentId: parent?.id });
 
     return mapTag(tag);
@@ -49,7 +55,24 @@ export class TagService extends BaseService {
   async update(auth: AuthDto, id: string, dto: TagUpdateDto): Promise<TagResponseDto> {
     await this.requireAccess({ auth, permission: Permission.TAG_UPDATE, ids: [id] });
 
-    const { value, color } = dto;
+    const { name, color } = dto;
+
+    if (name?.includes('/')) {
+      throw new BadRequestException(`Tag name cannot contain slash characters ("/")`);
+    }
+
+    const existing = await this.tagRepository.getOne(id);
+    if (!existing) {
+      throw new BadRequestException(`Tag not found with id: ${id}`);
+    }
+
+    let value;
+    if (name) {
+      const parts = existing.value.split("/");
+      parts[parts.length - 1] = name;
+      value = parts.join("/");
+    }
+
     const tag = await this.tagRepository.update(id, { value, color });
     return mapTag(tag);
   }
@@ -131,7 +154,7 @@ export class TagService extends BaseService {
   }
 
   private async findOrFail(id: string) {
-    const tag = await this.tagRepository.get(id);
+    const tag = await this.tagRepository.getOne(id);
     if (!tag) {
       throw new BadRequestException('Tag not found');
     }
@@ -141,7 +164,7 @@ export class TagService extends BaseService {
   private async findParent(auth: AuthDto, parentId?: string | null) {
     if (parentId) {
       await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [parentId] });
-      const parent = await this.tagRepository.get(parentId);
+      const parent = await this.tagRepository.getOne(parentId);
       if (!parent) {
         throw new BadRequestException('Tag not found');
       }

@@ -19,12 +19,13 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
-  import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
+  import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto, type TagUpdateDto } from '@immich/sdk';
   import { Button, HStack, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
+  import type { HttpError } from '@sveltejs/kit';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { onDestroy } from 'svelte';
 
   interface Props {
     data: PageData;
@@ -89,20 +90,26 @@
 
   const handleSubmit = async () => {
     if (tag && isEditOpen && hasChange(tag)) {
-      const tagUpdateDto = { color: newTagColor };
+      const tagUpdateDto: TagUpdateDto = { color: newTagColor };
       if (newTagName !== tag.name) {
-        const tagNames = tag.value.split('/');
-        tagNames[tagNames.length - 1] = newTagName;
-        tag.value = tagUpdateDto.value = tagNames.join('/');
+        tagUpdateDto.name = newTagName;
       }
-      await updateTag({ id: tag.id, tagUpdateDto });
 
-      notificationController.show({
-        message: $t('tag_updated', { values: { tag: tag.value } }),
-        type: NotificationType.Info,
-      });
-      
-      await navigateToView(normalizeTreePath(tag.value));
+      let response: TagResponseDto;
+      try {
+        response = await updateTag({ id: tag.id, tagUpdateDto });
+        notificationController.show({
+          message: $t('tag_updated', { values: { tag: response.value } }),
+          type: NotificationType.Info,
+        });
+      } catch (error) {
+        notificationController.show({
+          message: (error as HttpError)?.body?.message ?? $t('error'),
+          type: NotificationType.Error,
+        });
+      }
+
+      await navigateToView(normalizeTreePath(response!.value));
       isEditOpen = false;
     }
 
@@ -148,8 +155,8 @@
     await handleSubmit();
   };
 
-  const hasChange = (tag) => {
-     return newTagName !== tag?.name || newTagColor != (tag?.color || '');
+  const hasChange = (tag: TagResponseDto | null) => {
+    return newTagName !== tag?.name || newTagColor != (tag?.color || '');
   };
 </script>
 
@@ -250,7 +257,9 @@
 
     {#snippet stickyBottom()}
       <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
-      <Button type="submit" fullWidth shape="round" form="edit-tag-form" disabled={isEditOpen && !hasChange(tag)}>{$t('save')}</Button>
+      <Button type="submit" fullWidth shape="round" form="edit-tag-form" disabled={isEditOpen && !hasChange(tag)}
+        >{$t('save')}</Button
+      >
     {/snippet}
   </FullScreenModal>
 {/if}
