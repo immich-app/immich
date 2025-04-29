@@ -1,5 +1,5 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { locale } from '$lib/stores/preferences.store';
-import { getKey } from '$lib/utils';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
   getJustifiedLayoutFromAssets,
@@ -880,7 +880,7 @@ export class AssetStore {
     const timebuckets = await getTimeBuckets({
       ...this.#options,
       size: TimeBucketSize.Month,
-      key: getKey(),
+      key: authManager.key,
     });
 
     this.buckets = timebuckets.map((bucket) => {
@@ -1088,7 +1088,7 @@ export class AssetStore {
           ...this.#options,
           timeBucket: bucketDate,
           size: TimeBucketSize.Month,
-          key: getKey(),
+          key: authManager.key,
         },
         { signal },
       );
@@ -1099,7 +1099,7 @@ export class AssetStore {
               albumId: this.#options.timelineAlbumId,
               timeBucket: bucketDate,
               size: TimeBucketSize.Month,
-              key: getKey(),
+              key: authManager.key,
             },
             { signal },
           );

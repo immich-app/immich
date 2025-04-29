@@ -13,6 +13,7 @@
   import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getBoundingBox } from '$lib/utils/people-utils';
+  import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
@@ -71,8 +72,10 @@
 
   const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: { id: string }[]) => {
     for (const preloadAsset of preloadAssets || []) {
-      let img = new Image();
-      img.src = getAssetUrl(preloadAsset.id, targetSize, null);
+      if (preloadAsset.isImage()) {
+        let img = new Image();
+        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
+      }
     }
   };
 
@@ -167,6 +170,7 @@
     return () => {
       loader?.removeEventListener('load', onload);
       loader?.removeEventListener('error', onerror);
+      cancelImageUrl(imageLoaderUrl);
     };
   });
 
@@ -212,7 +216,7 @@
         <img
           src={assetFileUrl}
           alt=""
-          class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
+          class="absolute top-0 start-0 -z-10 object-cover h-full w-full blur-lg"
           draggable="false"
         />
       {/if}

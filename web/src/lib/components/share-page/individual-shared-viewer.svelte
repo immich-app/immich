@@ -3,10 +3,11 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { getKey, handlePromiseError } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -58,7 +59,7 @@
         assetIdsDto: {
           assetIds: results.filter((id) => !!id) as string[],
         },
-        key: getKey(),
+        key: authManager.key,
       });
 
       const added = data.filter((item) => item.success).length;

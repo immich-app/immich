@@ -251,7 +251,7 @@
 
 <section>
   {#if assetInteraction.selectionActive}
-    <div class="fixed z-[100] top-0 left-0 w-full">
+    <div class="fixed z-[100] top-0 start-0 w-full">
       <AssetSelectControlBar
         assets={assetInteraction.selectedAssets}
         clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -289,13 +289,13 @@
       </AssetSelectControlBar>
     </div>
   {:else}
-    <div class="fixed z-[100] top-0 left-0 w-full">
+    <div class="fixed z-[100] top-0 start-0 w-full">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div
           class="-z-[1] bg-immich-bg dark:bg-immich-dark-bg"
           style="position:absolute;top:0;left:0;right:0;bottom:0;"
         ></div>
-        <div class="w-full flex-1 pl-4">
+        <div class="w-full flex-1 ps-4">
           <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
         </div>
       </ControlAppBar>
@@ -313,13 +313,13 @@
       <div class="flex place-content-center place-items-center text-xs">
         <div
           class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
-          {value === true ? 'rounded-full' : 'rounded-tl-full rounded-bl-full'}"
+          {value === true ? 'rounded-full' : 'roudned-s-full'}"
         >
           {getHumanReadableSearchKey(key as keyof SearchTerms)}
         </div>
 
         {#if value !== true}
-          <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-tr-full rounded-br-full">
+          <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-e-full">
             {#if (key === 'takenAfter' || key === 'takenBefore') && typeof value === 'string'}
               {getHumanReadableDate(value)}
             {:else if key === 'personIds' && Array.isArray(value)}
@@ -349,7 +349,7 @@
 >
   {#if searchResultAlbums.length > 0}
     <section>
-      <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
+      <div class="ms-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
       <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
       <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">

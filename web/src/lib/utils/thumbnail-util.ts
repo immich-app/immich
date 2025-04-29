@@ -1,6 +1,7 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import { locale } from '$lib/stores/preferences.store';
 import { t } from 'svelte-i18n';
-import { derived } from 'svelte/store';
+import { derived, get } from 'svelte/store';
 import { fromLocalDateTime } from './timeline-util';
 
 /**
@@ -44,7 +45,7 @@ export const getAltTextForTimelineAsset = (_: TimelineAsset) => {
 
 export const getAltText = derived(t, ($t) => {
   return (asset: TimelineAsset) => {
-    const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
+    const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' }, { locale: get(locale) });
     const { city, country, people: names } = asset.text;
     const hasPlace = city && country;
 

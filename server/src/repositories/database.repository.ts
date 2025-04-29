@@ -3,7 +3,7 @@ import AsyncLock from 'async-lock';
 import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import semver from 'semver';
 import { EXTENSION_NAMES, POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { DB } from 'src/db';
@@ -205,8 +205,29 @@ export class DatabaseRepository {
     const { rows } = await tableExists.execute(this.db);
     const hasTypeOrmMigrations = !!rows[0]?.result;
     if (hasTypeOrmMigrations) {
+      // eslint-disable-next-line unicorn/prefer-module
+      const dist = resolve(`${__dirname}/..`);
+
       this.logger.debug('Running typeorm migrations');
-      const dataSource = new DataSource(database.config.typeorm);
+      const dataSource = new DataSource({
+        type: 'postgres',
+        entities: [],
+        subscribers: [],
+        migrations: [`${dist}/migrations` + '/*.{js,ts}'],
+        migrationsRun: false,
+        synchronize: false,
+        connectTimeoutMS: 10_000, // 10 seconds
+        parseInt8: true,
+        ...(database.config.connectionType === 'url'
+          ? { url: database.config.url }
+          : {
+              host: database.config.host,
+              port: database.config.port,
+              username: database.config.username,
+              password: database.config.password,
+              database: database.config.database,
+            }),
+      });
       await dataSource.initialize();
       await dataSource.runMigrations(options);
       await dataSource.destroy();

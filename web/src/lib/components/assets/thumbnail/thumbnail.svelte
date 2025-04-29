@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize } from '@immich/sdk';
@@ -17,6 +17,7 @@
   } from '@mdi/js';
 
   import { thumbhash } from '$lib/actions/thumbhash';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getFocusable } from '$lib/utils/focus-util';
@@ -332,21 +333,21 @@
         ></div>
 
         <!-- Favorite asset star -->
-        {#if !isSharedLink() && asset.isFavorite}
-          <div class="absolute bottom-2 left-2 z-10">
+        {#if !authManager.key && asset.isFavorite}
+          <div class="absolute bottom-2 start-2 z-10">
             <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
-        {#if !isSharedLink() && showArchiveIcon && asset.isArchived}
-          <div class={['absolute left-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+        {#if !authManager.key && showArchiveIcon && asset.isArchived}
+          <div class={['absolute start-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
-          <div class="absolute right-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
-            <span class="pr-2 pt-2">
+          <div class="absolute end-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
               <Icon path={mdiRotate360} size="24" />
             </span>
           </div>
@@ -357,10 +358,10 @@
           <div
             class={[
               'absolute z-10 flex place-items-center gap-1 text-xs font-medium text-white',
-              asset.isImage && !asset.livePhotoVideoId ? 'top-0 right-0' : 'top-7 right-1',
+              asset.isImage && !asset.livePhotoVideoId ? 'top-0 end-0' : 'top-7 end-1',
             ]}
           >
-            <span class="pr-2 pt-2 flex place-items-center gap-1">
+            <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
               <Icon path={mdiCameraBurst} size="24" />
             </span>

@@ -5,7 +5,7 @@ export interface DownloadProgress {
   abort: AbortController | null;
 }
 
-class DownloadStore {
+class DownloadManager {
   assets = $state<Record<string, DownloadProgress>>({});
 
   isDownloading = $derived(Object.keys(this.assets).length > 0);
@@ -42,10 +42,4 @@ class DownloadStore {
   }
 }
 
-export const downloadStore = new DownloadStore();
-
-export const downloadManager = {
-  add: (key: string, total: number, abort?: AbortController) => downloadStore.add(key, total, abort),
-  clear: (key: string) => downloadStore.clear(key),
-  update: (key: string, progress: number, total?: number) => downloadStore.update(key, progress, total),
-};
+export const downloadManager = new DownloadManager();

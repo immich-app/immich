@@ -5,6 +5,7 @@
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -12,7 +13,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
+  import { getAssetJobMessage, getSharedLink, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -117,7 +118,7 @@
   let zoomToggle = $state(() => void 0);
 
   const refreshStack = async () => {
-    if (isSharedLink()) {
+    if (authManager.key) {
       return;
     }
 
@@ -244,7 +245,7 @@
   });
 
   const handleGetAllAlbums = async () => {
-    if (isSharedLink()) {
+    if (authManager.key) {
       return;
     }
 
@@ -412,7 +413,7 @@
     }
   });
   $effect(() => {
-    if (asset.id && !sharedLink) {
+    if (asset.id) {
       handlePromiseError(handleGetAllAlbums());
     }
   });
@@ -422,7 +423,7 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed left-0 top-0 z-[1001] grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class="fixed start-0 top-0 z-[1001] grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   use:focusTrap
 >
   <!-- Top navigation bar -->
@@ -547,7 +548,7 @@
           />
         {/if}
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
-          <div class="z-[9999] absolute bottom-0 right-0 mb-20 mr-8">
+          <div class="z-[9999] absolute bottom-0 end-0 mb-20 me-8">
             <ActivityStatus
               disabled={!album?.isActivityEnabled}
               {isLiked}
@@ -571,7 +572,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
@@ -582,7 +583,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="editor-panel"
-      class="z-[1002] row-start-1 row-span-4 w-[400px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="z-[1002] row-start-1 row-span-4 w-[400px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
@@ -631,7 +632,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <ActivityViewer

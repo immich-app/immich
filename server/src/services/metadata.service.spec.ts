@@ -14,7 +14,7 @@ import { probeStub } from 'test/fixtures/media.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 const makeFaceTags = (face: Partial<{ Name: string }> = {}) => ({
   RegionInfo: {
@@ -104,10 +104,10 @@ describe(MetadataService.name, () => {
 
   describe('handleQueueMetadataExtraction', () => {
     it('should queue metadata extraction for all assets without exif values', async () => {
-      mocks.asset.getWithout.mockResolvedValue({ items: [assetStub.image], hasNextPage: false });
+      mocks.assetJob.streamForMetadataExtraction.mockReturnValue(makeStream([assetStub.image]));
 
       await expect(sut.handleQueueMetadataExtraction({ force: false })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getWithout).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForMetadataExtraction).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.METADATA_EXTRACTION,
@@ -117,10 +117,10 @@ describe(MetadataService.name, () => {
     });
 
     it('should queue metadata extraction for all assets', async () => {
-      mocks.asset.getAll.mockResolvedValue({ items: [assetStub.image], hasNextPage: false });
+      mocks.assetJob.streamForMetadataExtraction.mockReturnValue(makeStream([assetStub.image]));
 
       await expect(sut.handleQueueMetadataExtraction({ force: true })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getAll).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForMetadataExtraction).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.METADATA_EXTRACTION,

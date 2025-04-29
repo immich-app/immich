@@ -1,3 +1,4 @@
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { asLocalTimeISO } from '$lib/utils/date-time';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -19,6 +20,10 @@ export type MemoryAsset = MemoryIndex & {
 };
 
 class MemoryStoreSvelte {
+  constructor() {
+    eventManager.on('auth.logout', () => this.clearCache());
+  }
+
   memories = $state<MemoryResponseDto[]>([]);
   private initialized = false;
   private memoryAssets = $derived.by(() => {
