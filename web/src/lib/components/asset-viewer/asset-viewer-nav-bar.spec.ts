@@ -15,7 +15,7 @@ describe('AssetViewerNavBar component', () => {
     showShareButton: false,
     preAction: () => {},
     onZoomImage: () => {},
-    onCopyImage: async () => {},
+    onCopyImage: () => {},
     onAction: () => {},
     onRunJob: () => {},
     onPlaySlideshow: () => {},

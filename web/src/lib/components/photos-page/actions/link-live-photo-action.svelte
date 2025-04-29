@@ -50,7 +50,7 @@
   const handleUnlink = async () => {
     const [still] = [...getOwnedAssets()];
     if (still) {
-      const motionId = (still as TimelineAsset).livePhotoVideoId;
+      const motionId = still.livePhotoVideoId;
       if (!motionId) {
         return;
       }
