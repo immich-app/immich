@@ -1407,12 +1407,17 @@ export type TagBulkAssetsResponseDto = {
 export type TagUpdateDto = {
     color?: string | null;
 };
+export type TimelineAssetDescriptionDto = {
+    city: string | null;
+    country: string | null;
+};
 export type TimelineStackResponseDto = {
     assetCount: number;
     id: string;
     primaryAssetId: string;
 };
 export type TimeBucketAssetResponseDto = {
+    description: TimelineAssetDescriptionDto[];
     duration: (string | number)[];
     id: string[];
     isArchived: number[];

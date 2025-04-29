@@ -1,8 +1,8 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { AbortError } from '$lib/utils';
-import { TimeBucketSize, type AssetResponseDto } from '@immich/sdk';
-import { assetFactory, timelineAssetFactory } from '@test-data/factories/asset-factory';
-import { AssetStore } from './assets-store.svelte';
+import { type AssetResponseDto, type TimeBucketResponseDto } from '@immich/sdk';
+import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
+import { AssetStore, type TimelineAsset } from './assets-store.svelte';
 
 describe('AssetStore', () => {
   beforeEach(() => {
@@ -11,17 +11,21 @@ describe('AssetStore', () => {
 
   describe('init', () => {
     let assetStore: AssetStore;
-    const bucketAssets: Record<string, AssetResponseDto[]> = {
-      '2024-03-01T00:00:00.000Z': assetFactory
+    const bucketAssets: Record<string, TimelineAsset[]> = {
+      '2024-03-01T00:00:00.000Z': timelineAssetFactory
         .buildList(1)
         .map((asset) => ({ ...asset, localDateTime: '2024-03-01T00:00:00.000Z' })),
-      '2024-02-01T00:00:00.000Z': assetFactory
+      '2024-02-01T00:00:00.000Z': timelineAssetFactory
         .buildList(100)
         .map((asset) => ({ ...asset, localDateTime: '2024-02-01T00:00:00.000Z' })),
-      '2024-01-01T00:00:00.000Z': assetFactory
+      '2024-01-01T00:00:00.000Z': timelineAssetFactory
         .buildList(3)
         .map((asset) => ({ ...asset, localDateTime: '2024-01-01T00:00:00.000Z' })),
     };
+
+    const bucketAssetsResponse: Record<string, TimeBucketResponseDto> = Object.fromEntries(
+      Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
+    );
 
     beforeEach(async () => {
       assetStore = new AssetStore();
@@ -30,13 +34,14 @@ describe('AssetStore', () => {
         { count: 100, timeBucket: '2024-02-01T00:00:00.000Z' },
         { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
       ]);
-      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssets[timeBucket]));
+
+      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
       await assetStore.updateViewport({ width: 1588, height: 1000 });
     });
 
     it('should load buckets in viewport', () => {
       expect(sdkMock.getTimeBuckets).toBeCalledTimes(1);
-      expect(sdkMock.getTimeBuckets).toBeCalledWith({ size: TimeBucketSize.Month });
+
       expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
     });
 
@@ -48,29 +53,31 @@ describe('AssetStore', () => {
 
       expect(plainBuckets).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ bucketDate: '2024-03-01T00:00:00.000Z', bucketHeight: 304 }),
-          expect.objectContaining({ bucketDate: '2024-02-01T00:00:00.000Z', bucketHeight: 4515.333_333_333_333 }),
+          expect.objectContaining({ bucketDate: '2024-03-01T00:00:00.000Z', bucketHeight: 186.5 }),
+          expect.objectContaining({ bucketDate: '2024-02-01T00:00:00.000Z', bucketHeight: 12_017 }),
           expect.objectContaining({ bucketDate: '2024-01-01T00:00:00.000Z', bucketHeight: 286 }),
         ]),
       );
     });
 
     it('calculates timeline height', () => {
-      expect(assetStore.timelineHeight).toBe(5105.333_333_333_333);
+      expect(assetStore.timelineHeight).toBe(12_489.5);
     });
   });
 
   describe('loadBucket', () => {
     let assetStore: AssetStore;
-    const bucketAssets: Record<string, AssetResponseDto[]> = {
-      '2024-01-03T00:00:00.000Z': assetFactory
+    const bucketAssets: Record<string, TimelineAsset[]> = {
+      '2024-01-03T00:00:00.000Z': timelineAssetFactory
         .buildList(1)
         .map((asset) => ({ ...asset, localDateTime: '2024-03-01T00:00:00.000Z' })),
-      '2024-01-01T00:00:00.000Z': assetFactory
+      '2024-01-01T00:00:00.000Z': timelineAssetFactory
         .buildList(3)
         .map((asset) => ({ ...asset, localDateTime: '2024-01-01T00:00:00.000Z' })),
     };
-
+    const bucketAssetsResponse: Record<string, TimeBucketResponseDto> = Object.fromEntries(
+      Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
+    );
     beforeEach(async () => {
       assetStore = new AssetStore();
       sdkMock.getTimeBuckets.mockResolvedValue([
@@ -82,7 +89,7 @@ describe('AssetStore', () => {
         if (signal?.aborted) {
           throw new AbortError();
         }
-        return bucketAssets[timeBucket];
+        return bucketAssetsResponse[timeBucket];
       });
       await assetStore.updateViewport({ width: 1588, height: 0 });
     });
@@ -296,7 +303,9 @@ describe('AssetStore', () => {
     });
 
     it('removes asset from bucket', () => {
-      const [assetOne, assetTwo] = timelineAssetFactory.buildList(2, { localDateTime: '2024-01-20T12:00:00.000Z' });
+      const [assetOne, assetTwo] = timelineAssetFactory.buildList(2, {
+        localDateTime: '2024-01-20T12:00:00.000Z',
+      });
       assetStore.addAssets([assetOne, assetTwo]);
       assetStore.removeAssets([assetOne.id]);
 
@@ -342,17 +351,20 @@ describe('AssetStore', () => {
 
   describe('getPreviousAsset', () => {
     let assetStore: AssetStore;
-    const bucketAssets: Record<string, AssetResponseDto[]> = {
-      '2024-03-01T00:00:00.000Z': assetFactory
+    const bucketAssets: Record<string, TimelineAsset[]> = {
+      '2024-03-01T00:00:00.000Z': timelineAssetFactory
         .buildList(1)
         .map((asset) => ({ ...asset, localDateTime: '2024-03-01T00:00:00.000Z' })),
-      '2024-02-01T00:00:00.000Z': assetFactory
+      '2024-02-01T00:00:00.000Z': timelineAssetFactory
         .buildList(6)
         .map((asset) => ({ ...asset, localDateTime: '2024-02-01T00:00:00.000Z' })),
-      '2024-01-01T00:00:00.000Z': assetFactory
+      '2024-01-01T00:00:00.000Z': timelineAssetFactory
         .buildList(3)
         .map((asset) => ({ ...asset, localDateTime: '2024-01-01T00:00:00.000Z' })),
     };
+    const bucketAssetsResponse: Record<string, TimeBucketResponseDto> = Object.fromEntries(
+      Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
+    );
 
     beforeEach(async () => {
       assetStore = new AssetStore();
@@ -361,8 +373,7 @@ describe('AssetStore', () => {
         { count: 6, timeBucket: '2024-02-01T00:00:00.000Z' },
         { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
       ]);
-      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssets[timeBucket]));
-
+      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
       await assetStore.updateViewport({ width: 1588, height: 1000 });
     });
 

@@ -58,6 +58,7 @@ export class TimelineService extends BaseService {
       duration: [],
       projectionType: [],
       livePhotoVideoId: [],
+      description: [],
     };
     for (const item of items) {
       let width = item.width!;
@@ -82,6 +83,10 @@ export class TimelineService extends BaseService {
       bucketAssets.livePhotoVideoId.push(item.livePhotoVideoId || 0);
       bucketAssets.isImage.push(item.type === AssetType.IMAGE ? 1 : 0);
       bucketAssets.isVideo.push(item.type === AssetType.VIDEO ? 1 : 0);
+      bucketAssets.description.push({
+        city: item.city,
+        country: item.country,
+      });
     }
 
     return {

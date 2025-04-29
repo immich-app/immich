@@ -13847,6 +13847,13 @@
       },
       "TimeBucketAssetResponseDto": {
         "properties": {
+          "description": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/TimelineAssetDescriptionDto"
+            },
+            "type": "array"
+          },
           "duration": {
             "default": [],
             "items": {
@@ -13976,6 +13983,7 @@
           }
         },
         "required": [
+          "description",
           "duration",
           "id",
           "isArchived",
@@ -14020,6 +14028,23 @@
         "required": [
           "count",
           "timeBucket"
+        ],
+        "type": "object"
+      },
+      "TimelineAssetDescriptionDto": {
+        "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "city",
+          "country"
         ],
         "type": "object"
       },

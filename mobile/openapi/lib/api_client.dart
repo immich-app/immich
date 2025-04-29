@@ -270,8 +270,6 @@ class ApiClient {
           return AssetTypeEnumTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
-        case 'AvatarResponse':
-          return AvatarResponse.fromJson(value);
         case 'AvatarUpdate':
           return AvatarUpdate.fromJson(value);
         case 'BulkIdResponseDto':
@@ -392,6 +390,20 @@ class ApiClient {
           return MergePersonDto.fromJson(value);
         case 'MetadataSearchDto':
           return MetadataSearchDto.fromJson(value);
+        case 'NotificationCreateDto':
+          return NotificationCreateDto.fromJson(value);
+        case 'NotificationDeleteAllDto':
+          return NotificationDeleteAllDto.fromJson(value);
+        case 'NotificationDto':
+          return NotificationDto.fromJson(value);
+        case 'NotificationLevel':
+          return NotificationLevelTypeTransformer().decode(value);
+        case 'NotificationType':
+          return NotificationTypeTypeTransformer().decode(value);
+        case 'NotificationUpdateAllDto':
+          return NotificationUpdateAllDto.fromJson(value);
+        case 'NotificationUpdateDto':
+          return NotificationUpdateDto.fromJson(value);
         case 'OAuthAuthorizeResponseDto':
           return OAuthAuthorizeResponseDto.fromJson(value);
         case 'OAuthCallbackDto':
@@ -620,10 +632,18 @@ class ApiClient {
           return TemplateResponseDto.fromJson(value);
         case 'TestEmailResponseDto':
           return TestEmailResponseDto.fromJson(value);
+        case 'TimeBucketAssetResponseDto':
+          return TimeBucketAssetResponseDto.fromJson(value);
+        case 'TimeBucketAssetResponseDtoDurationInner':
+          return TimeBucketAssetResponseDtoDurationInner.fromJson(value);
         case 'TimeBucketResponseDto':
           return TimeBucketResponseDto.fromJson(value);
-        case 'TimeBucketSize':
-          return TimeBucketSizeTypeTransformer().decode(value);
+        case 'TimeBucketsResponseDto':
+          return TimeBucketsResponseDto.fromJson(value);
+        case 'TimelineAssetDescriptionDto':
+          return TimelineAssetDescriptionDto.fromJson(value);
+        case 'TimelineStackResponseDto':
+          return TimelineStackResponseDto.fromJson(value);
         case 'ToneMapping':
           return ToneMappingTypeTransformer().decode(value);
         case 'TranscodeHWAccel':

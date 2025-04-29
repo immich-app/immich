@@ -701,7 +701,14 @@ export class AssetRepository {
         'livePhotoVideoId',
       ])
       .leftJoin('exif', 'assets.id', 'exif.assetId')
-      .select(['exif.exifImageHeight as height', 'exifImageWidth as width', 'exif.orientation', 'exif.projectionType'])
+      .select([
+        'exif.exifImageHeight as height',
+        'exifImageWidth as width',
+        'exif.orientation',
+        'exif.projectionType',
+        'exif.city as city',
+        'exif.country as country',
+      ])
       .$if(!!options.albumId, (qb) =>
         qb
           .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')

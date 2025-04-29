@@ -4,6 +4,11 @@ export type TimelineStack = {
   assetCount: number;
 };
 
+export type AssetDescription = {
+  city: string | null;
+  country: string | null;
+};
+
 export type TimeBucketAssets = {
   id: string[];
   ownerId: string[];
@@ -19,4 +24,5 @@ export type TimeBucketAssets = {
   duration: (string | number)[];
   projectionType: (string | number)[];
   livePhotoVideoId: (string | number)[];
+  description: AssetDescription[];
 };

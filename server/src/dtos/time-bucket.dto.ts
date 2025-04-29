@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { IsEnum, IsInt, IsString, Min } from 'class-validator';
 import { AssetOrder } from 'src/enum';
-import { TimeBucketAssets, TimelineStack } from 'src/services/timeline.service.types';
+import { AssetDescription, TimeBucketAssets, TimelineStack } from 'src/services/timeline.service.types';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
@@ -62,6 +62,13 @@ export class TimelineStackResponseDto implements TimelineStack {
 
   @ApiProperty()
   assetCount!: number;
+}
+
+export class TimelineAssetDescriptionDto implements AssetDescription {
+  @ApiProperty()
+  city!: string | null;
+  @ApiProperty()
+  country!: string | null;
 }
 
 export class TimeBucketAssetResponseDto implements TimeBucketAssets {
@@ -154,6 +161,9 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
     },
   })
   livePhotoVideoId: (string | number)[] = [];
+
+  @ApiProperty()
+  description: TimelineAssetDescriptionDto[] = [];
 }
 
 export class TimeBucketsResponseDto {

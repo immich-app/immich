@@ -13,6 +13,7 @@ part of openapi.api;
 class TimeBucketAssetResponseDto {
   /// Returns a new [TimeBucketAssetResponseDto] instance.
   TimeBucketAssetResponseDto({
+    this.description = const [],
     this.duration = const [],
     this.id = const [],
     this.isArchived = const [],
@@ -28,6 +29,8 @@ class TimeBucketAssetResponseDto {
     this.stack = const [],
     this.thumbhash = const [],
   });
+
+  List<TimelineAssetDescriptionDto> description;
 
   List<TimeBucketAssetResponseDtoDurationInner> duration;
 
@@ -59,6 +62,7 @@ class TimeBucketAssetResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TimeBucketAssetResponseDto &&
+    _deepEquality.equals(other.description, description) &&
     _deepEquality.equals(other.duration, duration) &&
     _deepEquality.equals(other.id, id) &&
     _deepEquality.equals(other.isArchived, isArchived) &&
@@ -77,6 +81,7 @@ class TimeBucketAssetResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (description.hashCode) +
     (duration.hashCode) +
     (id.hashCode) +
     (isArchived.hashCode) +
@@ -93,10 +98,11 @@ class TimeBucketAssetResponseDto {
     (thumbhash.hashCode);
 
   @override
-  String toString() => 'TimeBucketAssetResponseDto[duration=$duration, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, isVideo=$isVideo, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash]';
+  String toString() => 'TimeBucketAssetResponseDto[description=$description, duration=$duration, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, isVideo=$isVideo, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'description'] = this.description;
       json[r'duration'] = this.duration;
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
@@ -123,6 +129,7 @@ class TimeBucketAssetResponseDto {
       final json = value.cast<String, dynamic>();
 
       return TimeBucketAssetResponseDto(
+        description: TimelineAssetDescriptionDto.listFromJson(json[r'description']),
         duration: TimeBucketAssetResponseDtoDurationInner.listFromJson(json[r'duration']),
         id: json[r'id'] is Iterable
             ? (json[r'id'] as Iterable).cast<String>().toList(growable: false)
@@ -200,6 +207,7 @@ class TimeBucketAssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'description',
     'duration',
     'id',
     'isArchived',
