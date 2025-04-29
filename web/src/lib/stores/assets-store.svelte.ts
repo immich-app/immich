@@ -1,5 +1,4 @@
 import { locale } from '$lib/stores/preferences.store';
-import { getKey } from '$lib/utils';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
   getJustifiedLayoutFromAssets,
@@ -21,6 +20,7 @@ import { clamp, debounce, isEqual, throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { SvelteSet } from 'svelte/reactivity';
 import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
@@ -851,7 +851,7 @@ export class AssetStore {
     const timebuckets = await getTimeBuckets({
       ...this.#options,
       size: TimeBucketSize.Month,
-      key: getKey(),
+      key: authManager.key,
     });
 
     this.buckets = timebuckets.map((bucket) => {
@@ -1059,7 +1059,7 @@ export class AssetStore {
           ...this.#options,
           timeBucket: bucketDate,
           size: TimeBucketSize.Month,
-          key: getKey(),
+          key: authManager.key,
         },
         { signal },
       );
@@ -1070,7 +1070,7 @@ export class AssetStore {
               albumId: this.#options.timelineAlbumId,
               timeBucket: bucketDate,
               size: TimeBucketSize.Month,
-              key: getKey(),
+              key: authManager.key,
             },
             { signal },
           );

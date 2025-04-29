@@ -565,7 +565,7 @@ describe(AssetService.name, () => {
     it('should remove faces', async () => {
       const assetWithFace = { ...assetStub.image, faces: [faceStub.face1, faceStub.mergeFace1] };
 
-      mocks.asset.getById.mockResolvedValue(assetWithFace);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetWithFace);
 
       await sut.handleAssetDeletion({ id: assetWithFace.id, deleteOnDisk: true });
 
@@ -592,7 +592,7 @@ describe(AssetService.name, () => {
 
     it('should update stack primary asset if deleted asset was primary asset in a stack', async () => {
       mocks.stack.update.mockResolvedValue(factory.stack() as any);
-      mocks.asset.getById.mockResolvedValue(assetStub.primaryImage);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.primaryImage);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
@@ -604,7 +604,7 @@ describe(AssetService.name, () => {
 
     it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
       mocks.stack.delete.mockResolvedValue();
-      mocks.asset.getById.mockResolvedValue({
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue({
         ...assetStub.primaryImage,
         stack: { ...assetStub.primaryImage.stack, assets: assetStub.primaryImage.stack!.assets.slice(0, 2) },
       });
@@ -615,7 +615,7 @@ describe(AssetService.name, () => {
     });
 
     it('should delete a live photo', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.livePhotoStillAsset as any);
       mocks.asset.getLivePhotoCount.mockResolvedValue(0);
 
       await sut.handleAssetDeletion({
@@ -653,7 +653,7 @@ describe(AssetService.name, () => {
 
     it('should not delete a live motion part if it is being used by another asset', async () => {
       mocks.asset.getLivePhotoCount.mockResolvedValue(2);
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.livePhotoStillAsset as any);
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,
@@ -680,12 +680,13 @@ describe(AssetService.name, () => {
     });
 
     it('should update usage', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.image);
       await sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.image.ownerId, -5000);
     });
 
     it('should fail if asset could not be found', async () => {
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(void 0);
       await expect(sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true })).resolves.toBe(
         JobStatus.FAILED,
       );

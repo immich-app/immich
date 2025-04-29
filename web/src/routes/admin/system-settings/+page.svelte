@@ -1,15 +1,16 @@
 <script lang="ts">
+  import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
   import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
   import AuthSettings from '$lib/components/admin-page/settings/auth/auth-settings.svelte';
   import BackupSettings from '$lib/components/admin-page/settings/backup-settings/backup-settings.svelte';
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import ImageSettings from '$lib/components/admin-page/settings/image/image-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
-  import MetadataSettings from '$lib/components/admin-page/settings/metadata-settings/metadata-settings.svelte';
   import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
   import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import MachineLearningSettings from '$lib/components/admin-page/settings/machine-learning-settings/machine-learning-settings.svelte';
   import MapSettings from '$lib/components/admin-page/settings/map-settings/map-settings.svelte';
+  import MetadataSettings from '$lib/components/admin-page/settings/metadata-settings/metadata-settings.svelte';
   import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
   import NotificationSettings from '$lib/components/admin-page/settings/notification-settings/notification-settings.svelte';
   import ServerSettings from '$lib/components/admin-page/settings/server/server-settings.svelte';
@@ -17,15 +18,16 @@
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import UserSettings from '$lib/components/admin-page/settings/user-settings/user-settings.svelte';
-  import { Button, Text, HStack, Alert } from '@immich/ui';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { QueryParameter } from '$lib/constants';
-  import { downloadManager } from '$lib/stores/download-store.svelte';
+  import { downloadManager } from '$lib/managers/download-manager.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
+  import { Alert, Button, HStack, Text } from '@immich/ui';
   import {
     mdiAccountOutline,
     mdiBackupRestore,
@@ -48,11 +50,9 @@
     mdiUpload,
     mdiVideoOutline,
   } from '@mdi/js';
-  import type { PageData } from './$types';
-  import { t } from 'svelte-i18n';
   import type { Component } from 'svelte';
-  import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
