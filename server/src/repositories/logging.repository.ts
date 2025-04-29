@@ -5,7 +5,7 @@ import { Telemetry } from 'src/decorators';
 import { LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 
-type LogDetails = any[];
+type LogDetails = any;
 type LogFunction = () => string;
 
 const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];

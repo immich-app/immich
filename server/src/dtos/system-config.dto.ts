@@ -25,6 +25,7 @@ import {
   Colorspace,
   ImageFormat,
   LogLevel,
+  OAuthTokenEndpointAuthMethod,
   QueueName,
   ToneMapping,
   TranscodeHWAccel,
@@ -33,7 +34,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName } from 'src/types';
-import { IsCronExpression, ValidateBoolean } from 'src/validation';
+import { IsCronExpression, Optional, ValidateBoolean } from 'src/validation';
 
 const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
@@ -344,9 +345,18 @@ class SystemConfigOAuthDto {
   clientId!: string;
 
   @ValidateIf(isOAuthEnabled)
-  @IsNotEmpty()
   @IsString()
   clientSecret!: string;
+
+  @IsEnum(OAuthTokenEndpointAuthMethod)
+  @ApiProperty({ enum: OAuthTokenEndpointAuthMethod, enumName: 'OAuthTokenEndpointAuthMethod' })
+  tokenEndpointAuthMethod!: OAuthTokenEndpointAuthMethod;
+
+  @IsInt()
+  @IsPositive()
+  @Optional()
+  @ApiProperty({ type: 'integer' })
+  timeout!: number;
 
   @IsNumber()
   @Min(0)

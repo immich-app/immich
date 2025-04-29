@@ -410,6 +410,8 @@ class ApiClient {
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':
           return OAuthConfigDto.fromJson(value);
+        case 'OAuthTokenEndpointAuthMethod':
+          return OAuthTokenEndpointAuthMethodTypeTransformer().decode(value);
         case 'OnThisDayDto':
           return OnThisDayDto.fromJson(value);
         case 'PartnerDirection':
