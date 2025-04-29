@@ -1226,6 +1226,8 @@
   "month": "Month",
   "monthly_title_text_date_format": "MMMM y",
   "more": "More",
+  "moved_to_archive": "Moved {count, plural, one {# asset} other {# assets}} to archive",
+  "moved_to_library": "Moved {count, plural, one {# asset} other {# assets}} to library",
   "moved_to_trash": "Moved to trash",
   "multiselect_grid_edit_date_time_err_read_only": "Cannot edit date of read only asset(s), skipping",
   "multiselect_grid_edit_gps_err_read_only": "Cannot edit location of read only asset(s), skipping",
