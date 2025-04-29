@@ -39,6 +39,7 @@ import { UserAdminService } from 'src/services/user-admin.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
+import { LargeAssetsService } from './large-assets.service';
 
 export const services = [
   ApiKeyService,
@@ -54,6 +55,7 @@ export const services = [
   DatabaseService,
   DownloadService,
   DuplicateService,
+  LargeAssetsService,
   JobService,
   LibraryService,
   MapService,

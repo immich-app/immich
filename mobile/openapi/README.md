@@ -128,6 +128,7 @@ Class | Method | HTTP request | Description
 *JobsApi* | [**createJob**](doc//JobsApi.md#createjob) | **POST** /jobs | 
 *JobsApi* | [**getAllJobsStatus**](doc//JobsApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobsApi* | [**sendJobCommand**](doc//JobsApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
+*LargeAssetsApi* | [**getLargeAssets**](doc//LargeAssetsApi.md#getlargeassets) | **GET** /large-assets | 
 *LibrariesApi* | [**createLibrary**](doc//LibrariesApi.md#createlibrary) | **POST** /libraries | 
 *LibrariesApi* | [**deleteLibrary**](doc//LibrariesApi.md#deletelibrary) | **DELETE** /libraries/{id} | 
 *LibrariesApi* | [**getAllLibraries**](doc//LibrariesApi.md#getalllibraries) | **GET** /libraries | 
@@ -347,6 +348,7 @@ Class | Method | HTTP request | Description
  - [JobName](doc//JobName.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
  - [JobStatusDto](doc//JobStatusDto.md)
+ - [LargeAssetsResponseDto](doc//LargeAssetsResponseDto.md)
  - [LibraryResponseDto](doc//LibraryResponseDto.md)
  - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LicenseKeyDto](doc//LicenseKeyDto.md)
