@@ -7,6 +7,7 @@ import {
   AssetType,
   AudioCodec,
   Colorspace,
+  ExifOrientation,
   ImageFormat,
   JobName,
   JobStatus,
@@ -20,7 +21,8 @@ import { JobCounts, RawImageInfo } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
-import { personStub } from 'test/fixtures/person.stub';
+import { personStub, personThumbnailStub } from 'test/fixtures/person.stub';
+import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 describe(MediaService.name, () => {
@@ -869,6 +871,251 @@ describe(MediaService.name, () => {
         },
         'upload/thumbs/user-id/as/se/asset-id-fullsize.webp',
       );
+    });
+  });
+
+  describe('handleGeneratePersonThumbnail', () => {
+    it('should skip if machine learning is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.SKIPPED);
+      expect(mocks.asset.getByIds).not.toHaveBeenCalled();
+      expect(mocks.systemMetadata.get).toHaveBeenCalled();
+    });
+
+    it('should skip a person not found', async () => {
+      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should skip a person without a face asset id', async () => {
+      mocks.person.getById.mockResolvedValue(personStub.noThumbnail);
+      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should skip a person with face not found', async () => {
+      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should generate a thumbnail', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 1000, height: 1000 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+        size: 250,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 238,
+            top: 163,
+            width: 274,
+            height: 274,
+          },
+          raw: info,
+          processInvalidImages: false,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        id: 'person-1',
+        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      });
+    });
+
+    it('should generate a thumbnail without going negative', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailStart);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 2160, height: 3840 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailStart.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+        size: 250,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 0,
+            top: 85,
+            width: 510,
+            height: 510,
+          },
+          raw: info,
+          processInvalidImages: false,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should generate a thumbnail without overflowing', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailEnd);
+      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 1000, height: 1000 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailEnd.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+        size: 250,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 591,
+            top: 591,
+            width: 408,
+            height: 408,
+          },
+          raw: info,
+          processInvalidImages: false,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should use embedded preview if enabled and raw image', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
+      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const extracted = Buffer.from('');
+      const data = Buffer.from('');
+      const info = { width: 2160, height: 3840 } as OutputInfo;
+      mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.JPEG });
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.getImageDimensions.mockResolvedValue(info);
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extracted, {
+        colorspace: Colorspace.P3,
+        orientation: ExifOrientation.Horizontal,
+        processInvalidImages: false,
+        size: 250,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            height: 844,
+            left: 388,
+            top: 730,
+            width: 844,
+          },
+          raw: info,
+          processInvalidImages: false,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should not use embedded preview if enabled and not raw image', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 2160, height: 3840 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.extract).not.toHaveBeenCalled();
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
+
+    it('should not use embedded preview if enabled and raw image if not exists', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 2160, height: 3840 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+        size: 250,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
+
+    it('should not use embedded preview if enabled and raw image if low resolution', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const extracted = Buffer.from('');
+      const data = Buffer.from('');
+      const info = { width: 1000, height: 1000 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.JPEG });
+      mocks.media.getImageDimensions.mockResolvedValue(info);
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+        size: 250,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });
   });
 

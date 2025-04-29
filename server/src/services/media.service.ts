@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -11,6 +11,7 @@ import {
   AssetVisibility,
   AudioCodec,
   Colorspace,
+  ImageFormat,
   JobName,
   JobStatus,
   LogLevel,
@@ -24,10 +25,13 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { UpsertFileOptions } from 'src/repositories/asset.repository';
+import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
+  CropOptions,
   DecodeToBufferOptions,
+  ImageDimensions,
   JobItem,
   JobOf,
   VideoFormat,
@@ -37,6 +41,7 @@ import {
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
+import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class MediaService extends BaseService {
@@ -306,6 +311,94 @@ export class MediaService extends BaseService {
     const outputs = await Promise.all(promises);
 
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
+  }
+
+  @OnJob({ name: JobName.GENERATE_PERSON_THUMBNAIL, queue: QueueName.THUMBNAIL_GENERATION })
+  async handleGeneratePersonThumbnail({ id }: JobOf<JobName.GENERATE_PERSON_THUMBNAIL>): Promise<JobStatus> {
+    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
+    if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
+      return JobStatus.SKIPPED;
+    }
+
+    const data = await this.personRepository.getDataForThumbnailGenerationJob(id);
+    if (!data) {
+      this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
+      return JobStatus.FAILED;
+    }
+
+    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    let inputImage: string | Buffer;
+    if (mimeTypes.isVideo(originalPath)) {
+      if (!previewPath) {
+        this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
+        return JobStatus.FAILED;
+      }
+      inputImage = previewPath;
+    }
+
+    if (image.extractEmbedded && mimeTypes.isRaw(originalPath)) {
+      const extracted = await this.extractImage(originalPath, image.preview.size);
+      inputImage = extracted ? extracted.buffer : originalPath;
+    } else {
+      inputImage = originalPath;
+    }
+
+    const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
+      colorspace: image.colorspace,
+      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+      size: FACE_THUMBNAIL_SIZE,
+      // if this is an extracted image, it may not have orientation metadata
+      orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
+    });
+
+    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
+    this.storageCore.ensureFolders(thumbnailPath);
+
+    const thumbnailOptions = {
+      colorspace: image.colorspace,
+      format: ImageFormat.JPEG,
+      raw: info,
+      quality: image.thumbnail.quality,
+      crop: this.getCrop(
+        { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
+        { x1, y1, x2, y2 },
+      ),
+      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+    };
+
+    await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
+    await this.personRepository.update({ id, thumbnailPath });
+
+    return JobStatus.SUCCESS;
+  }
+
+  private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {
+    const widthScale = dims.new.width / dims.old.width;
+    const heightScale = dims.new.height / dims.old.height;
+
+    const halfWidth = (widthScale * (x2 - x1)) / 2;
+    const halfHeight = (heightScale * (y2 - y1)) / 2;
+
+    const middleX = Math.round(widthScale * x1 + halfWidth);
+    const middleY = Math.round(heightScale * y1 + halfHeight);
+
+    // zoom out 10%
+    const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
+
+    // get the longest distance from the center of the image without overflowing
+    const newHalfSize = Math.min(
+      middleX - Math.max(0, middleX - targetHalfSize),
+      middleY - Math.max(0, middleY - targetHalfSize),
+      Math.min(dims.new.width - 1, middleX + targetHalfSize) - middleX,
+      Math.min(dims.new.height - 1, middleY + targetHalfSize) - middleY,
+    );
+
+    return {
+      left: middleX - newHalfSize,
+      top: middleY - newHalfSize,
+      width: newHalfSize * 2,
+      height: newHalfSize * 2,
+    };
   }
 
   private async generateVideoThumbnails(asset: ThumbnailPathEntity & { originalPath: string }) {

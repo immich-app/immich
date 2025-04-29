@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Insertable, Updateable } from 'kysely';
-import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { Person } from 'src/database';
 import { AssetFaces, FaceSearch } from 'src/db';
 import { Chunked, OnJob } from 'src/decorators';
@@ -25,10 +24,8 @@ import {
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
 import {
-  AssetType,
   AssetVisibility,
   CacheControl,
-  ImageFormat,
   JobName,
   JobStatus,
   Permission,
@@ -40,10 +37,10 @@ import {
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
-import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 'src/types';
+import { JobItem, JobOf } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
+import { isFacialRecognitionEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class PersonService extends BaseService {
@@ -537,41 +534,6 @@ export class PersonService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  @OnJob({ name: JobName.GENERATE_PERSON_THUMBNAIL, queue: QueueName.THUMBNAIL_GENERATION })
-  async handleGeneratePersonThumbnail({ id }: JobOf<JobName.GENERATE_PERSON_THUMBNAIL>): Promise<JobStatus> {
-    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
-    if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
-      return JobStatus.SKIPPED;
-    }
-
-    const data = await this.personRepository.getDataForThumbnailGenerationJob(id);
-    if (!data) {
-      this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
-      return JobStatus.FAILED;
-    }
-
-    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight } = data;
-
-    const { width, height, inputPath } = await this.getInputDimensions(data);
-
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
-    this.storageCore.ensureFolders(thumbnailPath);
-
-    const thumbnailOptions = {
-      colorspace: image.colorspace,
-      format: ImageFormat.JPEG,
-      size: FACE_THUMBNAIL_SIZE,
-      quality: image.thumbnail.quality,
-      crop: this.getCrop({ old: { width: oldWidth, height: oldHeight }, new: { width, height } }, { x1, y1, x2, y2 }),
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-    };
-
-    await this.mediaRepository.generateThumbnail(inputPath, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id, thumbnailPath });
-
-    return JobStatus.SUCCESS;
-  }
-
   async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
     const mergeIds = dto.ids;
     if (mergeIds.includes(id)) {
@@ -640,57 +602,6 @@ export class PersonService extends BaseService {
       throw new BadRequestException('Person not found');
     }
     return person;
-  }
-
-  private async getInputDimensions(asset: {
-    type: AssetType;
-    exifImageWidth: number;
-    exifImageHeight: number;
-    previewPath: string;
-    originalPath: string;
-    oldWidth: number;
-    oldHeight: number;
-  }): Promise<InputDimensions> {
-    if (asset.type === AssetType.IMAGE) {
-      let { exifImageWidth: width, exifImageHeight: height } = asset;
-      if (asset.oldHeight > asset.oldWidth !== height > width) {
-        [width, height] = [height, width];
-      }
-
-      return { width, height, inputPath: asset.originalPath };
-    }
-
-    const { width, height } = await this.mediaRepository.getImageDimensions(asset.previewPath);
-    return { width, height, inputPath: asset.previewPath };
-  }
-
-  private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {
-    const widthScale = dims.new.width / dims.old.width;
-    const heightScale = dims.new.height / dims.old.height;
-
-    const halfWidth = (widthScale * (x2 - x1)) / 2;
-    const halfHeight = (heightScale * (y2 - y1)) / 2;
-
-    const middleX = Math.round(widthScale * x1 + halfWidth);
-    const middleY = Math.round(heightScale * y1 + halfHeight);
-
-    // zoom out 10%
-    const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
-
-    // get the longest distance from the center of the image without overflowing
-    const newHalfSize = Math.min(
-      middleX - Math.max(0, middleX - targetHalfSize),
-      middleY - Math.max(0, middleY - targetHalfSize),
-      Math.min(dims.new.width - 1, middleX + targetHalfSize) - middleX,
-      Math.min(dims.new.height - 1, middleY + targetHalfSize) - middleY,
-    );
-
-    return {
-      left: middleX - newHalfSize,
-      top: middleY - newHalfSize,
-      width: newHalfSize * 2,
-      height: newHalfSize * 2,
-    };
   }
 
   // TODO return a asset face response
