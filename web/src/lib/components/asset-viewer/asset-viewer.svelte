@@ -5,6 +5,7 @@
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -12,7 +13,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
+  import { getAssetJobMessage, getSharedLink, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
@@ -116,7 +117,7 @@
   let zoomToggle = $state(() => void 0);
 
   const refreshStack = async () => {
-    if (isSharedLink()) {
+    if (authManager.key) {
       return;
     }
 
@@ -243,7 +244,7 @@
   });
 
   const handleGetAllAlbums = async () => {
-    if (isSharedLink()) {
+    if (authManager.key) {
       return;
     }
 
@@ -412,7 +413,7 @@
     }
   });
   $effect(() => {
-    if (asset.id && !sharedLink) {
+    if (asset.id) {
       handlePromiseError(handleGetAllAlbums());
     }
   });

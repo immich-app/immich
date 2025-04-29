@@ -337,6 +337,11 @@ export enum ImageFormat {
   WEBP = 'webp',
 }
 
+export enum RawExtractedFormat {
+  JPEG = 'jpeg',
+  JXL = 'jxl',
+}
+
 export enum LogLevel {
   VERBOSE = 'verbose',
   DEBUG = 'debug',
