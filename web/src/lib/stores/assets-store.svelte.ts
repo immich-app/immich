@@ -118,6 +118,7 @@ export class AssetDateGroup {
   left: number = $state(0);
   row = $state(0);
   col = $state(0);
+  deferredLayout = false;
 
   constructor(bucket: AssetBucket, index: number, date: DateTime, dayOfMonth: number) {
     this.index = index;
@@ -192,6 +193,10 @@ export class AssetDateGroup {
   }
 
   layout(options: CommonLayoutOptions) {
+    if (!this.bucket.intersecting) {
+      this.deferredLayout = true;
+      return;
+    }
     const assets = this.intersetingAssets.map((intersetingAsset) => intersetingAsset.asset!);
     const geometry = getJustifiedLayoutFromAssets(assets, options);
     this.width = geometry.containerWidth;
@@ -827,6 +832,15 @@ export class AssetStore {
     }
     bucket.intersecting = actuallyIntersecting || preIntersecting;
     bucket.actuallyIntersecting = actuallyIntersecting;
+    if (preIntersecting || actuallyIntersecting) {
+      const hasDeferred = bucket.dateGroups.some((group) => group.deferredLayout);
+      if (hasDeferred) {
+        this.#updateGeometry(bucket, true);
+        for (const group of bucket.dateGroups) {
+          group.deferredLayout = false;
+        }
+      }
+    }
   }
 
   #processPendingChanges = throttle(() => {
