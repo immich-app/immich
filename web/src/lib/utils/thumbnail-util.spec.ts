@@ -40,7 +40,7 @@ describe('getAltText', () => {
     'generates correctly formatted alt text when isVideo=$isVideo, city=$city, country=$country, people=$people.length',
     ({ isVideo, city, country, people, expected }) => {
       const asset = {
-        text: { city, country, people: (people || [])?.map((p: { name: string }) => p.name) },
+        description: { city, country, people: (people || [])?.map((p: { name: string }) => p.name) },
         localDateTime: '2024-01-01T12:00:00.000Z',
         people,
         isVideo,
