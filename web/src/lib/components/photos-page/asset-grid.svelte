@@ -6,6 +6,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import {
@@ -19,7 +20,7 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { getKey, handlePromiseError } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -369,7 +370,7 @@
 
     if (previousAsset) {
       const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
-      const asset = await getAssetInfo({ id: previousAsset.id, key: getKey() });
+      const asset = await getAssetInfo({ id: previousAsset.id, key: authManager.key });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
@@ -382,7 +383,7 @@
 
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
-      const asset = await getAssetInfo({ id: nextAsset.id, key: getKey() });
+      const asset = await getAssetInfo({ id: nextAsset.id, key: authManager.key });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
@@ -395,7 +396,7 @@
 
     if (randomAsset) {
       const preloadAsset = await assetStore.getNextAsset(randomAsset);
-      const asset = await getAssetInfo({ id: randomAsset.id, key: getKey() });
+      const asset = await getAssetInfo({ id: randomAsset.id, key: authManager.key });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
       return asset;

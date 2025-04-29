@@ -3,7 +3,7 @@
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
+  import { photoViewerImgElement, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
@@ -18,7 +18,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
-  import { type SwipeCustomEvent, swipe } from 'svelte-gestures';
+  import { swipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
@@ -26,7 +26,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    preloadAssets?: { id: string }[] | undefined;
+    preloadAssets?: TimelineAsset[] | undefined;
     element?: HTMLDivElement | undefined;
     haveFadeTransition?: boolean;
     sharedLink?: SharedLinkResponseDto | undefined;
@@ -70,9 +70,9 @@
     $boundingBoxesArray = [];
   });
 
-  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: { id: string }[]) => {
+  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
     for (const preloadAsset of preloadAssets || []) {
-      if (preloadAsset.isImage()) {
+      if (preloadAsset.isImage) {
         let img = new Image();
         img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
       }

@@ -9,6 +9,7 @@
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
@@ -54,7 +55,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    preloadAssets?: { id: string }[];
+    preloadAssets?: TimelineAsset[];
     showNavigation?: boolean;
     withStacked?: boolean;
     isShared?: boolean;
@@ -132,7 +133,7 @@
 
     untrack(() => {
       if (stack && stack?.assets.length > 1) {
-        preloadAssets.push(stack.assets[1]);
+        preloadAssets.push(toTimelineAsset(stack.assets[1]));
       }
     });
   };

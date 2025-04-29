@@ -24,13 +24,14 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type TimelineAsset, type Viewport } from '$lib/stores/assets-store.svelte';
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl, getKey, handlePromiseError, memoryLaneTitle } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { fromLocalDateTime, toTimelineAsset } from '$lib/utils/timeline-util';
@@ -68,7 +69,7 @@
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   let currentMemoryAssetFull = $derived.by(async () =>
-    current?.asset ? await getAssetInfo({ id: current?.asset.id, key: getKey() }) : undefined,
+    current?.asset ? await getAssetInfo({ id: current?.asset.id, key: authManager.key }) : undefined,
   );
   let currentTimelineAssets = $derived(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
 

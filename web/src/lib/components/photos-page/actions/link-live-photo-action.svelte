@@ -2,7 +2,8 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
-  import { getKey } from '$lib/utils';
+
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { OnLink, OnUnlink } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -57,7 +58,7 @@
       try {
         loading = true;
         const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: null } });
-        const motionResponse = await getAssetInfo({ id: motionId, key: getKey() });
+        const motionResponse = await getAssetInfo({ id: motionId, key: authManager.key });
         onUnlink({ still: toTimelineAsset(stillResponse), motion: toTimelineAsset(motionResponse) });
         clearSelect();
       } catch (error) {

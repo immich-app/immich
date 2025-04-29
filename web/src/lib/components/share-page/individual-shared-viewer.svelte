@@ -35,7 +35,7 @@
   const assetInteraction = new AssetInteraction();
 
   let assets = $derived(sharedLink.assets.map((a) => toTimelineAsset(a)));
-  let fullAsset = $derived(assets[0] ? getAssetInfo({ id: assets[0]?.id, key: getKey() }) : null);
+  let fullAsset = $derived(assets[0] ? getAssetInfo({ id: assets[0]?.id, key: authManager.key }) : null);
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {

@@ -1,7 +1,8 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { getKey } from '$lib/utils';
+
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { downloadArchive, downloadFile } from '$lib/utils/asset-utils';
   import { getAssetInfo } from '@immich/sdk';
   import { mdiCloudDownloadOutline, mdiFileDownloadOutline, mdiFolderDownloadOutline } from '@mdi/js';
@@ -22,7 +23,7 @@
     const assets = [...getAssets()];
     if (assets.length === 1) {
       clearSelect();
-      let asset = await getAssetInfo({ id: assets[0].id, key: getKey() });
+      let asset = await getAssetInfo({ id: assets[0].id, key: authManager.key });
       await downloadFile(asset);
       return;
     }

@@ -25,7 +25,6 @@ import { SvelteSet } from 'svelte/reactivity';
 import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
-
 const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
 } = TUNABLES;
@@ -1180,7 +1179,7 @@ export class AssetStore {
     await this.initTask.waitUntilCompletion();
     let bucket = this.#findBucketForAsset(id);
     if (!bucket) {
-      const asset = toTimelineAsset(await getAssetInfo({ id, key: getKey() }));
+      const asset = toTimelineAsset(await getAssetInfo({ id, key: authManager.key }));
       if (!asset || this.isExcluded(asset)) {
         return;
       }
