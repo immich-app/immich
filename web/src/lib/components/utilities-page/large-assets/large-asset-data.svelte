@@ -38,40 +38,27 @@
           <Icon path={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
-
-      <!--  should be unnecceary, stacks are probably best ignored in large assets viewer -->
-      <!-- EXTERNAL LIBRARY / STACK COUNT CHIP -->
-      <div class="absolute top-2 end-3">
-        {#if isFromExternalLibrary}
-          <div class="bg-immich-primary/90 px-2 py-1 rounded-xl text-xs text-white">
-            {$t('external')}
-          </div>
-        {/if}
-        {#if asset.stack?.assetCount}
-          <div class="bg-immich-primary/90 px-2 py-1 my-0.5 rounded-xl text-xs text-white">
-            <div class="flex items-center justify-center">
-              <div class="me-1">{asset.stack.assetCount}</div>
-              <Icon path={mdiImageMultipleOutline} size="18" />
-            </div>
-          </div>
-        {/if}
-      </div>
     </button>
   </div>
 
-  <div class="grid place-items-center gap-y-2 py-2 text-xs transition-colors dark:text-white">
-    <span class="break-all text-center">{asset.originalFileName}</span>
-    <span>{getAssetResolution(asset)} - {getFileSize(asset)}</span>
-    <span>
-      {#await getAllAlbums({ assetId: asset.id })}
-        {$t('scanning_for_album')}
-      {:then albums}
-        {#if albums.length === 0}
-          {$t('not_in_any_album')}
-        {:else}
-          {$t('in_albums', { values: { count: albums.length } })}
-        {/if}
-      {/await}
-    </span>
+  <div class="flex justify-between items-center pl-2">
+    <div class="grid gap-y-2 py-2 text-xs transition-colors dark:text-white">
+      <span class="break-all text-left">{asset.originalFileName}</span>
+      <span>{getAssetResolution(asset)}</span>
+      <span>
+        {#await getAllAlbums({ assetId: asset.id })}
+          {$t('scanning_for_album')}
+        {:then albums}
+          {#if albums.length === 0}
+            {$t('not_in_any_album')}
+          {:else}
+            {$t('in_albums', { values: { count: albums.length } })}
+          {/if}
+        {/await}
+      </span>
+    </div>
+    <div class="dark:text-white text-lg flex-grow text-center font-bold">
+      {getFileSize(asset, 1)}
+    </div>
   </div>
 </div>

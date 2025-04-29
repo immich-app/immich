@@ -14,7 +14,7 @@ import { usePagination } from 'src/utils/pagination';
 @Injectable()
 export class LargeAssetsService extends BaseService {
   async getLargeAssets(auth: AuthDto): Promise<LargeAssetsResponseDto> {
-    const largeAssets = await this.assetRepository.getLargeAssets(auth.user.id, 20);
+    const largeAssets = await this.assetRepository.getLargeAssets(auth.user.id, 100);
 
     return { assets: largeAssets.map((asset) => mapAsset(asset, { auth })) };
   }
