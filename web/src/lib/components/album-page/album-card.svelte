@@ -40,7 +40,7 @@
   {#if onShowContextMenu}
     <div
       id="icon-{album.id}"
-      class="absolute right-6 top-6 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
+      class="absolute end-6 top-6 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
       data-testid="context-button-parent"
     >
       <CircleIconButton

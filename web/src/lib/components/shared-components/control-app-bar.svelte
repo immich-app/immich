@@ -91,7 +91,7 @@
       {@render children?.()}
     </div>
 
-    <div class="mr-4 flex place-items-center gap-1 justify-self-end">
+    <div class="me-4 flex place-items-center gap-1 justify-self-end">
       {@render trailing?.()}
     </div>
   </div>

@@ -6,6 +6,7 @@
   import { t } from 'svelte-i18n';
   import { mdiAlert } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   interface Props {
     onClose: () => void;
@@ -177,16 +178,19 @@
               <span
                 class="immich-form-label pb-2 text-xs"
                 id="version-history"
-                title={createdAt.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS)}
+                title={createdAt.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS, { locale: $locale })}
               >
                 {$t('version_history_item', {
                   values: {
                     version: item.version,
-                    date: createdAt.toLocaleString({
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    }),
+                    date: createdAt.toLocaleString(
+                      {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      },
+                      { locale: $locale },
+                    ),
                   },
                 })}
               </span>

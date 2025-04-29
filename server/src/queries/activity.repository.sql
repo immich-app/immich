@@ -13,6 +13,7 @@ from
       "users"."id",
       "users"."name",
       "users"."email",
+      "users"."avatarColor",
       "users"."profileImagePath",
       "users"."profileChangedAt"
     from
@@ -44,6 +45,7 @@ returning
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from

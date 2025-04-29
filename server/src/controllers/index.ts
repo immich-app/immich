@@ -14,6 +14,7 @@ import { LibraryController } from 'src/controllers/library.controller';
 import { MapController } from 'src/controllers/map.controller';
 import { MemoryController } from 'src/controllers/memory.controller';
 import { NotificationAdminController } from 'src/controllers/notification-admin.controller';
+import { NotificationController } from 'src/controllers/notification.controller';
 import { OAuthController } from 'src/controllers/oauth.controller';
 import { PartnerController } from 'src/controllers/partner.controller';
 import { PersonController } from 'src/controllers/person.controller';
@@ -47,6 +48,7 @@ export const controllers = [
   LibraryController,
   MapController,
   MemoryController,
+  NotificationController,
   NotificationAdminController,
   OAuthController,
   PartnerController,

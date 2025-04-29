@@ -1,4 +1,4 @@
-import { getKey } from '$lib/utils';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { type AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import { readonly, writable } from 'svelte/store';
@@ -16,7 +16,7 @@ function createAssetViewingStore() {
   };
 
   const setAssetId = async (id: string): Promise<AssetResponseDto> => {
-    const asset = await getAssetInfo({ id, key: getKey() });
+    const asset = await getAssetInfo({ id, key: authManager.key });
     setAsset(asset);
     return asset;
   };
