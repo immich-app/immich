@@ -377,6 +377,7 @@ Class | Method | HTTP request | Description
  - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
+ - [OAuthTokenEndpointAuthMethod](doc//OAuthTokenEndpointAuthMethod.md)
  - [OnThisDayDto](doc//OnThisDayDto.md)
  - [PartnerDirection](doc//PartnerDirection.md)
  - [PartnerResponseDto](doc//PartnerResponseDto.md)

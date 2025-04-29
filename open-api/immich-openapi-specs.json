@@ -10824,6 +10824,13 @@
         ],
         "type": "object"
       },
+      "OAuthTokenEndpointAuthMethod": {
+        "enum": [
+          "client_secret_post",
+          "client_secret_basic"
+        ],
+        "type": "string"
+      },
       "OnThisDayDto": {
         "properties": {
           "year": {
@@ -13404,6 +13411,17 @@
           },
           "storageQuotaClaim": {
             "type": "string"
+          },
+          "timeout": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tokenEndpointAuthMethod": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OAuthTokenEndpointAuthMethod"
+              }
+            ]
           }
         },
         "required": [
@@ -13421,7 +13439,9 @@
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",
-          "storageQuotaClaim"
+          "storageQuotaClaim",
+          "timeout",
+          "tokenEndpointAuthMethod"
         ],
         "type": "object"
       },
