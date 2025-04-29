@@ -3,7 +3,7 @@
   import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AppRoute } from '$lib/constants';
-  import { isSharedLink } from '$lib/utils';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { removeTag, tagAssets } from '$lib/utils/asset-utils';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { mdiClose, mdiPlus } from '@mdi/js';
@@ -41,7 +41,7 @@
   };
 </script>
 
-{#if isOwner && !isSharedLink()}
+{#if isOwner && !authManager.key}
   <section class="px-4 mt-4">
     <div class="flex h-10 w-full items-center justify-between text-sm">
       <h2>{$t('tags').toUpperCase()}</h2>

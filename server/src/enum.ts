@@ -337,6 +337,11 @@ export enum ImageFormat {
   WEBP = 'webp',
 }
 
+export enum RawExtractedFormat {
+  JPEG = 'jpeg',
+  JXL = 'jxl',
+}
+
 export enum LogLevel {
   VERBOSE = 'verbose',
   DEBUG = 'debug',
@@ -599,6 +604,11 @@ export enum NotificationType {
   BackupFailed = 'BackupFailed',
   SystemMessage = 'SystemMessage',
   Custom = 'Custom',
+}
+
+export enum OAuthTokenEndpointAuthMethod {
+  CLIENT_SECRET_POST = 'client_secret_post',
+  CLIENT_SECRET_BASIC = 'client_secret_basic',
 }
 
 export enum AssetVisibility {

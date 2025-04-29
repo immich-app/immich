@@ -3,6 +3,7 @@ import {
   AssetMediaStatus,
   AssetResponseDto,
   AssetTypeEnum,
+  AssetVisibility,
   getAssetInfo,
   getMyUser,
   LoginResponseDto,
@@ -137,9 +138,9 @@ describe('/asset', () => {
       // stats
       utils.createAsset(statsUser.accessToken),
       utils.createAsset(statsUser.accessToken, { isFavorite: true }),
-      utils.createAsset(statsUser.accessToken, { isArchived: true }),
+      utils.createAsset(statsUser.accessToken, { visibility: AssetVisibility.Archive }),
       utils.createAsset(statsUser.accessToken, {
-        isArchived: true,
+        visibility: AssetVisibility.Archive,
         isFavorite: true,
         assetData: { filename: 'example.mp4' },
       }),
@@ -333,7 +334,7 @@ describe('/asset', () => {
       });
 
       it('disallows viewing archived assets', async () => {
-        const asset = await utils.createAsset(user1.accessToken, { isArchived: true });
+        const asset = await utils.createAsset(user1.accessToken, { visibility: AssetVisibility.Archive });
 
         const { status } = await request(app)
           .get(`/assets/${asset.id}`)

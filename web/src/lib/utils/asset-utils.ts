@@ -3,11 +3,12 @@ import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
 import type { InterpolationValues } from '$lib/components/i18n/format-message';
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { downloadManager } from '$lib/managers/download-manager.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { assetsSnapshot, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
-import { downloadManager } from '$lib/stores/download-store.svelte';
 import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, getKey, withError } from '$lib/utils';
+import { downloadRequest, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
@@ -45,7 +46,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
     bulkIdsDto: {
       ids: assetIds,
     },
-    key: getKey(),
+    key: authManager.key,
   });
   const count = result.filter(({ success }) => success).length;
   const $t = get(t);
@@ -179,7 +180,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
   const $preferences = get<UserPreferencesResponseDto | undefined>(preferences);
   const dto = { ...options, archiveSize: $preferences?.download.archiveSize };
 
-  const [error, downloadInfo] = await withError(() => getDownloadInfo({ downloadInfoDto: dto, key: getKey() }));
+  const [error, downloadInfo] = await withError(() => getDownloadInfo({ downloadInfoDto: dto, key: authManager.key }));
   if (error) {
     const $t = get(t);
     handleError(error, $t('errors.unable_to_download_files'));
@@ -194,7 +195,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
     const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
-    const key = getKey();
+    const key = authManager.key;
 
     let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {
@@ -241,7 +242,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
   };
 
   if (asset.livePhotoVideoId) {
-    const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
+    const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: authManager.key });
     if (!isAndroidMotionVideo(motionAsset) || get(preferences)?.download.includeEmbeddedVideos) {
       assets.push({
         filename: motionAsset.originalFileName,
@@ -253,7 +254,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
   for (const { filename, id } of assets) {
     try {
-      const key = getKey();
+      const key = authManager.key;
 
       notificationController.show({
         type: NotificationType.Info,

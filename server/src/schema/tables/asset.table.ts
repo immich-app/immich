@@ -1,4 +1,3 @@
-import { sql } from 'kysely';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';

@@ -1,4 +1,11 @@
-import { AssetMediaResponseDto, AssetResponseDto, deleteAssets, LoginResponseDto, updateAsset } from '@immich/sdk';
+import {
+  AssetMediaResponseDto,
+  AssetResponseDto,
+  AssetVisibility,
+  deleteAssets,
+  LoginResponseDto,
+  updateAsset,
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -50,7 +57,7 @@ describe('/search', () => {
       { filename: '/formats/motionphoto/samsung-one-ui-6.heic' },
       { filename: '/formats/motionphoto/samsung-one-ui-5.jpg' },
 
-      { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { isArchived: true } },
+      { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { visibility: AssetVisibility.Archive } },
 
       // used for search suggestions
       { filename: '/formats/png/density_plot.png' },
@@ -231,12 +238,12 @@ describe('/search', () => {
         deferred: () => ({ dto: { size: 1, isFavorite: false }, assets: [assetLast] }),
       },
       {
-        should: 'should search by isArchived (true)',
-        deferred: () => ({ dto: { isArchived: true }, assets: [assetSprings] }),
+        should: 'should search by visibility (AssetVisibility.Archive)',
+        deferred: () => ({ dto: { visibility: AssetVisibility.Archive }, assets: [assetSprings] }),
       },
       {
-        should: 'should search by isArchived (false)',
-        deferred: () => ({ dto: { size: 1, isArchived: false }, assets: [assetLast] }),
+        should: 'should search by visibility (AssetVisibility.Timeline)',
+        deferred: () => ({ dto: { size: 1, visibility: AssetVisibility.Archive }, assets: [assetLast] }),
       },
       {
         should: 'should search by type (image)',

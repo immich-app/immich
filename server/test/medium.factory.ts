@@ -173,7 +173,7 @@ export const getRepository = <K extends keyof RepositoriesTypes>(key: K, db: Kys
     }
 
     case 'search': {
-      return new SearchRepository(db);
+      return new SearchRepository(db, new ConfigRepository());
     }
 
     case 'session': {

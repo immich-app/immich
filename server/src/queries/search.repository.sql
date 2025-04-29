@@ -7,17 +7,18 @@ from
   "assets"
   inner join "exif" on "assets"."id" = "exif"."assetId"
 where
-  "assets"."fileCreatedAt" >= $1
-  and "exif"."lensModel" = $2
-  and "assets"."ownerId" = any ($3::uuid[])
-  and "assets"."isFavorite" = $4
+  "assets"."visibility" = $1
+  and "assets"."fileCreatedAt" >= $2
+  and "exif"."lensModel" = $3
+  and "assets"."ownerId" = any ($4::uuid[])
+  and "assets"."isFavorite" = $5
   and "assets"."deletedAt" is null
 order by
   "assets"."fileCreatedAt" desc
 limit
-  $5
-offset
   $6
+offset
+  $7
 
 -- SearchRepository.searchRandom
 (
@@ -27,16 +28,17 @@ offset
     "assets"
     inner join "exif" on "assets"."id" = "exif"."assetId"
   where
-    "assets"."fileCreatedAt" >= $1
-    and "exif"."lensModel" = $2
-    and "assets"."ownerId" = any ($3::uuid[])
-    and "assets"."isFavorite" = $4
+    "assets"."visibility" = $1
+    and "assets"."fileCreatedAt" >= $2
+    and "exif"."lensModel" = $3
+    and "assets"."ownerId" = any ($4::uuid[])
+    and "assets"."isFavorite" = $5
     and "assets"."deletedAt" is null
-    and "assets"."id" < $5
+    and "assets"."id" < $6
   order by
     random()
   limit
-    $6
+    $7
 )
 union all
 (
@@ -46,19 +48,20 @@ union all
     "assets"
     inner join "exif" on "assets"."id" = "exif"."assetId"
   where
-    "assets"."fileCreatedAt" >= $7
-    and "exif"."lensModel" = $8
-    and "assets"."ownerId" = any ($9::uuid[])
-    and "assets"."isFavorite" = $10
+    "assets"."visibility" = $8
+    and "assets"."fileCreatedAt" >= $9
+    and "exif"."lensModel" = $10
+    and "assets"."ownerId" = any ($11::uuid[])
+    and "assets"."isFavorite" = $12
     and "assets"."deletedAt" is null
-    and "assets"."id" > $11
+    and "assets"."id" > $13
   order by
     random()
   limit
-    $12
+    $14
 )
 limit
-  $13
+  $15
 
 -- SearchRepository.searchSmart
 select
@@ -68,17 +71,18 @@ from
   inner join "exif" on "assets"."id" = "exif"."assetId"
   inner join "smart_search" on "assets"."id" = "smart_search"."assetId"
 where
-  "assets"."fileCreatedAt" >= $1
-  and "exif"."lensModel" = $2
-  and "assets"."ownerId" = any ($3::uuid[])
-  and "assets"."isFavorite" = $4
+  "assets"."visibility" = $1
+  and "assets"."fileCreatedAt" >= $2
+  and "exif"."lensModel" = $3
+  and "assets"."ownerId" = any ($4::uuid[])
+  and "assets"."isFavorite" = $5
   and "assets"."deletedAt" is null
 order by
-  smart_search.embedding <=> $5
+  smart_search.embedding <=> $6
 limit
-  $6
-offset
   $7
+offset
+  $8
 
 -- SearchRepository.searchDuplicates
 with

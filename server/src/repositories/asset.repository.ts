@@ -603,7 +603,7 @@ export class AssetRepository {
   }
 
   getStatistics(ownerId: string, { visibility, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
-    visibility = visibility ?? AssetVisibility.TIMELINE;
+    const visibilities = visibility == undefined ? [AssetVisibility.ARCHIVE, AssetVisibility.TIMELINE] : [visibility];
     return this.db
       .selectFrom('assets')
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
@@ -611,7 +611,7 @@ export class AssetRepository {
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
-      .where('visibility', '=', visibility)
+      .where('visibility', 'in', visibilities)
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)

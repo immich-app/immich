@@ -17,10 +17,10 @@ import { parse } from 'pg-connection-string';
 import postgres, { Notice } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
 import { DB } from 'src/db';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, AssetVisibility, DatabaseExtension } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
-import { DatabaseConnectionParams } from 'src/types';
+import { DatabaseConnectionParams, VectorExtension } from 'src/types';
 
 type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
 
@@ -281,10 +281,13 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
+  const visibility = options.visibility == null ? AssetVisibility.TIMELINE : options.visibility;
+
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('assets')
     .selectAll('assets')
+    .where('assets.visibility', '=', visibility)
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
@@ -355,7 +358,6 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('assets.isOffline', '=', options.isOffline!))
-    .$if(options.visibility !== undefined, (qb) => qb.where('assets.visibility', 'in', options.visibility!))
     .$if(options.isEncoded !== undefined, (qb) =>
       qb.where('assets.encodedVideoPath', options.isEncoded ? 'is not' : 'is', null),
     )
@@ -370,4 +372,29 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
     .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
+}
+
+type VectorIndexOptions = { vectorExtension: VectorExtension; table: string; indexName: string };
+
+export function vectorIndexQuery({ vectorExtension, table, indexName }: VectorIndexOptions): string {
+  switch (vectorExtension) {
+    case DatabaseExtension.VECTORS: {
+      return `
+        CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
+        USING vectors (embedding vector_cos_ops) WITH (options = $$
+        [indexing.hnsw]
+        m = 16
+        ef_construction = 300
+        $$)`;
+    }
+    case DatabaseExtension.VECTOR: {
+      return `
+        CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
+        USING hnsw (embedding vector_cosine_ops)
+        WITH (ef_construction = 300, m = 16)`;
+    }
+    default: {
+      throw new Error(`Unsupported vector extension: '${vectorExtension}'`);
+    }
+  }
 }
