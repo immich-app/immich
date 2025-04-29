@@ -7,8 +7,7 @@ import { Request, Response } from 'express';
 import { RedisOptions } from 'ioredis';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
-import { join, resolve } from 'node:path';
-import { parse } from 'pg-connection-string';
+import { join } from 'node:path';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
@@ -22,9 +21,7 @@ import {
   QueueName,
 } from 'src/enum';
 import { DatabaseConnectionParams, VectorExtension } from 'src/types';
-import { isValidSsl, PostgresConnectionConfig } from 'src/utils/database';
 import { setDifference } from 'src/utils/set';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
 export interface EnvData {
   host?: string;
@@ -59,7 +56,7 @@ export interface EnvData {
   };
 
   database: {
-    config: { typeorm: PostgresConnectionOptions & DatabaseConnectionParams; kysely: PostgresConnectionConfig };
+    config: DatabaseConnectionParams;
     skipMigrations: boolean;
     vectorExtension: VectorExtension;
   };
@@ -152,13 +149,9 @@ const getEnv = (): EnvData => {
   const isProd = environment === ImmichEnvironment.PRODUCTION;
   const buildFolder = dto.IMMICH_BUILD_DATA || '/build';
   const folders = {
-    // eslint-disable-next-line unicorn/prefer-module
-    dist: resolve(`${__dirname}/..`),
     geodata: join(buildFolder, 'geodata'),
     web: join(buildFolder, 'www'),
   };
-
-  const databaseUrl = dto.DB_URL;
 
   let redisConfig = {
     host: dto.REDIS_HOSTNAME || 'redis',
@@ -191,30 +184,16 @@ const getEnv = (): EnvData => {
     }
   }
 
-  const parts = {
-    connectionType: 'parts',
-    host: dto.DB_HOSTNAME || 'database',
-    port: dto.DB_PORT || 5432,
-    username: dto.DB_USERNAME || 'postgres',
-    password: dto.DB_PASSWORD || 'postgres',
-    database: dto.DB_DATABASE_NAME || 'immich',
-  } as const;
-
-  let parsedOptions: PostgresConnectionConfig = parts;
-  if (dto.DB_URL) {
-    const parsed = parse(dto.DB_URL);
-    if (!isValidSsl(parsed.ssl)) {
-      throw new Error(`Invalid ssl option: ${parsed.ssl}`);
-    }
-
-    parsedOptions = {
-      ...parsed,
-      ssl: parsed.ssl,
-      host: parsed.host ?? undefined,
-      port: parsed.port ? Number(parsed.port) : undefined,
-      database: parsed.database ?? undefined,
-    };
-  }
+  const databaseConnection: DatabaseConnectionParams = dto.DB_URL
+    ? { connectionType: 'url', url: dto.DB_URL }
+    : {
+        connectionType: 'parts',
+        host: dto.DB_HOSTNAME || 'database',
+        port: dto.DB_PORT || 5432,
+        username: dto.DB_USERNAME || 'postgres',
+        password: dto.DB_PASSWORD || 'postgres',
+        database: dto.DB_DATABASE_NAME || 'immich',
+      };
 
   return {
     host: dto.IMMICH_HOST,
@@ -269,21 +248,7 @@ const getEnv = (): EnvData => {
     },
 
     database: {
-      config: {
-        typeorm: {
-          type: 'postgres',
-          entities: [],
-          migrations: [`${folders.dist}/migrations` + '/*.{js,ts}'],
-          subscribers: [],
-          migrationsRun: false,
-          synchronize: false,
-          connectTimeoutMS: 10_000, // 10 seconds
-          parseInt8: true,
-          ...(databaseUrl ? { connectionType: 'url', url: databaseUrl } : parts),
-        },
-        kysely: parsedOptions,
-      },
-
+      config: databaseConnection,
       skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,
       vectorExtension: dto.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS,
     },

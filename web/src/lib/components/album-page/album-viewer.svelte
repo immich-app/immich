@@ -1,25 +1,25 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { handlePromiseError } from '$lib/utils';
+  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
-  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
+  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
+  import { onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import AssetGrid from '../photos-page/asset-grid.svelte';
-  import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
-  import { shortcut } from '$lib/actions/shortcut';
-  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
-  import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from './album-summary.svelte';
-  import { t } from 'svelte-i18n';
-  import { onDestroy } from 'svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -117,7 +117,7 @@
       <!-- ALBUM DESCRIPTION -->
       {#if album.description}
         <p
-          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-left font-medium text-base text-black dark:text-gray-300"
+          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-start font-medium text-base text-black dark:text-gray-300"
         >
           {album.description}
         </p>

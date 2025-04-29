@@ -1,28 +1,41 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { shortcut } from '$lib/actions/shortcut';
+  import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { shortcut } from '$lib/actions/shortcut';
+  import type { TimelineAsset, Viewport } from '$lib/stores/assets-store.svelte';
+  import { lang, locale } from '$lib/stores/preferences.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { preferences } from '$lib/stores/user.store';
+  import { handlePromiseError } from '$lib/utils';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import { parseUtcDate } from '$lib/utils/date-time';
+  import { handleError } from '$lib/utils/handle-error';
+  import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     type AlbumResponseDto,
-    type AssetResponseDto,
     getPerson,
     getTagById,
     type MetadataSearchDto,
@@ -31,21 +44,8 @@
     type SmartSearchDto,
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import type { Viewport } from '$lib/stores/assets-store.svelte';
-  import { lang, locale } from '$lib/stores/preferences.store';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { parseUtcDate } from '$lib/utils/date-time';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
-  import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
-  import { t } from 'svelte-i18n';
   import { tick } from 'svelte';
-  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
-  import { preferences } from '$lib/stores/user.store';
-  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { t } from 'svelte-i18n';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -58,7 +58,7 @@
 
   let nextPage = $state(1);
   let searchResultAlbums: AlbumResponseDto[] = $state([]);
-  let searchResultAssets: AssetResponseDto[] = $state([]);
+  let searchResultAssets: TimelineAsset[] = $state([]);
   let isLoading = $state(true);
   let scrollY = $state(0);
   let scrollYHistory = 0;
@@ -122,7 +122,7 @@
 
   const onAssetDelete = (assetIds: string[]) => {
     const assetIdSet = new Set(assetIds);
-    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
+    searchResultAssets = searchResultAssets.filter((a: TimelineAsset) => !assetIdSet.has(a.id));
   };
   const handleSelectAll = () => {
     assetInteraction.selectAssets(searchResultAssets);
@@ -160,7 +160,7 @@
           : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
-      searchResultAssets.push(...assets.items);
+      searchResultAssets.push(...assets.items.map((a) => toTimelineAsset(a)));
 
       nextPage = Number(assets.nextPage) || 0;
     } catch (error) {
@@ -238,7 +238,7 @@
 
     if (terms.isNotInAlbum.toString() == 'true') {
       const assetIdSet = new Set(assetIds);
-      searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
+      searchResultAssets = searchResultAssets.filter((a) => !assetIdSet.has(a.id));
     }
   };
 
@@ -251,7 +251,7 @@
 
 <section>
   {#if assetInteraction.selectionActive}
-    <div class="fixed z-[100] top-0 left-0 w-full">
+    <div class="fixed z-[100] top-0 start-0 w-full">
       <AssetSelectControlBar
         assets={assetInteraction.selectedAssets}
         clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -289,13 +289,13 @@
       </AssetSelectControlBar>
     </div>
   {:else}
-    <div class="fixed z-[100] top-0 left-0 w-full">
+    <div class="fixed z-[100] top-0 start-0 w-full">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div
           class="-z-[1] bg-immich-bg dark:bg-immich-dark-bg"
           style="position:absolute;top:0;left:0;right:0;bottom:0;"
         ></div>
-        <div class="w-full flex-1 pl-4">
+        <div class="w-full flex-1 ps-4">
           <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
         </div>
       </ControlAppBar>
@@ -313,13 +313,13 @@
       <div class="flex place-content-center place-items-center text-xs">
         <div
           class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
-          {value === true ? 'rounded-full' : 'rounded-tl-full rounded-bl-full'}"
+          {value === true ? 'rounded-full' : 'roudned-s-full'}"
         >
           {getHumanReadableSearchKey(key as keyof SearchTerms)}
         </div>
 
         {#if value !== true}
-          <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-tr-full rounded-br-full">
+          <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-e-full">
             {#if (key === 'takenAfter' || key === 'takenBefore') && typeof value === 'string'}
               {getHumanReadableDate(value)}
             {:else if key === 'personIds' && Array.isArray(value)}
@@ -349,7 +349,7 @@
 >
   {#if searchResultAlbums.length > 0}
     <section>
-      <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
+      <div class="ms-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
       <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
       <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">

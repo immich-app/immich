@@ -1,20 +1,20 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import {
-    type AssetStore,
     type AssetBucket,
     assetSnapshot,
     assetsSnapshot,
+    type AssetStore,
     isSelectingAllAssets,
+    type TimelineAsset,
   } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { getDateLocaleString } from '$lib/utils/timeline-util';
-  import type { AssetResponseDto } from '@immich/sdk';
-  import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { fly } from 'svelte/transition';
-  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { scale } from 'svelte/transition';
+  import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
+  import { fly, scale } from 'svelte/transition';
+  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
   import { flip } from 'svelte/animate';
 
@@ -31,9 +31,9 @@
     assetStore: AssetStore;
     assetInteraction: AssetInteraction;
 
-    onSelect: ({ title, assets }: { title: string; assets: AssetResponseDto[] }) => void;
-    onSelectAssets: (asset: AssetResponseDto) => void;
-    onSelectAssetCandidates: (asset: AssetResponseDto | null) => void;
+    onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
+    onSelectAssets: (asset: TimelineAsset) => void;
+    onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
   }
 
   let {
@@ -54,7 +54,7 @@
 
   const transitionDuration = $derived.by(() => (bucket.store.suspendTransitions && !$isUploading ? 0 : 150));
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-  const onClick = (assetStore: AssetStore, assets: AssetResponseDto[], groupTitle: string, asset: AssetResponseDto) => {
+  const onClick = (assetStore: AssetStore, assets: TimelineAsset[], groupTitle: string, asset: TimelineAsset) => {
     if (isSelectionMode || assetInteraction.selectionActive) {
       assetSelectHandler(assetStore, asset, assets, groupTitle);
       return;
@@ -62,12 +62,12 @@
     void navigate({ targetRoute: 'current', assetId: asset.id });
   };
 
-  const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => onSelect({ title, assets });
+  const handleSelectGroup = (title: string, assets: TimelineAsset[]) => onSelect({ title, assets });
 
   const assetSelectHandler = (
     assetStore: AssetStore,
-    asset: AssetResponseDto,
-    assetsInDateGroup: AssetResponseDto[],
+    asset: TimelineAsset,
+    assetsInDateGroup: TimelineAsset[],
     groupTitle: string,
   ) => {
     onSelectAssets(asset);
@@ -91,7 +91,7 @@
     }
   };
 
-  const assetMouseEventHandler = (groupTitle: string, asset: AssetResponseDto | null) => {
+  const assetMouseEventHandler = (groupTitle: string, asset: TimelineAsset | null) => {
     // Show multi select icon on hover on date group
     hoveredDateGroup = groupTitle;
 
@@ -100,7 +100,7 @@
     }
   };
 
-  const assetOnFocusHandler = (asset: AssetResponseDto) => {
+  const assetOnFocusHandler = (asset: TimelineAsset) => {
     assetInteraction.focussedAssetId = asset.id;
   };
   function filterIntersecting<R extends { intersecting: boolean }>(intersectable: R[]) {
@@ -149,7 +149,7 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize ml-2.5" title={getDateLocaleString(dateGroup.date)}>
+      <span class="w-full truncate first-letter:capitalize ms-2.5" title={getDateLocaleString(dateGroup.date)}>
         {dateGroup.groupTitle}
       </span>
     </div>

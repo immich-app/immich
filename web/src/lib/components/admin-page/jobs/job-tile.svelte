@@ -51,7 +51,7 @@
   let isIdle = $derived(!queueStatus.isActive && !queueStatus.isPaused);
   let multipleButtons = $derived(allText || refreshText);
 
-  const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pr-4 pl-6';
+  const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
 </script>
 
 <div
@@ -110,7 +110,7 @@
 
       <div class="mt-2 flex w-full max-w-md flex-col sm:flex-row">
         <div
-          class="{commonClasses} rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-l-lg sm:rounded-r-none"
+          class="{commonClasses} rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-s-lg sm:rounded-e-none"
         >
           <p>{$t('active')}</p>
           <p class="text-2xl">
@@ -119,7 +119,7 @@
         </div>
 
         <div
-          class="{commonClasses} flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-l-none sm:rounded-r-lg"
+          class="{commonClasses} flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg"
         >
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}

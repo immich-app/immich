@@ -126,6 +126,11 @@ export enum Permission {
   MEMORY_UPDATE = 'memory.update',
   MEMORY_DELETE = 'memory.delete',
 
+  NOTIFICATION_CREATE = 'notification.create',
+  NOTIFICATION_READ = 'notification.read',
+  NOTIFICATION_UPDATE = 'notification.update',
+  NOTIFICATION_DELETE = 'notification.delete',
+
   PARTNER_CREATE = 'partner.create',
   PARTNER_READ = 'partner.read',
   PARTNER_UPDATE = 'partner.update',
@@ -332,6 +337,11 @@ export enum ImageFormat {
   WEBP = 'webp',
 }
 
+export enum RawExtractedFormat {
+  JPEG = 'jpeg',
+  JXL = 'jxl',
+}
+
 export enum LogLevel {
   VERBOSE = 'verbose',
   DEBUG = 'debug',
@@ -515,6 +525,7 @@ export enum JobName {
   NOTIFY_SIGNUP = 'notify-signup',
   NOTIFY_ALBUM_INVITE = 'notify-album-invite',
   NOTIFY_ALBUM_UPDATE = 'notify-album-update',
+  NOTIFICATIONS_CLEANUP = 'notifications-cleanup',
   SEND_EMAIL = 'notification-send-email',
 
   // Version check
@@ -579,4 +590,18 @@ export enum SyncEntityType {
   PartnerAssetV1 = 'PartnerAssetV1',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
+}
+
+export enum NotificationLevel {
+  Success = 'success',
+  Error = 'error',
+  Warning = 'warning',
+  Info = 'info',
+}
+
+export enum NotificationType {
+  JobFailed = 'JobFailed',
+  BackupFailed = 'BackupFailed',
+  SystemMessage = 'SystemMessage',
+  Custom = 'Custom',
 }

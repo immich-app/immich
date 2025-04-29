@@ -1,10 +1,10 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { type AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
-  import { mdiSelectAll, mdiSelectRemove } from '@mdi/js';
-  import { selectAllAssets, cancelMultiselect } from '$lib/utils/asset-utils';
-  import { t } from 'svelte-i18n';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { type AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import { cancelMultiselect, selectAllAssets } from '$lib/utils/asset-utils';
+  import { mdiSelectAll, mdiSelectRemove } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     assetStore: AssetStore;

@@ -1,6 +1,6 @@
 import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { resetSavedUser, user } from '$lib/stores/user.store';
-import { assetFactory } from '@test-data/factories/asset-factory';
+import { timelineAssetFactory } from '@test-data/factories/asset-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 
 describe('AssetInteraction', () => {
@@ -11,8 +11,8 @@ describe('AssetInteraction', () => {
   });
 
   it('calculates derived values from selection', () => {
-    assetInteraction.selectAsset(assetFactory.build({ isFavorite: true, isArchived: true, isTrashed: true }));
-    assetInteraction.selectAsset(assetFactory.build({ isFavorite: true, isArchived: false, isTrashed: false }));
+    assetInteraction.selectAsset(timelineAssetFactory.build({ isFavorite: true, isArchived: true, isTrashed: true }));
+    assetInteraction.selectAsset(timelineAssetFactory.build({ isFavorite: true, isArchived: false, isTrashed: false }));
 
     expect(assetInteraction.selectionActive).toBe(true);
     expect(assetInteraction.isAllTrashed).toBe(false);
@@ -22,7 +22,7 @@ describe('AssetInteraction', () => {
 
   it('updates isAllUserOwned when the active user changes', () => {
     const [user1, user2] = userAdminFactory.buildList(2);
-    assetInteraction.selectAsset(assetFactory.build({ ownerId: user1.id }));
+    assetInteraction.selectAsset(timelineAssetFactory.build({ ownerId: user1.id }));
 
     const cleanup = $effect.root(() => {
       expect(assetInteraction.isAllUserOwned).toBe(false);

@@ -97,6 +97,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
               );
               if (7 - scaleFactor.value.toInt() != perRow.value) {
                 perRow.value = 7 - scaleFactor.value.toInt();
+                settings.setSetting(AppSettingsEnum.tilesPerRow, perRow.value);
               }
             };
           }),

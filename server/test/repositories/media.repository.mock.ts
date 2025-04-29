@@ -8,7 +8,7 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     writeExif: vitest.fn().mockImplementation(() => Promise.resolve()),
     generateThumbhash: vitest.fn().mockResolvedValue(Buffer.from('')),
     decodeImage: vitest.fn().mockResolvedValue({ data: Buffer.from(''), info: {} }),
-    extract: vitest.fn().mockResolvedValue(false),
+    extract: vitest.fn().mockResolvedValue(null),
     probe: vitest.fn(),
     transcode: vitest.fn(),
     getImageDimensions: vitest.fn(),

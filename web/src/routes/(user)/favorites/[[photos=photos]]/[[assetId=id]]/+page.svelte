@@ -9,19 +9,19 @@
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
-  import type { PageData } from './$types';
-  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { t } from 'svelte-i18n';
-  import { onDestroy } from 'svelte';
-  import { preferences } from '$lib/stores/user.store';
-  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { preferences } from '$lib/stores/user.store';
+  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -30,7 +30,7 @@
   let { data }: Props = $props();
 
   const assetStore = new AssetStore();
-  void assetStore.updateOptions({ isFavorite: true });
+  void assetStore.updateOptions({ isFavorite: true, withStacked: true });
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
@@ -76,6 +76,7 @@
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
   <AssetGrid
     enableRouting={true}
+    withStacked={true}
     {assetStore}
     {assetInteraction}
     removeAction={AssetAction.UNFAVORITE}
