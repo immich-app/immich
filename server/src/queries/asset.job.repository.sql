@@ -194,6 +194,24 @@ where
   "asset_files"."assetId" = $1
   and "asset_files"."type" = $2
 
+-- AssetJobRepository.streamForEncodeClip
+select
+  "assets"."id"
+from
+  "assets"
+  inner join "asset_job_status" as "job_status" on "assetId" = "assets"."id"
+where
+  "job_status"."previewAt" is not null
+  and "assets"."isVisible" = $1
+  and not exists (
+    select
+    from
+      "smart_search"
+    where
+      "assetId" = "assets"."id"
+  )
+  and "assets"."deletedAt" is null
+
 -- AssetJobRepository.getForClipEncoding
 select
   "assets"."id",

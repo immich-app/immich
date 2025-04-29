@@ -1,11 +1,10 @@
 import { SystemConfig } from 'src/config';
 import { ImmichWorker, JobName, JobStatus } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { getCLIPModelInfo } from 'src/utils/misc';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;
@@ -152,38 +151,31 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({});
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
       expect(mocks.asset.getWithout).not.toHaveBeenCalled();
       expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
     });
 
     it('should queue the assets without clip embeddings', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForEncodeClip.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueEncodeClip({ force: false });
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } },
       ]);
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.SMART_SEARCH);
+      expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(false);
       expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
     });
 
     it('should queue all the assets', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForEncodeClip.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueEncodeClip({ force: true });
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } },
       ]);
-      expect(mocks.asset.getAll).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(true);
       expect(mocks.search.setDimensionSize).toHaveBeenCalledExactlyOnceWith(512);
     });
   });
