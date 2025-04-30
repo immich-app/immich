@@ -98,7 +98,7 @@
           </div>
         </Button>
         <Button
-          href="https://pixelunion.chargebeeportal.com"
+          href="https://billing.stripe.com/p/login/14kaFHfe8aTHa2s5kk"
           onclick={onClose}
           color="dark-gray"
           target
