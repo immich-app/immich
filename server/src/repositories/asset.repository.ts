@@ -48,7 +48,6 @@ export interface LivePhotoSearchOptions {
 export enum WithoutProperty {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded-video',
-  SIDECAR = 'sidecar',
 }
 
 export enum WithProperty {
@@ -542,11 +541,6 @@ export class AssetRepository {
           .where((eb) => eb.or([eb('assets.encodedVideoPath', 'is', null), eb('assets.encodedVideoPath', '=', '')])),
       )
 
-      .$if(property === WithoutProperty.SIDECAR, (qb) =>
-        qb
-          .where((eb) => eb.or([eb('assets.sidecarPath', '=', ''), eb('assets.sidecarPath', 'is', null)]))
-          .where('assets.isVisible', '=', true),
-      )
       .$if(property === WithoutProperty.THUMBNAIL, (qb) =>
         qb
           .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')

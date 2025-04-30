@@ -470,6 +470,18 @@ from
 where
   "assets"."deletedAt" <= $1
 
+-- AssetJobRepository.streamForSidecar
+select
+  "assets"."id"
+from
+  "assets"
+where
+  (
+    "assets"."sidecarPath" = $1
+    or "assets"."sidecarPath" is null
+  )
+  and "assets"."isVisible" = $2
+
 -- AssetJobRepository.streamForDetectFacesJob
 select
   "assets"."id"
