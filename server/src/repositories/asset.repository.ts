@@ -7,7 +7,6 @@ import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
-import { SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
 import {
   anyUuid,
   asUuid,
@@ -687,10 +686,7 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
-  async getAssetIdByCity(
-    ownerId: string,
-    { minAssetsPerField, maxFields }: AssetExploreFieldOptions,
-  ): Promise<SearchExploreItem<string>> {
+  async getAssetIdByCity(ownerId: string, { minAssetsPerField, maxFields }: AssetExploreFieldOptions) {
     const items = await this.db
       .with('cities', (qb) =>
         qb
@@ -705,6 +701,7 @@ export class AssetRepository {
       .innerJoin('cities', 'exif.city', 'cities.city')
       .distinctOn('exif.city')
       .select(['assetId as data', 'exif.city as value'])
+      .$narrowType<{ value: NotNull }>()
       .where('ownerId', '=', asUuid(ownerId))
       .where('isVisible', '=', true)
       .where('isArchived', '=', false)
@@ -713,7 +710,7 @@ export class AssetRepository {
       .limit(maxFields)
       .execute();
 
-    return { fieldName: 'exifInfo.city', items: items as SearchExploreItemSet<string> };
+    return { fieldName: 'exifInfo.city', items };
   }
 
   @GenerateSql({
