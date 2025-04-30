@@ -100,9 +100,6 @@
     }
   };
 
-  const assetOnFocusHandler = (asset: AssetResponseDto) => {
-    assetInteraction.focussedAssetId = asset.id;
-  };
   function filterIntersecting<R extends { intersecting: boolean }>(intersectable: R[]) {
     return intersectable.filter((int) => int.intersecting);
   }
@@ -182,13 +179,11 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            focussed={assetInteraction.isFocussedAsset(asset.id)}
             onClick={(asset) => onClick(assetStore, dateGroup.getAssets(), dateGroup.groupTitle, asset)}
             onSelect={(asset) => assetSelectHandler(assetStore, asset, dateGroup.getAssets(), dateGroup.groupTitle)}
             onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, assetSnapshot(asset))}
             selected={assetInteraction.hasSelectedAsset(asset.id) || dateGroup.bucket.store.albumAssets.has(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            handleFocus={() => assetOnFocusHandler(asset)}
             disabled={dateGroup.bucket.store.albumAssets.has(asset.id)}
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
