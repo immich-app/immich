@@ -100,8 +100,6 @@
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
 
-  let isInMapView = $state(false);
-
   let backUrl: string = $state(AppRoute.ALBUMS);
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let isCreatingSharedAlbum = $state(false);
@@ -532,7 +530,7 @@
                 icon={mdiShareVariantOutline}
               />
             {/if}
-            <AlbumMap {album} bind:isInMapView />
+            <AlbumMap {album} />
 
             {#if album.assetCount > 0}
               <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />
@@ -622,7 +620,6 @@
         {showArchiveIcon}
         {onSelect}
         onEscape={handleEscape}
-        bind:isInMapView
       >
         {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
           {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}

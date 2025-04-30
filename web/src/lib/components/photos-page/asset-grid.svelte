@@ -27,6 +27,7 @@
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { focusNext } from '$lib/utils/focus-util';
+  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -44,7 +45,6 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
-    isInMapView?: boolean;
     onSelect?: (asset: AssetResponseDto) => void;
     onEscape?: () => void;
     children?: Snippet;
@@ -64,7 +64,6 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
-    isInMapView = $bindable(false),
     onSelect = () => {},
     onEscape = () => {},
     children,
@@ -803,7 +802,7 @@
   </section>
 </section>
 
-{#if !isInMapView}
+{#if !albumMapViewManager.isInMapView}
   <Portal target="body">
     {#if $showAssetViewer}
       {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}

@@ -33,8 +33,6 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  let isInMapView = $state(false);
-
   const assetStore = new AssetStore();
   $effect(() => void assetStore.updateOptions({ albumId: album.id, order: album.order }));
   onDestroy(() => assetStore.destroy());
@@ -95,19 +93,18 @@
           />
         {/if}
         {#if sharedLink.showMetadata}
-          <AlbumMap {album} bind:isInMapView />
+          <AlbumMap {album} />
         {/if}
         <ThemeButton />
       {/snippet}
     </ControlAppBar>
   {/if}
 </header>
-<!-- <h1>{isInMapView}</h1> -->
 
 <main
   class="relative h-dvh overflow-hidden bg-immich-bg px-2 md:px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
 >
-  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction} bind:isInMapView>
+  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
       <h1

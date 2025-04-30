@@ -1,26 +1,26 @@
 <script lang="ts">
   import { clickOutside } from '$lib/actions/click-outside';
-  import { delay } from '$lib/utils/asset-utils';
-  import { timeToLoadTheMap } from '$lib/constants';
-  import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
-  import { t } from 'svelte-i18n';
-  import type Map from '$lib/components/shared-components/map/map.svelte';
-  import { LoadingSpinner } from '@immich/ui';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { onDestroy, onMount } from 'svelte';
-  import { mdiMapOutline } from '@mdi/js';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import type Map from '$lib/components/shared-components/map/map.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import { timeToLoadTheMap } from '$lib/constants';
+  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { navigate } from '$lib/utils/navigation';
   import { handlePromiseError } from '$lib/utils';
+  import { delay } from '$lib/utils/asset-utils';
+  import { navigate } from '$lib/utils/navigation';
+  import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
+  import { LoadingSpinner } from '@immich/ui';
+  import { mdiMapOutline } from '@mdi/js';
+  import { onDestroy, onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     album: AlbumResponseDto;
-    isInMapView: boolean;
   }
 
-  let { album, isInMapView = $bindable(false) }: Props = $props();
+  let { album }: Props = $props();
   let abortController: AbortController;
   let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
   let viewingAssets: string[] = $state([]);
@@ -67,12 +67,12 @@
   }
 
   function openMap() {
-    isInMapView = true;
+    albumMapViewManager.isInMapView = true;
   }
 
   function closeMap() {
     if (!$showAssetViewer) {
-      isInMapView = false;
+      albumMapViewManager.isInMapView = false;
     }
   }
 
@@ -111,7 +111,7 @@
 
 <CircleIconButton title={$t('map')} onclick={openMap} icon={mdiMapOutline} />
 
-{#if isInMapView}
+{#if albumMapViewManager.isInMapView}
   <div use:clickOutside={{ onOutclick: closeMap }}>
     <FullScreenModal title={$t('map')} width="wide" onClose={closeMap}>
       <div class="flex flex-col w-full h-full gap-2">
@@ -137,9 +137,7 @@
       </div>
     </FullScreenModal>
   </div>
-{/if}
 
-{#if isInMapView}
   <Portal target="body">
     {#if $showAssetViewer}
       {#await import('../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
