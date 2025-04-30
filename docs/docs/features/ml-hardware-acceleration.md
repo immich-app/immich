@@ -42,7 +42,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 - The GPU must have compute capability 5.2 or greater.
 - The server must have the official NVIDIA driver installed.
-- The installed driver must be >= 535 (it must support CUDA 12.2).
+- The installed driver must be >= 545 (it must support CUDA 12.3).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
 #### ROCm
@@ -71,7 +71,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. In the `docker-compose.yml` under `immich-machine-learning`, uncomment the `extends` section and change `cpu` to the appropriate backend.
-3. Still in `immich-machine-learning`, add one of -[armnn, cuda, rocm, openvino] to the `image` section's tag at the end of the line.
+3. Still in `immich-machine-learning`, add one of -[armnn, cuda, rocm, openvino, rknn] to the `image` section's tag at the end of the line.
 4. Redeploy the `immich-machine-learning` container with these updated settings.
 
 ### Confirming Device Usage

@@ -28,7 +28,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type Viewport } from '$lib/stores/assets-store.svelte';
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
-  import { locale, videoViewerMuted } from '$lib/stores/preferences.store';
+  import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
@@ -67,9 +67,12 @@
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   let isSaved = $derived(current?.memory.isSaved);
+  let viewerHeight = $state(0);
 
   const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
+  // need to include padding in the viewport for gallery
+  const galleryViewport: Viewport = $derived({ height: viewport.height, width: viewport.width - 32 });
   const assetInteraction = new AssetInteraction();
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
@@ -331,7 +334,12 @@
   </div>
 {/if}
 
-<section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
+<section
+  id="memory-viewer"
+  class="w-full bg-immich-dark-gray"
+  bind:this={memoryWrapper}
+  use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
+>
   {#if current}
     <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark multiRow>
       {#snippet leading()}
@@ -352,8 +360,8 @@
 
         {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)} aria-label={$t('view')}>
-            <span class="absolute left-0 h-[2px] w-full bg-gray-500"></span>
-            <span class="absolute left-0 h-[2px] bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
+            <span class="absolute start-0 h-[2px] w-full bg-gray-500"></span>
+            <span class="absolute start-0 h-[2px] bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
           </a>
         {/each}
 
@@ -372,7 +380,7 @@
 
     {#if galleryInView}
       <div
-        class="fixed top-20 z-30 left-1/2 -translate-x-1/2 transition-opacity"
+        class="fixed top-20 z-30 start-1/2 -translate-x-1/2 transition-opacity"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >
@@ -386,9 +394,9 @@
       </div>
     {/if}
     <!-- Viewer -->
-    <section class="overflow-hidden pt-32 md:pt-20">
+    <section class="overflow-hidden pt-32 md:pt-20" bind:clientHeight={viewerHeight}>
       <div
-        class="ml-[-100%] box-border flex h-[calc(100vh_-_224px)] md:h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
+        class="ms-[-100%] box-border flex h-[calc(100vh_-_224px)] md:h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
       >
         <!-- PREVIOUS MEMORY -->
         <div class="h-1/2 w-[20vw] rounded-2xl {current.previousMemory ? 'opacity-25 hover:opacity-70' : 'opacity-0'}">
@@ -416,7 +424,7 @@
             {/if}
 
             {#if current.previousMemory}
-              <div class="absolute bottom-4 right-4 text-left text-white">
+              <div class="absolute bottom-4 end-4 text-start text-white">
                 <p class="text-xs font-semibold text-gray-200">{$t('previous').toUpperCase()}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.previousMemory)}</p>
               </div>
@@ -441,6 +449,7 @@
                     poster={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
                     draggable="false"
                     muted={$videoViewerMuted}
+                    volume={$videoViewerVolume}
                     transition:fade
                   ></video>
                 {:else}
@@ -456,7 +465,7 @@
             {/key}
 
             <div
-              class="absolute bottom-0 right-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2"
+              class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2"
               class:opacity-0={galleryInView}
               class:opacity-100={!galleryInView}
             >
@@ -512,7 +521,7 @@
             </div>
             <!-- CONTROL BUTTONS -->
             {#if current.previous}
-              <div class="absolute top-1/2 left-0 ml-4">
+              <div class="absolute top-1/2 start-0 ms-4">
                 <CircleIconButton
                   title={$t('previous_memory')}
                   icon={mdiChevronLeft}
@@ -523,7 +532,7 @@
             {/if}
 
             {#if current.next}
-              <div class="absolute top-1/2 right-0 mr-4">
+              <div class="absolute top-1/2 end-0 me-4">
                 <CircleIconButton
                   title={$t('next_memory')}
                   icon={mdiChevronRight}
@@ -533,9 +542,11 @@
               </div>
             {/if}
 
-            <div class="absolute left-8 top-4 text-sm font-medium text-white">
+            <div class="absolute start-8 top-4 text-sm font-medium text-white">
               <p>
-                {fromLocalDateTime(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL)}
+                {fromLocalDateTime(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL, {
+                  locale: $locale,
+                })}
               </p>
               <p>
                 {current.asset.exifInfo?.city || ''}
@@ -571,7 +582,7 @@
             {/if}
 
             {#if current.nextMemory}
-              <div class="absolute bottom-4 left-4 text-left text-white">
+              <div class="absolute bottom-4 start-4 text-start text-white">
                 <p class="text-xs font-semibold text-gray-200">{$t('up_next').toUpperCase()}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.nextMemory)}</p>
               </div>
@@ -580,43 +591,44 @@
         </div>
       </div>
     </section>
-
-    <!-- GALLERY VIEWER -->
-    <section class="bg-immich-dark-gray p-4">
-      <div
-        class="sticky mb-10 flex place-content-center place-items-center transition-all"
-        class:opacity-0={galleryInView}
-        class:opacity-100={!galleryInView}
-      >
-        <CircleIconButton
-          title={$t('show_gallery')}
-          icon={mdiChevronDown}
-          color="light"
-          onclick={() => memoryGallery?.scrollIntoView({ behavior: 'smooth' })}
-        />
-      </div>
-
-      <div
-        id="gallery-memory"
-        use:intersectionObserver={{
-          onIntersect: handleGalleryScrollsIntoView,
-          onSeparate: handleGalleryScrollsOutOfView,
-          bottom: '-200px',
-        }}
-        use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
-        bind:this={memoryGallery}
-      >
-        <GalleryViewer
-          onNext={handleNextAsset}
-          onPrevious={handlePreviousAsset}
-          assets={current.memory.assets}
-          {viewport}
-          {assetInteraction}
-        />
-      </div>
-    </section>
   {/if}
 </section>
+{#if current}
+  <!-- GALLERY VIEWER -->
+  <section class="bg-immich-dark-gray p-4">
+    <div
+      class="sticky mb-10 flex place-content-center place-items-center transition-all"
+      class:opacity-0={galleryInView}
+      class:opacity-100={!galleryInView}
+    >
+      <CircleIconButton
+        title={$t('show_gallery')}
+        icon={mdiChevronDown}
+        color="light"
+        onclick={() => memoryGallery?.scrollIntoView({ behavior: 'smooth' })}
+      />
+    </div>
+
+    <div
+      id="gallery-memory"
+      use:intersectionObserver={{
+        onIntersect: handleGalleryScrollsIntoView,
+        onSeparate: handleGalleryScrollsOutOfView,
+        bottom: '-200px',
+      }}
+      bind:this={memoryGallery}
+    >
+      <GalleryViewer
+        onNext={handleNextAsset}
+        onPrevious={handlePreviousAsset}
+        assets={current.memory.assets}
+        viewport={galleryViewport}
+        {assetInteraction}
+        slidingWindowOffset={viewerHeight}
+      />
+    </div>
+  </section>
+{/if}
 
 <style>
   .main-view {

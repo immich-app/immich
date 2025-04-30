@@ -1,8 +1,10 @@
 name: PR Label Validation
 
 on:
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
     types: [opened, labeled, unlabeled, synchronize]
+
+permissions: {}
 
 jobs:
   validate-release-label:
@@ -17,6 +19,6 @@ jobs:
           mode: exactly
           count: 1
           use_regex: true
-          labels: "changelog:.*"
+          labels: 'changelog:.*'
           add_comment: true
-          message: "Label error. Requires {{errorString}} {{count}} of: {{ provided }}. Found: {{ applied }}. A maintainer will add the required label."
+          message: 'Label error. Requires {{errorString}} {{count}} of: {{ provided }}. Found: {{ applied }}. A maintainer will add the required label.'

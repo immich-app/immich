@@ -28,6 +28,7 @@ const storagePresets = [
   '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
   '{{y}}/{{MM}}/{{filename}}',
   '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
+  '{{#if album}}{{album-startDate-y}}/{{album}}{{else}}{{y}}/Other/{{MM}}{{/if}}/{{filename}}',
   '{{y}}/{{MMM}}/{{filename}}',
   '{{y}}/{{MMMM}}/{{filename}}',
   '{{y}}/{{MM}}/{{dd}}/{{filename}}',
@@ -54,6 +55,8 @@ interface RenderMetadata {
   filename: string;
   extension: string;
   albumName: string | null;
+  albumStartDate: Date | null;
+  albumEndDate: Date | null;
 }
 
 @Injectable()
@@ -62,6 +65,7 @@ export class StorageTemplateService extends BaseService {
     compiled: HandlebarsTemplateDelegate<any>;
     raw: string;
     needsAlbum: boolean;
+    needsAlbumMetadata: boolean;
   } | null = null;
 
   private get template() {
@@ -99,6 +103,8 @@ export class StorageTemplateService extends BaseService {
         filename: 'IMG_123',
         extension: 'jpg',
         albumName: 'album',
+        albumStartDate: new Date(),
+        albumEndDate: new Date(),
       });
     } catch (error) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
@@ -118,7 +124,7 @@ export class StorageTemplateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const asset = await this.assetRepository.getStorageTemplateAsset(id);
+    const asset = await this.assetJobRepository.getForStorageTemplateJob(id);
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -130,7 +136,7 @@ export class StorageTemplateService extends BaseService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const livePhotoVideo = await this.assetRepository.getStorageTemplateAsset(asset.livePhotoVideoId);
+      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
       if (!livePhotoVideo) {
         return JobStatus.FAILED;
       }
@@ -152,7 +158,7 @@ export class StorageTemplateService extends BaseService {
 
     await this.moveRepository.cleanMoveHistory();
 
-    const assets = this.assetRepository.streamStorageTemplateAssets();
+    const assets = this.assetJobRepository.streamForStorageTemplateJob();
     const users = await this.userRepository.getList();
 
     for await (const asset of assets) {
@@ -220,9 +226,11 @@ export class StorageTemplateService extends BaseService {
     const { storageLabel, filename } = metadata;
 
     try {
+      const filenameWithoutExtension = path.basename(filename, path.extname(filename));
+
       const source = asset.originalPath;
       let extension = path.extname(source).split('.').pop() as string;
-      const sanitized = sanitize(path.basename(filename, `.${extension}`));
+      const sanitized = sanitize(path.basename(filenameWithoutExtension, `.${extension}`));
       extension = extension?.toLowerCase();
       const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
 
@@ -253,9 +261,20 @@ export class StorageTemplateService extends BaseService {
       }
 
       let albumName = null;
+      let albumStartDate = null;
+      let albumEndDate = null;
       if (this.template.needsAlbum) {
         const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
-        albumName = albums?.[0]?.albumName || null;
+        const album = albums?.[0];
+        if (album) {
+          albumName = album.albumName || null;
+
+          if (this.template.needsAlbumMetadata) {
+            const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
+            albumStartDate = metadata?.startDate || null;
+            albumEndDate = metadata?.endDate || null;
+          }
+        }
       }
 
       const storagePath = this.render(this.template.compiled, {
@@ -263,6 +282,8 @@ export class StorageTemplateService extends BaseService {
         filename: sanitized,
         extension,
         albumName,
+        albumStartDate,
+        albumEndDate,
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${extension}`;
@@ -321,12 +342,13 @@ export class StorageTemplateService extends BaseService {
     return {
       raw: template,
       compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
-      needsAlbum: template.includes('{{album}}'),
+      needsAlbum: template.includes('album'),
+      needsAlbumMetadata: template.includes('album-startDate') || template.includes('album-endDate'),
     };
   }
 
   private render(template: HandlebarsTemplateDelegate<any>, options: RenderMetadata) {
-    const { filename, extension, asset, albumName } = options;
+    const { filename, extension, asset, albumName, albumStartDate, albumEndDate } = options;
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
@@ -344,6 +366,15 @@ export class StorageTemplateService extends BaseService {
 
     for (const token of Object.values(storageTokens).flat()) {
       substitutions[token] = dt.toFormat(token);
+      if (albumName) {
+        // Use system time zone for album dates to ensure all assets get the exact same date.
+        substitutions['album-startDate-' + token] = albumStartDate
+          ? DateTime.fromJSDate(albumStartDate, { zone: systemTimeZone }).toFormat(token)
+          : '';
+        substitutions['album-endDate-' + token] = albumEndDate
+          ? DateTime.fromJSDate(albumEndDate, { zone: systemTimeZone }).toFormat(token)
+          : '';
+      }
     }
 
     return template(substitutions).replaceAll(/\/{2,}/gm, '/');

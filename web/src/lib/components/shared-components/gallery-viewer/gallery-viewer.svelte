@@ -22,6 +22,7 @@
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { debounce } from 'lodash-es';
   import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+  import { focusNext } from '$lib/utils/focus-util';
 
   interface Props {
     assets: AssetResponseDto[];
@@ -35,6 +36,8 @@
     onPrevious?: (() => Promise<AssetResponseDto | undefined>) | undefined;
     onNext?: (() => Promise<AssetResponseDto | undefined>) | undefined;
     onRandom?: (() => Promise<AssetResponseDto | undefined>) | undefined;
+    pageHeaderOffset?: number;
+    slidingWindowOffset?: number;
   }
 
   let {
@@ -49,6 +52,8 @@
     onPrevious = undefined,
     onNext = undefined,
     onRandom = undefined,
+    slidingWindowOffset = 0,
+    pageHeaderOffset = 0,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
@@ -86,7 +91,7 @@
           height: geometry.getHeight(i),
         };
         // 54 is the content height of the asset-selection-app-bar
-        const layoutTopWithOffset = layout.top + 54;
+        const layoutTopWithOffset = layout.top + pageHeaderOffset;
         const layoutBottom = layoutTopWithOffset + layout.height;
 
         const display = layoutTopWithOffset < slidingWindow.bottom && layoutBottom > slidingWindow.top;
@@ -109,7 +114,7 @@
 
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
-    const top = document.scrollingElement?.scrollTop || 0;
+    const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
     const bottom = top + v.height;
     const w = {
       top,
@@ -255,25 +260,8 @@
     }
   };
 
-  const focusNextAsset = () => {
-    if (assetInteraction.focussedAssetId === null && assets.length > 0) {
-      assetInteraction.focussedAssetId = assets[0].id;
-    } else if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
-      if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
-        assetInteraction.focussedAssetId = assets[currentIndex + 1].id;
-      }
-    }
-  };
-
-  const focusPreviousAsset = () => {
-    if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
-      if (currentIndex >= 1) {
-        assetInteraction.focussedAssetId = assets[currentIndex - 1].id;
-      }
-    }
-  };
+  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let shortcutList = $derived(
     (() => {
@@ -309,6 +297,10 @@
       if (onNext) {
         asset = await onNext();
       } else {
+        if (currentViewAssetIndex >= assets.length - 1) {
+          return false;
+        }
+
         currentViewAssetIndex = currentViewAssetIndex + 1;
         asset = currentViewAssetIndex < assets.length ? assets[currentViewAssetIndex] : undefined;
       }
@@ -355,6 +347,10 @@
       if (onPrevious) {
         asset = await onPrevious();
       } else {
+        if (currentViewAssetIndex <= 0) {
+          return false;
+        }
+
         currentViewAssetIndex = currentViewAssetIndex - 1;
         asset = currentViewAssetIndex >= 0 ? assets[currentViewAssetIndex] : undefined;
       }
@@ -405,10 +401,6 @@
     }
   };
 
-  const assetOnFocusHandler = (asset: AssetResponseDto) => {
-    assetInteraction.focussedAssetId = asset.id;
-  };
-
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
 
@@ -457,7 +449,7 @@
     style:height={assetLayouts.containerHeight + 'px'}
     style:width={assetLayouts.containerWidth - 1 + 'px'}
   >
-    {#each assetLayouts.assetLayout as layout (layout.asset.id)}
+    {#each assetLayouts.assetLayout as layout, index (layout.asset.id + '-' + index)}
       {@const asset = layout.asset}
 
       {#if layout.display}
@@ -478,12 +470,10 @@
             }}
             onSelect={(asset) => handleSelectAssets(asset)}
             onMouseEvent={() => assetMouseEventHandler(asset)}
-            handleFocus={() => assetOnFocusHandler(asset)}
             {showArchiveIcon}
             {asset}
             selected={assetInteraction.hasSelectedAsset(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            focussed={assetInteraction.isFocussedAsset(asset.id)}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />

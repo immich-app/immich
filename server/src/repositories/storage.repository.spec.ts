@@ -183,6 +183,7 @@ describe(StorageRepository.name, () => {
   let sut: StorageRepository;
 
   beforeEach(() => {
+    // eslint-disable-next-line no-sparse-arrays
     sut = new StorageRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 

@@ -29,7 +29,7 @@ class EmailInput extends StatelessWidget {
       autofocus: true,
       controller: controller,
       decoration: InputDecoration(
-        labelText: 'login_form_label_email'.tr(),
+        labelText: 'email'.tr(),
         border: const OutlineInputBorder(),
         hintText: 'login_form_email_hint'.tr(),
         hintStyle: const TextStyle(

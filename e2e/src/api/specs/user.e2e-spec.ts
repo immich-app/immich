@@ -31,33 +31,7 @@ describe('/users', () => {
     );
   });
 
-  describe('GET /users', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/users');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should get users', async () => {
-      const { status, body } = await request(app).get('/users').set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toEqual(200);
-      expect(body).toHaveLength(2);
-      expect(body).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ email: 'admin@immich.cloud' }),
-          expect.objectContaining({ email: 'user2@immich.cloud' }),
-        ]),
-      );
-    });
-  });
-
   describe('GET /users/me', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/users/me`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should not work for shared links', async () => {
       const album = await utils.createAlbum(admin.accessToken, { albumName: 'Album' });
       const sharedLink = await utils.createSharedLink(admin.accessToken, {
@@ -99,24 +73,6 @@ describe('/users', () => {
   });
 
   describe('PUT /users/me', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/users/me`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    for (const key of ['email', 'name']) {
-      it(`should not allow null ${key}`, async () => {
-        const dto = { [key]: null };
-        const { status, body } = await request(app)
-          .put(`/users/me`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send(dto);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
-      });
-    }
-
     it('should update first and last name', async () => {
       const before = await getMyUser({ headers: asBearerAuth(admin.accessToken) });
 
@@ -183,6 +139,19 @@ describe('/users', () => {
         profileChangedAt: expect.anything(),
       });
     });
+
+    it('should update avatar color', async () => {
+      const { status, body } = await request(app)
+        .put(`/users/me`)
+        .send({ avatarColor: 'blue' })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ avatarColor: 'blue' });
+
+      const after = await getMyUser({ headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ avatarColor: 'blue' });
+    });
   });
 
   describe('PUT /users/me/preferences', () => {
@@ -200,19 +169,6 @@ describe('/users', () => {
 
       const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
       expect(after).toMatchObject({ memories: { enabled: false } });
-    });
-
-    it('should update avatar color', async () => {
-      const { status, body } = await request(app)
-        .put(`/users/me/preferences`)
-        .send({ avatar: { color: 'blue' } })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toMatchObject({ avatar: { color: 'blue' } });
-
-      const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
-      expect(after).toMatchObject({ avatar: { color: 'blue' } });
     });
 
     it('should require an integer for download archive size', async () => {
@@ -269,11 +225,6 @@ describe('/users', () => {
   });
 
   describe('GET /users/:id', () => {
-    it('should require authentication', async () => {
-      const { status } = await request(app).get(`/users/${admin.userId}`);
-      expect(status).toEqual(401);
-    });
-
     it('should get the user', async () => {
       const { status, body } = await request(app)
         .get(`/users/${admin.userId}`)
@@ -292,12 +243,6 @@ describe('/users', () => {
   });
 
   describe('GET /server/license', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/users/me/license');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should return the user license', async () => {
       await request(app)
         .put('/users/me/license')
@@ -315,11 +260,6 @@ describe('/users', () => {
   });
 
   describe('PUT /users/me/license', () => {
-    it('should require authentication', async () => {
-      const { status } = await request(app).put(`/users/me/license`);
-      expect(status).toEqual(401);
-    });
-
     it('should set the user license', async () => {
       const { status, body } = await request(app)
         .put(`/users/me/license`)

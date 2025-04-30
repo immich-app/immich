@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -257,7 +256,7 @@ class AssetService {
 
       for (var element in assets) {
         element.fileCreatedAt = DateTime.parse(updatedDt);
-        element.exifInfo ??= element.exifInfo
+        element.exifInfo = element.exifInfo
             ?.copyWith(dateTimeOriginal: DateTime.parse(updatedDt));
       }
 
@@ -284,7 +283,7 @@ class AssetService {
       );
 
       for (var element in assets) {
-        element.exifInfo ??= element.exifInfo?.copyWith(
+        element.exifInfo = element.exifInfo?.copyWith(
           latitude: location.latitude,
           longitude: location.longitude,
         );
@@ -389,10 +388,7 @@ class AssetService {
   }
 
   Future<double> getAspectRatio(Asset asset) async {
-    // platform_manager always returns 0 for orientation on iOS, so only prefer it on Android
-    if (asset.isLocal && Platform.isAndroid) {
-      await asset.localAsync;
-    } else if (asset.isRemote) {
+    if (asset.isRemote) {
       asset = await loadExif(asset);
     } else if (asset.isLocal) {
       await asset.localAsync;
@@ -518,9 +514,9 @@ class AssetService {
     return _assetRepository.watchAsset(id, fireImmediately: fireImmediately);
   }
 
-  Future<List<Asset>> getRecentlyAddedAssets() {
+  Future<List<Asset>> getRecentlyTakenAssets() {
     final me = _userService.getMyUser();
-    return _assetRepository.getRecentlyAddedAssets(me.id);
+    return _assetRepository.getRecentlyTakenAssets(me.id);
   }
 
   Future<List<Asset>> getMotionAssets() {

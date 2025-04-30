@@ -1,6 +1,12 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AssetBucket, assetSnapshot, assetsSnapshot } from '$lib/stores/assets-store.svelte';
+  import {
+    type AssetStore,
+    type AssetBucket,
+    assetSnapshot,
+    assetsSnapshot,
+    isSelectingAllAssets,
+  } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { getDateLocaleString } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
@@ -22,6 +28,7 @@
     withStacked: boolean;
     showArchiveIcon: boolean;
     bucket: AssetBucket;
+    assetStore: AssetStore;
     assetInteraction: AssetInteraction;
 
     onSelect: ({ title, assets }: { title: string; assets: AssetResponseDto[] }) => void;
@@ -36,6 +43,7 @@
     showArchiveIcon,
     bucket = $bindable(),
     assetInteraction,
+    assetStore,
     onSelect,
     onSelectAssets,
     onSelectAssetCandidates,
@@ -46,9 +54,9 @@
 
   const transitionDuration = $derived.by(() => (bucket.store.suspendTransitions && !$isUploading ? 0 : 150));
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-  const onClick = (assets: AssetResponseDto[], groupTitle: string, asset: AssetResponseDto) => {
+  const onClick = (assetStore: AssetStore, assets: AssetResponseDto[], groupTitle: string, asset: AssetResponseDto) => {
     if (isSelectionMode || assetInteraction.selectionActive) {
-      assetSelectHandler(asset, assets, groupTitle);
+      assetSelectHandler(assetStore, asset, assets, groupTitle);
       return;
     }
     void navigate({ targetRoute: 'current', assetId: asset.id });
@@ -56,7 +64,12 @@
 
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => onSelect({ title, assets });
 
-  const assetSelectHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
+  const assetSelectHandler = (
+    assetStore: AssetStore,
+    asset: AssetResponseDto,
+    assetsInDateGroup: AssetResponseDto[],
+    groupTitle: string,
+  ) => {
     onSelectAssets(asset);
 
     // Check if all assets are selected in a group to toggle the group selection's icon
@@ -70,6 +83,12 @@
     } else {
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
+
+    if (assetStore.getAssets().length == assetInteraction.selectedAssets.length) {
+      isSelectingAllAssets.set(true);
+    } else {
+      isSelectingAllAssets.set(false);
+    }
   };
 
   const assetMouseEventHandler = (groupTitle: string, asset: AssetResponseDto | null) => {
@@ -81,9 +100,6 @@
     }
   };
 
-  const assetOnFocusHandler = (asset: AssetResponseDto) => {
-    assetInteraction.focussedAssetId = asset.id;
-  };
   function filterIntersecting<R extends { intersecting: boolean }>(intersectable: R[]) {
     return intersectable.filter((int) => int.intersecting);
   }
@@ -112,7 +128,7 @@
   >
     <!-- Date group title -->
     <div
-      class="flex z-[100] pt-[calc(1.75rem+1px)] pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
+      class="flex z-[100] pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
       style:width={dateGroup.width + 'px'}
     >
       {#if !singleSelect && ((hoveredDateGroup === dateGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dateGroup.groupTitle))}
@@ -130,13 +146,18 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize ml-2.5" title={getDateLocaleString(dateGroup.date)}>
+      <span class="w-full truncate first-letter:capitalize ms-2.5" title={getDateLocaleString(dateGroup.date)}>
         {dateGroup.groupTitle}
       </span>
     </div>
 
     <!-- Image grid -->
-    <div class="relative overflow-clip" style:height={dateGroup.height + 'px'} style:width={dateGroup.width + 'px'}>
+    <div
+      data-image-grid
+      class="relative overflow-clip"
+      style:height={dateGroup.height + 'px'}
+      style:width={dateGroup.width + 'px'}
+    >
       {#each filterIntersecting(dateGroup.intersetingAssets) as intersectingAsset (intersectingAsset.id)}
         {@const position = intersectingAsset.position!}
         {@const asset = intersectingAsset.asset!}
@@ -158,13 +179,11 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            focussed={assetInteraction.isFocussedAsset(asset.id)}
-            onClick={(asset) => onClick(dateGroup.getAssets(), dateGroup.groupTitle, asset)}
-            onSelect={(asset) => assetSelectHandler(asset, dateGroup.getAssets(), dateGroup.groupTitle)}
+            onClick={(asset) => onClick(assetStore, dateGroup.getAssets(), dateGroup.groupTitle, asset)}
+            onSelect={(asset) => assetSelectHandler(assetStore, asset, dateGroup.getAssets(), dateGroup.groupTitle)}
             onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, assetSnapshot(asset))}
             selected={assetInteraction.hasSelectedAsset(asset.id) || dateGroup.bucket.store.albumAssets.has(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            handleFocus={() => assetOnFocusHandler(asset)}
             disabled={dateGroup.bucket.store.albumAssets.has(asset.id)}
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
@@ -179,5 +198,8 @@
 <style>
   section {
     contain: layout paint style;
+  }
+  [data-image-grid] {
+    user-select: none;
   }
 </style>

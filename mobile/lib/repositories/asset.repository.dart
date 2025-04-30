@@ -1,12 +1,7 @@
-import 'dart:io';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/device_asset.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
-import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -71,8 +66,13 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   Future<List<Asset>> getAllByRemoteId(
     Iterable<String> ids, {
     AssetState? state,
-  }) =>
-      _getAllByRemoteIdImpl(ids, state).findAll();
+  }) async {
+    if (ids.isEmpty) {
+      return [];
+    }
+
+    return _getAllByRemoteIdImpl(ids, state).findAll();
+  }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> _getAllByRemoteIdImpl(
     Iterable<String> ids,
@@ -154,19 +154,6 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   }
 
   @override
-  Future<List<DeviceAsset?>> getDeviceAssetsById(List<Object> ids) =>
-      Platform.isAndroid
-          ? db.androidDeviceAssets.getAll(ids.cast())
-          : db.iOSDeviceAssets.getAllById(ids.cast());
-
-  @override
-  Future<void> upsertDeviceAssets(List<DeviceAsset> deviceAssets) => txn(
-        () => Platform.isAndroid
-            ? db.androidDeviceAssets.putAll(deviceAssets.cast())
-            : db.iOSDeviceAssets.putAll(deviceAssets.cast()),
-      );
-
-  @override
   Future<Asset> update(Asset asset) async {
     await txn(() => asset.put(db));
     return asset;
@@ -238,7 +225,7 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   }
 
   @override
-  Future<List<Asset>> getRecentlyAddedAssets(String userId) {
+  Future<List<Asset>> getRecentlyTakenAssets(String userId) {
     return db.assets
         .where()
         .ownerIdEqualToAnyChecksum(fastHash(userId))

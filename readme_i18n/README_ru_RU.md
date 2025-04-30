@@ -62,19 +62,13 @@
 
 ## Демо
 
-Вы можете опробовать [Web демонстрационную версию](https://demo.immich.app/)
-
-В мобильном приложении укажите `https://demo.immich.app` в поле `URL-адрес сервера`
+Вы можете опробовать [Web демонстрационную версию](https://demo.immich.app/). В мобильном приложении укажите `https://demo.immich.app` в поле `URL-адрес сервера`
 
 ### Данные для входа
 
 | Email           | Пароль   |
 | --------------- | -------- |
 | demo@immich.app | demo     |
-
-```
-Характеристики демо-сервера: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
-```
 
 ## Возможности
 

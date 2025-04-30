@@ -13,7 +13,6 @@ import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 
 class BackupSettings extends HookConsumerWidget {
   const BackupSettings({
@@ -59,7 +58,7 @@ class BackupSettings extends HookConsumerWidget {
               ? const Column(
                   children: [
                     SizedBox(height: 20),
-                    Center(child: ImmichLoadingIndicator()),
+                    Center(child: CircularProgressIndicator()),
                     SizedBox(height: 20),
                   ],
                 )
@@ -83,9 +82,7 @@ class BackupSettings extends HookConsumerWidget {
           ),
           buttonText: 'sync_albums'.tr(),
           child: isAlbumSyncInProgress.value
-              ? const CircularProgressIndicator.adaptive(
-                  strokeWidth: 2,
-                )
+              ? const CircularProgressIndicator()
               : ElevatedButton(
                   onPressed: syncAlbums,
                   child: Text('sync'.tr()),

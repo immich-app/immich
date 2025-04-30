@@ -43,12 +43,12 @@ class NotificationSetting extends HookConsumerWidget {
           content: const Text('notification_permission_dialog_content').tr(),
           actions: [
             TextButton(
-              child: const Text('notification_permission_dialog_cancel').tr(),
+              child: const Text('cancel').tr(),
               onPressed: () => ctx.pop(),
             ),
             TextButton(
               onPressed: () => openAppNotificationSettings(ctx),
-              child: const Text('notification_permission_dialog_settings').tr(),
+              child: const Text('settings').tr(),
             ),
           ],
         ),

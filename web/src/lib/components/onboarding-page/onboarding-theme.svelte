@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { mdiArrowRight, mdiThemeLightDark } from '@mdi/js';
+  import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import OnboardingCard from './onboarding-card.svelte';
-  import { colorTheme } from '$lib/stores/preferences.store';
-  import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
   import { Theme } from '$lib/constants';
+  import { themeManager } from '$lib/managers/theme-manager.svelte';
+  import { mdiArrowRight, mdiThemeLightDark } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import OnboardingCard from './onboarding-card.svelte';
 
   interface Props {
     onDone: () => void;
@@ -24,7 +24,7 @@
     <button
       type="button"
       class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl border-[3px] border-immich-dark-primary/80 border-immich-primary dark:border dark:border-transparent"
-      onclick={() => ($colorTheme.value = Theme.LIGHT)}
+      onclick={() => themeManager.setTheme(Theme.LIGHT)}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
@@ -36,7 +36,7 @@
     <button
       type="button"
       class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl dark:border-[3px] dark:border-immich-dark-primary/80 dark:border-immich-dark-primary border border-transparent"
-      onclick={() => ($colorTheme.value = Theme.DARK)}
+      onclick={() => themeManager.setTheme(Theme.DARK)}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"

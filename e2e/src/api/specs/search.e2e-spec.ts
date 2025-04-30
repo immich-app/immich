@@ -633,7 +633,6 @@ describe('/search', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
         'Andalusia',
-        'Berlin',
         'Glarus',
         'Greater Accra',
         'Havana',
@@ -642,6 +641,7 @@ describe('/search', () => {
         'Mississippi',
         'New York',
         'Shanghai',
+        'State of Berlin',
         'St.-Petersburg',
         'Tbilisi',
         'Tokyo',
@@ -657,7 +657,6 @@ describe('/search', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
         'Andalusia',
-        'Berlin',
         'Glarus',
         'Greater Accra',
         'Havana',
@@ -666,6 +665,7 @@ describe('/search', () => {
         'Mississippi',
         'New York',
         'Shanghai',
+        'State of Berlin',
         'St.-Petersburg',
         'Tbilisi',
         'Tokyo',

@@ -1,8 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { mapAsset } from 'src/dtos/asset-response.dto';
+import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
@@ -35,7 +34,7 @@ describe(AssetService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  const mockGetById = (assets: AssetEntity[]) => {
+  const mockGetById = (assets: MapAsset[]) => {
     mocks.asset.getById.mockImplementation((assetId) => Promise.resolve(assets.find((asset) => asset.id === assetId)));
   };
 
@@ -88,7 +87,7 @@ describe(AssetService.name, () => {
 
     it('should get memories with partners with inTimeline enabled', async () => {
       const partner = factory.partner();
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.partner.getAll.mockResolvedValue([partner]);
       mocks.asset.getByDayOfYear.mockResolvedValue([]);
@@ -139,7 +138,7 @@ describe(AssetService.name, () => {
 
     it('should not include partner assets if not in timeline', async () => {
       const partner = factory.partner({ inTimeline: false });
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.asset.getRandom.mockResolvedValue([assetStub.image]);
       mocks.partner.getAll.mockResolvedValue([partner]);
@@ -151,7 +150,7 @@ describe(AssetService.name, () => {
 
     it('should include partner assets if in timeline', async () => {
       const partner = factory.partner({ inTimeline: true });
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.asset.getRandom.mockResolvedValue([assetStub.image]);
       mocks.partner.getAll.mockResolvedValue([partner]);
@@ -460,6 +459,34 @@ describe(AssetService.name, () => {
         rating: undefined,
       });
       expect(mocks.asset.updateAll).toHaveBeenCalled();
+      expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], { latitude: 0, longitude: 0 });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SIDECAR_WRITE, data: { id: 'asset-1', latitude: 0, longitude: 0 } },
+      ]);
+    });
+
+    it('should update exif table if latitude field is provided', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      const dateTimeOriginal = new Date().toISOString();
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        latitude: 30,
+        longitude: 50,
+        dateTimeOriginal,
+        isArchived: undefined,
+        isFavorite: false,
+        duplicateId: undefined,
+        rating: undefined,
+      });
+      expect(mocks.asset.updateAll).toHaveBeenCalled();
+      expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], {
+        dateTimeOriginal,
+        latitude: 30,
+        longitude: 50,
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SIDECAR_WRITE, data: { id: 'asset-1', dateTimeOriginal, latitude: 30, longitude: 50 } },
+      ]);
     });
   });
 
@@ -508,12 +535,12 @@ describe(AssetService.name, () => {
     it('should immediately queue assets for deletion if trash is disabled', async () => {
       const asset = factory.asset({ isOffline: false });
 
-      mocks.asset.streamDeletedAssets.mockReturnValue(makeStream([asset]));
+      mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: false } });
 
       await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.streamDeletedAssets).toHaveBeenCalledWith(new Date());
+      expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(new Date());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
       ]);
@@ -522,12 +549,12 @@ describe(AssetService.name, () => {
     it('should queue assets for deletion after trash duration', async () => {
       const asset = factory.asset({ isOffline: false });
 
-      mocks.asset.streamDeletedAssets.mockReturnValue(makeStream([asset]));
+      mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: true, days: 7 } });
 
       await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.streamDeletedAssets).toHaveBeenCalledWith(DateTime.now().minus({ days: 7 }).toJSDate());
+      expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(DateTime.now().minus({ days: 7 }).toJSDate());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
       ]);
@@ -538,7 +565,7 @@ describe(AssetService.name, () => {
     it('should remove faces', async () => {
       const assetWithFace = { ...assetStub.image, faces: [faceStub.face1, faceStub.mergeFace1] };
 
-      mocks.asset.getById.mockResolvedValue(assetWithFace);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetWithFace);
 
       await sut.handleAssetDeletion({ id: assetWithFace.id, deleteOnDisk: true });
 
@@ -550,6 +577,7 @@ describe(AssetService.name, () => {
               files: [
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
+                '/uploads/user-id/fullsize/path.webp',
                 assetWithFace.encodedVideoPath,
                 assetWithFace.sidecarPath,
                 assetWithFace.originalPath,
@@ -563,8 +591,8 @@ describe(AssetService.name, () => {
     });
 
     it('should update stack primary asset if deleted asset was primary asset in a stack', async () => {
-      mocks.stack.update.mockResolvedValue(factory.stack() as unknown as any);
-      mocks.asset.getById.mockResolvedValue(assetStub.primaryImage as AssetEntity);
+      mocks.stack.update.mockResolvedValue(factory.stack() as any);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.primaryImage);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
@@ -576,10 +604,10 @@ describe(AssetService.name, () => {
 
     it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
       mocks.stack.delete.mockResolvedValue();
-      mocks.asset.getById.mockResolvedValue({
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue({
         ...assetStub.primaryImage,
         stack: { ...assetStub.primaryImage.stack, assets: assetStub.primaryImage.stack!.assets.slice(0, 2) },
-      } as AssetEntity);
+      });
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
@@ -587,7 +615,7 @@ describe(AssetService.name, () => {
     });
 
     it('should delete a live photo', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.livePhotoStillAsset as any);
       mocks.asset.getLivePhotoCount.mockResolvedValue(0);
 
       await sut.handleAssetDeletion({
@@ -609,7 +637,14 @@ describe(AssetService.name, () => {
           {
             name: JobName.DELETE_FILES,
             data: {
-              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.jpeg'],
+              files: [
+                '/uploads/user-id/webp/path.ext',
+                '/uploads/user-id/thumbs/path.jpg',
+                '/uploads/user-id/fullsize/path.webp',
+                undefined,
+                undefined,
+                'fake_path/asset_1.jpeg',
+              ],
             },
           },
         ],
@@ -618,7 +653,7 @@ describe(AssetService.name, () => {
 
     it('should not delete a live motion part if it is being used by another asset', async () => {
       mocks.asset.getLivePhotoCount.mockResolvedValue(2);
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.livePhotoStillAsset as any);
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,
@@ -630,7 +665,14 @@ describe(AssetService.name, () => {
           {
             name: JobName.DELETE_FILES,
             data: {
-              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.jpeg'],
+              files: [
+                '/uploads/user-id/webp/path.ext',
+                '/uploads/user-id/thumbs/path.jpg',
+                '/uploads/user-id/fullsize/path.webp',
+                undefined,
+                undefined,
+                'fake_path/asset_1.jpeg',
+              ],
             },
           },
         ],
@@ -638,12 +680,13 @@ describe(AssetService.name, () => {
     });
 
     it('should update usage', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.image);
       await sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.image.ownerId, -5000);
     });
 
     it('should fail if asset could not be found', async () => {
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(void 0);
       await expect(sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true })).resolves.toBe(
         JobStatus.FAILED,
       );

@@ -44,11 +44,7 @@
   $effect(() => void assetStore.updateOptions({ deferInit: !tag, tagId }));
   onDestroy(() => assetStore.destroy());
 
-  let tags = $state<TagResponseDto[]>([]);
-  $effect(() => {
-    tags = data.tags;
-  });
-
+  let tags = $derived<TagResponseDto[]>(data.tags);
   let tagsMap = $derived(buildMap(tags));
   let tag = $derived(currentPath ? tagsMap[currentPath] : null);
   let tagId = $derived(tag?.id);
@@ -148,9 +144,9 @@
 <UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
     <SideBarSection>
-      <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} />
+      <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} breakpoint="md" />
       <section>
-        <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
+        <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiTag, active: mdiTag }}

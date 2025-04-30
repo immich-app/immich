@@ -9,7 +9,7 @@
   let { title, children }: Props = $props();
 </script>
 
-<section class="min-w-screen flex min-h-dvh items-center justify-center relative">
+<section class="min-w-dvw flex min-h-dvh items-center justify-center relative">
   <div class="absolute -z-10 w-full h-full flex place-items-center place-content-center">
     <img
       src={immichLogo}
@@ -17,7 +17,7 @@
       alt="Immich logo"
     />
     <div
-      class="w-full h-[99%] absolute left-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
+      class="w-full h-[99%] absolute start-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
     ></div>
   </div>
 

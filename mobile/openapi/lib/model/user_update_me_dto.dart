@@ -13,10 +13,13 @@ part of openapi.api;
 class UserUpdateMeDto {
   /// Returns a new [UserUpdateMeDto] instance.
   UserUpdateMeDto({
+    this.avatarColor,
     this.email,
     this.name,
     this.password,
   });
+
+  UserAvatarColor? avatarColor;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -44,6 +47,7 @@ class UserUpdateMeDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserUpdateMeDto &&
+    other.avatarColor == avatarColor &&
     other.email == email &&
     other.name == name &&
     other.password == password;
@@ -51,15 +55,21 @@ class UserUpdateMeDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode);
 
   @override
-  String toString() => 'UserUpdateMeDto[email=$email, name=$name, password=$password]';
+  String toString() => 'UserUpdateMeDto[avatarColor=$avatarColor, email=$email, name=$name, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.avatarColor != null) {
+      json[r'avatarColor'] = this.avatarColor;
+    } else {
+    //  json[r'avatarColor'] = null;
+    }
     if (this.email != null) {
       json[r'email'] = this.email;
     } else {
@@ -87,6 +97,7 @@ class UserUpdateMeDto {
       final json = value.cast<String, dynamic>();
 
       return UserUpdateMeDto(
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),

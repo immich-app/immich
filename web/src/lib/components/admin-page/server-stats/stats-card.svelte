@@ -31,7 +31,7 @@
       class="text-immich-primary dark:text-immich-dark-primary">{value}</span
     >
     {#if unit}
-      <span class="absolute -top-5 right-2 text-base font-light text-gray-400">{unit}</span>
+      <span class="absolute -top-5 end-2 text-base font-light text-gray-400">{unit}</span>
     {/if}
   </div>
 </div>

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { clickOutside } from '$lib/actions/click-outside';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
   import { shortcuts } from '$lib/actions/shortcut';
   import CircleIconButton, {
@@ -7,6 +6,7 @@
     type Padding,
   } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import {
     getContextMenuPositionFromBoundingRect,
@@ -27,6 +27,7 @@
     /**
      * The direction in which the context menu should open.
      */
+    // TODO change to start vs end
     direction?: 'left' | 'right';
     color?: Color;
     size?: string | undefined;
@@ -63,7 +64,15 @@
   const menuId = `context-menu-${id}`;
 
   const openDropdown = (event: KeyboardEvent | MouseEvent) => {
-    contextMenuPosition = getContextMenuPositionFromEvent(event, align);
+    let layoutAlign = align;
+    if (languageManager.rtl) {
+      if (align.includes('left')) {
+        layoutAlign = align.replace('left', 'right') as Align;
+      } else if (align.includes('right')) {
+        layoutAlign = align.replace('right', 'left') as Align;
+      }
+    }
+    contextMenuPosition = getContextMenuPositionFromEvent(event, layoutAlign);
     isOpen = true;
     menuContainer?.focus();
   };
@@ -105,6 +114,19 @@
     closeDropdown();
   };
 
+  const handleDocumentClick = (event: MouseEvent) => {
+    if (!isOpen) {
+      return;
+    }
+
+    const target = event.target as Node | null;
+    if (buttonContainer?.contains(target)) {
+      return;
+    }
+
+    closeDropdown();
+  };
+
   const focusButton = () => {
     const button = buttonContainer?.querySelector(`#${buttonId}`) as HTMLButtonElement | null;
     button?.focus();
@@ -118,6 +140,7 @@
 </script>
 
 <svelte:window onresize={onResize} />
+<svelte:document onclick={handleDocumentClick} />
 
 <div
   use:contextMenuNavigation={{
@@ -129,7 +152,6 @@
     selectedId: $selectedIdStore,
     selectionChanged: (id) => ($selectedIdStore = id),
   }}
-  use:clickOutside={{ onOutclick: closeDropdown }}
   onresize={onResize}
   {...restProps}
 >

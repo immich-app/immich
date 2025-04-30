@@ -273,7 +273,6 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockImplementation(async function* generator() {});
-      mocks.asset.getAll.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(1) });
 
@@ -292,7 +291,6 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockImplementation(async function* generator() {});
-      mocks.asset.getAll.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
       mocks.asset.getLibraryAssetCount.mockResolvedValue(0);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(1) });
 
@@ -350,7 +348,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.external]);
       mocks.storage.stat.mockRejectedValue(new Error('ENOENT, no such file or directory'));
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
@@ -371,7 +369,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.external]);
       mocks.storage.stat.mockRejectedValue(new Error('Could not read file'));
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
@@ -392,7 +390,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockRejectedValue(new Error('Could not read file'));
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
@@ -410,7 +408,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.external.fileModifiedAt } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
@@ -431,7 +429,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.external.fileModifiedAt } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
@@ -451,7 +449,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.external.fileModifiedAt } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
@@ -471,7 +469,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.external]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.external.fileModifiedAt } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
@@ -489,7 +487,7 @@ describe(LibraryService.name, () => {
         progressCounter: 0,
       };
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.trashedOffline.fileModifiedAt } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
@@ -518,7 +516,7 @@ describe(LibraryService.name, () => {
 
       const mtime = new Date(assetStub.external.fileModifiedAt.getDate() + 1);
 
-      mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
+      mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.external]);
       mocks.storage.stat.mockResolvedValue({ mtime } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);

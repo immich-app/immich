@@ -1,4 +1,6 @@
 <script lang="ts" module>
+  import { get } from 'svelte/store';
+
   export type ComboBoxOption = {
     id?: string;
     label: string;
@@ -28,7 +30,6 @@
   import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
-  import { get } from 'svelte/store';
 
   interface Props {
     label: string;
@@ -70,7 +71,7 @@
    * Keeps track of whether the combobox is actively being used.
    */
   let isActive = $state(false);
-  let searchQuery = $state(selectedOption?.label || '');
+  let searchQuery = $derived(selectedOption?.label || '');
   let selectedIndex: number | undefined = $state();
   let optionRefs: HTMLElement[] = $state([]);
   let input = $state<HTMLInputElement>();
@@ -227,10 +228,6 @@
 
   const getInputPosition = () => input?.getBoundingClientRect();
 
-  $effect(() => {
-    searchQuery = selectedOption ? selectedOption.label : '';
-  });
-
   let filteredOptions = $derived.by(() => {
     const _options = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -261,7 +258,7 @@
 >
   <div>
     {#if isActive}
-      <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+      <div class="absolute inset-y-0 start-0 flex items-center ps-3">
         <div class="dark:text-immich-dark-fg/75">
           <Icon path={mdiMagnify} ariaHidden={true} />
         </div>
@@ -276,13 +273,12 @@
       aria-expanded={isOpen}
       autocomplete="off"
       bind:this={input}
-      class:!pl-8={isActive}
+      class:!ps-8={isActive}
       class:!rounded-b-none={isOpen && dropdownDirection === 'bottom'}
       class:!rounded-t-none={isOpen && dropdownDirection === 'top'}
       class:cursor-pointer={!isActive}
-      class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
+      class="immich-form-input text-sm w-full !pe-12 transition-all"
       id={inputId}
-      onclick={activate}
       onfocus={activate}
       oninput={onInput}
       role="combobox"
@@ -329,8 +325,8 @@
     />
 
     <div
-      class="absolute right-0 top-0 h-full flex px-4 justify-center items-center content-between"
-      class:pr-2={selectedOption}
+      class="absolute end-0 top-0 h-full flex px-4 justify-center items-center content-between"
+      class:pe-2={selectedOption}
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
@@ -345,7 +341,7 @@
     role="listbox"
     id={listboxId}
     transition:fly={{ duration: 250 }}
-    class="fixed text-left text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900 z-[10000]"
+    class="fixed text-start text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900 z-[10000]"
     class:rounded-b-xl={dropdownDirection === 'bottom'}
     class:rounded-t-xl={dropdownDirection === 'top'}
     class:shadow={dropdownDirection === 'bottom'}
@@ -364,9 +360,9 @@
           role="option"
           aria-selected={selectedIndex === 0}
           aria-disabled={true}
-          class="text-left w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700"
+          class="text-start w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700"
           id={`${listboxId}-${0}`}
-          onclick={() => closeDropdown()}
+          onclick={closeDropdown}
         >
           {allowCreate ? searchQuery : $t('no_results')}
         </li>
@@ -376,7 +372,7 @@
         <li
           aria-selected={index === selectedIndex}
           bind:this={optionRefs[index]}
-          class="text-left w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700 break-words"
+          class="text-start w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700 break-words"
           id={`${listboxId}-${index}`}
           onclick={() => handleSelect(option)}
           role="option"

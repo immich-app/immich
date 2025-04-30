@@ -4,12 +4,12 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetBucket, assetsSnapshot, AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetBucket, assetsSnapshot, AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { isSearchEnabled } from '$lib/stores/search.store';
+  import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets } from '$lib/utils/actions';
+  import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
@@ -25,6 +25,8 @@
   import { page } from '$app/stores';
   import type { UpdatePayload } from 'vite';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { focusNext } from '$lib/utils/focus-util';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -77,38 +79,59 @@
   let scrubBucketPercent = $state(0);
   let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
   let scrubOverallPercent: number = $state(0);
+  let scrubberWidth = $state(0);
 
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
+  const maxMd = $derived(mobileDevice.maxMd);
+  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+
+  $effect(() => {
+    const layoutOptions = maxMd
+      ? {
+          rowHeight: 100,
+          headerHeight: 32,
+        }
+      : {
+          rowHeight: 235,
+          headerHeight: 48,
+        };
+    assetStore.setLayoutOptions(layoutOptions);
+  });
+
+  const scrollTo = (top: number) => {
+    element?.scrollTo({ top });
+    showSkeleton = false;
+  };
+
+  const scrollToTop = () => {
+    scrollTo(0);
+  };
+
   const completeNav = async () => {
-    if ($gridScrollTarget?.at) {
+    const scrollTarget = $gridScrollTarget?.at;
+    if (scrollTarget) {
       try {
-        const bucket = await assetStore.findBucketForAsset($gridScrollTarget.at);
+        const bucket = await assetStore.findBucketForAsset(scrollTarget);
         if (bucket) {
-          const height = bucket.findAssetAbsolutePosition($gridScrollTarget.at);
+          const height = bucket.findAssetAbsolutePosition(scrollTarget);
           if (height) {
-            element?.scrollTo({ top: height });
-            showSkeleton = false;
+            scrollTo(height);
             assetStore.updateIntersections();
+            return;
           }
         }
       } catch {
-        element?.scrollTo({ top: 0 });
-        showSkeleton = false;
+        // ignore errors - asset may not be in the store
       }
-    } else {
-      element?.scrollTo({ top: 0 });
-      showSkeleton = false;
     }
+    scrollToTop();
   };
   beforeNavigate(() => (assetStore.suspendTransitions = true));
   afterNavigate((nav) => {
-    const { complete, type } = nav;
-    if (type === 'enter') {
-      return;
-    }
+    const { complete } = nav;
     complete.then(completeNav, completeNav);
   });
 
@@ -134,8 +157,7 @@
                 { replaceState: true, forceNavigate: true },
               );
             } else {
-              element?.scrollTo({ top: 0 });
-              showSkeleton = false;
+              scrollToTop();
             }
           }, 500);
         }
@@ -156,7 +178,13 @@
   const updateIsScrolling = () => (assetStore.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
-  const compensateScrollCallback = (delta: number) => element?.scrollBy(0, delta);
+  const compensateScrollCallback = ({ delta, top }: { delta?: number; top?: number }) => {
+    if (delta) {
+      element?.scrollBy(0, delta);
+    } else if (top) {
+      element?.scrollTo({ top });
+    }
+  };
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
 
   onMount(() => {
@@ -261,10 +289,21 @@
           bucket = assetStore.buckets[i];
           bucketHeight = assetStore.buckets[i].bucketHeight;
         }
+
         let next = top - bucketHeight * maxScrollPercent;
-        if (next < 0) {
+        // instead of checking for < 0, add a little wiggle room for subpixel resolution
+        if (next < -1 && bucket) {
           scrubBucket = bucket;
-          scrubBucketPercent = top / (bucketHeight * maxScrollPercent);
+
+          // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
+          scrubBucketPercent = Math.max(0, top / (bucketHeight * maxScrollPercent));
+
+          // compensate for lost precision/rouding errors advance to the next bucket, if present
+          if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
+            scrubBucket = assetStore.buckets[i + 1];
+            scrubBucketPercent = 0;
+          }
+
           found = true;
           break;
         }
@@ -304,11 +343,11 @@
   };
 
   const onStackAssets = async () => {
-    const ids = await stackAssets(assetInteraction.selectedAssets);
-    if (ids) {
-      assetStore.removeAssets(ids);
-      onEscape();
-    }
+    const result = await stackAssets(assetInteraction.selectedAssets);
+
+    updateStackedAssetInTimeline(assetStore, result);
+
+    onEscape();
   };
 
   const toggleArchive = async () => {
@@ -377,7 +416,8 @@
       case removeAction:
       case AssetAction.TRASH:
       case AssetAction.RESTORE:
-      case AssetAction.DELETE: {
+      case AssetAction.DELETE:
+      case AssetAction.ARCHIVE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (await handleNext()) || (await handlePrevious()) || (await handleClose({ asset: action.asset }));
@@ -404,7 +444,7 @@
       }
 
       case AssetAction.UNSTACK: {
-        assetStore.addAssets(action.assets);
+        updateUnstackedAssetInTimeline(assetStore, action.assets);
       }
     }
   };
@@ -418,7 +458,7 @@
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if (searchStore.isSearchEnabled) {
       return;
     }
 
@@ -429,7 +469,7 @@
   };
 
   const onKeyUp = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if (searchStore.isSearchEnabled) {
       return;
     }
 
@@ -446,7 +486,7 @@
     lastAssetMouseEvent = asset;
   };
 
-  const handleGroupSelect = (group: string, assets: AssetResponseDto[]) => {
+  const handleGroupSelect = (assetStore: AssetStore, group: string, assets: AssetResponseDto[]) => {
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
@@ -457,6 +497,12 @@
       for (const asset of assets) {
         handleSelectAsset(asset);
       }
+    }
+
+    if (assetStore.getAssets().length == assetInteraction.selectedAssets.length) {
+      isSelectingAllAssets.set(true);
+    } else {
+      isSelectingAllAssets.set(false);
     }
   };
 
@@ -571,34 +617,8 @@
     }
   };
 
-  const focusNextAsset = async () => {
-    if (assetInteraction.focussedAssetId === null) {
-      const firstAsset = assetStore.getFirstAsset();
-      if (firstAsset) {
-        assetInteraction.focussedAssetId = firstAsset.id;
-      }
-    } else {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const nextAsset = await assetStore.getNextAsset(focussedAsset);
-        if (nextAsset) {
-          assetInteraction.focussedAssetId = nextAsset.id;
-        }
-      }
-    }
-  };
-
-  const focusPreviousAsset = async () => {
-    if (assetInteraction.focussedAssetId !== null) {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const previousAsset = await assetStore.getPreviousAsset(focussedAsset);
-        if (previousAsset) {
-          assetInteraction.focussedAssetId = previousAsset.id;
-        }
-      }
-    }
-  };
+  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
@@ -612,7 +632,7 @@
 
   let shortcutList = $derived(
     (() => {
-      if ($isSearchEnabled || $showAssetViewer) {
+      if (searchStore.isSearchEnabled || $showAssetViewer) {
         return [];
       }
 
@@ -676,7 +696,6 @@
 
 {#if assetStore.buckets.length > 0}
   <Scrubber
-    invisible={showSkeleton}
     {assetStore}
     height={assetStore.viewportHeight}
     timelineTopOffset={assetStore.topSectionHeight}
@@ -686,6 +705,7 @@
     {scrubBucketPercent}
     {scrubBucket}
     {onScrub}
+    bind:scrubberWidth
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
       let amount = 50;
@@ -707,7 +727,8 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
+  style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={assetStore.viewportHeight}
   bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
@@ -745,7 +766,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <Skeleton height={bucket.bucketHeight} title={bucket.bucketDateFormatted} />
+          <Skeleton height={bucket.bucketHeight - bucket.store.headerHeight} title={bucket.bucketDateFormatted} />
         </div>
       {:else if display}
         <div
@@ -759,17 +780,25 @@
             {withStacked}
             {showArchiveIcon}
             {assetInteraction}
+            {assetStore}
             {isSelectionMode}
             {singleSelect}
             {bucket}
-            onSelect={({ title, assets }) => handleGroupSelect(title, assets)}
+            onSelect={({ title, assets }) => handleGroupSelect(assetStore, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
           />
         </div>
       {/if}
     {/each}
-    <!-- <div class="h-[60px]" style:position="absolute" style:left="0" style:right="0" style:bottom="0"></div> -->
+    <!-- spacer for leadout -->
+    <div
+      class="h-[60px]"
+      style:position="absolute"
+      style:left="0"
+      style:right="0"
+      style:transform={`translate3d(0,${assetStore.timelineHeight}px,0)`}
+    ></div>
   </section>
 </section>
 

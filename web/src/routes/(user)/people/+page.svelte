@@ -408,13 +408,12 @@
 
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
     <PeopleInfiniteScroll people={showPeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
-      {#snippet children({ person, index })}
+      {#snippet children({ person })}
         <div
           class="p-2 rounded-xl hover:bg-gray-200 border-2 hover:border-immich-primary/50 hover:shadow-sm dark:hover:bg-immich-dark-primary/20 hover:dark:border-immich-dark-primary/25 border-transparent transition-all"
         >
           <PeopleCard
             {person}
-            preload={index < 20}
             onSetBirthDate={() => handleSetBirthDate(person)}
             onMergePeople={() => handleMergePeople(person)}
             onHidePerson={() => handleHidePerson(person)}
@@ -459,7 +458,7 @@
   <dialog
     open
     transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
-    class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
+    class="absolute start-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
     aria-modal="true"
     aria-labelledby="manage-visibility-title"
     use:focusTrap

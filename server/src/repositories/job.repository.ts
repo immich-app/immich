@@ -33,7 +33,7 @@ export class JobRepository {
     this.logger.setContext(JobRepository.name);
   }
 
-  setup({ services }: { services: ClassConstructor<unknown>[] }) {
+  setup(services: ClassConstructor<unknown>[]) {
     const reflector = this.moduleRef.get(Reflector, { strict: false });
 
     // discovery

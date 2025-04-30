@@ -78,7 +78,7 @@
   <LicenseModal onClose={() => (isOpen = false)} />
 {/if}
 
-<div class="hidden md:block license-status pl-4 text-sm">
+<div class="license-status ps-4 text-sm">
   {#if $isPurchased && $preferences.purchase.showSupportBadge}
     <button
       onclick={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
@@ -95,12 +95,12 @@
       onmouseleave={() => (hoverButton = false)}
       onfocus={onButtonHover}
       onblur={() => (hoverButton = false)}
-      class="p-2 flex justify-between place-items-center place-content-center border border-immich-primary/20 dark:border-immich-dark-primary/10 mt-2 rounded-lg shadow-md dark:bg-immich-dark-primary/10 w-full"
+      class="p-2 flex justify-between place-items-center place-content-center border border-immich-primary/20 dark:border-immich-dark-primary/10 mt-2 rounded-lg shadow-md dark:bg-immich-dark-primary/10 min-w-52 w-full"
     >
       <div class="flex justify-between w-full place-items-center place-content-center">
         <div class="flex place-items-center place-content-center gap-1">
           <div class="h-6 w-6">
-            <ImmichLogo noText />
+            <ImmichLogo noText class="h-[24px]" />
           </div>
           <p class="flex text-immich-primary dark:text-immich-dark-primary font-medium">
             {$t('purchase_button_buy_immich')}
@@ -110,7 +110,7 @@
         <div>
           <Icon
             path={mdiInformationOutline}
-            class="flex text-immich-primary dark:text-immich-dark-primary font-medium"
+            class="hidden sidebar:flex text-immich-primary dark:text-immich-dark-primary font-medium"
             size="18"
           />
         </div>
@@ -123,7 +123,7 @@
   {#if showMessage}
     <dialog
       open
-      class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
+      class="hidden sidebar:block w-[500px] absolute bottom-[75px] start-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       onmouseover={() => (hoverMessage = true)}
       onmouseleave={() => (hoverMessage = false)}
@@ -132,7 +132,7 @@
     >
       <div class="flex justify-between place-items-center">
         <div class="h-10 w-10">
-          <ImmichLogo noText />
+          <ImmichLogo noText class="h-[32px]" />
         </div>
         <CircleIconButton
           icon={mdiClose}

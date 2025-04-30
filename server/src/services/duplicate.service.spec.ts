@@ -1,13 +1,39 @@
-import { JobName, JobStatus } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
+import { AssetFileType, AssetType, JobName, JobStatus } from 'src/enum';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, vitest } from 'vitest';
 
 vitest.useFakeTimers();
+
+const hasEmbedding = {
+  id: 'asset-1',
+  ownerId: 'user-id',
+  files: [
+    {
+      assetId: 'asset-1',
+      createdAt: new Date(),
+      id: 'file-1',
+      path: 'preview.jpg',
+      type: AssetFileType.PREVIEW,
+      updatedAt: new Date(),
+      updateId: 'update-1',
+    },
+  ],
+  isVisible: true,
+  stackId: null,
+  type: AssetType.IMAGE,
+  duplicateId: null,
+  embedding: '[1, 2, 3, 4]',
+};
+
+const hasDupe = {
+  ...hasEmbedding,
+  id: 'asset-2',
+  duplicateId: 'duplicate-id',
+};
 
 describe(SearchService.name, () => {
   let sut: DuplicateService;
@@ -25,16 +51,16 @@ describe(SearchService.name, () => {
     it('should get duplicates', async () => {
       mocks.asset.getDuplicates.mockResolvedValue([
         {
-          duplicateId: assetStub.hasDupe.duplicateId!,
-          assets: [assetStub.hasDupe, assetStub.hasDupe],
+          duplicateId: 'duplicate-id',
+          assets: [assetStub.image, assetStub.image],
         },
       ]);
       await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual([
         {
-          duplicateId: assetStub.hasDupe.duplicateId,
+          duplicateId: 'duplicate-id',
           assets: [
-            expect.objectContaining({ id: assetStub.hasDupe.id }),
-            expect.objectContaining({ id: assetStub.hasDupe.id }),
+            expect.objectContaining({ id: assetStub.image.id }),
+            expect.objectContaining({ id: assetStub.image.id }),
           ],
         },
       ]);
@@ -86,14 +112,11 @@ describe(SearchService.name, () => {
     });
 
     it('should queue missing assets', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForSearchDuplicates.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueSearchDuplicates({});
 
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.DUPLICATE);
+      expect(mocks.assetJob.streamForSearchDuplicates).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.DUPLICATE_DETECTION,
@@ -103,14 +126,11 @@ describe(SearchService.name, () => {
     });
 
     it('should queue all assets', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForSearchDuplicates.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueSearchDuplicates({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForSearchDuplicates).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.DUPLICATE_DETECTION,
@@ -167,6 +187,8 @@ describe(SearchService.name, () => {
     });
 
     it('should fail if asset is not found', async () => {
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue(void 0);
+
       const result = await sut.handleSearchDuplicates({ id: assetStub.image.id });
 
       expect(result).toBe(JobStatus.FAILED);
@@ -175,7 +197,7 @@ describe(SearchService.name, () => {
 
     it('should skip if asset is part of stack', async () => {
       const id = assetStub.primaryImage.id;
-      mocks.asset.getById.mockResolvedValue(assetStub.primaryImage);
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, stackId: 'stack-id' });
 
       const result = await sut.handleSearchDuplicates({ id });
 
@@ -185,7 +207,7 @@ describe(SearchService.name, () => {
 
     it('should skip if asset is not visible', async () => {
       const id = assetStub.livePhotoMotionAsset.id;
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, isVisible: false });
 
       const result = await sut.handleSearchDuplicates({ id });
 
@@ -194,7 +216,7 @@ describe(SearchService.name, () => {
     });
 
     it('should fail if asset is missing preview image', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.noResizePath);
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, files: [] });
 
       const result = await sut.handleSearchDuplicates({ id: assetStub.noResizePath.id });
 
@@ -203,7 +225,7 @@ describe(SearchService.name, () => {
     });
 
     it('should fail if asset is missing embedding', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, embedding: null });
 
       const result = await sut.handleSearchDuplicates({ id: assetStub.image.id });
 
@@ -212,21 +234,21 @@ describe(SearchService.name, () => {
     });
 
     it('should search for duplicates and update asset with duplicateId', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.hasEmbedding);
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue(hasEmbedding);
       mocks.search.searchDuplicates.mockResolvedValue([
         { assetId: assetStub.image.id, distance: 0.01, duplicateId: null },
       ]);
-      const expectedAssetIds = [assetStub.image.id, assetStub.hasEmbedding.id];
+      const expectedAssetIds = [assetStub.image.id, hasEmbedding.id];
 
-      const result = await sut.handleSearchDuplicates({ id: assetStub.hasEmbedding.id });
+      const result = await sut.handleSearchDuplicates({ id: hasEmbedding.id });
 
       expect(result).toBe(JobStatus.SUCCESS);
       expect(mocks.search.searchDuplicates).toHaveBeenCalledWith({
-        assetId: assetStub.hasEmbedding.id,
-        embedding: assetStub.hasEmbedding.smartSearch!.embedding,
+        assetId: hasEmbedding.id,
+        embedding: hasEmbedding.embedding,
         maxDistance: 0.01,
-        type: assetStub.hasEmbedding.type,
-        userIds: [assetStub.hasEmbedding.ownerId],
+        type: hasEmbedding.type,
+        userIds: [hasEmbedding.ownerId],
       });
       expect(mocks.asset.updateDuplicates).toHaveBeenCalledWith({
         assetIds: expectedAssetIds,
@@ -239,24 +261,24 @@ describe(SearchService.name, () => {
     });
 
     it('should use existing duplicate ID among matched duplicates', async () => {
-      const duplicateId = assetStub.hasDupe.duplicateId;
-      mocks.asset.getById.mockResolvedValue(assetStub.hasEmbedding);
-      mocks.search.searchDuplicates.mockResolvedValue([{ assetId: assetStub.hasDupe.id, distance: 0.01, duplicateId }]);
-      const expectedAssetIds = [assetStub.hasEmbedding.id];
+      const duplicateId = hasDupe.duplicateId;
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue(hasEmbedding);
+      mocks.search.searchDuplicates.mockResolvedValue([{ assetId: hasDupe.id, distance: 0.01, duplicateId }]);
+      const expectedAssetIds = [hasEmbedding.id];
 
-      const result = await sut.handleSearchDuplicates({ id: assetStub.hasEmbedding.id });
+      const result = await sut.handleSearchDuplicates({ id: hasEmbedding.id });
 
       expect(result).toBe(JobStatus.SUCCESS);
       expect(mocks.search.searchDuplicates).toHaveBeenCalledWith({
-        assetId: assetStub.hasEmbedding.id,
-        embedding: assetStub.hasEmbedding.smartSearch!.embedding,
+        assetId: hasEmbedding.id,
+        embedding: hasEmbedding.embedding,
         maxDistance: 0.01,
-        type: assetStub.hasEmbedding.type,
-        userIds: [assetStub.hasEmbedding.ownerId],
+        type: hasEmbedding.type,
+        userIds: [hasEmbedding.ownerId],
       });
       expect(mocks.asset.updateDuplicates).toHaveBeenCalledWith({
         assetIds: expectedAssetIds,
-        targetDuplicateId: assetStub.hasDupe.duplicateId,
+        targetDuplicateId: duplicateId,
         duplicateIds: [],
       });
       expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith(
@@ -265,15 +287,15 @@ describe(SearchService.name, () => {
     });
 
     it('should remove duplicateId if no duplicates found and asset has duplicateId', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.hasDupe);
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue(hasDupe);
       mocks.search.searchDuplicates.mockResolvedValue([]);
 
-      const result = await sut.handleSearchDuplicates({ id: assetStub.hasDupe.id });
+      const result = await sut.handleSearchDuplicates({ id: hasDupe.id });
 
       expect(result).toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.hasDupe.id, duplicateId: null });
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: hasDupe.id, duplicateId: null });
       expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
-        assetId: assetStub.hasDupe.id,
+        assetId: hasDupe.id,
         duplicatesDetectedAt: expect.any(Date),
       });
     });

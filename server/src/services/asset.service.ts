@@ -5,6 +5,7 @@ import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import {
   AssetResponseDto,
+  MapAsset,
   MemoryLaneResponseDto,
   SanitizedAssetResponseDto,
   mapAsset,
@@ -20,7 +21,6 @@ import {
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
@@ -43,7 +43,7 @@ export class AssetService extends BaseService {
         yearsAgo,
         // TODO move this to clients
         title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-        assets: assets.map((asset) => mapAsset(asset as AssetEntity, { auth })),
+        assets: assets.map((asset) => mapAsset(asset, { auth })),
       };
     });
   }
@@ -105,7 +105,7 @@ export class AssetService extends BaseService {
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
 
-    let previousMotion: AssetEntity | null = null;
+    let previousMotion: MapAsset | null = null;
     if (rest.livePhotoVideoId) {
       await onBeforeLink(repos, { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId });
     } else if (rest.livePhotoVideoId === null) {
@@ -134,8 +134,11 @@ export class AssetService extends BaseService {
     const { ids, dateTimeOriginal, latitude, longitude, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
-    for (const id of ids) {
-      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
+    if (dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined) {
+      await this.assetRepository.updateAllExif(ids, { dateTimeOriginal, latitude, longitude });
+      await this.jobRepository.queueAll(
+        ids.map((id) => ({ name: JobName.SIDECAR_WRITE, data: { id, dateTimeOriginal, latitude, longitude } })),
+      );
     }
 
     if (
@@ -169,7 +172,7 @@ export class AssetService extends BaseService {
       }
     };
 
-    const assets = this.assetRepository.streamDeletedAssets(trashedBefore);
+    const assets = this.assetJobRepository.streamForDeletedJob(trashedBefore);
     for await (const asset of assets) {
       chunk.push(asset);
       if (chunk.length >= JOBS_ASSET_PAGINATION_SIZE) {
@@ -186,13 +189,7 @@ export class AssetService extends BaseService {
   async handleAssetDeletion(job: JobOf<JobName.ASSET_DELETION>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
-    const asset = await this.assetRepository.getById(id, {
-      faces: { person: true },
-      library: true,
-      stack: { assets: true },
-      exifInfo: true,
-      files: true,
-    });
+    const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
       return JobStatus.FAILED;
@@ -200,7 +197,7 @@ export class AssetService extends BaseService {
 
     // Replace the parent of the stack children with a new asset
     if (asset.stack?.primaryAssetId === id) {
-      const stackAssetIds = asset.stack.assets.map((a) => a.id);
+      const stackAssetIds = asset.stack?.assets.map((a) => a.id) ?? [];
       if (stackAssetIds.length > 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
         await this.stackRepository.update(asset.stack.id, {
@@ -230,8 +227,8 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
-    const files = [thumbnailFile?.path, previewFile?.path, asset.encodedVideoPath];
+    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files ?? []);
+    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
 
     if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);

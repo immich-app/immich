@@ -13,9 +13,6 @@ where
   and "assets"."isFavorite" = $4
   and "assets"."isArchived" = $5
   and "assets"."deletedAt" is null
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
 order by
   "assets"."fileCreatedAt" desc
 limit
@@ -37,9 +34,6 @@ offset
     and "assets"."isFavorite" = $4
     and "assets"."isArchived" = $5
     and "assets"."deletedAt" is null
-    and "assets"."fileCreatedAt" is not null
-    and "assets"."fileModifiedAt" is not null
-    and "assets"."localDateTime" is not null
     and "assets"."id" < $6
   order by
     random()
@@ -60,9 +54,6 @@ union all
     and "assets"."isFavorite" = $11
     and "assets"."isArchived" = $12
     and "assets"."deletedAt" is null
-    and "assets"."fileCreatedAt" is not null
-    and "assets"."fileModifiedAt" is not null
-    and "assets"."localDateTime" is not null
     and "assets"."id" > $13
   order by
     random()
@@ -86,9 +77,6 @@ where
   and "assets"."isFavorite" = $4
   and "assets"."isArchived" = $5
   and "assets"."deletedAt" is null
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
 order by
   smart_search.embedding <=> $6
 limit
@@ -136,6 +124,7 @@ with
       "asset_faces"
       inner join "assets" on "assets"."id" = "asset_faces"."assetId"
       inner join "face_search" on "face_search"."faceId" = "asset_faces"."id"
+      left join "person" on "person"."id" = "asset_faces"."personId"
     where
       "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
