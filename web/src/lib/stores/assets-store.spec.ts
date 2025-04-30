@@ -48,15 +48,15 @@ describe('AssetStore', () => {
 
       expect(plainBuckets).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ bucketDate: '2024-03-01T00:00:00.000Z', bucketHeight: 304 }),
-          expect.objectContaining({ bucketDate: '2024-02-01T00:00:00.000Z', bucketHeight: 4515.333_333_333_333 }),
+          expect.objectContaining({ bucketDate: '2024-03-01T00:00:00.000Z', bucketHeight: 303 }),
+          expect.objectContaining({ bucketDate: '2024-02-01T00:00:00.000Z', bucketHeight: 4514.333_333_333_333 }),
           expect.objectContaining({ bucketDate: '2024-01-01T00:00:00.000Z', bucketHeight: 286 }),
         ]),
       );
     });
 
     it('calculates timeline height', () => {
-      expect(assetStore.timelineHeight).toBe(5105.333_333_333_333);
+      expect(assetStore.timelineHeight).toBe(5103.333_333_333_333);
     });
   });
 

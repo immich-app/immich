@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { clickOutside } from '$lib/actions/click-outside';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
+  import type { Snippet } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { slide } from 'svelte/transition';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import type { Snippet } from 'svelte';
 
   interface Props {
     isVisible?: boolean;
@@ -41,12 +42,17 @@
 
   $effect(() => {
     if (menuElement) {
+      let layoutDirection = direction;
+      if (languageManager.rtl) {
+        layoutDirection = direction === 'left' ? 'right' : 'left';
+      }
+
       const rect = menuElement.getBoundingClientRect();
-      const directionWidth = direction === 'left' ? rect.width : 0;
+      const directionWidth = layoutDirection === 'left' ? rect.width : 0;
       const menuHeight = Math.min(menuElement.clientHeight, height) || 0;
 
-      left = Math.min(window.innerWidth - rect.width, x - directionWidth);
-      top = Math.min(window.innerHeight - menuHeight, y);
+      left = Math.max(8, Math.min(window.innerWidth - rect.width, x - directionWidth));
+      top = Math.max(8, Math.min(window.innerHeight - menuHeight, y));
     }
   });
 </script>
@@ -66,7 +72,7 @@
     aria-labelledby={ariaLabelledBy}
     bind:this={menuElement}
     class="{isVisible
-      ? 'max-h-dvh max-h-svh'
+      ? 'max-h-dvh'
       : 'max-h-0'} flex flex-col transition-all duration-[250ms] ease-in-out outline-none overflow-auto"
     role="menu"
     tabindex="-1"

@@ -255,9 +255,12 @@ class SyncService {
         .where((asset) => idsToDelete.contains(asset.remoteId))
         .toList();
 
-    for (var asset in matchedAssets) {
-      _localFilesManager.moveToTrash(asset.fileName);
-    }
+    final mediaUrls = await Future.wait(
+      matchedAssets
+          .map((asset) => asset.local?.getMediaUrl() ?? Future.value(null)),
+    );
+
+    await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
   }
 
   /// Deletes remote-only assets, updates merged assets to be local-only
@@ -819,12 +822,28 @@ class SyncService {
   }
 
   Future<void> _toggleTrashStatusForAssets(List<Asset> assetsList) async {
-    for (var asset in assetsList) {
+    final trashMediaUrls = <String>[];
+
+    for (final asset in assetsList) {
       if (asset.isTrashed) {
-        _localFilesManager.moveToTrash(asset.fileName);
+        final mediaUrl = await asset.local?.getMediaUrl();
+        if (mediaUrl == null) {
+          _log.warning(
+            "Failed to get media URL for asset ${asset.name} while moving to trash",
+          );
+          continue;
+        }
+        trashMediaUrls.add(mediaUrl);
       } else {
-        _localFilesManager.restoreFromTrash(asset.fileName);
+        await _localFilesManager.restoreFromTrash(
+          asset.fileName,
+          asset.type.index,
+        );
       }
+    }
+
+    if (trashMediaUrls.isNotEmpty) {
+      await _localFilesManager.moveToTrash(trashMediaUrls);
     }
   }
 

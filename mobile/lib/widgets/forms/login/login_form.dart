@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:crypto/crypto.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -203,13 +206,51 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
+    String generateRandomString(int length) {
+      const chars =
+          'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+      final random = Random.secure();
+      return String.fromCharCodes(
+        Iterable.generate(
+          length,
+          (_) => chars.codeUnitAt(random.nextInt(chars.length)),
+        ),
+      );
+    }
+
+    List<int> randomBytes(int length) {
+      final random = Random.secure();
+      return List<int>.generate(length, (i) => random.nextInt(256));
+    }
+
+    /// Per specification, the code verifier must be 43-128 characters long
+    /// and consist of characters [A-Z, a-z, 0-9, "-", ".", "_", "~"]
+    /// https://datatracker.ietf.org/doc/html/rfc7636#section-4.1
+    String randomCodeVerifier() {
+      return base64Url.encode(randomBytes(42));
+    }
+
+    Future<String> generatePKCECodeChallenge(String codeVerifier) async {
+      var bytes = utf8.encode(codeVerifier);
+      var digest = sha256.convert(bytes);
+      return base64Url.encode(digest.bytes).replaceAll('=', '');
+    }
+
     oAuthLogin() async {
       var oAuthService = ref.watch(oAuthServiceProvider);
       String? oAuthServerUrl;
 
+      final state = generateRandomString(32);
+
+      final codeVerifier = randomCodeVerifier();
+      final codeChallenge = await generatePKCECodeChallenge(codeVerifier);
+
       try {
-        oAuthServerUrl = await oAuthService
-            .getOAuthServerUrl(sanitizeUrl(serverEndpointController.text));
+        oAuthServerUrl = await oAuthService.getOAuthServerUrl(
+          sanitizeUrl(serverEndpointController.text),
+          state,
+          codeChallenge,
+        );
 
         isLoading.value = true;
 
@@ -230,8 +271,11 @@ class LoginForm extends HookConsumerWidget {
 
       if (oAuthServerUrl != null) {
         try {
-          final loginResponseDto =
-              await oAuthService.oAuthLogin(oAuthServerUrl);
+          final loginResponseDto = await oAuthService.oAuthLogin(
+            oAuthServerUrl,
+            state,
+            codeVerifier,
+          );
 
           if (loginResponseDto == null) {
             return;

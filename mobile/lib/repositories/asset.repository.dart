@@ -225,7 +225,7 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   }
 
   @override
-  Future<List<Asset>> getRecentlyAddedAssets(String userId) {
+  Future<List<Asset>> getRecentlyTakenAssets(String userId) {
     return db.assets
         .where()
         .ownerIdEqualToAnyChecksum(fastHash(userId))

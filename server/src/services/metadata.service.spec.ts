@@ -5,7 +5,6 @@ import { constants } from 'node:fs/promises';
 import { defaults } from 'src/config';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -14,7 +13,7 @@ import { probeStub } from 'test/fixtures/media.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 const makeFaceTags = (face: Partial<{ Name: string }> = {}) => ({
   RegionInfo: {
@@ -104,10 +103,10 @@ describe(MetadataService.name, () => {
 
   describe('handleQueueMetadataExtraction', () => {
     it('should queue metadata extraction for all assets without exif values', async () => {
-      mocks.asset.getWithout.mockResolvedValue({ items: [assetStub.image], hasNextPage: false });
+      mocks.assetJob.streamForMetadataExtraction.mockReturnValue(makeStream([assetStub.image]));
 
       await expect(sut.handleQueueMetadataExtraction({ force: false })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getWithout).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForMetadataExtraction).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.METADATA_EXTRACTION,
@@ -117,10 +116,10 @@ describe(MetadataService.name, () => {
     });
 
     it('should queue metadata extraction for all assets', async () => {
-      mocks.asset.getAll.mockResolvedValue({ items: [assetStub.image], hasNextPage: false });
+      mocks.assetJob.streamForMetadataExtraction.mockReturnValue(makeStream([assetStub.image]));
 
       await expect(sut.handleQueueMetadataExtraction({ force: true })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getAll).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForMetadataExtraction).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.METADATA_EXTRACTION,
@@ -598,6 +597,10 @@ describe(MetadataService.name, () => {
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
       expect(mocks.asset.update).toHaveBeenCalledTimes(3);
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: { id: assetStub.livePhotoMotionAsset.id },
+      });
     });
 
     it('should extract the EmbeddedVideo tag from Samsung JPEG motion photos', async () => {
@@ -652,6 +655,10 @@ describe(MetadataService.name, () => {
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
       expect(mocks.asset.update).toHaveBeenCalledTimes(3);
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: { id: assetStub.livePhotoMotionAsset.id },
+      });
     });
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
@@ -706,6 +713,10 @@ describe(MetadataService.name, () => {
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
       expect(mocks.asset.update).toHaveBeenCalledTimes(3);
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: { id: assetStub.livePhotoMotionAsset.id },
+      });
     });
 
     it('should delete old motion photo video assets if they do not match what is extracted', async () => {
@@ -1334,12 +1345,11 @@ describe(MetadataService.name, () => {
 
   describe('handleQueueSidecar', () => {
     it('should queue assets with sidecar files', async () => {
-      mocks.asset.getAll.mockResolvedValue({ items: [assetStub.sidecar], hasNextPage: false });
+      mocks.assetJob.streamForSidecar.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueSidecar({ force: true });
+      expect(mocks.assetJob.streamForSidecar).toHaveBeenCalledWith(true);
 
-      expect(mocks.asset.getAll).toHaveBeenCalledWith({ take: 1000, skip: 0 });
-      expect(mocks.asset.getWithout).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.SIDECAR_SYNC,
@@ -1349,12 +1359,11 @@ describe(MetadataService.name, () => {
     });
 
     it('should queue assets without sidecar files', async () => {
-      mocks.asset.getWithout.mockResolvedValue({ items: [assetStub.image], hasNextPage: false });
+      mocks.assetJob.streamForSidecar.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueSidecar({ force: false });
 
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ take: 1000, skip: 0 }, WithoutProperty.SIDECAR);
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
+      expect(mocks.assetJob.streamForSidecar).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.SIDECAR_DISCOVERY,

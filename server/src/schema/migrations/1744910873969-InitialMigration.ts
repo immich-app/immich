@@ -2,6 +2,7 @@ import { Kysely, sql } from 'kysely';
 import { DatabaseExtension } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { vectorIndexQuery } from 'src/utils/database';
 
 const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
 const lastMigrationSql = sql<{ name: string }>`SELECT "name" FROM "migrations" ORDER BY "timestamp" DESC LIMIT 1;`;
@@ -29,7 +30,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await sql`CREATE EXTENSION IF NOT EXISTS "cube";`.execute(db);
   await sql`CREATE EXTENSION IF NOT EXISTS "earthdistance";`.execute(db);
   await sql`CREATE EXTENSION IF NOT EXISTS "pg_trgm";`.execute(db);
-  await sql`CREATE EXTENSION IF NOT EXISTS "vectors";`.execute(db);
+  await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(vectorExtension)}`.execute(db);
   await sql`CREATE OR REPLACE FUNCTION immich_uuid_v7(p_timestamp timestamp with time zone default clock_timestamp())
   RETURNS uuid
   VOLATILE LANGUAGE SQL
@@ -108,7 +109,6 @@ export async function up(db: Kysely<any>): Promise<void> {
   $$;`.execute(db);
   if (vectorExtension === DatabaseExtension.VECTORS) {
     await sql`SET search_path TO "$user", public, vectors`.execute(db);
-    await sql`SET vectors.pgvector_compatibility=on`.execute(db);
   }
   await sql`CREATE TYPE "assets_status_enum" AS ENUM ('active','trashed','deleted');`.execute(db);
   await sql`CREATE TYPE "sourcetype" AS ENUM ('machine-learning','exif','manual');`.execute(db);
@@ -293,7 +293,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await sql`CREATE INDEX "IDX_live_photo_cid" ON "exif" ("livePhotoCID")`.execute(db);
   await sql`CREATE INDEX "IDX_auto_stack_id" ON "exif" ("autoStackId")`.execute(db);
   await sql`CREATE INDEX "IDX_asset_exif_update_id" ON "exif" ("updateId")`.execute(db);
-  await sql`CREATE INDEX "face_index" ON "face_search" USING hnsw (embedding vector_cosine_ops) WITH (ef_construction = 300, m = 16)`.execute(db);
+  await sql.raw(vectorIndexQuery({ vectorExtension, table: 'face_search', indexName: 'face_index' })).execute(db);
   await sql`CREATE INDEX "IDX_geodata_gist_earthcoord" ON "geodata_places" (ll_to_earth_public(latitude, longitude))`.execute(db);
   await sql`CREATE INDEX "idx_geodata_places_name" ON "geodata_places" USING gin (f_unaccent("name") gin_trgm_ops)`.execute(db);
   await sql`CREATE INDEX "idx_geodata_places_admin2_name" ON "geodata_places" USING gin (f_unaccent("admin2Name") gin_trgm_ops)`.execute(db);
@@ -316,7 +316,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await sql`CREATE INDEX "IDX_sharedlink_albumId" ON "shared_links" ("albumId")`.execute(db);
   await sql`CREATE INDEX "IDX_5b7decce6c8d3db9593d6111a6" ON "shared_link__asset" ("assetsId")`.execute(db);
   await sql`CREATE INDEX "IDX_c9fab4aa97ffd1b034f3d6581a" ON "shared_link__asset" ("sharedLinksId")`.execute(db);
-  await sql`CREATE INDEX "clip_index" ON "smart_search" USING hnsw (embedding vector_cosine_ops) WITH (ef_construction = 300, m = 16)`.execute(db);
+  await sql.raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: 'clip_index' })).execute(db);
   await sql`CREATE INDEX "IDX_d8ddd9d687816cc490432b3d4b" ON "session_sync_checkpoints" ("sessionId")`.execute(db);
   await sql`CREATE INDEX "IDX_session_sync_checkpoints_update_id" ON "session_sync_checkpoints" ("updateId")`.execute(db);
   await sql`CREATE INDEX "IDX_92e67dc508c705dd66c9461557" ON "tags" ("userId")`.execute(db);

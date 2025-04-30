@@ -11,6 +11,8 @@ import {
   AssetStatus,
   AssetType,
   MemoryType,
+  NotificationLevel,
+  NotificationType,
   Permission,
   SharedLinkType,
   SourceType,
@@ -263,6 +265,21 @@ export interface Memories {
   updateId: Generated<string>;
 }
 
+export interface Notifications {
+  id: Generated<string>;
+  createdAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp>;
+  deletedAt: Timestamp | null;
+  updateId: Generated<string>;
+  userId: string;
+  level: Generated<NotificationLevel>;
+  type: NotificationType;
+  title: string;
+  description: string | null;
+  data: any | null;
+  readAt: Timestamp | null;
+}
+
 export interface MemoriesAssetsAssets {
   assetsId: string;
   memoriesId: string;
@@ -463,6 +480,7 @@ export interface DB {
   memories: Memories;
   memories_assets_assets: MemoriesAssetsAssets;
   migrations: Migrations;
+  notifications: Notifications;
   move_history: MoveHistory;
   naturalearth_countries: NaturalearthCountries;
   partners_audit: PartnersAudit;

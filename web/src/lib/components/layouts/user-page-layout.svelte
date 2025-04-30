@@ -49,7 +49,7 @@
 
   {@render header?.()}
 </header>
-<main
+<div
   tabindex="-1"
   class="relative grid h-dvh grid-cols-[theme(spacing.0)_auto] overflow-hidden bg-immich-bg max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
 >
@@ -59,7 +59,7 @@
     <SideBar />
   {/if}
 
-  <section class="relative">
+  <main class="relative">
     {#if title || buttons}
       <div
         class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 dark:border-immich-dark-gray dark:text-immich-dark-fg"
@@ -79,5 +79,5 @@
     <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
       {@render children?.()}
     </div>
-  </section>
-</main>
+  </main>
+</div>

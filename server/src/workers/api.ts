@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
@@ -60,6 +61,7 @@ async function bootstrap() {
     );
   }
   app.use(app.get(ApiService).ssr(excludePaths));
+  app.use(compression());
 
   const server = await (host ? app.listen(port, host) : app.listen(port));
   server.requestTimeout = 24 * 60 * 60 * 1000;
