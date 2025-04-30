@@ -34,6 +34,9 @@
     --immich-ui-info: 14 165 233;
     --immich-ui-default-border: 209 213 219;
   }
+  * {
+    --tw-ring-offset-width: 0px;
+  }
 
   .dark {
     /* dark */

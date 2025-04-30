@@ -84,7 +84,7 @@
   let title = $derived(label ?? `${user.name} (${user.email})`);
   let interactiveClass = $derived(
     interactive
-      ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
+      ? 'group-focus:ring-4 ring-2 ring-immich-primary dark:ring-immich-dark-primary hocus:immich-dark-primary transition-colors'
       : '',
   );
 </script>

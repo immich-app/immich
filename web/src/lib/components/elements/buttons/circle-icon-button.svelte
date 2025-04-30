@@ -61,17 +61,17 @@
   }: Props = $props();
 
   const colorClasses: Record<Color, string> = {
-    transparent: 'bg-transparent hover:bg-[#d3d3d3] dark:text-immich-dark-fg',
-    opaque: 'bg-transparent hover:bg-immich-bg/30 text-white hover:dark:text-white',
-    light: 'bg-white hover:bg-[#d3d3d3]',
-    red: 'text-red-400 bg-red-100 hover:bg-[#d3d3d3]',
-    dark: 'bg-[#202123] hover:bg-[#d3d3d3]',
-    alert: 'text-[#ff0000] hover:text-white',
-    gray: 'bg-[#d3d3d3] hover:bg-[#e2e7e9] text-immich-dark-gray hover:text-black',
+    transparent: 'bg-transparent hocus:bg-[#d3d3d3] dark:text-immich-dark-fg',
+    opaque: 'bg-transparent hocus:bg-immich-bg/30 text-white hocus:dark:text-white',
+    light: 'bg-white hocus:bg-[#d3d3d3]',
+    red: 'text-red-400 bg-red-100 hocus:bg-[#d3d3d3]',
+    dark: 'bg-[#202123] hocus:bg-[#d3d3d3]',
+    alert: 'text-[#ff0000] hocus:text-white',
+    gray: 'bg-[#d3d3d3] hocus:bg-[#e2e7e9] text-immich-dark-gray hocus:text-black',
     neutral:
-      'dark:bg-immich-dark-gray dark:text-gray-300 hover:dark:bg-immich-dark-gray/50 hover:dark:text-gray-300 bg-gray-200 text-gray-700 hover:bg-gray-300',
+      'dark:bg-immich-dark-gray dark:text-gray-300 hocus:dark:bg-immich-dark-gray/50 hocus:dark:text-gray-300 bg-gray-200 text-gray-700 hocus:bg-gray-300',
     primary:
-      'bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 hover:dark:bg-immich-dark-primary/80 text-white dark:text-immich-dark-gray',
+      'bg-immich-primary dark:bg-immich-dark-primary hocus:bg-immich-primary/75 hocus:dark:bg-immich-dark-primary/80 text-white dark:text-immich-dark-gray',
   };
 
   const paddingClasses: Record<Padding, string> = {
@@ -92,9 +92,16 @@
   {href}
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
-  class="flex place-content-center place-items-center rounded-full {colorClass} {paddingClass} transition-all disabled:cursor-default hover:dark:text-immich-dark-gray {className} {mobileClass}"
+  class="flex place-content-center place-items-center rounded-full {colorClass} {paddingClass} transition-all disabled:cursor-default hover:dark:text-immich-dark-gray focus:dark:text-immich-dark-gray outline-none ring-offset-transparent focus:ring-4 {className} {mobileClass}"
   {onclick}
   {...rest}
 >
   <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />
 </svelte:element>
+
+<style>
+  button,
+  a {
+    --tw-ring-offset-width: 0px;
+  }
+</style>

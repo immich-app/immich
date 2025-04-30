@@ -73,5 +73,10 @@ export default {
         { values: theme('width') },
       );
     }),
+    plugin(({ addVariant }) => {
+      addVariant('hocus', ['&:hover', '&:focus']);
+      addVariant('hocus-within', ['&:hover', '&:focus-within']);
+      addVariant('hocus-visible', ['&:hover', '&:focus-visible']);
+    }),
   ],
 };

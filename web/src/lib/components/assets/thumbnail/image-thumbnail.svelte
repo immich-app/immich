@@ -5,8 +5,8 @@
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
-  import type { ClassValue } from 'svelte/elements';
   import type { ActionReturn } from 'svelte/action';
+  import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -77,7 +77,7 @@
       circle && 'rounded-full',
       shadow && 'shadow-lg',
       (circle || !heightStyle) && 'aspect-square',
-      border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+      border && 'border-[3px] border-immich-dark-primary/80 hocus:border-immich-primary',
       brokenAssetClass,
     ]
       .filter(Boolean)

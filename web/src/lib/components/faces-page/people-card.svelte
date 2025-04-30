@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { focusOutside } from '$lib/actions/focus-outside';
   import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
@@ -27,22 +26,13 @@
   }
 
   let { person, onSetBirthDate, onMergePeople, onHidePerson, onToggleFavorite }: Props = $props();
-
-  let showVerticalDots = $state(false);
 </script>
 
-<div
-  id="people-card"
-  class="relative"
-  onmouseenter={() => (showVerticalDots = true)}
-  onmouseleave={() => (showVerticalDots = false)}
-  role="group"
-  use:focusOutside={{ onFocusOut: () => (showVerticalDots = false) }}
->
+<div id="people-card" class="relative group" role="group">
   <a
+    class="focus:outline-none"
     href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={AppRoute.PEOPLE}"
     draggable="false"
-    onfocus={() => (showVerticalDots = true)}
   >
     <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail
@@ -61,25 +51,23 @@
     </div>
   </a>
 
-  {#if showVerticalDots}
-    <div class="absolute top-2 end-2">
-      <ButtonContextMenu
-        buttonClass="icon-white-drop-shadow focus:opacity-100 {showVerticalDots ? 'opacity-100' : 'opacity-0'}"
-        color="opaque"
-        padding="2"
-        size="20"
-        icon={mdiDotsVertical}
-        title={$t('show_person_options')}
-      >
-        <MenuOption onClick={onHidePerson} icon={mdiEyeOffOutline} text={$t('hide_person')} />
-        <MenuOption onClick={onSetBirthDate} icon={mdiCalendarEditOutline} text={$t('set_date_of_birth')} />
-        <MenuOption onClick={onMergePeople} icon={mdiAccountMultipleCheckOutline} text={$t('merge_people')} />
-        <MenuOption
-          onClick={onToggleFavorite}
-          icon={person.isFavorite ? mdiHeartMinusOutline : mdiHeartOutline}
-          text={person.isFavorite ? $t('unfavorite') : $t('to_favorite')}
-        />
-      </ButtonContextMenu>
-    </div>
-  {/if}
+  <div class="absolute top-2 end-2">
+    <ButtonContextMenu
+      buttonClass="icon-white-drop-shadow focus:opacity-100 group-hover:opacity-100 opacity-0"
+      color="opaque"
+      padding="2"
+      size="20"
+      icon={mdiDotsVertical}
+      title={$t('show_person_options')}
+    >
+      <MenuOption onClick={onHidePerson} icon={mdiEyeOffOutline} text={$t('hide_person')} />
+      <MenuOption onClick={onSetBirthDate} icon={mdiCalendarEditOutline} text={$t('set_date_of_birth')} />
+      <MenuOption onClick={onMergePeople} icon={mdiAccountMultipleCheckOutline} text={$t('merge_people')} />
+      <MenuOption
+        onClick={onToggleFavorite}
+        icon={person.isFavorite ? mdiHeartMinusOutline : mdiHeartOutline}
+        text={person.isFavorite ? $t('unfavorite') : $t('to_favorite')}
+      />
+    </ButtonContextMenu>
+  </div>
 </div>

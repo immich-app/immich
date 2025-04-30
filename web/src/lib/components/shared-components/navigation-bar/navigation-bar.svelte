@@ -13,6 +13,7 @@
   import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
@@ -26,7 +27,6 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import { notificationManager } from '$lib/stores/notification-manager.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -34,6 +34,8 @@
   }
 
   let { showUploadButton = true, onUploadClick }: Props = $props();
+
+  let isHocus = $state(false);
 
   let shouldShowAccountInfo = $state(false);
   let shouldShowAccountInfoPanel = $state(false);
@@ -83,7 +85,11 @@
         }}
         class="sidebar:hidden"
       />
-      <a data-sveltekit-preload-data="hover" href={AppRoute.PHOTOS}>
+      <a
+        class="outline-none rounded-xl ring-inset focus:ring-2"
+        data-sveltekit-preload-data="hover"
+        href={AppRoute.PHOTOS}
+      >
         <ImmichLogo class="max-md:h-[48px] h-[50px]" noText={!mobileDevice.isFullSidebar} />
       </a>
     </div>
@@ -97,6 +103,7 @@
       <section class="flex place-items-center justify-end gap-1 md:gap-2 w-full sm:w-auto">
         {#if $featureFlags.search}
           <IconButton
+            class="sm:hidden focus:ring-2 ring-offset-transparent focus:bg-dark/10"
             color="secondary"
             shape="round"
             variant="ghost"
@@ -104,7 +111,6 @@
             icon={mdiMagnify}
             href={AppRoute.SEARCH}
             id="search-button"
-            class="sm:hidden"
             aria-label={$t('go_to_search')}
           />
         {/if}
@@ -113,7 +119,7 @@
           <Button
             leadingIcon={mdiTrayArrowUp}
             onclick={onUploadClick}
-            class="hidden lg:flex"
+            class="hidden lg:flex focus:ring-2 ring-offset-transparent focus:bg-dark/10"
             variant="ghost"
             size="medium"
             color="secondary"
@@ -128,7 +134,7 @@
             title={$t('upload')}
             aria-label={$t('upload')}
             icon={mdiTrayArrowUp}
-            class="lg:hidden"
+            class="lg:hidden focus:ring-2 ring-offset-transparent focus:bg-dark/10"
           />
         {/if}
 
@@ -140,6 +146,7 @@
           }}
         >
           <IconButton
+            class="focus:inset-ring-2  ring-offset-transparent focus:bg-dark/10"
             shape="round"
             color="secondary"
             variant="ghost"
@@ -157,6 +164,7 @@
           }}
         >
           <IconButton
+            class="focus:ring-2 ring-offset-transparent focus:bg-dark/10"
             shape="round"
             color={hasUnreadNotifications ? 'primary' : 'secondary'}
             variant="ghost"
@@ -179,11 +187,11 @@
         >
           <button
             type="button"
-            class="flex ps-2"
-            onmouseover={() => (shouldShowAccountInfo = true)}
-            onfocus={() => (shouldShowAccountInfo = true)}
-            onblur={() => (shouldShowAccountInfo = false)}
-            onmouseleave={() => (shouldShowAccountInfo = false)}
+            class="flex ps-2 outline-none group"
+            onmouseover={() => ((shouldShowAccountInfo = true), (isHocus = true))}
+            onfocus={() => ((shouldShowAccountInfo = true), (isHocus = true))}
+            onblur={() => ((shouldShowAccountInfo = false), (isHocus = false))}
+            onmouseleave={() => ((shouldShowAccountInfo = false), (isHocus = false))}
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
             {#key $user}
