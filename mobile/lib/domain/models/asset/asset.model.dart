@@ -1,64 +1,46 @@
-import 'package:immich_mobile/utils/nullable_value.dart';
+part of 'base_asset.model.dart';
 
-part 'local_asset.model.dart';
-part 'merged_asset.model.dart';
-part 'remote_asset.model.dart';
-
-enum AssetType {
-  // do not change this order!
-  other,
-  image,
-  video,
-  audio,
-}
-
-sealed class Asset {
-  final String name;
-  final String? checksum;
-  final AssetType type;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final int? durationInSeconds;
+class Asset extends BaseAsset {
+  final String id;
+  final String? localId;
 
   const Asset({
-    required this.name,
-    required this.checksum,
-    required this.type,
-    required this.createdAt,
-    required this.updatedAt,
-    this.durationInSeconds,
+    required this.id,
+    this.localId,
+    required super.name,
+    required super.checksum,
+    required super.type,
+    required super.createdAt,
+    required super.updatedAt,
+    super.width,
+    super.height,
+    super.durationInSeconds,
+    super.isFavorite = false,
   });
 
   @override
   String toString() {
     return '''Asset {
-  name: $name,
-  type: $type,
-  createdAt: $createdAt,
-  updatedAt: $updatedAt,
-  durationInSeconds: ${durationInSeconds ?? "<NA>"}
-}''';
+   id: $id,
+   name: $name,
+   type: $type,
+   createdAt: $createdAt,
+   updatedAt: $updatedAt,
+   width: ${width ?? "<NA>"},
+   height: ${height ?? "<NA>"},
+   durationInSeconds: ${durationInSeconds ?? "<NA>"},
+   localId: ${localId ?? "<NA>"},
+   isFavorite: $isFavorite,
+ }''';
   }
 
   @override
   bool operator ==(Object other) {
+    if (other is! Asset) return false;
     if (identical(this, other)) return true;
-    if (other is Asset) {
-      return name == other.name &&
-          type == other.type &&
-          createdAt == other.createdAt &&
-          updatedAt == other.updatedAt &&
-          durationInSeconds == other.durationInSeconds;
-    }
-    return false;
+    return super == other && id == other.id && localId == other.localId;
   }
 
   @override
-  int get hashCode {
-    return name.hashCode ^
-        type.hashCode ^
-        createdAt.hashCode ^
-        updatedAt.hashCode ^
-        durationInSeconds.hashCode;
-  }
+  int get hashCode => super.hashCode ^ id.hashCode ^ localId.hashCode;
 }

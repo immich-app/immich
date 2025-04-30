@@ -36,7 +36,6 @@ import {
   SourceType,
   SystemMetadataKey,
 } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
@@ -44,7 +43,6 @@ import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 's
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class PersonService extends BaseService {
@@ -265,22 +263,18 @@ export class PersonService extends BaseService {
       await this.handlePersonCleanup();
     }
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force === false
-        ? this.assetRepository.getWithout(pagination, WithoutProperty.FACES)
-        : this.assetRepository.getAll(pagination, {
-            orderDirection: 'desc',
-            withFaces: true,
-            withArchived: true,
-            isVisible: true,
-          });
-    });
+    let jobs: JobItem[] = [];
+    const assets = this.assetJobRepository.streamForDetectFacesJob(force);
+    for await (const asset of assets) {
+      jobs.push({ name: JobName.FACE_DETECTION, data: { id: asset.id } });
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.FACE_DETECTION, data: { id: asset.id } })),
-      );
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
+      }
     }
+
+    await this.jobRepository.queueAll(jobs);
 
     if (force === undefined) {
       await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });

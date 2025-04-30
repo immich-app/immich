@@ -282,7 +282,7 @@
   <section class="my-4">
     <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
-        <table class="w-full text-left">
+        <table class="w-full text-start">
           <thead
             class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
           >
@@ -369,7 +369,7 @@
               {/if}
               {#if editScanSettings === index}
                 <!-- svelte-ignore node_invalid_placement_ssr -->
-                <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
+                <div transition:slide={{ duration: 250 }} class="mb-4 ms-4 me-4">
                   <LibraryScanSettingsForm
                     {library}
                     onSubmit={handleUpdate}

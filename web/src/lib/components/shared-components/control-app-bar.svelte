@@ -67,7 +67,7 @@
 </script>
 
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
-  <div
+  <nav
     id="asset-selection-app-bar"
     class={[
       'grid',
@@ -77,8 +77,7 @@
       appBarBorder,
       'mx-2 my-2 place-items-center rounded-lg p-2 max-md:p-0 transition-all',
       tailwindClasses,
-      'bg-immich-gray dark:bg-immich-dark-gray',
-      forceDark && 'bg-immich-dark-gray text-white',
+      forceDark ? 'bg-immich-dark-gray text-white' : 'bg-immich-gray dark:bg-immich-dark-gray',
     ]}
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
@@ -92,8 +91,8 @@
       {@render children?.()}
     </div>
 
-    <div class="mr-4 flex place-items-center gap-1 justify-self-end">
+    <div class="me-4 flex place-items-center gap-1 justify-self-end">
       {@render trailing?.()}
     </div>
-  </div>
+  </nav>
 </div>

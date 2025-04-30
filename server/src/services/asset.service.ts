@@ -189,13 +189,7 @@ export class AssetService extends BaseService {
   async handleAssetDeletion(job: JobOf<JobName.ASSET_DELETION>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
-    const asset = await this.assetRepository.getById(id, {
-      faces: { person: true },
-      library: true,
-      stack: { assets: true },
-      exifInfo: true,
-      files: true,
-    });
+    const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
       return JobStatus.FAILED;

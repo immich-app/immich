@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -17,15 +17,16 @@
   } from '@mdi/js';
 
   import { thumbhash } from '$lib/actions/thumbhash';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { focusNext } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
+  import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-  import { onMount } from 'svelte';
-  import { getFocusable } from '$lib/utils/focus-util';
 
   interface Props {
     asset: AssetResponseDto;
@@ -34,7 +35,6 @@
     thumbnailWidth?: number | undefined;
     thumbnailHeight?: number | undefined;
     selected?: boolean;
-    focussed?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
     disableLinkMouseOver?: boolean;
@@ -57,7 +57,6 @@
     thumbnailWidth = undefined,
     thumbnailHeight = undefined,
     selected = false,
-    focussed = false,
     selectionCandidate = false,
     disabled = false,
     disableLinkMouseOver = false,
@@ -78,16 +77,10 @@
   } = TUNABLES;
 
   let usingMobileDevice = $derived(mobileDevice.pointerCoarse);
-  let focussableElement: HTMLElement | undefined = $state();
+  let element: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
   let thumbError = $state(false);
-
-  $effect(() => {
-    if (focussed && document.activeElement !== focussableElement) {
-      focussableElement?.focus();
-    }
-  });
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -235,31 +228,14 @@
       if (evt.key === 'x') {
         onSelect?.(asset);
       }
-      if (document.activeElement === focussableElement && evt.key === 'Escape') {
-        const focusable = getFocusable(document);
-        const index = focusable.indexOf(focussableElement);
-
-        let i = index + 1;
-        while (i !== index) {
-          const next = focusable[i];
-          if (next.dataset.thumbnailFocusContainer !== undefined) {
-            if (i === focusable.length - 1) {
-              i = 0;
-            } else {
-              i++;
-            }
-            continue;
-          }
-          next.focus();
-          break;
-        }
+      if (document.activeElement === element && evt.key === 'Escape') {
+        focusNext((element) => element.dataset.thumbnailFocusContainer === undefined, true);
       }
     }}
     onclick={handleClick}
-    bind:this={focussableElement}
+    bind:this={element}
     onfocus={handleFocus}
     data-thumbnail-focus-container
-    data-testid="container-with-tabindex"
     tabindex={0}
     role="link"
   >
@@ -331,21 +307,21 @@
         ></div>
 
         <!-- Favorite asset star -->
-        {#if !isSharedLink() && asset.isFavorite}
-          <div class="absolute bottom-2 left-2 z-10">
+        {#if !authManager.key && asset.isFavorite}
+          <div class="absolute bottom-2 start-2 z-10">
             <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
-        {#if !isSharedLink() && showArchiveIcon && asset.isArchived}
-          <div class={['absolute left-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+        {#if !authManager.key && showArchiveIcon && asset.isArchived}
+          <div class={['absolute start-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
-          <div class="absolute right-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
-            <span class="pr-2 pt-2">
+          <div class="absolute end-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
               <Icon path={mdiRotate360} size="24" />
             </span>
           </div>
@@ -356,10 +332,10 @@
           <div
             class={[
               'absolute z-10 flex place-items-center gap-1 text-xs font-medium text-white',
-              asset.type == AssetTypeEnum.Image && !asset.livePhotoVideoId ? 'top-0 right-0' : 'top-7 right-1',
+              asset.type == AssetTypeEnum.Image && !asset.livePhotoVideoId ? 'top-0 end-0' : 'top-7 end-1',
             ]}
           >
-            <span class="pr-2 pt-2 flex place-items-center gap-1">
+            <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
               <Icon path={mdiCameraBurst} size="24" />
             </span>

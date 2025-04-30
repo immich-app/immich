@@ -1,4 +1,4 @@
-import 'package:immich_mobile/domain/models/asset/asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 
 abstract interface class IAlbumMediaRepository {

@@ -10,7 +10,6 @@ abstract final class LocalAlbumStub {
         assetCount: 1,
         thumbnailId: null,
         backupSelection: BackupSelection.none,
-        isAll: false,
       );
 
   static LocalAlbum get album2 => LocalAlbum(
@@ -20,7 +19,6 @@ abstract final class LocalAlbumStub {
         assetCount: 2,
         thumbnailId: null,
         backupSelection: BackupSelection.selected,
-        isAll: true,
       );
 
   static LocalAlbum get album3 => LocalAlbum(
@@ -30,6 +28,5 @@ abstract final class LocalAlbumStub {
         assetCount: 20,
         thumbnailId: "123",
         backupSelection: BackupSelection.excluded,
-        isAll: false,
       );
 }

@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_asset.interface.dart';
-import 'package:immich_mobile/domain/models/asset/asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/nullable_value.dart';
@@ -34,6 +34,7 @@ class DeviceSyncService {
       // and not the albums.
       final deviceAlbums =
           (await _albumMediaRepository.getAll()).sortedBy((a) => a.id);
+
       final dbAlbums =
           await _localAlbumRepository.getAll(sortBy: SortLocalAlbumsBy.id);
 
@@ -64,7 +65,7 @@ class DeviceSyncService {
 
       final album = deviceAlbum.copyWith(
         // The below assumes the list is already sorted by createdDate from the filter
-        thumbnailId: NullableValue.valueOrEmpty(assets.firstOrNull?.localId),
+        thumbnailId: NullableValue.valueOrEmpty(assets.firstOrNull?.id),
       );
 
       await _localAlbumRepository.insert(album, assets);
@@ -100,7 +101,7 @@ class DeviceSyncService {
         return false;
       }
 
-      _log.fine("Device album ${dbAlbum.name} has changed. Syncing...");
+      _log.info("Device album ${dbAlbum.name} has changed. Syncing...");
 
       // Faster path - only new assets added
       if (await checkAddition(dbAlbum, deviceAlbum)) {
@@ -157,13 +158,13 @@ class DeviceSyncService {
       String? thumbnailId = dbAlbum.thumbnailId;
       if (thumbnailId == null || newAssets.isNotEmpty) {
         if (thumbnailId == null) {
-          thumbnailId = newAssets.firstOrNull?.localId;
+          thumbnailId = newAssets.firstOrNull?.id;
         } else if (newAssets.isNotEmpty) {
           // The below assumes the list is already sorted by createdDate from the filter
           final oldThumbAsset = await _localAssetRepository.get(thumbnailId);
           if (oldThumbAsset.createdAt
               .isBefore(newAssets.firstOrNull!.createdAt)) {
-            thumbnailId = newAssets.firstOrNull?.localId;
+            thumbnailId = newAssets.firstOrNull?.id;
           }
         }
       }
@@ -205,14 +206,14 @@ class DeviceSyncService {
             thumbnailId: const NullableValue.empty(),
             backupSelection: dbAlbum.backupSelection,
           ),
-          assetIdsToDelete: assetsInDb.map((a) => a.localId),
+          assetIdsToDelete: assetsInDb.map((a) => a.id),
         );
         return true;
       }
 
       // The below assumes the list is already sorted by createdDate from the filter
       String? thumbnailId = assetsInDevice.isNotEmpty
-          ? assetsInDevice.firstOrNull?.localId
+          ? assetsInDevice.firstOrNull?.id
           : dbAlbum.thumbnailId;
 
       final updatedDeviceAlbum = deviceAlbum.copyWith(
@@ -228,8 +229,8 @@ class DeviceSyncService {
         return true;
       }
 
-      assert(assetsInDb.isSortedBy((a) => a.localId));
-      assetsInDevice.sort((a, b) => a.localId.compareTo(b.localId));
+      assert(assetsInDb.isSortedBy((a) => a.id));
+      assetsInDevice.sort((a, b) => a.id.compareTo(b.id));
 
       final assetsToUpsert = <LocalAsset>[];
       final assetsToDelete = <String>[];
@@ -237,7 +238,7 @@ class DeviceSyncService {
       diffSortedListsSync(
         assetsInDb,
         assetsInDevice,
-        compare: (a, b) => a.localId.compareTo(b.localId),
+        compare: (a, b) => a.id.compareTo(b.id),
         both: (dbAsset, deviceAsset) {
           // Custom comparison to check if the asset has been modified without
           // comparing the checksum
@@ -247,7 +248,7 @@ class DeviceSyncService {
           }
           return false;
         },
-        onlyFirst: (dbAsset) => assetsToDelete.add(dbAsset.localId),
+        onlyFirst: (dbAsset) => assetsToDelete.add(dbAsset.id),
         onlySecond: (deviceAsset) => assetsToUpsert.add(deviceAsset),
       );
 

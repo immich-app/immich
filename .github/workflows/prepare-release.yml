@@ -44,10 +44,13 @@ jobs:
           persist-credentials: true
 
       - name: Install uv
-        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
 
       - name: Bump version
-        run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
+        env:
+          SERVER_BUMP: ${{ inputs.serverBump }}
+          MOBILE_BUMP: ${{ inputs.mobileBump }}
+        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
 
       - name: Commit and tag
         id: push-tag
@@ -61,6 +64,8 @@ jobs:
   build_mobile:
     uses: ./.github/workflows/build-mobile.yml
     needs: bump_version
+    permissions:
+      contents: read
     secrets:
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
@@ -90,12 +95,12 @@ jobs:
           persist-credentials: false
 
       - name: Download APK
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-apk-signed
 
       - name: Create draft release
-        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2
         with:
           draft: true
           tag_name: ${{ env.IMMICH_VERSION }}

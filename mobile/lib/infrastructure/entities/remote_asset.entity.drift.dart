@@ -3,7 +3,7 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
     as i1;
-import 'package:immich_mobile/domain/models/asset/asset.model.dart' as i2;
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as i2;
 import 'dart:typed_data' as i3;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart'
     as i4;

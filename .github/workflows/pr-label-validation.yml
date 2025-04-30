@@ -1,7 +1,7 @@
 name: PR Label Validation
 
 on:
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
     types: [opened, labeled, unlabeled, synchronize]
 
 permissions: {}

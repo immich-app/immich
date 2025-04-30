@@ -13,6 +13,7 @@ part of openapi.api;
 class UserAdminUpdateDto {
   /// Returns a new [UserAdminUpdateDto] instance.
   UserAdminUpdateDto({
+    this.avatarColor,
     this.email,
     this.name,
     this.password,
@@ -20,6 +21,8 @@ class UserAdminUpdateDto {
     this.shouldChangePassword,
     this.storageLabel,
   });
+
+  UserAvatarColor? avatarColor;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -60,6 +63,7 @@ class UserAdminUpdateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminUpdateDto &&
+    other.avatarColor == avatarColor &&
     other.email == email &&
     other.name == name &&
     other.password == password &&
@@ -70,6 +74,7 @@ class UserAdminUpdateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
@@ -78,10 +83,15 @@ class UserAdminUpdateDto {
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UserAdminUpdateDto[email=$email, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UserAdminUpdateDto[avatarColor=$avatarColor, email=$email, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.avatarColor != null) {
+      json[r'avatarColor'] = this.avatarColor;
+    } else {
+    //  json[r'avatarColor'] = null;
+    }
     if (this.email != null) {
       json[r'email'] = this.email;
     } else {
@@ -124,6 +134,7 @@ class UserAdminUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return UserAdminUpdateDto(
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),

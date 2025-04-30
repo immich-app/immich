@@ -10,11 +10,11 @@ import {
   AssetType,
   AudioCodec,
   Colorspace,
-  ImageFormat,
   JobName,
   JobStatus,
   LogLevel,
   QueueName,
+  RawExtractedFormat,
   StorageFolder,
   TranscodeHWAccel,
   TranscodePolicy,
@@ -22,12 +22,11 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { UpsertFileOptions, WithoutProperty } from 'src/repositories/asset.repository';
+import { UpsertFileOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
   DecodeToBufferOptions,
-  GenerateThumbnailOptions,
   JobItem,
   JobOf,
   VideoFormat,
@@ -37,7 +36,6 @@ import {
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class MediaService extends BaseService {
@@ -51,18 +49,26 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.QUEUE_GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.QUEUE_GENERATE_THUMBNAILS>): Promise<JobStatus> {
-    const thumbJobs: JobItem[] = [];
+    let jobs: JobItem[] = [];
+
+    const queueAll = async () => {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    };
+
     for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
       const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
 
       if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
-        thumbJobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
-        continue;
+        jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
+      }
+
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
       }
     }
-    await this.jobRepository.queueAll(thumbJobs);
 
-    const jobs: JobItem[] = [];
+    await queueAll();
 
     const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
 
@@ -77,32 +83,36 @@ export class MediaService extends BaseService {
       }
 
       jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
+      }
     }
 
-    await this.jobRepository.queueAll(jobs);
+    await queueAll();
 
     return JobStatus.SUCCESS;
   }
 
   @OnJob({ name: JobName.QUEUE_MIGRATION, queue: QueueName.MIGRATION })
   async handleQueueMigration(): Promise<JobStatus> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination),
-    );
-
     const { active, waiting } = await this.jobRepository.getJobCounts(QueueName.MIGRATION);
     if (active === 1 && waiting === 0) {
       await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
       await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
     }
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } })),
-      );
+    let jobs: JobItem[] = [];
+    const assets = this.assetJobRepository.streamForMigrationJob();
+    for await (const asset of assets) {
+      jobs.push({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
+      }
     }
 
-    let jobs: { name: JobName.MIGRATE_PERSON; data: { id: string } }[] = [];
+    await this.jobRepository.queueAll(jobs);
+    jobs = [];
 
     for await (const person of this.personRepository.getAll()) {
       jobs.push({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
@@ -213,6 +223,29 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
+  private async extractImage(originalPath: string, minSize: number) {
+    let extracted = await this.mediaRepository.extract(originalPath);
+    if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, minSize))) {
+      extracted = null;
+    }
+
+    return extracted;
+  }
+
+  private async decodeImage(thumbSource: string | Buffer, exifInfo: Exif, targetSize?: number) {
+    const { image } = await this.getConfig({ withCache: true });
+    const colorspace = this.isSRGB(exifInfo) ? Colorspace.SRGB : image.colorspace;
+    const decodeOptions: DecodeToBufferOptions = {
+      colorspace,
+      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+      size: targetSize,
+      orientation: exifInfo.orientation ? Number(exifInfo.orientation) : undefined,
+    };
+
+    const { info, data } = await this.mediaRepository.decodeImage(thumbSource, decodeOptions);
+    return { info, data, colorspace };
+  }
+
   private async generateImageThumbnails(asset: {
     id: string;
     ownerId: string;
@@ -225,68 +258,48 @@ export class MediaService extends BaseService {
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
 
-    const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
-    const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
+    // Handle embedded preview extraction for RAW files
+    const extractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
+    const extracted = extractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
+    const generateFullsize = image.fullsize.enabled && !mimeTypes.isWebSupportedImage(asset.originalPath);
+    const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
-    // prevents this extra "enabled" from leaking into fullsizeOptions later
-    const { enabled: imageFullsizeEnabled, ...imageFullsizeConfig } = image.fullsize;
+    const { info, data, colorspace } = await this.decodeImage(
+      extracted ? extracted.buffer : asset.originalPath,
+      asset.exifInfo,
+      convertFullsize ? undefined : image.preview.size,
+    );
 
-    const shouldConvertFullsize = imageFullsizeEnabled && !mimeTypes.isWebSupportedImage(asset.originalFileName);
-    const shouldExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
-    const decodeOptions: DecodeToBufferOptions = { colorspace, processInvalidImages, size: image.preview.size };
-
-    let useExtracted = false;
-    let decodeInputPath: string = asset.originalPath;
-    // Converted or extracted image from non-web-supported formats (e.g. RAW)
-    let fullsizePath: string | undefined;
-
-    if (shouldConvertFullsize) {
-      // unset size to decode fullsize image
-      decodeOptions.size = undefined;
-      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.fullsize.format);
-    }
-
-    if (shouldExtractEmbedded) {
-      // For RAW files, try extracting embedded preview first
-      // Assume extracted image from RAW always in JPEG format, as implied from the `jpgFromRaw` tag name
-      const extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, ImageFormat.JPEG);
-      const didExtract = await this.mediaRepository.extract(asset.originalPath, extractedPath);
-      useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.preview.size));
-
-      if (useExtracted) {
-        if (shouldConvertFullsize) {
-          // skip re-encoding and directly use extracted as fullsize preview
-          // as usually the extracted image is already heavily compressed, no point doing lossy conversion again
-          fullsizePath = extractedPath;
-        }
-        // use this as origin of preview and thumbnail
-        decodeInputPath = extractedPath;
-        if (asset.exifInfo) {
-          // write essential orientation and colorspace EXIF for correct fullsize preview and subsequent processing
-          const exif = { orientation: asset.exifInfo.orientation, colorspace: asset.exifInfo.colorspace };
-          await this.mediaRepository.writeExif(exif, extractedPath);
-        }
-      }
-    }
-
-    const { info, data } = await this.mediaRepository.decodeImage(decodeInputPath, decodeOptions);
-
-    const thumbnailOptions = { colorspace, processInvalidImages, raw: info };
+    // generate final images
+    const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info };
     const promises = [
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
       this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailPath),
       this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewPath),
     ];
 
-    // did not extract a usable image from RAW
-    if (fullsizePath && !useExtracted) {
-      const fullsizeOptions: GenerateThumbnailOptions = {
-        ...imageFullsizeConfig,
-        ...thumbnailOptions,
-        size: undefined,
-      };
+    let fullsizePath: string | undefined;
+
+    if (convertFullsize) {
+      // convert a new fullsize image from the same source as the thumbnail
+      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.fullsize.format);
+      const fullsizeOptions = { format: image.fullsize.format, quality: image.fullsize.quality, ...thumbnailOptions };
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
+    } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.JPEG) {
+      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, extracted.format);
+      this.storageCore.ensureFolders(fullsizePath);
+
+      // Write the buffer to disk with essential EXIF data
+      await this.storageRepository.createOrOverwriteFile(fullsizePath, extracted.buffer);
+      await this.mediaRepository.writeExif(
+        {
+          orientation: asset.exifInfo.orientation,
+          colorspace: asset.exifInfo.colorspace,
+        },
+        fullsizePath,
+      );
     }
+
     const outputs = await Promise.all(promises);
 
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
@@ -330,25 +343,25 @@ export class MediaService extends BaseService {
   async handleQueueVideoConversion(job: JobOf<JobName.QUEUE_VIDEO_CONVERSION>): Promise<JobStatus> {
     const { force } = job;
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination, { type: AssetType.VIDEO })
-        : this.assetRepository.getWithout(pagination, WithoutProperty.ENCODED_VIDEO);
-    });
+    let queue: { name: JobName.VIDEO_CONVERSION; data: { id: string } }[] = [];
+    for await (const asset of this.assetJobRepository.streamForVideoConversion(force)) {
+      queue.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } });
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } })),
-      );
+      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(queue);
+        queue = [];
+      }
     }
+
+    await this.jobRepository.queueAll(queue);
 
     return JobStatus.SUCCESS;
   }
 
   @OnJob({ name: JobName.VIDEO_CONVERSION, queue: QueueName.VIDEO_CONVERSION })
   async handleVideoConversion({ id }: JobOf<JobName.VIDEO_CONVERSION>): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || asset.type !== AssetType.VIDEO) {
+    const asset = await this.assetJobRepository.getForVideoConversion(id);
+    if (!asset) {
       return JobStatus.FAILED;
     }
 
@@ -521,8 +534,7 @@ export class MediaService extends BaseService {
     return name !== VideoContainer.MP4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 
-  isSRGB(asset: { exifInfo: Exif }): boolean {
-    const { colorspace, profileDescription, bitsPerSample } = asset.exifInfo;
+  isSRGB({ colorspace, profileDescription, bitsPerSample }: Exif): boolean {
     if (colorspace || profileDescription) {
       return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
     } else if (bitsPerSample) {
@@ -550,10 +562,9 @@ export class MediaService extends BaseService {
     }
   }
 
-  private async shouldUseExtractedImage(extractedPath: string, targetSize: number) {
-    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPath);
+  private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
+    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPathOrBuffer);
     const extractedSize = Math.min(width, height);
-
     return extractedSize >= targetSize;
   }
 

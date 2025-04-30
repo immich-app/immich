@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/asset/asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
@@ -12,9 +12,8 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   TextColumn get checksum => text().nullable()();
 
-  IntColumn get width => integer().nullable()();
-
-  IntColumn get height => integer().nullable()();
+  // Only used during backup to mirror the favorite status of the asset in the server
+  BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {localId};
@@ -23,15 +22,14 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 extension LocalAssetEntityX on LocalAssetEntityData {
   LocalAsset toDto() {
     return LocalAsset(
-      localId: localId,
+      id: localId,
       name: name,
       checksum: checksum,
       type: type,
       createdAt: createdAt,
       updatedAt: updatedAt,
-      width: width,
-      height: height,
       durationInSeconds: durationInSeconds,
+      isFavorite: isFavorite,
     );
   }
 }

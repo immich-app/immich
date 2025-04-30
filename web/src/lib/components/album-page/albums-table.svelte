@@ -24,7 +24,7 @@
   let { groupedAlbums, albumGroupOption = AlbumGroupBy.None, onShowContextMenu }: Props = $props();
 </script>
 
-<table class="mt-2 w-full text-left">
+<table class="mt-2 w-full text-start">
   <thead
     class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
   >
@@ -48,18 +48,18 @@
         class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         <tr
-          class="flex w-full place-items-center p-2 md:pl-5 md:pr-5 md:pt-3 md:pb-3"
+          class="flex w-full place-items-center p-2 md:ps-5 md:pe-5 md:pt-3 md:pb-3"
           onclick={() => toggleAlbumGroupCollapsing(albumGroup.id)}
           aria-expanded={!isCollapsed}
         >
-          <td class="text-md text-left -mb-1">
+          <td class="text-md text-start -mb-1">
             <Icon
               path={mdiChevronRight}
               size="20"
               class="inline-block -mt-2 transition-all duration-[250ms] {iconRotation}"
             />
             <span class="font-bold text-2xl">{albumGroup.name}</span>
-            <span class="ml-1.5">
+            <span class="ms-1.5">
               ({$t('albums_count', { values: { count: albumGroup.albums.length } })})
             </span>
           </td>

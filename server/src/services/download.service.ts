@@ -33,7 +33,7 @@ export class DownloadService extends BaseService {
 
     const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;
     const metadata = await this.userRepository.getMetadata(auth.user.id);
-    const preferences = getPreferences(auth.user.email, metadata);
+    const preferences = getPreferences(metadata);
     const motionIds = new Set<string>();
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };

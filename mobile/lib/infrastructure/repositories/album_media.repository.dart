@@ -1,11 +1,15 @@
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
-import 'package:immich_mobile/domain/models/asset/asset.model.dart' as asset;
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart'
+    as asset;
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:platform/platform.dart';
 
 class AlbumMediaRepository implements IAlbumMediaRepository {
-  const AlbumMediaRepository();
+  final Platform _platform;
+  const AlbumMediaRepository({Platform platform = const LocalPlatform()})
+      : _platform = platform;
 
   PMFilter _getAlbumFilter({
     withAssetTitle = false,
@@ -42,7 +46,12 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     );
 
     return PhotoManager.getAssetPathList(hasAll: true, filterOption: filter)
-        .then((e) => e.toDtoList());
+        .then((e) {
+      if (_platform.isAndroid) {
+        e.removeWhere((a) => a.isAll);
+      }
+      return e.toDtoList();
+    });
   }
 
   @override
@@ -85,7 +94,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
 
 extension on AssetEntity {
   Future<asset.LocalAsset> toDto() async => asset.LocalAsset(
-        localId: id,
+        id: id,
         name: title ?? await titleAsync,
         type: switch (type) {
           AssetType.other => asset.AssetType.other,
@@ -114,7 +123,6 @@ extension on AssetPathEntity {
         // the assetCountAsync call is expensive for larger albums with several thousand assets
         assetCount: withAssetCount ? await assetCountAsync : 0,
         backupSelection: BackupSelection.none,
-        isAll: isAll,
       );
 }
 

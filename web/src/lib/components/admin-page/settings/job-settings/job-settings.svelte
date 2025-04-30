@@ -47,7 +47,7 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
       {#each jobNames as jobName (jobName)}
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+        <div class="ms-4 mt-4 flex flex-col gap-4">
           {#if isSystemConfigJobDto(jobName)}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
@@ -71,7 +71,7 @@
         </div>
       {/each}
 
-      <div class="ml-4">
+      <div class="ms-4">
         <SettingButtonsRow
           onReset={(options) => onReset({ ...options, configKeys: ['job'] })}
           onSave={() => onSave({ job: config.job })}

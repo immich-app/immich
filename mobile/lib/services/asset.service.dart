@@ -514,9 +514,9 @@ class AssetService {
     return _assetRepository.watchAsset(id, fireImmediately: fireImmediately);
   }
 
-  Future<List<Asset>> getRecentlyAddedAssets() {
+  Future<List<Asset>> getRecentlyTakenAssets() {
     final me = _userService.getMyUser();
-    return _assetRepository.getRecentlyAddedAssets(me.id);
+    return _assetRepository.getRecentlyTakenAssets(me.id);
   }
 
   Future<List<Asset>> getMotionAssets() {

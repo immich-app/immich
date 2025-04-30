@@ -16,20 +16,16 @@ typedef $$LocalAlbumEntityTableCreateCompanionBuilder
   required String id,
   required String name,
   i0.Value<DateTime> updatedAt,
-  i0.Value<int> assetCount,
   i0.Value<String?> thumbnailId,
   required i2.BackupSelection backupSelection,
-  i0.Value<bool> isAll,
 });
 typedef $$LocalAlbumEntityTableUpdateCompanionBuilder
     = i1.LocalAlbumEntityCompanion Function({
   i0.Value<String> id,
   i0.Value<String> name,
   i0.Value<DateTime> updatedAt,
-  i0.Value<int> assetCount,
   i0.Value<String?> thumbnailId,
   i0.Value<i2.BackupSelection> backupSelection,
-  i0.Value<bool> isAll,
 });
 
 final class $$LocalAlbumEntityTableReferences extends i0.BaseReferences<
@@ -82,16 +78,10 @@ class $$LocalAlbumEntityTableFilterComposer
   i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get assetCount => $composableBuilder(
-      column: $table.assetCount, builder: (column) => i0.ColumnFilters(column));
-
   i0.ColumnWithTypeConverterFilters<i2.BackupSelection, i2.BackupSelection, int>
       get backupSelection => $composableBuilder(
           column: $table.backupSelection,
           builder: (column) => i0.ColumnWithTypeConverterFilters(column));
-
-  i0.ColumnFilters<bool> get isAll => $composableBuilder(
-      column: $table.isAll, builder: (column) => i0.ColumnFilters(column));
 
   i5.$$LocalAssetEntityTableFilterComposer get thumbnailId {
     final i5.$$LocalAssetEntityTableFilterComposer composer = $composerBuilder(
@@ -135,16 +125,9 @@ class $$LocalAlbumEntityTableOrderingComposer
       column: $table.updatedAt,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get assetCount => $composableBuilder(
-      column: $table.assetCount,
-      builder: (column) => i0.ColumnOrderings(column));
-
   i0.ColumnOrderings<int> get backupSelection => $composableBuilder(
       column: $table.backupSelection,
       builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<bool> get isAll => $composableBuilder(
-      column: $table.isAll, builder: (column) => i0.ColumnOrderings(column));
 
   i5.$$LocalAssetEntityTableOrderingComposer get thumbnailId {
     final i5.$$LocalAssetEntityTableOrderingComposer composer =
@@ -189,15 +172,9 @@ class $$LocalAlbumEntityTableAnnotationComposer
   i0.GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get assetCount => $composableBuilder(
-      column: $table.assetCount, builder: (column) => column);
-
   i0.GeneratedColumnWithTypeConverter<i2.BackupSelection, int>
       get backupSelection => $composableBuilder(
           column: $table.backupSelection, builder: (column) => column);
-
-  i0.GeneratedColumn<bool> get isAll =>
-      $composableBuilder(column: $table.isAll, builder: (column) => column);
 
   i5.$$LocalAssetEntityTableAnnotationComposer get thumbnailId {
     final i5.$$LocalAssetEntityTableAnnotationComposer composer =
@@ -252,38 +229,30 @@ class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            i0.Value<int> assetCount = const i0.Value.absent(),
             i0.Value<String?> thumbnailId = const i0.Value.absent(),
             i0.Value<i2.BackupSelection> backupSelection =
                 const i0.Value.absent(),
-            i0.Value<bool> isAll = const i0.Value.absent(),
           }) =>
               i1.LocalAlbumEntityCompanion(
             id: id,
             name: name,
             updatedAt: updatedAt,
-            assetCount: assetCount,
             thumbnailId: thumbnailId,
             backupSelection: backupSelection,
-            isAll: isAll,
           ),
           createCompanionCallback: ({
             required String id,
             required String name,
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            i0.Value<int> assetCount = const i0.Value.absent(),
             i0.Value<String?> thumbnailId = const i0.Value.absent(),
             required i2.BackupSelection backupSelection,
-            i0.Value<bool> isAll = const i0.Value.absent(),
           }) =>
               i1.LocalAlbumEntityCompanion.insert(
             id: id,
             name: name,
             updatedAt: updatedAt,
-            assetCount: assetCount,
             thumbnailId: thumbnailId,
             backupSelection: backupSelection,
-            isAll: isAll,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -368,14 +337,6 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
           type: i0.DriftSqlType.dateTime,
           requiredDuringInsert: false,
           defaultValue: i4.currentDateAndTime);
-  static const i0.VerificationMeta _assetCountMeta =
-      const i0.VerificationMeta('assetCount');
-  @override
-  late final i0.GeneratedColumn<int> assetCount = i0.GeneratedColumn<int>(
-      'asset_count', aliasedName, false,
-      type: i0.DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const i4.Constant(0));
   static const i0.VerificationMeta _thumbnailIdMeta =
       const i0.VerificationMeta('thumbnailId');
   @override
@@ -392,19 +353,9 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
               type: i0.DriftSqlType.int, requiredDuringInsert: true)
           .withConverter<i2.BackupSelection>(
               i1.$LocalAlbumEntityTable.$converterbackupSelection);
-  static const i0.VerificationMeta _isAllMeta =
-      const i0.VerificationMeta('isAll');
-  @override
-  late final i0.GeneratedColumn<bool> isAll = i0.GeneratedColumn<bool>(
-      'is_all', aliasedName, false,
-      type: i0.DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          i0.GeneratedColumn.constraintIsAlways('CHECK ("is_all" IN (0, 1))'),
-      defaultValue: const i4.Constant(false));
   @override
   List<i0.GeneratedColumn> get $columns =>
-      [id, name, updatedAt, assetCount, thumbnailId, backupSelection, isAll];
+      [id, name, updatedAt, thumbnailId, backupSelection];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -431,21 +382,11 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
-    if (data.containsKey('asset_count')) {
-      context.handle(
-          _assetCountMeta,
-          assetCount.isAcceptableOrUnknown(
-              data['asset_count']!, _assetCountMeta));
-    }
     if (data.containsKey('thumbnail_id')) {
       context.handle(
           _thumbnailIdMeta,
           thumbnailId.isAcceptableOrUnknown(
               data['thumbnail_id']!, _thumbnailIdMeta));
-    }
-    if (data.containsKey('is_all')) {
-      context.handle(
-          _isAllMeta, isAll.isAcceptableOrUnknown(data['is_all']!, _isAllMeta));
     }
     return context;
   }
@@ -463,15 +404,11 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
           .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
       updatedAt: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      assetCount: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}asset_count'])!,
       thumbnailId: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}thumbnail_id']),
       backupSelection: i1.$LocalAlbumEntityTable.$converterbackupSelection
           .fromSql(attachedDatabase.typeMapping.read(i0.DriftSqlType.int,
               data['${effectivePrefix}backup_selection'])!),
-      isAll: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_all'])!,
     );
   }
 
@@ -495,25 +432,20 @@ class LocalAlbumEntityData extends i0.DataClass
   final String id;
   final String name;
   final DateTime updatedAt;
-  final int assetCount;
   final String? thumbnailId;
   final i2.BackupSelection backupSelection;
-  final bool isAll;
   const LocalAlbumEntityData(
       {required this.id,
       required this.name,
       required this.updatedAt,
-      required this.assetCount,
       this.thumbnailId,
-      required this.backupSelection,
-      required this.isAll});
+      required this.backupSelection});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     map['id'] = i0.Variable<String>(id);
     map['name'] = i0.Variable<String>(name);
     map['updated_at'] = i0.Variable<DateTime>(updatedAt);
-    map['asset_count'] = i0.Variable<int>(assetCount);
     if (!nullToAbsent || thumbnailId != null) {
       map['thumbnail_id'] = i0.Variable<String>(thumbnailId);
     }
@@ -522,7 +454,6 @@ class LocalAlbumEntityData extends i0.DataClass
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toSql(backupSelection));
     }
-    map['is_all'] = i0.Variable<bool>(isAll);
     return map;
   }
 
@@ -533,11 +464,9 @@ class LocalAlbumEntityData extends i0.DataClass
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      assetCount: serializer.fromJson<int>(json['assetCount']),
       thumbnailId: serializer.fromJson<String?>(json['thumbnailId']),
       backupSelection: i1.$LocalAlbumEntityTable.$converterbackupSelection
           .fromJson(serializer.fromJson<int>(json['backupSelection'])),
-      isAll: serializer.fromJson<bool>(json['isAll']),
     );
   }
   @override
@@ -547,12 +476,10 @@ class LocalAlbumEntityData extends i0.DataClass
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'assetCount': serializer.toJson<int>(assetCount),
       'thumbnailId': serializer.toJson<String?>(thumbnailId),
       'backupSelection': serializer.toJson<int>(i1
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toJson(backupSelection)),
-      'isAll': serializer.toJson<bool>(isAll),
     };
   }
 
@@ -560,32 +487,25 @@ class LocalAlbumEntityData extends i0.DataClass
           {String? id,
           String? name,
           DateTime? updatedAt,
-          int? assetCount,
           i0.Value<String?> thumbnailId = const i0.Value.absent(),
-          i2.BackupSelection? backupSelection,
-          bool? isAll}) =>
+          i2.BackupSelection? backupSelection}) =>
       i1.LocalAlbumEntityData(
         id: id ?? this.id,
         name: name ?? this.name,
         updatedAt: updatedAt ?? this.updatedAt,
-        assetCount: assetCount ?? this.assetCount,
         thumbnailId: thumbnailId.present ? thumbnailId.value : this.thumbnailId,
         backupSelection: backupSelection ?? this.backupSelection,
-        isAll: isAll ?? this.isAll,
       );
   LocalAlbumEntityData copyWithCompanion(i1.LocalAlbumEntityCompanion data) {
     return LocalAlbumEntityData(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      assetCount:
-          data.assetCount.present ? data.assetCount.value : this.assetCount,
       thumbnailId:
           data.thumbnailId.present ? data.thumbnailId.value : this.thumbnailId,
       backupSelection: data.backupSelection.present
           ? data.backupSelection.value
           : this.backupSelection,
-      isAll: data.isAll.present ? data.isAll.value : this.isAll,
     );
   }
 
@@ -595,17 +515,15 @@ class LocalAlbumEntityData extends i0.DataClass
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('assetCount: $assetCount, ')
           ..write('thumbnailId: $thumbnailId, ')
-          ..write('backupSelection: $backupSelection, ')
-          ..write('isAll: $isAll')
+          ..write('backupSelection: $backupSelection')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, name, updatedAt, assetCount, thumbnailId, backupSelection, isAll);
+  int get hashCode =>
+      Object.hash(id, name, updatedAt, thumbnailId, backupSelection);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -613,10 +531,8 @@ class LocalAlbumEntityData extends i0.DataClass
           other.id == this.id &&
           other.name == this.name &&
           other.updatedAt == this.updatedAt &&
-          other.assetCount == this.assetCount &&
           other.thumbnailId == this.thumbnailId &&
-          other.backupSelection == this.backupSelection &&
-          other.isAll == this.isAll);
+          other.backupSelection == this.backupSelection);
 }
 
 class LocalAlbumEntityCompanion
@@ -624,27 +540,21 @@ class LocalAlbumEntityCompanion
   final i0.Value<String> id;
   final i0.Value<String> name;
   final i0.Value<DateTime> updatedAt;
-  final i0.Value<int> assetCount;
   final i0.Value<String?> thumbnailId;
   final i0.Value<i2.BackupSelection> backupSelection;
-  final i0.Value<bool> isAll;
   const LocalAlbumEntityCompanion({
     this.id = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
-    this.assetCount = const i0.Value.absent(),
     this.thumbnailId = const i0.Value.absent(),
     this.backupSelection = const i0.Value.absent(),
-    this.isAll = const i0.Value.absent(),
   });
   LocalAlbumEntityCompanion.insert({
     required String id,
     required String name,
     this.updatedAt = const i0.Value.absent(),
-    this.assetCount = const i0.Value.absent(),
     this.thumbnailId = const i0.Value.absent(),
     required i2.BackupSelection backupSelection,
-    this.isAll = const i0.Value.absent(),
   })  : id = i0.Value(id),
         name = i0.Value(name),
         backupSelection = i0.Value(backupSelection);
@@ -652,19 +562,15 @@ class LocalAlbumEntityCompanion
     i0.Expression<String>? id,
     i0.Expression<String>? name,
     i0.Expression<DateTime>? updatedAt,
-    i0.Expression<int>? assetCount,
     i0.Expression<String>? thumbnailId,
     i0.Expression<int>? backupSelection,
-    i0.Expression<bool>? isAll,
   }) {
     return i0.RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (assetCount != null) 'asset_count': assetCount,
       if (thumbnailId != null) 'thumbnail_id': thumbnailId,
       if (backupSelection != null) 'backup_selection': backupSelection,
-      if (isAll != null) 'is_all': isAll,
     });
   }
 
@@ -672,18 +578,14 @@ class LocalAlbumEntityCompanion
       {i0.Value<String>? id,
       i0.Value<String>? name,
       i0.Value<DateTime>? updatedAt,
-      i0.Value<int>? assetCount,
       i0.Value<String?>? thumbnailId,
-      i0.Value<i2.BackupSelection>? backupSelection,
-      i0.Value<bool>? isAll}) {
+      i0.Value<i2.BackupSelection>? backupSelection}) {
     return i1.LocalAlbumEntityCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       updatedAt: updatedAt ?? this.updatedAt,
-      assetCount: assetCount ?? this.assetCount,
       thumbnailId: thumbnailId ?? this.thumbnailId,
       backupSelection: backupSelection ?? this.backupSelection,
-      isAll: isAll ?? this.isAll,
     );
   }
 
@@ -699,9 +601,6 @@ class LocalAlbumEntityCompanion
     if (updatedAt.present) {
       map['updated_at'] = i0.Variable<DateTime>(updatedAt.value);
     }
-    if (assetCount.present) {
-      map['asset_count'] = i0.Variable<int>(assetCount.value);
-    }
     if (thumbnailId.present) {
       map['thumbnail_id'] = i0.Variable<String>(thumbnailId.value);
     }
@@ -709,9 +608,6 @@ class LocalAlbumEntityCompanion
       map['backup_selection'] = i0.Variable<int>(i1
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toSql(backupSelection.value));
-    }
-    if (isAll.present) {
-      map['is_all'] = i0.Variable<bool>(isAll.value);
     }
     return map;
   }
@@ -722,10 +618,8 @@ class LocalAlbumEntityCompanion
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('assetCount: $assetCount, ')
           ..write('thumbnailId: $thumbnailId, ')
-          ..write('backupSelection: $backupSelection, ')
-          ..write('isAll: $isAll')
+          ..write('backupSelection: $backupSelection')
           ..write(')'))
         .toString();
   }
