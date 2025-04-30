@@ -46,7 +46,6 @@ export interface EnvData {
   environment: ImmichEnvironment;
   configFile?: string;
   logLevel?: LogLevel;
-  logFormat?: 'text' | 'json';
 
   buildMetadata: {
     build?: string;
@@ -267,7 +266,6 @@ const getEnv = (): EnvData => {
     environment,
     configFile: dto.IMMICH_CONFIG_FILE,
     logLevel: dto.IMMICH_LOG_LEVEL,
-    logFormat: dto.IMMICH_LOG_FORMAT || 'text',
 
     buildMetadata: {
       build: dto.IMMICH_BUILD,

@@ -73,11 +73,9 @@ export class MyConsoleLogger extends ConsoleLogger {
 @Telemetry({ enabled: false })
 export class LoggingRepository {
   private logger: MyConsoleLogger;
-  private isJsonFormat: boolean;
 
   constructor(cls: ClsService, configRepository: ConfigRepository) {
-    const { noColor, logFormat } = configRepository.getEnv();
-    this.isJsonFormat = logFormat === 'json';
+    const { noColor } = configRepository.getEnv();
     this.logger = new MyConsoleLogger(cls, { context: LoggingRepository.name, color: !noColor });
   }
 
@@ -136,45 +134,35 @@ export class LoggingRepository {
   }
 
   private handleMessage(level: LogLevel, message: string | Error, details: LogDetails[]) {
-    if (this.isJsonFormat) {
-      const logEntry = {
-        level,
-        message: message instanceof Error ? message.message : message,
-        details,
-        timestamp: new Date().toISOString(),
-      };
-      this.logger.log(JSON.stringify(logEntry));
-    } else {
-      switch (level) {
-        case LogLevel.VERBOSE: {
-          this.logger.verbose(message, ...details);
-          break;
-        }
+    switch (level) {
+      case LogLevel.VERBOSE: {
+        this.logger.verbose(message, ...details);
+        break;
+      }
 
-        case LogLevel.DEBUG: {
-          this.logger.debug(message, ...details);
-          break;
-        }
+      case LogLevel.DEBUG: {
+        this.logger.debug(message, ...details);
+        break;
+      }
 
-        case LogLevel.LOG: {
-          this.logger.log(message, ...details);
-          break;
-        }
+      case LogLevel.LOG: {
+        this.logger.log(message, ...details);
+        break;
+      }
 
-        case LogLevel.WARN: {
-          this.logger.warn(message, ...details);
-          break;
-        }
+      case LogLevel.WARN: {
+        this.logger.warn(message, ...details);
+        break;
+      }
 
-        case LogLevel.ERROR: {
-          this.logger.error(message, ...details);
-          break;
-        }
+      case LogLevel.ERROR: {
+        this.logger.error(message, ...details);
+        break;
+      }
 
-        case LogLevel.FATAL: {
-          this.logger.fatal(message, ...details);
-          break;
-        }
+      case LogLevel.FATAL: {
+        this.logger.fatal(message, ...details);
+        break;
       }
     }
   }
