@@ -40,7 +40,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ml-4 mt-4">
+      <div class="ms-4 mt-4">
         <SettingAccordion
           key="thumbnail-settings"
           title={$t('admin.image_thumbnail_title')}
@@ -195,7 +195,7 @@
         </div>
       </div>
 
-      <div class="ml-4 mt-4">
+      <div class="ms-4 mt-4">
         <SettingButtonsRow
           onReset={(options) => onReset({ ...options, configKeys: ['image'] })}
           onSave={() => onSave({ image: config.image })}

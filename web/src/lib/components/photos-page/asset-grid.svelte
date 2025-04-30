@@ -96,7 +96,16 @@
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
 
   $effect(() => {
-    assetStore.rowHeight = maxMd ? 100 : 235;
+    const layoutOptions = maxMd
+      ? {
+          rowHeight: 100,
+          headerHeight: 32,
+        }
+      : {
+          rowHeight: 235,
+          headerHeight: 48,
+        };
+    assetStore.setLayoutOptions(layoutOptions);
   });
 
   const scrollTo = (top: number) => {
@@ -752,7 +761,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ml-0': !isEmpty }]}
+  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
   style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={assetStore.viewportHeight}

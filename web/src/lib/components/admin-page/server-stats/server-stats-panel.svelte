@@ -79,7 +79,7 @@
             <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(statsUsage)}</span><span
               class="text-immich-primary dark:text-immich-dark-primary">{statsUsage}</span
             >
-            <span class="my-auto ml-2 text-center text-base font-light text-gray-400">{statsUsageUnit}</span>
+            <span class="my-auto ms-2 text-center text-base font-light text-gray-400">{statsUsageUnit}</span>
           </div>
         </div>
       </div>
@@ -88,7 +88,7 @@
 
   <div>
     <p class="text-sm dark:text-immich-dark-fg">{$t('user_usage_detail').toUpperCase()}</p>
-    <table class="mt-5 w-full text-left">
+    <table class="mt-5 w-full text-start">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >

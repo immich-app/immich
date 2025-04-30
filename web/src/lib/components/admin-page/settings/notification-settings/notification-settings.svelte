@@ -80,7 +80,7 @@
     <form autocomplete="off" {onsubmit} class="mt-4">
       <div class="flex flex-col gap-4">
         <SettingAccordion key="email" title={$t('email')} subtitle={$t('admin.notification_email_setting_description')}>
-          <div class="ml-4 mt-4 flex flex-col gap-4">
+          <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.notification_enable_email_notifications')}
               {disabled}

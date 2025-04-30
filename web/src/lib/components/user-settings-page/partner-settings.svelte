@@ -130,7 +130,7 @@
         <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">
           <div class="flex gap-4">
             <UserAvatar user={partner.user} size="md" />
-            <div class="text-left">
+            <div class="text-start">
               <p class="text-immich-fg dark:text-immich-dark-fg">
                 {partner.user.name}
               </p>

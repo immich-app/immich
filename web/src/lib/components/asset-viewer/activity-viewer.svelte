@@ -186,7 +186,7 @@
       >
         {#each reactions as reaction, index (reaction.id)}
           {#if reaction.type === ReactionType.Comment}
-            <div class="flex dark:bg-gray-800 bg-gray-200 py-3 pl-3 mt-3 rounded-lg gap-4 justify-start">
+            <div class="flex dark:bg-gray-800 bg-gray-200 py-3 ps-3 mt-3 rounded-lg gap-4 justify-start">
               <div class="flex items-center">
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
@@ -202,7 +202,7 @@
                 </a>
               {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
-                <div class="mr-4">
+                <div class="me-4">
                   <ButtonContextMenu
                     icon={mdiDotsVertical}
                     title={$t('comment_options')}
@@ -231,7 +231,7 @@
             {/if}
           {:else if reaction.type === ReactionType.Like}
             <div class="relative">
-              <div class="flex py-3 pl-3 mt-3 gap-4 items-center text-sm">
+              <div class="flex py-3 ps-3 mt-3 gap-4 items-center text-sm">
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
@@ -255,7 +255,7 @@
                   </a>
                 {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
-                  <div class="mr-4">
+                  <div class="me-4">
                     <ButtonContextMenu
                       icon={mdiDotsVertical}
                       title={$t('reaction_options')}
@@ -307,17 +307,17 @@
               }}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
-                : ''} w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
+                : ''} w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
             ></textarea>
           </div>
           {#if isSendingMessage}
-            <div class="flex items-end place-items-center pb-2 ml-0">
+            <div class="flex items-end place-items-center pb-2 ms-0">
               <div class="flex w-full place-items-center">
                 <LoadingSpinner />
               </div>
             </div>
           {:else if message}
-            <div class="flex items-end w-fit ml-0">
+            <div class="flex items-end w-fit ms-0">
               <CircleIconButton
                 title={$t('send_message')}
                 size="15"

@@ -51,7 +51,7 @@
               {#if config.machineLearning.urls.length > 1}
                 <CircleIconButton
                   size="24"
-                  class="ml-2"
+                  class="ms-2"
                   padding="2"
                   color="red"
                   title=""
@@ -88,7 +88,7 @@
         title={$t('admin.machine_learning_smart_search')}
         subtitle={$t('admin.machine_learning_smart_search_description')}
       >
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+        <div class="ms-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('admin.machine_learning_smart_search_enabled')}
             subtitle={$t('admin.machine_learning_smart_search_enabled_description')}
@@ -124,7 +124,7 @@
         title={$t('admin.machine_learning_duplicate_detection')}
         subtitle={$t('admin.machine_learning_duplicate_detection_setting_description')}
       >
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+        <div class="ms-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('admin.machine_learning_duplicate_detection_enabled')}
             subtitle={$t('admin.machine_learning_duplicate_detection_enabled_description')}
@@ -154,7 +154,7 @@
         title={$t('admin.machine_learning_facial_recognition')}
         subtitle={$t('admin.machine_learning_facial_recognition_description')}
       >
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+        <div class="ms-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('admin.machine_learning_facial_recognition_setting')}
             subtitle={$t('admin.machine_learning_facial_recognition_setting_description')}

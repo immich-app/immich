@@ -1,9 +1,13 @@
 import { goto } from '$app/navigation';
+import { page } from '$app/state';
 import { AppRoute } from '$lib/constants';
-import { eventManager } from '$lib/stores/event-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { isSharedLinkRoute } from '$lib/utils/navigation';
 import { logout } from '@immich/sdk';
 
 class AuthManager {
+  key = $derived(isSharedLinkRoute(page.route?.id) ? page.params.key : undefined);
+
   async logout() {
     let redirectUri;
 

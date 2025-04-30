@@ -7,7 +7,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { downloadManager } from '$lib/stores/download-store.svelte';
+  import { downloadManager } from '$lib/managers/download-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
@@ -228,7 +228,7 @@
         </div>
       {:else}
         <div class="gap-2">
-          <table class="table-fixed mt-5 w-full text-left">
+          <table class="table-fixed mt-5 w-full text-start">
             <thead
               class="mb-4 flex w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
@@ -265,7 +265,7 @@
             </tbody>
           </table>
 
-          <table class="table-fixed mt-5 w-full text-left">
+          <table class="table-fixed mt-5 w-full text-start">
             <thead
               class="mb-4 flex w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
@@ -295,7 +295,7 @@
                   <td onclick={() => copyToClipboard(orphan.pathValue)}>
                     <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" onclick={() => {}} />
                   </td>
-                  <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
+                  <td class="truncate text-sm font-mono text-start" title={orphan.pathValue}>
                     {orphan.pathValue}
                   </td>
                   <td class="text-sm font-mono">
@@ -306,7 +306,7 @@
             </tbody>
           </table>
 
-          <table class="table-fixed mt-5 w-full text-left max-h-[300px]">
+          <table class="table-fixed mt-5 w-full text-start max-h-[300px]">
             <thead
               class="mb-4 flex w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
             >
@@ -337,11 +337,11 @@
                   <td onclick={() => copyToClipboard(extra.filename)}>
                     <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" onclick={() => {}} />
                   </td>
-                  <td class="w-full text-md text-ellipsis flex justify-between pr-5">
-                    <span class="text-ellipsis grow truncate font-mono text-sm pr-5" title={extra.filename}
+                  <td class="w-full text-md text-ellipsis flex justify-between pe-5">
+                    <span class="text-ellipsis grow truncate font-mono text-sm pe-5" title={extra.filename}
                       >{extra.filename}</span
                     >
-                    <span class="text-sm font-mono dark:text-immich-dark-primary text-immich-primary pr-5">
+                    <span class="text-sm font-mono dark:text-immich-dark-primary text-immich-primary pes-5">
                       {#if extra.checksum}
                         [sha1:{extra.checksum}]
                       {/if}

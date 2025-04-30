@@ -446,7 +446,7 @@
   aria-valuemax={toScrollY(1)}
   aria-valuemin={toScrollY(0)}
   data-id="immich-scrubbable-scrollbar"
-  class="absolute right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
+  class="absolute end-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
   style:padding-top={PADDING_TOP + 'px'}
   style:padding-bottom={PADDING_BOTTOM + 'px'}
   style:width
@@ -464,7 +464,7 @@
       class={[
         { 'border-b-2': isDragging },
         { 'rounded-bl-md': !isDragging },
-        'truncate opacity-85 pointer-events-none absolute right-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md  border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg',
+        'truncate opacity-85 pointer-events-none absolute end-0 z-[100] min-w-20 max-w-64 w-fit rounded-ss-md  border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg',
       ]}
       style:top="{hoverY + 2}px"
     >
@@ -474,7 +474,7 @@
   {#if usingMobileDevice && ((assetStore.scrolling && scrollHoverLabel) || isHover || isDragging)}
     <div
       id="time-label"
-      class="rounded-l-full w-[32px] pl-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
+      class="rounded-s-full w-[32px] ps-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
       style:top="{PADDING_TOP + (scrollY - 50 / 2)}px"
       style:height="50px"
       style:right="0"
@@ -482,8 +482,8 @@
       in:fade={{ duration: 200 }}
       out:fade={{ duration: 200 }}
     >
-      <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -right-[2px]" />
-      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-[1px] -right-[2px]" />
+      <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -end-[2px]" />
+      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-[1px] -end-[2px]" />
       {#if (assetStore.scrolling && scrollHoverLabel) || isHover || isDragging}
         <p
           transition:fade={{ duration: 200 }}
@@ -500,13 +500,13 @@
   <!-- Scroll Position Indicator Line -->
   {#if !usingMobileDevice && !isDragging}
     <div
-      class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
+      class="absolute end-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
       style:top="{scrollY + PADDING_TOP - 2}px"
     >
       {#if assetStore.scrolling && scrollHoverLabel && !isHover}
         <p
           transition:fade={{ duration: 200 }}
-          class="truncate pointer-events-none absolute right-0 bottom-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg/80 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray/80 dark:text-immich-dark-fg"
+          class="truncate pointer-events-none absolute end-0 bottom-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg/80 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray/80 dark:text-immich-dark-fg"
         >
           {scrollHoverLabel}
         </p>
@@ -521,7 +521,7 @@
     data-label={segments.at(0)?.dateFormatted}
   >
     {#if relativeTopOffset > 6}
-      <div class="absolute right-[0.75rem] h-[4px] w-[4px] rounded-full bg-gray-300"></div>
+      <div class="absolute end-[0.75rem] h-[4px] w-[4px] rounded-full bg-gray-300"></div>
     {/if}
   </div>
   <!-- Time Segment -->
@@ -535,12 +535,12 @@
     >
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
-          <div class="absolute right-[1.25rem] top-[-16px] z-10 text-[12px] dark:text-immich-dark-fg font-immich-mono">
+          <div class="absolute end-[1.25rem] top-[-16px] z-10 text-[12px] dark:text-immich-dark-fg font-immich-mono">
             {segment.date.year}
           </div>
         {/if}
         {#if segment.hasDot}
-          <div class="absolute right-[0.75rem] bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
+          <div class="absolute end-[0.75rem] bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
         {/if}
       {/if}
     </div>

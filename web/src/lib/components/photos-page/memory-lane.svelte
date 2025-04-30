@@ -44,9 +44,9 @@
     onscroll={onScroll}
   >
     {#if canScrollLeft || canScrollRight}
-      <div class="sticky left-0 z-20">
+      <div class="sticky start-0 z-20">
         {#if canScrollLeft}
-          <div class="absolute left-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
+          <div class="absolute start-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
@@ -59,7 +59,7 @@
           </div>
         {/if}
         {#if canScrollRight}
-          <div class="absolute right-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
+          <div class="absolute end-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
@@ -76,7 +76,7 @@
     <div class="inline-block" use:resizeObserver={({ width }) => (innerWidth = width)}>
       {#each memoryStore.memories as memory (memory.id)}
         <a
-          class="memory-card relative mr-2 md:mr-4 last:mr-0 inline-block aspect-[3/4] md:aspect-[4/3] max-md:h-[150px] xl:aspect-video h-[215px] rounded-xl"
+          class="memory-card relative me-2 md:me-4 last:me-0 inline-block aspect-[3/4] md:aspect-[4/3] max-md:h-[150px] xl:aspect-video h-[215px] rounded-xl"
           href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
         >
           <img
@@ -85,11 +85,11 @@
             alt={$t('memory_lane_title', { values: { title: $getAltText(memory.assets[0]) } })}
             draggable="false"
           />
-          <p class="absolute bottom-2 left-4 z-10 text-lg text-white max-md:text-sm">
+          <p class="absolute bottom-2 start-4 z-10 text-lg text-white max-md:text-sm">
             {$memoryLaneTitle(memory)}
           </p>
           <div
-            class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
+            class="absolute start-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
           ></div>
         </a>
       {/each}

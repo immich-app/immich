@@ -126,7 +126,7 @@
   >
     <!-- Date group title -->
     <div
-      class="flex z-[100] pt-[calc(1.75rem+1px)] pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
+      class="flex z-[100] pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
       style:width={dateGroup.width + 'px'}
     >
       {#if !singleSelect && ((hoveredDateGroup === dateGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dateGroup.groupTitle))}
@@ -144,7 +144,7 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize ml-2.5" title={getDateLocaleString(dateGroup.date)}>
+      <span class="w-full truncate first-letter:capitalize ms-2.5" title={getDateLocaleString(dateGroup.date)}>
         {dateGroup.groupTitle}
       </span>
     </div>
