@@ -40,7 +40,10 @@
     }
   },
   "overrideCommand": true,
-  "workspaceFolder": "/workspace/immich",
+  "workspaceFolder": "/workspaces/immich",
   "remoteUser": "node",
-  "postCreateCommand": "/immich-devcontainer/postCreate.sh"
+  "postCreateCommand": "/immich-devcontainer/postCreate.sh",
+  "mounts": [
+    "source=${localWorkspaceFolder}/app-data,target=/data,type=bind,consistency=cached"
+  ]
 }

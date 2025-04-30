@@ -13,5 +13,4 @@ COPY --chmod=777 ./.devcontainer/server/postCreate.sh /immich-devcontainer/postC
 COPY --chmod=777 ./.devcontainer/server/startServer.sh /immich-devcontainer/startServer.sh
 COPY --chmod=777 ./.devcontainer/server/startWeb.sh /immich-devcontainer/startWeb.sh
 
-COPY ./.devcontainer/ /workspaces/immich/.devcontainer/
 
