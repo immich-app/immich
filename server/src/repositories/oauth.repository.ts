@@ -1,16 +1,19 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import type { UserInfoResponse } from 'openid-client' with { 'resolution-mode': 'import' };
+import { OAuthTokenEndpointAuthMethod } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export type OAuthConfig = {
   clientId: string;
-  clientSecret: string;
+  clientSecret?: string;
   issuerUrl: string;
   mobileOverrideEnabled: boolean;
   mobileRedirectUri: string;
   profileSigningAlgorithm: string;
   scope: string;
   signingAlgorithm: string;
+  tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
+  timeout: number;
 };
 export type OAuthProfile = UserInfoResponse;
 
@@ -76,12 +79,10 @@ export class OAuthRepository {
         );
       }
 
-      if (error.code === 'OAUTH_INVALID_RESPONSE') {
-        this.logger.warn(`Invalid response from authorization server. Cause: ${error.cause?.message}`);
-        throw error.cause;
-      }
+      this.logger.error(`OAuth login failed: ${error.message}`);
+      this.logger.error(error);
 
-      throw error;
+      throw new Error('OAuth login failed', { cause: error });
     }
   }
 
@@ -103,6 +104,8 @@ export class OAuthRepository {
     clientSecret,
     profileSigningAlgorithm,
     signingAlgorithm,
+    tokenEndpointAuthMethod,
+    timeout,
   }: OAuthConfig) {
     try {
       const { allowInsecureRequests, discovery } = await import('openid-client');
@@ -114,14 +117,38 @@ export class OAuthRepository {
           response_types: ['code'],
           userinfo_signed_response_alg: profileSigningAlgorithm === 'none' ? undefined : profileSigningAlgorithm,
           id_token_signed_response_alg: signingAlgorithm,
-          timeout: 30_000,
         },
-        undefined,
-        { execute: [allowInsecureRequests] },
+        await this.getTokenAuthMethod(tokenEndpointAuthMethod, clientSecret),
+        {
+          execute: [allowInsecureRequests],
+          timeout,
+        },
       );
     } catch (error: any | AggregateError) {
       this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
       throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });
+    }
+  }
+
+  private async getTokenAuthMethod(tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod, clientSecret?: string) {
+    const { None, ClientSecretPost, ClientSecretBasic } = await import('openid-client');
+
+    if (!clientSecret) {
+      return None();
+    }
+
+    switch (tokenEndpointAuthMethod) {
+      case OAuthTokenEndpointAuthMethod.CLIENT_SECRET_POST: {
+        return ClientSecretPost(clientSecret);
+      }
+
+      case OAuthTokenEndpointAuthMethod.CLIENT_SECRET_BASIC: {
+        return ClientSecretBasic(clientSecret);
+      }
+
+      default: {
+        return None();
+      }
     }
   }
 }

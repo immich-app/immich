@@ -1,15 +1,15 @@
 <script lang="ts">
+  import { SettingInputFieldType } from '$lib/constants';
+  import { onMount, tick, type Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import type { FormEventHandler } from 'svelte/elements';
   import { fly } from 'svelte/transition';
   import PasswordField from '../password-field.svelte';
-  import { t } from 'svelte-i18n';
-  import { onMount, tick, type Snippet } from 'svelte';
-  import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
     inputType: SettingInputFieldType;
-    value: string | number;
+    value: string | number | undefined;
     min?: number;
     max?: number;
     step?: string;
@@ -147,7 +147,7 @@
       name={label}
       autocomplete={passwordAutocomplete}
       {required}
-      password={value.toString()}
+      password={(value || '').toString()}
       onInput={(passwordValue) => (value = passwordValue)}
       {disabled}
       {title}

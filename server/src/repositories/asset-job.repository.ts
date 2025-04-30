@@ -135,6 +135,23 @@ export class AssetJobRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [], stream: true })
+  streamForEncodeClip(force?: boolean) {
+    return this.db
+      .selectFrom('assets')
+      .select(['assets.id'])
+      .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
+      .where('job_status.previewAt', 'is not', null)
+      .where('assets.isVisible', '=', true)
+      .$if(!force, (qb) =>
+        qb.where((eb) =>
+          eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))),
+        ),
+      )
+      .where('assets.deletedAt', 'is', null)
+      .stream();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getForClipEncoding(id: string) {
     return this.db

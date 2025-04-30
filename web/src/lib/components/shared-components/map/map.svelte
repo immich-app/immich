@@ -9,15 +9,15 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
-  import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
+  import { themeManager } from '$lib/managers/theme-manager.svelte';
+  import { mapSettings } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { type MapMarkerResponseDto } from '@immich/sdk';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-  import { type GeoJSONSource, GlobeControl, type LngLatLike } from 'maplibre-gl';
-  import maplibregl from 'maplibre-gl';
+  import maplibregl, { GlobeControl, type GeoJSONSource, type LngLatLike } from 'maplibre-gl';
   import { t } from 'svelte-i18n';
   import {
     AttributionControl,
@@ -68,7 +68,7 @@
   let map: maplibregl.Map | undefined = $state();
   let marker: maplibregl.Marker | null = null;
 
-  const theme = $derived($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT);
+  const theme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.LIGHT);
   const styleUrl = $derived(theme === Theme.DARK ? $serverConfig.mapDarkStyleUrl : $serverConfig.mapLightStyleUrl);
 
   export function addClipMapMarker(lng: number, lat: number) {
