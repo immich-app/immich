@@ -495,3 +495,11 @@ where
   and "job_status"."facesRecognizedAt" is null
 order by
   "assets"."createdAt" desc
+
+-- AssetJobRepository.streamForMigrationJob
+select
+  "id"
+from
+  "assets"
+where
+  "assets"."deletedAt" is null

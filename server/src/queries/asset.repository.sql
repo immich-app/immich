@@ -232,20 +232,6 @@ where
 limit
   $3
 
--- AssetRepository.getWithout (sidecar)
-select
-  "assets".*
-from
-  "assets"
-where
-  "deletedAt" is null
-order by
-  "createdAt"
-limit
-  $1
-offset
-  $2
-
 -- AssetRepository.getTimeBuckets
 with
   "assets" as (

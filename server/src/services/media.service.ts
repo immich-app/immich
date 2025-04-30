@@ -36,7 +36,6 @@ import {
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class MediaService extends BaseService {
@@ -96,23 +95,24 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.QUEUE_MIGRATION, queue: QueueName.MIGRATION })
   async handleQueueMigration(): Promise<JobStatus> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination),
-    );
-
     const { active, waiting } = await this.jobRepository.getJobCounts(QueueName.MIGRATION);
     if (active === 1 && waiting === 0) {
       await this.storageCore.removeEmptyDirs(StorageFolder.THUMBNAILS);
       await this.storageCore.removeEmptyDirs(StorageFolder.ENCODED_VIDEO);
     }
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } })),
-      );
+    let jobs: JobItem[] = [];
+    const assets = this.assetJobRepository.streamForMigrationJob();
+    for await (const asset of assets) {
+      jobs.push({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
+      }
     }
 
-    let jobs: { name: JobName.MIGRATE_PERSON; data: { id: string } }[] = [];
+    await this.jobRepository.queueAll(jobs);
+    jobs = [];
 
     for await (const person of this.personRepository.getAll()) {
       jobs.push({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
