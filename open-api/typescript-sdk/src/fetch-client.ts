@@ -462,10 +462,6 @@ export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
 };
-export type MemoryLaneResponseDto = {
-    assets: AssetResponseDto[];
-    yearsAgo: number;
-};
 export type AssetStatsResponseDto = {
     images: number;
     total: number;
@@ -1865,20 +1861,6 @@ export function runAssetJobs({ assetJobsDto }: {
         method: "POST",
         body: assetJobsDto
     })));
-}
-export function getMemoryLane({ day, month }: {
-    day: number;
-    month: number;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: MemoryLaneResponseDto[];
-    }>(`/assets/memory-lane${QS.query(QS.explode({
-        day,
-        month
-    }))}`, {
-        ...opts
-    }));
 }
 /**
  * This property was deprecated in v1.116.0

@@ -156,7 +156,6 @@ part 'model/map_reverse_geocode_response_dto.dart';
 part 'model/memories_response.dart';
 part 'model/memories_update.dart';
 part 'model/memory_create_dto.dart';
-part 'model/memory_lane_response_dto.dart';
 part 'model/memory_response_dto.dart';
 part 'model/memory_type.dart';
 part 'model/memory_update_dto.dart';

@@ -1726,62 +1726,6 @@
         ]
       }
     },
-    "/assets/memory-lane": {
-      "get": {
-        "operationId": "getMemoryLane",
-        "parameters": [
-          {
-            "name": "day",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 31,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "month",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 12,
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MemoryLaneResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
     "/assets/random": {
       "get": {
         "deprecated": true,
@@ -10114,24 +10058,6 @@
           "data",
           "memoryAt",
           "type"
-        ],
-        "type": "object"
-      },
-      "MemoryLaneResponseDto": {
-        "properties": {
-          "assets": {
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            },
-            "type": "array"
-          },
-          "yearsAgo": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "assets",
-          "yearsAgo"
         ],
         "type": "object"
       },
