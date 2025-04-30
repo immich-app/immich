@@ -23,11 +23,9 @@ import {
   SourceType,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
-import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
 /** look for a date from these tags (in order) */
@@ -189,98 +187,6 @@ export class MetadataService extends BaseService {
     if (!asset) {
       return JobStatus.FAILED;
     }
-
-    const [exifTags, stats] = await Promise.all([
-      this.getExifTags(asset),
-      this.storageRepository.stat(asset.originalPath),
-    ]);
-    this.logger.verbose('Exif Tags', exifTags);
-
-    const dates = this.getDates(asset, exifTags, stats);
-
-    const { width, height } = this.getImageDimensions(exifTags);
-    let geo: ReverseGeocodeResult = { country: null, state: null, city: null },
-      latitude: number | null = null,
-      longitude: number | null = null;
-    if (this.hasGeo(exifTags)) {
-      latitude = exifTags.GPSLatitude;
-      longitude = exifTags.GPSLongitude;
-      if (reverseGeocoding.enabled) {
-        geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
-      }
-    }
-
-    const exifData: Insertable<Exif> = {
-      assetId: asset.id,
-
-      // dates
-      dateTimeOriginal: dates.dateTimeOriginal,
-      modifyDate: stats.mtime,
-      timeZone: dates.timeZone,
-
-      // gps
-      latitude,
-      longitude,
-      country: geo.country,
-      state: geo.state,
-      city: geo.city,
-
-      // image/file
-      fileSizeInByte: stats.size,
-      exifImageHeight: validate(height),
-      exifImageWidth: validate(width),
-      orientation: validate(exifTags.Orientation)?.toString() ?? null,
-      projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
-      bitsPerSample: this.getBitsPerSample(exifTags),
-      colorspace: exifTags.ColorSpace ?? null,
-
-      // camera
-      make: exifTags.Make ?? exifTags?.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,
-      model: exifTags.Model ?? exifTags?.Device?.ModelName ?? exifTags.AndroidModel ?? null,
-      fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
-      iso: validate(exifTags.ISO) as number,
-      exposureTime: exifTags.ExposureTime ?? null,
-      lensModel: getLensModel(exifTags),
-      fNumber: validate(exifTags.FNumber),
-      focalLength: validate(exifTags.FocalLength),
-
-      // comments
-      description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
-      profileDescription: exifTags.ProfileDescription || null,
-      rating: validateRange(exifTags.Rating, -1, 5),
-
-      // grouping
-      livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
-      autoStackId: this.getAutoStackId(exifTags),
-    };
-
-    const promises: Promise<unknown>[] = [
-      this.assetRepository.upsertExif(exifData),
-      this.assetRepository.update({
-        id: asset.id,
-        duration: exifTags.Duration?.toString() ?? null,
-        localDateTime: dates.localDateTime,
-        fileCreatedAt: dates.dateTimeOriginal ?? undefined,
-        fileModifiedAt: stats.mtime,
-      }),
-      this.applyTagList(asset, exifTags),
-    ];
-
-    if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats));
-    }
-
-    if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
-      promises.push(this.applyTaggedFaces(asset, exifTags));
-    }
-
-    await Promise.all(promises);
-    if (exifData.livePhotoCID) {
-      await this.linkLivePhotos(asset, exifData);
-    }
-
-    await this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() });
-
     return JobStatus.SUCCESS;
   }
 
@@ -425,9 +331,9 @@ export class MetadataService extends BaseService {
         typeof tag === 'number'
           ? String(tag)
           : tag
-              .split('|')
-              .map((tag) => tag.replaceAll('/', '|'))
-              .join('/'),
+            .split('|')
+            .map((tag) => tag.replaceAll('/', '|'))
+            .join('/'),
       );
     } else if (exifTags.Keywords) {
       let keywords = exifTags.Keywords;

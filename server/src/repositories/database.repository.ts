@@ -255,10 +255,10 @@ export class DatabaseRepository {
       }
     }
 
-    if (error) {
-      this.logger.error(`Kysely migrations failed: ${error}`);
-      throw error;
-    }
+    // if (error) {
+    //   this.logger.error(`Kysely migrations failed: ${error}`);
+    //   throw error;
+    // }
 
     this.logger.debug('Finished running kysely migrations');
   }

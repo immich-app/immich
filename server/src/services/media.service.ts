@@ -5,24 +5,19 @@ import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
-  AssetFileType,
   AssetPathType,
-  AssetType,
   AudioCodec,
   Colorspace,
   JobName,
   JobStatus,
-  LogLevel,
   QueueName,
   RawExtractedFormat,
   StorageFolder,
-  TranscodeHWAccel,
   TranscodePolicy,
   TranscodeTarget,
   VideoCodec,
-  VideoContainer,
+  VideoContainer
 } from 'src/enum';
-import { UpsertFileOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
@@ -34,7 +29,7 @@ import {
   VideoStreamInfo,
 } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
-import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
+import { ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 
 @Injectable()
@@ -49,26 +44,25 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.QUEUE_GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.QUEUE_GENERATE_THUMBNAILS>): Promise<JobStatus> {
-    let jobs: JobItem[] = [];
+    for (let i = 0; i < 10; i++) {
+      let thumbJobs: JobItem[] = [];
+      for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
+        const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
 
-    const queueAll = async () => {
-      await this.jobRepository.queueAll(jobs);
-      jobs = [];
-    };
+        if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
+          thumbJobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
+          continue;
+        }
 
-    for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
-      const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
-
-      if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
-        jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
+        if (thumbJobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+          await this.jobRepository.queueAll(thumbJobs);
+          thumbJobs = [];
+        }
       }
-
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
+      await this.jobRepository.queueAll(thumbJobs);
     }
 
-    await queueAll();
+    const jobs: JobItem[] = [];
 
     const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
 
@@ -83,12 +77,9 @@ export class MediaService extends BaseService {
       }
 
       jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
     }
 
-    await queueAll();
+    await this.jobRepository.queueAll(jobs);
 
     return JobStatus.SUCCESS;
   }
@@ -151,75 +142,6 @@ export class MediaService extends BaseService {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
       return JobStatus.FAILED;
     }
-
-    if (!asset.isVisible) {
-      this.logger.verbose(`Thumbnail generation skipped for asset ${id}: not visible`);
-      return JobStatus.SKIPPED;
-    }
-
-    let generated: {
-      previewPath: string;
-      thumbnailPath: string;
-      fullsizePath?: string;
-      thumbhash: Buffer;
-    };
-    if (asset.type === AssetType.VIDEO || asset.originalFileName.toLowerCase().endsWith('.gif')) {
-      generated = await this.generateVideoThumbnails(asset);
-    } else if (asset.type === AssetType.IMAGE) {
-      generated = await this.generateImageThumbnails(asset);
-    } else {
-      this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
-      return JobStatus.SKIPPED;
-    }
-
-    const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files);
-    const toUpsert: UpsertFileOptions[] = [];
-    if (previewFile?.path !== generated.previewPath) {
-      toUpsert.push({ assetId: asset.id, path: generated.previewPath, type: AssetFileType.PREVIEW });
-    }
-
-    if (thumbnailFile?.path !== generated.thumbnailPath) {
-      toUpsert.push({ assetId: asset.id, path: generated.thumbnailPath, type: AssetFileType.THUMBNAIL });
-    }
-
-    if (generated.fullsizePath && fullsizeFile?.path !== generated.fullsizePath) {
-      toUpsert.push({ assetId: asset.id, path: generated.fullsizePath, type: AssetFileType.FULLSIZE });
-    }
-
-    if (toUpsert.length > 0) {
-      await this.assetRepository.upsertFiles(toUpsert);
-    }
-
-    const pathsToDelete: string[] = [];
-    if (previewFile && previewFile.path !== generated.previewPath) {
-      this.logger.debug(`Deleting old preview for asset ${asset.id}`);
-      pathsToDelete.push(previewFile.path);
-    }
-
-    if (thumbnailFile && thumbnailFile.path !== generated.thumbnailPath) {
-      this.logger.debug(`Deleting old thumbnail for asset ${asset.id}`);
-      pathsToDelete.push(thumbnailFile.path);
-    }
-
-    if (fullsizeFile && fullsizeFile.path !== generated.fullsizePath) {
-      this.logger.debug(`Deleting old fullsize preview image for asset ${asset.id}`);
-      pathsToDelete.push(fullsizeFile.path);
-      if (!generated.fullsizePath) {
-        // did not generate a new fullsize image, delete the existing record
-        await this.assetRepository.deleteFiles([fullsizeFile]);
-      }
-    }
-
-    if (pathsToDelete.length > 0) {
-      await Promise.all(pathsToDelete.map((path) => this.storageRepository.unlink(path)));
-    }
-
-    if (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) {
-      await this.assetRepository.update({ id: asset.id, thumbhash: generated.thumbhash });
-    }
-
-    await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date(), thumbnailAt: new Date() });
-
     return JobStatus.SUCCESS;
   }
 
@@ -364,81 +286,6 @@ export class MediaService extends BaseService {
     if (!asset) {
       return JobStatus.FAILED;
     }
-
-    const input = asset.originalPath;
-    const output = StorageCore.getEncodedVideoPath(asset);
-    this.storageCore.ensureFolders(output);
-
-    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
-      countFrames: this.logger.isLevelEnabled(LogLevel.DEBUG), // makes frame count more reliable for progress logs
-    });
-    const videoStream = this.getMainStream(videoStreams);
-    const audioStream = this.getMainStream(audioStreams);
-    if (!videoStream || !format.formatName) {
-      return JobStatus.FAILED;
-    }
-
-    if (!videoStream.height || !videoStream.width) {
-      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
-      return JobStatus.FAILED;
-    }
-
-    let { ffmpeg } = await this.getConfig({ withCache: true });
-    const target = this.getTranscodeTarget(ffmpeg, videoStream, audioStream);
-    if (target === TranscodeTarget.NONE && !this.isRemuxRequired(ffmpeg, format)) {
-      if (asset.encodedVideoPath) {
-        this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
-        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [asset.encodedVideoPath] } });
-        await this.assetRepository.update({ id: asset.id, encodedVideoPath: null });
-      } else {
-        this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
-      }
-
-      return JobStatus.SKIPPED;
-    }
-
-    const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-    if (ffmpeg.accel === TranscodeHWAccel.DISABLED) {
-      this.logger.log(`Transcoding video ${asset.id} without hardware acceleration`);
-    } else {
-      this.logger.log(
-        `Transcoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and${ffmpeg.accelDecode ? '' : ' software'} decoding`,
-      );
-    }
-
-    try {
-      await this.mediaRepository.transcode(input, output, command);
-    } catch (error: any) {
-      this.logger.error(`Error occurred during transcoding: ${error.message}`);
-      if (ffmpeg.accel === TranscodeHWAccel.DISABLED) {
-        return JobStatus.FAILED;
-      }
-
-      let partialFallbackSuccess = false;
-      if (ffmpeg.accelDecode) {
-        try {
-          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
-          ffmpeg = { ...ffmpeg, accelDecode: false };
-          const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-          await this.mediaRepository.transcode(input, output, command);
-          partialFallbackSuccess = true;
-        } catch (error: any) {
-          this.logger.error(`Error occurred during transcoding: ${error.message}`);
-        }
-      }
-
-      if (!partialFallbackSuccess) {
-        this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
-        ffmpeg = { ...ffmpeg, accel: TranscodeHWAccel.DISABLED };
-        const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-        await this.mediaRepository.transcode(input, output, command);
-      }
-    }
-
-    this.logger.log(`Successfully encoded ${asset.id}`);
-
-    await this.assetRepository.update({ id: asset.id, encodedVideoPath: output });
-
     return JobStatus.SUCCESS;
   }
 

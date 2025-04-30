@@ -10,7 +10,6 @@ import { AssetPathType, AssetType, DatabaseLock, JobName, JobStatus, QueueName, 
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf, StorageAsset } from 'src/types';
-import { getLivePhotoMotionFilename } from 'src/utils/file';
 
 const storageTokens = {
   secondOptions: ['s', 'ss', 'SSS'],
@@ -127,21 +126,6 @@ export class StorageTemplateService extends BaseService {
     const asset = await this.assetJobRepository.getForStorageTemplateJob(id);
     if (!asset) {
       return JobStatus.FAILED;
-    }
-
-    const user = await this.userRepository.get(asset.ownerId, {});
-    const storageLabel = user?.storageLabel || null;
-    const filename = asset.originalFileName || asset.id;
-    await this.moveAsset(asset, { storageLabel, filename });
-
-    // move motion part of live photo
-    if (asset.livePhotoVideoId) {
-      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
-      if (!livePhotoVideo) {
-        return JobStatus.FAILED;
-      }
-      const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
     }
     return JobStatus.SUCCESS;
   }

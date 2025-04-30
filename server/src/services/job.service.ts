@@ -5,7 +5,6 @@ import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
 import {
-  AssetType,
   BootstrapEventPriority,
   ImmichWorker,
   JobCommand,
@@ -306,11 +305,8 @@ export class JobService extends BaseService {
         const jobs: JobItem[] = [
           { name: JobName.SMART_SEARCH, data: item.data },
           { name: JobName.FACE_DETECTION, data: item.data },
+          { name: JobName.VIDEO_CONVERSION, data: item.data },
         ];
-
-        if (asset.type === AssetType.VIDEO) {
-          jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
-        }
 
         await this.jobRepository.queueAll(jobs);
         if (asset.isVisible) {

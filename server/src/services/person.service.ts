@@ -1,9 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Insertable, Updateable } from 'kysely';
-import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
+import { Updateable } from 'kysely';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { Person } from 'src/database';
-import { AssetFaces, FaceSearch } from 'src/db';
 import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -27,7 +25,6 @@ import {
 import {
   AssetType,
   CacheControl,
-  ImageFormat,
   JobName,
   JobStatus,
   Permission,
@@ -291,79 +288,6 @@ export class PersonService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForDetectFacesJob(id);
-    const previewFile = asset?.files[0];
-    if (!asset || asset.files.length !== 1 || !previewFile) {
-      return JobStatus.FAILED;
-    }
-
-    if (!asset.isVisible) {
-      return JobStatus.SKIPPED;
-    }
-
-    const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
-      machineLearning.urls,
-      previewFile.path,
-      machineLearning.facialRecognition,
-    );
-    this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
-
-    const facesToAdd: (Insertable<AssetFaces> & { id: string })[] = [];
-    const embeddings: FaceSearch[] = [];
-    const mlFaceIds = new Set<string>();
-
-    for (const face of asset.faces) {
-      if (face.sourceType === SourceType.MACHINE_LEARNING) {
-        mlFaceIds.add(face.id);
-      }
-    }
-
-    const heightScale = imageHeight / (asset.faces[0]?.imageHeight || 1);
-    const widthScale = imageWidth / (asset.faces[0]?.imageWidth || 1);
-    for (const { boundingBox, embedding } of faces) {
-      const scaledBox = {
-        x1: boundingBox.x1 * widthScale,
-        y1: boundingBox.y1 * heightScale,
-        x2: boundingBox.x2 * widthScale,
-        y2: boundingBox.y2 * heightScale,
-      };
-      const match = asset.faces.find((face) => this.iou(face, scaledBox) > 0.5);
-
-      if (match && !mlFaceIds.delete(match.id)) {
-        embeddings.push({ faceId: match.id, embedding });
-      } else if (!match) {
-        const faceId = this.cryptoRepository.randomUUID();
-        facesToAdd.push({
-          id: faceId,
-          assetId: asset.id,
-          imageHeight,
-          imageWidth,
-          boundingBoxX1: boundingBox.x1,
-          boundingBoxY1: boundingBox.y1,
-          boundingBoxX2: boundingBox.x2,
-          boundingBoxY2: boundingBox.y2,
-        });
-        embeddings.push({ faceId, embedding });
-      }
-    }
-    const faceIdsToRemove = [...mlFaceIds];
-
-    if (facesToAdd.length > 0 || faceIdsToRemove.length > 0 || embeddings.length > 0) {
-      await this.personRepository.refreshFaces(facesToAdd, faceIdsToRemove, embeddings);
-    }
-
-    if (faceIdsToRemove.length > 0) {
-      this.logger.log(`Removed ${faceIdsToRemove.length} faces below detection threshold in asset ${id}`);
-    }
-
-    if (facesToAdd.length > 0) {
-      this.logger.log(`Detected ${facesToAdd.length} new faces in asset ${id}`);
-      const jobs = facesToAdd.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id } }) as const);
-      await this.jobRepository.queueAll([{ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } }, ...jobs]);
-    } else if (embeddings.length > 0) {
-      this.logger.log(`Added ${embeddings.length} face embeddings for asset ${id}`);
-    }
-
-    await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });
 
     return JobStatus.SUCCESS;
   }
@@ -547,26 +471,6 @@ export class PersonService extends BaseService {
       this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
       return JobStatus.FAILED;
     }
-
-    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight } = data;
-
-    const { width, height, inputPath } = await this.getInputDimensions(data);
-
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
-    this.storageCore.ensureFolders(thumbnailPath);
-
-    const thumbnailOptions = {
-      colorspace: image.colorspace,
-      format: ImageFormat.JPEG,
-      size: FACE_THUMBNAIL_SIZE,
-      quality: image.thumbnail.quality,
-      crop: this.getCrop({ old: { width: oldWidth, height: oldHeight }, new: { width, height } }, { x1, y1, x2, y2 }),
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-    };
-
-    await this.mediaRepository.generateThumbnail(inputPath, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id, thumbnailPath });
-
     return JobStatus.SUCCESS;
   }
 

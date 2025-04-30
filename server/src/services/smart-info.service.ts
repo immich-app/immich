@@ -103,30 +103,6 @@ export class SmartInfoService extends BaseService {
     if (!asset || asset.files.length !== 1) {
       return JobStatus.FAILED;
     }
-
-    if (!asset.isVisible) {
-      return JobStatus.SKIPPED;
-    }
-
-    const embedding = await this.machineLearningRepository.encodeImage(
-      machineLearning.urls,
-      asset.files[0].path,
-      machineLearning.clip,
-    );
-
-    if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
-      this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
-      await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
-    }
-
-    const newConfig = await this.getConfig({ withCache: true });
-    if (machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
-      // Skip the job if the the model has changed since the embedding was generated.
-      return JobStatus.SKIPPED;
-    }
-
-    await this.searchRepository.upsert(asset.id, embedding);
-
     return JobStatus.SUCCESS;
   }
 }
