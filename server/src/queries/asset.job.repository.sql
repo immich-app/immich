@@ -194,15 +194,16 @@ where
   "asset_files"."assetId" = $1
   and "asset_files"."type" = $2
 
--- AssetJobRepository.streamForEncodeClip
+-- AssetJobRepository.streamForSearchDuplicates
 select
   "assets"."id"
 from
   "assets"
   inner join "asset_job_status" as "job_status" on "assetId" = "assets"."id"
 where
-  "job_status"."previewAt" is not null
-  and "assets"."isVisible" = $1
+  "assets"."isVisible" = $1
+  and "assets"."deletedAt" is null
+  and "job_status"."previewAt" is not null
   and not exists (
     select
     from
@@ -210,7 +211,25 @@ where
     where
       "assetId" = "assets"."id"
   )
+  and "job_status"."duplicatesDetectedAt" is null
+
+-- AssetJobRepository.streamForEncodeClip
+select
+  "assets"."id"
+from
+  "assets"
+  inner join "asset_job_status" as "job_status" on "assetId" = "assets"."id"
+where
+  "assets"."isVisible" = $1
   and "assets"."deletedAt" is null
+  and "job_status"."previewAt" is not null
+  and not exists (
+    select
+    from
+      "smart_search"
+    where
+      "assetId" = "assets"."id"
+  )
 
 -- AssetJobRepository.getForClipEncoding
 select

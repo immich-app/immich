@@ -49,7 +49,6 @@ export enum WithoutProperty {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded-video',
   EXIF = 'exif',
-  DUPLICATE = 'duplicate',
   FACES = 'faces',
   SIDECAR = 'sidecar',
 }
@@ -539,14 +538,6 @@ export class AssetRepository {
     const items = await this.db
       .selectFrom('assets')
       .selectAll('assets')
-      .$if(property === WithoutProperty.DUPLICATE, (qb) =>
-        qb
-          .innerJoin('asset_job_status as job_status', 'assets.id', 'job_status.assetId')
-          .where('job_status.duplicatesDetectedAt', 'is', null)
-          .where('job_status.previewAt', 'is not', null)
-          .where((eb) => eb.exists(eb.selectFrom('smart_search').where('assetId', '=', eb.ref('assets.id'))))
-          .where('assets.isVisible', '=', true),
-      )
       .$if(property === WithoutProperty.ENCODED_VIDEO, (qb) =>
         qb
           .where('assets.type', '=', AssetType.VIDEO)
