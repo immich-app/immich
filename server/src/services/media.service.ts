@@ -50,18 +50,26 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.QUEUE_GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.QUEUE_GENERATE_THUMBNAILS>): Promise<JobStatus> {
-    const thumbJobs: JobItem[] = [];
+    let jobs: JobItem[] = [];
+
+    const queueAll = async () => {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    };
+
     for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
       const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
 
       if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
-        thumbJobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
-        continue;
+        jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
+      }
+
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
       }
     }
-    await this.jobRepository.queueAll(thumbJobs);
 
-    const jobs: JobItem[] = [];
+    await queueAll();
 
     const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
 
@@ -76,9 +84,12 @@ export class MediaService extends BaseService {
       }
 
       jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
+      }
     }
 
-    await this.jobRepository.queueAll(jobs);
+    await queueAll();
 
     return JobStatus.SUCCESS;
   }
