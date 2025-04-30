@@ -1,4 +1,3 @@
-import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
@@ -37,11 +36,9 @@ export const middleware = [
 ];
 
 const configRepository = new ConfigRepository();
-const { bull, cls, database, otel } = configRepository.getEnv();
+const { cls, database, otel } = configRepository.getEnv();
 
 const imports = [
-  BullModule.forRoot(bull.config),
-  BullModule.registerQueue(...bull.queues),
   ClsModule.forRoot(cls.config),
   OpenTelemetryModule.forRoot(otel),
   KyselyModule.forRoot(getKyselyConfig(database.config)),

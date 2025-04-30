@@ -30,20 +30,15 @@ export class JobCountsDto {
   @ApiProperty({ type: 'integer' })
   active!: number;
   @ApiProperty({ type: 'integer' })
-  completed!: number;
-  @ApiProperty({ type: 'integer' })
-  failed!: number;
+  waiting!: number;
   @ApiProperty({ type: 'integer' })
   delayed!: number;
   @ApiProperty({ type: 'integer' })
-  waiting!: number;
-  @ApiProperty({ type: 'integer' })
-  paused!: number;
+  failed!: number;
 }
 
 export class QueueStatusDto {
-  isActive!: boolean;
-  isPaused!: boolean;
+  paused!: boolean;
 }
 
 export class JobStatusDto {

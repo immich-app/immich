@@ -204,6 +204,7 @@ export enum SystemMetadataKey {
   SYSTEM_FLAGS = 'system-flags',
   VERSION_CHECK_STATE = 'version-check-state',
   LICENSE = 'license',
+  QUEUES_STATE = 'queues-state',
 }
 
 export enum UserMetadataKey {
@@ -533,10 +534,20 @@ export enum JobName {
 }
 
 export enum JobCommand {
+  // The behavior of start depends on the queue. Usually it is a request to
+  // reprocess everything associated with the queue from scratch.
   START = 'start',
+
+  // Pause prevents workers from processing jobs.
   PAUSE = 'pause',
+
+  // Resume allows workers to continue processing jobs.
   RESUME = 'resume',
-  EMPTY = 'empty',
+
+  // Clear removes all pending jobs.
+  CLEAR = 'clear',
+
+  // ClearFailed removes all failed jobs.
   CLEAR_FAILED = 'clear-failed',
 }
 

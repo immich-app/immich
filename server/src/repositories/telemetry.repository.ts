@@ -4,7 +4,6 @@ import { MetricOptions } from '@opentelemetry/api';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
-import { IORedisInstrumentation } from '@opentelemetry/instrumentation-ioredis';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { resourceFromAttributes } from '@opentelemetry/resources';
@@ -68,12 +67,7 @@ export const bootstrapTelemetry = (port: number) => {
     }),
     metricReader: new PrometheusExporter({ port }),
     contextManager: new AsyncLocalStorageContextManager(),
-    instrumentations: [
-      new HttpInstrumentation(),
-      new IORedisInstrumentation(),
-      new NestInstrumentation(),
-      new PgInstrumentation(),
-    ],
+    instrumentations: [new HttpInstrumentation(), new NestInstrumentation(), new PgInstrumentation()],
     views: [
       {
         instrumentName: '*',

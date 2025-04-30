@@ -278,7 +278,7 @@ You can use [Smart Search](/docs/features/searching.md) for this to some extent.
 
 ### I'm getting a lot of "faces" that aren't faces, what can I do?
 
-You can increase the MIN DETECTION SCORE to 0.8 to help prevent bad thumbnails. Setting the score too high (above 0.9) might filter out too many real faces depending on the library used. If you just want to hide specific faces, you can adjust the 'MIN FACES DETECTED' setting in the administration panel  
+You can increase the MIN DETECTION SCORE to 0.8 to help prevent bad thumbnails. Setting the score too high (above 0.9) might filter out too many real faces depending on the library used. If you just want to hide specific faces, you can adjust the 'MIN FACES DETECTED' setting in the administration panel
 to increase the bar for what the algorithm considers a "core face" for that person, reducing the chance of bad thumbnails being chosen.
 
 ### The immich_model-cache volume takes up a lot of space, what could be the problem?
@@ -367,12 +367,6 @@ You need to [enable WebSockets](/docs/administration/reverse-proxy/) on your rev
 
 Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/docs/guides/docker-help.md).
 
-### How can I reduce the log verbosity of Redis?
-
-To decrease Redis logs, you can add the following line to the `redis:` section of the `docker-compose.yml`:
-
-`    command: redis-server --loglevel warning`
-
 ### How can I run Immich as a non-root user?
 
 You can change the user in the container by setting the `user` argument in `docker-compose.yml` for each service.
@@ -380,7 +374,6 @@ You may need to add mount points or docker volumes for the following internal co
 
 - `immich-machine-learning:/.config`
 - `immich-machine-learning:/.cache`
-- `redis:/data`
 
 The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION` and `/cache` for machine-learning.
 
@@ -425,7 +418,7 @@ After removing the containers and volumes, there are a few directories that need
 - `UPLOAD_LOCATION` contains all the media uploaded to Immich.
 
 :::note Portainer
-If you use portainer, bring down the stack in portainer. Go into the volumes section  
+If you use portainer, bring down the stack in portainer. Go into the volumes section
 and remove all the volumes related to immich then restart the stack.
 :::
 

@@ -499,14 +499,13 @@ describe(NotificationService.name, () => {
     });
 
     it('should add new recipients for new images if job is already queued', async () => {
-      mocks.job.removeJob.mockResolvedValue({ id: '1', recipientIds: ['2', '3', '4'] } as INotifyAlbumUpdateJob);
       await sut.onAlbumUpdate({ id: '1', recipientIds: ['1', '2', '3'] } as INotifyAlbumUpdateJob);
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_ALBUM_UPDATE,
         data: {
           id: '1',
           delay: 300_000,
-          recipientIds: ['1', '2', '3', '4'],
+          recipientIds: ['1', '2', '3'],
         },
       });
     });

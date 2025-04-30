@@ -18,7 +18,6 @@ read_file_and_export "DB_HOSTNAME_FILE" "DB_HOSTNAME"
 read_file_and_export "DB_DATABASE_NAME_FILE" "DB_DATABASE_NAME"
 read_file_and_export "DB_USERNAME_FILE" "DB_USERNAME"
 read_file_and_export "DB_PASSWORD_FILE" "DB_PASSWORD"
-read_file_and_export "REDIS_PASSWORD_FILE" "REDIS_PASSWORD"
 
 export CPU_CORES="${CPU_CORES:=$(./get-cpus.sh)}"
 echo "Detected CPU Cores: $CPU_CORES"

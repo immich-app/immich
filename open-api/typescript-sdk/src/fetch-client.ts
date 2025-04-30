@@ -577,15 +577,12 @@ export type FaceDto = {
 };
 export type JobCountsDto = {
     active: number;
-    completed: number;
     delayed: number;
     failed: number;
-    paused: number;
     waiting: number;
 };
 export type QueueStatusDto = {
-    isActive: boolean;
-    isPaused: boolean;
+    paused: boolean;
 };
 export type JobStatusDto = {
     jobCounts: JobCountsDto;
@@ -3673,7 +3670,7 @@ export enum JobCommand {
     Start = "start",
     Pause = "pause",
     Resume = "resume",
-    Empty = "empty",
+    Clear = "clear",
     ClearFailed = "clear-failed"
 }
 export enum MemoryType {

@@ -67,16 +67,12 @@ describe(MetadataService.name, () => {
   });
 
   describe('onBootstrapEvent', () => {
-    it('should pause and resume queue during init', async () => {
-      mocks.job.pause.mockResolvedValue();
+    it('should init', async () => {
       mocks.map.init.mockResolvedValue();
-      mocks.job.resume.mockResolvedValue();
 
       await sut.onBootstrap();
 
-      expect(mocks.job.pause).toHaveBeenCalledTimes(1);
       expect(mocks.map.init).toHaveBeenCalledTimes(1);
-      expect(mocks.job.resume).toHaveBeenCalledTimes(1);
     });
   });
 

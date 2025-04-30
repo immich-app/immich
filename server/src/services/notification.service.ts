@@ -196,14 +196,15 @@ export class NotificationService extends BaseService {
       data: { id, recipientIds, delay: NotificationService.albumUpdateEmailDelayMs },
     };
 
-    const previousJobData = await this.jobRepository.removeJob(id, JobName.NOTIFY_ALBUM_UPDATE);
-    if (previousJobData && this.isAlbumUpdateJob(previousJobData)) {
-      for (const id of previousJobData.recipientIds) {
-        if (!recipientIds.includes(id)) {
-          recipientIds.push(id);
-        }
-      }
-    }
+    // todo: https://github.com/immich-app/immich/pull/17879
+    // const previousJobData = await this.jobRepository.removeJob(id, JobName.NOTIFY_ALBUM_UPDATE);
+    // if (previousJobData && this.isAlbumUpdateJob(previousJobData)) {
+    //   for (const id of previousJobData.recipientIds) {
+    //     if (!recipientIds.includes(id)) {
+    //       recipientIds.push(id);
+    //     }
+    //   }
+    // }
     await this.jobRepository.queue(job);
   }
 

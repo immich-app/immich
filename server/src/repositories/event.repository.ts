@@ -64,6 +64,9 @@ type EventMap = {
   'assets.delete': [{ assetIds: string[]; userId: string }];
   'assets.restore': [{ assetIds: string[]; userId: string }];
 
+  'queue.pause': [QueueName];
+  'queue.resume': [QueueName];
+
   'job.start': [QueueName, JobItem];
   'job.failed': [{ job: JobItem; error: Error | any }];
 
@@ -85,7 +88,7 @@ type EventMap = {
   'websocket.connect': [{ userId: string }];
 };
 
-export const serverEvents = ['config.update'] as const;
+export const serverEvents = ['config.update', 'queue.pause', 'queue.resume'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export type EmitEvent = keyof EventMap;

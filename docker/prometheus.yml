@@ -1,12 +1,14 @@
 global:
-  scrape_interval:     15s
-  evaluation_interval: 15s
+  scrape_interval: 3s
+  evaluation_interval: 3s
 
 scrape_configs:
   - job_name: immich_api
+    scrape_interval: 3s
     static_configs:
-      - targets: ['immich-server:8081']
+      - targets: ["immich-server:8081"]
 
   - job_name: immich_microservices
+    scrape_interval:
     static_configs:
-      - targets: ['immich-server:8082']
+      - targets: ["immich-server:8082"]
