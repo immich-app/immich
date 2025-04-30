@@ -268,7 +268,7 @@ export class MediaService extends BaseService {
       extracted ? extracted.buffer : asset.originalPath,
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
-      { ...asset.exifInfo, orientation: extracted ? asset.exifInfo.orientation : null },
+      extracted ? asset.exifInfo :  { ...asset.exifInfo, orientation: null },
       convertFullsize ? undefined : image.preview.size,
     );
 
