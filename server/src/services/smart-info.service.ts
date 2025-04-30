@@ -3,12 +3,10 @@ import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
+import { JobItem, JobOf } from 'src/types';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class SmartInfoService extends BaseService {
@@ -79,17 +77,17 @@ export class SmartInfoService extends BaseService {
       await this.searchRepository.setDimensionSize(dimSize);
     }
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination, { visibility: AssetVisibility.TIMELINE })
-        : this.assetRepository.getWithout(pagination, WithoutProperty.SMART_SEARCH);
-    });
-
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.SMART_SEARCH, data: { id: asset.id } })),
-      );
+    let queue: JobItem[] = [];
+    const assets = this.assetJobRepository.streamForEncodeClip(force);
+    for await (const asset of assets) {
+      queue.push({ name: JobName.SMART_SEARCH, data: { id: asset.id } });
+      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(queue);
+        queue = [];
+      }
     }
+
+    await this.jobRepository.queueAll(queue);
 
     return JobStatus.SUCCESS;
   }
