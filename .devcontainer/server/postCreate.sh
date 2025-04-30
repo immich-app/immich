@@ -7,8 +7,10 @@ sudo chown node -R "${IMMICH_WORKSPACE}/.vscode" \
     "${IMMICH_WORKSPACE}/e2e/node_modules" \
     "${IMMICH_WORKSPACE}/open-api/typescript-sdk/node_modules" \
     "${IMMICH_WORKSPACE}/server/node_modules" \
+    "${IMMICH_WORKSPACE}/server/upload" \
+    "${IMMICH_WORKSPACE}/server/dist" \
     "${IMMICH_WORKSPACE}/web/node_modules" \
-    "${IMMICH_WORKSPACE}/server/upload"
+    "${IMMICH_WORKSPACE}/web/dist"
 
 echo "Installing dependencies (server)"
 echo npm --prefix "${IMMICH_WORKSPACE}/server" install
