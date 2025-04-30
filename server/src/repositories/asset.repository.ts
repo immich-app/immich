@@ -48,8 +48,6 @@ export interface LivePhotoSearchOptions {
 export enum WithoutProperty {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded-video',
-  EXIF = 'exif',
-  FACES = 'faces',
   SIDECAR = 'sidecar',
 }
 
@@ -543,19 +541,7 @@ export class AssetRepository {
           .where('assets.type', '=', AssetType.VIDEO)
           .where((eb) => eb.or([eb('assets.encodedVideoPath', 'is', null), eb('assets.encodedVideoPath', '=', '')])),
       )
-      .$if(property === WithoutProperty.EXIF, (qb) =>
-        qb
-          .leftJoin('asset_job_status as job_status', 'assets.id', 'job_status.assetId')
-          .where((eb) => eb.or([eb('job_status.metadataExtractedAt', 'is', null), eb('assetId', 'is', null)]))
-          .where('assets.isVisible', '=', true),
-      )
-      .$if(property === WithoutProperty.FACES, (qb) =>
-        qb
-          .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-          .where('job_status.previewAt', 'is not', null)
-          .where('job_status.facesRecognizedAt', 'is', null)
-          .where('assets.isVisible', '=', true),
-      )
+
       .$if(property === WithoutProperty.SIDECAR, (qb) =>
         qb
           .where((eb) => eb.or([eb('assets.sidecarPath', '=', ''), eb('assets.sidecarPath', 'is', null)]))

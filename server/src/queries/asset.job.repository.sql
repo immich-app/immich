@@ -469,3 +469,17 @@ from
   "assets"
 where
   "assets"."deletedAt" <= $1
+
+-- AssetJobRepository.streamForDetectFacesJob
+select
+  "assets"."id"
+from
+  "assets"
+  inner join "asset_job_status" as "job_status" on "assetId" = "assets"."id"
+where
+  "assets"."isVisible" = $1
+  and "assets"."deletedAt" is null
+  and "job_status"."previewAt" is not null
+  and "job_status"."facesRecognizedAt" is null
+order by
+  "assets"."createdAt" desc
