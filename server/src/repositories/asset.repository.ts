@@ -7,13 +7,12 @@ import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
-import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
+import { SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
 import {
   anyUuid,
   asUuid,
   hasPeople,
   removeUndefinedKeys,
-  searchAssetBuilder,
   truncatedDate,
   unnest,
   withExif,
@@ -27,7 +26,6 @@ import {
   withTags,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
-import { PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -43,11 +41,6 @@ export interface LivePhotoSearchOptions {
   livePhotoCID: string;
   otherAssetId: string;
   type: AssetType;
-}
-
-export enum WithoutProperty {
-  THUMBNAIL = 'thumbnail',
-  ENCODED_VIDEO = 'encoded-video',
 }
 
 export enum WithProperty {
@@ -331,10 +324,6 @@ export class AssetRepository {
     return assets.map((asset) => asset.deviceAssetId);
   }
 
-  getByUserId(pagination: PaginationOptions, userId: string, options: Omit<AssetSearchOptions, 'userIds'> = {}) {
-    return this.getAll(pagination, { ...options, userIds: [userId] });
-  }
-
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string) {
     return this.db
@@ -344,16 +333,6 @@ export class AssetRepository {
       .where('originalPath', '=', originalPath)
       .limit(1)
       .executeTakeFirst();
-  }
-
-  async getAll(pagination: PaginationOptions, { orderDirection, ...options }: AssetSearchOptions = {}) {
-    const builder = searchAssetBuilder(this.db, options)
-      .select(withFiles)
-      .orderBy('assets.createdAt', orderDirection ?? 'asc')
-      .limit(pagination.take + 1)
-      .offset(pagination.skip ?? 0);
-    const items = await builder.execute();
-    return paginationHelper(items, pagination.take);
   }
 
   /**
@@ -523,43 +502,6 @@ export class AssetRepository {
       .where('exif.livePhotoCID', '=', livePhotoCID)
       .limit(1)
       .executeTakeFirst();
-  }
-
-  @GenerateSql(
-    ...Object.values(WithProperty).map((property) => ({
-      name: property,
-      params: [DummyValue.PAGINATION, property],
-    })),
-  )
-  async getWithout(pagination: PaginationOptions, property: WithoutProperty) {
-    const items = await this.db
-      .selectFrom('assets')
-      .selectAll('assets')
-      .$if(property === WithoutProperty.ENCODED_VIDEO, (qb) =>
-        qb
-          .where('assets.type', '=', AssetType.VIDEO)
-          .where((eb) => eb.or([eb('assets.encodedVideoPath', 'is', null), eb('assets.encodedVideoPath', '=', '')])),
-      )
-
-      .$if(property === WithoutProperty.THUMBNAIL, (qb) =>
-        qb
-          .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-          .where('assets.isVisible', '=', true)
-          .where((eb) =>
-            eb.or([
-              eb('job_status.previewAt', 'is', null),
-              eb('job_status.thumbnailAt', 'is', null),
-              eb('assets.thumbhash', 'is', null),
-            ]),
-          ),
-      )
-      .where('deletedAt', 'is', null)
-      .limit(pagination.take + 1)
-      .offset(pagination.skip ?? 0)
-      .orderBy('createdAt')
-      .execute();
-
-    return paginationHelper(items, pagination.take);
   }
 
   getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {

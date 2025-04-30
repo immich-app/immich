@@ -343,4 +343,9 @@ export class AssetJobRepository {
       .orderBy('assets.createdAt', 'desc')
       .stream();
   }
+
+  @GenerateSql({ params: [DummyValue.DATE], stream: true })
+  streamForMigrationJob() {
+    return this.db.selectFrom('assets').select(['id']).where('assets.deletedAt', 'is', null).stream();
+  }
 }
