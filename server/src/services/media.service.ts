@@ -266,7 +266,9 @@ export class MediaService extends BaseService {
 
     const { info, data, colorspace } = await this.decodeImage(
       extracted ? extracted.buffer : asset.originalPath,
-      asset.exifInfo,
+      // only specify orientation to extracted images which don't have EXIF orientation data
+      // or it can double rotate the image
+      { ...asset.exifInfo, orientation: extracted ? asset.exifInfo.orientation : null },
       convertFullsize ? undefined : image.preview.size,
     );
 
