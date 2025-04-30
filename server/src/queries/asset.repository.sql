@@ -238,18 +238,13 @@ select
 from
   "assets"
 where
-  (
-    "assets"."sidecarPath" = $1
-    or "assets"."sidecarPath" is null
-  )
-  and "assets"."isVisible" = $2
-  and "deletedAt" is null
+  "deletedAt" is null
 order by
   "createdAt"
 limit
-  $3
+  $1
 offset
-  $4
+  $2
 
 -- AssetRepository.getTimeBuckets
 with

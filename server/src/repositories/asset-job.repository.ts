@@ -322,4 +322,16 @@ export class AssetJobRepository {
       .where('assets.deletedAt', '<=', trashedBefore)
       .stream();
   }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForSidecar(force?: boolean) {
+    return this.db
+      .selectFrom('assets')
+      .select(['assets.id'])
+      .$if(!force, (qb) =>
+        qb.where((eb) => eb.or([eb('assets.sidecarPath', '=', ''), eb('assets.sidecarPath', 'is', null)])),
+      )
+      .where('assets.isVisible', '=', true)
+      .stream();
+  }
 }

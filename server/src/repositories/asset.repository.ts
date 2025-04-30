@@ -50,7 +50,6 @@ export enum WithoutProperty {
   ENCODED_VIDEO = 'encoded-video',
   EXIF = 'exif',
   FACES = 'faces',
-  SIDECAR = 'sidecar',
 }
 
 export enum WithProperty {
@@ -554,11 +553,6 @@ export class AssetRepository {
           .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
           .where('job_status.previewAt', 'is not', null)
           .where('job_status.facesRecognizedAt', 'is', null)
-          .where('assets.isVisible', '=', true),
-      )
-      .$if(property === WithoutProperty.SIDECAR, (qb) =>
-        qb
-          .where((eb) => eb.or([eb('assets.sidecarPath', '=', ''), eb('assets.sidecarPath', 'is', null)]))
           .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.THUMBNAIL, (qb) =>
