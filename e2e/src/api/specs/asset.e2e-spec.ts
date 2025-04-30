@@ -43,6 +43,7 @@ const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
 const facesAssetFilepath = `${testAssetDir}/metadata/faces/portrait.jpg`;
+const facesOrientation6AssetFilepath = `${testAssetDir}/metadata/faces/portrait-orientation-6.jpg`;
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -234,6 +235,64 @@ describe('/asset', () => {
         assetData: {
           filename: 'portrait.jpg',
           bytes: await readFile(facesAssetFilepath),
+        },
+      });
+
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
+
+      const { status, body } = await request(app)
+        .get(`/assets/${facesAsset.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body.id).toEqual(facesAsset.id);
+      expect(body.people).toMatchObject([
+        {
+          name: 'Marie Curie',
+          birthDate: null,
+          thumbnailPath: '',
+          isHidden: false,
+          faces: [
+            {
+              imageHeight: 700,
+              imageWidth: 840,
+              boundingBoxX1: 261,
+              boundingBoxX2: 356,
+              boundingBoxY1: 146,
+              boundingBoxY2: 284,
+              sourceType: 'exif',
+            },
+          ],
+        },
+        {
+          name: 'Pierre Curie',
+          birthDate: null,
+          thumbnailPath: '',
+          isHidden: false,
+          faces: [
+            {
+              imageHeight: 700,
+              imageWidth: 840,
+              boundingBoxX1: 536,
+              boundingBoxX2: 618,
+              boundingBoxY1: 83,
+              boundingBoxY2: 252,
+              sourceType: 'exif',
+            },
+          ],
+        },
+      ]);
+    });
+
+    it('should get the asset faces and handle exif orientation (6) by adjusting face regions', async () => {
+      const config = await utils.getSystemConfig(admin.accessToken);
+      config.metadata.faces.import = true;
+      await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
+
+      // asset faces
+      const facesAsset = await utils.createAsset(admin.accessToken, {
+        assetData: {
+          filename: 'portrait-orientation-6.jpg',
+          bytes: await readFile(facesOrientation6AssetFilepath),
         },
       });
 
