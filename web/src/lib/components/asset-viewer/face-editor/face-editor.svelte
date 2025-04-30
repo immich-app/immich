@@ -2,14 +2,15 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { notificationController } from '$lib/components/shared-components/notification/notification';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getAllPeople, createFace, type PersonResponseDto } from '@immich/sdk';
+  import { handleError } from '$lib/utils/handle-error';
+  import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Input } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { onMount } from 'svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { handleError } from '$lib/utils/handle-error';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     htmlElement: HTMLImageElement | HTMLVideoElement;
@@ -316,7 +317,7 @@
     bind:this={faceSelectorEl}
     class="absolute top-[calc(50%-250px)] start-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800"
   >
-    <p class="text-center text-sm">Select a person to tag</p>
+    <p class="text-center text-sm">{$t('select_person_to_tag')}</p>
 
     <div class="my-3 relative">
       <Input placeholder="Search person..." bind:value={searchTerm} size="tiny" />
@@ -348,11 +349,11 @@
         </div>
       {:else}
         <div class="flex items-center justify-center py-4">
-          <p class="text-sm text-gray-500">No matching people found</p>
+          <p class="text-sm text-gray-500">{$t('no_people_found')}</p>
         </div>
       {/if}
     </div>
 
-    <Button size="small" fullWidth onclick={cancel} color="danger" class="mt-2">Cancel</Button>
+    <Button size="small" fullWidth onclick={cancel} color="danger" class="mt-2">{$t('cancel')}</Button>
   </div>
 </div>
