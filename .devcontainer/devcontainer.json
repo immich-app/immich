@@ -42,8 +42,5 @@
   "overrideCommand": true,
   "workspaceFolder": "/workspace/immich",
   "remoteUser": "node",
-  "postCreateCommand": "/immich-devcontainer/postCreate.sh",
-  "mounts": [
-    "source=${localWorkspaceFolder}/app-data,target=/data,type=bind,consistency=cached"
-  ]
+  "postCreateCommand": "/immich-devcontainer/postCreate.sh"
 }
