@@ -429,6 +429,21 @@ jobs:
         run: npx playwright test
         if: ${{ !cancelled() }}
 
+  success-check-e2e:
+    name: End-to-End Tests Success
+    needs: [e2e-tests-server-cli, e2e-tests-web]
+    permissions: {}
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Any jobs failed?
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
+      - name: All jobs passed or skipped
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
+        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
+        
   mobile-unit-tests:
     name: Unit Test Mobile
     needs: pre-job
