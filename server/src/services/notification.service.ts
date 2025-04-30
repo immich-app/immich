@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
+import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   mapNotification,
@@ -150,6 +151,18 @@ export class NotificationService extends BaseService {
   @OnEvent({ name: 'assets.trash' })
   onAssetsTrash({ assetIds, userId }: ArgOf<'assets.trash'>) {
     this.eventRepository.clientSend('on_asset_trash', userId, assetIds);
+  }
+
+  @OnEvent({ name: 'asset.metadataExtracted' })
+  async onAssetMetadataExtracted({ assetId, userId, source }: ArgOf<'asset.metadataExtracted'>) {
+    if (source !== 'sidecar-write') {
+      return;
+    }
+
+    const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId]);
+    if (asset) {
+      this.eventRepository.clientSend('on_asset_update', userId, mapAsset(asset));
+    }
   }
 
   @OnEvent({ name: 'assets.restore' })

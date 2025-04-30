@@ -143,7 +143,8 @@ describe(MetadataService.name, () => {
 
     it('should handle an asset that could not be found', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(void 0);
-      await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(JobStatus.FAILED);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
       expect(mocks.asset.upsertExif).not.toHaveBeenCalled();
@@ -526,7 +527,7 @@ describe(MetadataService.name, () => {
         ContainerDirectory: [{ Foo: 100 }],
       });
 
-      await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
     });
 
     it('should extract the correct video orientation', async () => {
@@ -1201,7 +1202,7 @@ describe(MetadataService.name, () => {
     it('should handle livePhotoCID not set', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
 
-      await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
       expect(mocks.asset.findLivePhotoMatch).not.toHaveBeenCalled();
@@ -1214,9 +1215,7 @@ describe(MetadataService.name, () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.livePhotoMotionAsset);
       mockReadTags({ ContentIdentifier: 'CID' });
 
-      await expect(sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id })).resolves.toBe(
-        JobStatus.SUCCESS,
-      );
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id });
 
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.id);
       expect(mocks.asset.findLivePhotoMatch).toHaveBeenCalledWith({
@@ -1235,9 +1234,7 @@ describe(MetadataService.name, () => {
       mocks.asset.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
       mockReadTags({ ContentIdentifier: 'CID' });
 
-      await expect(sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
-        JobStatus.SUCCESS,
-      );
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
 
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.livePhotoStillAsset.id);
       expect(mocks.asset.findLivePhotoMatch).toHaveBeenCalledWith({
@@ -1261,9 +1258,7 @@ describe(MetadataService.name, () => {
       mocks.asset.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
       mockReadTags({ ContentIdentifier: 'CID' });
 
-      await expect(sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
-        JobStatus.SUCCESS,
-      );
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
 
       expect(mocks.event.emit).toHaveBeenCalledWith('asset.hide', {
         userId: assetStub.livePhotoMotionAsset.ownerId,
@@ -1279,10 +1274,12 @@ describe(MetadataService.name, () => {
       mocks.asset.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
       mockReadTags({ ContentIdentifier: 'CID' });
 
-      await expect(sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
-        JobStatus.SUCCESS,
-      );
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
 
+      expect(mocks.event.emit).toHaveBeenCalledWith('asset.metadataExtracted', {
+        assetId: assetStub.livePhotoStillAsset.id,
+        userId: assetStub.livePhotoStillAsset.ownerId,
+      });
       expect(mocks.asset.findLivePhotoMatch).toHaveBeenCalledWith({
         ownerId: 'user-id',
         otherAssetId: 'live-photo-still-asset',
