@@ -23,7 +23,6 @@ This environment includes the services below. Additional details are available i
 - Server - [`/server`](https://github.com/immich-app/immich/tree/main/server)
 - Web app - [`/web`](https://github.com/immich-app/immich/tree/main/web)
 - Machine learning - [`/machine-learning`](https://github.com/immich-app/immich/tree/main/machine-learning)
-- Redis
 - PostgreSQL development database with exposed port `5432` so you can use any database client to access it
 
 All the services are packaged to run as with single Docker Compose command.

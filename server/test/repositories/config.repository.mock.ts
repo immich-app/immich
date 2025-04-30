@@ -8,12 +8,6 @@ const envData: EnvData = {
   environment: ImmichEnvironment.PRODUCTION,
 
   buildMetadata: {},
-  bull: {
-    config: {
-      prefix: 'immich_bull',
-    },
-    queues: [{ name: 'queue-1' }],
-  },
 
   cls: {
     config: {},
@@ -50,12 +44,6 @@ const envData: EnvData = {
         ignoreRoutes: [],
       },
     },
-  },
-
-  redis: {
-    host: 'redis',
-    port: 6379,
-    db: 0,
   },
 
   resourcePaths: {

@@ -154,7 +154,7 @@
       jobs[jobId] = await sendJobCommand({ id: jobId, jobCommandDto: jobCommand });
 
       switch (jobCommand.command) {
-        case JobCommand.Empty: {
+        case JobCommand.Clear: {
           notificationController.show({
             message: $t('admin.cleared_jobs', { values: { job: title } }),
             type: NotificationType.Info,

@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { defaults, SystemConfig } from 'src/config';
 import { ImmichWorker, JobCommand, JobName, JobStatus, QueueName } from 'src/enum';
 import { JobService } from 'src/services/job.service';
-import { JobItem } from 'src/types';
+import { JobCounts, JobItem } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -21,14 +21,14 @@ describe(JobService.name, () => {
   });
 
   describe('onConfigUpdate', () => {
-    it('should update concurrency', () => {
-      sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
+    it('should update concurrency', async () => {
+      await sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
 
-      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(15);
-      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FACIAL_RECOGNITION, 1);
-      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DUPLICATE_DETECTION, 1);
-      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BACKGROUND_TASK, 5);
-      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(9, QueueName.STORAGE_TEMPLATE_MIGRATION, 1);
+      expect(mocks.job.start).toHaveBeenCalledTimes(15);
+      expect(mocks.job.start).toHaveBeenNthCalledWith(5, QueueName.FACIAL_RECOGNITION, 1);
+      expect(mocks.job.start).toHaveBeenNthCalledWith(7, QueueName.DUPLICATE_DETECTION, 1);
+      expect(mocks.job.start).toHaveBeenNthCalledWith(8, QueueName.BACKGROUND_TASK, 5);
+      expect(mocks.job.start).toHaveBeenNthCalledWith(9, QueueName.STORAGE_TEMPLATE_MIGRATION, 1);
     });
   });
 
@@ -55,29 +55,20 @@ describe(JobService.name, () => {
     it('should get all job statuses', async () => {
       mocks.job.getJobCounts.mockResolvedValue({
         active: 1,
-        completed: 1,
-        failed: 1,
-        delayed: 1,
         waiting: 1,
-        paused: 1,
-      });
-      mocks.job.getQueueStatus.mockResolvedValue({
-        isActive: true,
-        isPaused: true,
+        delayed: 1,
+        failed: 1,
       });
 
       const expectedJobStatus = {
         jobCounts: {
           active: 1,
-          completed: 1,
+          waiting: 1,
           delayed: 1,
           failed: 1,
-          waiting: 1,
-          paused: 1,
         },
         queueStatus: {
-          isActive: true,
-          isPaused: true,
+          paused: true,
         },
       };
 
@@ -114,14 +105,20 @@ describe(JobService.name, () => {
       expect(mocks.job.resume).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
     });
 
-    it('should handle an empty command', async () => {
-      await sut.handleCommand(QueueName.METADATA_EXTRACTION, { command: JobCommand.EMPTY, force: false });
+    it('should handle a clear command', async () => {
+      await sut.handleCommand(QueueName.METADATA_EXTRACTION, { command: JobCommand.CLEAR, force: false });
 
-      expect(mocks.job.empty).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
+      expect(mocks.job.clear).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
+    });
+
+    it('should handle a clear-failed command', async () => {
+      await sut.handleCommand(QueueName.METADATA_EXTRACTION, { command: JobCommand.CLEAR_FAILED, force: false });
+
+      expect(mocks.job.clearFailed).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
     });
 
     it('should not start a job that is already running', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: true, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 1 } as JobCounts);
 
       await expect(
         sut.handleCommand(QueueName.VIDEO_CONVERSION, { command: JobCommand.START, force: false }),
@@ -132,7 +129,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start video conversion command', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await sut.handleCommand(QueueName.VIDEO_CONVERSION, { command: JobCommand.START, force: false });
 
@@ -140,7 +137,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start storage template migration command', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await sut.handleCommand(QueueName.STORAGE_TEMPLATE_MIGRATION, { command: JobCommand.START, force: false });
 
@@ -148,7 +145,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start smart search command', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await sut.handleCommand(QueueName.SMART_SEARCH, { command: JobCommand.START, force: false });
 
@@ -156,7 +153,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start metadata extraction command', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await sut.handleCommand(QueueName.METADATA_EXTRACTION, { command: JobCommand.START, force: false });
 
@@ -164,7 +161,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start sidecar command', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await sut.handleCommand(QueueName.SIDECAR, { command: JobCommand.START, force: false });
 
@@ -172,7 +169,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start thumbnail generation command', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await sut.handleCommand(QueueName.THUMBNAIL_GENERATION, { command: JobCommand.START, force: false });
 
@@ -180,7 +177,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start face detection command', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await sut.handleCommand(QueueName.FACE_DETECTION, { command: JobCommand.START, force: false });
 
@@ -188,7 +185,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start facial recognition command', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await sut.handleCommand(QueueName.FACIAL_RECOGNITION, { command: JobCommand.START, force: false });
 
@@ -196,7 +193,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start backup database command', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await sut.handleCommand(QueueName.BACKUP_DATABASE, { command: JobCommand.START, force: false });
 
@@ -204,7 +201,7 @@ describe(JobService.name, () => {
     });
 
     it('should throw a bad request when an invalid queue is used', async () => {
-      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      mocks.job.getJobCounts.mockResolvedValue({ active: 0 } as JobCounts);
 
       await expect(
         sut.handleCommand(QueueName.BACKGROUND_TASK, { command: JobCommand.START, force: false }),

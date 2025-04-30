@@ -33,6 +33,7 @@ services:
       - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
       - /usr/src/app/node_modules
       - /etc/localtime:/etc/localtime:ro
+      - ../flickr30k-images:/flickr30k:ro
     env_file:
       - .env
     environment:
@@ -58,7 +59,6 @@ services:
       - 9231:9231
       - 2283:2283
     depends_on:
-      - redis
       - database
     healthcheck:
       disable: false
@@ -114,12 +114,6 @@ services:
     healthcheck:
       disable: false
 
-  redis:
-    container_name: immich_redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:c855f98e09d558a0d7cc1a4e56473231206a4c54c0114ada9c485b47aeb92ec8
-    healthcheck:
-      test: redis-cli ping || exit 1
-
   database:
     container_name: immich_postgres
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
@@ -154,25 +148,25 @@ services:
       -c wal_compression=on
 
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
-  # immich-prometheus:
-  #   container_name: immich_prometheus
-  #   ports:
-  #     - 9090:9090
-  #   image: prom/prometheus
-  #   volumes:
-  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
-  #     - prometheus-data:/prometheus
+  immich-prometheus:
+    container_name: immich_prometheus
+    ports:
+      - 9090:9090
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
 
   # first login uses admin/admin
   # add data source for http://immich-prometheus:9090 to get started
-  # immich-grafana:
-  #   container_name: immich_grafana
-  #   command: ['./run.sh', '-disable-reporting']
-  #   ports:
-  #     - 3000:3000
-  #   image: grafana/grafana:10.3.3-ubuntu
-  #   volumes:
-  #     - grafana-data:/var/lib/grafana
+  immich-grafana:
+    container_name: immich_grafana
+    command: ['./run.sh', '-disable-reporting']
+    ports:
+      - 3001:3000
+    image: grafana/grafana:10.3.3-ubuntu
+    volumes:
+      - grafana-data:/var/lib/grafana
 
 volumes:
   model-cache:

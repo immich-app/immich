@@ -1,6 +1,6 @@
 # Scaling Immich
 
-Immich is built with modern deployment practices in mind, and the backend is designed to be able to run multiple instances in parallel. When doing this, the only requirement you need to be aware of is that every instance needs to be connected to the shared infrastructure. That means they should all have access to the same Postgres and Redis instances, and have the same files mounted into the containers.
+Immich is built with modern deployment practices in mind, and the backend is designed to be able to run multiple instances in parallel. When doing this, the only requirement you need to be aware of is that every instance needs to be connected to the shared infrastructure. That means they should all have access to the same Postgres instance, and have the same files mounted into the containers.
 
 Scaling can be useful for many reasons. Maybe you have a gaming PC that you want to use for transcoding and thumbnail generation, or perhaps you run a Kubernetes cluster across a handful of powerful servers that you want to make use of.
 
@@ -16,4 +16,4 @@ By default, each running `immich-server` container comes with multiple internal 
 
 ## Scaling down
 
-In the same way you can scale up to multiple containers, you can also choose to scale down. All state is stored in Postgres, Redis, and the filesystem so there is no risk in stopping a running immich-server container, for example if you want to use your GPU to play some games. As long as there is an API worker running you will still be able to browse Immich, and jobs will wait to be processed until there is a worker available for them.
+In the same way you can scale up to multiple containers, you can also choose to scale down. All state is stored in Postgres and the filesystem so there is no risk in stopping a running immich-server container, for example if you want to use your GPU to play some games. As long as there is an API worker running you will still be able to browse Immich, and jobs will wait to be processed until there is a worker available for them.

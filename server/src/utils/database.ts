@@ -32,7 +32,7 @@ export const asPostgresConnectionConfig = (params: DatabaseConnectionParams) => 
     return {
       host: params.host,
       port: params.port,
-      username: params.username,
+      user: params.username,
       password: params.password,
       database: params.database,
       ssl: undefined,
@@ -51,7 +51,7 @@ export const asPostgresConnectionConfig = (params: DatabaseConnectionParams) => 
   return {
     host: host ?? undefined,
     port: port ? Number(port) : undefined,
-    username: user,
+    user,
     password,
     database: database ?? undefined,
     ssl,
@@ -92,7 +92,7 @@ export const getKyselyConfig = (
         },
         host: config.host,
         port: config.port,
-        username: config.username,
+        user: config.user,
         password: config.password,
         database: config.database,
         ssl: config.ssl,

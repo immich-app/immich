@@ -121,9 +121,7 @@ export class MetadataService extends BaseService {
     this.logger.log('Initializing metadata service');
 
     try {
-      await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
       await this.databaseRepository.withLock(DatabaseLock.GeodataImport, () => this.mapRepository.init());
-      await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
       this.logger.log(`Initialized local reverse geocoder`);
     } catch (error: Error | any) {

@@ -12,7 +12,6 @@ import {
   JobName,
   JobStatus,
   ManualJobName,
-  QueueCleanType,
   QueueName,
 } from 'src/enum';
 import { ArgOf, ArgsOf } from 'src/repositories/event.repository';
@@ -56,7 +55,7 @@ export class JobService extends BaseService {
   private services: ClassConstructor<unknown>[] = [];
 
   @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
-  onConfigInit({ newConfig: config }: ArgOf<'config.init'>) {
+  async onConfigInit({ newConfig: config }: ArgOf<'config.init'>) {
     this.logger.debug(`Updating queue concurrency settings`);
     for (const queueName of Object.values(QueueName)) {
       let concurrency = 1;
@@ -64,21 +63,18 @@ export class JobService extends BaseService {
         concurrency = config.job[queueName].concurrency;
       }
       this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
-      this.jobRepository.setConcurrency(queueName, concurrency);
+      await this.jobRepository.start(queueName, concurrency);
     }
   }
 
   @OnEvent({ name: 'config.update', server: true, workers: [ImmichWorker.MICROSERVICES] })
-  onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
-    this.onConfigInit({ newConfig: config });
+  async onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
+    await this.onConfigInit({ newConfig: config });
   }
 
   @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.JobService })
-  onBootstrap() {
-    this.jobRepository.setup(this.services);
-    if (this.worker === ImmichWorker.MICROSERVICES) {
-      this.jobRepository.startWorkers();
-    }
+  async onBootstrap() {
+    await this.jobRepository.setup(this.services);
   }
 
   setServices(services: ClassConstructor<unknown>[]) {
@@ -97,25 +93,20 @@ export class JobService extends BaseService {
         await this.start(queueName, dto);
         break;
       }
-
       case JobCommand.PAUSE: {
-        await this.jobRepository.pause(queueName);
+        this.eventRepository.serverSend('queue.pause', queueName);
         break;
       }
-
       case JobCommand.RESUME: {
-        await this.jobRepository.resume(queueName);
+        this.eventRepository.serverSend('queue.resume', queueName);
         break;
       }
-
-      case JobCommand.EMPTY: {
-        await this.jobRepository.empty(queueName);
+      case JobCommand.CLEAR: {
+        await this.jobRepository.clear(queueName);
         break;
       }
-
       case JobCommand.CLEAR_FAILED: {
-        const failedJobs = await this.jobRepository.clear(queueName, QueueCleanType.FAILED);
-        this.logger.debug(`Cleared failed jobs: ${failedJobs}`);
+        await this.jobRepository.clearFailed(queueName);
         break;
       }
     }
@@ -141,9 +132,9 @@ export class JobService extends BaseService {
   }
 
   private async start(name: QueueName, { force }: JobCommandDto): Promise<void> {
-    const { isActive } = await this.jobRepository.getQueueStatus(name);
-    if (isActive) {
-      throw new BadRequestException(`Job is already running`);
+    const { active } = await this.jobRepository.getJobCounts(name);
+    if (active > 0) {
+      throw new BadRequestException(`Jobs are already running`);
     }
 
     this.telemetryRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1);
@@ -201,6 +192,16 @@ export class JobService extends BaseService {
         throw new BadRequestException(`Invalid job name: ${name}`);
       }
     }
+  }
+
+  @OnEvent({ name: 'queue.pause', server: true, workers: [ImmichWorker.MICROSERVICES] })
+  async pause(...[queueName]: ArgsOf<'queue.pause'>): Promise<void> {
+    await this.jobRepository.pause(queueName);
+  }
+
+  @OnEvent({ name: 'queue.resume', server: true, workers: [ImmichWorker.MICROSERVICES] })
+  async resume(...[queueName]: ArgsOf<'queue.resume'>): Promise<void> {
+    await this.jobRepository.resume(queueName);
   }
 
   @OnEvent({ name: 'job.start' })

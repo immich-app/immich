@@ -157,34 +157,4 @@ export class EnvDto {
   @IsString()
   @Optional()
   NO_COLOR?: string;
-
-  @IsString()
-  @Optional()
-  REDIS_HOSTNAME?: string;
-
-  @IsInt()
-  @Optional()
-  @Type(() => Number)
-  REDIS_PORT?: number;
-
-  @IsInt()
-  @Optional()
-  @Type(() => Number)
-  REDIS_DBINDEX?: number;
-
-  @IsString()
-  @Optional()
-  REDIS_USERNAME?: string;
-
-  @IsString()
-  @Optional()
-  REDIS_PASSWORD?: string;
-
-  @IsString()
-  @Optional()
-  REDIS_SOCKET?: string;
-
-  @IsString()
-  @Optional()
-  REDIS_URL?: string;
 }

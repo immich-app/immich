@@ -13,32 +13,26 @@ part of openapi.api;
 class QueueStatusDto {
   /// Returns a new [QueueStatusDto] instance.
   QueueStatusDto({
-    required this.isActive,
-    required this.isPaused,
+    required this.paused,
   });
 
-  bool isActive;
-
-  bool isPaused;
+  bool paused;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueStatusDto &&
-    other.isActive == isActive &&
-    other.isPaused == isPaused;
+    other.paused == paused;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (isActive.hashCode) +
-    (isPaused.hashCode);
+    (paused.hashCode);
 
   @override
-  String toString() => 'QueueStatusDto[isActive=$isActive, isPaused=$isPaused]';
+  String toString() => 'QueueStatusDto[paused=$paused]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'isActive'] = this.isActive;
-      json[r'isPaused'] = this.isPaused;
+      json[r'paused'] = this.paused;
     return json;
   }
 
@@ -51,8 +45,7 @@ class QueueStatusDto {
       final json = value.cast<String, dynamic>();
 
       return QueueStatusDto(
-        isActive: mapValueOfType<bool>(json, r'isActive')!,
-        isPaused: mapValueOfType<bool>(json, r'isPaused')!,
+        paused: mapValueOfType<bool>(json, r'paused')!,
       );
     }
     return null;
@@ -100,8 +93,7 @@ class QueueStatusDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'isActive',
-    'isPaused',
+    'paused',
   };
 }
 

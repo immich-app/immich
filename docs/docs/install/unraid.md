@@ -17,9 +17,9 @@ Immich can easily be installed and updated on Unraid via:
 
 :::
 
-In order to install Immich from the Unraid CA, you will need an existing Redis and PostgreSQL 14 container, If you do not already have Redis or PostgreSQL you can install them from the Unraid CA, just make sure you choose PostgreSQL **14**.
+In order to install Immich from the Unraid CA, you will need an existing PostgreSQL 14 container, If you do not already have PostgreSQL you can install it from the Unraid CA, just make sure you choose PostgreSQL **14**.
 
-Once you have Redis and PostgreSQL running, search for Immich on the Unraid CA, choose either of the templates listed and fill out the example variables.
+Once you have PostgreSQL running, search for Immich on the Unraid CA, choose either of the templates listed and fill out the example variables.
 
 For more information about setting up the community image see [here](https://github.com/imagegenius/docker-immich#application-setup)
 
@@ -45,63 +45,63 @@ width="70%"
 alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
 />
 
-3.  Select the cogwheel ⚙️ next to Immich and click "**Edit Stack**"
-4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor. Remove any text that may be in the text area by default. Note that Unraid v6.12.10 uses version 24.0.9 of the Docker Engine, which does not support healthcheck `start_interval` as defined in the `database` service of the Docker compose file (version 25 or higher is needed). This parameter defines an initial waiting period before starting health checks, to give the container time to start up. Commenting out the `start_interval` and `start_period` parameters will allow the containers to start up normally. The only downside to this is that the database container will not receive an initial health check until `interval` time has passed.
+3. Select the cogwheel ⚙️ next to Immich and click "**Edit Stack**"
+4. Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor. Remove any text that may be in the text area by default. Note that Unraid v6.12.10 uses version 24.0.9 of the Docker Engine, which does not support healthcheck `start_interval` as defined in the `database` service of the Docker compose file (version 25 or higher is needed). This parameter defines an initial waiting period before starting health checks, to give the container time to start up. Commenting out the `start_interval` and `start_period` parameters will allow the containers to start up normally. The only downside to this is that the database container will not receive an initial health check until `interval` time has passed.
 
-    <details >
-        <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 5.</summary>
-        <ul>
-            <li>Comment out the database service</li>
-            <img
-                src={require('./img/unraid02.webp').default}
-                width="50%"
-                alt="Comment out database service in the compose file"
-            />
-            <li>Comment out the database dependency for <b>each service</b> <i>(example in screenshot below only shows 2 of the services - ensure you do this for all services)</i></li>
-            <img
-                src={require('./img/unraid03.webp').default}
-                width="50%"
-                alt="Comment out every reference to the database service in the compose file"
-            />
-            <li>Comment out the volumes</li>
-            <img
-                src={require('./img/unraid04.webp').default}
-                width="20%"
-                alt="Comment out database volume"
-            />
-        </ul>
-    </details>
+<details >
+    <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 5.</summary>
+    <ul>
+        <li>Comment out the database service</li>
+        <img
+            src={require('./img/unraid02.webp').default}
+            width="50%"
+            alt="Comment out database service in the compose file"
+        />
+        <li>Comment out the database dependency for <b>each service</b> <i>(example in screenshot below only shows 2 of the services - ensure you do this for all services)</i></li>
+        <img
+            src={require('./img/unraid03.webp').default}
+            width="50%"
+            alt="Comment out every reference to the database service in the compose file"
+        />
+        <li>Comment out the volumes</li>
+        <img
+            src={require('./img/unraid04.webp').default}
+            width="20%"
+            alt="Comment out database volume"
+        />
+    </ul>
+</details>
 
-5.  Click "**Save Changes**", you will be prompted to edit stack UI labels, just leave this blank and click "**Ok**"
-6.  Select the cog ⚙️ next to Immich, click "**Edit Stack**", then click "**Env File**"
-7.  Paste the entire contents of the [Immich example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file into the Unraid editor, then **before saving** edit the following:
+5. Click "**Save Changes**", you will be prompted to edit stack UI labels, just leave this blank and click "**Ok**"
+6. Select the cog ⚙️ next to Immich, click "**Edit Stack**", then click "**Env File**"
+7. Paste the entire contents of the [Immich example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file into the Unraid editor, then **before saving** edit the following:
 
-    - `UPLOAD_LOCATION`: Create a folder in your Images Unraid share and place the **absolute** location here > For example my _"images"_ share has a folder within it called _"immich"_. If I browse to this directory in the terminal and type `pwd` the output is `/mnt/user/images/immich`. This is the exact value I need to enter as my `UPLOAD_LOCATION`
-    - `DB_DATA_LOCATION`: Change this to use an Unraid share (preferably a cache pool, e.g. `/mnt/user/appdata/postgresql/data`). This uses the `appdata` share. Do also create the `postgresql` folder, by running `mkdir /mnt/user/{share_location}/postgresql/data`. If left at default it will try to use Unraid's `/boot/config/plugins/compose.manager/projects/[stack_name]/postgres` folder which it doesn't have permissions to, resulting in this container continuously restarting.
+   - `UPLOAD_LOCATION`: Create a folder in your Images Unraid share and place the **absolute** location here > For example my _"images"_ share has a folder within it called _"immich"_. If I browse to this directory in the terminal and type `pwd` the output is `/mnt/user/images/immich`. This is the exact value I need to enter as my `UPLOAD_LOCATION`
+   - `DB_DATA_LOCATION`: Change this to use an Unraid share (preferably a cache pool, e.g. `/mnt/user/appdata/postgresql/data`). This uses the `appdata` share. Do also create the `postgresql` folder, by running `mkdir /mnt/user/{share_location}/postgresql/data`. If left at default it will try to use Unraid's `/boot/config/plugins/compose.manager/projects/[stack_name]/postgres` folder which it doesn't have permissions to, resulting in this container continuously restarting.
 
-      <img
-      src={require('./img/unraid05.webp').default}
-      width="70%"
-      alt="Absolute location of where you want immich images stored"
-      />
+     <img
+     src={require('./img/unraid05.webp').default}
+     width="70%"
+     alt="Absolute location of where you want immich images stored"
+     />
 
-    <details >
-        <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 8.</summary>
-        <p>Update the following database variables as relevant to your Postgres container:</p>
-        <ul>
-            <li><code>DB_HOSTNAME</code></li>
-            <li><code>DB_USERNAME</code></li>
-            <li><code>DB_PASSWORD</code></li>
-            <li><code>DB_DATABASE_NAME</code></li>
-            <li><code>DB_PORT</code></li>
-        </ul>
-    </details>
+   <details >
+       <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 8.</summary>
+       <p>Update the following database variables as relevant to your Postgres container:</p>
+       <ul>
+           <li><code>DB_HOSTNAME</code></li>
+           <li><code>DB_USERNAME</code></li>
+           <li><code>DB_PASSWORD</code></li>
+           <li><code>DB_DATABASE_NAME</code></li>
+           <li><code>DB_PORT</code></li>
+       </ul>
+   </details>
 
-8.  Click "**Save Changes**" followed by "**Compose Up**" and Unraid will begin to create the Immich containers in a popup window. Once complete you will see a message on the popup window stating _"Connection Closed"_. Click "**Done**" and go to the Unraid "**Docker**" page
+8. Click "**Save Changes**" followed by "**Compose Up**" and Unraid will begin to create the Immich containers in a popup window. Once complete you will see a message on the popup window stating _"Connection Closed"_. Click "**Done**" and go to the Unraid "**Docker**" page
 
-    > Note: This can take several minutes depending on your Internet speed and Unraid hardware
+   > Note: This can take several minutes depending on your Internet speed and Unraid hardware
 
-9.  Once on the Docker page you will see several Immich containers, one of them will be labelled `immich_server` and will have a port mapping. Visit the `IP:PORT` displayed in your web browser and you should see the Immich admin setup page.
+9. Once on the Docker page you will see several Immich containers, one of them will be labelled `immich_server` and will have a port mapping. Visit the `IP:PORT` displayed in your web browser and you should see the Immich admin setup page.
 
 <img
 src={require('./img/unraid06.webp').default}
@@ -122,7 +122,7 @@ alt="Go to Docker Tab and visit the address listed next to immich-web"
         width="90%"
         alt="Go to Docker Tab and visit the address listed next to immich-web"
     />
-    
+
 </details>
 
 :::tip

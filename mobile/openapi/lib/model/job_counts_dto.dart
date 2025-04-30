@@ -14,54 +14,42 @@ class JobCountsDto {
   /// Returns a new [JobCountsDto] instance.
   JobCountsDto({
     required this.active,
-    required this.completed,
     required this.delayed,
     required this.failed,
-    required this.paused,
     required this.waiting,
   });
 
   int active;
 
-  int completed;
-
   int delayed;
 
   int failed;
-
-  int paused;
 
   int waiting;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobCountsDto &&
     other.active == active &&
-    other.completed == completed &&
     other.delayed == delayed &&
     other.failed == failed &&
-    other.paused == paused &&
     other.waiting == waiting;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (active.hashCode) +
-    (completed.hashCode) +
     (delayed.hashCode) +
     (failed.hashCode) +
-    (paused.hashCode) +
     (waiting.hashCode);
 
   @override
-  String toString() => 'JobCountsDto[active=$active, completed=$completed, delayed=$delayed, failed=$failed, paused=$paused, waiting=$waiting]';
+  String toString() => 'JobCountsDto[active=$active, delayed=$delayed, failed=$failed, waiting=$waiting]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'active'] = this.active;
-      json[r'completed'] = this.completed;
       json[r'delayed'] = this.delayed;
       json[r'failed'] = this.failed;
-      json[r'paused'] = this.paused;
       json[r'waiting'] = this.waiting;
     return json;
   }
@@ -76,10 +64,8 @@ class JobCountsDto {
 
       return JobCountsDto(
         active: mapValueOfType<int>(json, r'active')!,
-        completed: mapValueOfType<int>(json, r'completed')!,
         delayed: mapValueOfType<int>(json, r'delayed')!,
         failed: mapValueOfType<int>(json, r'failed')!,
-        paused: mapValueOfType<int>(json, r'paused')!,
         waiting: mapValueOfType<int>(json, r'waiting')!,
       );
     }
@@ -129,10 +115,8 @@ class JobCountsDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'active',
-    'completed',
     'delayed',
     'failed',
-    'paused',
     'waiting',
   };
 }
