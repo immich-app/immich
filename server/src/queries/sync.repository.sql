@@ -76,6 +76,7 @@ order by
 select
   "id",
   "ownerId",
+  "originalFileName",
   "thumbhash",
   "checksum",
   "fileCreatedAt",
@@ -98,6 +99,7 @@ order by
 select
   "id",
   "ownerId",
+  "originalFileName",
   "thumbhash",
   "checksum",
   "fileCreatedAt",

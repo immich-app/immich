@@ -28,8 +28,6 @@ extension LocalAssetEntityX on LocalAssetEntityData {
       type: type,
       createdAt: createdAt,
       updatedAt: updatedAt,
-      width: width,
-      height: height,
       durationInSeconds: durationInSeconds,
       isFavorite: isFavorite,
     );

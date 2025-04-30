@@ -12463,6 +12463,9 @@
             "nullable": true,
             "type": "string"
           },
+          "originalFileName": {
+            "type": "string"
+          },
           "ownerId": {
             "type": "string"
           },
@@ -12489,6 +12492,7 @@
           "isFavorite",
           "isVisible",
           "localDateTime",
+          "originalFileName",
           "ownerId",
           "thumbhash",
           "type"

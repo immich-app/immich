@@ -59,6 +59,7 @@ export class SyncPartnerDeleteV1 {
 export class SyncAssetV1 {
   id!: string;
   ownerId!: string;
+  originalFileName!: string;
   thumbhash!: string | null;
   checksum!: string;
   fileCreatedAt!: Date | null;

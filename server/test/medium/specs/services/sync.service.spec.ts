@@ -424,12 +424,14 @@ describe(SyncService.name, () => {
     it('should detect and sync the first asset', async () => {
       const { auth, sut, getRepository, testSync } = await setup();
 
+      const originalFileName = 'firstAsset';
       const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
       const thumbhash = '2225vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
       const date = new Date().toISOString();
 
       const assetRepo = getRepository('asset');
       const asset = mediumFactory.assetInsert({
+        originalFileName,
         ownerId: auth.user.id,
         checksum: Buffer.from(checksum, 'base64'),
         thumbhash: Buffer.from(thumbhash, 'base64'),
@@ -449,6 +451,7 @@ describe(SyncService.name, () => {
             ack: expect.any(String),
             data: {
               id: asset.id,
+              originalFileName,
               ownerId: asset.ownerId,
               thumbhash,
               checksum,
@@ -534,6 +537,7 @@ describe(SyncService.name, () => {
     it('should detect and sync the first partner asset', async () => {
       const { auth, sut, getRepository, testSync } = await setup();
 
+      const originalFileName = 'firstPartnerAsset';
       const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
       const thumbhash = '2225vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
       const date = new Date().toISOString();
@@ -545,6 +549,7 @@ describe(SyncService.name, () => {
       const assetRepo = getRepository('asset');
       const asset = mediumFactory.assetInsert({
         ownerId: user2.id,
+        originalFileName,
         checksum: Buffer.from(checksum, 'base64'),
         thumbhash: Buffer.from(thumbhash, 'base64'),
         fileCreatedAt: date,
@@ -567,6 +572,7 @@ describe(SyncService.name, () => {
             data: {
               id: asset.id,
               ownerId: asset.ownerId,
+              originalFileName,
               thumbhash,
               checksum,
               deletedAt: null,
