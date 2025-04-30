@@ -90,7 +90,7 @@ Future<void> handleFavoriteAssets(
       ImmichToast.show(
         context: context,
         msg: toastMessage,
-        gravity: ToastGravity.BOTTOM,
+        gravity: toastGravity,
       );
     }
   }
