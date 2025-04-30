@@ -135,20 +135,33 @@ export class AssetJobRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [], stream: true })
-  streamForEncodeClip(force?: boolean) {
+  private assetsWithPreviews() {
     return this.db
       .selectFrom('assets')
-      .select(['assets.id'])
-      .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-      .where('job_status.previewAt', 'is not', null)
       .where('assets.isVisible', '=', true)
+      .where('assets.deletedAt', 'is', null)
+      .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
+      .where('job_status.previewAt', 'is not', null);
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForSearchDuplicates(force?: boolean) {
+    return this.assetsWithPreviews()
+      .where((eb) => eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))))
+      .$if(!force, (qb) => qb.where('job_status.duplicatesDetectedAt', 'is', null))
+      .select(['assets.id'])
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForEncodeClip(force?: boolean) {
+    return this.assetsWithPreviews()
+      .select(['assets.id'])
       .$if(!force, (qb) =>
         qb.where((eb) =>
           eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))),
         ),
       )
-      .where('assets.deletedAt', 'is', null)
       .stream();
   }
 
