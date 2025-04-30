@@ -25,6 +25,7 @@ class SyncApiRepository implements ISyncApiRepository {
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
   }) async {
+    // ignore: avoid-unused-assignment
     final stopwatch = Stopwatch()..start();
     final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
@@ -132,6 +133,7 @@ class SyncApiRepository implements ISyncApiRepository {
   }
 }
 
+// ignore: avoid-dynamic
 const _kResponseMap = <SyncEntityType, Function(dynamic)>{
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,

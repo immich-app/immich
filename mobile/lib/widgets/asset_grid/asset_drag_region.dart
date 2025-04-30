@@ -1,3 +1,4 @@
+// ignore_for_file: library_private_types_in_public_api
 // Based on https://stackoverflow.com/a/52625182
 
 import 'dart:async';
@@ -163,6 +164,7 @@ class _CustomLongPressGestureRecognizer extends LongPressGestureRecognizer {
   }
 }
 
+// ignore: prefer-single-widget-per-file
 class AssetIndexWrapper extends SingleChildRenderObjectWidget {
   final int rowIndex;
   final int sectionIndex;
@@ -175,7 +177,6 @@ class AssetIndexWrapper extends SingleChildRenderObjectWidget {
   });
 
   @override
-  // ignore: library_private_types_in_public_api
   _AssetIndexProxy createRenderObject(BuildContext context) {
     return _AssetIndexProxy(
       index: AssetIndex(rowIndex: rowIndex, sectionIndex: sectionIndex),
@@ -185,7 +186,6 @@ class AssetIndexWrapper extends SingleChildRenderObjectWidget {
   @override
   void updateRenderObject(
     BuildContext context,
-    // ignore: library_private_types_in_public_api
     _AssetIndexProxy renderObject,
   ) {
     renderObject.index =
