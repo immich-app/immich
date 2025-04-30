@@ -443,7 +443,7 @@ jobs:
         if: ${{ !(contains(needs.*.result, 'failure')) }}
         # zizmor: ignore[template-injection]
         run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
-        
+
   mobile-unit-tests:
     name: Unit Test Mobile
     needs: pre-job
