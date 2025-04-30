@@ -22,7 +22,7 @@ import {
 import { EmailTemplate } from 'src/repositories/email.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { EmailImageAttachment, IEntityJob, INotifyAlbumUpdateJob, JobItem, JobOf } from 'src/types';
+import { EmailImageAttachment, JobOf } from 'src/types';
 import { getFilenameExtension } from 'src/utils/file';
 import { getExternalDomain } from 'src/utils/misc';
 import { isEqualObject } from 'src/utils/object';
@@ -185,30 +185,12 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'album.update' })
-  async onAlbumUpdate({ id, recipientIds }: ArgOf<'album.update'>) {
-    // if recipientIds is empty, album likely only has one user part of it, don't queue notification if so
-    if (recipientIds.length === 0) {
-      return;
-    }
-
-    const job: JobItem = {
+  async onAlbumUpdate({ id, recipientId }: ArgOf<'album.update'>) {
+    await this.jobRepository.removeJob(JobName.NOTIFY_ALBUM_UPDATE, `${id}/${recipientId}`);
+    await this.jobRepository.queue({
       name: JobName.NOTIFY_ALBUM_UPDATE,
-      data: { id, recipientIds, delay: NotificationService.albumUpdateEmailDelayMs },
-    };
-
-    const previousJobData = await this.jobRepository.removeJob(id, JobName.NOTIFY_ALBUM_UPDATE);
-    if (previousJobData && this.isAlbumUpdateJob(previousJobData)) {
-      for (const id of previousJobData.recipientIds) {
-        if (!recipientIds.includes(id)) {
-          recipientIds.push(id);
-        }
-      }
-    }
-    await this.jobRepository.queue(job);
-  }
-
-  private isAlbumUpdateJob(job: IEntityJob): job is INotifyAlbumUpdateJob {
-    return 'recipientIds' in job;
+      data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
+    });
   }
 
   @OnEvent({ name: 'album.invite' })
@@ -399,7 +381,7 @@ export class NotificationService extends BaseService {
   }
 
   @OnJob({ name: JobName.NOTIFY_ALBUM_UPDATE, queue: QueueName.NOTIFICATION })
-  async handleAlbumUpdate({ id, recipientIds }: JobOf<JobName.NOTIFY_ALBUM_UPDATE>) {
+  async handleAlbumUpdate({ id, recipientId }: JobOf<JobName.NOTIFY_ALBUM_UPDATE>) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
 
     if (!album) {
@@ -411,48 +393,43 @@ export class NotificationService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) =>
-      recipientIds.includes(user.id),
-    );
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server, templates } = await this.getConfig({ withCache: false });
 
-    for (const recipient of recipients) {
-      const user = await this.userRepository.get(recipient.id, { withDeleted: false });
-      if (!user) {
-        continue;
-      }
-
-      const { emailNotifications } = getPreferences(user.metadata);
-
-      if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
-        continue;
-      }
-
-      const { html, text } = await this.emailRepository.renderEmail({
-        template: EmailTemplate.ALBUM_UPDATE,
-        data: {
-          baseUrl: getExternalDomain(server),
-          albumId: album.id,
-          albumName: album.albumName,
-          recipientName: recipient.name,
-          cid: attachment ? attachment.cid : undefined,
-        },
-        customTemplate: templates.email.albumUpdateTemplate,
-      });
-
-      await this.jobRepository.queue({
-        name: JobName.SEND_EMAIL,
-        data: {
-          to: recipient.email,
-          subject: `New media has been added to an album - ${album.albumName}`,
-          html,
-          text,
-          imageAttachments: attachment ? [attachment] : undefined,
-        },
-      });
+    const user = await this.userRepository.get(recipientId, { withDeleted: false });
+    if (!user) {
+      return JobStatus.SKIPPED;
     }
+
+    const { emailNotifications } = getPreferences(user.metadata);
+
+    if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
+      return JobStatus.SKIPPED;
+    }
+
+    const { html, text } = await this.emailRepository.renderEmail({
+      template: EmailTemplate.ALBUM_UPDATE,
+      data: {
+        baseUrl: getExternalDomain(server),
+        albumId: album.id,
+        albumName: album.albumName,
+        recipientName: user.name,
+        cid: attachment ? attachment.cid : undefined,
+      },
+      customTemplate: templates.email.albumUpdateTemplate,
+    });
+
+    await this.jobRepository.queue({
+      name: JobName.SEND_EMAIL,
+      data: {
+        to: user.email,
+        subject: `New media has been added to an album - ${album.albumName}`,
+        html,
+        text,
+        imageAttachments: attachment ? [attachment] : undefined,
+      },
+    });
 
     return JobStatus.SUCCESS;
   }

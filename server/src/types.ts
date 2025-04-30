@@ -251,7 +251,7 @@ export interface INotifyAlbumInviteJob extends IEntityJob {
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
-  recipientIds: string[];
+  recipientId: string;
 }
 
 export interface JobCounts {
