@@ -26,7 +26,7 @@ class JobCommand {
   static const start = JobCommand._(r'start');
   static const pause = JobCommand._(r'pause');
   static const resume = JobCommand._(r'resume');
-  static const empty = JobCommand._(r'empty');
+  static const clear = JobCommand._(r'clear');
   static const clearFailed = JobCommand._(r'clear-failed');
 
   /// List of all possible values in this [enum][JobCommand].
@@ -34,7 +34,7 @@ class JobCommand {
     start,
     pause,
     resume,
-    empty,
+    clear,
     clearFailed,
   ];
 
@@ -77,7 +77,7 @@ class JobCommandTypeTransformer {
         case r'start': return JobCommand.start;
         case r'pause': return JobCommand.pause;
         case r'resume': return JobCommand.resume;
-        case r'empty': return JobCommand.empty;
+        case r'clear': return JobCommand.clear;
         case r'clear-failed': return JobCommand.clearFailed;
         default:
           if (!allowNull) {

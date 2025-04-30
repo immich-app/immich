@@ -107,8 +107,6 @@ Accept the default option or select the **Machine Learning Image Type** for your
 
 Immich's default is `postgres` but you should consider setting the **Database Password** to a custom value using only the characters `A-Za-z0-9`.
 
-The **Redis Password** should be set to a custom value using only the characters `A-Za-z0-9`.
-
 Accept the **Log Level** default of **Log**.
 
 Leave **Hugging Face Endpoint** blank. (This is for downloading ML models from a different source.)
@@ -242,7 +240,7 @@ className="border rounded-xl"
 :::info
 Some Environment Variables are not available for the TrueNAS SCALE app. This is mainly because they can be configured through GUI options in the [Edit Immich screen](#edit-app-settings).
 
-Some examples are: `IMMICH_VERSION`, `UPLOAD_LOCATION`, `DB_DATA_LOCATION`, `TZ`, `IMMICH_LOG_LEVEL`, `DB_PASSWORD`, `REDIS_PASSWORD`.
+Some examples are: `IMMICH_VERSION`, `UPLOAD_LOCATION`, `DB_DATA_LOCATION`, `TZ`, `IMMICH_LOG_LEVEL`, `DB_PASSWORD`.
 :::
 
 ## Updating the App

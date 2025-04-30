@@ -58,7 +58,6 @@ services:
       - 9231:9231
       - 2283:2283
     depends_on:
-      - redis
       - database
     healthcheck:
       disable: false
@@ -113,12 +112,6 @@ services:
     restart: unless-stopped
     healthcheck:
       disable: false
-
-  redis:
-    container_name: immich_redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:c855f98e09d558a0d7cc1a4e56473231206a4c54c0114ada9c485b47aeb92ec8
-    healthcheck:
-      test: redis-cli ping || exit 1
 
   database:
     container_name: immich_postgres

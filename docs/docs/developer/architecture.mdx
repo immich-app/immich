@@ -13,7 +13,7 @@ Immich uses a traditional client-server design, with a dedicated database for da
 
 <img alt="Immich Architecture" src={AppArchitecture} className="p-4 dark:bg-immich-dark-primary my-4" />
 
-The diagram shows clients communicating with the server's API via REST. The server communicates with downstream systems (i.e. Redis, Postgres, Machine Learning, file system) through repository interfaces. Not shown in the diagram, is that the server is split into two separate containers `immich-server` and `immich-microservices`. The microservices container does not handle API requests or schedule cron jobs, but primarily handles incoming job requests from Redis.
+The diagram shows clients communicating with the server's API via REST. The server communicates with downstream systems (i.e. Postgres, Machine Learning, file system) through repository interfaces. Not shown in the diagram, is that the server is split into two separate containers `immich-server` and `immich-microservices`. The microservices container does not handle API requests or schedule cron jobs, but primarily handles incoming job requests from Postgres.
 
 ## Clients
 
@@ -53,7 +53,6 @@ The Immich backend is divided into several services, which are run as individual
 1. `immich-server` - Handle and respond to REST API requests, execute background jobs (thumbnail generation, metadata extraction, transcoding, etc.)
 1. `immich-machine-learning` - Execute machine learning models
 1. `postgres` - Persistent data storage
-1. `redis`- Queue management for background jobs
 
 ### Immich Server
 
@@ -111,7 +110,3 @@ Immich persists data in Postgres, which includes information about access and au
 :::info
 See [Database Migrations](./database-migrations.md) for more information about how to modify the database to create an index, modify a table, add a new column, etc.
 :::
-
-### Redis
-
-Immich uses [Redis](https://redis.com/) via [BullMQ](https://docs.bullmq.io/) to manage job queues. Some jobs trigger subsequent jobs. For example, Smart Search and Facial Recognition relies on thumbnail generation and automatically run after one is generated.

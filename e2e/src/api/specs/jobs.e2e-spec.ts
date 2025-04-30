@@ -78,7 +78,7 @@ describe('/jobs', () => {
       }
 
       await utils.jobCommand(admin.accessToken, JobName.MetadataExtraction, {
-        command: JobCommand.Empty,
+        command: JobCommand.Clear,
         force: false,
       });
 
@@ -160,7 +160,7 @@ describe('/jobs', () => {
       expect(assetBefore.thumbhash).toBeNull();
 
       await utils.jobCommand(admin.accessToken, JobName.ThumbnailGeneration, {
-        command: JobCommand.Empty,
+        command: JobCommand.Clear,
         force: false,
       });
 

@@ -236,6 +236,30 @@ export interface GeodataPlaces {
   name: string;
 }
 
+export interface GraphileWorkerJobs {
+  id: Generated<string>;
+  task_identifier: string;
+  locked_at: Timestamp | null;
+  locked_by: string | null;
+  run_at: Timestamp | null;
+  attempts: number;
+  max_attempts: number;
+}
+
+export interface GraphileWorkerPrivateJobs {
+  id: Generated<string>;
+  task_id: string;
+  locked_at: Timestamp | null;
+  locked_by: string | null;
+  attempts: number;
+  max_attempts: number;
+}
+
+export interface GraphileWorkerPrivateTasks {
+  id: Generated<string>;
+  identifier: string;
+}
+
 export interface Libraries {
   createdAt: Generated<Timestamp>;
   deletedAt: Timestamp | null;
@@ -476,6 +500,9 @@ export interface DB {
   exif: Exif;
   face_search: FaceSearch;
   geodata_places: GeodataPlaces;
+  'graphile_worker.jobs': GraphileWorkerJobs;
+  'graphile_worker._private_jobs': GraphileWorkerPrivateJobs;
+  'graphile_worker._private_tasks': GraphileWorkerPrivateTasks;
   libraries: Libraries;
   memories: Memories;
   memories_assets_assets: MemoriesAssetsAssets;

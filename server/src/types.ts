@@ -256,16 +256,13 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
 
 export interface JobCounts {
   active: number;
-  completed: number;
-  failed: number;
-  delayed: number;
   waiting: number;
-  paused: number;
+  delayed: number;
+  failed: number;
 }
 
 export interface QueueStatus {
-  isActive: boolean;
-  isPaused: boolean;
+  paused: boolean;
 }
 
 export type JobItem =
@@ -450,6 +447,14 @@ export type MemoriesState = {
   lastOnThisDayDate: string;
 };
 
+export type QueueState = {
+  paused: boolean;
+};
+
+export type QueuesState = {
+  [key in QueueName]?: QueueState;
+};
+
 export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
   [SystemMetadataKey.ADMIN_ONBOARDING]: { isOnboarded: boolean };
   [SystemMetadataKey.FACIAL_RECOGNITION_STATE]: { lastRun?: string };
@@ -459,6 +464,7 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.SYSTEM_FLAGS]: DeepPartial<SystemFlags>;
   [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
   [SystemMetadataKey.MEMORIES_STATE]: MemoriesState;
+  [SystemMetadataKey.QUEUES_STATE]: QueuesState;
 }
 
 export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
