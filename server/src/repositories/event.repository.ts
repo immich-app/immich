@@ -48,7 +48,7 @@ type EventMap = {
   'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  'album.update': [{ id: string; recipientIds: string[] }];
+  'album.update': [{ id: string; recipientId: string }];
   'album.invite': [{ id: string; userId: string }];
 
   // asset events
