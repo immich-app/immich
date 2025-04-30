@@ -129,7 +129,7 @@ export class JobRepository {
       concurrency,
       taskList: {
         [queueName]: async (payload: unknown): Promise<void> => {
-          this.logger.log(`Job ${queueName} started with payload: ${JSON.stringify(payload)}`);
+          // this.logger.log(`Job ${queueName} started with payload: ${JSON.stringify(payload)}`);
           await this.eventRepository.emit('job.start', queueName, payload as JobItem);
         },
       },
