@@ -114,28 +114,17 @@
 />
 
 <div class="pt-4 rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-[54rem] mx-auto mb-16">
-  <div class="flex flex-wrap gap-1 place-items-center place-content-center px-4 pt-4">
-    {#each assets as asset (asset.id)}
-      <DuplicateAsset
-        {asset}
-        {onSelectAsset}
-        isSelected={selectedAssetIds.has(asset.id)}
-        onViewAsset={(asset) => setAsset(asset)}
-      />
-    {/each}
-  </div>
-
-  <div class="flex flex-wrap gap-y-6 mt-10 mb-4 px-6 w-full place-content-end justify-between">
+  <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
       <button
         type="button"
-        class="px-4 py-3 flex place-items-center gap-2 rounded-tl-full rounded-bl-full dark:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/90 bg-immich-primary/25 hover:bg-immich-primary/50"
+        class="px-4 py-3 flex place-items-center gap-2 rounded-s-full dark:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/90 bg-immich-primary/25 hover:bg-immich-primary/50"
         onclick={onSelectAll}><Icon path={mdiCheck} size="20" />{$t('select_keep_all')}</button
       >
       <button
         type="button"
-        class="px-4 py-3 flex place-items-center gap-2 rounded-tr-full rounded-br-full dark:bg-immich-dark-primary/50 hover:dark:bg-immich-dark-primary/70 bg-immich-primary hover:bg-immich-primary/80 text-white"
+        class="px-4 py-3 flex place-items-center gap-2 rounded-e-full dark:bg-immich-dark-primary/50 hover:dark:bg-immich-dark-primary/70 bg-immich-primary hover:bg-immich-primary/80 text-white"
         onclick={onSelectNone}><Icon path={mdiTrashCanOutline} size="20" />{$t('select_trash_all')}</button
       >
     </div>
@@ -143,21 +132,11 @@
     <!-- CONFIRM BUTTONS -->
     <div class="flex text-xs text-black">
       {#if trashCount === 0}
-        <Button
-          size="sm"
-          color="primary"
-          class="flex place-items-center rounded-tl-full rounded-bl-full gap-2"
-          onclick={handleResolve}
-        >
+        <Button size="sm" color="primary" class="flex place-items-center rounded-s-full gap-2" onclick={handleResolve}>
           <Icon path={mdiCheck} size="20" />{$t('keep_all')}
         </Button>
       {:else}
-        <Button
-          size="sm"
-          color="red"
-          class="flex place-items-center rounded-tl-full rounded-bl-full gap-2 py-3"
-          onclick={handleResolve}
-        >
+        <Button size="sm" color="red" class="flex place-items-center rounded-s-full gap-2 py-3" onclick={handleResolve}>
           <Icon path={mdiTrashCanOutline} size="20" />{trashCount === assets.length
             ? $t('trash_all')
             : $t('trash_count', { values: { count: trashCount } })}
@@ -166,13 +145,24 @@
       <Button
         size="sm"
         color="primary"
-        class="flex place-items-center rounded-tr-full rounded-br-full  gap-2"
+        class="flex place-items-center rounded-e-full  gap-2"
         onclick={handleStack}
         disabled={selectedAssetIds.size !== 1}
       >
         <Icon path={mdiImageMultipleOutline} size="20" />{$t('stack')}
       </Button>
     </div>
+  </div>
+
+  <div class="flex flex-wrap gap-1 mb-4 place-items-center place-content-center px-4 pt-4">
+    {#each assets as asset (asset.id)}
+      <DuplicateAsset
+        {asset}
+        {onSelectAsset}
+        isSelected={selectedAssetIds.has(asset.id)}
+        onViewAsset={(asset) => setAsset(asset)}
+      />
+    {/each}
   </div>
 </div>
 

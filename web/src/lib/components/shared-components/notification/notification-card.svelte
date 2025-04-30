@@ -100,7 +100,7 @@
     />
   </div>
 
-  <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">
+  <p class="whitespace-pre-wrap ps-[28px] pe-[16px] text-sm" data-testid="message">
     {#if isComponentNotification(notification)}
       <notification.component.type {...notification.component.props} />
     {:else}
@@ -109,7 +109,7 @@
   </p>
 
   {#if notification.button}
-    <p class="pl-[28px] mt-2.5 text-sm">
+    <p class="ps-[28px] mt-2.5 text-sm">
       <button
         type="button"
         class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"

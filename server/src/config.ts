@@ -5,6 +5,7 @@ import {
   CQMode,
   ImageFormat,
   LogLevel,
+  OAuthTokenEndpointAuthMethod,
   QueueName,
   ToneMapping,
   TranscodeHWAccel,
@@ -96,6 +97,8 @@ export interface SystemConfig {
     scope: string;
     signingAlgorithm: string;
     profileSigningAlgorithm: string;
+    tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
+    timeout: number;
     storageLabelClaim: string;
     storageQuotaClaim: string;
   };
@@ -260,6 +263,8 @@ export const defaults = Object.freeze<SystemConfig>({
     profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
+    tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.CLIENT_SECRET_POST,
+    timeout: 30_000,
   },
   passwordLogin: {
     enabled: true,

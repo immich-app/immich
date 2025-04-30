@@ -144,7 +144,7 @@
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   {#snippet promptSnippet()}
-    <div class="flex flex-col text-left gap-2">
+    <div class="flex flex-col text-start gap-2">
       <div class="flex flex-col">
         <label for="datetime">{$t('date_and_time')}</label>
         <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />

@@ -107,7 +107,7 @@
   >
     {#snippet promptSnippet()}
       <form {onsubmit} autocomplete="off" id="create-tag-form" class="w-full">
-        <div class="flex flex-col gap-1 text-left">
+        <div class="flex flex-col gap-1 text-start">
           <Combobox
             bind:selectedOption={selectedJob}
             label={$t('jobs')}

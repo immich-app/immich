@@ -157,6 +157,15 @@ where
   and "memories"."ownerId" = $2
   and "memories"."deletedAt" is null
 
+-- AccessRepository.notification.checkOwnerAccess
+select
+  "notifications"."id"
+from
+  "notifications"
+where
+  "notifications"."id" in ($1)
+  and "notifications"."userId" = $2
+
 -- AccessRepository.person.checkOwnerAccess
 select
   "person"."id"

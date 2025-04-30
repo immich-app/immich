@@ -28,6 +28,7 @@ import { MemoryTable } from 'src/schema/tables/memory.table';
 import { MemoryAssetTable } from 'src/schema/tables/memory_asset.table';
 import { MoveTable } from 'src/schema/tables/move.table';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
+import { NotificationTable } from 'src/schema/tables/notification.table';
 import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
 import { PersonTable } from 'src/schema/tables/person.table';
@@ -46,14 +47,8 @@ import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
 import { ConfigurationParameter, Database, Extensions } from 'src/sql-tools';
 
-@Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'vectors', 'plpgsql'])
+@Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
 @ConfigurationParameter({ name: 'search_path', value: () => '"$user", public, vectors', scope: 'database' })
-@ConfigurationParameter({
-  name: 'vectors.pgvector_compatibility',
-  value: () => 'on',
-  scope: 'user',
-  synchronize: false,
-})
 @Database({ name: 'immich' })
 export class ImmichDatabase {
   tables = [
@@ -76,6 +71,7 @@ export class ImmichDatabase {
     MemoryTable,
     MoveTable,
     NaturalEarthCountriesTable,
+    NotificationTable,
     PartnerAuditTable,
     PartnerTable,
     PersonTable,

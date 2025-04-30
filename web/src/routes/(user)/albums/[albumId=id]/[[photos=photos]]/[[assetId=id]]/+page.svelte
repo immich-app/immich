@@ -708,7 +708,7 @@
       </AssetGrid>
 
       {#if showActivityStatus}
-        <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
+        <div class="absolute z-[2] bottom-0 end-0 mb-6 me-6 justify-self-end">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
             {isLiked}
@@ -725,7 +725,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
         translate="yes"
       >
         <ActivityViewer

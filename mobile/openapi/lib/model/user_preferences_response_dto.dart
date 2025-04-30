@@ -13,7 +13,6 @@ part of openapi.api;
 class UserPreferencesResponseDto {
   /// Returns a new [UserPreferencesResponseDto] instance.
   UserPreferencesResponseDto({
-    required this.avatar,
     required this.download,
     required this.emailNotifications,
     required this.folders,
@@ -24,8 +23,6 @@ class UserPreferencesResponseDto {
     required this.sharedLinks,
     required this.tags,
   });
-
-  AvatarResponse avatar;
 
   DownloadResponse download;
 
@@ -47,7 +44,6 @@ class UserPreferencesResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
-    other.avatar == avatar &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
     other.folders == folders &&
@@ -61,7 +57,6 @@ class UserPreferencesResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatar.hashCode) +
     (download.hashCode) +
     (emailNotifications.hashCode) +
     (folders.hashCode) +
@@ -73,11 +68,10 @@ class UserPreferencesResponseDto {
     (tags.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
+  String toString() => 'UserPreferencesResponseDto[download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'avatar'] = this.avatar;
       json[r'download'] = this.download;
       json[r'emailNotifications'] = this.emailNotifications;
       json[r'folders'] = this.folders;
@@ -99,7 +93,6 @@ class UserPreferencesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return UserPreferencesResponseDto(
-        avatar: AvatarResponse.fromJson(json[r'avatar'])!,
         download: DownloadResponse.fromJson(json[r'download'])!,
         emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
         folders: FoldersResponse.fromJson(json[r'folders'])!,
@@ -156,7 +149,6 @@ class UserPreferencesResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'avatar',
     'download',
     'emailNotifications',
     'folders',

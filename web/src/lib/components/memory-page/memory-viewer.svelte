@@ -360,8 +360,8 @@
 
         {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)} aria-label={$t('view')}>
-            <span class="absolute left-0 h-[2px] w-full bg-gray-500"></span>
-            <span class="absolute left-0 h-[2px] bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
+            <span class="absolute start-0 h-[2px] w-full bg-gray-500"></span>
+            <span class="absolute start-0 h-[2px] bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
           </a>
         {/each}
 
@@ -380,7 +380,7 @@
 
     {#if galleryInView}
       <div
-        class="fixed top-20 z-30 left-1/2 -translate-x-1/2 transition-opacity"
+        class="fixed top-20 z-30 start-1/2 -translate-x-1/2 transition-opacity"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >
@@ -396,7 +396,7 @@
     <!-- Viewer -->
     <section class="overflow-hidden pt-32 md:pt-20" bind:clientHeight={viewerHeight}>
       <div
-        class="ml-[-100%] box-border flex h-[calc(100vh_-_224px)] md:h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
+        class="ms-[-100%] box-border flex h-[calc(100vh_-_224px)] md:h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
       >
         <!-- PREVIOUS MEMORY -->
         <div class="h-1/2 w-[20vw] rounded-2xl {current.previousMemory ? 'opacity-25 hover:opacity-70' : 'opacity-0'}">
@@ -424,7 +424,7 @@
             {/if}
 
             {#if current.previousMemory}
-              <div class="absolute bottom-4 right-4 text-left text-white">
+              <div class="absolute bottom-4 end-4 text-start text-white">
                 <p class="text-xs font-semibold text-gray-200">{$t('previous').toUpperCase()}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.previousMemory)}</p>
               </div>
@@ -465,7 +465,7 @@
             {/key}
 
             <div
-              class="absolute bottom-0 right-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2"
+              class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2"
               class:opacity-0={galleryInView}
               class:opacity-100={!galleryInView}
             >
@@ -521,7 +521,7 @@
             </div>
             <!-- CONTROL BUTTONS -->
             {#if current.previous}
-              <div class="absolute top-1/2 left-0 ml-4">
+              <div class="absolute top-1/2 start-0 ms-4">
                 <CircleIconButton
                   title={$t('previous_memory')}
                   icon={mdiChevronLeft}
@@ -532,7 +532,7 @@
             {/if}
 
             {#if current.next}
-              <div class="absolute top-1/2 right-0 mr-4">
+              <div class="absolute top-1/2 end-0 me-4">
                 <CircleIconButton
                   title={$t('next_memory')}
                   icon={mdiChevronRight}
@@ -542,9 +542,11 @@
               </div>
             {/if}
 
-            <div class="absolute left-8 top-4 text-sm font-medium text-white">
+            <div class="absolute start-8 top-4 text-sm font-medium text-white">
               <p>
-                {fromLocalDateTime(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL)}
+                {fromLocalDateTime(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL, {
+                  locale: $locale,
+                })}
               </p>
               <p>
                 {current.asset.exifInfo?.city || ''}
@@ -580,7 +582,7 @@
             {/if}
 
             {#if current.nextMemory}
-              <div class="absolute bottom-4 left-4 text-left text-white">
+              <div class="absolute bottom-4 start-4 text-start text-white">
                 <p class="text-xs font-semibold text-gray-200">{$t('up_next').toUpperCase()}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.nextMemory)}</p>
               </div>
