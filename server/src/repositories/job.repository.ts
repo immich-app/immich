@@ -188,7 +188,7 @@ export class JobRepository {
   }
 
   async queue(item: JobItem): Promise<void> {
-    this.logger.log(`Queueing job: ${this.getQueueName(item.name)}, data: ${JSON.stringify(item)}`);
+    // this.logger.log(`Queueing job: ${this.getQueueName(item.name)}, data: ${JSON.stringify(item)}`);
     await this.workerUtils!.addJob(this.getQueueName(item.name), item, this.getJobOptions(item));
   }
 
