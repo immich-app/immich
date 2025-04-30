@@ -346,7 +346,7 @@ jobs:
         working-directory: ./e2e
     strategy:
       matrix:
-        runner: [mich, ubuntu-24.04-arm]
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
@@ -394,7 +394,7 @@ jobs:
         working-directory: ./e2e
     strategy:
       matrix:
-        runner: [mich, ubuntu-24.04-arm]
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
