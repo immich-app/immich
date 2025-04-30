@@ -1,7 +1,10 @@
 import FocusTrapTest from '$lib/actions/__test__/focus-trap-test.svelte';
+import { setDefaultTabbleOptions } from '$lib/utils/focus-util';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
+
+setDefaultTabbleOptions({ displayCheck: 'none' });
 
 describe('focusTrap action', () => {
   const user = userEvent.setup();
@@ -38,6 +41,7 @@ describe('focusTrap action', () => {
     const openButton = screen.getByText('Open');
 
     await user.click(openButton);
+    await tick();
     expect(document.activeElement).toEqual(screen.getByTestId('one'));
 
     screen.getByText('Close').click();

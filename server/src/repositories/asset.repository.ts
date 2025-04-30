@@ -49,7 +49,6 @@ export enum WithoutProperty {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded-video',
   EXIF = 'exif',
-  SMART_SEARCH = 'smart-search',
   DUPLICATE = 'duplicate',
   FACES = 'faces',
   SIDECAR = 'sidecar',
@@ -570,15 +569,6 @@ export class AssetRepository {
         qb
           .where((eb) => eb.or([eb('assets.sidecarPath', '=', ''), eb('assets.sidecarPath', 'is', null)]))
           .where('assets.isVisible', '=', true),
-      )
-      .$if(property === WithoutProperty.SMART_SEARCH, (qb) =>
-        qb
-          .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-          .where('job_status.previewAt', 'is not', null)
-          .where('assets.isVisible', '=', true)
-          .where((eb) =>
-            eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))),
-          ),
       )
       .$if(property === WithoutProperty.THUMBNAIL, (qb) =>
         qb

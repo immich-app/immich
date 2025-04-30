@@ -72,4 +72,5 @@ jobs:
         with:
           name: docs-build-output
           path: docs/build/
+          include-hidden-files: true
           retention-days: 1
