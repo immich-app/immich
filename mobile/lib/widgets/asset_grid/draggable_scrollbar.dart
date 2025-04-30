@@ -80,8 +80,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelTextBuilder,
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
-        scrollThumbBuilder =
-            _thumbRRectBuilder(alwaysVisibleScrollThumb);
+        scrollThumbBuilder = _thumbRRectBuilder(alwaysVisibleScrollThumb);
 
   DraggableScrollbar.arrows({
     super.key,
@@ -97,8 +96,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelTextBuilder,
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
-        scrollThumbBuilder =
-            _thumbArrowBuilder(alwaysVisibleScrollThumb);
+        scrollThumbBuilder = _thumbArrowBuilder(alwaysVisibleScrollThumb);
 
   DraggableScrollbar.semicircle({
     super.key,
