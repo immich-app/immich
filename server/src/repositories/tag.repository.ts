@@ -77,8 +77,8 @@ export class TagRepository {
       if (dto.value) {
         // propagate value update downstream
         const descendantIds = await this.getDescendantIds(id);
-        const descendants = await this.getMany(descendantIds.filter(_id => _id !== id));
-        const childrenByParentId =  new Map<string, { id: string, value: string }[]>();
+        const descendants = await this.getMany(descendantIds.filter((_id) => _id !== id));
+        const childrenByParentId = new Map<string, { id: string; value: string }[]>();
         for (const descendant of descendants) {
           const parentId = descendant.parentId;
           if (parentId) {
@@ -89,7 +89,7 @@ export class TagRepository {
           }
         }
 
-        const queue: { id: string; value: string }[] = [{id, value: updated.value}];
+        const queue: { id: string; value: string }[] = [{ id, value: updated.value }];
         for (let i = 0; i < queue.length; i++) {
           const { id, value } = queue[i];
           const children = childrenByParentId.get(id) ?? [];
@@ -98,26 +98,26 @@ export class TagRepository {
             const item = { id: child.id, value: `${value}/${name}` };
             queue.push(item);
           }
-      }
+        }
 
-      const toUpdate = queue.slice(1);
-      if (toUpdate.length > 0) {
-        await sql`
+        const toUpdate = queue.slice(1);
+        if (toUpdate.length > 0) {
+          await sql`
           UPDATE tags
           SET value = updates.value
           FROM (
             VALUES
               ${sql.join(
-                toUpdate.map(u => sql`(${sql`${u.id}::uuid`}, ${u.value})`),
-                sql`, `
+                toUpdate.map((u) => sql`(${sql`${u.id}::uuid`}, ${u.value})`),
+                sql`, `,
               )}
           ) AS updates(id, value)
           WHERE tags.id = updates.id
         `.execute(tx);
-        };
+        }
       }
     });
-    
+
     return updated!;
   }
 
@@ -232,10 +232,10 @@ export class TagRepository {
       .where('id_ancestor', '=', ancestorId)
       .execute();
 
-    return results.map(r => r.id_descendant);
+    return results.map((r) => r.id_descendant);
   }
 
-  async updateTagClosures(tag: { id: string, parentId?: string | null }, tx: Transaction<DB>) {
+  async updateTagClosures(tag: { id: string; parentId?: string | null }, tx: Transaction<DB>) {
     // update closure table
     await tx
       .insertInto('tags_closure')

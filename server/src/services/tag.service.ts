@@ -68,9 +68,9 @@ export class TagService extends BaseService {
 
     let value;
     if (name) {
-      const parts = existing.value.split("/");
+      const parts = existing.value.split('/');
       parts[parts.length - 1] = name;
-      value = parts.join("/");
+      value = parts.join('/');
     }
 
     const tag = await this.tagRepository.update(id, { value, color });

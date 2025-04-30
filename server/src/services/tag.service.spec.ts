@@ -113,6 +113,7 @@ describe(TagService.name, () => {
     it('should update a tag', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
       mocks.tag.update.mockResolvedValue(tagStub.colorCreate);
+      mocks.tag.getOne.mockResolvedValue(tagStub.tag);
       await expect(sut.update(authStub.admin, 'tag-1', { color: '#000000' })).resolves.toEqual(tagResponseStub.color1);
       expect(mocks.tag.update).toHaveBeenCalledWith('tag-1', { color: '#000000' });
     });

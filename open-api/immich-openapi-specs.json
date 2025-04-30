@@ -13766,6 +13766,7 @@
             "type": "string"
           },
           "name": {
+            "nullable": true,
             "type": "string"
           }
         },
