@@ -334,4 +334,13 @@ export class AssetJobRepository {
       .where('assets.isVisible', '=', true)
       .stream();
   }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForDetectFacesJob(force?: boolean) {
+    return this.assetsWithPreviews()
+      .$if(!force, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
+      .select(['assets.id'])
+      .orderBy('assets.createdAt', 'desc')
+      .stream();
+  }
 }
