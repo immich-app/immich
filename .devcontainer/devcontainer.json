@@ -40,7 +40,6 @@
     }
   },
   "overrideCommand": true,
-  "workspaceFolder": "/workspace/immich",
   "remoteUser": "node",
   "postCreateCommand": "/immich-devcontainer/postCreate.sh"
 }
