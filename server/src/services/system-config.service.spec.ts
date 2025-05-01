@@ -1,5 +1,5 @@
-import { BadRequestException } from '@nestjs/common';
-import { defaults, SystemConfig } from 'src/config';
+import {BadRequestException} from '@nestjs/common';
+import {defaults, SystemConfig} from 'src/config';
 import {
   AudioCodec,
   Colorspace,
@@ -13,10 +13,10 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { SystemConfigService } from 'src/services/system-config.service';
-import { DeepPartial } from 'src/types';
-import { mockEnvData } from 'test/repositories/config.repository.mock';
-import { newTestService, ServiceMocks } from 'test/utils';
+import {SystemConfigService} from 'src/services/system-config.service';
+import {DeepPartial} from 'src/types';
+import {mockEnvData} from 'test/repositories/config.repository.mock';
+import {newTestService, ServiceMocks} from 'test/utils';
 
 const partialConfig = {
   ffmpeg: { crf: 30 },
@@ -71,12 +71,27 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   liveFfmpeg: {
     enabled: true,
+    crf: 30,
     threads: 0,
-    preset: 'veryfast',
+    preset: 'ultrafast',
+    targetAudioCodec: AudioCodec.AAC,
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS, AudioCodec.PCMS16LE],
+    targetResolution: '720',
+    targetVideoCodec: VideoCodec.H264,
+    acceptedVideoCodecs: [VideoCodec.H264],
+    acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
+    maxBitrate: '0',
+    bframes: -1,
+    refs: 0,
+    gopSize: 0,
+    temporalAQ: false,
+    cqMode: CQMode.AUTO,
+    twoPass: false,
     preferredHwDevice: 'auto',
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
     accelDecode: false,
+    tonemap: ToneMapping.HABLE,
   },
   logging: {
     enabled: true,

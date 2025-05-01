@@ -1,30 +1,39 @@
-import { BullModule } from '@nestjs/bullmq';
-import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@nestjs/common';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
-import { PostgresJSDialect } from 'kysely-postgres-js';
-import { ClsModule } from 'nestjs-cls';
-import { KyselyModule } from 'nestjs-kysely';
-import { OpenTelemetryModule } from 'nestjs-otel';
+import {BullModule} from '@nestjs/bullmq';
+import {
+  Inject,
+  MiddlewareConsumer,
+  Module,
+  OnModuleDestroy,
+  OnModuleInit,
+  RequestMethod,
+  ValidationPipe,
+} from '@nestjs/common';
+import cors from 'cors';
+import {APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core';
+import {ScheduleModule, SchedulerRegistry} from '@nestjs/schedule';
+import {PostgresJSDialect} from 'kysely-postgres-js';
+import {ClsModule} from 'nestjs-cls';
+import {KyselyModule} from 'nestjs-kysely';
+import {OpenTelemetryModule} from 'nestjs-otel';
 import postgres from 'postgres';
-import { commands } from 'src/commands';
-import { IWorker } from 'src/constants';
-import { controllers } from 'src/controllers';
-import { ImmichWorker } from 'src/enum';
-import { AuthGuard } from 'src/middleware/auth.guard';
-import { ErrorInterceptor } from 'src/middleware/error.interceptor';
-import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
-import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
-import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
-import { repositories } from 'src/repositories';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { EventRepository } from 'src/repositories/event.repository';
-import { JobRepository } from 'src/repositories/job.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
-import { services } from 'src/services';
-import { AuthService } from 'src/services/auth.service';
-import { CliService } from 'src/services/cli.service';
+import {commands} from 'src/commands';
+import {IWorker} from 'src/constants';
+import {controllers} from 'src/controllers';
+import {ImmichWorker} from 'src/enum';
+import {AuthGuard} from 'src/middleware/auth.guard';
+import {ErrorInterceptor} from 'src/middleware/error.interceptor';
+import {FileUploadInterceptor} from 'src/middleware/file-upload.interceptor';
+import {GlobalExceptionFilter} from 'src/middleware/global-exception.filter';
+import {LoggingInterceptor} from 'src/middleware/logging.interceptor';
+import {repositories} from 'src/repositories';
+import {ConfigRepository} from 'src/repositories/config.repository';
+import {EventRepository} from 'src/repositories/event.repository';
+import {JobRepository} from 'src/repositories/job.repository';
+import {LoggingRepository} from 'src/repositories/logging.repository';
+import {teardownTelemetry, TelemetryRepository} from 'src/repositories/telemetry.repository';
+import {services} from 'src/services';
+import {AuthService} from 'src/services/auth.service';
+import {CliService} from 'src/services/cli.service';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
@@ -103,7 +112,13 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
   controllers: [...controllers],
   providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.API }],
 })
-export class ApiModule extends BaseModule {}
+export class ApiModule extends BaseModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(cors({origin: "*"}))
+      .forRoutes({ path: 'playback', method: RequestMethod.GET });
+  }
+}
 
 @Module({
   imports: [...imports],

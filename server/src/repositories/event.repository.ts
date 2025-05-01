@@ -15,10 +15,10 @@ import {EventConfig} from 'src/decorators';
 import {AssetResponseDto} from 'src/dtos/asset-response.dto';
 import {AuthDto} from 'src/dtos/auth.dto';
 import {ReleaseNotification, ServerVersionResponseDto} from 'src/dtos/server.dto';
-import {ImmichWorker, MetadataKey, QueueName} from 'src/enum';
+import {ImmichWorker, MetadataKey, QueueName, VideoCodec} from 'src/enum';
 import {ConfigRepository} from 'src/repositories/config.repository';
 import {LoggingRepository} from 'src/repositories/logging.repository';
-import {JobItem} from 'src/types';
+import {AudioStreamInfo, JobItem, VideoFormat, VideoStreamInfo} from 'src/types';
 import {handlePromiseError} from 'src/utils/misc';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
@@ -82,10 +82,17 @@ type EventMap = {
   // websocket events
   'websocket.connect': [{ userId: string }];
 
-  'media.liveTranscode': [{ id: string, path: string }]
+  'media.liveTranscode': [{
+    path: string,
+    id: string,
+    quality: string,
+    partTimes: number[],
+    keyTimes: number[],
+    codec: VideoCodec,
+  }]
 };
 
-export const serverEvents = ['config.update'] as const;
+export const serverEvents = ['config.update', 'media.liveTranscode'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export type EmitEvent = keyof EventMap;
@@ -138,8 +145,8 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     this.logger.setContext(EventRepository.name);
   }
 
-  setup({services}: { services: ClassConstructor<unknown>[] }) {
-    const reflector = this.moduleRef.get(Reflector, {strict: false});
+  setup({ services }: { services: ClassConstructor<unknown>[] }) {
+    const reflector = this.moduleRef.get(Reflector, { strict: false });
     const items: Item<EmitEvent>[] = [];
     const worker = this.configRepository.getWorker();
     if (!worker) {
@@ -195,7 +202,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     for (const event of serverEvents) {
       server.on(event, (...args: ArgsOf<any>) => {
         this.logger.debug(`Server event: ${event} (receive)`);
-        handlePromiseError(this.onEvent({name: event, args, server: true}), this.logger);
+        handlePromiseError(this.onEvent({ name: event, args, server: true }), this.logger);
       });
     }
   }
@@ -208,7 +215,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
       if (auth.session) {
         await client.join(auth.session.id);
       }
-      await this.onEvent({name: 'websocket.connect', args: [{userId: auth.user.id}], server: false});
+      await this.onEvent({ name: 'websocket.connect', args: [{ userId: auth.user.id }], server: false });
     } catch (error: Error | any) {
       this.logger.error(`Websocket connection error: ${error}`, error?.stack);
       client.emit('error', 'unauthorized');
@@ -221,30 +228,8 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     await client.leave(client.nsp.name);
   }
 
-  private addHandler<T extends EmitEvent>(item: Item<T>): void {
-    const event = item.event;
-
-    if (!this.emitHandlers[event]) {
-      this.emitHandlers[event] = [];
-    }
-
-    this.emitHandlers[event].push(item);
-  }
-
   emit<T extends EmitEvent>(event: T, ...args: ArgsOf<T>): Promise<void> {
-    return this.onEvent({name: event, args, server: false});
-  }
-
-  private async onEvent<T extends EmitEvent>(event: { name: T; args: ArgsOf<T>; server: boolean }): Promise<void> {
-    const handlers = this.emitHandlers[event.name] || [];
-    for (const {handler, server} of handlers) {
-      // exclude handlers that ignore server events
-      if (!server && event.server) {
-        continue;
-      }
-
-      await handler(...event.args);
-    }
+    return this.onEvent({ name: event, args, server: false });
   }
 
   clientSend<T extends keyof ClientEventMap>(event: T, room: string, ...data: ClientEventMap[T]) {
@@ -262,6 +247,28 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
 
   setAuthFn(fn: (client: Socket) => Promise<AuthDto>) {
     this.authFn = fn;
+  }
+
+  private addHandler<T extends EmitEvent>(item: Item<T>): void {
+    const event = item.event;
+
+    if (!this.emitHandlers[event]) {
+      this.emitHandlers[event] = [];
+    }
+
+    this.emitHandlers[event].push(item);
+  }
+
+  private async onEvent<T extends EmitEvent>(event: { name: T; args: ArgsOf<T>; server: boolean }): Promise<void> {
+    const handlers = this.emitHandlers[event.name] || [];
+    for (const { handler, server } of handlers) {
+      // exclude handlers that ignore server events
+      if (!server && event.server) {
+        continue;
+      }
+
+      await handler(...event.args);
+    }
   }
 
   private async authenticate(client: Socket) {

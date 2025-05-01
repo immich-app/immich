@@ -221,27 +221,6 @@ export class AssetMediaService extends BaseService {
     });
   }
 
-  async getPlaylist(auth: AuthDto, id: string, secret: string): Promise<string> {
-    await this.requireAccess({auth, permission: Permission.ASSET_VIEW, ids: [id]});
-    const asset = await this.findOrFail(id);
-
-    if (asset.type !== AssetType.VIDEO) {
-      throw new BadRequestException('Asset is not a video');
-    }
-
-    const filepath = asset.originalPath;
-    await this.eventRepository.emit('media.liveTranscode', {id, path: filepath});
-    return this.mediaRepository.getPlaylist(id, secret);
-  }
-
-  playbackPart(id: string): Promise<ImmichFileResponse> {
-    return Promise.resolve(new ImmichFileResponse({
-      path: `${id}`,
-      contentType: 'video/mp4',
-      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
-    }));
-  }
-
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.requireAccess({auth, permission: Permission.ASSET_VIEW, ids: [id]});
 

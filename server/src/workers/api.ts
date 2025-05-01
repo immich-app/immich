@@ -23,6 +23,7 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
+  app.enableCors();
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
 

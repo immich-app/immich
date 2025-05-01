@@ -36,6 +36,7 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
+import { TranscodingRepository } from 'src/repositories/transcoding.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
@@ -79,6 +80,7 @@ export const repositories = [
   TagRepository,
   TelemetryRepository,
   TrashRepository,
+  TranscodingRepository,
   UserRepository,
   ViewRepository,
   VersionHistoryRepository,

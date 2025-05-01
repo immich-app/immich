@@ -3,8 +3,21 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class PartParamDto {
   @IsNotEmpty()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
+  @IsString()
+  secret!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  quality!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
+}
+
+export class PlaylistParamDto {
+  @IsNotEmpty()
+  @IsString()
   secret!: string;
 
   @IsNotEmpty()

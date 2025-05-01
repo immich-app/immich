@@ -1,4 +1,4 @@
-import { CronExpression } from '@nestjs/schedule';
+import {CronExpression} from '@nestjs/schedule';
 import {
   AudioCodec,
   Colorspace,
@@ -12,7 +12,7 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { ConcurrentQueueName, ImageOptions } from 'src/types';
+import {ConcurrentQueueName, ImageOptions} from 'src/types';
 
 export interface SystemConfig {
   backup: {
@@ -47,12 +47,27 @@ export interface SystemConfig {
   };
   liveFfmpeg: {
     enabled: boolean;
+    crf: number;
     threads: number;
     preset: string;
+    targetVideoCodec: VideoCodec;
+    acceptedVideoCodecs: VideoCodec[];
+    targetAudioCodec: AudioCodec;
+    acceptedAudioCodecs: AudioCodec[];
+    acceptedContainers: VideoContainer[];
+    targetResolution: string;
+    maxBitrate: string;
+    bframes: number;
+    refs: number;
+    gopSize: number;
+    temporalAQ: boolean;
+    cqMode: CQMode;
+    twoPass: boolean;
     preferredHwDevice: string;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;
     accelDecode: boolean;
+    tonemap: ToneMapping;
   };
   job: Record<ConcurrentQueueName, { concurrency: number }>;
   logging: {
@@ -205,12 +220,27 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   liveFfmpeg: {
     enabled: true,
-    accelDecode: false,
-    accel: TranscodeHWAccel.DISABLED,
-    preferredHwDevice: 'auto',
+    crf: 23,
     threads: 0,
-    preset: 'veryfast',
-    transcode: TranscodePolicy.ALL,
+    preset: 'ultrafast',
+    targetVideoCodec: VideoCodec.H264,
+    acceptedVideoCodecs: [VideoCodec.H264],
+    targetAudioCodec: AudioCodec.AAC,
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS, AudioCodec.PCMS16LE],
+    acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
+    targetResolution: '720',
+    maxBitrate: '0',
+    bframes: -1,
+    refs: 0,
+    gopSize: 0,
+    temporalAQ: false,
+    cqMode: CQMode.AUTO,
+    twoPass: false,
+    preferredHwDevice: 'auto',
+    transcode: TranscodePolicy.REQUIRED,
+    tonemap: ToneMapping.HABLE,
+    accel: TranscodeHWAccel.DISABLED,
+    accelDecode: false,
   },
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -41,8 +42,7 @@ import {AssetMediaService} from 'src/services/asset-media.service';
 import {UploadFiles} from 'src/types';
 import {sendFile} from 'src/utils/file';
 import {FileNotEmptyValidator, UUIDParamDto} from 'src/validation';
-import {PartParamDto} from 'src/dtos/video.dto';
-import {JwtService} from '@nestjs/jwt';
+import {TranscodingService} from 'src/services/transcofing.service';
 
 @ApiTags('Assets')
 @Controller(RouteKey.ASSET)
@@ -50,8 +50,9 @@ export class AssetMediaController {
   constructor(
     private logger: LoggingRepository,
     private service: AssetMediaService,
-    private jwtService: JwtService,
-  ) {}
+    private transcodingService: TranscodingService,
+  ) {
+  }
 
   @Post()
   @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
@@ -61,15 +62,15 @@ export class AssetMediaController {
     description: 'sha1 checksum that can be used for duplicate detection before the file is uploaded',
     required: false,
   })
-  @ApiBody({description: 'Asset Upload Information', type: AssetMediaCreateDto})
-  @Authenticated({sharedLink: true})
+  @ApiBody({ description: 'Asset Upload Information', type: AssetMediaCreateDto })
+  @Authenticated({ sharedLink: true })
   async uploadAsset(
     @Auth() auth: AuthDto,
-    @UploadedFiles(new ParseFilePipe({validators: [new FileNotEmptyValidator(['assetData'])]})) files: UploadFiles,
+    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body() dto: AssetMediaCreateDto,
-    @Res({passthrough: true}) res: Response,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<AssetMediaResponseDto> {
-    const {file, sidecarFile} = getFiles(files);
+    const { file, sidecarFile } = getFiles(files);
     const responseDto = await this.service.uploadAsset(auth, dto, file, sidecarFile);
 
     if (responseDto.status === AssetMediaStatus.DUPLICATE) {
@@ -81,10 +82,10 @@ export class AssetMediaController {
 
   @Get(':id/original')
   @FileResponse()
-  @Authenticated({sharedLink: true})
+  @Authenticated({ sharedLink: true })
   async downloadAsset(
     @Auth() auth: AuthDto,
-    @Param() {id}: UUIDParamDto,
+    @Param() { id }: UUIDParamDto,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
@@ -97,21 +98,21 @@ export class AssetMediaController {
   @Put(':id/original')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
-  @EndpointLifecycle({addedAt: 'v1.106.0'})
+  @EndpointLifecycle({ addedAt: 'v1.106.0' })
   @ApiOperation({
     summary: 'replaceAsset',
     description: 'Replace the asset with new file, without changing its id',
   })
-  @Authenticated({sharedLink: true})
+  @Authenticated({ sharedLink: true })
   async replaceAsset(
     @Auth() auth: AuthDto,
-    @Param() {id}: UUIDParamDto,
-    @UploadedFiles(new ParseFilePipe({validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])]}))
+    @Param() { id }: UUIDParamDto,
+    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
       files: UploadFiles,
     @Body() dto: AssetMediaReplaceDto,
-    @Res({passthrough: true}) res: Response,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<AssetMediaResponseDto> {
-    const {file} = getFiles(files);
+    const { file } = getFiles(files);
     const responseDto = await this.service.replaceAsset(auth, id, dto, file);
     if (responseDto.status === AssetMediaStatus.DUPLICATE) {
       res.status(HttpStatus.OK);
@@ -121,10 +122,10 @@ export class AssetMediaController {
 
   @Get(':id/thumbnail')
   @FileResponse()
-  @Authenticated({sharedLink: true})
+  @Authenticated({ sharedLink: true })
   async viewAsset(
     @Auth() auth: AuthDto,
-    @Param() {id}: UUIDParamDto,
+    @Param() { id }: UUIDParamDto,
     @Query() dto: AssetMediaOptionsDto,
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -132,42 +133,31 @@ export class AssetMediaController {
     await sendFile(res, next, () => this.service.viewThumbnail(auth, id, dto), this.logger);
   }
 
-  @Get(':id/video/playback')
+  @Get(':id/video/playback/')
   @FileResponse()
-  @Authenticated({sharedLink: true})
+  @Authenticated({ sharedLink: true })
   async playAssetVideo(
     @Auth() auth: AuthDto,
-    @Param() {id}: UUIDParamDto,
+    @Param() { id }: UUIDParamDto,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    const {liveFfmpeg} = await this.service.getConfig({withCache: true});
-    if (liveFfmpeg.enabled) {
-      res.contentType('application/x-mpegURL');
-      res.write(await this.service.getPlaylist(auth, id, this.jwtService.sign({id})));
-      res.end();
-    } else {
-      await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
-    }
+    await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
   }
 
-  @Get('/video/:secret/:name')
+  @Get(':id/video/playback/hls')
   @FileResponse()
-  @Authenticated({sharedLink: true})
-  async getVideoPart(
-    @Param() { secret, name }: PartParamDto,
+  @Authenticated({ sharedLink: true })
+  async streamAssetVideo(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
     @Res() res: Response,
-    @Next() next: NextFunction,
   ) {
-    const {liveFfmpeg} = await this.service.getConfig({withCache: true});
+    const { liveFfmpeg } = await this.service.getConfig({ withCache: true });
     if (liveFfmpeg.enabled) {
-      const data = await this.jwtService.verifyAsync(secret);
-      if (data['id']) {
-        await sendFile(res, next, () => this.service.playbackPart(data['id']), this.logger);
-      }
+      res.redirect(await this.transcodingService.getPlaylistUrl(auth, id));
     } else {
-      res.statusCode = 403;
-      next();
+      throw new BadRequestException('HLS is not enabled on this server');
     }
   }
 

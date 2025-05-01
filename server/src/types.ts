@@ -105,6 +105,10 @@ export interface VideoStreamInfo {
   isHDR: boolean;
   bitrate: number;
   pixelFormat: string;
+  codecTag?: string;
+  profile?: string;
+  fps: number;
+  level: number;
 }
 
 export interface AudioStreamInfo {

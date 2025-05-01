@@ -1,13 +1,13 @@
-import {Injectable} from '@nestjs/common';
-import {exiftool} from 'exiftool-vendored';
-import ffmpeg, {FfprobeData} from 'fluent-ffmpeg';
-import {Duration} from 'luxon';
+import { Injectable } from '@nestjs/common';
+import { exiftool } from 'exiftool-vendored';
+import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
-import {Writable} from 'node:stream';
+import { Writable } from 'node:stream';
 import sharp from 'sharp';
-import {ORIENTATION_TO_SHARP_ROTATION} from 'src/constants';
-import {Colorspace, LogLevel} from 'src/enum';
-import {LoggingRepository} from 'src/repositories/logging.repository';
+import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
+import { Colorspace, LogLevel } from 'src/enum';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
@@ -17,15 +17,14 @@ import {
   TranscodeCommand,
   VideoInfo,
 } from 'src/types';
-import {handlePromiseError} from 'src/utils/misc';
-import {JwtService} from '@nestjs/jwt';
+import { handlePromiseError } from 'src/utils/misc';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
 sharp.concurrency(0);
-sharp.cache({files: 0});
+sharp.cache({ files: 0 });
 
 type ProgressEvent = {
   frames: number;
@@ -40,22 +39,6 @@ type ProgressEvent = {
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
-  }
-
-  getPlaylist(id: string, secret: string): string {
-    const playlist = [];
-    playlist.push(
-      "#EXTM3U",
-      "#EXT-X-VERSION:10",
-      "#EXT-X-MEDIA-SEQUENCE:0",
-      "#EXT-X-TARGETDURATION:10",
-      "#EXT-X-SERVER-CONTROL:CAN-BLOCK-RELOAD=YES",
-      "#EXT-X-PART-INF:PART-TARGET=0.33334",
-      "EXT-X-PLAYLIST-TYPE:EVENT",
-      `#EXT-X-MAP:URI=\"${secret}/init.mp4\"`
-    );
-
-    return playlist.join("\n");
   }
 
   async extract(input: string, output: string): Promise<boolean> {
@@ -75,7 +58,7 @@ export class MediaRepository {
   }
 
   decodeImage(input: string, options: DecodeToBufferOptions) {
-    return this.getImageDecodingPipeline(input, options).raw().toBuffer({resolveWithObject: true});
+    return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
   }
 
   async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
@@ -99,7 +82,7 @@ export class MediaRepository {
       .withIccProfile(options.colorspace);
 
     if (!options.raw) {
-      const {angle, flip, flop} = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
+      const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
       pipeline = pipeline.rotate(angle);
       if (flip) {
         pipeline = pipeline.flip();
@@ -114,17 +97,17 @@ export class MediaRepository {
       pipeline = pipeline.extract(options.crop);
     }
 
-    return pipeline.resize(options.size, options.size, {fit: 'outside', withoutEnlargement: true});
+    return pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });
   }
 
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
-    const [{rgbaToThumbHash}, {data, info}] = await Promise.all([
+    const [{ rgbaToThumbHash }, { data, info }] = await Promise.all([
       import('thumbhash'),
       sharp(input, options)
-        .resize(100, 100, {fit: 'inside', withoutEnlargement: true})
+        .resize(100, 100, { fit: 'inside', withoutEnlargement: true })
         .raw()
         .ensureAlpha()
-        .toBuffer({resolveWithObject: true}),
+        .toBuffer({ resolveWithObject: true }),
     ]);
     return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
   }
@@ -147,6 +130,12 @@ export class MediaRepository {
           width: this.parseInt(stream.width),
           codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
           codecType: stream.codec_type,
+          codecTag: stream.codec_tag_string,
+          profile: stream.profile as unknown as string, // In reality this is string like High/Baseline
+          fps: (stream.avg_frame_rate)
+            ? this.parseInt(stream.avg_frame_rate.split('/')[0])
+            : this.parseInt(stream.nb_frames) / this.parseInt(stream.duration),
+          level: this.parseInt(stream.level),
           frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
           rotation: this.parseInt(stream.rotation),
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
@@ -194,7 +183,7 @@ export class MediaRepository {
             .addOptions('-passlogfile', output)
             .on('error', reject)
             .on('end', () => handlePromiseError(fs.unlink(`${output}-0.log`), this.logger))
-            .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, {force: true}), this.logger))
+            .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, { force: true }), this.logger))
             .on('end', () => resolve())
             .run();
         })
@@ -203,19 +192,19 @@ export class MediaRepository {
   }
 
   async getImageDimensions(input: string): Promise<ImageDimensions> {
-    const {width = 0, height = 0} = await sharp(input).metadata();
-    return {width, height};
+    const { width = 0, height = 0 } = await sharp(input).metadata();
+    return { width, height };
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
-    const ffmpegCall = ffmpeg(input, {niceness: 10})
+    const ffmpegCall = ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
       .on('start', (command: string) => this.logger.debug(command))
       .on('error', (error, _, stderr) => this.logger.error(stderr || error));
 
-    const {frameCount, percentInterval} = options.progress;
+    const { frameCount, percentInterval } = options.progress;
     const frameInterval = Math.ceil(frameCount / (100 / percentInterval));
     if (this.logger.isLevelEnabled(LogLevel.DEBUG) && frameCount && frameInterval) {
       let lastProgressFrame: number = 0;
@@ -227,7 +216,7 @@ export class MediaRepository {
         lastProgressFrame = progress.frames;
         const percent = ((progress.frames / frameCount) * 100).toFixed(2);
         const ms = progress.currentFps ? Math.floor((frameCount - progress.frames) / progress.currentFps) * 1000 : 0;
-        const duration = ms ? Duration.fromMillis(ms).rescale().toHuman({unitDisplay: 'narrow'}) : '';
+        const duration = ms ? Duration.fromMillis(ms).rescale().toHuman({ unitDisplay: 'narrow' }) : '';
         const outputText = output instanceof Writable ? 'stream' : output.split('/').pop();
         this.logger.debug(
           `Transcoding ${percent}% done${duration ? `, estimated ${duration} remaining` : ''} for output ${outputText}`,
