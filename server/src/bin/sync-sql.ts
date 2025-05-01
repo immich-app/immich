@@ -72,7 +72,7 @@ class SqlGenerator {
     await rm(this.options.targetDir, { force: true, recursive: true });
     await mkdir(this.options.targetDir);
 
-    process.env.DB_HOSTNAME = 'localhost';
+    process.env.DB_HOSTNAME = process.env.DB_HOSTNAME || 'localhost';
     const { database, cls, otel } = new ConfigRepository().getEnv();
 
     const moduleFixture = await Test.createTestingModule({
