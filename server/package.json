@@ -63,7 +63,7 @@
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
-    "graphile-worker": "^0.16.6",
+    "graphile-worker": "^0.17.0-canary.1fcb2a0",
     "handlebars": "^4.7.8",
     "i18n-iso-countries": "^7.6.0",
     "joi": "^17.10.0",

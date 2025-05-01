@@ -130,7 +130,7 @@ export class JobService extends BaseService {
     return response;
   }
 
-  private async start(name: QueueName, { force }: JobCommandDto): Promise<void> {
+  private async start(name: QueueName, { force }: JobCommandDto): Promise<unknown> {
     const { active } = await this.jobRepository.getJobCounts(name);
     if (active > 0) {
       throw new BadRequestException(`Jobs are already running`);

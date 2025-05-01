@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { ClassConstructor } from 'class-transformer';
-import { makeWorkerUtils, run, Runner, TaskSpec, WorkerUtils } from 'graphile-worker';
+import { AddJobsJobSpec, makeWorkerUtils, run, Runner, TaskSpec, WorkerUtils } from 'graphile-worker';
 import { Kysely } from 'kysely';
 import { DateTime, Duration } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
@@ -178,24 +178,21 @@ export class JobRepository {
     return (this.handlers[name] as JobMapItem).queueName;
   }
 
-  async run({ name, data }: JobItem): Promise<JobStatus> {
+  run({ name, data }: JobItem): Promise<JobStatus> {
     const item = this.handlers[name as JobName];
     if (!item) {
       this.logger.warn(`Skipping unknown job: "${name}"`);
-      return JobStatus.SKIPPED;
+      return Promise.resolve(JobStatus.SKIPPED);
     }
     return item.handler(data);
   }
 
-  async queue(item: JobItem): Promise<void> {
-    // this.logger.log(`Queueing job: ${this.getQueueName(item.name)}, data: ${JSON.stringify(item)}`);
-    await this.workerUtils!.addJob(this.getQueueName(item.name), item, this.getJobOptions(item));
+  queue(item: JobItem): Promise<unknown> {
+    return this.workerUtils!.addJob(this.getQueueName(item.name), item, this.getJobOptions(item));
   }
 
-  async queueAll(items: JobItem[]): Promise<void> {
-    for (const item of items) {
-      await this.queue(item);
-    }
+  queueAll(items: JobItem[]): Promise<unknown> {
+    return this.workerUtils!.addJobs(items.map((item) => this.getJobSpec(item)));
   }
 
   // todo: are we actually generating sql
@@ -278,6 +275,31 @@ export class JobRepository {
   async getQueueStatus(queueName: QueueName): Promise<QueueStatus> {
     const state = await this.systemMetadataRepository.get(SystemMetadataKey.QUEUES_STATE);
     return { paused: state?.[queueName]?.paused ?? false };
+  }
+
+  private getJobSpec(item: JobItem): AddJobsJobSpec {
+    switch (item.name) {
+      case JobName.NOTIFY_ALBUM_UPDATE: {
+        return {
+          identifier: item.name,
+          payload: item.data,
+          jobKey: item.data.id,
+          runAt: item.data?.delay ? new Date(Date.now() + item.data.delay) : undefined,
+        };
+      }
+      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
+        return { identifier: item.name, payload: item.data, jobKey: QueueName.STORAGE_TEMPLATE_MIGRATION };
+      }
+      case JobName.GENERATE_PERSON_THUMBNAIL: {
+        return { identifier: item.name, payload: item.data, priority: 1 };
+      }
+      case JobName.QUEUE_FACIAL_RECOGNITION: {
+        return { identifier: item.name, payload: item.data, jobKey: JobName.QUEUE_FACIAL_RECOGNITION };
+      }
+      default: {
+        return { identifier: item.name, payload: item.data };
+      }
+    }
   }
 
   private getJobOptions(item: JobItem): TaskSpec | undefined {
