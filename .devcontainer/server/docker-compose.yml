@@ -58,5 +58,7 @@ volumes:
   server_node_modules:
   web_node_modules:
   immich:
-  upload-volume:
-  db-volume:
+  # UPLOAD_LOCATION must be set to a absolute path or vol-upload
+  vol-upload:
+  # DB_DATA_LOCATION must be set to a absolute path or vol-database
+  vol-database:

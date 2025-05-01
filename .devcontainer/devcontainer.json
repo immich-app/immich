@@ -40,24 +40,28 @@
     }
   },
   "overrideCommand": true,
+  "initializeCommand": "env",
   "workspaceFolder": "/workspaces/immich",
   "remoteUser": "node",
   "postCreateCommand": "/immich-devcontainer/postCreate.sh",
+  "userEnvProbe": "loginInteractiveShell",
   "remoteEnv": {
     // The location where your uploaded files are stored
     //  If this starts with / or ./, it is a bind mount to a path
-    //  on host. Otherwise, it is a volume mount.
-    "UPLOAD_LOCATION": "${localEnv:UPLOAD_LOCATION|upload-volume}",
+    //  on host. Otherwise, it must be the value "vol-upload"
+    // which is also the default loaded from .env.
+    "UPLOAD_LOCATION": "${localEnv:UPLOAD_LOCATION}",
     //  The location where your database files are stored.
     //  If this starts with / or ./, it is a bind mount to a path
-    //  on host. Otherwise, it is a volume mount.
-    "DB_DATA_LOCATION": "${localEnv:DB_DATA_LOCATION|db-volume}",
+    //  on host.  Otherwise, it must be the value "vol-database"
+    // which is also the default loaded from .env.
+    "DB_DATA_LOCATION": "${localEnv:DB_DATA_LOCATION}",
     //  Connection secret for postgres. You should change it to a random password
     //  Please use only the characters `A-Za-z0-9`, without special characters or spaces
-    "DB_PASSWORD": "${localEnv:DB_PASSWORD|postgres}",
+    "DB_PASSWORD": "${localEnv:DB_PASSWORD}",
     //  The database username
-    "DB_USERNAME": "${localEnv:DB_USERNAME|postgres}",
+    "DB_USERNAME": "${localEnv:DB_USERNAME}",
     //  The database name
-    "DB_DATABASE_NAME": "${localEnv:DB_DATABASE_NAME|immich}"
+    "DB_DATABASE_NAME": "${localEnv:DB_DATABASE_NAME}"
   }
 }
