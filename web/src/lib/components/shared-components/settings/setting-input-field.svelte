@@ -1,15 +1,15 @@
 <script lang="ts">
+  import { SettingInputFieldType } from '$lib/constants';
+  import { onMount, tick, type Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import type { FormEventHandler } from 'svelte/elements';
   import { fly } from 'svelte/transition';
   import PasswordField from '../password-field.svelte';
-  import { t } from 'svelte-i18n';
-  import { onMount, tick, type Snippet } from 'svelte';
-  import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
     inputType: SettingInputFieldType;
-    value: string | number;
+    value: string | number | undefined;
     min?: number;
     max?: number;
     step?: string;
@@ -71,7 +71,9 @@
 
 <div class="mb-4 w-full">
   <div class="flex place-items-center gap-1">
-    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={label}>{label}</label>
+    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm min-h-6" for={label}
+      >{label}</label
+    >
     {#if required}
       <div class="text-red-400">*</div>
     {/if}
@@ -99,7 +101,7 @@
       {#if inputType === SettingInputFieldType.COLOR}
         <input
           bind:this={input}
-          class="immich-form-input w-full pb-2 rounded-none mr-1"
+          class="immich-form-input w-full pb-2 rounded-none me-1"
           aria-describedby={description ? `${label}-desc` : undefined}
           aria-labelledby="{label}-label"
           id={label}
@@ -109,7 +111,7 @@
           max={max.toString()}
           {step}
           {required}
-          {value}
+          bind:value
           onchange={handleChange}
           {disabled}
           {title}
@@ -129,7 +131,7 @@
         max={max.toString()}
         {step}
         {required}
-        {value}
+        bind:value
         onchange={handleChange}
         {disabled}
         {title}
@@ -145,7 +147,7 @@
       name={label}
       autocomplete={passwordAutocomplete}
       {required}
-      password={value.toString()}
+      password={(value || '').toString()}
       onInput={(passwordValue) => (value = passwordValue)}
       {disabled}
       {title}

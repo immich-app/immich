@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { savedSearchTerms } from '$lib/stores/search.store';
+  import { searchStore } from '$lib/stores/search.svelte';
   import { mdiMagnify, mdiClose } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
@@ -29,7 +29,7 @@
   }: Props = $props();
 
   let filteredSearchTerms = $derived(
-    $savedSearchTerms.filter((term) => term.toLowerCase().includes(searchQuery.toLowerCase())),
+    searchStore.savedSearchTerms.filter((term) => term.toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
   $effect(() => {
@@ -122,7 +122,7 @@
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
               id={getId(index)}
-              class="relative flex w-full cursor-pointer gap-3 py-3 pl-5 hover:bg-gray-100 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-500/30 dark:hover:bg-gray-500/30"
+              class="relative flex w-full cursor-pointer gap-3 py-3 ps-5 hover:bg-gray-100 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-500/30 dark:hover:bg-gray-500/30"
               onclick={() => handleSelect(savedSearchTerm)}
               role="option"
               tabindex="-1"
@@ -132,7 +132,7 @@
               <Icon path={mdiMagnify} size="1.5em" ariaHidden={true} />
               {savedSearchTerm}
             </div>
-            <div aria-hidden={true} class="absolute right-5 top-0 items-center justify-center py-3">
+            <div aria-hidden={true} class="absolute end-5 top-0 items-center justify-center py-3">
               <CircleIconButton
                 icon={mdiClose}
                 title={$t('remove')}

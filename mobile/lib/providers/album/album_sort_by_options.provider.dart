@@ -84,12 +84,12 @@ enum AlbumSortMode {
   created(0, "library_page_sort_created", _AlbumSortHandlers.created),
   mostRecent(
     2,
-    "library_page_sort_most_recent_photo",
+    "sort_recent",
     _AlbumSortHandlers.mostRecent,
   ),
   mostOldest(
     5,
-    "library_page_sort_most_oldest_photo",
+    "sort_oldest",
     _AlbumSortHandlers.mostOldest,
   );
 

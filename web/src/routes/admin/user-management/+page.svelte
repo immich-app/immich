@@ -155,7 +155,7 @@
           onConfirm={() => (shouldShowPasswordResetSuccess = false)}
           onCancel={() => (shouldShowPasswordResetSuccess = false)}
           hideCancelButton={true}
-          confirmColor="green"
+          confirmColor="success"
         >
           {#snippet promptSnippet()}
             <div class="flex flex-col gap-4">
@@ -180,7 +180,7 @@
         </ConfirmDialog>
       {/if}
 
-      <table class="my-5 w-full text-left">
+      <table class="my-5 w-full text-start">
         <thead
           class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
         >
@@ -209,7 +209,7 @@
                 <td class="hidden sm:block w-3/12 text-ellipsis break-all px-2 text-sm">{immichUser.name}</td>
                 <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
-                    {#if immichUser.quotaSizeInBytes && immichUser.quotaSizeInBytes > 0}
+                    {#if immichUser.quotaSizeInBytes !== null && immichUser.quotaSizeInBytes >= 0}
                       {getByteUnitString(immichUser.quotaSizeInBytes, $locale)}
                     {:else}
                       <Icon path={mdiInfinity} size="16" />

@@ -9,7 +9,9 @@ import 'package:isar/isar.dart';
 class IsarStoreRepository extends IsarDatabaseRepository
     implements IStoreRepository {
   final Isar _db;
-  const IsarStoreRepository(super.db) : _db = db;
+  final validStoreKeys = StoreKey.values.map((e) => e.id).toSet();
+
+  IsarStoreRepository(super.db) : _db = db;
 
   @override
   Future<bool> deleteAll() async {
@@ -21,9 +23,14 @@ class IsarStoreRepository extends IsarDatabaseRepository
 
   @override
   Stream<StoreUpdateEvent> watchAll() {
-    return _db.storeValues.where().watch(fireImmediately: true).asyncExpand(
-          (entities) =>
-              Stream.fromFutures(entities.map((e) async => _toUpdateEvent(e))),
+    return _db.storeValues
+        .filter()
+        .anyOf(validStoreKeys, (query, id) => query.idEqualTo(id))
+        .watch(fireImmediately: true)
+        .asyncExpand(
+          (entities) => Stream.fromFutures(
+            entities.map((e) async => _toUpdateEvent(e)),
+          ),
         );
   }
 
@@ -78,7 +85,9 @@ class IsarStoreRepository extends IsarDatabaseRepository
         const (DateTime) => entity.intValue == null
             ? null
             : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
-        const (UserDto) => await IsarUserRepository(_db).get(entity.intValue!),
+        const (UserDto) => entity.strValue == null
+            ? null
+            : await IsarUserRepository(_db).getByUserId(entity.strValue!),
         _ => null,
       } as T?;
 
@@ -89,8 +98,8 @@ class IsarStoreRepository extends IsarDatabaseRepository
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
       const (UserDto) => (
-          (await IsarUserRepository(_db).update(value as UserDto)).id,
           null,
+          (await IsarUserRepository(_db).update(value as UserDto)).id,
         ),
       _ => throw UnsupportedError(
           "Unsupported primitive type: ${key.type} for key: ${key.name}",

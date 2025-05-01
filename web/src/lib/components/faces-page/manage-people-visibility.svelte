@@ -117,12 +117,12 @@
   <div class="flex items-center">
     <CircleIconButton title={$t('close')} icon={mdiClose} onclick={onClose} />
     <div class="flex gap-2 items-center">
-      <p id={titleId} class="ml-2">{$t('show_and_hide_people')}</p>
+      <p id={titleId} class="ms-2">{$t('show_and_hide_people')}</p>
       <p class="text-sm text-gray-400 dark:text-gray-600">({totalPeopleCount.toLocaleString($locale)})</p>
     </div>
   </div>
   <div class="flex items-center justify-end">
-    <div class="flex items-center md:mr-4">
+    <div class="flex items-center md:me-4">
       <CircleIconButton title={$t('reset_people_visibility')} icon={mdiRestart} onclick={handleResetVisibility} />
       <CircleIconButton title={toggleButton.label} icon={toggleButton.icon} onclick={handleToggleVisibility} />
     </div>
@@ -136,7 +136,7 @@
 
 <div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
   <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
-    {#snippet children({ person, index })}
+    {#snippet children({ person })}
       {@const hidden = personIsHidden[person.id]}
       <button
         type="button"
@@ -146,7 +146,6 @@
         aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
       >
         <ImageThumbnail
-          preload={index < 20}
           {hidden}
           shadow
           url={getPeopleThumbnailUrl(person)}
@@ -155,7 +154,7 @@
           hiddenIconClass="text-white group-hover:text-black transition-colors"
         />
         {#if person.name}
-          <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+          <span class="absolute bottom-2 start-0 w-full select-text px-1 text-center font-medium text-white">
             {person.name}
           </span>
         {/if}

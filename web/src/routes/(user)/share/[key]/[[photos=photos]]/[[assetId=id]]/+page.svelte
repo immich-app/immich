@@ -27,7 +27,6 @@
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
-  let innerWidth: number = $state(0);
 
   const handlePasswordSubmit = async () => {
     try {
@@ -54,8 +53,6 @@
   };
 </script>
 
-<svelte:window bind:innerWidth />
-
 <svelte:head>
   <title>{title}</title>
   <meta name="description" content={description} />
@@ -64,7 +61,7 @@
   <header>
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-        <ImmichLogoSmallLink width={innerWidth} />
+        <ImmichLogoSmallLink />
       {/snippet}
 
       {#snippet trailing()}
@@ -73,7 +70,7 @@
     </ControlAppBar>
   </header>
   <main
-    class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+    class="relative h-dvh overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
   >
     <div class="flex flex-col items-center justify-center mt-20">
       <div class="text-2xl font-bold text-immich-primary dark:text-immich-dark-primary">{$t('password_required')}</div>

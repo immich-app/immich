@@ -81,7 +81,7 @@ class ThemeSetting extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: "theme_setting_theme_title".tr()),
+        SettingsSubTitle(title: "theme".tr()),
         SettingsSwitchListTile(
           valueNotifier: isSystemTheme,
           title: 'theme_setting_system_theme_switch'.tr(),
@@ -90,7 +90,7 @@ class ThemeSetting extends HookConsumerWidget {
         if (currentTheme.value != ThemeMode.system)
           SettingsSwitchListTile(
             valueNotifier: isDarkTheme,
-            title: 'theme_setting_dark_mode_switch'.tr(),
+            title: 'map_settings_dark_mode'.tr(),
             onChanged: onThemeChange,
           ),
         const PrimaryColorSetting(),

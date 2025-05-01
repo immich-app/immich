@@ -1,6 +1,5 @@
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/device_asset.entity.dart';
 import 'package:immich_mobile/interfaces/database.interface.dart';
 
 abstract interface class IAssetRepository implements IDatabaseRepository {
@@ -19,7 +18,7 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
   );
 
   Future<List<Asset>> getAll({
-    required int ownerId,
+    required String ownerId,
     AssetState? state,
     AssetSort? sortBy,
     int? limit,
@@ -29,8 +28,8 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<List<Asset>> getByAlbum(
     Album album, {
-    Iterable<int> notOwnedBy = const [],
-    int? ownerId,
+    Iterable<String> notOwnedBy = const [],
+    String? ownerId,
     AssetState? state,
     AssetSort? sortBy,
   });
@@ -45,14 +44,10 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<List<Asset>> getMatches({
     required List<Asset> assets,
-    required int ownerId,
+    required String ownerId,
     AssetState? state,
     int limit = 100,
   });
-
-  Future<List<DeviceAsset?>> getDeviceAssetsById(List<Object> ids);
-
-  Future<void> upsertDeviceAssets(List<DeviceAsset> deviceAssets);
 
   Future<void> upsertDuplicatedAssets(Iterable<String> duplicatedAssets);
 
@@ -64,10 +59,10 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Stream<Asset?> watchAsset(int id, {bool fireImmediately = false});
 
-  Future<List<Asset>> getTrashAssets(int userId);
+  Future<List<Asset>> getTrashAssets(String userId);
 
-  Future<List<Asset>> getRecentlyAddedAssets(int userId);
-  Future<List<Asset>> getMotionAssets(int userId);
+  Future<List<Asset>> getRecentlyTakenAssets(String userId);
+  Future<List<Asset>> getMotionAssets(String userId);
 }
 
 enum AssetSort { checksum, ownerIdChecksum }

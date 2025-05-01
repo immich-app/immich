@@ -4,7 +4,7 @@
   import { t } from 'svelte-i18n';
 </script>
 
-<section class="flex h-screen w-screen place-content-center place-items-center">
+<section class="flex h-dvh w-dvw place-content-center place-items-center">
   <div class="flex max-w-[350px] flex-col place-items-center gap-10 text-center">
     <div class="flex place-content-center place-items-center">
       <Logo variant="icon" class="text-center" size="landing" />

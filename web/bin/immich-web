@@ -5,4 +5,17 @@ TYPESCRIPT_SDK=/usr/src/open-api/typescript-sdk
 npm --prefix "$TYPESCRIPT_SDK" install
 npm --prefix "$TYPESCRIPT_SDK" run build
 
+
+COUNT=0
+UPSTREAM="${IMMICH_SERVER_URL:-http://immich-server:2283/}"
+until wget --spider --quiet "${UPSTREAM}/api/server/config" > /dev/null 2>&1; do
+    if [ $((COUNT % 10)) -eq 0 ]; then
+      echo "Waiting for $UPSTREAM to start..."
+    fi
+    COUNT=$((COUNT + 1))
+    sleep 1
+done
+
+echo "Connected to $UPSTREAM"
+
 node ./node_modules/.bin/vite dev --host 0.0.0.0 --port 3000

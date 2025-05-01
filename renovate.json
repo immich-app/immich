@@ -1,46 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    "docker:pinDigests"
-  ],
-  "recreateWhen": "never",
-  "minimumReleaseAge": "5 days",
+  "extends": ["local>immich-app/.github:renovate-config"],
   "packageRules": [
-    {
-      "groupName": "@immich/ui",
-      "matchPackageNames": ["@immich/ui"]
-    },
-    {
-      "matchFileNames": [
-        "cli/**",
-        "docs/**",
-        "e2e/**",
-        "open-api/**",
-        "server/**",
-        "web/**"
-      ],
-      "groupName": "typescript-projects",
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "schedule": "on tuesday",
-      "matchPackageNames": [
-        "!exiftool{/,}**",
-        "!reflect-metadata{/,}**",
-        "!node",
-        "!@types/node",
-        "!@mapbox/mapbox-gl-rtl-text"
-      ]
-    },
     {
       "matchFileNames": [
         "machine-learning/**"
       ],
       "groupName": "machine-learning",
       "rangeStrategy": "in-range-only",
-      "schedule": "on tuesday"
     },
     {
       "matchFileNames": [
@@ -51,80 +18,9 @@
         "minor",
         "patch"
       ],
-      "schedule": "on tuesday",
       "addLabels": [
         "📱mobile"
       ]
-    },
-    {
-      "groupName": "flutter",
-      "schedule": "on tuesday",
-      "matchPackageNames": [
-        "/flutter/"
-      ]
-    },
-    {
-      "groupName": "exiftool",
-      "schedule": "on tuesday",
-      "matchPackageNames": [
-        "exiftool{/,}**"
-      ]
-    },
-    {
-      "groupName": "svelte",
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "schedule": "on tuesday",
-      "matchPackageNames": [
-        "@sveltejs{/,}**"
-      ]
-    },
-    {
-      "matchFileNames": [
-        ".github/**"
-      ],
-      "groupName": "github-actions",
-      "schedule": "on tuesday"
-    },
-    {
-      "groupName": "base-image",
-      "minimumReleaseAge": "0",
-      "matchPackageNames": [
-        "ghcr.io/immich-app/base-server{/,}**"
-      ]
-    },
-    {
-      "matchDatasources": [
-        "npm"
-      ],
-      "rangeStrategy": "bump",
-      "groupName": "node",
-      "versioning": "node",
-      "matchPackageNames": [
-        "node",
-        "@types/node"
-      ],
-      "schedule": "on tuesday"
-    },
-    {
-      "groupName": "node",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchPackageNames": [
-        "node"
-      ],
-      "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
-      "versioning": "node",
-      "schedule": "on tuesday"
-    },
-    {
-      "matchPackageNames": [
-        "com.google.guava:guava"
-      ],
-      "versioning": "docker",
-      "schedule": "on tuesday"
     }
   ],
   "ignorePaths": [
@@ -135,9 +31,5 @@
   "ignoreDeps": [
     "http",
     "intl"
-  ],
-  "labels": [
-    "dependencies",
-    "changelog:skip"
   ]
 }

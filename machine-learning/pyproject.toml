@@ -1,5 +1,5 @@
 [project]
-name = "machine-learning"
+name = "immich-ml"
 version = "1.129.0"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
@@ -51,6 +51,8 @@ cpu = ["onnxruntime>=1.15.0,<2"]
 cuda = ["onnxruntime-gpu>=1.17.0,<2"]
 openvino = ["onnxruntime-openvino>=1.17.1,<1.19.0"]
 armnn = ["onnxruntime>=1.15.0,<2"]
+rknn = ["onnxruntime>=1.15.0,<2", "rknn-toolkit-lite2>=2.3.0,<3"]
+rocm = []
 
 [tool.uv]
 compile-bytecode = true
@@ -64,10 +66,10 @@ explicit = true
 onnxruntime-gpu = { index = "cuda12" }
 
 [tool.hatch.build.targets.sdist]
-include = ["app"]
+include = ["immich_ml"]
 
 [tool.hatch.build.targets.wheel]
-include = ["app"]
+include = ["immich_ml"]
 
 [build-system]
 requires = ["hatchling"]

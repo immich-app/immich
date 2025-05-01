@@ -45,17 +45,17 @@ test.describe('Shared Links', () => {
     await page.goto(`/share/${sharedLink.key}`);
     await page.getByRole('heading', { name: 'Test Album' }).waitFor();
     await page.locator(`[data-asset-id="${asset.id}"]`).hover();
-    await page.waitForSelector('#asset-group-by-date svg');
+    await page.waitForSelector('[data-group] svg');
     await page.getByRole('checkbox').click();
     await page.getByRole('button', { name: 'Download' }).click();
-    await page.getByText('DOWNLOADING', { exact: true }).waitFor();
+    await page.waitForEvent('download');
   });
 
   test('download all from shared link', async ({ page }) => {
     await page.goto(`/share/${sharedLink.key}`);
     await page.getByRole('heading', { name: 'Test Album' }).waitFor();
     await page.getByRole('button', { name: 'Download' }).click();
-    await page.getByText('DOWNLOADING', { exact: true }).waitFor();
+    await page.waitForEvent('download');
   });
 
   test('enter password for a shared link', async ({ page }) => {

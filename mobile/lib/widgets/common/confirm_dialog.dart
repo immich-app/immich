@@ -14,7 +14,7 @@ class ConfirmDialog extends StatelessWidget {
     required this.onOk,
     required this.title,
     required this.content,
-    this.cancel = "delete_dialog_cancel",
+    this.cancel = "cancel",
     this.ok = "backup_controller_page_background_battery_info_ok",
   });
 

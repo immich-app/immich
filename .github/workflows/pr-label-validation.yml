@@ -1,8 +1,10 @@
 name: PR Label Validation
 
 on:
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
     types: [opened, labeled, unlabeled, synchronize]
+
+permissions: {}
 
 jobs:
   validate-release-label:
@@ -12,11 +14,11 @@ jobs:
       pull-requests: write
     steps:
       - name: Require PR to have a changelog label
-        uses: mheap/github-action-required-labels@v5
+        uses: mheap/github-action-required-labels@388fd6af37b34cdfe5a23b37060e763217e58b03 # v5
         with:
           mode: exactly
           count: 1
           use_regex: true
-          labels: "changelog:.*"
+          labels: 'changelog:.*'
           add_comment: true
-          message: "Label error. Requires {{errorString}} {{count}} of: {{ provided }}. Found: {{ applied }}. A maintainer will add the required label."
+          message: 'Label error. Requires {{errorString}} {{count}} of: {{ provided }}. Found: {{ applied }}. A maintainer will add the required label.'

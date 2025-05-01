@@ -72,7 +72,7 @@ class PartnerPage extends HookConsumerWidget {
         context: context,
         builder: (BuildContext context) {
           return ConfirmDialog(
-            title: "partner_page_stop_sharing_title",
+            title: "stop_photo_sharing",
             content: "partner_page_stop_sharing_content".tr(args: [u.name]),
             onOk: () => ref.read(partnerServiceProvider).removePartner(u),
           );
@@ -131,7 +131,7 @@ class PartnerPage extends HookConsumerWidget {
                         data: (data) => addNewUsersHandler,
                       ),
                       icon: const Icon(Icons.person_add),
-                      label: const Text("partner_page_add_partner").tr(),
+                      label: const Text("add_partner").tr(),
                     ),
                   ),
                 ],
@@ -151,7 +151,7 @@ class PartnerPage extends HookConsumerWidget {
             onPressed:
                 availableUsers.whenOrNull(data: (data) => addNewUsersHandler),
             icon: const Icon(Icons.person_add),
-            tooltip: "partner_page_add_partner".tr(),
+            tooltip: "add_partner".tr(),
           ),
         ],
       ),

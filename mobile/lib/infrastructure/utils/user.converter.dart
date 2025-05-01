@@ -1,10 +1,12 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:openapi/api.dart';
 
+// TODO: Move to repository once all classes are refactored
 abstract final class UserConverter {
   /// Base user dto used where the complete user object is not required
   static UserDto fromSimpleUserDto(UserResponseDto dto) => UserDto(
-        uid: dto.id,
+        id: dto.id,
         email: dto.email,
         name: dto.name,
         isAdmin: false,
@@ -18,7 +20,7 @@ abstract final class UserConverter {
     UserPreferencesResponseDto? preferenceDto,
   ]) =>
       UserDto(
-        uid: adminDto.id,
+        id: adminDto.id,
         email: adminDto.email,
         name: adminDto.name,
         isAdmin: adminDto.isAdmin,
@@ -34,7 +36,7 @@ abstract final class UserConverter {
       );
 
   static UserDto fromPartnerDto(PartnerResponseDto dto) => UserDto(
-        uid: dto.id,
+        id: dto.id,
         email: dto.email,
         name: dto.name,
         isAdmin: false,

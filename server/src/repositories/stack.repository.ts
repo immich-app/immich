@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
+import { columns } from 'src/database';
+import { AssetStack, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { StackEntity } from 'src/entities/stack.entity';
 import { asUuid } from 'src/utils/database';
 
 export interface StackSearch {
@@ -18,7 +18,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>, withTags = false) 
       .selectFrom('assets')
       .selectAll('assets')
       .innerJoinLateral(
-        (eb) => eb.selectFrom('exif').selectAll('exif').whereRef('exif.assetId', '=', 'assets.id').as('exifInfo'),
+        (eb) => eb.selectFrom('exif').select(columns.exif).whereRef('exif.assetId', '=', 'assets.id').as('exifInfo'),
         (join) => join.onTrue(),
       )
       .$if(withTags, (eb) =>
@@ -26,7 +26,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>, withTags = false) 
           jsonArrayFrom(
             eb
               .selectFrom('tags')
-              .selectAll('tags')
+              .select(columns.tag)
               .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
               .whereRef('tag_asset.assetsId', '=', 'assets.id'),
           ).as('tags'),
@@ -43,17 +43,17 @@ export class StackRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })
-  search(query: StackSearch): Promise<StackEntity[]> {
+  search(query: StackSearch) {
     return this.db
       .selectFrom('asset_stack')
       .selectAll('asset_stack')
       .select(withAssets)
       .where('asset_stack.ownerId', '=', query.ownerId)
       .$if(!!query.primaryAssetId, (eb) => eb.where('asset_stack.primaryAssetId', '=', query.primaryAssetId!))
-      .execute() as unknown as Promise<StackEntity[]>;
+      .execute();
   }
 
-  async create(entity: { ownerId: string; assetIds: string[] }): Promise<StackEntity> {
+  async create(entity: { ownerId: string; assetIds: string[] }) {
     return this.db.transaction().execute(async (tx) => {
       const stacks = await tx
         .selectFrom('asset_stack')
@@ -116,63 +116,36 @@ export class StackRepository {
         .selectAll('asset_stack')
         .select(withAssets)
         .where('id', '=', newRecord.id)
-        .executeTakeFirst() as unknown as Promise<StackEntity>;
+        .executeTakeFirstOrThrow();
     });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
-    const stack = await this.getById(id);
-    if (!stack) {
-      return;
-    }
-
-    const assetIds = stack.assets.map(({ id }) => id);
-
     await this.db.deleteFrom('asset_stack').where('id', '=', asUuid(id)).execute();
-    await this.db
-      .updateTable('assets')
-      .set({ stackId: null, updatedAt: new Date() })
-      .where('id', 'in', assetIds)
-      .execute();
   }
 
   async deleteAll(ids: string[]): Promise<void> {
-    const assetIds = [];
-    for (const id of ids) {
-      const stack = await this.getById(id);
-      if (!stack) {
-        continue;
-      }
-
-      assetIds.push(...stack.assets.map(({ id }) => id));
-    }
-
-    await this.db
-      .updateTable('assets')
-      .set({ updatedAt: new Date(), stackId: null })
-      .where('id', 'in', assetIds)
-      .where('stackId', 'in', ids)
-      .execute();
+    await this.db.deleteFrom('asset_stack').where('id', 'in', ids).execute();
   }
 
-  update(id: string, entity: Updateable<StackEntity>): Promise<StackEntity> {
+  update(id: string, entity: Updateable<AssetStack>) {
     return this.db
       .updateTable('asset_stack')
       .set(entity)
       .where('id', '=', asUuid(id))
       .returningAll('asset_stack')
       .returning((eb) => withAssets(eb, true))
-      .executeTakeFirstOrThrow() as unknown as Promise<StackEntity>;
+      .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string): Promise<StackEntity | undefined> {
+  getById(id: string) {
     return this.db
       .selectFrom('asset_stack')
       .selectAll()
       .select((eb) => withAssets(eb, true))
       .where('id', '=', asUuid(id))
-      .executeTakeFirst() as Promise<StackEntity | undefined>;
+      .executeTakeFirst();
   }
 }

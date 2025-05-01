@@ -100,7 +100,6 @@
                     url={getPeopleThumbnailUrl(person)}
                     altText={person.name}
                     widthStyle="100%"
-                    onClick={() => changePersonToMerge(person)}
                   />
                 </button>
               </div>

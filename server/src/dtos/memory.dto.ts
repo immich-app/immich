@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
+import { Memory } from 'src/database';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryType } from 'src/enum';
-import { MemoryItem } from 'src/types';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class MemoryBaseDto {
@@ -88,7 +88,7 @@ export class MemoryResponseDto {
   assets!: AssetResponseDto[];
 }
 
-export const mapMemory = (entity: MemoryItem): MemoryResponseDto => {
+export const mapMemory = (entity: Memory, auth: AuthDto): MemoryResponseDto => {
   return {
     id: entity.id,
     createdAt: entity.createdAt,
@@ -102,6 +102,6 @@ export const mapMemory = (entity: MemoryItem): MemoryResponseDto => {
     type: entity.type as MemoryType,
     data: entity.data as unknown as MemoryData,
     isSaved: entity.isSaved,
-    assets: ('assets' in entity ? entity.assets : []).map((asset) => mapAsset(asset as AssetEntity)),
+    assets: ('assets' in entity ? entity.assets : []).map((asset) => mapAsset(asset, { auth })),
   };
 };

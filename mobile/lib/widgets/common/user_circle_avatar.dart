@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -27,7 +28,7 @@ class UserCircleAvatar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     bool isDarkTheme = context.themeData.brightness == Brightness.dark;
     final profileImageUrl =
-        '${Store.get(StoreKey.serverEndpoint)}/users/${user.uid}/profile-image?d=${Random().nextInt(1024)}';
+        '${Store.get(StoreKey.serverEndpoint)}/users/${user.id}/profile-image?d=${Random().nextInt(1024)}';
 
     final textIcon = DefaultTextStyle(
       style: TextStyle(

@@ -85,7 +85,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     void handleUserClick(UserDto user) {
       var actions = [];
 
-      if (user.uid == userId) {
+      if (user.id == userId) {
         actions = [
           ListTile(
             leading: const Icon(Icons.exit_to_app_rounded),
@@ -140,7 +140,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
           style: TextStyle(color: context.colorScheme.onSurfaceSecondary),
         ),
         trailing: Text(
-          "shared_album_section_people_owner_label",
+          "owner",
           style: context.textTheme.labelLarge,
         ).tr(),
       );
@@ -170,10 +170,10 @@ class AlbumOptionsPage extends HookConsumerWidget {
                 color: context.colorScheme.onSurfaceSecondary,
               ),
             ),
-            trailing: userId == user.uid || isOwner
+            trailing: userId == user.id || isOwner
                 ? const Icon(Icons.more_horiz_rounded)
                 : const SizedBox(),
-            onTap: userId == user.uid || isOwner
+            onTap: userId == user.id || isOwner
                 ? () => handleUserClick(user)
                 : null,
           );
@@ -195,7 +195,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
           onPressed: () => context.maybePop(null),
         ),
         centerTitle: true,
-        title: Text("translated_text_options".tr()),
+        title: Text("options".tr()),
       ),
       body: ListView(
         children: [
@@ -215,12 +215,12 @@ class AlbumOptionsPage extends HookConsumerWidget {
                   : context.themeData.disabledColor,
               dense: true,
               title: Text(
-                "shared_album_activity_setting_title",
+                "comments_and_likes",
                 style: context.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w500),
               ).tr(),
               subtitle: Text(
-                "shared_album_activity_setting_subtitle",
+                "let_others_respond",
                 style: context.textTheme.labelLarge?.copyWith(
                   color: context.colorScheme.onSurfaceSecondary,
                 ),

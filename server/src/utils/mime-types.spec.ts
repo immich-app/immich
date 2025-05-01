@@ -101,6 +101,20 @@ describe('mimeTypes', () => {
     });
   }
 
+  describe('toExtension', () => {
+    it('should get an extension for a png file', () => {
+      expect(mimeTypes.toExtension('image/png')).toEqual('.png');
+    });
+
+    it('should get an extension for a jpeg file', () => {
+      expect(mimeTypes.toExtension('image/jpeg')).toEqual('.jpg');
+    });
+
+    it('should get an extension from a webp file', () => {
+      expect(mimeTypes.toExtension('image/webp')).toEqual('.webp');
+    });
+  });
+
   describe('profile', () => {
     it('should contain only lowercase mime types', () => {
       const keys = Object.keys(mimeTypes.profile);

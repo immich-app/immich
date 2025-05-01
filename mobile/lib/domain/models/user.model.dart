@@ -1,38 +1,8 @@
-import 'dart:ui';
-
-import 'package:immich_mobile/utils/hash.dart';
-
-enum AvatarColor {
-  // do not change this order or reuse indices for other purposes, adding is OK
-  primary,
-  pink,
-  red,
-  yellow,
-  blue,
-  green,
-  purple,
-  orange,
-  gray,
-  amber;
-
-  Color toColor({bool isDarkTheme = false}) => switch (this) {
-        AvatarColor.primary =>
-          isDarkTheme ? const Color(0xFFABCBFA) : const Color(0xFF4250AF),
-        AvatarColor.pink => const Color.fromARGB(255, 244, 114, 182),
-        AvatarColor.red => const Color.fromARGB(255, 239, 68, 68),
-        AvatarColor.yellow => const Color.fromARGB(255, 234, 179, 8),
-        AvatarColor.blue => const Color.fromARGB(255, 59, 130, 246),
-        AvatarColor.green => const Color.fromARGB(255, 22, 163, 74),
-        AvatarColor.purple => const Color.fromARGB(255, 147, 51, 234),
-        AvatarColor.orange => const Color.fromARGB(255, 234, 88, 12),
-        AvatarColor.gray => const Color.fromARGB(255, 75, 85, 99),
-        AvatarColor.amber => const Color.fromARGB(255, 217, 119, 6),
-      };
-}
+import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 
 // TODO: Rename to User once Isar is removed
 class UserDto {
-  final String uid;
+  final String id;
   final String email;
   final String name;
   final bool isAdmin;
@@ -50,11 +20,10 @@ class UserDto {
   final int quotaUsageInBytes;
   final int quotaSizeInBytes;
 
-  int get id => fastHash(uid);
   bool get hasQuota => quotaSizeInBytes > 0;
 
   const UserDto({
-    required this.uid,
+    required this.id,
     required this.email,
     required this.name,
     required this.isAdmin,
@@ -73,7 +42,6 @@ class UserDto {
   String toString() {
     return '''User: {
 id: $id,
-uid: $uid,
 email: $email,
 name: $name,
 isAdmin: $isAdmin,
@@ -90,7 +58,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
   }
 
   UserDto copyWith({
-    String? uid,
+    String? id,
     String? email,
     String? name,
     bool? isAdmin,
@@ -105,7 +73,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
     int? quotaSizeInBytes,
   }) =>
       UserDto(
-        uid: uid ?? this.uid,
+        id: id ?? this.id,
         email: email ?? this.email,
         name: name ?? this.name,
         isAdmin: isAdmin ?? this.isAdmin,
@@ -124,7 +92,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
   bool operator ==(covariant UserDto other) {
     if (identical(this, other)) return true;
 
-    return other.uid == uid &&
+    return other.id == id &&
         other.updatedAt.isAtSameMomentAs(updatedAt) &&
         other.avatarColor == avatarColor &&
         other.email == email &&
@@ -141,7 +109,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
 
   @override
   int get hashCode =>
-      uid.hashCode ^
+      id.hashCode ^
       name.hashCode ^
       email.hashCode ^
       updatedAt.hashCode ^

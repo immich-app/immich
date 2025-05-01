@@ -4,9 +4,10 @@ import { InjectKysely } from 'nestjs-kysely';
 import { readFile } from 'node:fs/promises';
 import { DB, SystemMetadata as DbSystemMetadata } from 'src/db';
 import { GenerateSql } from 'src/decorators';
-import { SystemMetadata } from 'src/entities/system-metadata.entity';
+import { SystemMetadata } from 'src/types';
 import { SystemMetadataKey } from 'src/enum';
 import { randomBytes } from 'node:crypto';
+
 type Upsert = Insertable<DbSystemMetadata>;
 
 @Injectable()

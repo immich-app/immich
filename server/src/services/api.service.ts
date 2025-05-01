@@ -103,7 +103,9 @@ export class ApiService {
             break;
           }
         }
-      } catch {}
+      } catch {
+        // nothing to do here
+      }
 
       res.type('text/html').header('Cache-Control', 'no-store').send(html);
     };

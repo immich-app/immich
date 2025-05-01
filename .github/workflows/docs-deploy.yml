@@ -1,7 +1,7 @@
 name: Docs deploy
 on:
-  workflow_run:
-    workflows: ["Docs build"]
+  workflow_run: # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
+    workflows: ['Docs build']
     types:
       - completed
 
@@ -9,6 +9,9 @@ jobs:
   checks:
     name: Docs Deploy Checks
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pull-requests: read
     outputs:
       parameters: ${{ steps.parameters.outputs.result }}
       artifact: ${{ steps.get-artifact.outputs.result }}
@@ -17,7 +20,7 @@ jobs:
         run: echo 'The triggering workflow did not succeed' && exit 1
       - name: Get artifact
         id: get-artifact
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
           script: |
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
@@ -35,7 +38,9 @@ jobs:
             return { found: true, id: matchArtifact.id };
       - name: Determine deploy parameters
         id: parameters
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         with:
           script: |
             const eventType = context.payload.workflow_run.event;
@@ -57,7 +62,8 @@ jobs:
             } else if (eventType == "pull_request") {
               let pull_number = context.payload.workflow_run.pull_requests[0]?.number;
               if(!pull_number) {
-                const response = await github.rest.search.issuesAndPullRequests({q: 'repo:${{ github.repository }} is:pr sha:${{ github.event.workflow_run.head_sha }}',per_page: 1,})
+                const {HEAD_SHA} = process.env;
+                const response = await github.rest.search.issuesAndPullRequests({q: `repo:${{ github.repository }} is:pr sha:${HEAD_SHA}`,per_page: 1,})
                 const items = response.data.items
                 if (items.length < 1) {
                   throw new Error("No pull request found for the commit")
@@ -95,30 +101,36 @@ jobs:
     name: Docs Deploy
     runs-on: ubuntu-latest
     needs: checks
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
     if: ${{ fromJson(needs.checks.outputs.artifact).found && fromJson(needs.checks.outputs.parameters).shouldDeploy }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Load parameters
         id: parameters
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        env:
+          PARAM_JSON: ${{ needs.checks.outputs.parameters }}
         with:
           script: |
-            const json = `${{ needs.checks.outputs.parameters }}`;
-            const parameters = JSON.parse(json);
+            const parameters = JSON.parse(process.env.PARAM_JSON);
             core.setOutput("event", parameters.event);
             core.setOutput("name", parameters.name);
             core.setOutput("shouldDeploy", parameters.shouldDeploy);
 
-      - run: |
-          echo "Starting docs deployment for ${{ steps.parameters.outputs.event }} ${{ steps.parameters.outputs.name }}"
-
       - name: Download artifact
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        env:
+          ARTIFACT_JSON: ${{ needs.checks.outputs.artifact }}
         with:
           script: |
-            let artifact = ${{ needs.checks.outputs.artifact }};
+            let artifact = JSON.parse(process.env.ARTIFACT_JSON);
             let download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
@@ -138,12 +150,12 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@v2
+        uses: gruntwork-io/terragrunt-action@9559e51d05873b0ea467c42bbabcb5c067642ccc # v2
         with:
-          tg_version: "0.58.12"
-          tofu_version: "1.7.1"
-          tg_dir: "deployment/modules/cloudflare/docs"
-          tg_command: "apply"
+          tg_version: '0.58.12'
+          tofu_version: '1.7.1'
+          tg_dir: 'deployment/modules/cloudflare/docs'
+          tg_command: 'apply'
 
       - name: Deploy Docs Subdomain Output
         id: docs-output
@@ -153,27 +165,29 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@v2
+        uses: gruntwork-io/terragrunt-action@9559e51d05873b0ea467c42bbabcb5c067642ccc # v2
         with:
-          tg_version: "0.58.12"
-          tofu_version: "1.7.1"
-          tg_dir: "deployment/modules/cloudflare/docs"
-          tg_command: "output -json"
+          tg_version: '0.58.12'
+          tofu_version: '1.7.1'
+          tg_dir: 'deployment/modules/cloudflare/docs'
+          tg_command: 'output -json'
 
       - name: Output Cleaning
         id: clean
+        env:
+          TG_OUTPUT: ${{ steps.docs-output.outputs.tg_action_output }}
         run: |
-          TG_OUT=$(echo '${{ steps.docs-output.outputs.tg_action_output }}' | sed 's|%0A|\n|g ; s|%3C|<|g' | jq -c .)
-          echo "output=$TG_OUT" >> $GITHUB_OUTPUT
+          CLEANED=$(echo "$TG_OUTPUT" | sed 's|%0A|\n|g ; s|%3C|<|g' | jq -c .)
+          echo "output=$CLEANED" >> $GITHUB_OUTPUT
 
       - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/pages-action@f0a1cd58cd66095dee69bfa18fa5efd1dde93bca # v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN_PAGES_UPLOAD }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: ${{ fromJson(steps.clean.outputs.output).pages_project_name.value }}
-          workingDirectory: "docs"
-          directory: "build"
+          workingDirectory: 'docs'
+          directory: 'build'
           branch: ${{ steps.parameters.outputs.name }}
           wranglerVersion: '3'
 
@@ -184,7 +198,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@v2
+        uses: gruntwork-io/terragrunt-action@9559e51d05873b0ea467c42bbabcb5c067642ccc # v2
         with:
           tg_version: '0.58.12'
           tofu_version: '1.7.1'
@@ -192,7 +206,7 @@ jobs:
           tg_command: 'apply'
 
       - name: Comment
-        uses: actions-cool/maintain-one-comment@v3
+        uses: actions-cool/maintain-one-comment@4b2dbf086015f892dcb5e8c1106f5fccd6c1476b # v3
         if: ${{ steps.parameters.outputs.event == 'pr' }}
         with:
           number: ${{ fromJson(needs.checks.outputs.parameters).pr_number }}

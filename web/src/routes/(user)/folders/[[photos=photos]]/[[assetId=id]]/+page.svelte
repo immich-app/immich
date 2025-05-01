@@ -87,7 +87,7 @@
 </script>
 
 {#if assetInteraction.selectionActive}
-  <div class="fixed z-[910] top-0 left-0 w-full">
+  <div class="fixed z-[910] top-0 start-0 w-full">
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -98,7 +98,19 @@
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
       </ButtonContextMenu>
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={(ids, isFavorite) => {
+          if (data.pathAssets && data.pathAssets.length > 0) {
+            for (const id of ids) {
+              const asset = data.pathAssets.find((asset) => asset.id === id);
+              if (asset) {
+                asset.isFavorite = isFavorite;
+              }
+            }
+          }
+        }}
+      />
 
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
@@ -119,9 +131,9 @@
 <UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
     <SideBarSection>
-      <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} />
+      <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
       <section>
-        <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
+        <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiFolderOutline, active: mdiFolder }}
@@ -142,7 +154,13 @@
     <!-- Assets -->
     {#if data.pathAssets && data.pathAssets.length > 0}
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
-        <GalleryViewer assets={data.pathAssets} {assetInteraction} {viewport} showAssetName={true} />
+        <GalleryViewer
+          assets={data.pathAssets}
+          {assetInteraction}
+          {viewport}
+          showAssetName={true}
+          pageHeaderOffset={54}
+        />
       </div>
     {/if}
   </section>

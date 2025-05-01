@@ -3,13 +3,10 @@ import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { JobItem, JobOf } from 'src/types';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class SmartInfoService extends BaseService {
@@ -51,12 +48,6 @@ export class SmartInfoService extends BaseService {
         return;
       }
 
-      const { isPaused } = await this.jobRepository.getQueueStatus(QueueName.SMART_SEARCH);
-      if (!isPaused) {
-        await this.jobRepository.pause(QueueName.SMART_SEARCH);
-      }
-      await this.jobRepository.waitForQueueCompletion(QueueName.SMART_SEARCH);
-
       if (dimSizeChange) {
         this.logger.log(
           `Dimension size of model ${newConfig.machineLearning.clip.modelName} is ${dimSize}, but database expects ${dbDimSize}.`,
@@ -68,9 +59,8 @@ export class SmartInfoService extends BaseService {
         await this.searchRepository.deleteAllSearchEmbeddings();
       }
 
-      if (!isPaused) {
-        await this.jobRepository.resume(QueueName.SMART_SEARCH);
-      }
+      // TODO: A job to reindex all assets should be scheduled, though user
+      // confirmation should probably be requested before doing that.
     });
   }
 
@@ -82,20 +72,22 @@ export class SmartInfoService extends BaseService {
     }
 
     if (force) {
-      await this.searchRepository.deleteAllSearchEmbeddings();
+      const { dimSize } = getCLIPModelInfo(machineLearning.clip.modelName);
+      // in addition to deleting embeddings, update the dimension size in case it failed earlier
+      await this.searchRepository.setDimensionSize(dimSize);
     }
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination, { isVisible: true })
-        : this.assetRepository.getWithout(pagination, WithoutProperty.SMART_SEARCH);
-    });
-
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.SMART_SEARCH, data: { id: asset.id } })),
-      );
+    let queue: JobItem[] = [];
+    const assets = this.assetJobRepository.streamForEncodeClip(force);
+    for await (const asset of assets) {
+      queue.push({ name: JobName.SMART_SEARCH, data: { id: asset.id } });
+      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(queue);
+        queue = [];
+      }
     }
+
+    await this.jobRepository.queueAll(queue);
 
     return JobStatus.SUCCESS;
   }
@@ -107,8 +99,8 @@ export class SmartInfoService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id], { files: true });
-    if (!asset) {
+    const asset = await this.assetJobRepository.getForClipEncoding(id);
+    if (!asset || asset.files.length !== 1) {
       return JobStatus.FAILED;
     }
 
@@ -116,20 +108,21 @@ export class SmartInfoService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { previewFile } = getAssetFiles(asset.files);
-    if (!previewFile) {
-      return JobStatus.FAILED;
-    }
-
     const embedding = await this.machineLearningRepository.encodeImage(
       machineLearning.urls,
-      previewFile.path,
+      asset.files[0].path,
       machineLearning.clip,
     );
 
     if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
       this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
       await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
+    }
+
+    const newConfig = await this.getConfig({ withCache: true });
+    if (machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
+      // Skip the job if the the model has changed since the embedding was generated.
+      return JobStatus.SKIPPED;
     }
 
     await this.searchRepository.upsert(asset.id, embedding);

@@ -41,8 +41,20 @@ describe(AlbumService.name, () => {
     it('gets list of albums for auth user', async () => {
       mocks.album.getOwned.mockResolvedValue([albumStub.empty, albumStub.sharedWithUser]);
       mocks.album.getMetadataForIds.mockResolvedValue([
-        { albumId: albumStub.empty.id, assetCount: 0, startDate: null, endDate: null },
-        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: null, endDate: null },
+        {
+          albumId: albumStub.empty.id,
+          assetCount: 0,
+          startDate: null,
+          endDate: null,
+          lastModifiedAssetTimestamp: null,
+        },
+        {
+          albumId: albumStub.sharedWithUser.id,
+          assetCount: 0,
+          startDate: null,
+          endDate: null,
+          lastModifiedAssetTimestamp: null,
+        },
       ]);
 
       const result = await sut.getAll(authStub.admin, {});
@@ -59,6 +71,7 @@ describe(AlbumService.name, () => {
           assetCount: 1,
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
+          lastModifiedAssetTimestamp: new Date('1970-01-01'),
         },
       ]);
 
@@ -71,7 +84,13 @@ describe(AlbumService.name, () => {
     it('gets list of albums that are shared', async () => {
       mocks.album.getShared.mockResolvedValue([albumStub.sharedWithUser]);
       mocks.album.getMetadataForIds.mockResolvedValue([
-        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: null, endDate: null },
+        {
+          albumId: albumStub.sharedWithUser.id,
+          assetCount: 0,
+          startDate: null,
+          endDate: null,
+          lastModifiedAssetTimestamp: null,
+        },
       ]);
 
       const result = await sut.getAll(authStub.admin, { shared: true });
@@ -83,7 +102,13 @@ describe(AlbumService.name, () => {
     it('gets list of albums that are NOT shared', async () => {
       mocks.album.getNotShared.mockResolvedValue([albumStub.empty]);
       mocks.album.getMetadataForIds.mockResolvedValue([
-        { albumId: albumStub.empty.id, assetCount: 0, startDate: null, endDate: null },
+        {
+          albumId: albumStub.empty.id,
+          assetCount: 0,
+          startDate: null,
+          endDate: null,
+          lastModifiedAssetTimestamp: null,
+        },
       ]);
 
       const result = await sut.getAll(authStub.admin, { shared: false });
@@ -101,6 +126,7 @@ describe(AlbumService.name, () => {
         assetCount: 1,
         startDate: new Date('1970-01-01'),
         endDate: new Date('1970-01-01'),
+        lastModifiedAssetTimestamp: new Date('1970-01-01'),
       },
     ]);
 
@@ -447,6 +473,7 @@ describe(AlbumService.name, () => {
           assetCount: 1,
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
+          lastModifiedAssetTimestamp: new Date('1970-01-01'),
         },
       ]);
 
@@ -468,6 +495,7 @@ describe(AlbumService.name, () => {
           assetCount: 1,
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
+          lastModifiedAssetTimestamp: new Date('1970-01-01'),
         },
       ]);
 
@@ -489,6 +517,7 @@ describe(AlbumService.name, () => {
           assetCount: 1,
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
+          lastModifiedAssetTimestamp: new Date('1970-01-01'),
         },
       ]);
 
@@ -577,7 +606,7 @@ describe(AlbumService.name, () => {
       expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
       expect(mocks.event.emit).toHaveBeenCalledWith('album.update', {
         id: 'album-123',
-        recipientIds: ['admin_id'],
+        recipientId: 'admin_id',
       });
     });
 

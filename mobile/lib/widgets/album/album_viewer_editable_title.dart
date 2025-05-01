@@ -88,7 +88,7 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
           focusColor: Colors.grey[300],
           fillColor: context.scaffoldBackgroundColor,
           filled: titleFocusNode.hasFocus,
-          hintText: 'share_add_title'.tr(),
+          hintText: 'add_a_title'.tr(),
           hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
             fontSize: 28,
           ),

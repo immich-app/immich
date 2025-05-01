@@ -3,6 +3,7 @@ import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { TimelineService } from 'src/services/timeline.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
+import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(TimelineService.name, () => {
@@ -114,15 +115,15 @@ describe(TimelineService.name, () => {
       mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set(['album-id']));
       mocks.asset.getTimeBucket.mockResolvedValue([assetStub.image]);
 
-      const buckets = await sut.getTimeBucket(
-        { ...authStub.admin, sharedLink: { ...authStub.adminSharedLink.sharedLink!, showExif: false } },
-        {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isArchived: true,
-          albumId: 'album-id',
-        },
-      );
+      const auth = factory.auth({ sharedLink: { showExif: false } });
+
+      const buckets = await sut.getTimeBucket(auth, {
+        size: TimeBucketSize.DAY,
+        timeBucket: 'bucket',
+        isArchived: true,
+        albumId: 'album-id',
+      });
+
       expect(buckets).toEqual([expect.objectContaining({ id: 'asset-id' })]);
       expect(buckets[0]).not.toHaveProperty('exif');
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {

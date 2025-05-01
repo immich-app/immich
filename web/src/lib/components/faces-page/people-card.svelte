@@ -20,14 +20,13 @@
 
   interface Props {
     person: PersonResponseDto;
-    preload?: boolean;
     onSetBirthDate: () => void;
     onMergePeople: () => void;
     onHidePerson: () => void;
     onToggleFavorite: () => void;
   }
 
-  let { person, preload = false, onSetBirthDate, onMergePeople, onHidePerson, onToggleFavorite }: Props = $props();
+  let { person, onSetBirthDate, onMergePeople, onHidePerson, onToggleFavorite }: Props = $props();
 
   let showVerticalDots = $state(false);
 </script>
@@ -48,7 +47,6 @@
     <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
-        {preload}
         url={getPeopleThumbnailUrl(person)}
         altText={person.name}
         title={person.name}
@@ -56,7 +54,7 @@
         circle
       />
       {#if person.isFavorite}
-        <div class="absolute top-4 left-4">
+        <div class="absolute top-4 start-4">
           <Icon path={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
@@ -64,7 +62,7 @@
   </a>
 
   {#if showVerticalDots}
-    <div class="absolute top-2 right-2">
+    <div class="absolute top-2 end-2">
       <ButtonContextMenu
         buttonClass="icon-white-drop-shadow focus:opacity-100 {showVerticalDots ? 'opacity-100' : 'opacity-0'}"
         color="opaque"

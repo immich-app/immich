@@ -1,4 +1,7 @@
+import 'package:drift/drift.dart' hide Index;
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
@@ -40,7 +43,7 @@ class User {
   });
 
   static User fromDto(UserDto dto) => User(
-        id: dto.uid,
+        id: dto.id,
         updatedAt: dto.updatedAt,
         email: dto.email,
         name: dto.name,
@@ -56,7 +59,7 @@ class User {
       );
 
   UserDto toDto() => UserDto(
-        uid: id,
+        id: id,
         email: email,
         name: name,
         isAdmin: isAdmin,
@@ -70,4 +73,21 @@ class User {
         quotaUsageInBytes: quotaUsageInBytes,
         quotaSizeInBytes: quotaSizeInBytes,
       );
+}
+
+class UserEntity extends Table with DriftDefaultsMixin {
+  const UserEntity();
+
+  BlobColumn get id => blob()();
+  TextColumn get name => text()();
+  BoolColumn get isAdmin => boolean().withDefault(const Constant(false))();
+  TextColumn get email => text()();
+  TextColumn get profileImagePath => text().nullable()();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  // Quota
+  IntColumn get quotaSizeInBytes => integer().nullable()();
+  IntColumn get quotaUsageInBytes => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

@@ -1,0 +1,5 @@
+Policy: https://github.com/immich-app/immich/blob/main/SECURITY.md
+Contact: mailto:security@immich.app
+Preferred-Languages: en
+Expires: 2026-05-01T23:59:00.000Z
+Canonical: https://immich.app/.well-known/security.txt

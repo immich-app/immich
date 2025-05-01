@@ -23,7 +23,7 @@
         icon={mdiArrowUpLeft}
         title={$t('to_parent')}
         href={getLink(pathSegments.slice(0, -1).join('/'))}
-        class="mr-2"
+        class="me-2"
         padding="2"
         onclick={() => {}}
       />
@@ -45,7 +45,7 @@
           onclick={() => {}}
         />
       </li>
-      {#each pathSegments as segment, index (segment)}
+      {#each pathSegments as segment, index (index)}
         {@const isLastSegment = index === pathSegments.length - 1}
         <li
           class="flex gap-2 items-center font-mono text-sm text-nowrap text-immich-primary dark:text-immich-dark-primary"

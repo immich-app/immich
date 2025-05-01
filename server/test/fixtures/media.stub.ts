@@ -148,6 +148,22 @@ export const probeStub = {
       },
     ],
   }),
+  videoStream4K10Bit: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 2160,
+        width: 3840,
+        codecName: 'h264',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: false,
+        bitrate: 0,
+        pixelFormat: 'yuv420p10le',
+      },
+    ],
+  }),
   videoStreamVertical2160p: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [

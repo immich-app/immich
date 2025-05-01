@@ -4,30 +4,32 @@ on:
   pull_request:
     branches: [main]
 
+permissions: {}
+
 jobs:
   pre-job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       should_run: ${{ steps.found_paths.outputs.i18n == 'true' && github.head_ref != 'chore/translations'}}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
       - id: found_paths
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
           filters: |
             i18n:
               - 'i18n/!(en)**\.json'
-      - name: Debug
-        run: |
-            echo "Should run: ${{ steps.found_paths.outputs.i18n == 'true' && github.head_ref != 'chore/translations'}}"
-            echo "Found i18n paths: ${{ steps.found_paths.outputs.i18n }}"
-            echo "Head ref: ${{ github.head_ref }}"
 
   enforce-lock:
     name: Check Weblate Lock
-    needs: [ pre-job ]
+    needs: [pre-job]
     runs-on: ubuntu-latest
+    permissions: {}
     if: ${{ needs.pre-job.outputs.should_run == 'true' }}
     steps:
       - name: Check weblate lock
@@ -36,7 +38,7 @@ jobs:
             exit 1
           fi
       - name: Find Pull Request
-        uses: juliangruber/find-pull-request-action@v1
+        uses: juliangruber/find-pull-request-action@48b6133aa6c826f267ebd33aa2d29470f9d9e7d0 # v1
         id: find-pr
         with:
           branch: chore/translations
@@ -45,8 +47,9 @@ jobs:
         run: exit 1
   success-check-lock:
     name: Weblate Lock Check Success
-    needs: [ enforce-lock ]
+    needs: [enforce-lock]
     runs-on: ubuntu-latest
+    permissions: {}
     if: always()
     steps:
       - name: Any jobs failed?
@@ -54,4 +57,5 @@ jobs:
         run: exit 1
       - name: All jobs passed or skipped
         if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
         run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"

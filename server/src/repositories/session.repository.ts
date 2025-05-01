@@ -5,7 +5,6 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB, Sessions } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { withUser } from 'src/entities/session.entity';
 import { asUuid } from 'src/utils/database';
 
 export type SessionSearchOptions = { updatedBefore: Date };
@@ -45,9 +44,8 @@ export class SessionRepository {
   getByUserId(userId: string) {
     return this.db
       .selectFrom('sessions')
-      .innerJoinLateral(withUser, (join) => join.onTrue())
+      .innerJoin('users', (join) => join.onRef('users.id', '=', 'sessions.userId').on('users.deletedAt', 'is', null))
       .selectAll('sessions')
-      .select((eb) => eb.fn.toJson('user').as('user'))
       .where('sessions.userId', '=', userId)
       .orderBy('sessions.updatedAt', 'desc')
       .orderBy('sessions.createdAt', 'desc')

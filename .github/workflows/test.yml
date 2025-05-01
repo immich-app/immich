@@ -9,9 +9,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   pre-job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       should_run_web: ${{ steps.found_paths.outputs.web == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
@@ -21,11 +25,15 @@ jobs:
       should_run_ml: ${{ steps.found_paths.outputs.machine-learning == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_e2e_web: ${{ steps.found_paths.outputs.e2e == 'true' || steps.found_paths.outputs.web == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_e2e_server_cli: ${{ steps.found_paths.outputs.e2e == 'true' || steps.found_paths.outputs.server == 'true' || steps.found_paths.outputs.cli == 'true' || steps.should_force.outputs.should_force == 'true' }}
+      should_run_.github: ${{ steps.found_paths.outputs['.github'] == 'true' || steps.should_force.outputs.should_force == 'true' }} # redundant to have should_force but if someone changes the trigger then this won't have to be changed
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - id: found_paths
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
           filters: |
             web:
@@ -45,6 +53,8 @@ jobs:
               - 'machine-learning/**'
             workflow:
               - '.github/workflows/test.yml'
+            .github:
+              - '.github/**'
 
       - name: Check if we should force jobs to run
         id: should_force
@@ -55,16 +65,20 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./server
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './server/.nvmrc'
 
@@ -92,16 +106,20 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_cli == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./cli
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './cli/.nvmrc'
 
@@ -133,16 +151,20 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_cli == 'true' }}
     runs-on: windows-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./cli
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './cli/.nvmrc'
 
@@ -162,21 +184,25 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
-  web-unit-tests:
-    name: Test & Lint Web
+  web-lint:
+    name: Lint Web
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_web == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: mich
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./web
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './web/.nvmrc'
 
@@ -188,7 +214,7 @@ jobs:
         run: npm ci
 
       - name: Run linter
-        run: npm run lint
+        run: npm run lint:p
         if: ${{ !cancelled() }}
 
       - name: Run formatter
@@ -198,6 +224,35 @@ jobs:
       - name: Run svelte checks
         run: npm run check:svelte
         if: ${{ !cancelled() }}
+
+  web-unit-tests:
+    name: Test Web
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_web == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: './web/.nvmrc'
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install
+        run: npm ci
 
       - name: Run tsc
         run: npm run check:typescript
@@ -212,16 +267,20 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./e2e
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './e2e/.nvmrc'
 
@@ -251,16 +310,20 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./server
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './server/.nvmrc'
 
@@ -275,19 +338,25 @@ jobs:
     name: End-to-End Tests (Server & CLI)
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_server_cli == 'true' }}
-    runs-on: mich
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./e2e
+    strategy:
+      matrix:
+        runner: [mich, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
+          persist-credentials: false
           submodules: 'recursive'
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './e2e/.nvmrc'
 
@@ -317,19 +386,25 @@ jobs:
     name: End-to-End Tests (Web)
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_web == 'true' }}
-    runs-on: mich
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./e2e
+    strategy:
+      matrix:
+        runner: [mich, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
+          persist-credentials: false
           submodules: 'recursive'
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './e2e/.nvmrc'
 
@@ -354,15 +429,35 @@ jobs:
         run: npx playwright test
         if: ${{ !cancelled() }}
 
+  success-check-e2e:
+    name: End-to-End Tests Success
+    needs: [e2e-tests-server-cli, e2e-tests-web]
+    permissions: {}
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Any jobs failed?
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
+      - name: All jobs passed or skipped
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
+        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
+
   mobile-unit-tests:
     name: Unit Test Mobile
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_mobile == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
@@ -375,14 +470,19 @@ jobs:
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./machine-learning
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
-      - uses: actions/setup-python@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
         # with:
         #   python-version: 3.11
@@ -392,39 +492,77 @@ jobs:
           uv sync --extra cpu
       - name: Lint with ruff
         run: |
-          uv run ruff check --output-format=github app export
+          uv run ruff check --output-format=github immich_ml
       - name: Check black formatting
         run: |
-          uv run black --check app export
+          uv run black --check immich_ml
       - name: Run mypy type checking
         run: |
-          uv run mypy --strict app/
+          uv run mypy --strict immich_ml/
       - name: Run tests and coverage
         run: |
-          uv run pytest app --cov=app --cov-report term-missing
+          uv run pytest --cov=immich_ml --cov-report term-missing
+
+  github-files-formatting:
+    name: .github Files Formatting
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs['should_run_.github'] == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./.github
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: './.github/.nvmrc'
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run formatter
+        run: npm run format
+        if: ${{ !cancelled() }}
 
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
           ignore_paths: >-
             **/open-api/**
-            **/openapi/**
+            **/openapi**
             **/node_modules/**
 
   generated-api-up-to-date:
     name: OpenAPI Clients
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './server/.nvmrc'
 
@@ -438,7 +576,7 @@ jobs:
         run: make open-api
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
         id: verify-changed-files
         with:
           files: |
@@ -448,14 +586,18 @@ jobs:
 
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated files not up to date!"
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
   generated-typeorm-migrations-up-to-date:
     name: TypeORM Checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       postgres:
         image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
@@ -476,10 +618,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './server/.nvmrc'
 
@@ -490,27 +634,29 @@ jobs:
         run: npm run build
 
       - name: Run existing migrations
-        run: npm run typeorm:migrations:run
+        run: npm run migrations:run
 
       - name: Test npm run schema:reset command works
-        run: npm run typeorm:schema:reset
+        run: npm run schema:reset
 
       - name: Generate new migrations
         continue-on-error: true
-        run: npm run typeorm:migrations:generate ./src/migrations/TestMigration
+        run: npm run migrations:generate TestMigration
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
         id: verify-changed-files
         with:
           files: |
-            server/src/migrations/
+            server/src
       - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated migration files not up to date!"
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
-          cat ./src/migrations/*-TestMigration.ts
+          echo "Changed files: ${CHANGED_FILES}"
+          cat ./src/*-TestMigration.ts
           exit 1
 
       - name: Run SQL generation
@@ -519,7 +665,7 @@ jobs:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
         id: verify-changed-sql-files
         with:
           files: |
@@ -527,9 +673,11 @@ jobs:
 
       - name: Verify SQL files have not changed
         if: steps.verify-changed-sql-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-sql-files.outputs.changed_files }}
         run: |
           echo "ERROR: Generated SQL files not up to date!"
-          echo "Changed files: ${{ steps.verify-changed-sql-files.outputs.changed_files }}"
+          echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
   # mobile-integration-tests:

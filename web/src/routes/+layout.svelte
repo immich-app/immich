@@ -3,25 +3,24 @@
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
-  import Error from '$lib/components/error.svelte';
+  import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
-  import { Theme } from '$lib/constants';
-  import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
-  import { copyToClipboard, setKey } from '$lib/utils';
-  import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
-  import { run } from 'svelte/legacy';
+  import { copyToClipboard } from '$lib/utils';
+  import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { setTranslations } from '@immich/ui';
-  import '../app.css';
+  import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { run } from 'svelte/legacy';
+  import '../app.css';
 
   interface Props {
     children?: Snippet;
@@ -39,24 +38,6 @@
 
   let showNavigationLoadingBar = $state(false);
 
-  const changeTheme = (theme: ThemeSetting) => {
-    if (theme.system) {
-      theme.value = globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
-    }
-
-    if (theme.value === Theme.LIGHT) {
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.documentElement.classList.add('dark');
-    }
-  };
-
-  const handleChangeTheme = () => {
-    if ($colorTheme.system) {
-      handleToggleTheme();
-    }
-  };
-
   const getMyImmichLink = () => {
     return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
   };
@@ -65,20 +46,11 @@
     const element = document.querySelector('#stencil');
     element?.remove();
     // if the browser theme changes, changes the Immich theme too
-    globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
   });
 
-  onDestroy(() => {
-    document.removeEventListener('change', handleChangeTheme);
-  });
-
-  if (isSharedLinkRoute(page.route?.id)) {
-    setKey(page.params.key);
-  }
+  eventManager.emit('app.init');
 
   beforeNavigate(({ from, to }) => {
-    setKey(isSharedLinkRoute(to?.route.id) ? to?.params?.key : undefined);
-
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
       return;
     }
@@ -87,9 +59,6 @@
 
   afterNavigate(() => {
     showNavigationLoadingBar = false;
-  });
-  run(() => {
-    changeTheme($colorTheme);
   });
   run(() => {
     if ($user) {
@@ -141,7 +110,7 @@
 />
 
 {#if page.data.error}
-  <Error error={page.data.error}></Error>
+  <ErrorLayout error={page.data.error}></ErrorLayout>
 {:else}
   {@render children?.()}
 {/if}

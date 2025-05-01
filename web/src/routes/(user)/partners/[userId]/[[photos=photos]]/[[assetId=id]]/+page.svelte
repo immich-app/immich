@@ -21,7 +21,9 @@
 
   let { data }: Props = $props();
 
-  const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false, withStacked: true });
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ userId: data.partner.id, isArchived: false, withStacked: true }));
+  onDestroy(() => assetStore.destroy());
   const assetInteraction = new AssetInteraction();
 
   const handleEscape = () => {
@@ -30,13 +32,9 @@
       return;
     }
   };
-
-  onDestroy(() => {
-    assetStore.destroy();
-  });
 </script>
 
-<main class="grid h-screen bg-immich-bg pt-18 dark:bg-immich-dark-bg">
+<main class="grid h-dvh bg-immich-bg pt-18 dark:bg-immich-dark-bg">
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}

@@ -8,13 +8,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/filter_bottom_sheet_scaffold.dart';
@@ -33,7 +33,7 @@ class SearchPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textSearchType = useState<TextSearchType>(TextSearchType.context);
-    final searchHintText = useState<String>('contextual_search'.tr());
+    final searchHintText = useState<String>('sunrise_on_the_beach'.tr());
     final textSearchController = useTextEditingController();
     final filter = useState<SearchFilter>(
       SearchFilter(
@@ -48,6 +48,8 @@ class SearchPage extends HookConsumerWidget {
               isFavorite: false,
             ),
         mediaType: prefilter?.mediaType ?? AssetType.other,
+        language:
+            "${context.locale.languageCode}-${context.locale.countryCode}",
       ),
     );
 
@@ -306,9 +308,9 @@ class SearchPage extends HookConsumerWidget {
           end: filter.value.date.takenBefore ?? lastDate,
         ),
         helpText: 'search_filter_date_title'.tr(),
-        cancelText: 'action_common_cancel'.tr(),
-        confirmText: 'action_common_select'.tr(),
-        saveText: 'action_common_save'.tr(),
+        cancelText: 'cancel'.tr(),
+        confirmText: 'select'.tr(),
+        saveText: 'save'.tr(),
         errorFormatText: 'invalid_date_format'.tr(),
         errorInvalidText: 'invalid_date'.tr(),
         fieldStartHintText: 'start_date'.tr(),
@@ -370,10 +372,10 @@ class SearchPage extends HookConsumerWidget {
 
         mediaTypeCurrentFilterWidget.value = Text(
           assetType == AssetType.image
-              ? 'search_filter_media_type_image'.tr()
+              ? 'image'.tr()
               : assetType == AssetType.video
-                  ? 'search_filter_media_type_video'.tr()
-                  : 'search_filter_media_type_all'.tr(),
+                  ? 'video'.tr()
+                  : 'all'.tr(),
           style: context.textTheme.labelLarge,
         );
       }
@@ -425,7 +427,7 @@ class SearchPage extends HookConsumerWidget {
                 ),
               );
               if (value) {
-                filterText.add('search_filter_display_option_archive'.tr());
+                filterText.add('archive'.tr());
               }
               break;
             case DisplayOption.favorite:
@@ -435,7 +437,7 @@ class SearchPage extends HookConsumerWidget {
                 ),
               );
               if (value) {
-                filterText.add('search_filter_display_option_favorite'.tr());
+                filterText.add('favorite'.tr());
               }
               break;
           }
@@ -468,7 +470,7 @@ class SearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         child: FilterBottomSheetScaffold(
-          title: 'search_filter_display_options_title'.tr(),
+          title: 'display_options'.tr(),
           onSearch: search,
           onClear: handleClear,
           child: DisplayOptionPicker(
@@ -561,7 +563,7 @@ class SearchPage extends HookConsumerWidget {
                   child: ListTile(
                     leading: const Icon(Icons.image_search_rounded),
                     title: Text(
-                      'search_filter_contextual'.tr(),
+                      'search_by_context'.tr(),
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: textSearchType.value == TextSearchType.context
@@ -574,7 +576,7 @@ class SearchPage extends HookConsumerWidget {
                   ),
                   onPressed: () {
                     textSearchType.value = TextSearchType.context;
-                    searchHintText.value = 'contextual_search'.tr();
+                    searchHintText.value = 'sunrise_on_the_beach'.tr();
                   },
                 ),
                 MenuItemButton(
@@ -594,14 +596,14 @@ class SearchPage extends HookConsumerWidget {
                   ),
                   onPressed: () {
                     textSearchType.value = TextSearchType.filename;
-                    searchHintText.value = 'filename_search'.tr();
+                    searchHintText.value = 'file_name_or_extension'.tr();
                   },
                 ),
                 MenuItemButton(
                   child: ListTile(
                     leading: const Icon(Icons.text_snippet_outlined),
                     title: Text(
-                      'search_filter_description'.tr(),
+                      'search_by_description'.tr(),
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color:
@@ -616,7 +618,7 @@ class SearchPage extends HookConsumerWidget {
                   ),
                   onPressed: () {
                     textSearchType.value = TextSearchType.description;
-                    searchHintText.value = 'description_search'.tr();
+                    searchHintText.value = 'search_by_description_example'.tr();
                   },
                 ),
               ],
@@ -640,51 +642,21 @@ class SearchPage extends HookConsumerWidget {
               end: Alignment.bottomRight,
             ),
           ),
-          child: TextField(
+          child: SearchField(
+            hintText: searchHintText.value,
             key: const Key('search_text_field'),
             controller: textSearchController,
-            decoration: InputDecoration(
-              contentPadding: prefilter != null
-                  ? const EdgeInsets.only(left: 24)
-                  : const EdgeInsets.all(8),
-              prefixIcon: prefilter != null
-                  ? null
-                  : Icon(
-                      getSearchPrefixIcon(),
-                      color: context.colorScheme.primary,
-                    ),
-              hintText: searchHintText.value,
-              hintStyle: context.textTheme.bodyLarge?.copyWith(
-                color: context.themeData.colorScheme.onSurfaceSecondary,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.surfaceDim,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.surfaceContainer,
-                ),
-              ),
-              disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.surfaceDim,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.primary.withAlpha(100),
-                ),
-              ),
-            ),
+            contentPadding: prefilter != null
+                ? const EdgeInsets.only(left: 24)
+                : const EdgeInsets.all(8),
+            prefixIcon: prefilter != null
+                ? null
+                : Icon(
+                    getSearchPrefixIcon(),
+                    color: context.colorScheme.primary,
+                  ),
             onSubmitted: handleTextSubmitted,
             focusNode: ref.watch(searchInputFocusProvider),
-            onTapOutside: (_) => ref.read(searchInputFocusProvider).unfocus(),
           ),
         ),
       ),
@@ -701,25 +673,25 @@ class SearchPage extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   SearchFilterChip(
-                    icon: Icons.people_alt_rounded,
+                    icon: Icons.people_alt_outlined,
                     onTap: showPeoplePicker,
-                    label: 'search_filter_people'.tr(),
+                    label: 'people'.tr(),
                     currentFilter: peopleCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.location_pin,
+                    icon: Icons.location_on_outlined,
                     onTap: showLocationPicker,
                     label: 'search_filter_location'.tr(),
                     currentFilter: locationCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.camera_alt_rounded,
+                    icon: Icons.camera_alt_outlined,
                     onTap: showCameraPicker,
-                    label: 'search_filter_camera'.tr(),
+                    label: 'camera'.tr(),
                     currentFilter: cameraCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.date_range_rounded,
+                    icon: Icons.date_range_outlined,
                     onTap: showDatePicker,
                     label: 'search_filter_date'.tr(),
                     currentFilter: dateRangeCurrentFilterWidget.value,
@@ -743,7 +715,7 @@ class SearchPage extends HookConsumerWidget {
           ),
           if (isSearching.value)
             const Expanded(
-              child: Center(child: CircularProgressIndicator.adaptive()),
+              child: Center(child: CircularProgressIndicator()),
             )
           else
             SearchResultGrid(
@@ -796,6 +768,7 @@ class SearchResultGrid extends StatelessWidget {
             editEnabled: true,
             favoriteEnabled: true,
             stackEnabled: false,
+            dragScrollLabelEnabled: false,
             emptyIndicator: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: !isSearching
@@ -870,10 +843,10 @@ class QuickLinkList extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         children: [
           QuickLink(
-            title: 'recently_added'.tr(),
+            title: 'recently_taken'.tr(),
             icon: Icons.schedule_outlined,
             isTop: true,
-            onTap: () => context.pushRoute(const RecentlyAddedRoute()),
+            onTap: () => context.pushRoute(const RecentlyTakenRoute()),
           ),
           QuickLink(
             title: 'videos'.tr(),

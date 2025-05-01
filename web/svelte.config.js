@@ -9,6 +9,9 @@ process.env.PUBLIC_IMMICH_PAY_HOST = process.env.PUBLIC_IMMICH_PAY_HOST || 'http
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
+  compilerOptions: {
+    runes: true,
+  },
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter({

@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
@@ -8,12 +9,11 @@ import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
-import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum';
 import { UserFindOptions } from 'src/repositories/user.repository';
+import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
+import { JobOf, UserMetadataItem } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
@@ -50,9 +50,10 @@ export class UserService extends BaseService {
       }
     }
 
-    const update: Partial<UserEntity> = {
+    const update: Updateable<UserTable> = {
       email: dto.email,
       name: dto.name,
+      avatarColor: dto.avatarColor,
     };
 
     if (dto.password) {
@@ -68,18 +69,16 @@ export class UserService extends BaseService {
 
   async getMyPreferences(auth: AuthDto): Promise<UserPreferencesResponseDto> {
     const metadata = await this.userRepository.getMetadata(auth.user.id);
-    const preferences = getPreferences(auth.user.email, metadata);
-    return mapPreferences(preferences);
+    return mapPreferences(getPreferences(metadata));
   }
 
   async updateMyPreferences(auth: AuthDto, dto: UserPreferencesUpdateDto) {
     const metadata = await this.userRepository.getMetadata(auth.user.id);
-    const current = getPreferences(auth.user.email, metadata);
-    const updated = mergePreferences(current, dto);
+    const updated = mergePreferences(getPreferences(metadata), dto);
 
     await this.userRepository.upsertMetadata(auth.user.id, {
       key: UserMetadataKey.PREFERENCES,
-      value: getPreferencesPartial(auth.user, updated),
+      value: getPreferencesPartial(updated),
     });
 
     return mapPreferences(updated);
@@ -135,7 +134,7 @@ export class UserService extends BaseService {
     const metadata = await this.userRepository.getMetadata(auth.user.id);
 
     const license = metadata.find(
-      (item): item is UserMetadataEntity<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
+      (item): item is UserMetadataItem<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
     );
     if (!license) {
       throw new NotFoundException();
@@ -188,15 +187,9 @@ export class UserService extends BaseService {
 
   @OnJob({ name: JobName.USER_DELETE_CHECK, queue: QueueName.BACKGROUND_TASK })
   async handleUserDeleteCheck(): Promise<JobStatus> {
-    const users = await this.userRepository.getDeletedUsers();
     const config = await this.getConfig({ withCache: false });
-    await this.jobRepository.queueAll(
-      users.flatMap((user) =>
-        this.isReadyForDeletion(user, config.user.deleteDelay)
-          ? [{ name: JobName.USER_DELETION, data: { id: user.id } }]
-          : [],
-      ),
-    );
+    const users = await this.userRepository.getDeletedAfter(DateTime.now().minus({ days: config.user.deleteDelay }));
+    await this.jobRepository.queueAll(users.map((user) => ({ name: JobName.USER_DELETION, data: { id: user.id } })));
     return JobStatus.SUCCESS;
   }
 
@@ -236,7 +229,7 @@ export class UserService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private isReadyForDeletion(user: UserEntity, deleteDelay: number): boolean {
+  private isReadyForDeletion(user: { id: string; deletedAt?: Date | null }, deleteDelay: number): boolean {
     if (!user.deletedAt) {
       return false;
     }
