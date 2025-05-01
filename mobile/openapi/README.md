@@ -100,7 +100,6 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | getAllUserAssetsByDeviceId
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | 
 *AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | 
-*AssetsApi* | [**getMemoryLane**](doc//AssetsApi.md#getmemorylane) | **GET** /assets/memory-lane | 
 *AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | 
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | 
 *AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | replaceAsset
@@ -353,7 +352,6 @@ Class | Method | HTTP request | Description
  - [MemoriesResponse](doc//MemoriesResponse.md)
  - [MemoriesUpdate](doc//MemoriesUpdate.md)
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
- - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
  - [MemoryResponseDto](doc//MemoryResponseDto.md)
  - [MemoryType](doc//MemoryType.md)
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
