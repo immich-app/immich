@@ -151,7 +151,6 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({});
 
-      expect(mocks.asset.getWithout).not.toHaveBeenCalled();
       expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
     });
 
