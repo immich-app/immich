@@ -37,7 +37,6 @@
 
   onDestroy(() => {
     abortController?.abort();
-    abortController?.abort();
     assetViewingStore.showAssetViewer(false);
   });
 
