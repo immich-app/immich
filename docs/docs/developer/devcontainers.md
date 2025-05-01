@@ -1,10 +1,9 @@
 ---
+title: Devcontainers
 sidebar_position: 3
 ---
 
-## Dev Containers
-
-### Getting started with Dev Containers
+## Getting started with Dev Containers
 
 The Dev Container is a fully featured dev environment. It is a portable way, using docker containers, to set up a dev environment. With a single click, you can get started with a Immich environment, on Mac, Linux or Windows or the cloud, like GitHub codespaces.
 
