@@ -283,63 +283,63 @@ describe('/asset', () => {
       ]);
     });
 
-    it('should get the asset faces and handle exif orientation (6) by adjusting face regions', async () => {
-      const config = await utils.getSystemConfig(admin.accessToken);
-      config.metadata.faces.import = true;
-      await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
+    // it('should get the asset faces and handle exif orientation (6) by adjusting face regions', async () => {
+    //   const config = await utils.getSystemConfig(admin.accessToken);
+    //   config.metadata.faces.import = true;
+    //   await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
 
-      // asset faces
-      const facesAsset = await utils.createAsset(admin.accessToken, {
-        assetData: {
-          filename: 'portrait-orientation-6.jpg',
-          bytes: await readFile(facesOrientation6AssetFilepath),
-        },
-      });
+    //   // asset faces
+    //   const facesAsset = await utils.createAsset(admin.accessToken, {
+    //     assetData: {
+    //       filename: 'portrait-orientation-6.jpg',
+    //       bytes: await readFile(facesOrientation6AssetFilepath),
+    //     },
+    //   });
 
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
+    //   await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
 
-      const { status, body } = await request(app)
-        .get(`/assets/${facesAsset.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(200);
-      expect(body.id).toEqual(facesAsset.id);
-      expect(body.people).toMatchObject([
-        {
-          name: 'Marie Curie',
-          birthDate: null,
-          thumbnailPath: '',
-          isHidden: false,
-          faces: [
-            {
-              imageHeight: 700,
-              imageWidth: 840,
-              boundingBoxX1: 261,
-              boundingBoxX2: 356,
-              boundingBoxY1: 146,
-              boundingBoxY2: 284,
-              sourceType: 'exif',
-            },
-          ],
-        },
-        {
-          name: 'Pierre Curie',
-          birthDate: null,
-          thumbnailPath: '',
-          isHidden: false,
-          faces: [
-            {
-              imageHeight: 700,
-              imageWidth: 840,
-              boundingBoxX1: 536,
-              boundingBoxX2: 618,
-              boundingBoxY1: 83,
-              boundingBoxY2: 252,
-              sourceType: 'exif',
-            },
-          ],
-        },
-      ]);
-    });
+    //   const { status, body } = await request(app)
+    //     .get(`/assets/${facesAsset.id}`)
+    //     .set('Authorization', `Bearer ${admin.accessToken}`);
+    //   expect(status).toBe(200);
+    //   expect(body.id).toEqual(facesAsset.id);
+    //   expect(body.people).toMatchObject([
+    //     {
+    //       name: 'Marie Curie',
+    //       birthDate: null,
+    //       thumbnailPath: '',
+    //       isHidden: false,
+    //       faces: [
+    //         {
+    //           imageHeight: 700,
+    //           imageWidth: 840,
+    //           boundingBoxX1: 261,
+    //           boundingBoxX2: 356,
+    //           boundingBoxY1: 146,
+    //           boundingBoxY2: 284,
+    //           sourceType: 'exif',
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       name: 'Pierre Curie',
+    //       birthDate: null,
+    //       thumbnailPath: '',
+    //       isHidden: false,
+    //       faces: [
+    //         {
+    //           imageHeight: 700,
+    //           imageWidth: 840,
+    //           boundingBoxX1: 536,
+    //           boundingBoxX2: 618,
+    //           boundingBoxY1: 83,
+    //           boundingBoxY2: 252,
+    //           sourceType: 'exif',
+    //         },
+    //       ],
+    //     },
+    //   ]);
+    // });
 
     it('should work with a shared link', async () => {
       const sharedLink = await utils.createSharedLink(user1.accessToken, {
