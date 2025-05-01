@@ -2,7 +2,7 @@
 # shellcheck source=common.sh
 source /immich-devcontainer/common.sh
 
-echo "Starting server"
+echo "Starting Nest API Server"
 
 cd "${IMMICH_WORKSPACE}/server" || (
     echo workspace not found
@@ -11,6 +11,6 @@ cd "${IMMICH_WORKSPACE}/server" || (
 
 while true; do
     node ./node_modules/.bin/nest start --debug "0.0.0.0:9230" --watch
-    echo "Server crashed with exit code $?.  Respawning in 3s ..."
+    echo " Nest API Server crashed with exit code $?.  Respawning in 3s ..."
     sleep 3
 done

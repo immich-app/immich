@@ -10,7 +10,7 @@ RUN chown node -R /workspaces
 RUN mkdir /immich-devcontainer && chown node -R /immich-devcontainer
 COPY --chmod=777 ./.devcontainer/server/common.sh /immich-devcontainer/common.sh
 COPY --chmod=777 ./.devcontainer/server/postCreate.sh /immich-devcontainer/postCreate.sh
-COPY --chmod=777 ./.devcontainer/server/startServer.sh /immich-devcontainer/startServer.sh
-COPY --chmod=777 ./.devcontainer/server/startWeb.sh /immich-devcontainer/startWeb.sh
+COPY --chmod=777 ./.devcontainer/server/startNestApiServer.sh /immich-devcontainer/startNestApiServer.sh
+COPY --chmod=777 ./.devcontainer/server/startViteWebServer.sh /immich-devcontainer/startViteWebServer.sh
 
 

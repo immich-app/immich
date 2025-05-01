@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Immich API (Server)",
+      "label": "Immich API Server (Nest)",
       "type": "shell",
-      "command": "/immich-devcontainer/startServer.sh",
+      "command": "/immich-devcontainer/startNestApiServer.sh",
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -19,9 +19,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Immich Web",
+      "label": "Immich Web Server (Vite)",
       "type": "shell",
-      "command": "/immich-devcontainer/startWeb.sh",
+      "command": "/immich-devcontainer/startViteWebServer.sh",
       "presentation": {
         "echo": true,
         "reveal": "always",
