@@ -10,7 +10,7 @@ The Dev Container is a fully featured dev environment. It is a portable way, usi
 
 [![Open in VSCode Containers](https://img.shields.io/static/v1?label=VSCode%20DevContainer&message=Immich&color=blue)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/immich-app/immich/)
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/immich-app/immich/)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/immich-app/immich/)
 
 [More info on dev containers here](https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers)
 
