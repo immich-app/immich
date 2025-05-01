@@ -8,7 +8,8 @@ if [ "$(dpkg --print-architecture)" = "arm64" ]; then
         qemu-user-static \
         libc6:amd64 \
         libstdc++6:amd64 \
-        libgcc1:amd64
+        libgcc1:amd64 \
+        default-jre
 fi
 
 # Install DCM
