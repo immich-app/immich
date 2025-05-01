@@ -13,14 +13,14 @@ sudo chown node -R "${IMMICH_WORKSPACE}/.vscode" \
     "${IMMICH_WORKSPACE}/web/node_modules" \
     "${IMMICH_WORKSPACE}/web/dist"
 
-echo "Installing dependencies (server)"
-echo npm --prefix "${IMMICH_WORKSPACE}/server" install
-npm --prefix "${IMMICH_WORKSPACE}/server" install
+run_cmd() {
+    echo "$@"
+    "$@"
+}
 
-echo "Installing dependencies (web)"
-echo npm --prefix "${IMMICH_WORKSPACE}/open-api/typescript-sdk" install
-npm --prefix "${IMMICH_WORKSPACE}/open-api/typescript-sdk" install
-echo npm --prefix "${IMMICH_WORKSPACE}/open-api/typescript-sdk" run build
-npm --prefix "${IMMICH_WORKSPACE}/open-api/typescript-sdk" run build
-echo npm --prefix "${IMMICH_WORKSPACE}/web" install
-npm --prefix "${IMMICH_WORKSPACE}/web" install
+echo "Installing dependencies"
+
+run_cmd npm --prefix "${IMMICH_WORKSPACE}/server" install
+run_cmd npm --prefix "${IMMICH_WORKSPACE}/open-api/typescript-sdk" install
+run_cmd npm --prefix "${IMMICH_WORKSPACE}/open-api/typescript-sdk" run build
+run_cmd npm --prefix "${IMMICH_WORKSPACE}/web" install

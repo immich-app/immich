@@ -13,7 +13,7 @@ The Dev Container is a fully featured dev environment. It is a portable way, usi
 
 [More info on dev containers here](https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers)
 
-### Details
+## Configuration
 
 The Immich dev container runs the web and server in one container, and redis and ML each in their own container.
 
@@ -29,11 +29,11 @@ In non-cloud environments, you can optionally use host filesystem paths instead 
 4. Select "Immich - Backend and Frontend"
 5. Wait a while - after the builds are done, the server and web processes will be started as tasks, and the browser will be opened (once) to the front page.
 
-## Configuring Database and Upload paths to the host
+### Configuring Database and Upload paths to the host
 
 ENV VARs can use to control the location of the upload and the database paths.
 
-### UPLOAD_LOCATION
+#### UPLOAD_LOCATION
 
 The default for `UPLOAD_LOCATION` is `vol-upload` which is a volume mount.
 
@@ -45,7 +45,7 @@ To use a bind mount instead, simply set `UPLOAD_LOCATION` to an **absolute** pat
 export UPLOAD_LOCATION=/data/my/upload/path
 ```
 
-### DB_DATA_LOCATION
+#### DB_DATA_LOCATION
 
 The default for `DB_DATA_LOCATION` is `vol-database` which is a volume mount.
 
@@ -57,7 +57,7 @@ To use a bind mount instead, simply set `DB_DATA_LOCATION` to an **absolute** pa
 export DB_DATA_LOCATION=/data/my/upload/path
 ```
 
-### Other Variables
+#### Other Variables
 
 Its unlikely, but in case you modified the username/password of the database, you can control these values using the following ENV VARs:
 
@@ -68,3 +68,33 @@ export DB_DATABASE_NAME=immich
 ```
 
 This must be added to the `.bash_profile` if your using bash, or equivalent for other shells.
+
+### SSH Keys and Commit Signing
+
+This section applies if you are using SSH Keys to access GitHub. In order to allow git from inside the devcontainer to access GitHub using your existing SSH keys, ensure that you have a SSH Agent running, and that SSH agent forwarding is allowed. 
+
+For instructions, see the [guide here.](https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials) 
+
+You can also use this SSH key as a signing key. To configure this, see the [guide here.](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key#telling-git-about-your-ssh-key) 
+
+## Workflow
+
+Please ensure you've read the [setup](/docs/developer/setup) information first. 
+
+After you've configured or reviewed the environment variables as mentioned above, then you are ready to start development. 
+
+By default, the devcontainer will automatically perform a few tasks whenever it starts. 
+
+1) Runs `postCreate.sh` - this bash script will adjust permissions to the `node` user that the devcontainer runs as. It will also run `npm i` and `npm run build` in all of the packages: `open-api/typescript-sdk`, `web`, and `server`. 
+2. VSCode will autorun the `Immich Server and Web` task defined in `tasks.json`. This task depends on `Immich Web Server (Vite)` and `Immich API Server (Nest)`, which will both be started automatically.
+3. VSCode will automatically forward the web ports, and the debug ports from each process. The first time the web server is started, a browser will automatically be opened on the `/` URL of the server (both in local and cloud environments)
+
+The `Immich API Server (Nest)` task runs the "API server", watching and compiling chnages in the `/server` folder. 
+
+The `Immich Web Server (Vite)` task runs the "Web server", watching and compiling chnages in the `/web` folder. The web server will automatically proxy the upstream `/api` server in this development. 
+
+These two tasks combined replace the command
+``` 
+make dev 
+```
+from the non devcontainer developer workflow. 

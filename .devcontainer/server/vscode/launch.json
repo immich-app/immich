@@ -18,7 +18,6 @@
       "name": "Immich Workers",
       "remoteRoot": "/usr/src/app",
       "localRoot": "${workspaceFolder}/server"
-      
     }
   ]
 }
