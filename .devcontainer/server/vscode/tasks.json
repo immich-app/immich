@@ -37,7 +37,7 @@
     },
     {
       "label": "Immich Server and Web",
-      "dependsOn": ["Immich Web", "Immich API (Server)"],
+      "dependsOn": ["Immich Web Server (Vite)", "Immich API Server (Nest)"],
       "runOptions": {
         "runOn": "folderOpen"
       },
