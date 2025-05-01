@@ -29,6 +29,10 @@ In non-cloud environments, you can optionally use host filesystem paths instead 
 4. Select "Immich - Backend and Frontend"
 5. Wait a while - after the builds are done, the server and web processes will be started as tasks, and the browser will be opened (once) to the front page.
 
+:::tip Not Just VSCode
+Many other editors also have devcontainers integration, or you can use [the devcontainer cli](https://github.com/devcontainers/cli).
+:::
+
 ### Configuring Database and Upload paths to the host
 
 ENV VARs can use to control the location of the upload and the database paths.
