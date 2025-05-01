@@ -462,10 +462,6 @@ export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
 };
-export type MemoryLaneResponseDto = {
-    assets: AssetResponseDto[];
-    yearsAgo: number;
-};
 export type AssetStatsResponseDto = {
     images: number;
     total: number;
@@ -799,27 +795,6 @@ export type AssetFaceUpdateDto = {
 };
 export type PersonStatisticsResponseDto = {
     assets: number;
-};
-export type FileReportItemDto = {
-    checksum?: string;
-    entityId: string;
-    entityType: PathEntityType;
-    pathType: PathType;
-    pathValue: string;
-};
-export type FileReportDto = {
-    extras: string[];
-    orphans: FileReportItemDto[];
-};
-export type FileChecksumDto = {
-    filenames: string[];
-};
-export type FileChecksumResponseDto = {
-    checksum: string;
-    filename: string;
-};
-export type FileReportFixDto = {
-    items: FileReportItemDto[];
 };
 export type SearchExploreItem = {
     data: AssetResponseDto;
@@ -1315,6 +1290,8 @@ export type SystemConfigOAuthDto = {
     signingAlgorithm: string;
     storageLabelClaim: string;
     storageQuotaClaim: string;
+    timeout: number;
+    tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
 };
 export type SystemConfigPasswordLoginDto = {
     enabled: boolean;
@@ -1885,20 +1862,6 @@ export function runAssetJobs({ assetJobsDto }: {
         method: "POST",
         body: assetJobsDto
     })));
-}
-export function getMemoryLane({ day, month }: {
-    day: number;
-    month: number;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: MemoryLaneResponseDto[];
-    }>(`/assets/memory-lane${QS.query(QS.explode({
-        day,
-        month
-    }))}`, {
-        ...opts
-    }));
 }
 /**
  * This property was deprecated in v1.116.0
@@ -2661,35 +2624,6 @@ export function getPersonThumbnail({ id }: {
     }>(`/people/${encodeURIComponent(id)}/thumbnail`, {
         ...opts
     }));
-}
-export function getAuditFiles(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: FileReportDto;
-    }>("/reports", {
-        ...opts
-    }));
-}
-export function getFileChecksums({ fileChecksumDto }: {
-    fileChecksumDto: FileChecksumDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: FileChecksumResponseDto[];
-    }>("/reports/checksum", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: fileChecksumDto
-    })));
-}
-export function fixAuditFiles({ fileReportFixDto }: {
-    fileReportFixDto: FileReportFixDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/reports/fix", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: fileReportFixDto
-    })));
 }
 export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3750,21 +3684,6 @@ export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
 }
-export enum PathEntityType {
-    Asset = "asset",
-    Person = "person",
-    User = "user"
-}
-export enum PathType {
-    Original = "original",
-    Fullsize = "fullsize",
-    Preview = "preview",
-    Thumbnail = "thumbnail",
-    EncodedVideo = "encoded_video",
-    Sidecar = "sidecar",
-    Face = "face",
-    Profile = "profile"
-}
 export enum SearchSuggestionType {
     Country = "country",
     State = "state",
@@ -3859,6 +3778,10 @@ export enum LogLevel {
     Warn = "warn",
     Error = "error",
     Fatal = "fatal"
+}
+export enum OAuthTokenEndpointAuthMethod {
+    ClientSecretPost = "client_secret_post",
+    ClientSecretBasic = "client_secret_basic"
 }
 export enum TimeBucketSize {
     Day = "DAY",

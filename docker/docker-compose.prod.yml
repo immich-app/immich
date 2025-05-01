@@ -56,7 +56,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:42cba146593a5ea9a622002c1b7cba5da7be248650cbb64ecb9c6c33d29794b1
+    image: docker.io/valkey/valkey:8-bookworm@sha256:c855f98e09d558a0d7cc1a4e56473231206a4c54c0114ada9c485b47aeb92ec8
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
@@ -102,7 +102,7 @@ services:
     command: [ './run.sh', '-disable-reporting' ]
     ports:
       - 3000:3000
-    image: grafana/grafana:11.6.0-ubuntu@sha256:fd8fa48213c624e1a95122f1d93abbf1cf1cbe85fc73212c1e599dbd76c63ff8
+    image: grafana/grafana:11.6.1-ubuntu@sha256:6fc273288470ef499dd3c6b36aeade093170d4f608f864c5dd3a7fabeae77b50
     volumes:
       - grafana-data:/var/lib/grafana
 
