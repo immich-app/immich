@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -43,6 +44,7 @@ import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadFiles } from 'src/types';
 import { ImmichFileResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
+import { TranscodingService } from 'src/services/transcofing.service';
 
 @ApiTags('Assets')
 @Controller(RouteKey.ASSET)
@@ -50,6 +52,7 @@ export class AssetMediaController {
   constructor(
     private logger: LoggingRepository,
     private service: AssetMediaService,
+    private transcodingService: TranscodingService
   ) {}
 
   @Post()
@@ -165,6 +168,22 @@ export class AssetMediaController {
     @Next() next: NextFunction,
   ) {
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
+  }
+
+  @Get(':id/video/playback/hls')
+  @FileResponse()
+  @Authenticated({ sharedLink: true })
+  async streamAssetVideo(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Res() res: Response,
+  ) {
+    const { liveFfmpeg } = await this.service.getConfig({ withCache: true });
+    if (liveFfmpeg.enabled) {
+      res.redirect(await this.transcodingService.getPlaylistUrl(auth, id));
+    } else {
+      throw new BadRequestException('HLS is not enabled on this server');
+    }
   }
 
   /**
