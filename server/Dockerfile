@@ -18,7 +18,10 @@ ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 FROM dev AS dev-container
 
-RUN apt-get install inetutils-ping sudo -y
+RUN apt-get update && \
+    apt-get install inetutils-ping openjdk-11-jre-headless \
+    vim nano \
+    -y --no-install-recommends --fix-missing
 RUN usermod -aG sudo node
 RUN echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 RUN mkdir -p /workspaces/immich

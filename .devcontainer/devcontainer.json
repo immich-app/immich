@@ -15,7 +15,8 @@
         "bluebrown.yamlfmt",
         "vkrishna04.cspell-sync",
         "vitest.explorer",
-        "ms-playwright.playwright"
+        "ms-playwright.playwright",
+        "ms-azuretools.vscode-docker"
       ]
     }
   },

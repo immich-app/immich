@@ -71,30 +71,33 @@ This must be added to the `.bash_profile` if your using bash, or equivalent for 
 
 ### SSH Keys and Commit Signing
 
-This section applies if you are using SSH Keys to access GitHub. In order to allow git from inside the devcontainer to access GitHub using your existing SSH keys, ensure that you have a SSH Agent running, and that SSH agent forwarding is allowed. 
+This section applies if you are using SSH Keys to access GitHub. In order to allow git from inside the devcontainer to access GitHub using your existing SSH keys, ensure that you have a SSH Agent running, and that SSH agent forwarding is allowed.
 
-For instructions, see the [guide here.](https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials) 
+For instructions, see the [guide here.](https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials)
 
-You can also use this SSH key as a signing key. To configure this, see the [guide here.](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key#telling-git-about-your-ssh-key) 
+You can also use this SSH key as a signing key. To configure this, see the [guide here.](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key#telling-git-about-your-ssh-key)
 
 ## Workflow
 
-Please ensure you've read the [setup](/docs/developer/setup) information first. 
+Please ensure you've read the [setup](/docs/developer/setup) information first.
 
-After you've configured or reviewed the environment variables as mentioned above, then you are ready to start development. 
+After you've configured or reviewed the environment variables as mentioned above, then you are ready to start development.
 
-By default, the devcontainer will automatically perform a few tasks whenever it starts. 
+By default, the devcontainer will automatically perform a few tasks whenever it starts.
 
-1) Runs `postCreate.sh` - this bash script will adjust permissions to the `node` user that the devcontainer runs as. It will also run `npm i` and `npm run build` in all of the packages: `open-api/typescript-sdk`, `web`, and `server`. 
-2. VSCode will autorun the `Immich Server and Web` task defined in `tasks.json`. This task depends on `Immich Web Server (Vite)` and `Immich API Server (Nest)`, which will both be started automatically.
-3. VSCode will automatically forward the web ports, and the debug ports from each process. The first time the web server is started, a browser will automatically be opened on the `/` URL of the server (both in local and cloud environments)
+1. Runs `postCreate.sh` - this bash script will adjust permissions to the `node` user that the devcontainer runs as. It will also run `npm i` and `npm run build` in all of the packages: `open-api/typescript-sdk`, `web`, and `server`.
 
-The `Immich API Server (Nest)` task runs the "API server", watching and compiling chnages in the `/server` folder. 
+2) VSCode will autorun the `Immich Server and Web` task defined in `tasks.json`. This task depends on `Immich Web Server (Vite)` and `Immich API Server (Nest)`, which will both be started automatically.
+3) VSCode will automatically forward the web ports, and the debug ports from each process. The first time the web server is started, a browser will automatically be opened on the `/` URL of the server (both in local and cloud environments)
 
-The `Immich Web Server (Vite)` task runs the "Web server", watching and compiling chnages in the `/web` folder. The web server will automatically proxy the upstream `/api` server in this development. 
+The `Immich API Server (Nest)` task runs the "API server", watching and compiling chnages in the `/server` folder.
+
+The `Immich Web Server (Vite)` task runs the "Web server", watching and compiling chnages in the `/web` folder. The web server will automatically proxy the upstream `/api` server in this development.
 
 These two tasks combined replace the command
-``` 
-make dev 
+
 ```
-from the non devcontainer developer workflow. 
+make dev
+```
+
+from the non devcontainer developer workflow.
