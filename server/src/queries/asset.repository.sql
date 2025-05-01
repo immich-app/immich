@@ -231,25 +231,6 @@ where
 limit
   $3
 
--- AssetRepository.getWithout (sidecar)
-select
-  "assets".*
-from
-  "assets"
-where
-  (
-    "assets"."sidecarPath" = $1
-    or "assets"."sidecarPath" is null
-  )
-  and "assets"."visibility" = $2
-  and "deletedAt" is null
-order by
-  "createdAt"
-limit
-  $3
-offset
-  $4
-
 -- AssetRepository.getTimeBuckets
 with
   "assets" as (

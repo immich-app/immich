@@ -385,7 +385,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
         .set('Authorization', `Bearer ${statsUser.accessToken}`)
-        .query({ isArchived: true });
+        .query({ visibility: AssetVisibility.Archive });
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 1, videos: 1, total: 2 });
@@ -395,7 +395,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
         .set('Authorization', `Bearer ${statsUser.accessToken}`)
-        .query({ isFavorite: true, isArchived: true });
+        .query({ isFavorite: true, visibility: AssetVisibility.Archive });
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 0, videos: 1, total: 1 });
@@ -405,7 +405,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
         .set('Authorization', `Bearer ${statsUser.accessToken}`)
-        .query({ isFavorite: false, isArchived: false });
+        .query({ isFavorite: false, visibility: AssetVisibility.Timeline });
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 1, videos: 0, total: 1 });
@@ -520,7 +520,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ isArchived: true });
+        .send({ visibility: AssetVisibility.Archive });
       expect(body).toMatchObject({ id: user1Assets[0].id, isArchived: true });
       expect(status).toEqual(200);
     });
@@ -973,7 +973,10 @@ describe('/asset', () => {
       { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
       { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
       { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
-      { should: 'throw if `isArchived` is not a boolean', dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' } },
+      {
+        should: 'throw if `visibility` is not in AssetVisibility enum',
+        dto: { ...makeUploadDto(), visibility: 'not-a-valid-value' },
+      },
     ])('should $should', async ({ dto }) => {
       const { status, body } = await request(app)
         .post('/assets')

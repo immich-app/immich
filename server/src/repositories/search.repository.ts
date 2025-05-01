@@ -8,41 +8,10 @@ import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { anyUuid, asUuid, searchAssetBuilder, vectorIndexQuery } from 'src/utils/database';
+import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
-export interface SearchResult<T> {
-  /** total matches */
-  total: number;
-  /** collection size */
-  count: number;
-  /** current page */
-  page: number;
-  /** items for page */
-  items: T[];
-  /** score */
-  distances: number[];
-  facets: SearchFacet[];
-}
-
-export interface SearchFacet {
-  fieldName: string;
-  counts: Array<{
-    count: number;
-    value: string;
-  }>;
-}
-
-export type SearchExploreItemSet<T> = Array<{
-  value: string;
-  data: T;
-}>;
-
-export interface SearchExploreItem<T> {
-  fieldName: string;
-  items: SearchExploreItemSet<T>;
-}
-
-export interface SearchAssetIDOptions {
+export interface SearchAssetIdOptions {
   checksum?: Buffer;
   deviceAssetId?: string;
   id?: string;
@@ -54,15 +23,13 @@ export interface SearchUserIdOptions {
   userIds?: string[];
 }
 
-export type SearchIdOptions = SearchAssetIDOptions & SearchUserIdOptions;
+export type SearchIdOptions = SearchAssetIdOptions & SearchUserIdOptions;
 
 export interface SearchStatusOptions {
-  isArchived?: boolean;
   isEncoded?: boolean;
   isFavorite?: boolean;
   isMotion?: boolean;
   isOffline?: boolean;
-  isVisible?: boolean;
   isNotInAlbum?: boolean;
   type?: AssetType;
   status?: AssetStatus;
@@ -145,8 +112,6 @@ type BaseAssetSearchOptions = SearchDateOptions &
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
-export type AssetSearchOneToOneRelationOptions = BaseAssetSearchOptions & SearchOneToOneRelationOptions;
-
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
 export type SmartSearchOptions = SearchDateOptions &
@@ -227,9 +192,8 @@ export class SearchRepository {
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();
-    const hasNextPage = items.length > pagination.size;
-    items.splice(pagination.size);
-    return { items, hasNextPage };
+
+    return paginationHelper(items, pagination.size);
   }
 
   @GenerateSql({
@@ -284,9 +248,7 @@ export class SearchRepository {
       .offset((pagination.page - 1) * pagination.size)
       .execute();
 
-    const hasNextPage = items.length > pagination.size;
-    items.splice(pagination.size);
-    return { items, hasNextPage };
+    return paginationHelper(items, pagination.size);
   }
 
   @GenerateSql({

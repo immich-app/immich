@@ -202,7 +202,6 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   encodedVideoPath: null,
   fileCreatedAt: newDate(),
   fileModifiedAt: newDate(),
-  isArchived: false,
   isExternal: false,
   isFavorite: false,
   isOffline: false,

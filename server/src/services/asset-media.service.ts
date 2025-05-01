@@ -146,7 +146,6 @@ export class AssetMediaService extends BaseService {
           { userId: auth.user.id, livePhotoVideoId: dto.livePhotoVideoId },
         );
       }
-
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
 
       await this.userRepository.updateUsage(auth.user.id, file.size);

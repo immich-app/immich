@@ -135,20 +135,33 @@ export class AssetJobRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [], stream: true })
-  streamForEncodeClip(force?: boolean) {
+  private assetsWithPreviews() {
     return this.db
       .selectFrom('assets')
-      .select(['assets.id'])
-      .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-      .where('job_status.previewAt', 'is not', null)
       .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
+      .where('assets.deletedAt', 'is', null)
+      .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
+      .where('job_status.previewAt', 'is not', null);
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForSearchDuplicates(force?: boolean) {
+    return this.assetsWithPreviews()
+      .where((eb) => eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))))
+      .$if(!force, (qb) => qb.where('job_status.duplicatesDetectedAt', 'is', null))
+      .select(['assets.id'])
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForEncodeClip(force?: boolean) {
+    return this.assetsWithPreviews()
+      .select(['assets.id'])
       .$if(!force, (qb) =>
         qb.where((eb) =>
           eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))),
         ),
       )
-      .where('assets.deletedAt', 'is', null)
       .stream();
   }
 
@@ -308,5 +321,31 @@ export class AssetJobRepository {
       .select(['id', 'isOffline'])
       .where('assets.deletedAt', '<=', trashedBefore)
       .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForSidecar(force?: boolean) {
+    return this.db
+      .selectFrom('assets')
+      .select(['assets.id'])
+      .$if(!force, (qb) =>
+        qb.where((eb) => eb.or([eb('assets.sidecarPath', '=', ''), eb('assets.sidecarPath', 'is', null)])),
+      )
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForDetectFacesJob(force?: boolean) {
+    return this.assetsWithPreviews()
+      .$if(!force, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
+      .select(['assets.id'])
+      .orderBy('assets.createdAt', 'desc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.DATE], stream: true })
+  streamForMigrationJob() {
+    return this.db.selectFrom('assets').select(['id']).where('assets.deletedAt', 'is', null).stream();
   }
 }

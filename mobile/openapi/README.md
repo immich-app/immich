@@ -100,7 +100,6 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | getAllUserAssetsByDeviceId
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | 
 *AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | 
-*AssetsApi* | [**getMemoryLane**](doc//AssetsApi.md#getmemorylane) | **GET** /assets/memory-lane | 
 *AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | 
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | 
 *AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | replaceAsset
@@ -122,9 +121,6 @@ Class | Method | HTTP request | Description
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | 
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | 
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | 
-*FileReportsApi* | [**fixAuditFiles**](doc//FileReportsApi.md#fixauditfiles) | **POST** /reports/fix | 
-*FileReportsApi* | [**getAuditFiles**](doc//FileReportsApi.md#getauditfiles) | **GET** /reports | 
-*FileReportsApi* | [**getFileChecksums**](doc//FileReportsApi.md#getfilechecksums) | **POST** /reports/checksum | 
 *JobsApi* | [**createJob**](doc//JobsApi.md#createjob) | **POST** /jobs | 
 *JobsApi* | [**getAllJobsStatus**](doc//JobsApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobsApi* | [**sendJobCommand**](doc//JobsApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
@@ -333,11 +329,6 @@ Class | Method | HTTP request | Description
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [FaceDto](doc//FaceDto.md)
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)
- - [FileChecksumDto](doc//FileChecksumDto.md)
- - [FileChecksumResponseDto](doc//FileChecksumResponseDto.md)
- - [FileReportDto](doc//FileReportDto.md)
- - [FileReportFixDto](doc//FileReportFixDto.md)
- - [FileReportItemDto](doc//FileReportItemDto.md)
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [ImageFormat](doc//ImageFormat.md)
@@ -362,7 +353,6 @@ Class | Method | HTTP request | Description
  - [MemoriesResponse](doc//MemoriesResponse.md)
  - [MemoriesUpdate](doc//MemoriesUpdate.md)
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
- - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
  - [MemoryResponseDto](doc//MemoryResponseDto.md)
  - [MemoryType](doc//MemoryType.md)
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
@@ -382,8 +372,6 @@ Class | Method | HTTP request | Description
  - [OnThisDayDto](doc//OnThisDayDto.md)
  - [PartnerDirection](doc//PartnerDirection.md)
  - [PartnerResponseDto](doc//PartnerResponseDto.md)
- - [PathEntityType](doc//PathEntityType.md)
- - [PathType](doc//PathType.md)
  - [PeopleResponse](doc//PeopleResponse.md)
  - [PeopleResponseDto](doc//PeopleResponseDto.md)
  - [PeopleUpdate](doc//PeopleUpdate.md)

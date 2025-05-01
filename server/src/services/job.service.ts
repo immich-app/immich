@@ -265,17 +265,6 @@ export class JobService extends BaseService {
         break;
       }
 
-      case JobName.METADATA_EXTRACTION: {
-        if (item.data.source === 'sidecar-write') {
-          const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([item.data.id]);
-          if (asset) {
-            this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
-          }
-        }
-        await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
-        break;
-      }
-
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
           await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: item.data });
@@ -313,7 +302,7 @@ export class JobService extends BaseService {
         }
 
         await this.jobRepository.queueAll(jobs);
-        if (asset.visibility === AssetVisibility.TIMELINE) {
+        if (asset.visibility === AssetVisibility.TIMELINE || asset.visibility === AssetVisibility.ARCHIVE) {
           this.eventRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
         }
 

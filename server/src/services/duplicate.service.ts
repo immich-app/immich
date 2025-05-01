@@ -5,13 +5,11 @@ import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { AssetFileType, AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
+import { JobItem, JobOf } from 'src/types';
 import { getAssetFile } from 'src/utils/asset.util';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class DuplicateService extends BaseService {
@@ -30,17 +28,21 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination, { visibility: AssetVisibility.TIMELINE })
-        : this.assetRepository.getWithout(pagination, WithoutProperty.DUPLICATE);
-    });
+    let jobs: JobItem[] = [];
+    const queueAll = async () => {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    };
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.DUPLICATE_DETECTION, data: { id: asset.id } })),
-      );
+    const assets = this.assetJobRepository.streamForSearchDuplicates(force);
+    for await (const asset of assets) {
+      jobs.push({ name: JobName.DUPLICATE_DETECTION, data: { id: asset.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
+      }
     }
+
+    await queueAll();
 
     return JobStatus.SUCCESS;
   }
