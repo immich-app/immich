@@ -10,12 +10,13 @@
     mdiPanorama,
     mdiShuffle,
   } from '@mdi/js';
+
+  import { SettingInputFieldType } from '$lib/constants';
+  import { t } from 'svelte-i18n';
   import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
   import Button from './elements/buttons/button.svelte';
   import type { RenderedOption } from './elements/dropdown.svelte';
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
-  import { t } from 'svelte-i18n';
-  import { SettingInputFieldType } from '$lib/constants';
 
   const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook, slideshowTransition } = slideshowStore;
 
@@ -47,6 +48,21 @@
       }
     }
   };
+
+  let tempSlideshowDelay = $slideshowDelay;
+  let tempShowProgressBar = $showProgressBar;
+  let tempSlideshowNavigation = $slideshowNavigation;
+  let tempSlideshowLook = $slideshowLook;
+  let tempSlideshowTransition = $slideshowTransition;
+
+  const applyChanges = () => {
+    $slideshowDelay = tempSlideshowDelay;
+    $showProgressBar = tempShowProgressBar;
+    $slideshowNavigation = tempSlideshowNavigation;
+    $slideshowLook = tempSlideshowLook;
+    $slideshowTransition = tempSlideshowTransition;
+    onClose();
+  };
 </script>
 
 <FullScreenModal title={$t('slideshow_settings')} onClose={() => onClose()}>
@@ -54,31 +70,31 @@
     <SettingDropdown
       title={$t('direction')}
       options={Object.values(navigationOptions)}
-      selectedOption={navigationOptions[$slideshowNavigation]}
+      selectedOption={navigationOptions[tempSlideshowNavigation]}
       onToggle={(option) => {
-        $slideshowNavigation = handleToggle(option, navigationOptions) || $slideshowNavigation;
+        tempSlideshowNavigation = handleToggle(option, navigationOptions) || tempSlideshowNavigation;
       }}
     />
     <SettingDropdown
       title={$t('look')}
       options={Object.values(lookOptions)}
-      selectedOption={lookOptions[$slideshowLook]}
+      selectedOption={lookOptions[tempSlideshowLook]}
       onToggle={(option) => {
-        $slideshowLook = handleToggle(option, lookOptions) || $slideshowLook;
+        tempSlideshowLook = handleToggle(option, lookOptions) || tempSlideshowLook;
       }}
     />
-    <SettingSwitch title={$t('show_progress_bar')} bind:checked={$showProgressBar} />
-    <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={$slideshowTransition} />
+    <SettingSwitch title={$t('show_progress_bar')} bind:checked={tempShowProgressBar} />
+    <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={tempSlideshowTransition} />
     <SettingInputField
       inputType={SettingInputFieldType.NUMBER}
       label={$t('duration')}
       description={$t('admin.slideshow_duration_description')}
       min={1}
-      bind:value={$slideshowDelay}
+      bind:value={tempSlideshowDelay}
     />
   </div>
 
   {#snippet stickyBottom()}
-    <Button fullwidth color="primary" onclick={(_) => onClose()}>{$t('done')}</Button>
+    <Button fullwidth color="primary" onclick={(_) => applyChanges()}>{$t('done')}</Button>
   {/snippet}
 </FullScreenModal>
