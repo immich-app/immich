@@ -20,7 +20,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { getFocusable } from '$lib/utils/focus-util';
+  import { focusNext } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
   import { onMount } from 'svelte';
@@ -36,7 +36,6 @@
     thumbnailWidth?: number;
     thumbnailHeight?: number;
     selected?: boolean;
-    focussed?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
     disableLinkMouseOver?: boolean;
@@ -59,7 +58,6 @@
     thumbnailWidth = undefined,
     thumbnailHeight = undefined,
     selected = false,
-    focussed = false,
     selectionCandidate = false,
     disabled = false,
     disableLinkMouseOver = false,
@@ -80,16 +78,10 @@
   } = TUNABLES;
 
   let usingMobileDevice = $derived(mobileDevice.pointerCoarse);
-  let focussableElement: HTMLElement | undefined = $state();
+  let element: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
   let thumbError = $state(false);
-
-  $effect(() => {
-    if (focussed && document.activeElement !== focussableElement) {
-      focussableElement?.focus();
-    }
-  });
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -237,31 +229,14 @@
       if (evt.key === 'x') {
         onSelect?.(asset);
       }
-      if (document.activeElement === focussableElement && evt.key === 'Escape') {
-        const focusable = getFocusable(document);
-        const index = focusable.indexOf(focussableElement);
-
-        let i = index + 1;
-        while (i !== index) {
-          const next = focusable[i];
-          if (next.dataset.thumbnailFocusContainer !== undefined) {
-            if (i === focusable.length - 1) {
-              i = 0;
-            } else {
-              i++;
-            }
-            continue;
-          }
-          next.focus();
-          break;
-        }
+      if (document.activeElement === element && evt.key === 'Escape') {
+        focusNext((element) => element.dataset.thumbnailFocusContainer === undefined, true);
       }
     }}
     onclick={handleClick}
-    bind:this={focussableElement}
+    bind:this={element}
     onfocus={handleFocus}
     data-thumbnail-focus-container
-    data-testid="container-with-tabindex"
     tabindex={0}
     role="link"
   >

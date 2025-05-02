@@ -38,10 +38,6 @@ describe(MediaService.name, () => {
   describe('handleQueueGenerateThumbnails', () => {
     it('should queue all assets', async () => {
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.image]));
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
 
       mocks.person.getAll.mockReturnValue(makeStream([personStub.newThumbnail]));
       mocks.person.getFacesByIds.mockResolvedValue([faceStub.face1]);
@@ -67,10 +63,6 @@ describe(MediaService.name, () => {
 
     it('should queue trashed assets when force is true', async () => {
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.archived]));
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.trashed],
-        hasNextPage: false,
-      });
       mocks.person.getAll.mockReturnValue(makeStream());
 
       await sut.handleQueueGenerateThumbnails({ force: true });
@@ -171,7 +163,7 @@ describe(MediaService.name, () => {
 
   describe('handleQueueMigration', () => {
     it('should remove empty directories and queue jobs', async () => {
-      mocks.asset.getAll.mockResolvedValue({ hasNextPage: false, items: [assetStub.image] });
+      mocks.assetJob.streamForMigrationJob.mockReturnValue(makeStream([assetStub.image]));
       mocks.job.getJobCounts.mockResolvedValue({ active: 1, waiting: 0 } as JobCounts);
       mocks.person.getAll.mockReturnValue(makeStream([personStub.withName]));
 

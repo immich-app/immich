@@ -1726,62 +1726,6 @@
         ]
       }
     },
-    "/assets/memory-lane": {
-      "get": {
-        "operationId": "getMemoryLane",
-        "parameters": [
-          {
-            "name": "day",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 31,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "month",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 12,
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MemoryLaneResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
     "/assets/random": {
       "get": {
         "deprecated": true,
@@ -4648,118 +4592,6 @@
         ],
         "tags": [
           "People"
-        ]
-      }
-    },
-    "/reports": {
-      "get": {
-        "operationId": "getAuditFiles",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileReportDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "File Reports"
-        ]
-      }
-    },
-    "/reports/checksum": {
-      "post": {
-        "operationId": "getFileChecksums",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileChecksumDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/FileChecksumResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "File Reports"
-        ]
-      }
-    },
-    "/reports/fix": {
-      "post": {
-        "operationId": "fixAuditFiles",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileReportFixDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "File Reports"
         ]
       }
     },
@@ -9749,105 +9581,6 @@
         ],
         "type": "object"
       },
-      "FileChecksumDto": {
-        "properties": {
-          "filenames": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "filenames"
-        ],
-        "type": "object"
-      },
-      "FileChecksumResponseDto": {
-        "properties": {
-          "checksum": {
-            "type": "string"
-          },
-          "filename": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "checksum",
-          "filename"
-        ],
-        "type": "object"
-      },
-      "FileReportDto": {
-        "properties": {
-          "extras": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "orphans": {
-            "items": {
-              "$ref": "#/components/schemas/FileReportItemDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "extras",
-          "orphans"
-        ],
-        "type": "object"
-      },
-      "FileReportFixDto": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/FileReportItemDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "items"
-        ],
-        "type": "object"
-      },
-      "FileReportItemDto": {
-        "properties": {
-          "checksum": {
-            "type": "string"
-          },
-          "entityId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "entityType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PathEntityType"
-              }
-            ]
-          },
-          "pathType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PathType"
-              }
-            ]
-          },
-          "pathValue": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "entityId",
-          "entityType",
-          "pathType",
-          "pathValue"
-        ],
-        "type": "object"
-      },
       "FoldersResponse": {
         "properties": {
           "enabled": {
@@ -10325,24 +10058,6 @@
           "data",
           "memoryAt",
           "type"
-        ],
-        "type": "object"
-      },
-      "MemoryLaneResponseDto": {
-        "properties": {
-          "assets": {
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            },
-            "type": "array"
-          },
-          "yearsAgo": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "assets",
-          "yearsAgo"
         ],
         "type": "object"
       },
@@ -10824,6 +10539,13 @@
         ],
         "type": "object"
       },
+      "OAuthTokenEndpointAuthMethod": {
+        "enum": [
+          "client_secret_post",
+          "client_secret_basic"
+        ],
+        "type": "string"
+      },
       "OnThisDayDto": {
         "properties": {
           "year": {
@@ -10881,27 +10603,6 @@
           "profileImagePath"
         ],
         "type": "object"
-      },
-      "PathEntityType": {
-        "enum": [
-          "asset",
-          "person",
-          "user"
-        ],
-        "type": "string"
-      },
-      "PathType": {
-        "enum": [
-          "original",
-          "fullsize",
-          "preview",
-          "thumbnail",
-          "encoded_video",
-          "sidecar",
-          "face",
-          "profile"
-        ],
-        "type": "string"
       },
       "PeopleResponse": {
         "properties": {
@@ -13404,6 +13105,17 @@
           },
           "storageQuotaClaim": {
             "type": "string"
+          },
+          "timeout": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tokenEndpointAuthMethod": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OAuthTokenEndpointAuthMethod"
+              }
+            ]
           }
         },
         "required": [
@@ -13421,7 +13133,9 @@
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",
-          "storageQuotaClaim"
+          "storageQuotaClaim",
+          "timeout",
+          "tokenEndpointAuthMethod"
         ],
         "type": "object"
       },

@@ -205,7 +205,7 @@ jobs:
 
       - name: Build and push image
         id: build
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1 # v6.16.0
         with:
           context: ${{ env.context }}
           file: ${{ env.file }}
@@ -266,7 +266,7 @@ jobs:
       - build_and_push_ml
     steps:
       - name: Download digests
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: ${{ runner.temp }}/digests
           pattern: ml-digests-${{ matrix.device }}-*
@@ -407,7 +407,7 @@ jobs:
 
       - name: Build and push image
         id: build
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1 # v6.16.0
         with:
           context: ${{ env.context }}
           file: ${{ env.file }}
@@ -454,7 +454,7 @@ jobs:
       - build_and_push_server
     steps:
       - name: Download digests
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: ${{ runner.temp }}/digests
           pattern: server-digests-*

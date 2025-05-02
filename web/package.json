@@ -12,7 +12,7 @@
     "check:svelte": "svelte-check --no-tsconfig --fail-on-warnings --compiler-warnings 'reactive_declaration_non_reactive_property:ignore' --ignore src/lib/components/photos-page/asset-grid.svelte",
     "check:typescript": "tsc --noEmit",
     "check:watch": "npm run check:svelte -- --watch",
-    "check:code": "npm run format && npm run lint && npm run check:svelte && npm run check:typescript",
+    "check:code": "npm run format && npm run lint:p && npm run check:svelte && npm run check:typescript",
     "check:all": "npm run check:code && npm run test:cov",
     "lint": "eslint . --max-warnings 0",
     "lint:p": "eslint-p . --max-warnings 0 --concurrency=4",

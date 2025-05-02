@@ -6,42 +6,12 @@ import { DB, Exif } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType } from 'src/enum';
-import { anyUuid, asUuid, searchAssetBuilder } from 'src/utils/database';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { anyUuid, asUuid, searchAssetBuilder, vectorIndexQuery } from 'src/utils/database';
+import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
-export interface SearchResult<T> {
-  /** total matches */
-  total: number;
-  /** collection size */
-  count: number;
-  /** current page */
-  page: number;
-  /** items for page */
-  items: T[];
-  /** score */
-  distances: number[];
-  facets: SearchFacet[];
-}
-
-export interface SearchFacet {
-  fieldName: string;
-  counts: Array<{
-    count: number;
-    value: string;
-  }>;
-}
-
-export type SearchExploreItemSet<T> = Array<{
-  value: string;
-  data: T;
-}>;
-
-export interface SearchExploreItem<T> {
-  fieldName: string;
-  items: SearchExploreItemSet<T>;
-}
-
-export interface SearchAssetIDOptions {
+export interface SearchAssetIdOptions {
   checksum?: Buffer;
   deviceAssetId?: string;
   id?: string;
@@ -53,7 +23,7 @@ export interface SearchUserIdOptions {
   userIds?: string[];
 }
 
-export type SearchIdOptions = SearchAssetIDOptions & SearchUserIdOptions;
+export type SearchIdOptions = SearchAssetIdOptions & SearchUserIdOptions;
 
 export interface SearchStatusOptions {
   isArchived?: boolean;
@@ -143,8 +113,6 @@ type BaseAssetSearchOptions = SearchDateOptions &
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
-export type AssetSearchOneToOneRelationOptions = BaseAssetSearchOptions & SearchOneToOneRelationOptions;
-
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
 export type SmartSearchOptions = SearchDateOptions &
@@ -201,7 +169,10 @@ export interface GetCameraMakesOptions {
 
 @Injectable()
 export class SearchRepository {
-  constructor(@InjectKysely() private db: Kysely<DB>) {}
+  constructor(
+    @InjectKysely() private db: Kysely<DB>,
+    private configRepository: ConfigRepository,
+  ) {}
 
   @GenerateSql({
     params: [
@@ -222,9 +193,8 @@ export class SearchRepository {
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();
-    const hasNextPage = items.length > pagination.size;
-    items.splice(pagination.size);
-    return { items, hasNextPage };
+
+    return paginationHelper(items, pagination.size);
   }
 
   @GenerateSql({
@@ -279,9 +249,7 @@ export class SearchRepository {
       .offset((pagination.page - 1) * pagination.size)
       .execute();
 
-    const hasNextPage = items.length > pagination.size;
-    items.splice(pagination.size);
-    return { items, hasNextPage };
+    return paginationHelper(items, pagination.size);
   }
 
   @GenerateSql({
@@ -446,8 +414,8 @@ export class SearchRepository {
   async upsert(assetId: string, embedding: string): Promise<void> {
     await this.db
       .insertInto('smart_search')
-      .values({ assetId: asUuid(assetId), embedding } as any)
-      .onConflict((oc) => oc.column('assetId').doUpdateSet({ embedding } as any))
+      .values({ assetId, embedding })
+      .onConflict((oc) => oc.column('assetId').doUpdateSet((eb) => ({ embedding: eb.ref('excluded.embedding') })))
       .execute();
   }
 
@@ -469,19 +437,32 @@ export class SearchRepository {
     return dimSize;
   }
 
-  setDimensionSize(dimSize: number): Promise<void> {
+  async setDimensionSize(dimSize: number): Promise<void> {
     if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
-    return this.db.transaction().execute(async (trx) => {
-      await sql`truncate ${sql.table('smart_search')}`.execute(trx);
+    // this is done in two transactions to handle concurrent writes
+    await this.db.transaction().execute(async (trx) => {
+      await sql`delete from ${sql.table('smart_search')}`.execute(trx);
+      await trx.schema.alterTable('smart_search').dropConstraint('dim_size_constraint').ifExists().execute();
+      await sql`alter table ${sql.table('smart_search')} add constraint dim_size_constraint check (array_length(embedding::real[], 1) = ${sql.lit(dimSize)})`.execute(
+        trx,
+      );
+    });
+
+    const vectorExtension = this.configRepository.getEnv().database.vectorExtension;
+    await this.db.transaction().execute(async (trx) => {
+      await sql`drop index if exists clip_index`.execute(trx);
       await trx.schema
         .alterTable('smart_search')
         .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
         .execute();
-      await sql`reindex index clip_index`.execute(trx);
+      await sql.raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: 'clip_index' })).execute(trx);
+      await trx.schema.alterTable('smart_search').dropConstraint('dim_size_constraint').ifExists().execute();
     });
+
+    await sql`vacuum analyze ${sql.table('smart_search')}`.execute(this.db);
   }
 
   async deleteAllSearchEmbeddings(): Promise<void> {

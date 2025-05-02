@@ -605,3 +605,8 @@ export enum NotificationType {
   SystemMessage = 'SystemMessage',
   Custom = 'Custom',
 }
+
+export enum OAuthTokenEndpointAuthMethod {
+  CLIENT_SECRET_POST = 'client_secret_post',
+  CLIENT_SECRET_BASIC = 'client_secret_basic',
+}
