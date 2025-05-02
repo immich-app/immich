@@ -49,8 +49,7 @@
 {#if isConfirmOpen}
   <ConfirmDialog
     title={$t('admin.disable_login')}
-    onCancel={() => (isConfirmOpen = false)}
-    onConfirm={() => handleSave(true)}
+    onClose={(confirmed) => (confirmed ? handleSave(true) : (isConfirmOpen = false))}
   >
     {#snippet promptSnippet()}
       <div class="flex flex-col gap-4">

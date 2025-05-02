@@ -1,8 +1,8 @@
 <script lang="ts">
-  import FullScreenModal from '../full-screen-modal.svelte';
-  import { t } from 'svelte-i18n';
-  import type { Snippet } from 'svelte';
   import { Button, type Color } from '@immich/ui';
+  import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import FullScreenModal from '../full-screen-modal.svelte';
 
   interface Props {
     title?: string;
@@ -14,8 +14,7 @@
     hideCancelButton?: boolean;
     disabled?: boolean;
     width?: 'wide' | 'narrow';
-    onCancel: () => void;
-    onConfirm: () => void;
+    onClose: (confirmed: boolean) => void;
     promptSnippet?: Snippet;
   }
 
@@ -29,17 +28,16 @@
     hideCancelButton = false,
     disabled = false,
     width = 'narrow',
-    onCancel,
-    onConfirm,
+    onClose,
     promptSnippet,
   }: Props = $props();
 
   const handleConfirm = () => {
-    onConfirm();
+    onClose(true);
   };
 </script>
 
-<FullScreenModal {title} onClose={onCancel} {width}>
+<FullScreenModal {title} onClose={() => onClose(false)} {width}>
   <div class="text-md py-5 text-center">
     {#if promptSnippet}{@render promptSnippet()}{:else}
       <p>{prompt}</p>
@@ -48,7 +46,7 @@
 
   {#snippet stickyBottom()}
     {#if !hideCancelButton}
-      <Button shape="round" color={cancelColor} fullWidth onclick={onCancel}>
+      <Button shape="round" color={cancelColor} fullWidth onclick={() => onClose(false)}>
         {cancelText}
       </Button>
     {/if}
