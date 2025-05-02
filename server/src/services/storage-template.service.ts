@@ -344,9 +344,19 @@ export class StorageTemplateService extends BaseService {
   }
 
   private compile(template: string) {
+    // Register helpers
+    handlebar.registerHelper('eq', (a: unknown, b: unknown) => a === b);
+    handlebar.registerHelper('or', function() {
+      const args = Array.prototype.slice.call(arguments, 0, -1);
+      return args.some(Boolean);
+    });
+
     return {
       raw: template,
-      compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
+      compiled: handlebar.compile(template, {
+        knownHelpers: { eq: true, or: true },
+        strict: true
+      }),
       needsAlbum: template.includes('album'),
       needsAlbumMetadata: template.includes('album-startDate') || template.includes('album-endDate'),
     };
