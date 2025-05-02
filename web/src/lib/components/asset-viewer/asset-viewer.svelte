@@ -5,8 +5,8 @@
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
+  import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -19,15 +19,9 @@
   import {
     AssetJobName,
     AssetTypeEnum,
-    ReactionType,
-    createActivity,
-    deleteActivity,
-    getActivities,
-    getActivityStatistics,
     getAllAlbums,
     getStack,
     runAssetJobs,
-    type ActivityResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -61,7 +55,6 @@
     person?: PersonResponseDto | null;
     preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
-    reactions?: ActivityResponseDto[];
     showCloseButton?: boolean;
     onClose: (dto: { asset: AssetResponseDto }) => void;
     onNext: () => Promise<HasAsset>;
@@ -80,7 +73,6 @@
     person = null,
     preAction = undefined,
     onAction = undefined,
-    reactions = $bindable([]),
     showCloseButton,
     onClose,
     onNext,
@@ -107,8 +99,6 @@
   let previewStackedAsset: AssetResponseDto | undefined = $state();
   let isShowActivity = $state(false);
   let isShowEditor = $state(false);
-  let isLiked: ActivityResponseDto | null = $state(null);
-  let numberOfComments = $state(0);
   let fullscreenElement = $state<Element>();
   let unsubscribes: (() => void)[] = [];
   let selectedEditType: string = $state('');
@@ -136,59 +126,20 @@
     });
   };
 
-  const handleAddComment = () => {
-    numberOfComments++;
-    updateNumberOfComments(1);
-  };
-
-  const handleRemoveComment = () => {
-    numberOfComments--;
-    updateNumberOfComments(-1);
-  };
-
   const handleFavorite = async () => {
     if (album && album.isActivityEnabled) {
       try {
-        if (isLiked) {
-          const activityId = isLiked.id;
-          await deleteActivity({ id: activityId });
-          reactions = reactions.filter((reaction) => reaction.id !== activityId);
-          isLiked = null;
-        } else {
-          const data = await createActivity({
-            activityCreateDto: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
-          });
-
-          isLiked = data;
-          reactions = [...reactions, isLiked];
-        }
+        await activityManager.toggleLike();
       } catch (error) {
         handleError(error, $t('errors.unable_to_change_favorite'));
       }
     }
   };
 
-  const getFavorite = async () => {
-    if (album && $user) {
-      try {
-        const data = await getActivities({
-          userId: $user.id,
-          assetId: asset.id,
-          albumId: album.id,
-          $type: ReactionType.Like,
-        });
-        isLiked = data.length > 0 ? data[0] : null;
-      } catch (error) {
-        handleError(error, $t('errors.unable_to_load_liked_status'));
-      }
-    }
-  };
-
-  const getNumberOfComments = async () => {
+  const updateComments = async () => {
     if (album) {
       try {
-        const { comments } = await getActivityStatistics({ assetId: asset.id, albumId: album.id });
-        numberOfComments = comments;
+        await activityManager.refreshActivities(album.id, asset.id);
       } catch (error) {
         handleError(error, $t('errors.unable_to_get_comments_number'));
       }
@@ -227,6 +178,10 @@
     if (!sharedLink) {
       await handleGetAllAlbums();
     }
+
+    if (album) {
+      activityManager.init(album.id, asset.id);
+    }
   });
 
   onDestroy(() => {
@@ -241,6 +196,8 @@
     for (const unsubscribe of unsubscribes) {
       unsubscribe();
     }
+
+    activityManager.reset();
   });
 
   const handleGetAllAlbums = async () => {
@@ -402,14 +359,13 @@
     }
   });
   $effect(() => {
-    if (album && !album.isActivityEnabled && numberOfComments === 0) {
+    if (album && !album.isActivityEnabled && activityManager.commentCount === 0) {
       isShowActivity = false;
     }
   });
   $effect(() => {
     if (isShared && asset.id) {
-      handlePromiseError(getFavorite());
-      handlePromiseError(getNumberOfComments());
+      handlePromiseError(updateComments());
     }
   });
   $effect(() => {
@@ -547,12 +503,12 @@
             onVideoStarted={handleVideoStarted}
           />
         {/if}
-        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
+        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0)}
           <div class="z-[9999] absolute bottom-0 end-0 mb-20 me-8">
             <ActivityStatus
               disabled={!album?.isActivityEnabled}
-              {isLiked}
-              {numberOfComments}
+              isLiked={activityManager.isLiked}
+              numberOfComments={activityManager.commentCount}
               onFavorite={handleFavorite}
               onOpenActivityTab={handleOpenActivity}
             />
@@ -642,11 +598,6 @@
         albumOwnerId={album.ownerId}
         albumId={album.id}
         assetId={asset.id}
-        {isLiked}
-        bind:reactions
-        onAddComment={handleAddComment}
-        onDeleteComment={handleRemoveComment}
-        onDeleteLike={() => (isLiked = null)}
         onClose={() => (isShowActivity = false)}
       />
     </div>

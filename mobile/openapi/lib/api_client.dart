@@ -320,16 +320,6 @@ class ApiClient {
           return FaceDto.fromJson(value);
         case 'FacialRecognitionConfig':
           return FacialRecognitionConfig.fromJson(value);
-        case 'FileChecksumDto':
-          return FileChecksumDto.fromJson(value);
-        case 'FileChecksumResponseDto':
-          return FileChecksumResponseDto.fromJson(value);
-        case 'FileReportDto':
-          return FileReportDto.fromJson(value);
-        case 'FileReportFixDto':
-          return FileReportFixDto.fromJson(value);
-        case 'FileReportItemDto':
-          return FileReportItemDto.fromJson(value);
         case 'FoldersResponse':
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':
@@ -378,8 +368,6 @@ class ApiClient {
           return MemoriesUpdate.fromJson(value);
         case 'MemoryCreateDto':
           return MemoryCreateDto.fromJson(value);
-        case 'MemoryLaneResponseDto':
-          return MemoryLaneResponseDto.fromJson(value);
         case 'MemoryResponseDto':
           return MemoryResponseDto.fromJson(value);
         case 'MemoryType':
@@ -418,10 +406,6 @@ class ApiClient {
           return PartnerDirectionTypeTransformer().decode(value);
         case 'PartnerResponseDto':
           return PartnerResponseDto.fromJson(value);
-        case 'PathEntityType':
-          return PathEntityTypeTypeTransformer().decode(value);
-        case 'PathType':
-          return PathTypeTypeTransformer().decode(value);
         case 'PeopleResponse':
           return PeopleResponse.fromJson(value);
         case 'PeopleResponseDto':
