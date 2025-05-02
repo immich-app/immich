@@ -142,6 +142,10 @@ export class EnvDto {
   @ValidateBoolean({ optional: true })
   DB_SKIP_MIGRATIONS?: boolean;
 
+  @IsEnum(['disable', 'allow', 'prefer', 'require', 'verify-ca', 'verify-full'])
+  @Optional()
+  DB_SSL_MODE?: 'disable' | 'allow' | 'prefer' | 'require' | 'verify-ca' | 'verify-full';
+
   @IsString()
   @Optional()
   DB_URL?: string;

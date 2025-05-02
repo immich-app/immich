@@ -373,6 +373,8 @@ export type DatabaseConnectionURL = {
   url: string;
 };
 
+type SSL = 'disable' | 'allow' | 'prefer' | 'require' | 'verify-ca' | 'verify-full';
+
 export type DatabaseConnectionParts = {
   connectionType: 'parts';
   host: string;
@@ -380,6 +382,7 @@ export type DatabaseConnectionParts = {
   username: string;
   password: string;
   database: string;
+  ssl?: SSL;
 };
 
 export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;

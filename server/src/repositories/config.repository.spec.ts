@@ -23,6 +23,7 @@ const resetEnv = () => {
     'DB_USERNAME',
     'DB_PASSWORD',
     'DB_DATABASE_NAME',
+    'DB_SSL_MODE',
     'DB_SKIP_MIGRATIONS',
     'DB_VECTOR_EXTENSION',
 

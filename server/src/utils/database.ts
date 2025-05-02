@@ -35,7 +35,7 @@ export const asPostgresConnectionConfig = (params: DatabaseConnectionParams) => 
       username: params.username,
       password: params.password,
       database: params.database,
-      ssl: undefined,
+      ssl: params.ssl,
     };
   }
 
