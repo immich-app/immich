@@ -115,7 +115,7 @@
 <ConfirmDialog
   confirmColor="primary"
   title={$t('change_location')}
-  width="wide"
+  size="medium"
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
 >
   {#snippet promptSnippet()}
