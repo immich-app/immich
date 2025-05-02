@@ -11,7 +11,7 @@ import { services } from 'src/services';
 import { ApiService } from 'src/services/api.service';
 import { AuthService } from 'src/services/auth.service';
 import { BaseService } from 'src/services/base.service';
-import { automock } from 'test/utils';
+import { automock, mockBaseService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 export const createControllerTestApp = async (options?: { authType?: 'mock' | 'real' }) => {
@@ -24,10 +24,6 @@ export const createControllerTestApp = async (options?: { authType?: 'mock' | 'r
   loggerMock.error.mockImplementation((...args: any[]) => {
     console.log('Logger.error was called with', ...args);
   });
-
-  const mockBaseService = (service: ClassConstructor<BaseService>) => {
-    return automock(service, { args: [loggerMock], strict: false });
-  };
 
   const clsServiceMock = clsMock;
 
