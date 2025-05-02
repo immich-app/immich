@@ -259,7 +259,6 @@
     }}
     onclick={handleClick}
     bind:this={element}
-    onfocus={handleFocus}
     data-thumbnail-focus-container
     tabindex={0}
     role="link"
