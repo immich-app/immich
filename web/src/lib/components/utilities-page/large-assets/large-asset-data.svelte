@@ -3,8 +3,8 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
-  import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
+  import { type AssetResponseDto } from '@immich/sdk';
+  import { mdiHeart } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -14,7 +14,6 @@
 
   let { asset, onViewAsset }: Props = $props();
 
-  let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
 </script>
 
@@ -32,6 +31,11 @@
         draggable="false"
       />
 
+      <!-- OVERLAY CHIP -->
+      {#if !!asset.libraryId}
+        <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-red-300/90">External</div>
+      {/if}
+
       <!-- FAVORITE ICON -->
       {#if asset.isFavorite}
         <div class="absolute bottom-2 start-2">
@@ -41,23 +45,12 @@
     </button>
   </div>
 
-  <div class="flex justify-between items-center pl-2">
+  <div class="flex justify-between items-center pl-2 pr-4 gap-2">
     <div class="grid gap-y-2 py-2 text-xs transition-colors dark:text-white">
-      <span class="break-all text-left">{asset.originalFileName}</span>
+      <div class="text-left text-ellipsis truncate">{asset.originalFileName}</div>
       <span>{getAssetResolution(asset)}</span>
-      <span>
-        {#await getAllAlbums({ assetId: asset.id })}
-          {$t('scanning_for_album')}
-        {:then albums}
-          {#if albums.length === 0}
-            {$t('not_in_any_album')}
-          {:else}
-            {$t('in_albums', { values: { count: albums.length } })}
-          {/if}
-        {/await}
-      </span>
     </div>
-    <div class="dark:text-white text-lg flex-grow text-center font-bold">
+    <div class="dark:text-white text-lg font-bold whitespace-nowrap w-max">
       {getFileSize(asset, 1)}
     </div>
   </div>
