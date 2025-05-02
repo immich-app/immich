@@ -12,6 +12,7 @@
         "panel": "dedicated",
         "showReuseMessage": true,
         "clear": false,
+        "group": "Devcontainer tasks",
         "close": true
       },
       "runOptions": {
@@ -30,6 +31,7 @@
         "panel": "dedicated",
         "showReuseMessage": true,
         "clear": false,
+        "group": "Devcontainer tasks",
         "close": true
       },
       "runOptions": {
