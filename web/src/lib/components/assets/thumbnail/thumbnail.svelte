@@ -243,6 +243,26 @@
     class={['group absolute top-[0px] bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
+    onmouseenter={onMouseEnter}
+    onmouseleave={onMouseLeave}
+    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
+    onkeydown={(evt) => {
+      if (evt.key === 'Enter') {
+        callClickHandlers();
+      }
+      if (evt.key === 'x') {
+        onSelect?.(asset);
+      }
+      if (document.activeElement === element && evt.key === 'Escape') {
+        focusNext((element) => element.dataset.thumbnailFocusContainer === undefined, true);
+      }
+    }}
+    onclick={handleClick}
+    bind:this={element}
+    onfocus={handleFocus}
+    data-thumbnail-focus-container
+    tabindex={0}
+    role="link"
   >
     <!-- Select asset button  -->
     {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
