@@ -11,7 +11,7 @@ describe(ActivityController.name, () => {
     ctx = await controllerSetup(ActivityController, [
       { provide: ActivityService, useValue: mockBaseService(ActivityService) },
     ]);
-    return ctx.close();
+    return () => ctx.close();
   });
 
   beforeEach(() => {

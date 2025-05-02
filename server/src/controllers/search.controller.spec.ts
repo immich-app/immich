@@ -11,7 +11,7 @@ describe(SearchController.name, () => {
     ctx = await controllerSetup(SearchController, [
       { provide: SearchService, useValue: mockBaseService(SearchService) },
     ]);
-    return ctx.close();
+    return () => ctx.close();
   });
 
   beforeEach(() => {

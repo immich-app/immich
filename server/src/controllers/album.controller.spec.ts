@@ -9,7 +9,7 @@ describe(AlbumController.name, () => {
 
   beforeAll(async () => {
     ctx = await controllerSetup(AlbumController, [{ provide: AlbumService, useValue: mockBaseService(AlbumService) }]);
-    return ctx.close();
+    return () => ctx.close();
   });
 
   beforeEach(() => {

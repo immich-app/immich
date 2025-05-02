@@ -1,4 +1,4 @@
-import { Provider, ValidationPipe } from '@nestjs/common';
+import { CallHandler, Provider, ValidationPipe } from '@nestjs/common';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { ClassConstructor } from 'class-transformer';
@@ -8,7 +8,9 @@ import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import postgres from 'postgres';
 import { DB } from 'src/db';
+import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { AuthGuard } from 'src/middleware/auth.guard';
+import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -79,6 +81,7 @@ export type ControllerContext = {
 };
 
 export const controllerSetup = async (controller: ClassConstructor<unknown>, providers: Provider[]) => {
+  const noopInterceptor = { intercept: (ctx: never, next: CallHandler<unknown>) => next.handle() };
   const authenticate = vi.fn();
   const moduleRef = await Test.createTestingModule({
     controllers: [controller],
@@ -89,7 +92,12 @@ export const controllerSetup = async (controller: ClassConstructor<unknown>, pro
       { provide: AuthService, useValue: { authenticate } },
       ...providers,
     ],
-  }).compile();
+  })
+    .overrideInterceptor(FileUploadInterceptor)
+    .useValue(noopInterceptor)
+    .overrideInterceptor(AssetUploadInterceptor)
+    .useValue(noopInterceptor)
+    .compile();
   const app = moduleRef.createNestApplication();
   await app.init();
 
@@ -116,7 +124,7 @@ const mockFn = (label: string, { strict }: { strict: boolean }) => {
   });
 };
 
-export const mockBaseService = (service: ClassConstructor<BaseService>) => {
+export const mockBaseService = <T extends BaseService>(service: ClassConstructor<T>) => {
   return automock(service, { args: [{ setContext: () => {} }], strict: false });
 };
 
