@@ -7,58 +7,23 @@ import 'package:immich_mobile/domain/models/local_album.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart'
     as i3;
 import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
-    as i5;
-import 'package:drift/internal/modular.dart' as i6;
 
 typedef $$LocalAlbumEntityTableCreateCompanionBuilder
     = i1.LocalAlbumEntityCompanion Function({
   required String id,
   required String name,
   i0.Value<DateTime> updatedAt,
-  i0.Value<String?> thumbnailId,
   required i2.BackupSelection backupSelection,
+  i0.Value<bool> marker_,
 });
 typedef $$LocalAlbumEntityTableUpdateCompanionBuilder
     = i1.LocalAlbumEntityCompanion Function({
   i0.Value<String> id,
   i0.Value<String> name,
   i0.Value<DateTime> updatedAt,
-  i0.Value<String?> thumbnailId,
   i0.Value<i2.BackupSelection> backupSelection,
+  i0.Value<bool> marker_,
 });
-
-final class $$LocalAlbumEntityTableReferences extends i0.BaseReferences<
-    i0.GeneratedDatabase, i1.$LocalAlbumEntityTable, i1.LocalAlbumEntityData> {
-  $$LocalAlbumEntityTableReferences(
-      super.$_db, super.$_table, super.$_typedResult);
-
-  static i5.$LocalAssetEntityTable _thumbnailIdTable(i0.GeneratedDatabase db) =>
-      i6.ReadDatabaseContainer(db)
-          .resultSet<i5.$LocalAssetEntityTable>('local_asset_entity')
-          .createAlias(i0.$_aliasNameGenerator(
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i1.$LocalAlbumEntityTable>('local_album_entity')
-                  .thumbnailId,
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i5.$LocalAssetEntityTable>('local_asset_entity')
-                  .localId));
-
-  i5.$$LocalAssetEntityTableProcessedTableManager? get thumbnailId {
-    final $_column = $_itemColumn<String>('thumbnail_id');
-    if ($_column == null) return null;
-    final manager = i5
-        .$$LocalAssetEntityTableTableManager(
-            $_db,
-            i6.ReadDatabaseContainer($_db)
-                .resultSet<i5.$LocalAssetEntityTable>('local_asset_entity'))
-        .filter((f) => f.localId.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_thumbnailIdTable($_db));
-    if (item == null) return manager;
-    return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
-}
 
 class $$LocalAlbumEntityTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i1.$LocalAlbumEntityTable> {
@@ -83,27 +48,8 @@ class $$LocalAlbumEntityTableFilterComposer
           column: $table.backupSelection,
           builder: (column) => i0.ColumnWithTypeConverterFilters(column));
 
-  i5.$$LocalAssetEntityTableFilterComposer get thumbnailId {
-    final i5.$$LocalAssetEntityTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.thumbnailId,
-        referencedTable: i6.ReadDatabaseContainer($db)
-            .resultSet<i5.$LocalAssetEntityTable>('local_asset_entity'),
-        getReferencedColumn: (t) => t.localId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i5.$$LocalAssetEntityTableFilterComposer(
-              $db: $db,
-              $table: i6.ReadDatabaseContainer($db)
-                  .resultSet<i5.$LocalAssetEntityTable>('local_asset_entity'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
+  i0.ColumnFilters<bool> get marker_ => $composableBuilder(
+      column: $table.marker_, builder: (column) => i0.ColumnFilters(column));
 }
 
 class $$LocalAlbumEntityTableOrderingComposer
@@ -129,29 +75,8 @@ class $$LocalAlbumEntityTableOrderingComposer
       column: $table.backupSelection,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i5.$$LocalAssetEntityTableOrderingComposer get thumbnailId {
-    final i5.$$LocalAssetEntityTableOrderingComposer composer =
-        $composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.thumbnailId,
-            referencedTable: i6.ReadDatabaseContainer($db)
-                .resultSet<i5.$LocalAssetEntityTable>('local_asset_entity'),
-            getReferencedColumn: (t) => t.localId,
-            builder: (joinBuilder,
-                    {$addJoinBuilderToRootComposer,
-                    $removeJoinBuilderFromRootComposer}) =>
-                i5.$$LocalAssetEntityTableOrderingComposer(
-                  $db: $db,
-                  $table: i6.ReadDatabaseContainer($db)
-                      .resultSet<i5.$LocalAssetEntityTable>(
-                          'local_asset_entity'),
-                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                  joinBuilder: joinBuilder,
-                  $removeJoinBuilderFromRootComposer:
-                      $removeJoinBuilderFromRootComposer,
-                ));
-    return composer;
-  }
+  i0.ColumnOrderings<bool> get marker_ => $composableBuilder(
+      column: $table.marker_, builder: (column) => i0.ColumnOrderings(column));
 }
 
 class $$LocalAlbumEntityTableAnnotationComposer
@@ -176,29 +101,8 @@ class $$LocalAlbumEntityTableAnnotationComposer
       get backupSelection => $composableBuilder(
           column: $table.backupSelection, builder: (column) => column);
 
-  i5.$$LocalAssetEntityTableAnnotationComposer get thumbnailId {
-    final i5.$$LocalAssetEntityTableAnnotationComposer composer =
-        $composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.thumbnailId,
-            referencedTable: i6.ReadDatabaseContainer($db)
-                .resultSet<i5.$LocalAssetEntityTable>('local_asset_entity'),
-            getReferencedColumn: (t) => t.localId,
-            builder: (joinBuilder,
-                    {$addJoinBuilderToRootComposer,
-                    $removeJoinBuilderFromRootComposer}) =>
-                i5.$$LocalAssetEntityTableAnnotationComposer(
-                  $db: $db,
-                  $table: i6.ReadDatabaseContainer($db)
-                      .resultSet<i5.$LocalAssetEntityTable>(
-                          'local_asset_entity'),
-                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                  joinBuilder: joinBuilder,
-                  $removeJoinBuilderFromRootComposer:
-                      $removeJoinBuilderFromRootComposer,
-                ));
-    return composer;
-  }
+  i0.GeneratedColumn<bool> get marker_ =>
+      $composableBuilder(column: $table.marker_, builder: (column) => column);
 }
 
 class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
@@ -210,9 +114,13 @@ class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
     i1.$$LocalAlbumEntityTableAnnotationComposer,
     $$LocalAlbumEntityTableCreateCompanionBuilder,
     $$LocalAlbumEntityTableUpdateCompanionBuilder,
-    (i1.LocalAlbumEntityData, i1.$$LocalAlbumEntityTableReferences),
+    (
+      i1.LocalAlbumEntityData,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$LocalAlbumEntityTable,
+          i1.LocalAlbumEntityData>
+    ),
     i1.LocalAlbumEntityData,
-    i0.PrefetchHooks Function({bool thumbnailId})> {
+    i0.PrefetchHooks Function()> {
   $$LocalAlbumEntityTableTableManager(
       i0.GeneratedDatabase db, i1.$LocalAlbumEntityTable table)
       : super(i0.TableManagerState(
@@ -229,73 +137,35 @@ class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            i0.Value<String?> thumbnailId = const i0.Value.absent(),
             i0.Value<i2.BackupSelection> backupSelection =
                 const i0.Value.absent(),
+            i0.Value<bool> marker_ = const i0.Value.absent(),
           }) =>
               i1.LocalAlbumEntityCompanion(
             id: id,
             name: name,
             updatedAt: updatedAt,
-            thumbnailId: thumbnailId,
             backupSelection: backupSelection,
+            marker_: marker_,
           ),
           createCompanionCallback: ({
             required String id,
             required String name,
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            i0.Value<String?> thumbnailId = const i0.Value.absent(),
             required i2.BackupSelection backupSelection,
+            i0.Value<bool> marker_ = const i0.Value.absent(),
           }) =>
               i1.LocalAlbumEntityCompanion.insert(
             id: id,
             name: name,
             updatedAt: updatedAt,
-            thumbnailId: thumbnailId,
             backupSelection: backupSelection,
+            marker_: marker_,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    i1.$$LocalAlbumEntityTableReferences(db, table, e)
-                  ))
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({thumbnailId = false}) {
-            return i0.PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends i0.TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic>>(state) {
-                if (thumbnailId) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.thumbnailId,
-                    referencedTable: i1.$$LocalAlbumEntityTableReferences
-                        ._thumbnailIdTable(db),
-                    referencedColumn: i1.$$LocalAlbumEntityTableReferences
-                        ._thumbnailIdTable(db)
-                        .localId,
-                  ) as T;
-                }
-
-                return state;
-              },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ));
 }
 
@@ -308,9 +178,13 @@ typedef $$LocalAlbumEntityTableProcessedTableManager = i0.ProcessedTableManager<
     i1.$$LocalAlbumEntityTableAnnotationComposer,
     $$LocalAlbumEntityTableCreateCompanionBuilder,
     $$LocalAlbumEntityTableUpdateCompanionBuilder,
-    (i1.LocalAlbumEntityData, i1.$$LocalAlbumEntityTableReferences),
+    (
+      i1.LocalAlbumEntityData,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$LocalAlbumEntityTable,
+          i1.LocalAlbumEntityData>
+    ),
     i1.LocalAlbumEntityData,
-    i0.PrefetchHooks Function({bool thumbnailId})>;
+    i0.PrefetchHooks Function()>;
 
 class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
     with i0.TableInfo<$LocalAlbumEntityTable, i1.LocalAlbumEntityData> {
@@ -337,15 +211,6 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
           type: i0.DriftSqlType.dateTime,
           requiredDuringInsert: false,
           defaultValue: i4.currentDateAndTime);
-  static const i0.VerificationMeta _thumbnailIdMeta =
-      const i0.VerificationMeta('thumbnailId');
-  @override
-  late final i0.GeneratedColumn<String> thumbnailId =
-      i0.GeneratedColumn<String>('thumbnail_id', aliasedName, true,
-          type: i0.DriftSqlType.string,
-          requiredDuringInsert: false,
-          defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-              'REFERENCES local_asset_entity (local_id) ON DELETE SET NULL'));
   @override
   late final i0.GeneratedColumnWithTypeConverter<i2.BackupSelection, int>
       backupSelection = i0.GeneratedColumn<int>(
@@ -353,9 +218,19 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
               type: i0.DriftSqlType.int, requiredDuringInsert: true)
           .withConverter<i2.BackupSelection>(
               i1.$LocalAlbumEntityTable.$converterbackupSelection);
+  static const i0.VerificationMeta _marker_Meta =
+      const i0.VerificationMeta('marker_');
+  @override
+  late final i0.GeneratedColumn<bool> marker_ = i0.GeneratedColumn<bool>(
+      'marker', aliasedName, false,
+      type: i0.DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          i0.GeneratedColumn.constraintIsAlways('CHECK ("marker" IN (0, 1))'),
+      defaultValue: const i4.Constant(false));
   @override
   List<i0.GeneratedColumn> get $columns =>
-      [id, name, updatedAt, thumbnailId, backupSelection];
+      [id, name, updatedAt, backupSelection, marker_];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -382,11 +257,9 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
-    if (data.containsKey('thumbnail_id')) {
-      context.handle(
-          _thumbnailIdMeta,
-          thumbnailId.isAcceptableOrUnknown(
-              data['thumbnail_id']!, _thumbnailIdMeta));
+    if (data.containsKey('marker')) {
+      context.handle(_marker_Meta,
+          marker_.isAcceptableOrUnknown(data['marker']!, _marker_Meta));
     }
     return context;
   }
@@ -404,11 +277,11 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
           .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
       updatedAt: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      thumbnailId: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}thumbnail_id']),
       backupSelection: i1.$LocalAlbumEntityTable.$converterbackupSelection
           .fromSql(attachedDatabase.typeMapping.read(i0.DriftSqlType.int,
               data['${effectivePrefix}backup_selection'])!),
+      marker_: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.bool, data['${effectivePrefix}marker'])!,
     );
   }
 
@@ -432,28 +305,26 @@ class LocalAlbumEntityData extends i0.DataClass
   final String id;
   final String name;
   final DateTime updatedAt;
-  final String? thumbnailId;
   final i2.BackupSelection backupSelection;
+  final bool marker_;
   const LocalAlbumEntityData(
       {required this.id,
       required this.name,
       required this.updatedAt,
-      this.thumbnailId,
-      required this.backupSelection});
+      required this.backupSelection,
+      required this.marker_});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     map['id'] = i0.Variable<String>(id);
     map['name'] = i0.Variable<String>(name);
     map['updated_at'] = i0.Variable<DateTime>(updatedAt);
-    if (!nullToAbsent || thumbnailId != null) {
-      map['thumbnail_id'] = i0.Variable<String>(thumbnailId);
-    }
     {
       map['backup_selection'] = i0.Variable<int>(i1
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toSql(backupSelection));
     }
+    map['marker'] = i0.Variable<bool>(marker_);
     return map;
   }
 
@@ -464,9 +335,9 @@ class LocalAlbumEntityData extends i0.DataClass
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      thumbnailId: serializer.fromJson<String?>(json['thumbnailId']),
       backupSelection: i1.$LocalAlbumEntityTable.$converterbackupSelection
           .fromJson(serializer.fromJson<int>(json['backupSelection'])),
+      marker_: serializer.fromJson<bool>(json['marker_']),
     );
   }
   @override
@@ -476,10 +347,10 @@ class LocalAlbumEntityData extends i0.DataClass
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'thumbnailId': serializer.toJson<String?>(thumbnailId),
       'backupSelection': serializer.toJson<int>(i1
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toJson(backupSelection)),
+      'marker_': serializer.toJson<bool>(marker_),
     };
   }
 
@@ -487,25 +358,24 @@ class LocalAlbumEntityData extends i0.DataClass
           {String? id,
           String? name,
           DateTime? updatedAt,
-          i0.Value<String?> thumbnailId = const i0.Value.absent(),
-          i2.BackupSelection? backupSelection}) =>
+          i2.BackupSelection? backupSelection,
+          bool? marker_}) =>
       i1.LocalAlbumEntityData(
         id: id ?? this.id,
         name: name ?? this.name,
         updatedAt: updatedAt ?? this.updatedAt,
-        thumbnailId: thumbnailId.present ? thumbnailId.value : this.thumbnailId,
         backupSelection: backupSelection ?? this.backupSelection,
+        marker_: marker_ ?? this.marker_,
       );
   LocalAlbumEntityData copyWithCompanion(i1.LocalAlbumEntityCompanion data) {
     return LocalAlbumEntityData(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      thumbnailId:
-          data.thumbnailId.present ? data.thumbnailId.value : this.thumbnailId,
       backupSelection: data.backupSelection.present
           ? data.backupSelection.value
           : this.backupSelection,
+      marker_: data.marker_.present ? data.marker_.value : this.marker_,
     );
   }
 
@@ -515,15 +385,15 @@ class LocalAlbumEntityData extends i0.DataClass
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('thumbnailId: $thumbnailId, ')
-          ..write('backupSelection: $backupSelection')
+          ..write('backupSelection: $backupSelection, ')
+          ..write('marker_: $marker_')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, name, updatedAt, thumbnailId, backupSelection);
+      Object.hash(id, name, updatedAt, backupSelection, marker_);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -531,8 +401,8 @@ class LocalAlbumEntityData extends i0.DataClass
           other.id == this.id &&
           other.name == this.name &&
           other.updatedAt == this.updatedAt &&
-          other.thumbnailId == this.thumbnailId &&
-          other.backupSelection == this.backupSelection);
+          other.backupSelection == this.backupSelection &&
+          other.marker_ == this.marker_);
 }
 
 class LocalAlbumEntityCompanion
@@ -540,21 +410,21 @@ class LocalAlbumEntityCompanion
   final i0.Value<String> id;
   final i0.Value<String> name;
   final i0.Value<DateTime> updatedAt;
-  final i0.Value<String?> thumbnailId;
   final i0.Value<i2.BackupSelection> backupSelection;
+  final i0.Value<bool> marker_;
   const LocalAlbumEntityCompanion({
     this.id = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
-    this.thumbnailId = const i0.Value.absent(),
     this.backupSelection = const i0.Value.absent(),
+    this.marker_ = const i0.Value.absent(),
   });
   LocalAlbumEntityCompanion.insert({
     required String id,
     required String name,
     this.updatedAt = const i0.Value.absent(),
-    this.thumbnailId = const i0.Value.absent(),
     required i2.BackupSelection backupSelection,
+    this.marker_ = const i0.Value.absent(),
   })  : id = i0.Value(id),
         name = i0.Value(name),
         backupSelection = i0.Value(backupSelection);
@@ -562,15 +432,15 @@ class LocalAlbumEntityCompanion
     i0.Expression<String>? id,
     i0.Expression<String>? name,
     i0.Expression<DateTime>? updatedAt,
-    i0.Expression<String>? thumbnailId,
     i0.Expression<int>? backupSelection,
+    i0.Expression<bool>? marker_,
   }) {
     return i0.RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (thumbnailId != null) 'thumbnail_id': thumbnailId,
       if (backupSelection != null) 'backup_selection': backupSelection,
+      if (marker_ != null) 'marker': marker_,
     });
   }
 
@@ -578,14 +448,14 @@ class LocalAlbumEntityCompanion
       {i0.Value<String>? id,
       i0.Value<String>? name,
       i0.Value<DateTime>? updatedAt,
-      i0.Value<String?>? thumbnailId,
-      i0.Value<i2.BackupSelection>? backupSelection}) {
+      i0.Value<i2.BackupSelection>? backupSelection,
+      i0.Value<bool>? marker_}) {
     return i1.LocalAlbumEntityCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       updatedAt: updatedAt ?? this.updatedAt,
-      thumbnailId: thumbnailId ?? this.thumbnailId,
       backupSelection: backupSelection ?? this.backupSelection,
+      marker_: marker_ ?? this.marker_,
     );
   }
 
@@ -601,13 +471,13 @@ class LocalAlbumEntityCompanion
     if (updatedAt.present) {
       map['updated_at'] = i0.Variable<DateTime>(updatedAt.value);
     }
-    if (thumbnailId.present) {
-      map['thumbnail_id'] = i0.Variable<String>(thumbnailId.value);
-    }
     if (backupSelection.present) {
       map['backup_selection'] = i0.Variable<int>(i1
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toSql(backupSelection.value));
+    }
+    if (marker_.present) {
+      map['marker'] = i0.Variable<bool>(marker_.value);
     }
     return map;
   }
@@ -618,8 +488,8 @@ class LocalAlbumEntityCompanion
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('thumbnailId: $thumbnailId, ')
-          ..write('backupSelection: $backupSelection')
+          ..write('backupSelection: $backupSelection, ')
+          ..write('marker_: $marker_')
           ..write(')'))
         .toString();
   }

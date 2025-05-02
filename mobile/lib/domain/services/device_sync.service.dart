@@ -4,28 +4,50 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
-import 'package:immich_mobile/domain/interfaces/local_asset.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
+import 'package:immich_mobile/platform/messages.g.dart' as platform;
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:immich_mobile/utils/nullable_value.dart';
 import 'package:logging/logging.dart';
 
 class DeviceSyncService {
   final IAlbumMediaRepository _albumMediaRepository;
   final ILocalAlbumRepository _localAlbumRepository;
-  final ILocalAssetRepository _localAssetRepository;
+  final platform.ImHostService _hostService;
   final Logger _log = Logger("SyncService");
 
   DeviceSyncService({
     required IAlbumMediaRepository albumMediaRepository,
     required ILocalAlbumRepository localAlbumRepository,
-    required ILocalAssetRepository localAssetRepository,
+    required platform.ImHostService hostService,
   })  : _albumMediaRepository = albumMediaRepository,
         _localAlbumRepository = localAlbumRepository,
-        _localAssetRepository = localAssetRepository;
+        _hostService = hostService;
 
   Future<void> sync() async {
+    try {
+      if (await _hostService.shouldFullSync()) {
+        _log.fine("Cannot use partial sync. Performing full sync");
+        return await fullSync();
+      }
+
+      if (!await _hostService.hasMediaChanges()) {
+        _log.fine("No media changes detected. Skipping sync");
+        return;
+      }
+
+      final deviceAlbums = await _albumMediaRepository.getAll();
+      await _localAlbumRepository.updateAll(deviceAlbums);
+
+      final delta = await _hostService.getMediaChanges();
+      await _localAlbumRepository.handleSyncDelta(delta);
+      await _hostService.checkpointSync();
+    } catch (e, s) {
+      _log.severe("Error performing device sync", e, s);
+    }
+  }
+
+  Future<void> fullSync() async {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
       // The deviceAlbums will not have the updatedAt field
@@ -47,6 +69,7 @@ class DeviceSyncService {
         onlySecond: addAlbum,
       );
 
+      _hostService.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
     } catch (e, s) {
@@ -57,16 +80,11 @@ class DeviceSyncService {
   Future<void> addAlbum(LocalAlbum newAlbum) async {
     try {
       _log.info("Adding device album ${newAlbum.name}");
-      final deviceAlbum = await _albumMediaRepository.refresh(newAlbum.id);
+      final album = await _albumMediaRepository.refresh(newAlbum.id);
 
-      final assets = deviceAlbum.assetCount > 0
-          ? await _albumMediaRepository.getAssetsForAlbum(deviceAlbum.id)
+      final assets = album.assetCount > 0
+          ? await _albumMediaRepository.getAssetsForAlbum(album.id)
           : <LocalAsset>[];
-
-      final album = deviceAlbum.copyWith(
-        // The below assumes the list is already sorted by createdDate from the filter
-        thumbnailId: NullableValue.valueOrEmpty(assets.firstOrNull?.id),
-      );
 
       await _localAlbumRepository.insert(album, assets);
       _log.fine("Successfully added device album ${album.name}");
@@ -110,7 +128,7 @@ class DeviceSyncService {
       }
 
       // Slower path - full sync
-      return await fullSync(dbAlbum, deviceAlbum);
+      return await fullDiff(dbAlbum, deviceAlbum);
     } catch (e, s) {
       _log.warning("Error while diff device album", e, s);
     }
@@ -155,25 +173,8 @@ class DeviceSyncService {
         return false;
       }
 
-      String? thumbnailId = dbAlbum.thumbnailId;
-      if (thumbnailId == null || newAssets.isNotEmpty) {
-        if (thumbnailId == null) {
-          thumbnailId = newAssets.firstOrNull?.id;
-        } else if (newAssets.isNotEmpty) {
-          // The below assumes the list is already sorted by createdDate from the filter
-          final oldThumbAsset = await _localAssetRepository.get(thumbnailId);
-          if (oldThumbAsset.createdAt
-              .isBefore(newAssets.firstOrNull!.createdAt)) {
-            thumbnailId = newAssets.firstOrNull?.id;
-          }
-        }
-      }
-
       await _updateAlbum(
-        deviceAlbum.copyWith(
-          thumbnailId: NullableValue.valueOrEmpty(thumbnailId),
-          backupSelection: dbAlbum.backupSelection,
-        ),
+        deviceAlbum.copyWith(backupSelection: dbAlbum.backupSelection),
         assetsToUpsert: newAssets,
       );
 
@@ -187,7 +188,7 @@ class DeviceSyncService {
   @visibleForTesting
   // The [deviceAlbum] is expected to be refreshed before calling this method
   // with modified time and asset count
-  Future<bool> fullSync(LocalAlbum dbAlbum, LocalAlbum deviceAlbum) async {
+  Future<bool> fullDiff(LocalAlbum dbAlbum, LocalAlbum deviceAlbum) async {
     try {
       final assetsInDevice = deviceAlbum.assetCount > 0
           ? await _albumMediaRepository.getAssetsForAlbum(deviceAlbum.id)
@@ -201,23 +202,13 @@ class DeviceSyncService {
           "Device album ${deviceAlbum.name} is empty. Removing assets from DB.",
         );
         await _updateAlbum(
-          deviceAlbum.copyWith(
-            // Clear thumbnail for empty album
-            thumbnailId: const NullableValue.empty(),
-            backupSelection: dbAlbum.backupSelection,
-          ),
+          deviceAlbum.copyWith(backupSelection: dbAlbum.backupSelection),
           assetIdsToDelete: assetsInDb.map((a) => a.id),
         );
         return true;
       }
 
-      // The below assumes the list is already sorted by createdDate from the filter
-      String? thumbnailId = assetsInDevice.isNotEmpty
-          ? assetsInDevice.firstOrNull?.id
-          : dbAlbum.thumbnailId;
-
       final updatedDeviceAlbum = deviceAlbum.copyWith(
-        thumbnailId: NullableValue.valueOrEmpty(thumbnailId),
         backupSelection: dbAlbum.backupSelection,
       );
 

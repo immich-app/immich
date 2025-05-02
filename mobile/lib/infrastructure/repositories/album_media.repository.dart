@@ -41,12 +41,10 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
 
   @override
   Future<List<LocalAlbum>> getAll() {
-    final filter = AdvancedCustomFilter(
-      orderBy: [OrderByItem.asc(CustomColumns.base.id)],
-    );
-
-    return PhotoManager.getAssetPathList(hasAll: true, filterOption: filter)
-        .then((e) {
+    return PhotoManager.getAssetPathList(
+      hasAll: true,
+      filterOption: AdvancedCustomFilter(),
+    ).then((e) {
       if (_platform.isAndroid) {
         e.removeWhere((a) => a.isAll);
       }

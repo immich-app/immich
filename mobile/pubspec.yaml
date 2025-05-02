@@ -82,11 +82,6 @@ dependencies:
   drift: ^2.23.1
   drift_flutter: ^0.2.4
 
-dependency_overrides:
-  analyzer: ^6.0.0
-  meta: ^1.11.0
-  analyzer_plugin: ^0.11.3
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -96,11 +91,13 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.3
   flutter_native_splash: ^2.4.5
   isar_generator:
-    version: *isar_version
-    hosted: https://pub.isar-community.dev/
+    git:
+      url: https://github.com/callumw-k/isar
+      ref: v3
+      path: packages/isar_generator/
   integration_test:
     sdk: flutter
-  custom_lint: ^0.6.4
+  custom_lint: ^0.7.5
   riverpod_lint: ^2.6.1
   riverpod_generator: ^2.6.1
   mocktail: ^1.0.4
@@ -110,6 +107,8 @@ dev_dependencies:
   file: ^7.0.1 # for MemoryFileSystem
   # Drift generator
   drift_dev: ^2.23.1
+  # Type safe platform code
+  pigeon: ^25.3.1
 
 flutter:
   uses-material-design: true

@@ -8,6 +8,7 @@ import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.d
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/platform/messages.g.dart' as platform;
 import 'package:platform/platform.dart';
 
 class DriftLocalAlbumRepository extends DriftDatabaseRepository
@@ -65,7 +66,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       transaction(() async {
         await _upsertAssets(assets);
         // Needs to be after asset upsert to link the thumbnail
-        await _upsertAlbum(localAlbum);
+        await update(localAlbum);
         await _linkAssetsToAlbum(localAlbum.id, assets);
       });
 
@@ -112,7 +113,46 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<void> update(LocalAlbum localAlbum) => _upsertAlbum(localAlbum);
+  Future<void> update(LocalAlbum localAlbum) {
+    final companion = LocalAlbumEntityCompanion.insert(
+      id: localAlbum.id,
+      name: localAlbum.name,
+      updatedAt: Value(localAlbum.updatedAt),
+      backupSelection: localAlbum.backupSelection,
+    );
+
+    return _db.localAlbumEntity
+        .insertOne(companion, onConflict: DoUpdate((_) => companion));
+  }
+
+  @override
+  Future<void> updateAll(Iterable<LocalAlbum> albums) {
+    return _db.transaction(() async {
+      await _db.localAlbumEntity
+          .update()
+          .write(const LocalAlbumEntityCompanion(marker_: Value(false)));
+
+      await _db.batch((batch) {
+        for (final album in albums) {
+          final companion = LocalAlbumEntityCompanion.insert(
+            id: album.id,
+            name: album.name,
+            updatedAt: Value(album.updatedAt),
+            backupSelection: album.backupSelection,
+            marker_: const Value(true),
+          );
+
+          batch.insert(
+            _db.localAlbumEntity,
+            companion,
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+
+      await _db.localAlbumEntity.deleteWhere((f) => f.marker_.equals(false));
+    });
+  }
 
   @override
   Future<List<LocalAsset>> getAssetsForAlbum(String albumId) {
@@ -132,17 +172,30 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         .get();
   }
 
-  Future<void> _upsertAlbum(LocalAlbum localAlbum) {
-    final companion = LocalAlbumEntityCompanion.insert(
-      id: localAlbum.id,
-      name: localAlbum.name,
-      updatedAt: Value(localAlbum.updatedAt),
-      thumbnailId: Value.absentIfNull(localAlbum.thumbnailId),
-      backupSelection: localAlbum.backupSelection,
-    );
+  @override
+  Future<void> handleSyncDelta(platform.SyncDelta delta) {
+    return _db.transaction(() async {
+      await _deleteAssets(delta.deletes);
 
-    return _db.localAlbumEntity
-        .insertOne(companion, onConflict: DoUpdate((_) => companion));
+      await _upsertAssets(delta.updates.map((a) => a.toLocalAsset()));
+      await _db.batch((batch) {
+        batch.deleteWhere(
+          _db.localAlbumAssetEntity,
+          (f) => f.assetId.isIn(delta.updates.map((a) => a.id)),
+        );
+        for (final asset in delta.updates) {
+          batch.insertAll(
+            _db.localAlbumAssetEntity,
+            asset.albumIds.map(
+              (albumId) => LocalAlbumAssetEntityCompanion.insert(
+                assetId: asset.id,
+                albumId: albumId,
+              ),
+            ),
+          );
+        }
+      });
+    });
   }
 
   Future<void> _linkAssetsToAlbum(
@@ -237,6 +290,21 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         _db.localAssetEntity,
         (f) => f.localId.isIn(ids),
       ),
+    );
+  }
+}
+
+extension on platform.Asset {
+  LocalAsset toLocalAsset() {
+    return LocalAsset(
+      id: id,
+      name: name,
+      type: AssetType.values.elementAtOrNull(type) ?? AssetType.other,
+      createdAt:
+          createdAt == null ? DateTime.now() : DateTime.parse(createdAt!),
+      updatedAt:
+          updatedAt == null ? DateTime.now() : DateTime.parse(updatedAt!),
+      durationInSeconds: durationInSeconds,
     );
   }
 }

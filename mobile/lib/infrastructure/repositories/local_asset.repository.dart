@@ -9,8 +9,8 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository
   const DriftLocalAssetRepository(this._db) : super(_db);
 
   @override
-  Future<LocalAsset> get(String assetId) => _db.managers.localAssetEntity
-      .filter((f) => f.localId(assetId))
+  Future<LocalAsset> get(String id) => _db.managers.localAssetEntity
+      .filter((f) => f.localId(id))
       .map((a) => a.toDto())
       .getSingle();
 }

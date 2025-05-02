@@ -5,15 +5,15 @@ import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.da
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 
 final deviceSyncServiceProvider = Provider(
   (ref) => DeviceSyncService(
     albumMediaRepository: ref.watch(albumMediaRepositoryProvider),
     localAlbumRepository: ref.watch(localAlbumRepository),
-    localAssetRepository: ref.watch(localAssetProvider),
+    hostService: ref.watch(platformMessagesImpl),
   ),
 );
 
