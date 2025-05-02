@@ -14,6 +14,7 @@ import { asUuid } from 'src/utils/database';
 type Upsert = Insertable<DbUserMetadata>;
 
 export interface UserListFilter {
+  id?: string;
   withDeleted?: boolean;
 }
 
@@ -141,12 +142,13 @@ export class UserRepository {
     { name: 'with deleted', params: [{ withDeleted: true }] },
     { name: 'without deleted', params: [{ withDeleted: false }] },
   )
-  getList({ withDeleted }: UserListFilter = {}) {
+  getList({ id, withDeleted }: UserListFilter = {}) {
     return this.db
       .selectFrom('users')
       .select(columns.userAdmin)
       .select(withMetadata)
       .$if(!withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
+      .$if(!!id, (eb) => eb.where('users.id', '=', id!))
       .orderBy('createdAt', 'desc')
       .execute();
   }

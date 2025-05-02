@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { SALT_ROUNDS } from 'src/constants';
+import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
@@ -18,7 +19,10 @@ import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/uti
 @Injectable()
 export class UserAdminService extends BaseService {
   async search(auth: AuthDto, dto: UserAdminSearchDto): Promise<UserAdminResponseDto[]> {
-    const users = await this.userRepository.getList({ withDeleted: dto.withDeleted });
+    const users = await this.userRepository.getList({
+      id: dto.id,
+      withDeleted: dto.withDeleted,
+    });
     return users.map((user) => mapUserAdmin(user));
   }
 
@@ -107,6 +111,11 @@ export class UserAdminService extends BaseService {
     await this.albumRepository.restoreAll(id);
     const user = await this.userRepository.restore(id);
     return mapUserAdmin(user);
+  }
+
+  async getStatistics(auth: AuthDto, id: string, dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
+    const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
+    return mapStats(stats);
   }
 
   async getPreferences(auth: AuthDto, id: string): Promise<UserPreferencesResponseDto> {
