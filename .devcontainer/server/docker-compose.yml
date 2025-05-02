@@ -17,7 +17,6 @@ services:
     volumes:
       # bind mount host to /workspaces/immich
       - ../..:/workspaces/immich
-      - ./vscode:/workspaces/immich/.vscode
       - cli_node_modules:/workspaces/immich/cli/node_modules
       - e2e_node_modules:/workspaces/immich/e2e/node_modules
       - open_api_node_modules:/workspaces/immich/open-api/typescript-sdk/node_modules

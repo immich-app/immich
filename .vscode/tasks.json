@@ -4,14 +4,15 @@
     {
       "label": "Immich API Server (Nest)",
       "type": "shell",
-      "command": "/immich-devcontainer/startNestApiServer.sh",
+      "command": "[ -f /immich-devcontainer/startNestApiServer.sh ] && /immich-devcontainer/startNestApiServer.sh || exit 0",
       "presentation": {
         "echo": true,
         "reveal": "always",
         "focus": false,
         "panel": "dedicated",
         "showReuseMessage": true,
-        "clear": true
+        "clear": false,
+        "close": true
       },
       "runOptions": {
         "runOn": "default"
@@ -21,14 +22,15 @@
     {
       "label": "Immich Web Server (Vite)",
       "type": "shell",
-      "command": "/immich-devcontainer/startViteWebServer.sh",
+      "command": "[ -f /immich-devcontainer/startViteWebServer.sh ] && /immich-devcontainer/startViteWebServer.sh || exit 0",
       "presentation": {
         "echo": true,
         "reveal": "always",
         "focus": false,
         "panel": "dedicated",
         "showReuseMessage": true,
-        "clear": true
+        "clear": false,
+        "close": true
       },
       "runOptions": {
         "runOn": "default"
