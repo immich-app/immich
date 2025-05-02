@@ -46,7 +46,7 @@
   };
 </script>
 
-<UserPageLayout title={data.meta.title + ` (${data.assets.length.toLocaleString($locale)})`} scrollbar={true}>
+<UserPageLayout title={data.meta.title} scrollbar={true}>
   <div class="flex gap-2 flex-wrap">
     {#if data.assets && data.assets.length > 0}
       {#each data.assets as asset (asset.id)}

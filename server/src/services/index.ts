@@ -12,6 +12,7 @@ import { DatabaseService } from 'src/services/database.service';
 import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { JobService } from 'src/services/job.service';
+import { LargeAssetsService } from 'src/services/large-assets.service';
 import { LibraryService } from 'src/services/library.service';
 import { MapService } from 'src/services/map.service';
 import { MediaService } from 'src/services/media.service';
@@ -39,7 +40,6 @@ import { UserAdminService } from 'src/services/user-admin.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
-import { LargeAssetsService } from './large-assets.service';
 
 export const services = [
   ApiKeyService,

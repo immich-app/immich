@@ -8,7 +8,7 @@ import { LargeAssetsService } from 'src/services/large-assets.service';
 @ApiTags('LargeAssets')
 @Controller('large-assets')
 export class LargeAssestsController {
-  constructor(private service: LargeAssetsService) { }
+  constructor(private service: LargeAssetsService) {}
 
   @Get()
   @Authenticated()
