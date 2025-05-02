@@ -152,8 +152,7 @@
         <ConfirmDialog
           title={$t('password_reset_success')}
           confirmText={$t('done')}
-          onConfirm={() => (shouldShowPasswordResetSuccess = false)}
-          onCancel={() => (shouldShowPasswordResetSuccess = false)}
+          onClose={() => (shouldShowPasswordResetSuccess = false)}
           hideCancelButton={true}
           confirmColor="success"
         >
