@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=common.sh
+# shellcheck disable=SC1091
 source /immich-devcontainer/common.sh
 
 echo "Starting Nest API Server"

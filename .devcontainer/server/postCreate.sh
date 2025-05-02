@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=common.sh
+# shellcheck disable=SC1091
 source /immich-devcontainer/common.sh
 
 sudo find "${IMMICH_WORKSPACE}/server/upload" -not -path "${IMMICH_WORKSPACE}/server/upload/postgres/*" -not -path "${IMMICH_WORKSPACE}/server/upload/postgres" -exec chown node {} +

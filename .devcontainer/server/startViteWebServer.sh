@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=common.sh
+# shellcheck disable=SC1091
 source /immich-devcontainer/common.sh
 
 until curl --output /dev/null --silent --head --fail "http://127.0.0.1:${IMMICH_PORT}/api/server/config"; do
