@@ -347,7 +347,7 @@ export class AssetRepository {
       .select(['deviceAssetId'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
-      .where('visibility', '=', AssetVisibility.TIMELINE)
+      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .execute();
 
@@ -541,13 +541,15 @@ export class AssetRepository {
             .select(truncatedDate<Date>(options.size).as('timeBucket'))
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-            .where(
-              'assets.visibility',
-              'in',
-              options.visibility == undefined
-                ? [AssetVisibility.TIMELINE, AssetVisibility.ARCHIVE]
-                : [options.visibility],
+            .$if(options.visibility == undefined, (qb) =>
+              qb.where((qb) =>
+                qb.or([
+                  qb('assets.visibility', '=', AssetVisibility.TIMELINE),
+                  qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
+                ]),
+              ),
             )
+            .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
@@ -627,11 +629,15 @@ export class AssetRepository {
       .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
       .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
       .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-      .where(
-        'assets.visibility',
-        'in',
-        options.visibility == undefined ? [AssetVisibility.TIMELINE, AssetVisibility.ARCHIVE] : [options.visibility],
+      .$if(options.visibility == undefined, (qb) =>
+        qb.where((qb) =>
+          qb.or([
+            qb('assets.visibility', '=', AssetVisibility.TIMELINE),
+            qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
+          ]),
+        ),
       )
+      .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
       .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
       .orderBy('assets.localDateTime', options.order ?? 'desc')
       .execute();
@@ -665,7 +671,7 @@ export class AssetRepository {
             .where('assets.duplicateId', 'is not', null)
             .$narrowType<{ duplicateId: NotNull }>()
             .where('assets.deletedAt', 'is', null)
-            .where('assets.visibility', '=', AssetVisibility.TIMELINE)
+            .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
             .where('assets.stackId', 'is', null)
             .groupBy('assets.duplicateId'),
         )
@@ -749,7 +755,7 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).$castTo<Stack | null>().as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
-      .where('assets.visibility', '=', AssetVisibility.TIMELINE)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .where('assets.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
@@ -777,7 +783,7 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets').$castTo<Stack | null>()).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
-      .where('assets.visibility', '=', AssetVisibility.TIMELINE)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .where('assets.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute();

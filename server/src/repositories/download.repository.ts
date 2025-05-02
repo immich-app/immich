@@ -34,7 +34,7 @@ export class DownloadRepository {
   downloadUserId(userId: string) {
     return builder(this.db)
       .where('assets.ownerId', '=', userId)
-      .where('assets.visibility', '=', AssetVisibility.TIMELINE)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .stream();
   }
 }

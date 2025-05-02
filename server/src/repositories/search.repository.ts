@@ -275,7 +275,7 @@ export class SearchRepository {
           .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.deletedAt', 'is', null)
-          .where('assets.visibility', '=', AssetVisibility.TIMELINE)
+          .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
           .where('assets.type', '=', type)
           .where('assets.id', '!=', asUuid(assetId))
           .where('assets.stackId', 'is', null)
@@ -515,7 +515,7 @@ export class SearchRepository {
       .distinctOn(field)
       .innerJoin('assets', 'assets.id', 'exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
-      .where('visibility', '=', AssetVisibility.TIMELINE)
+      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null);
   }

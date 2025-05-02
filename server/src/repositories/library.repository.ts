@@ -78,7 +78,7 @@ export class LibraryRepository {
         eb.fn
           .countAll<number>()
           .filterWhere((eb) =>
-            eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.visibility', '=', AssetVisibility.TIMELINE)]),
+            eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.visibility', '!=', AssetVisibility.HIDDEN)]),
           )
           .as('photos'),
       )
@@ -86,7 +86,7 @@ export class LibraryRepository {
         eb.fn
           .countAll<number>()
           .filterWhere((eb) =>
-            eb.and([eb('assets.type', '=', AssetType.VIDEO), eb('assets.visibility', '=', AssetVisibility.TIMELINE)]),
+            eb.and([eb('assets.type', '=', AssetType.VIDEO), eb('assets.visibility', '!=', AssetVisibility.HIDDEN)]),
           )
           .as('videos'),
       )

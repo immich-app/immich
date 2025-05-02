@@ -199,7 +199,13 @@ class AssetAccess {
       )
       .select('assets.id')
       .where('partner.sharedWithId', '=', userId)
-      .where('assets.visibility', 'in', [AssetVisibility.TIMELINE, AssetVisibility.HIDDEN])
+      .where((eb) =>
+        eb.or([
+          eb('assets.visibility', '=', AssetVisibility.TIMELINE),
+          eb('assets.visibility', '=', AssetVisibility.HIDDEN),
+        ]),
+      )
+
       .where('assets.id', 'in', [...assetIds])
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));

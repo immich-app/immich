@@ -207,7 +207,7 @@ export class UserRepository {
           .filterWhere((eb) =>
             eb.and([
               eb('assets.type', '=', sql.lit(AssetType.IMAGE)),
-              eb('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE)),
+              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
             ]),
           )
           .as('photos'),
@@ -216,7 +216,7 @@ export class UserRepository {
           .filterWhere((eb) =>
             eb.and([
               eb('assets.type', '=', sql.lit(AssetType.VIDEO)),
-              eb('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE)),
+              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
             ]),
           )
           .as('videos'),

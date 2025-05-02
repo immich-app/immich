@@ -157,7 +157,7 @@ export class PersonRepository {
       .innerJoin('assets', (join) =>
         join
           .onRef('asset_faces.assetId', '=', 'assets.id')
-          .on('assets.visibility', '!=', AssetVisibility.HIDDEN)
+          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE)
           .on('assets.deletedAt', 'is', null),
       )
       .where('person.ownerId', '=', userId)
@@ -346,7 +346,7 @@ export class PersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('asset_faces.personId', '=', personId)
-          .on('assets.visibility', '=', AssetVisibility.TIMELINE)
+          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE)
           .on('assets.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
@@ -369,7 +369,7 @@ export class PersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('assets.deletedAt', 'is', null)
-          .on('assets.visibility', '=', AssetVisibility.TIMELINE),
+          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['person.id'])).as('total'))
       .select((eb) =>

@@ -285,14 +285,14 @@ select
     where
       (
         "assets"."type" = 'IMAGE'
-        and "assets"."visibility" = 'timeline'
+        and "assets"."visibility" != 'hidden'
       )
   ) as "photos",
   count(*) filter (
     where
       (
         "assets"."type" = 'VIDEO'
-        and "assets"."visibility" = 'timeline'
+        and "assets"."visibility" != 'hidden'
       )
   ) as "videos",
   coalesce(

@@ -83,7 +83,7 @@ from
   inner join "asset_job_status" on "asset_job_status"."assetId" = "assets"."id"
 where
   "assets"."deletedAt" is null
-  and "assets"."visibility" = $1
+  and "assets"."visibility" != $1
   and (
     "asset_job_status"."previewAt" is null
     or "asset_job_status"."thumbnailAt" is null

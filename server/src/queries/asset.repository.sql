@@ -158,7 +158,7 @@ from
 where
   "ownerId" = $1::uuid
   and "deviceId" = $2
-  and "visibility" = $3
+  and "visibility" != $3
   and "deletedAt" is null
 
 -- AssetRepository.getLivePhotoCount
@@ -240,7 +240,10 @@ with
       "assets"
     where
       "assets"."deletedAt" is null
-      and "assets"."visibility" in ($2, $3)
+      and (
+        "assets"."visibility" = $2
+        or "assets"."visibility" = $3
+      )
   )
 select
   "timeBucket",
@@ -280,7 +283,10 @@ where
     or "assets"."stackId" is null
   )
   and "assets"."deletedAt" is null
-  and "assets"."visibility" in ($2, $3)
+  and (
+    "assets"."visibility" = $2
+    or "assets"."visibility" = $3
+  )
   and date_trunc($4, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $5
 order by
   "assets"."localDateTime" desc
@@ -306,7 +312,7 @@ with
       "assets"."ownerId" = $1::uuid
       and "assets"."duplicateId" is not null
       and "assets"."deletedAt" is null
-      and "assets"."visibility" = $2
+      and "assets"."visibility" != $2
       and "assets"."stackId" is null
     group by
       "assets"."duplicateId"
@@ -392,7 +398,7 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = $1::uuid
-  and "assets"."visibility" = $2
+  and "assets"."visibility" != $2
   and "assets"."updatedAt" <= $3
   and "assets"."id" > $4
 order by
@@ -422,7 +428,7 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = any ($1::uuid[])
-  and "assets"."visibility" = $2
+  and "assets"."visibility" != $2
   and "assets"."updatedAt" > $3
 limit
   $4

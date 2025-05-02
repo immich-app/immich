@@ -97,7 +97,7 @@ with
     where
       "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
-      and "assets"."visibility" = $3
+      and "assets"."visibility" != $3
       and "assets"."type" = $4
       and "assets"."id" != $5::uuid
       and "assets"."stackId" is null

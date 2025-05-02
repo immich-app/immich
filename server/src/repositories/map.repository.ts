@@ -80,7 +80,6 @@ export class MapRepository {
     albumIds: string[],
     { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore }: MapMarkerSearchOptions = {},
   ) {
-    const visibilities = isArchived ? [AssetVisibility.TIMELINE, AssetVisibility.ARCHIVE] : [AssetVisibility.TIMELINE];
     return this.db
       .selectFrom('assets')
       .innerJoin('exif', (builder) =>
@@ -91,7 +90,17 @@ export class MapRepository {
       )
       .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
       .$narrowType<{ lat: NotNull; lon: NotNull }>()
-      .where('visibility', 'in', visibilities)
+      .$if(isArchived === true, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb('assets.visibility', '=', AssetVisibility.TIMELINE),
+            eb('assets.visibility', '=', AssetVisibility.ARCHIVE),
+          ]),
+        ),
+      )
+      .$if(isArchived === false || isArchived === undefined, (qb) =>
+        qb.where('assets.visibility', '=', AssetVisibility.TIMELINE),
+      )
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
       .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!))

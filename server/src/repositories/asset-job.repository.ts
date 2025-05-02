@@ -70,7 +70,7 @@ export class AssetJobRepository {
       .select(['assets.id', 'assets.thumbhash'])
       .select(withFiles)
       .where('assets.deletedAt', 'is', null)
-      .where('assets.visibility', '=', AssetVisibility.TIMELINE)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .$if(!force, (qb) =>
         qb
           // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
