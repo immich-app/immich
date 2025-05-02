@@ -90,7 +90,7 @@ export class StorageService extends BaseService {
     const { folderPath } = this.getMountFilePaths(folder);
     const readmePath = join(folderPath, 'README.TXT');
     const warningMessage =
-      `WARNING: Do not modify/delete the contents of the Upload/Library folder as it may cause unexpected errors and database incompatibilities.\n\n` +
+      `WARNING: Do not modify/delete the contents of the Upload/Library folders as it may cause unexpected errors and database incompatibilities.\n\n` +
       `Please refer to the documentation for more information:\n` +
       `https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations`;
 
@@ -100,7 +100,6 @@ export class StorageService extends BaseService {
       return;
     } catch (error: any) {
       if (error?.code === 'ENOENT') {
-        // File does not exist, proceed with creation
         try {
           await this.storageRepository.createFile(readmePath, Buffer.from(warningMessage));
           this.logger.log(`README.TXT file created at ${readmePath}`);
@@ -109,9 +108,8 @@ export class StorageService extends BaseService {
           throw new ImmichStartupError(`Failed to create README.TXT in "${folderPath} - ${docsMessage}"`);
         }
       } else {
-        // Some other error occurred during stat, re-throw it
-        this.logger.error(`Error checking for README.TXT in ${folderPath}: ${error}`); //Log original error
-        throw new ImmichStartupError(`Failed to check existence of README.TXT in "${folderPath} - ${docsMessage}"`); // Throw more specific error for checking existence
+        this.logger.error(`Error checking for README.TXT in ${folderPath}: ${error}`);
+        throw new ImmichStartupError(`Failed to check existence of README.TXT in "${folderPath} - ${docsMessage}"`);
       }
     }
   }
