@@ -16,30 +16,7 @@ import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
-const makeFaceTags = (face: Partial<{ Name: string }> = {}) => ({
-  RegionInfo: {
-    AppliedToDimensions: {
-      W: 100,
-      H: 100,
-      Unit: 'normalized',
-    },
-    RegionList: [
-      {
-        Type: 'face',
-        Area: {
-          X: 0.05,
-          Y: 0.05,
-          W: 0.1,
-          H: 0.1,
-          Unit: 'normalized',
-        },
-        ...face,
-      },
-    ],
-  },
-});
-
-const makeOrientationFaceTags = (face: Partial<{ Name: string }> = {}, orientation: ImmichTags['Orientation']) => ({
+const makeFaceTags = (face: Partial<{ Name: string }> = {}, orientation?: ImmichTags['Orientation']) => ({
   Orientation: orientation,
   RegionInfo: {
     AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
@@ -1118,11 +1095,11 @@ describe(MetadataService.name, () => {
             assetId: assetStub.primaryImage.id,
             personId: 'random-uuid',
             imageHeight: 100,
-            imageWidth: 100,
+            imageWidth: 1000,
             boundingBoxX1: 0,
-            boundingBoxX2: 10,
-            boundingBoxY1: 0,
-            boundingBoxY2: 10,
+            boundingBoxX2: 200,
+            boundingBoxY1: 20,
+            boundingBoxY2: 60,
             sourceType: SourceType.EXIF,
           },
         ],
@@ -1157,11 +1134,11 @@ describe(MetadataService.name, () => {
             assetId: assetStub.primaryImage.id,
             personId: personStub.withName.id,
             imageHeight: 100,
-            imageWidth: 100,
+            imageWidth: 1000,
             boundingBoxX1: 0,
-            boundingBoxX2: 10,
-            boundingBoxY1: 0,
-            boundingBoxY2: 10,
+            boundingBoxX2: 200,
+            boundingBoxY1: 20,
+            boundingBoxY2: 60,
             sourceType: SourceType.EXIF,
           },
         ],
@@ -1227,7 +1204,7 @@ describe(MetadataService.name, () => {
 
           mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.primaryImage);
           mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-          mockReadTags(makeOrientationFaceTags({ Name: personStub.withName.name }, orientation));
+          mockReadTags(makeFaceTags({ Name: personStub.withName.name }, orientation));
           mocks.person.getDistinctNames.mockResolvedValue([]);
           mocks.person.createAll.mockResolvedValue([personStub.withName.id]);
           mocks.person.update.mockResolvedValue(personStub.withName);
