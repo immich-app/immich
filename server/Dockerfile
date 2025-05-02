@@ -19,7 +19,7 @@ ENTRYPOINT ["tini", "--", "/bin/sh"]
 FROM dev AS dev-container
 
 RUN apt-get update && \
-    apt-get install inetutils-ping openjdk-11-jre-headless \
+    apt-get install sudo inetutils-ping openjdk-11-jre-headless \
     vim nano \
     -y --no-install-recommends --fix-missing
 RUN usermod -aG sudo node
