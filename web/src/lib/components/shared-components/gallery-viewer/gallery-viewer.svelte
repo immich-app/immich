@@ -12,6 +12,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
+  import { focusNext } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
   import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -267,25 +268,8 @@
     }
   };
 
-  const focusNextAsset = () => {
-    if (assetInteraction.focussedAssetId === null && assets.length > 0) {
-      assetInteraction.focussedAssetId = assets[0].id;
-    } else if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
-      if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
-        assetInteraction.focussedAssetId = assets[currentIndex + 1].id;
-      }
-    }
-  };
-
-  const focusPreviousAsset = () => {
-    if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
-      if (currentIndex >= 1) {
-        assetInteraction.focussedAssetId = assets[currentIndex - 1].id;
-      }
-    }
-  };
+  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let shortcutList = $derived(
     (() => {
@@ -502,7 +486,6 @@
             asset={toTimelineAsset(asset)}
             selected={assetInteraction.hasSelectedAsset(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            focussed={assetInteraction.isFocussedAsset(asset.id)}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />

@@ -23,6 +23,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { focusNext } from '$lib/utils/focus-util';
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
   import { getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
@@ -95,7 +96,16 @@
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
 
   $effect(() => {
-    assetStore.rowHeight = maxMd ? 100 : 235;
+    const layoutOptions = maxMd
+      ? {
+          rowHeight: 100,
+          headerHeight: 32,
+        }
+      : {
+          rowHeight: 235,
+          headerHeight: 48,
+        };
+    assetStore.setLayoutOptions(layoutOptions);
   });
 
   const scrollTo = (top: number) => {
@@ -616,34 +626,8 @@
     }
   };
 
-  const focusNextAsset = async () => {
-    if (assetInteraction.focussedAssetId === null) {
-      const firstAsset = assetStore.getFirstAsset();
-      if (firstAsset) {
-        assetInteraction.focussedAssetId = firstAsset.id;
-      }
-    } else {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const nextAsset = await assetStore.getNextAsset(focussedAsset);
-        if (nextAsset) {
-          assetInteraction.focussedAssetId = nextAsset.id;
-        }
-      }
-    }
-  };
-
-  const focusPreviousAsset = async () => {
-    if (assetInteraction.focussedAssetId !== null) {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const previousAsset = await assetStore.getPreviousAsset(focussedAsset);
-        if (previousAsset) {
-          assetInteraction.focussedAssetId = previousAsset.id;
-        }
-      }
-    }
-  };
+  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);

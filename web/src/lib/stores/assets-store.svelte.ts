@@ -33,9 +33,7 @@ export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
   deferInit?: boolean;
 };
-export type AssetStoreLayoutOptions = {
-  rowHeight: number;
-};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateObject(target: any, source: any): boolean {
   if (!target) {
@@ -130,7 +128,6 @@ export class AssetDateGroup {
   readonly date: DateTime;
   readonly dayOfMonth: number;
   intersetingAssets: IntersectingAsset[] = $state([]);
-  dodo: IntersectingAsset[] = $state([]);
 
   height = $state(0);
   width = $state(0);
@@ -141,6 +138,7 @@ export class AssetDateGroup {
   left: number = $state(0);
   row = $state(0);
   col = $state(0);
+  deferredLayout = false;
 
   constructor(bucket: AssetBucket, index: number, date: DateTime, dayOfMonth: number) {
     this.index = index;
@@ -215,6 +213,10 @@ export class AssetDateGroup {
   }
 
   layout(options: CommonLayoutOptions) {
+    if (!this.bucket.intersecting) {
+      this.deferredLayout = true;
+      return;
+    }
     const assets = this.intersetingAssets.map((intersetingAsset) => intersetingAsset.asset!);
     const geometry = getJustifiedLayoutFromAssets(assets, options);
     this.width = geometry.containerWidth;
@@ -605,6 +607,11 @@ export type LiteBucket = {
   bucketDateFormattted: string;
 };
 
+type AssetStoreLayoutOptions = {
+  rowHeight?: number;
+  headerHeight?: number;
+  gap?: number;
+};
 export class AssetStore {
   // --- public ----
   isInitialized = $state(false);
@@ -654,7 +661,7 @@ export class AssetStore {
   #unsubscribers: Unsubscriber[] = [];
 
   #rowHeight = $state(235);
-  #headerHeight = $state(49);
+  #headerHeight = $state(48);
   #gap = $state(12);
 
   #options: AssetStoreOptions = AssetStore.#INIT_OPTIONS;
@@ -666,36 +673,46 @@ export class AssetStore {
 
   constructor() {}
 
-  set headerHeight(value) {
+  setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: AssetStoreLayoutOptions) {
+    let changed = false;
+    changed ||= this.#setHeaderHeight(headerHeight);
+    changed ||= this.#setGap(gap);
+    changed ||= this.#setRowHeight(rowHeight);
+    if (changed) {
+      this.refreshLayout();
+    }
+  }
+
+  #setHeaderHeight(value: number) {
     if (this.#headerHeight == value) {
-      return;
+      return false;
     }
     this.#headerHeight = value;
-    this.refreshLayout();
+    return true;
   }
 
   get headerHeight() {
     return this.#headerHeight;
   }
 
-  set gap(value) {
+  #setGap(value: number) {
     if (this.#gap == value) {
-      return;
+      return false;
     }
     this.#gap = value;
-    this.refreshLayout();
+    return true;
   }
 
   get gap() {
     return this.#gap;
   }
 
-  set rowHeight(value) {
+  #setRowHeight(value: number) {
     if (this.#rowHeight == value) {
-      return;
+      return false;
     }
     this.#rowHeight = value;
-    this.refreshLayout();
+    return true;
   }
 
   get rowHeight() {
@@ -877,6 +894,15 @@ export class AssetStore {
     }
     bucket.intersecting = actuallyIntersecting || preIntersecting;
     bucket.actuallyIntersecting = actuallyIntersecting;
+    if (preIntersecting || actuallyIntersecting) {
+      const hasDeferred = bucket.dateGroups.some((group) => group.deferredLayout);
+      if (hasDeferred) {
+        this.#updateGeometry(bucket, true);
+        for (const group of bucket.dateGroups) {
+          group.deferredLayout = false;
+        }
+      }
+    }
   }
 
   #processPendingChanges = throttle(() => {

@@ -177,9 +177,10 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
+export type JobSource = 'upload' | 'sidecar-write' | 'copy';
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'sidecar-write' | 'copy';
+  source?: JobSource;
   notify?: boolean;
 }
 
@@ -251,7 +252,7 @@ export interface INotifyAlbumInviteJob extends IEntityJob {
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
-  recipientIds: string[];
+  recipientId: string;
 }
 
 export interface JobCounts {

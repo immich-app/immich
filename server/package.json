@@ -53,7 +53,7 @@
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
     "bcrypt": "^5.1.1",
-    "bullmq": "^4.8.0",
+    "bullmq": "^5.51.0",
     "chokidar": "^3.5.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
