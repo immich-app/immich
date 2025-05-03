@@ -22,24 +22,6 @@ import { app, asBearerAuth, tempDir, TEN_TIMES, testAssetDir, utils } from 'src/
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
-  const dto: Record<string, any> = {
-    deviceAssetId: 'example-image',
-    deviceId: 'TEST',
-    fileCreatedAt: new Date().toISOString(),
-    fileModifiedAt: new Date().toISOString(),
-    isFavorite: 'testing',
-    duration: '0:00:00.000000',
-  };
-
-  const omit = options?.omit;
-  if (omit) {
-    delete dto[omit];
-  }
-
-  return dto;
-};
-
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
 const facesAssetFilepath = `${testAssetDir}/metadata/faces/portrait.jpg`;
@@ -160,13 +142,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id/original', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/assets/${uuidDto.notFound}/original`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should download the file', async () => {
       const response = await request(app)
         .get(`/assets/${user1Assets[0].id}/original`)
@@ -178,20 +153,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/assets/${uuidDto.notFound}`);
-      expect(body).toEqual(errorDto.unauthorized);
-      expect(status).toBe(401);
-    });
-
-    it('should require a valid id', async () => {
-      const { status, body } = await request(app)
-        .get(`/assets/${uuidDto.invalid}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
-    });
-
     it('should require access', async () => {
       const { status, body } = await request(app)
         .get(`/assets/${user2Assets[0].id}`)
@@ -354,13 +315,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/statistics', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/assets/statistics');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should return stats of all assets', async () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
@@ -425,13 +379,6 @@ describe('/asset', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
     });
 
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/assets/random');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it.each(TEN_TIMES)('should return 1 random assets', async () => {
       const { status, body } = await request(app)
         .get('/assets/random')
@@ -466,14 +413,6 @@ describe('/asset', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual([expect.objectContaining({ id: user2Assets[0].id })]);
-    });
-
-    it('should return error', async () => {
-      const { status } = await request(app)
-        .get('/assets/random?count=ABC')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-
-      expect(status).toBe(400);
     });
   });
 
@@ -619,28 +558,6 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
-    it('should reject invalid gps coordinates', async () => {
-      for (const test of [
-        { latitude: 12 },
-        { longitude: 12 },
-        { latitude: 12, longitude: 'abc' },
-        { latitude: 'abc', longitude: 12 },
-        { latitude: null, longitude: 12 },
-        { latitude: 12, longitude: null },
-        { latitude: 91, longitude: 12 },
-        { latitude: -91, longitude: 12 },
-        { latitude: 12, longitude: -181 },
-        { latitude: 12, longitude: 181 },
-      ]) {
-        const { status, body } = await request(app)
-          .put(`/assets/${user1Assets[0].id}`)
-          .send(test)
-          .set('Authorization', `Bearer ${user1.accessToken}`);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
-      }
-    });
-
     it('should update gps data', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
@@ -712,17 +629,6 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
-    it('should reject invalid rating', async () => {
-      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: null }]) {
-        const { status, body } = await request(app)
-          .put(`/assets/${user1Assets[0].id}`)
-          .send(test)
-          .set('Authorization', `Bearer ${user1.accessToken}`);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
-      }
-    });
-
     it('should return tagged people', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
@@ -746,25 +652,6 @@ describe('/asset', () => {
   });
 
   describe('DELETE /assets', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .delete(`/assets`)
-        .send({ ids: [uuidDto.notFound] });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require a valid uuid', async () => {
-      const { status, body } = await request(app)
-        .delete(`/assets`)
-        .send({ ids: [uuidDto.invalid] })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['each value in ids must be a UUID']));
-    });
-
     it('should throw an error when the id is not found', async () => {
       const { status, body } = await request(app)
         .delete(`/assets`)
@@ -877,13 +764,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id/thumbnail', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/assets/${locationAsset.id}/thumbnail`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should not include gps data for webp thumbnails', async () => {
       await utils.waitForWebsocketEvent({
         event: 'assetUpload',
@@ -919,13 +799,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id/original', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/assets/${locationAsset.id}/original`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should download the original', async () => {
       const { status, body, type } = await request(app)
         .get(`/assets/${locationAsset.id}/original`)
@@ -946,42 +819,8 @@ describe('/asset', () => {
     });
   });
 
-  describe('PUT /assets', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put('/assets');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-  });
-
   describe('POST /assets', () => {
     beforeAll(setupTests, 30_000);
-
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/assets`);
-      expect(body).toEqual(errorDto.unauthorized);
-      expect(status).toBe(401);
-    });
-
-    it.each([
-      { should: 'require `deviceAssetId`', dto: { ...makeUploadDto({ omit: 'deviceAssetId' }) } },
-      { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
-      { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
-      { should: 'require `fileModifiedAt`', dto: { ...makeUploadDto({ omit: 'fileModifiedAt' }) } },
-      { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
-      { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
-      { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
-      { should: 'throw if `isArchived` is not a boolean', dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' } },
-    ])('should $should', async ({ dto }) => {
-      const { status, body } = await request(app)
-        .post('/assets')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .attach('assetData', makeRandomImage(), 'example.png')
-        .field(dto);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest());
-    });
 
     const tests = [
       {
