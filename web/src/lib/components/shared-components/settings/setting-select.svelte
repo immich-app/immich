@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { quintOut } from 'svelte/easing';
-  import { fly } from 'svelte/transition';
-  import { t } from 'svelte-i18n';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiChevronDown } from '@mdi/js';
+  import { t } from 'svelte-i18n';
+  import { quintOut } from 'svelte/easing';
+  import { fly } from 'svelte/transition';
 
   interface Props {
-    value: string | number;
+    value: string | number | undefined;
     options: { value: string | number; text: string }[];
     label?: string;
     desc?: string;
