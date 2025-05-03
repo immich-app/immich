@@ -55,7 +55,7 @@
   <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} {info} />
 {/if}
 
-<section
+<nav
   id="dashboard-navbar"
   class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm"
 >
@@ -209,4 +209,4 @@
       </section>
     </div>
   </div>
-</section>
+</nav>

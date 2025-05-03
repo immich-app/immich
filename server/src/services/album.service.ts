@@ -170,8 +170,8 @@ export class AlbumService extends BaseService {
         (userId) => userId !== auth.user.id,
       );
 
-      if (allUsersExceptUs.length > 0) {
-        await this.eventRepository.emit('album.update', { id, recipientIds: allUsersExceptUs });
+      for (const recipientId of allUsersExceptUs) {
+        await this.eventRepository.emit('album.update', { id, recipientId });
       }
     }
 

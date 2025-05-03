@@ -7,10 +7,11 @@
   import { onMount, type Snippet } from 'svelte';
 
   interface Props {
+    ariaLabel?: string;
     children?: Snippet;
   }
 
-  let { children }: Props = $props();
+  let { ariaLabel, children }: Props = $props();
 
   const isHidden = $derived(!sidebarStore.isOpen && !mobileDevice.isFullSidebar);
   const isExpanded = $derived(sidebarStore.isOpen && !mobileDevice.isFullSidebar);
@@ -30,8 +31,9 @@
   };
 </script>
 
-<section
+<nav
   id="sidebar"
+  aria-label={ariaLabel}
   tabindex="-1"
   class="immich-scrollbar relative z-10 w-0 sidebar:w-[16rem] overflow-y-auto overflow-x-hidden bg-immich-bg pt-8 transition-all duration-200 dark:bg-immich-dark-bg"
   class:shadow-2xl={isExpanded}
@@ -46,4 +48,4 @@
   <div class="pe-6 flex flex-col gap-1 h-max min-h-full">
     {@render children?.()}
   </div>
-</section>
+</nav>

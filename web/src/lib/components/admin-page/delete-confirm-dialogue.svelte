@@ -47,8 +47,7 @@
 <ConfirmDialog
   title={$t('delete_user')}
   confirmText={forceDelete ? $t('permanently_delete') : $t('delete')}
-  onConfirm={handleDeleteUser}
-  {onCancel}
+  onClose={(confirmed) => (confirmed ? handleDeleteUser() : onCancel())}
   disabled={deleteButtonDisabled}
 >
   {#snippet promptSnippet()}

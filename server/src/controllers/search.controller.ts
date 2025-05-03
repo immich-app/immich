@@ -46,7 +46,7 @@ export class SearchController {
   @Get('explore')
   @Authenticated()
   getExploreData(@Auth() auth: AuthDto): Promise<SearchExploreResponseDto[]> {
-    return this.service.getExploreData(auth) as Promise<SearchExploreResponseDto[]>;
+    return this.service.getExploreData(auth);
   }
 
   @Get('person')

@@ -199,10 +199,3 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     resized: true,
   };
 }
-
-export class MemoryLaneResponseDto {
-  @ApiProperty({ type: 'integer' })
-  yearsAgo!: number;
-
-  assets!: AssetResponseDto[];
-}

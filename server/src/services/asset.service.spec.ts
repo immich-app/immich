@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetStatus, AssetType, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
@@ -11,7 +11,6 @@ import { faceStub } from 'test/fixtures/face.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
-import { vitest } from 'vitest';
 
 const stats: AssetStats = {
   [AssetType.IMAGE]: 10,
@@ -42,62 +41,6 @@ describe(AssetService.name, () => {
     ({ sut, mocks } = newTestService(AssetService));
 
     mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
-  });
-
-  describe('getMemoryLane', () => {
-    beforeAll(() => {
-      vitest.useFakeTimers();
-      vitest.setSystemTime(new Date('2024-01-15'));
-    });
-
-    afterAll(() => {
-      vitest.useRealTimers();
-    });
-
-    it('should group the assets correctly', async () => {
-      const image1 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 0, 0, 0) };
-      const image2 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 1, 0, 0) };
-      const image3 = { ...assetStub.image, localDateTime: new Date(2015, 1, 15) };
-      const image4 = { ...assetStub.image, localDateTime: new Date(2009, 1, 15) };
-
-      mocks.partner.getAll.mockResolvedValue([]);
-      mocks.asset.getByDayOfYear.mockResolvedValue([
-        {
-          year: 2023,
-          assets: [image1, image2],
-        },
-        {
-          year: 2015,
-          assets: [image3],
-        },
-        {
-          year: 2009,
-          assets: [image4],
-        },
-      ] as any);
-
-      await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
-        { yearsAgo: 1, title: '1 year ago', assets: [mapAsset(image1), mapAsset(image2)] },
-        { yearsAgo: 9, title: '9 years ago', assets: [mapAsset(image3)] },
-        { yearsAgo: 15, title: '15 years ago', assets: [mapAsset(image4)] },
-      ]);
-
-      expect(mocks.asset.getByDayOfYear.mock.calls).toEqual([[[authStub.admin.user.id], { day: 15, month: 1 }]]);
-    });
-
-    it('should get memories with partners with inTimeline enabled', async () => {
-      const partner = factory.partner();
-      const auth = factory.auth({ user: { id: partner.sharedWithId } });
-
-      mocks.partner.getAll.mockResolvedValue([partner]);
-      mocks.asset.getByDayOfYear.mockResolvedValue([]);
-
-      await sut.getMemoryLane(auth, { day: 15, month: 1 });
-
-      expect(mocks.asset.getByDayOfYear.mock.calls).toEqual([
-        [[auth.user.id, partner.sharedById], { day: 15, month: 1 }],
-      ]);
-    });
   });
 
   describe('getStatistics', () => {

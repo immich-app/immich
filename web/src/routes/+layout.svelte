@@ -10,16 +10,14 @@
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
-  import { Theme } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { copyToClipboard } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { setTranslations } from '@immich/ui';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
   import '../app.css';
@@ -40,24 +38,6 @@
 
   let showNavigationLoadingBar = $state(false);
 
-  const changeTheme = (theme: ThemeSetting) => {
-    if (theme.system) {
-      theme.value = globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
-    }
-
-    if (theme.value === Theme.LIGHT) {
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.documentElement.classList.add('dark');
-    }
-  };
-
-  const handleChangeTheme = () => {
-    if ($colorTheme.system) {
-      handleToggleTheme();
-    }
-  };
-
   const getMyImmichLink = () => {
     return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
   };
@@ -66,11 +46,6 @@
     const element = document.querySelector('#stencil');
     element?.remove();
     // if the browser theme changes, changes the Immich theme too
-    globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
-  });
-
-  onDestroy(() => {
-    document.removeEventListener('change', handleChangeTheme);
   });
 
   eventManager.emit('app.init');
@@ -84,9 +59,6 @@
 
   afterNavigate(() => {
     showNavigationLoadingBar = false;
-  });
-  run(() => {
-    changeTheme($colorTheme);
   });
   run(() => {
     if ($user) {

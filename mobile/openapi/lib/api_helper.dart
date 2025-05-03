@@ -106,14 +106,11 @@ String parameterToString(dynamic value) {
   if (value is NotificationType) {
     return NotificationTypeTypeTransformer().encode(value).toString();
   }
+  if (value is OAuthTokenEndpointAuthMethod) {
+    return OAuthTokenEndpointAuthMethodTypeTransformer().encode(value).toString();
+  }
   if (value is PartnerDirection) {
     return PartnerDirectionTypeTransformer().encode(value).toString();
-  }
-  if (value is PathEntityType) {
-    return PathEntityTypeTypeTransformer().encode(value).toString();
-  }
-  if (value is PathType) {
-    return PathTypeTypeTransformer().encode(value).toString();
   }
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();

@@ -6,7 +6,7 @@ import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, SourceType } from 'src/enum';
 import { removeUndefinedKeys } from 'src/utils/database';
-import { PaginationOptions } from 'src/utils/pagination';
+import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
   minimumFaceCount: number;
@@ -200,11 +200,7 @@ export class PersonRepository {
       .limit(pagination.take + 1)
       .execute();
 
-    if (items.length > pagination.take) {
-      return { items: items.slice(0, -1), hasNextPage: true };
-    }
-
-    return { items, hasNextPage: false };
+    return paginationHelper(items, pagination.take);
   }
 
   @GenerateSql()

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { DateTime } from 'luxon';
-  import ConfirmDialog from './dialog/confirm-dialog.svelte';
-  import Combobox, { type ComboBoxOption } from './combobox.svelte';
-  import DateInput from '../elements/date-input.svelte';
   import { t } from 'svelte-i18n';
+  import DateInput from '../elements/date-input.svelte';
+  import Combobox, { type ComboBoxOption } from './combobox.svelte';
+  import ConfirmDialog from './dialog/confirm-dialog.svelte';
 
   interface Props {
     initialDate?: DateTime;
@@ -138,8 +138,7 @@
   title={$t('edit_date_and_time')}
   prompt="Please select a new date:"
   disabled={!date.isValid}
-  onConfirm={handleConfirm}
-  {onCancel}
+  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
 >
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->

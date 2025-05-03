@@ -338,12 +338,15 @@ jobs:
     name: End-to-End Tests (Server & CLI)
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_server_cli == 'true' }}
-    runs-on: mich
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
     defaults:
       run:
         working-directory: ./e2e
+    strategy:
+      matrix:
+        runner: [mich, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
@@ -383,12 +386,15 @@ jobs:
     name: End-to-End Tests (Web)
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_e2e_web == 'true' }}
-    runs-on: mich
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
     defaults:
       run:
         working-directory: ./e2e
+    strategy:
+      matrix:
+        runner: [mich, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
@@ -422,6 +428,21 @@ jobs:
       - name: Run e2e tests (web)
         run: npx playwright test
         if: ${{ !cancelled() }}
+
+  success-check-e2e:
+    name: End-to-End Tests Success
+    needs: [e2e-tests-server-cli, e2e-tests-web]
+    permissions: {}
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Any jobs failed?
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
+      - name: All jobs passed or skipped
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
+        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
 
   mobile-unit-tests:
     name: Unit Test Mobile
