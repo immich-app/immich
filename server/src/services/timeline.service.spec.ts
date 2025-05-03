@@ -1,6 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
 import { TimelineService } from 'src/services/timeline.service';
-import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -28,7 +27,7 @@ describe(TimelineService.name, () => {
   describe('getTimeBucket', () => {
     it('should return the assets for a album time bucket if user has album.read', async () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      mocks.asset.getTimeBucket.mockResolvedValue([assetStub.image]);
+      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
 
       await expect(sut.getTimeBucket(authStub.admin, { timeBucket: 'bucket', albumId: 'album-id' })).resolves.toEqual(
         expect.objectContaining({
@@ -51,7 +50,7 @@ describe(TimelineService.name, () => {
     });
 
     it('should return the assets for a archive time bucket if user has archive.read', async () => {
-      mocks.asset.getTimeBucket.mockResolvedValue([assetStub.image]);
+      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
 
       await expect(
         sut.getTimeBucket(authStub.admin, {
@@ -79,7 +78,7 @@ describe(TimelineService.name, () => {
     });
 
     it('should include partner shared assets', async () => {
-      mocks.asset.getTimeBucket.mockResolvedValue([assetStub.image]);
+      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
       mocks.partner.getAll.mockResolvedValue([]);
 
       await expect(
@@ -110,7 +109,7 @@ describe(TimelineService.name, () => {
     });
 
     it('should check permissions to read tag', async () => {
-      mocks.asset.getTimeBucket.mockResolvedValue([assetStub.image]);
+      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-123']));
 
       await expect(
@@ -139,7 +138,7 @@ describe(TimelineService.name, () => {
     });
 
     it('should return the assets for a library time bucket if user has library.read', async () => {
-      mocks.asset.getTimeBucket.mockResolvedValue([assetStub.image]);
+      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
 
       await expect(
         sut.getTimeBucket(authStub.admin, {
