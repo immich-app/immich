@@ -148,7 +148,26 @@ describe('/timeline', () => {
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual([]);
+      expect(body).toEqual({
+        bucketAssets: {
+          description: [],
+          duration: [],
+          id: [],
+          isArchived: [],
+          isFavorite: [],
+          isImage: [],
+          isTrashed: [],
+          isVideo: [],
+          livePhotoVideoId: [],
+          localDateTime: [],
+          ownerId: [],
+          projectionType: [],
+          ratio: [],
+          stack: [],
+          thumbhash: [],
+        },
+        hasNextPage: false,
+      });
     });
 
     // TODO enable date string validation while still accepting 5 digit years
@@ -169,7 +188,26 @@ describe('/timeline', () => {
         .query({ timeBucket: '1970-02-10' });
 
       expect(status).toBe(200);
-      expect(body).toEqual([]);
+      expect(body).toEqual({
+        bucketAssets: {
+          description: [],
+          duration: [],
+          id: [],
+          isArchived: [],
+          isFavorite: [],
+          isImage: [],
+          isTrashed: [],
+          isVideo: [],
+          livePhotoVideoId: [],
+          localDateTime: [],
+          ownerId: [],
+          projectionType: [],
+          ratio: [],
+          stack: [],
+          thumbhash: [],
+        },
+        hasNextPage: false,
+      });
     });
   });
 });
