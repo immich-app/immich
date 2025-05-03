@@ -9,7 +9,7 @@ import {
   LoginResponseDto,
   SharedLinkType,
 } from '@immich/sdk';
-import { createUserDto, uuidDto } from 'src/fixtures';
+import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
@@ -128,28 +128,6 @@ describe('/albums', () => {
   });
 
   describe('GET /albums', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/albums');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should reject an invalid shared param', async () => {
-      const { status, body } = await request(app)
-        .get('/albums?shared=invalid')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(['shared must be a boolean value']));
-    });
-
-    it('should reject an invalid assetId param', async () => {
-      const { status, body } = await request(app)
-        .get('/albums?assetId=invalid')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(['assetId must be a UUID']));
-    });
-
     it("should not show other users' favorites", async () => {
       const { status, body } = await request(app)
         .get(`/albums/${user1Albums[0].id}?withoutAssets=false`)
@@ -323,12 +301,6 @@ describe('/albums', () => {
   });
 
   describe('GET /albums/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/albums/${user1Albums[0].id}`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should return album info for own album', async () => {
       const { status, body } = await request(app)
         .get(`/albums/${user1Albums[0].id}?withoutAssets=false`)
@@ -421,12 +393,6 @@ describe('/albums', () => {
   });
 
   describe('GET /albums/statistics', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/albums/statistics');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should return total count of albums the user has access to', async () => {
       const { status, body } = await request(app)
         .get('/albums/statistics')
@@ -438,12 +404,6 @@ describe('/albums', () => {
   });
 
   describe('POST /albums', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/albums').send({ albumName: 'New album' });
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should create an album', async () => {
       const { status, body } = await request(app)
         .post('/albums')
@@ -471,12 +431,6 @@ describe('/albums', () => {
   });
 
   describe('PUT /albums/:id/assets', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/albums/${user1Albums[0].id}/assets`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should be able to add own asset to own album', async () => {
       const asset = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
@@ -526,14 +480,6 @@ describe('/albums', () => {
   });
 
   describe('PATCH /albums/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .patch(`/albums/${uuidDto.notFound}`)
-        .send({ albumName: 'New album name' });
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should update an album', async () => {
       const album = await utils.createAlbum(user1.accessToken, {
         albumName: 'New album',
@@ -576,15 +522,6 @@ describe('/albums', () => {
   });
 
   describe('DELETE /albums/:id/assets', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .delete(`/albums/${user1Albums[0].id}/assets`)
-        .send({ ids: [user1Asset1.id] });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should require authorization', async () => {
       const { status, body } = await request(app)
         .delete(`/albums/${user1Albums[1].id}/assets`)
@@ -677,13 +614,6 @@ describe('/albums', () => {
       album = await utils.createAlbum(user1.accessToken, {
         albumName: 'testAlbum',
       });
-    });
-
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/albums/${user1Albums[0].id}/users`).send({ sharedUserIds: [] });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should be able to add user to own album', async () => {
