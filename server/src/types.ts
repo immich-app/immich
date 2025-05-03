@@ -11,7 +11,6 @@ import {
   SyncEntityType,
   SystemMetadataKey,
   TranscodeTarget,
-  UserAvatarColor,
   UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
@@ -178,9 +177,10 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
+export type JobSource = 'upload' | 'sidecar-write' | 'copy';
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'sidecar-write' | 'copy';
+  source?: JobSource;
   notify?: boolean;
 }
 
@@ -252,7 +252,7 @@ export interface INotifyAlbumInviteJob extends IEntityJob {
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
-  recipientIds: string[];
+  recipientId: string;
 }
 
 export interface JobCounts {
@@ -298,6 +298,10 @@ export type JobItem =
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
+
+  // Notifications
+  | { name: JobName.NOTIFICATIONS_CLEANUP; data?: IBaseJob }
+
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
@@ -485,9 +489,6 @@ export interface UserPreferences {
   tags: {
     enabled: boolean;
     sidebarWeb: boolean;
-  };
-  avatar: {
-    color: UserAvatarColor;
   };
   emailNotifications: {
     enabled: boolean;

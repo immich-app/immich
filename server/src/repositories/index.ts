@@ -22,6 +22,7 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -55,6 +56,7 @@ export const repositories = [
   CryptoRepository,
   DatabaseRepository,
   DownloadRepository,
+  EmailRepository,
   EventRepository,
   JobRepository,
   LibraryRepository,
@@ -65,7 +67,7 @@ export const repositories = [
   MemoryRepository,
   MetadataRepository,
   MoveRepository,
-  EmailRepository,
+  NotificationRepository,
   OAuthRepository,
   PartnerRepository,
   PersonRepository,

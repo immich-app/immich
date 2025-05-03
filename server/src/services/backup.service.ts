@@ -174,7 +174,7 @@ export class BackupService extends BaseService {
       await this.storageRepository
         .unlink(backupFilePath)
         .catch((error) => this.logger.error('Failed to delete failed backup file', error));
-      return JobStatus.FAILED;
+      throw error;
     }
 
     this.logger.log(`Database Backup Success`);

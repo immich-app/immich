@@ -21,6 +21,7 @@
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { cancelImageUrl, preloadImageUrl } from '$lib/utils/sw-messaging';
 
   interface Props {
     asset: AssetResponseDto;
@@ -71,8 +72,7 @@
   const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: AssetResponseDto[]) => {
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
-        let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
+        preloadImageUrl(getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash));
       }
     }
   };
@@ -168,6 +168,7 @@
     return () => {
       loader?.removeEventListener('load', onload);
       loader?.removeEventListener('error', onerror);
+      cancelImageUrl(imageLoaderUrl);
     };
   });
 
@@ -213,7 +214,7 @@
         <img
           src={assetFileUrl}
           alt={$getAltText(asset)}
-          class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
+          class="absolute top-0 start-0 -z-10 object-cover h-full w-full blur-lg"
           draggable="false"
         />
       {/if}

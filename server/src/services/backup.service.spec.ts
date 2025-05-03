@@ -142,52 +142,55 @@ describe(BackupService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.backupEnabled);
       mocks.storage.createWriteStream.mockReturnValue(new PassThrough());
     });
+
     it('should run a database backup successfully', async () => {
       const result = await sut.handleBackupDatabase();
       expect(result).toBe(JobStatus.SUCCESS);
       expect(mocks.storage.createWriteStream).toHaveBeenCalled();
     });
+
     it('should rename file on success', async () => {
       const result = await sut.handleBackupDatabase();
       expect(result).toBe(JobStatus.SUCCESS);
       expect(mocks.storage.rename).toHaveBeenCalled();
     });
+
     it('should fail if pg_dumpall fails', async () => {
       mocks.process.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
-      const result = await sut.handleBackupDatabase();
-      expect(result).toBe(JobStatus.FAILED);
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('Backup failed with code 1');
     });
+
     it('should not rename file if pgdump fails and gzip succeeds', async () => {
       mocks.process.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
-      const result = await sut.handleBackupDatabase();
-      expect(result).toBe(JobStatus.FAILED);
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('Backup failed with code 1');
       expect(mocks.storage.rename).not.toHaveBeenCalled();
     });
+
     it('should fail if gzip fails', async () => {
       mocks.process.spawn.mockReturnValueOnce(mockSpawn(0, 'data', ''));
       mocks.process.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
-      const result = await sut.handleBackupDatabase();
-      expect(result).toBe(JobStatus.FAILED);
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('Gzip failed with code 1');
     });
+
     it('should fail if write stream fails', async () => {
       mocks.storage.createWriteStream.mockImplementation(() => {
         throw new Error('error');
       });
-      const result = await sut.handleBackupDatabase();
-      expect(result).toBe(JobStatus.FAILED);
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('error');
     });
+
     it('should fail if rename fails', async () => {
       mocks.storage.rename.mockRejectedValue(new Error('error'));
-      const result = await sut.handleBackupDatabase();
-      expect(result).toBe(JobStatus.FAILED);
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('error');
     });
+
     it('should ignore unlink failing and still return failed job status', async () => {
       mocks.process.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
       mocks.storage.unlink.mockRejectedValue(new Error('error'));
-      const result = await sut.handleBackupDatabase();
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('Backup failed with code 1');
       expect(mocks.storage.unlink).toHaveBeenCalled();
-      expect(result).toBe(JobStatus.FAILED);
     });
+
     it.each`
       postgresVersion                       | expectedVersion
       ${'14.10'}                            | ${14}

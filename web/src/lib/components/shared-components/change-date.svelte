@@ -1,9 +1,9 @@
 <script lang="ts">
   import { DateTime } from 'luxon';
-  import ConfirmDialog from './dialog/confirm-dialog.svelte';
-  import Combobox, { type ComboBoxOption } from './combobox.svelte';
-  import DateInput from '../elements/date-input.svelte';
   import { t } from 'svelte-i18n';
+  import DateInput from '../elements/date-input.svelte';
+  import Combobox, { type ComboBoxOption } from './combobox.svelte';
+  import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import DurationInput from '../elements/duration-input.svelte';
   import { Field, Switch } from '@immich/ui';
 
@@ -151,8 +151,7 @@
   title={$t('edit_date_and_time')}
   prompt="Please select a new date:"
   disabled={!date.isValid}
-  onConfirm={handleConfirm}
-  {onCancel}
+  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
 >
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
@@ -164,7 +163,7 @@
         </Field>
       </div>
     {/if}
-    <div class="flex flex-col text-left min-h-[140px]">
+    <div class="flex flex-col text-start min-h-[140px]">
       <div style="display: {showRelative ? 'none' : 'block'}">
         <div class="flex flex-col">
           <label for="datetime">{$t('date_and_time')}</label>

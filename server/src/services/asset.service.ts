@@ -3,13 +3,7 @@ import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import {
-  AssetResponseDto,
-  MapAsset,
-  MemoryLaneResponseDto,
-  SanitizedAssetResponseDto,
-  mapAsset,
-} from 'src/dtos/asset-response.dto';
+import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -20,7 +14,6 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
@@ -28,26 +21,6 @@ import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUn
 
 @Injectable()
 export class AssetService extends BaseService {
-  async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    const partnerIds = await getMyPartnerIds({
-      userId: auth.user.id,
-      repository: this.partnerRepository,
-      timelineEnabled: true,
-    });
-    const userIds = [auth.user.id, ...partnerIds];
-
-    const groups = await this.assetRepository.getByDayOfYear(userIds, dto);
-    return groups.map(({ year, assets }) => {
-      const yearsAgo = DateTime.utc().year - year;
-      return {
-        yearsAgo,
-        // TODO move this to clients
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-        assets: assets.map((asset) => mapAsset(asset, { auth })),
-      };
-    });
-  }
-
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
     return mapStats(stats);
@@ -209,13 +182,7 @@ export class AssetService extends BaseService {
   async handleAssetDeletion(job: JobOf<JobName.ASSET_DELETION>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
-    const asset = await this.assetRepository.getById(id, {
-      faces: { person: true },
-      library: true,
-      stack: { assets: true },
-      exifInfo: true,
-      files: true,
-    });
+    const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
       return JobStatus.FAILED;
