@@ -61,7 +61,7 @@ describe('AssetStore', () => {
     });
 
     it('calculates timeline height', () => {
-      expect(assetStore.timelineHeight).toBe(12487.5);
+      expect(assetStore.timelineHeight).toBe(12_487.5);
     });
   });
 
