@@ -13576,7 +13576,7 @@
                   "type": "string"
                 },
                 {
-                  "type": "number"
+                  "type": "null"
                 }
               ]
             },
@@ -13632,7 +13632,7 @@
                   "type": "string"
                 },
                 {
-                  "type": "number"
+                  "type": "null"
                 }
               ]
             },
@@ -13661,7 +13661,7 @@
                   "type": "string"
                 },
                 {
-                  "type": "number"
+                  "type": "null"
                 }
               ]
             },
@@ -13677,7 +13677,14 @@
           "stack": {
             "default": [],
             "items": {
-              "$ref": "#/components/schemas/TimelineStackResponseDto"
+              "oneOf": [
+                {
+                  "type": "TimelineStackResponseDto"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "type": "array"
           },
@@ -13689,7 +13696,7 @@
                   "type": "string"
                 },
                 {
-                  "type": "number"
+                  "type": "null"
                 }
               ]
             },
@@ -13759,25 +13766,6 @@
         "required": [
           "city",
           "country"
-        ],
-        "type": "object"
-      },
-      "TimelineStackResponseDto": {
-        "properties": {
-          "assetCount": {
-            "type": "number"
-          },
-          "id": {
-            "type": "string"
-          },
-          "primaryAssetId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetCount",
-          "id",
-          "primaryAssetId"
         ],
         "type": "object"
       },

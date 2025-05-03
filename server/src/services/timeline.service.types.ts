@@ -18,11 +18,11 @@ export type TimeBucketAssets = {
   isTrashed: number[];
   isVideo: number[];
   isImage: number[];
-  thumbhash: (string | number)[];
+  thumbhash: (string | null)[];
   localDateTime: Date[];
-  stack: (TimelineStack | number)[];
-  duration: (string | number)[];
-  projectionType: (string | number)[];
-  livePhotoVideoId: (string | number)[];
+  stack: (TimelineStack | null)[];
+  duration: (string | null)[];
+  projectionType: (string | null)[];
+  livePhotoVideoId: (string | null)[];
   description: AssetDescription[];
 };

@@ -419,10 +419,6 @@ export class AssetBucket {
     };
   }
 
-  #decodeString(stringOrNumber: string | number) {
-    return typeof stringOrNumber === 'number' ? null : (stringOrNumber as string);
-  }
-
   // note - if the assets are not part of this bucket, they will not be added
   addAssets(bucketResponse: TimeBucketResponseDto) {
     const addContext = new AddContext();
@@ -432,20 +428,20 @@ export class AssetBucket {
           ...bucketResponse.bucketAssets.description[i],
           people: [],
         },
-        duration: this.#decodeString(bucketResponse.bucketAssets.duration[i]),
+        duration: bucketResponse.bucketAssets.duration[i],
         id: bucketResponse.bucketAssets.id[i],
         isArchived: !!bucketResponse.bucketAssets.isArchived[i],
         isFavorite: !!bucketResponse.bucketAssets.isFavorite[i],
         isImage: !!bucketResponse.bucketAssets.isImage[i],
         isTrashed: !!bucketResponse.bucketAssets.isTrashed[i],
         isVideo: !!bucketResponse.bucketAssets.isVideo[i],
-        livePhotoVideoId: this.#decodeString(bucketResponse.bucketAssets.livePhotoVideoId[i]),
+        livePhotoVideoId: bucketResponse.bucketAssets.livePhotoVideoId[i],
         localDateTime: bucketResponse.bucketAssets.localDateTime[i],
         ownerId: bucketResponse.bucketAssets.ownerId[i],
-        projectionType: this.#decodeString(bucketResponse.bucketAssets.projectionType[i]),
+        projectionType: bucketResponse.bucketAssets.projectionType[i],
         ratio: bucketResponse.bucketAssets.ratio[i],
         stack: bucketResponse.bucketAssets.stack[i],
-        thumbhash: this.#decodeString(bucketResponse.bucketAssets.thumbhash[i]),
+        thumbhash: bucketResponse.bucketAssets.thumbhash[i],
       };
       this.addTimelineAsset(timelineAsset, addContext);
     }

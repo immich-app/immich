@@ -24,7 +24,10 @@ export function asHumanReadable(bytes: number, precision = 1): string {
 }
 
 // if an asset is jsonified in the DB before being returned, its buffer fields will be hex-encoded strings
-export const hexOrBufferToBase64 = (encoded: string | Buffer) => {
+export const hexOrBufferToBase64 = (encoded: string | Buffer | null) => {
+  if (!encoded) {
+    return null;
+  }
   if (typeof encoded === 'string') {
     return Buffer.from(encoded.slice(2), 'hex').toString('base64');
   }

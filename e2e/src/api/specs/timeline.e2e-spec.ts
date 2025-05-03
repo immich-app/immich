@@ -104,7 +104,7 @@ describe('/timeline', () => {
       const req1 = await request(app)
         .get('/timeline/buckets')
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isArchived: true });
+        .query({ withPartners: true, isArchived: true });
 
       expect(req1.status).toBe(400);
       expect(req1.body).toEqual(errorDto.badRequest());
@@ -112,7 +112,7 @@ describe('/timeline', () => {
       const req2 = await request(app)
         .get('/timeline/buckets')
         .set('Authorization', `Bearer ${user.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isArchived: undefined });
+        .query({ withPartners: true, isArchived: undefined });
 
       expect(req2.status).toBe(400);
       expect(req2.body).toEqual(errorDto.badRequest());
@@ -122,7 +122,7 @@ describe('/timeline', () => {
       const req1 = await request(app)
         .get('/timeline/buckets')
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isFavorite: true });
+        .query({ withPartners: true, isFavorite: true });
 
       expect(req1.status).toBe(400);
       expect(req1.body).toEqual(errorDto.badRequest());
@@ -130,7 +130,7 @@ describe('/timeline', () => {
       const req2 = await request(app)
         .get('/timeline/buckets')
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isFavorite: false });
+        .query({ withPartners: true, isFavorite: false });
 
       expect(req2.status).toBe(400);
       expect(req2.body).toEqual(errorDto.badRequest());
@@ -140,7 +140,7 @@ describe('/timeline', () => {
       const req = await request(app)
         .get('/timeline/buckets')
         .set('Authorization', `Bearer ${user.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isTrashed: true });
+        .query({ withPartners: true, isTrashed: true });
 
       expect(req.status).toBe(400);
       expect(req.body).toEqual(errorDto.badRequest());
@@ -150,7 +150,6 @@ describe('/timeline', () => {
   describe('GET /timeline/bucket', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).get('/timeline/bucket').query({
-        size: TimeBucketSize.Month,
         timeBucket: '1900-01-01',
       });
 
@@ -161,7 +160,7 @@ describe('/timeline', () => {
     it('should handle 5 digit years', async () => {
       const { status, body } = await request(app)
         .get('/timeline/bucket')
-        .query({ size: TimeBucketSize.Month, timeBucket: '012345-01-01' })
+        .query({ timeBucket: '012345-01-01' })
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`);
 
       expect(status).toBe(200);
@@ -173,7 +172,7 @@ describe('/timeline', () => {
     //   const { status, body } = await request(app)
     //     .get('/timeline/bucket')
     //     .set('Authorization', `Bearer ${user.accessToken}`)
-    //     .query({ size: TimeBucketSize.Month, timeBucket: 'foo' });
+    //     .query({  timeBucket: 'foo' });
 
     //   expect(status).toBe(400);
     //   expect(body).toEqual(errorDto.badRequest);
@@ -183,7 +182,7 @@ describe('/timeline', () => {
       const { status, body } = await request(app)
         .get('/timeline/bucket')
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, timeBucket: '1970-02-10' });
+        .query({ timeBucket: '1970-02-10' });
 
       expect(status).toBe(200);
       expect(body).toEqual([]);

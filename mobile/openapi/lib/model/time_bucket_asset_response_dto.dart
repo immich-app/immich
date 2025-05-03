@@ -56,7 +56,7 @@ class TimeBucketAssetResponseDto {
 
   List<num> ratio;
 
-  List<TimelineStackResponseDto> stack;
+  List<TimeBucketAssetResponseDtoStackInner> stack;
 
   List<TimeBucketAssetResponseDtoDurationInner> thumbhash;
 
@@ -158,7 +158,7 @@ class TimeBucketAssetResponseDto {
         ratio: json[r'ratio'] is Iterable
             ? (json[r'ratio'] as Iterable).cast<num>().toList(growable: false)
             : const [],
-        stack: TimelineStackResponseDto.listFromJson(json[r'stack']),
+        stack: TimeBucketAssetResponseDtoStackInner.listFromJson(json[r'stack']),
         thumbhash: TimeBucketAssetResponseDtoDurationInner.listFromJson(json[r'thumbhash']),
       );
     }

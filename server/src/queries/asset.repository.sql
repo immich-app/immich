@@ -255,8 +255,23 @@ order by
 
 -- AssetRepository.getTimeBucket
 select
-  "assets".*,
-  to_json("exif") as "exifInfo",
+  "assets"."id" as "id",
+  "assets"."ownerId",
+  "assets"."status",
+  "deletedAt",
+  "type",
+  "duration",
+  "isFavorite",
+  "isArchived",
+  "thumbhash",
+  "localDateTime",
+  "livePhotoVideoId",
+  "exif"."exifImageHeight" as "height",
+  "exifImageWidth" as "width",
+  "exif"."orientation",
+  "exif"."projectionType",
+  "exif"."city" as "city",
+  "exif"."country" as "country",
   to_json("stacked_assets") as "stack"
 from
   "assets"

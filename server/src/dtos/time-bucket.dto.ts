@@ -104,12 +104,12 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
           type: 'string',
         },
         {
-          type: 'number',
+          type: 'null',
         },
       ],
     },
   })
-  thumbhash: (string | number)[] = [];
+  thumbhash: (string | null)[] = [];
 
   @ApiProperty()
   localDateTime: Date[] = [];
@@ -122,15 +122,27 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
           type: 'string',
         },
         {
-          type: 'number',
+          type: 'null',
         },
       ],
     },
   })
-  duration: (string | number)[] = [];
+  duration: (string | null)[] = [];
 
-  @ApiProperty({ type: [TimelineStackResponseDto] })
-  stack: (TimelineStackResponseDto | number)[] = [];
+  @ApiProperty({
+    type: 'array',
+    items: {
+      oneOf: [
+        {
+          type: 'TimelineStackResponseDto',
+        },
+        {
+          type: 'null',
+        },
+      ],
+    },
+  })
+  stack: (TimelineStackResponseDto | null)[] = [];
 
   @ApiProperty({
     type: 'array',
@@ -140,12 +152,12 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
           type: 'string',
         },
         {
-          type: 'number',
+          type: 'null',
         },
       ],
     },
   })
-  projectionType: (string | number)[] = [];
+  projectionType: (string | null)[] = [];
 
   @ApiProperty({
     type: 'array',
@@ -155,12 +167,12 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
           type: 'string',
         },
         {
-          type: 'number',
+          type: 'null',
         },
       ],
     },
   })
-  livePhotoVideoId: (string | number)[] = [];
+  livePhotoVideoId: (string | null)[] = [];
 
   @ApiProperty()
   description: TimelineAssetDescriptionDto[] = [];

@@ -409,10 +409,6 @@
     }
   };
 
-  const assetOnFocusHandler = (asset: TimelineAsset) => {
-    assetInteraction.focussedAssetId = asset.id;
-  };
-
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
 
@@ -481,7 +477,6 @@
             }}
             onSelect={() => handleSelectAssets(toTimelineAsset(asset))}
             onMouseEvent={() => assetMouseEventHandler(toTimelineAsset(asset))}
-            handleFocus={() => assetOnFocusHandler(toTimelineAsset(asset))}
             {showArchiveIcon}
             asset={toTimelineAsset(asset)}
             selected={assetInteraction.hasSelectedAsset(asset.id)}

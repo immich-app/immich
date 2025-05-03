@@ -75,12 +75,12 @@ export class TimelineService extends BaseService {
       bucketAssets.isArchived.push(item.isArchived ? 1 : 0);
       bucketAssets.isFavorite.push(item.isFavorite ? 1 : 0);
       bucketAssets.isTrashed.push(item.deletedAt === null ? 0 : 1);
-      bucketAssets.thumbhash.push(item.thumbhash ? hexOrBufferToBase64(item.thumbhash) : 0);
+      bucketAssets.thumbhash.push(hexOrBufferToBase64(item.thumbhash));
       bucketAssets.localDateTime.push(item.localDateTime);
-      bucketAssets.stack.push(this.mapStack(item.stack) || 0);
-      bucketAssets.duration.push(item.duration || 0);
-      bucketAssets.projectionType.push(item.projectionType || 0);
-      bucketAssets.livePhotoVideoId.push(item.livePhotoVideoId || 0);
+      bucketAssets.stack.push(this.mapStack(item.stack));
+      bucketAssets.duration.push(item.duration);
+      bucketAssets.projectionType.push(item.projectionType);
+      bucketAssets.livePhotoVideoId.push(item.livePhotoVideoId);
       bucketAssets.isImage.push(item.type === AssetType.IMAGE ? 1 : 0);
       bucketAssets.isVideo.push(item.type === AssetType.VIDEO ? 1 : 0);
       bucketAssets.description.push({
@@ -97,7 +97,7 @@ export class TimelineService extends BaseService {
 
   mapStack(entity?: Stack | null) {
     if (!entity) {
-      return;
+      return null;
     }
 
     return {
