@@ -99,8 +99,8 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
   @ApiProperty({ type: [String] })
   thumbhash: (string | null)[] = [];
 
-  @ApiProperty()
-  localDateTime: Date[] = [];
+  @ApiProperty({ type: [String] })
+  localDateTime: string[] = [];
 
   @ApiProperty({ type: [String] })
   duration: (string | null)[] = [];

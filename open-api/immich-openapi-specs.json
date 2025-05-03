@@ -13627,7 +13627,6 @@
           "localDateTime": {
             "default": [],
             "items": {
-              "format": "date-time",
               "type": "string"
             },
             "type": "array"

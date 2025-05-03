@@ -612,6 +612,7 @@ export class AssetRepository {
         'exif.city as city',
         'exif.country as country',
       ])
+      .select(sql<string>`to_json("localDateTime" at time zone 'UTC')#>>'{}'`.as('localDateTime'))
       .$if(!!options.albumId, (qb) =>
         qb
           .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')

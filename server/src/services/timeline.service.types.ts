@@ -19,7 +19,7 @@ export type TimeBucketAssets = {
   isVideo: number[];
   isImage: number[];
   thumbhash: (string | null)[];
-  localDateTime: Date[];
+  localDateTime: string[];
   stack: (TimelineStack | null)[];
   duration: (string | null)[];
   projectionType: (string | null)[];

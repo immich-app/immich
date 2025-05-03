@@ -48,7 +48,7 @@ class TimeBucketAssetResponseDto {
 
   List<String> livePhotoVideoId;
 
-  List<DateTime> localDateTime;
+  List<String> localDateTime;
 
   List<String> ownerId;
 
@@ -154,7 +154,9 @@ class TimeBucketAssetResponseDto {
         livePhotoVideoId: json[r'livePhotoVideoId'] is Iterable
             ? (json[r'livePhotoVideoId'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        localDateTime: DateTime.listFromJson(json[r'localDateTime']),
+        localDateTime: json[r'localDateTime'] is Iterable
+            ? (json[r'localDateTime'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         ownerId: json[r'ownerId'] is Iterable
             ? (json[r'ownerId'] as Iterable).cast<String>().toList(growable: false)
             : const [],

@@ -20,7 +20,7 @@ export class TimelineService extends BaseService {
   async getTimeBuckets(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketsResponseDto[]> {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
-    return this.assetRepository.getTimeBuckets(timeBucketOptions);
+    return await this.assetRepository.getTimeBuckets(timeBucketOptions);
   }
 
   async getTimeBucket(auth: AuthDto, dto: TimeBucketAssetDto): Promise<TimeBucketResponseDto> {
