@@ -1,8 +1,8 @@
 <script lang="ts">
   import { DateTime } from 'luxon';
-  import ConfirmDialog from './dialog/confirm-dialog.svelte';
-  import DateInput from '../elements/date-input.svelte';
   import { t } from 'svelte-i18n';
+  import DateInput from '../elements/date-input.svelte';
+  import ConfirmDialog from './dialog/confirm-dialog.svelte';
 
   interface Props {
     initialDate?: DateTime;
@@ -26,7 +26,12 @@
   let date = $derived(DateTime.fromISO(selectedDate));
 </script>
 
-<ConfirmDialog confirmColor="primary" title="Go to date" disabled={!date.isValid} onConfirm={handleConfirm} {onCancel}>
+<ConfirmDialog
+  confirmColor="primary"
+  title="Go to date"
+  disabled={!date.isValid}
+  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
+>
   {#snippet promptSnippet()}
     <div class="flex flex-col text-left gap-2">
       <div class="flex flex-col">
