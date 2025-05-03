@@ -63,8 +63,14 @@
       return '';
     }
 
+    handlebar.registerHelper('eq', (a: unknown, b: unknown) => a === b);
+    handlebar.registerHelper('or', function () {
+      const args = Array.prototype.slice.call(arguments, 0, -1);
+      return args.some(Boolean);
+    });
+
     const template = handlebar.compile(templateString, {
-      knownHelpers: undefined,
+      knownHelpers: { eq: true, or: true },
     });
 
     const substitutions: Record<string, string> = {

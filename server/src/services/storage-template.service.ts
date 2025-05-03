@@ -43,6 +43,7 @@ const storagePresets = [
   '{{y}}/{{y}}-{{MM}}/{{assetId}}',
   '{{y}}/{{y}}-{{WW}}/{{assetId}}',
   '{{album}}/{{filename}}',
+  '{{y}}/{{#if (or (eq ext "insp") (eq ext "insv"))}}360Media/{{/if}}{{MM}}-{{MMMM}}/{{filetype}}/{{y}}-{{MM}}-{{dd}}{{HH}}-{{mm}}{{filename}}'
 ];
 
 export interface MoveAssetMetadata {
@@ -344,7 +345,6 @@ export class StorageTemplateService extends BaseService {
   }
 
   private compile(template: string) {
-    // Register helpers
     handlebar.registerHelper('eq', (a: unknown, b: unknown) => a === b);
     handlebar.registerHelper('or', function() {
       const args = Array.prototype.slice.call(arguments, 0, -1);
