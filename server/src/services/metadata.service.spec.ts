@@ -1199,6 +1199,38 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should set projectionType for spatial photo', async () => {
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+      mockReadTags({
+        DepthDataVersion: 1,
+        IntrinsicMatrix: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        ExtrinsicMatrix: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        LensDistortionCoefficients: [1, 2, 3],
+        PhotosAppFeatureFlags: 1
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectionType: 'SPATIAL_APPLE_PHOTO',
+        }),
+      );
+    });
+
+    it('should set projectionType for spatial video', async () => {
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.video);
+      mockReadTags({
+        'SpatialFormat-version': 1
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.video.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectionType: 'SPATIAL_APPLE_VIDEO',
+        }),
+      );
+    });
+
     it('should handle livePhotoCID not set', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
 
