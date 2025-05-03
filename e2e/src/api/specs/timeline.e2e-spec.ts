@@ -52,7 +52,7 @@ describe('/timeline', () => {
 
   describe('GET /timeline/buckets', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/timeline/buckets').query({ size: TimeBucketSize.Month });
+      const { status, body } = await request(app).get('/timeline/buckets').query({});
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -61,7 +61,7 @@ describe('/timeline', () => {
       const { status, body } = await request(app)
         .get('/timeline/buckets')
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month });
+        .query({});
 
       expect(status).toBe(200);
       expect(body).toEqual(
@@ -78,26 +78,10 @@ describe('/timeline', () => {
         assetIds: userAssets.map(({ id }) => id),
       });
 
-      const { status, body } = await request(app)
-        .get('/timeline/buckets')
-        .query({ key: sharedLink.key, size: TimeBucketSize.Month });
+      const { status, body } = await request(app).get('/timeline/buckets').query({ key: sharedLink.key });
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should get time buckets by day', async () => {
-      const { status, body } = await request(app)
-        .get('/timeline/buckets')
-        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Day });
-
-      expect(status).toBe(200);
-      expect(body).toEqual([
-        { count: 2, timeBucket: '1970-02-11T00:00:00.000Z' },
-        { count: 1, timeBucket: '1970-02-10T00:00:00.000Z' },
-        { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
-      ]);
     });
 
     it('should return error if time bucket is requested with partners asset and archived', async () => {
