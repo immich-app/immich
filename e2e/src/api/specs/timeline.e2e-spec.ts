@@ -1,4 +1,4 @@
-import { AssetMediaResponseDto, LoginResponseDto, SharedLinkType, TimeBucketSize } from '@immich/sdk';
+import { AssetMediaResponseDto, LoginResponseDto, SharedLinkType } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';

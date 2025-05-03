@@ -620,16 +620,14 @@ class ApiClient {
           return TestEmailResponseDto.fromJson(value);
         case 'TimeBucketAssetResponseDto':
           return TimeBucketAssetResponseDto.fromJson(value);
-        case 'TimeBucketAssetResponseDtoDurationInner':
-          return TimeBucketAssetResponseDtoDurationInner.fromJson(value);
-        case 'TimeBucketAssetResponseDtoStackInner':
-          return TimeBucketAssetResponseDtoStackInner.fromJson(value);
         case 'TimeBucketResponseDto':
           return TimeBucketResponseDto.fromJson(value);
         case 'TimeBucketsResponseDto':
           return TimeBucketsResponseDto.fromJson(value);
         case 'TimelineAssetDescriptionDto':
           return TimelineAssetDescriptionDto.fromJson(value);
+        case 'TimelineStackResponseDto':
+          return TimelineStackResponseDto.fromJson(value);
         case 'ToneMapping':
           return ToneMappingTypeTransformer().decode(value);
         case 'TranscodeHWAccel':

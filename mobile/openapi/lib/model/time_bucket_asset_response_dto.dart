@@ -32,7 +32,7 @@ class TimeBucketAssetResponseDto {
 
   List<TimelineAssetDescriptionDto> description;
 
-  List<TimeBucketAssetResponseDtoDurationInner> duration;
+  List<String> duration;
 
   List<String> id;
 
@@ -46,19 +46,19 @@ class TimeBucketAssetResponseDto {
 
   List<num> isVideo;
 
-  List<TimeBucketAssetResponseDtoDurationInner> livePhotoVideoId;
+  List<String> livePhotoVideoId;
 
   List<DateTime> localDateTime;
 
   List<String> ownerId;
 
-  List<TimeBucketAssetResponseDtoDurationInner> projectionType;
+  List<String> projectionType;
 
   List<num> ratio;
 
-  List<TimeBucketAssetResponseDtoStackInner> stack;
+  List<TimelineStackResponseDto> stack;
 
-  List<TimeBucketAssetResponseDtoDurationInner> thumbhash;
+  List<String> thumbhash;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TimeBucketAssetResponseDto &&
@@ -130,7 +130,9 @@ class TimeBucketAssetResponseDto {
 
       return TimeBucketAssetResponseDto(
         description: TimelineAssetDescriptionDto.listFromJson(json[r'description']),
-        duration: TimeBucketAssetResponseDtoDurationInner.listFromJson(json[r'duration']),
+        duration: json[r'duration'] is Iterable
+            ? (json[r'duration'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         id: json[r'id'] is Iterable
             ? (json[r'id'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -149,17 +151,23 @@ class TimeBucketAssetResponseDto {
         isVideo: json[r'isVideo'] is Iterable
             ? (json[r'isVideo'] as Iterable).cast<num>().toList(growable: false)
             : const [],
-        livePhotoVideoId: TimeBucketAssetResponseDtoDurationInner.listFromJson(json[r'livePhotoVideoId']),
+        livePhotoVideoId: json[r'livePhotoVideoId'] is Iterable
+            ? (json[r'livePhotoVideoId'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         localDateTime: DateTime.listFromJson(json[r'localDateTime']),
         ownerId: json[r'ownerId'] is Iterable
             ? (json[r'ownerId'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        projectionType: TimeBucketAssetResponseDtoDurationInner.listFromJson(json[r'projectionType']),
+        projectionType: json[r'projectionType'] is Iterable
+            ? (json[r'projectionType'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         ratio: json[r'ratio'] is Iterable
             ? (json[r'ratio'] as Iterable).cast<num>().toList(growable: false)
             : const [],
-        stack: TimeBucketAssetResponseDtoStackInner.listFromJson(json[r'stack']),
-        thumbhash: TimeBucketAssetResponseDtoDurationInner.listFromJson(json[r'thumbhash']),
+        stack: TimelineStackResponseDto.listFromJson(json[r'stack']),
+        thumbhash: json[r'thumbhash'] is Iterable
+            ? (json[r'thumbhash'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
       );
     }
     return null;

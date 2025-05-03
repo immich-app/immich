@@ -13571,14 +13571,7 @@
           "duration": {
             "default": [],
             "items": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
+              "type": "string"
             },
             "type": "array"
           },
@@ -13627,14 +13620,7 @@
           "livePhotoVideoId": {
             "default": [],
             "items": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
+              "type": "string"
             },
             "type": "array"
           },
@@ -13656,14 +13642,7 @@
           "projectionType": {
             "default": [],
             "items": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
+              "type": "string"
             },
             "type": "array"
           },
@@ -13677,28 +13656,14 @@
           "stack": {
             "default": [],
             "items": {
-              "oneOf": [
-                {
-                  "type": "TimelineStackResponseDto"
-                },
-                {
-                  "type": "null"
-                }
-              ]
+              "$ref": "#/components/schemas/TimelineStackResponseDto"
             },
             "type": "array"
           },
           "thumbhash": {
             "default": [],
             "items": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
+              "type": "string"
             },
             "type": "array"
           }
@@ -13766,6 +13731,25 @@
         "required": [
           "city",
           "country"
+        ],
+        "type": "object"
+      },
+      "TimelineStackResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "number"
+          },
+          "id": {
+            "type": "string"
+          },
+          "primaryAssetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "id",
+          "primaryAssetId"
         ],
         "type": "object"
       },

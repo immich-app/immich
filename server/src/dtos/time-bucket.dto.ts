@@ -96,82 +96,22 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
   @ApiProperty()
   isVideo: number[] = [];
 
-  @ApiProperty({
-    type: 'array',
-    items: {
-      oneOf: [
-        {
-          type: 'string',
-        },
-        {
-          type: 'null',
-        },
-      ],
-    },
-  })
+  @ApiProperty({ type: [String] })
   thumbhash: (string | null)[] = [];
 
   @ApiProperty()
   localDateTime: Date[] = [];
 
-  @ApiProperty({
-    type: 'array',
-    items: {
-      oneOf: [
-        {
-          type: 'string',
-        },
-        {
-          type: 'null',
-        },
-      ],
-    },
-  })
+  @ApiProperty({ type: [String] })
   duration: (string | null)[] = [];
 
-  @ApiProperty({
-    type: 'array',
-    items: {
-      oneOf: [
-        {
-          type: 'TimelineStackResponseDto',
-        },
-        {
-          type: 'null',
-        },
-      ],
-    },
-  })
+  @ApiProperty({ type: [TimelineStackResponseDto] })
   stack: (TimelineStackResponseDto | null)[] = [];
 
-  @ApiProperty({
-    type: 'array',
-    items: {
-      oneOf: [
-        {
-          type: 'string',
-        },
-        {
-          type: 'null',
-        },
-      ],
-    },
-  })
+  @ApiProperty({ type: [String] })
   projectionType: (string | null)[] = [];
 
-  @ApiProperty({
-    type: 'array',
-    items: {
-      oneOf: [
-        {
-          type: 'string',
-        },
-        {
-          type: 'null',
-        },
-      ],
-    },
-  })
+  @ApiProperty({ type: [String] })
   livePhotoVideoId: (string | null)[] = [];
 
   @ApiProperty()

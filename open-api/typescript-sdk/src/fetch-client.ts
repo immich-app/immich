@@ -1388,22 +1388,27 @@ export type TimelineAssetDescriptionDto = {
     city: string | null;
     country: string | null;
 };
+export type TimelineStackResponseDto = {
+    assetCount: number;
+    id: string;
+    primaryAssetId: string;
+};
 export type TimeBucketAssetResponseDto = {
     description: TimelineAssetDescriptionDto[];
-    duration: (string | null)[];
+    duration: string[];
     id: string[];
     isArchived: number[];
     isFavorite: number[];
     isImage: number[];
     isTrashed: number[];
     isVideo: number[];
-    livePhotoVideoId: (string | null)[];
+    livePhotoVideoId: string[];
     localDateTime: string[];
     ownerId: string[];
-    projectionType: (string | null)[];
+    projectionType: string[];
     ratio: number[];
-    stack: (any | null)[];
-    thumbhash: (string | null)[];
+    stack: TimelineStackResponseDto[];
+    thumbhash: string[];
 };
 export type TimeBucketResponseDto = {
     bucketAssets: TimeBucketAssetResponseDto;
