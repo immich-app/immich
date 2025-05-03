@@ -98,6 +98,7 @@
     "job_status": "Job Status",
     "jobs_delayed": "{jobCount, plural, other {# delayed}}",
     "jobs_failed": "{jobCount, plural, other {# failed}}",
+    "large_assets": "Large Assets",
     "library_created": "Created library: {library}",
     "library_deleted": "Library deleted",
     "library_import_path_description": "Specify a folder to import. This folder, including subfolders, will be scanned for images and videos.",
