@@ -272,6 +272,7 @@ select
   "exif"."projectionType",
   "exif"."city" as "city",
   "exif"."country" as "country",
+  to_json("localDateTime" at time zone 'UTC') #>> '{}' as "localDateTime",
   to_json("stacked_assets") as "stack"
 from
   "assets"

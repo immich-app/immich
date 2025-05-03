@@ -75,20 +75,20 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
   };
   for (const asset of timelineAsset) {
     bucketAssets.description.push(asset.description);
-    bucketAssets.duration.push(asset.duration);
+    bucketAssets.duration.push(asset.duration!);
     bucketAssets.id.push(asset.id);
     bucketAssets.isArchived.push(asset.isArchived ? 1 : 0);
     bucketAssets.isFavorite.push(asset.isFavorite ? 1 : 0);
     bucketAssets.isImage.push(asset.isImage ? 1 : 0);
     bucketAssets.isTrashed.push(asset.isTrashed ? 1 : 0);
     bucketAssets.isVideo.push(asset.isVideo ? 1 : 0);
-    bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId);
+    bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
     bucketAssets.localDateTime.push(asset.localDateTime);
     bucketAssets.ownerId.push(asset.ownerId);
-    bucketAssets.projectionType.push(asset.projectionType);
+    bucketAssets.projectionType.push(asset.projectionType!);
     bucketAssets.ratio.push(asset.ratio);
     bucketAssets.stack.push(asset.stack as TimelineStackResponseDto);
-    bucketAssets.thumbhash.push(asset.thumbhash);
+    bucketAssets.thumbhash.push(asset.thumbhash!);
   }
   const response: TimeBucketResponseDto = {
     bucketAssets,
