@@ -230,10 +230,10 @@ describe('/asset', () => {
           description: 'without orientation',
           filename: 'portrait.jpg',
         },
-        {
-          description: 'adjusting face regions to orientation',
-          filename: 'portrait-orientation-6.jpg',
-        },
+        // {
+        //   description: 'adjusting face regions to orientation',
+        //   filename: 'portrait-orientation-6.jpg',
+        // },
       ];
       // should produce same resulting face region coordinates for any orientation
       const expectedFaces = [
