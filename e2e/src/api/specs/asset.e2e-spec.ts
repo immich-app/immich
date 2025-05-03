@@ -280,7 +280,7 @@ describe('/asset', () => {
 
         const facesAsset = await utils.createAsset(admin.accessToken, {
           assetData: {
-            filename: filename,
+            filename,
             bytes: await readFile(`${facesAssetDir}/${filename}`),
           },
         });
