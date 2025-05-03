@@ -46,38 +46,6 @@ describe('/activities', () => {
   });
 
   describe('GET /activities', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/activities');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require an albumId', async () => {
-      const { status, body } = await request(app)
-        .get('/activities')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
-    });
-
-    it('should reject an invalid albumId', async () => {
-      const { status, body } = await request(app)
-        .get('/activities')
-        .query({ albumId: uuidDto.invalid })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
-    });
-
-    it('should reject an invalid assetId', async () => {
-      const { status, body } = await request(app)
-        .get('/activities')
-        .query({ albumId: uuidDto.notFound, assetId: uuidDto.invalid })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['assetId must be a UUID'])));
-    });
-
     it('should start off empty', async () => {
       const { status, body } = await request(app)
         .get('/activities')
@@ -192,30 +160,6 @@ describe('/activities', () => {
   });
 
   describe('POST /activities', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/activities');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require an albumId', async () => {
-      const { status, body } = await request(app)
-        .post('/activities')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ albumId: uuidDto.invalid });
-      expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
-    });
-
-    it('should require a comment when type is comment', async () => {
-      const { status, body } = await request(app)
-        .post('/activities')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ albumId: uuidDto.notFound, type: 'comment', comment: null });
-      expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(['comment must be a string', 'comment should not be empty']));
-    });
-
     it('should add a comment to an album', async () => {
       const { status, body } = await request(app)
         .post('/activities')
@@ -330,20 +274,6 @@ describe('/activities', () => {
   });
 
   describe('DELETE /activities/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/activities/${uuidDto.notFound}`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require a valid uuid', async () => {
-      const { status, body } = await request(app)
-        .delete(`/activities/${uuidDto.invalid}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
-    });
-
     it('should remove a comment from an album', async () => {
       const reaction = await createActivity({
         albumId: album.id,

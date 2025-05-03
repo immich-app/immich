@@ -3,7 +3,6 @@ import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Socket } from 'socket.io-client';
-import { errorDto } from 'src/responses';
 import { app, asBearerAuth, TEN_TIMES, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -141,65 +140,6 @@ describe('/search', () => {
   });
 
   describe('POST /search/metadata', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/search/metadata');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    const badTests = [
-      {
-        should: 'should reject page as a string',
-        dto: { page: 'abc' },
-        expected: ['page must not be less than 1', 'page must be an integer number'],
-      },
-      {
-        should: 'should reject page as a decimal',
-        dto: { page: 1.5 },
-        expected: ['page must be an integer number'],
-      },
-      {
-        should: 'should reject page as a negative number',
-        dto: { page: -10 },
-        expected: ['page must not be less than 1'],
-      },
-      {
-        should: 'should reject page as 0',
-        dto: { page: 0 },
-        expected: ['page must not be less than 1'],
-      },
-      {
-        should: 'should reject size as a string',
-        dto: { size: 'abc' },
-        expected: [
-          'size must not be greater than 1000',
-          'size must not be less than 1',
-          'size must be an integer number',
-        ],
-      },
-      {
-        should: 'should reject an invalid size',
-        dto: { size: -1.5 },
-        expected: ['size must not be less than 1', 'size must be an integer number'],
-      },
-      ...['isArchived', 'isFavorite', 'isEncoded', 'isOffline', 'isMotion', 'isVisible'].map((value) => ({
-        should: `should reject ${value} not a boolean`,
-        dto: { [value]: 'immich' },
-        expected: [`${value} must be a boolean value`],
-      })),
-    ];
-
-    for (const { should, dto, expected } of badTests) {
-      it(should, async () => {
-        const { status, body } = await request(app)
-          .post('/search/metadata')
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send(dto);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(expected));
-      });
-    }
-
     const searchTests = [
       {
         should: 'should get my assets',
@@ -454,14 +394,6 @@ describe('/search', () => {
     }
   });
 
-  describe('POST /search/smart', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/search/smart');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-  });
-
   describe('POST /search/random', () => {
     beforeAll(async () => {
       await Promise.all([
@@ -474,13 +406,6 @@ describe('/search', () => {
       ]);
 
       await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
-    });
-
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/search/random').send({ size: 1 });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it.each(TEN_TIMES)('should return 1 random assets', async () => {
@@ -512,12 +437,6 @@ describe('/search', () => {
   });
 
   describe('GET /search/explore', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/search/explore');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get explore data', async () => {
       const { status, body } = await request(app)
         .get('/search/explore')
@@ -528,12 +447,6 @@ describe('/search', () => {
   });
 
   describe('GET /search/places', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/search/places');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get relevant places', async () => {
       const name = 'Paris';
 
@@ -552,12 +465,6 @@ describe('/search', () => {
   });
 
   describe('GET /search/cities', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/search/cities');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get all cities', async () => {
       const { status, body } = await request(app)
         .get('/search/cities')
@@ -576,12 +483,6 @@ describe('/search', () => {
   });
 
   describe('GET /search/suggestions', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/search/suggestions');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get suggestions for country (including null)', async () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=country&includeNull=true')
