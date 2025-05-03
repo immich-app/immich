@@ -36,3 +36,9 @@ If you want to store assets in album folders, but you also have assets that do n
 ```
 {{y}}/{{#if album}}{{album}}{{else}}Other{{/if}}/{{MM}}/{{filename}}
 ```
+
+You can also use handlebars helpers `eq` and `or` to create more complex path conditions. For example, if you want to store Insta360 media files in a separate folder, you can do this using the expression:
+
+```
+{{y}}/{{#if (or (eq ext "insp") (eq ext "insv"))}}360Media/{{/if}}{{MM}}-{{MMMM}}/{{filetype}}/{{y}}-{{MM}}-{{dd}}{{HH}}-{{mm}}{{filename}}
+```
