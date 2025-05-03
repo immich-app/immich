@@ -10,7 +10,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema';
 import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
-import { getKyselyConfig } from 'src/utils/database';
+import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
 
 const main = async () => {
   const command = process.argv[2];
@@ -56,7 +56,7 @@ const main = async () => {
 const getDatabaseClient = () => {
   const configRepository = new ConfigRepository();
   const { database } = configRepository.getEnv();
-  return new Kysely<any>(getKyselyConfig(database.config.kysely));
+  return new Kysely<any>(getKyselyConfig(database.config));
 };
 
 const runQuery = async (query: string) => {
@@ -67,7 +67,7 @@ const runQuery = async (query: string) => {
 
 const runMigrations = async () => {
   const configRepository = new ConfigRepository();
-  const logger = new LoggingRepository(undefined, configRepository);
+  const logger = LoggingRepository.create();
   const db = getDatabaseClient();
   const databaseRepository = new DatabaseRepository(db, logger, configRepository);
   await databaseRepository.runMigrations();
@@ -105,7 +105,7 @@ const create = (path: string, up: string[], down: string[]) => {
 const compare = async () => {
   const configRepository = new ConfigRepository();
   const { database } = configRepository.getEnv();
-  const db = postgres(database.config.kysely);
+  const db = postgres(asPostgresConnectionConfig(database.config));
 
   const source = schemaFromCode();
   const target = await schemaFromDatabase(db, {});

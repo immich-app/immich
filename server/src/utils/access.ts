@@ -221,6 +221,12 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.person.checkFaceOwnerAccess(auth.user.id, ids);
     }
 
+    case Permission.NOTIFICATION_READ:
+    case Permission.NOTIFICATION_UPDATE:
+    case Permission.NOTIFICATION_DELETE: {
+      return access.notification.checkOwnerAccess(auth.user.id, ids);
+    }
+
     case Permission.TAG_ASSET:
     case Permission.TAG_READ:
     case Permission.TAG_UPDATE:

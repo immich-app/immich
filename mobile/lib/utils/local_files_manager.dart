@@ -1,38 +1,37 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 
-class LocalFilesManager {
+abstract final class LocalFilesManager {
+  static final Logger _logger = Logger('LocalFilesManager');
   static const MethodChannel _channel = MethodChannel('file_trash');
 
-  static Future<bool> moveToTrash(String fileName) async {
+  static Future<bool> moveToTrash(List<String> mediaUrls) async {
     try {
-      final bool success =
-          await _channel.invokeMethod('moveToTrash', {'fileName': fileName});
-      return success;
-    } on PlatformException catch (e) {
-      debugPrint('Error moving to trash: ${e.message}');
+      return await _channel
+          .invokeMethod('moveToTrash', {'mediaUrls': mediaUrls});
+    } catch (e, s) {
+      _logger.warning('Error moving file to trash', e, s);
       return false;
     }
   }
 
-  static Future<bool> restoreFromTrash(String fileName) async {
+  static Future<bool> restoreFromTrash(String fileName, int type) async {
     try {
-      final bool success = await _channel
-          .invokeMethod('restoreFromTrash', {'fileName': fileName});
-      return success;
-    } on PlatformException catch (e) {
-      debugPrint('Error restoring file: ${e.message}');
+      return await _channel.invokeMethod(
+        'restoreFromTrash',
+        {'fileName': fileName, 'type': type},
+      );
+    } catch (e, s) {
+      _logger.warning('Error restore file from trash', e, s);
       return false;
     }
   }
 
-  static Future<bool> requestManageStoragePermission() async {
+  static Future<bool> requestManageMediaPermission() async {
     try {
-      final bool success =
-          await _channel.invokeMethod('requestManageStoragePermission');
-      return success;
-    } on PlatformException catch (e) {
-      debugPrint('Error requesting permission: ${e.message}');
+      return await _channel.invokeMethod('requestManageMediaPermission');
+    } catch (e, s) {
+      _logger.warning('Error requesting manage media permission', e, s);
       return false;
     }
   }

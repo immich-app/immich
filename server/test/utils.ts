@@ -1,10 +1,16 @@
+import { CallHandler, Provider, ValidationPipe } from '@nestjs/common';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { Test } from '@nestjs/testing';
 import { ClassConstructor } from 'class-transformer';
-import { Kysely, sql } from 'kysely';
+import { Kysely } from 'kysely';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
-import { parse } from 'pg-connection-string';
 import { PNG } from 'pngjs';
+import postgres from 'postgres';
 import { DB } from 'src/db';
+import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
+import { AuthGuard } from 'src/middleware/auth.guard';
+import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -29,6 +35,7 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -47,9 +54,10 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { AuthService } from 'src/services/auth.service';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
-import { getKyselyConfig } from 'src/utils/database';
+import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
@@ -63,7 +71,47 @@ import { newStorageRepositoryMock } from 'test/repositories/storage.repository.m
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { ITelemetryRepositoryMock, newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools';
-import { assert, Mocked, vitest } from 'vitest';
+import { assert, Mock, Mocked, vitest } from 'vitest';
+
+export type ControllerContext = {
+  authenticate: Mock;
+  getHttpServer: () => any;
+  reset: () => void;
+  close: () => Promise<void>;
+};
+
+export const controllerSetup = async (controller: ClassConstructor<unknown>, providers: Provider[]) => {
+  const noopInterceptor = { intercept: (ctx: never, next: CallHandler<unknown>) => next.handle() };
+  const authenticate = vi.fn();
+  const moduleRef = await Test.createTestingModule({
+    controllers: [controller],
+    providers: [
+      { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
+      { provide: APP_GUARD, useClass: AuthGuard },
+      { provide: LoggingRepository, useValue: LoggingRepository.create() },
+      { provide: AuthService, useValue: { authenticate } },
+      ...providers,
+    ],
+  })
+    .overrideInterceptor(FileUploadInterceptor)
+    .useValue(noopInterceptor)
+    .overrideInterceptor(AssetUploadInterceptor)
+    .useValue(noopInterceptor)
+    .compile();
+  const app = moduleRef.createNestApplication();
+  await app.init();
+
+  return {
+    authenticate,
+    getHttpServer: () => app.getHttpServer(),
+    reset: () => {
+      authenticate.mockReset();
+    },
+    close: async () => {
+      await app.close();
+    },
+  };
+};
 
 const mockFn = (label: string, { strict }: { strict: boolean }) => {
   const message = `Called a mock function without a mock implementation (${label})`;
@@ -74,6 +122,10 @@ const mockFn = (label: string, { strict }: { strict: boolean }) => {
       // console.warn(message);
     }
   });
+};
+
+export const mockBaseService = <T extends BaseService>(service: ClassConstructor<T>) => {
+  return automock(service, { args: [{ setContext: () => {} }], strict: false });
 };
 
 export const automock = <T>(
@@ -135,6 +187,7 @@ export type ServiceOverrides = {
   memory: MemoryRepository;
   metadata: MetadataRepository;
   move: MoveRepository;
+  notification: NotificationRepository;
   oauth: OAuthRepository;
   partner: PartnerRepository;
   person: PersonRepository;
@@ -202,6 +255,7 @@ export const newTestService = <T extends BaseService>(
     memory: automock(MemoryRepository),
     metadata: newMetadataRepositoryMock(),
     move: automock(MoveRepository, { strict: false }),
+    notification: automock(NotificationRepository),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
     person: newPersonRepositoryMock(),
@@ -250,6 +304,7 @@ export const newTestService = <T extends BaseService>(
     overrides.memory || (mocks.memory as As<MemoryRepository>),
     overrides.metadata || (mocks.metadata as As<MetadataRepository>),
     overrides.move || (mocks.move as As<MoveRepository>),
+    overrides.notification || (mocks.notification as As<NotificationRepository>),
     overrides.oauth || (mocks.oauth as As<OAuthRepository>),
     overrides.partner || (mocks.partner as As<PartnerRepository>),
     overrides.person || (mocks.person as As<PersonRepository>),
@@ -297,24 +352,20 @@ function* newPngFactory() {
 
 const pngFactory = newPngFactory();
 
+const withDatabase = (url: string, name: string) => url.replace('/immich', `/${name}`);
+
 export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
-  const parsed = parse(process.env.IMMICH_TEST_POSTGRES_URL!);
+  const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;
+  const sql = postgres({
+    ...asPostgresConnectionConfig({ connectionType: 'url', url: withDatabase(testUrl, 'postgres') }),
+    max: 1,
+  });
 
-  const parsedOptions = {
-    ...parsed,
-    ssl: false,
-    host: parsed.host ?? undefined,
-    port: parsed.port ? Number(parsed.port) : undefined,
-    database: parsed.database ?? undefined,
-  };
-
-  const kysely = new Kysely<DB>(getKyselyConfig({ ...parsedOptions, max: 1, database: 'postgres' }));
   const randomSuffix = Math.random().toString(36).slice(2, 7);
   const dbName = `immich_${suffix ?? randomSuffix}`;
+  await sql.unsafe(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`);
 
-  await sql.raw(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`).execute(kysely);
-
-  return new Kysely<DB>(getKyselyConfig({ ...parsedOptions, database: dbName }));
+  return new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: withDatabase(testUrl, dbName) }));
 };
 
 export const newRandomImage = () => {

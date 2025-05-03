@@ -215,11 +215,7 @@ export class JobService extends BaseService {
         await this.onDone(job);
       }
     } catch (error: Error | any) {
-      this.logger.error(
-        `Unable to run job handler (${queueName}/${job.name}): ${error}`,
-        error?.stack,
-        JSON.stringify(job.data),
-      );
+      await this.eventRepository.emit('job.failed', { job, error });
     } finally {
       this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
     }
@@ -265,17 +261,6 @@ export class JobService extends BaseService {
           name: JobName.METADATA_EXTRACTION,
           data: { id: item.data.id, source: 'sidecar-write' },
         });
-        break;
-      }
-
-      case JobName.METADATA_EXTRACTION: {
-        if (item.data.source === 'sidecar-write') {
-          const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([item.data.id]);
-          if (asset) {
-            this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
-          }
-        }
-        await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
         break;
       }
 

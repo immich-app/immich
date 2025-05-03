@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.132.0",
+  "version": "1.132.3",
   "description": "",
   "author": "",
   "private": true,
@@ -53,10 +53,11 @@
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
     "bcrypt": "^5.1.1",
-    "bullmq": "^4.8.0",
+    "bullmq": "^5.51.0",
     "chokidar": "^3.5.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "compression": "^1.8.0",
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "exiftool-vendored": "^28.3.1",
@@ -88,7 +89,7 @@
     "sanitize-filename": "^1.6.3",
     "sanitize-html": "^2.14.0",
     "semver": "^7.6.2",
-    "sharp": "^0.33.5",
+    "sharp": "^0.34.0",
     "sirv": "^3.0.0",
     "tailwindcss-preset-email": "^1.3.2",
     "thumbhash": "^0.1.1",
@@ -108,6 +109,7 @@
     "@types/archiver": "^6.0.0",
     "@types/async-lock": "^1.4.2",
     "@types/bcrypt": "^5.0.0",
+    "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^4.17.17",
     "@types/fluent-ffmpeg": "^2.1.21",
@@ -132,7 +134,8 @@
     "globals": "^16.0.0",
     "jsdom": "^26.1.0",
     "mock-fs": "^5.2.0",
-    "node-addon-api": "^8.3.0",
+    "node-addon-api": "^8.3.1",
+    "node-gyp": "^11.2.0",
     "patch-package": "^8.0.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.0.2",
@@ -152,5 +155,8 @@
   },
   "volta": {
     "node": "22.14.0"
+  },
+  "overrides": {
+    "sharp": "^0.34.0"
   }
 }

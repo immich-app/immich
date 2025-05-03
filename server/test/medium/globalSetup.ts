@@ -1,5 +1,4 @@
 import { Kysely } from 'kysely';
-import { parse } from 'pg-connection-string';
 import { DB } from 'src/db';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
@@ -37,22 +36,13 @@ const globalSetup = async () => {
 
   const postgresPort = postgresContainer.getMappedPort(5432);
   const postgresUrl = `postgres://postgres:postgres@localhost:${postgresPort}/immich`;
-  const parsed = parse(postgresUrl);
 
   process.env.IMMICH_TEST_POSTGRES_URL = postgresUrl;
 
-  const db = new Kysely<DB>(
-    getKyselyConfig({
-      ...parsed,
-      ssl: false,
-      host: parsed.host ?? undefined,
-      port: parsed.port ? Number(parsed.port) : undefined,
-      database: parsed.database ?? undefined,
-    }),
-  );
+  const db = new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: postgresUrl }));
 
   const configRepository = new ConfigRepository();
-  const logger = new LoggingRepository(undefined, configRepository);
+  const logger = LoggingRepository.create();
   await new DatabaseRepository(db, logger, configRepository).runMigrations();
 
   await db.destroy();

@@ -141,7 +141,7 @@
     </p>
   </div>
   {#await getTemplateOptions() then}
-    <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
+    <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ms-4 mt-4'}">
       <SettingSwitch
         title={$t('admin.storage_template_enable_description')}
         {disabled}

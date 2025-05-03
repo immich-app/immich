@@ -8,12 +8,12 @@ import { AuthController } from 'src/controllers/auth.controller';
 import { DownloadController } from 'src/controllers/download.controller';
 import { DuplicateController } from 'src/controllers/duplicate.controller';
 import { FaceController } from 'src/controllers/face.controller';
-import { ReportController } from 'src/controllers/file-report.controller';
 import { JobController } from 'src/controllers/job.controller';
 import { LibraryController } from 'src/controllers/library.controller';
 import { MapController } from 'src/controllers/map.controller';
 import { MemoryController } from 'src/controllers/memory.controller';
 import { NotificationAdminController } from 'src/controllers/notification-admin.controller';
+import { NotificationController } from 'src/controllers/notification.controller';
 import { OAuthController } from 'src/controllers/oauth.controller';
 import { PartnerController } from 'src/controllers/partner.controller';
 import { PersonController } from 'src/controllers/person.controller';
@@ -47,11 +47,11 @@ export const controllers = [
   LibraryController,
   MapController,
   MemoryController,
+  NotificationController,
   NotificationAdminController,
   OAuthController,
   PartnerController,
   PersonController,
-  ReportController,
   SearchController,
   ServerController,
   SessionController,

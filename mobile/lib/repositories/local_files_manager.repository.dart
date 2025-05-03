@@ -3,21 +3,23 @@ import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
 import 'package:immich_mobile/utils/local_files_manager.dart';
 
 final localFilesManagerRepositoryProvider =
-    Provider((ref) => LocalFilesManagerRepository());
+    Provider((ref) => const LocalFilesManagerRepository());
 
 class LocalFilesManagerRepository implements ILocalFilesManager {
+  const LocalFilesManagerRepository();
+
   @override
-  Future<bool> moveToTrash(String fileName) async {
-    return await LocalFilesManager.moveToTrash(fileName);
+  Future<bool> moveToTrash(List<String> mediaUrls) async {
+    return await LocalFilesManager.moveToTrash(mediaUrls);
   }
 
   @override
-  Future<bool> restoreFromTrash(String fileName) async {
-    return await LocalFilesManager.restoreFromTrash(fileName);
+  Future<bool> restoreFromTrash(String fileName, int type) async {
+    return await LocalFilesManager.restoreFromTrash(fileName, type);
   }
 
   @override
-  Future<bool> requestManageStoragePermission() async {
-    return await LocalFilesManager.requestManageStoragePermission();
+  Future<bool> requestManageMediaPermission() async {
+    return await LocalFilesManager.requestManageMediaPermission();
   }
 }
