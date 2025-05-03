@@ -102,8 +102,7 @@
     confirmColor="primary"
     title={$t('admin.create_job')}
     disabled={!selectedJob}
-    onConfirm={handleCreate}
-    onCancel={handleCancel}
+    onClose={(confirmed) => (confirmed ? handleCreate() : handleCancel())}
   >
     {#snippet promptSnippet()}
       <form {onsubmit} autocomplete="off" id="create-tag-form" class="w-full">
