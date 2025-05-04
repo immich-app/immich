@@ -9,7 +9,7 @@ import { DownloadController } from 'src/controllers/download.controller';
 import { DuplicateController } from 'src/controllers/duplicate.controller';
 import { FaceController } from 'src/controllers/face.controller';
 import { JobController } from 'src/controllers/job.controller';
-import { LargeAssestsController } from 'src/controllers/large-assets.controller';
+import { LargeAssetsController } from 'src/controllers/large-assets.controller';
 import { LibraryController } from 'src/controllers/library.controller';
 import { MapController } from 'src/controllers/map.controller';
 import { MemoryController } from 'src/controllers/memory.controller';
@@ -43,7 +43,7 @@ export const controllers = [
   AuthController,
   DownloadController,
   DuplicateController,
-  LargeAssestsController,
+  LargeAssetsController,
   FaceController,
   JobController,
   LibraryController,
