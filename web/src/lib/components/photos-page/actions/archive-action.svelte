@@ -1,11 +1,11 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import type { OnArchive } from '$lib/utils/actions';
+  import { archiveAssets } from '$lib/utils/asset-utils';
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { archiveAssets } from '$lib/utils/asset-utils';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     onArchive?: OnArchive;

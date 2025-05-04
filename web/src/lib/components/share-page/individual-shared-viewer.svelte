@@ -11,7 +11,8 @@
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { addSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -33,7 +34,8 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
 
-  let assets = $derived(sharedLink.assets);
+  let assets = $derived(sharedLink.assets.map((a) => toTimelineAsset(a)));
+  let fullAsset = $derived(assets[0] ? getAssetInfo({ id: assets[0]?.id, key: authManager.key }) : null);
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -127,14 +129,16 @@
       <GalleryViewer {assets} {assetInteraction} {viewport} />
     </section>
   {:else}
-    <AssetViewer
-      asset={assets[0]}
-      showCloseButton={false}
-      onAction={handleAction}
-      onPrevious={() => Promise.resolve(false)}
-      onNext={() => Promise.resolve(false)}
-      onRandom={() => Promise.resolve(undefined)}
-      onClose={() => {}}
-    />
+    {#await fullAsset then asset}
+      <AssetViewer
+        asset={asset!}
+        showCloseButton={false}
+        onAction={handleAction}
+        onPrevious={() => Promise.resolve(false)}
+        onNext={() => Promise.resolve(false)}
+        onRandom={() => Promise.resolve(undefined)}
+        onClose={() => {}}
+      />
+    {/await}
   {/if}
 </section>

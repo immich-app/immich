@@ -1,5 +1,5 @@
+import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { getAltText } from '$lib/utils/thumbnail-util';
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
 
 const onePerson = [{ name: 'person' }];
@@ -40,25 +40,16 @@ describe('getAltText', () => {
     'generates correctly formatted alt text when isVideo=$isVideo, city=$city, country=$country, people=$people.length',
     ({ isVideo, city, country, people, expected }) => {
       const asset = {
-        exifInfo: { city, country },
+        text: { city, country, people: (people || [])?.map((p: { name: string }) => p.name) },
         localDateTime: '2024-01-01T12:00:00.000Z',
         people,
-        type: isVideo ? AssetTypeEnum.Video : AssetTypeEnum.Image,
-      } as AssetResponseDto;
+        isVideo,
+        isImage: !isVideo,
+      } as unknown as TimelineAsset;
 
       getAltText.subscribe((fn) => {
         expect(fn(asset)).toEqual(expected);
       });
     },
   );
-
-  it('defaults to the description, if available', () => {
-    const asset = {
-      exifInfo: { description: 'description' },
-    } as AssetResponseDto;
-
-    getAltText.subscribe((fn) => {
-      expect(fn(asset)).toEqual('description');
-    });
-  });
 });

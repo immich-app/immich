@@ -32,7 +32,7 @@
     type OnUnlink,
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { AssetTypeEnum } from '@immich/sdk';
+
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -50,8 +50,8 @@
     const isLivePhoto = selectedAssets.length === 1 && !!selectedAssets[0].livePhotoVideoId;
     const isLivePhotoCandidate =
       selectedAssets.length === 2 &&
-      selectedAssets.some((asset) => asset.type === AssetTypeEnum.Image) &&
-      selectedAssets.some((asset) => asset.type === AssetTypeEnum.Video);
+      selectedAssets.some((asset) => asset.isImage) &&
+      selectedAssets.some((asset) => asset.isVideo);
 
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
