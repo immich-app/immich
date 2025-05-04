@@ -307,6 +307,7 @@ export const langs = [
   { name: 'Latvian', code: 'lv', loader: () => import('$i18n/lv.json') },
   { name: 'Malay (Pattani)', code: 'mfa', loader: () => import('$i18n/mfa.json') },
   { name: 'Macedonian', code: 'mk', loader: () => import('$i18n/mk.json') },
+  { name: 'Malayalam', code: 'ml', loader: () => import('$i18n/ml.json') },
   { name: 'Mongolian', code: 'mn', loader: () => import('$i18n/mn.json') },
   { name: 'Marathi', code: 'mr', loader: () => import('$i18n/mr.json') },
   { name: 'Malay', code: 'ms', loader: () => import('$i18n/ms.json') },
