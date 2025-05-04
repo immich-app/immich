@@ -1,5 +1,4 @@
 <script lang="ts">
-  import ImmersivePanoramaViewer from '$lib/components/asset-viewer/immersive-panorama-viewer.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getAssetOriginalUrl } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
@@ -23,7 +22,7 @@
     // Check if WebXR is supported and specifically if immersive-vr is supported
     if ('xr' in navigator && typeof navigator?.xr?.isSessionSupported === 'function') {
       try {
-        isVrSupported = await navigator.xr.isSessionSupported('inline');
+        isVrSupported = await navigator.xr.isSessionSupported('immersive-vr');
       } catch (err) {
         console.error('Error checking VR support:', err);
         isVrSupported = false;
@@ -46,7 +45,10 @@
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
-  {#await Promise.all([loadAssetData(asset.id), import('./photo-sphere-viewer-adapter.svelte')])}
+  {#await Promise.all([
+    loadAssetData(asset.id), 
+    import('./photo-sphere-viewer-adapter.svelte')
+  ])}
     <LoadingSpinner />
   {:then [data, { default: PhotoSphereViewer }]}
     {#if !showVR}
@@ -62,12 +64,16 @@
         {/if}
       </div>
     {:else}
-      <ImmersivePanoramaViewer
-        imageUrl={isWebCompatibleImage(asset) ? getAssetOriginalUrl({ id: asset.id }) : data}
-        onClose={() => {
-          showVR = false;
-        }}
-      />
+      {#await import('./immersive-panorama-viewer.svelte')}
+        <LoadingSpinner />
+      {:then { default: ImmersivePanoramaViewer }}
+        <ImmersivePanoramaViewer
+          imageUrl={isWebCompatibleImage(asset) ? getAssetOriginalUrl({ id: asset.id }) : data}
+          onClose={() => {
+            showVR = false;
+          }}
+        />
+      {/await}
     {/if}
   {:catch}
     {$t('errors.failed_to_load_asset')}
