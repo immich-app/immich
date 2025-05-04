@@ -1,28 +1,27 @@
 <script lang="ts">
-  import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
   import { goto } from '$app/navigation';
+  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { focusNext } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
+  import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
   import { type AssetResponseDto } from '@immich/sdk';
+  import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-  import ShowShortcuts from '../show-shortcuts.svelte';
-  import Portal from '../portal/portal.svelte';
-  import { handlePromiseError } from '$lib/utils';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { debounce } from 'lodash-es';
-  import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
-  import { focusNext } from '$lib/utils/focus-util';
+  import ShowShortcuts from '../show-shortcuts.svelte';
 
   interface Props {
     assets: AssetResponseDto[];
@@ -448,6 +447,7 @@
     style:position="relative"
     style:height={assetLayouts.containerHeight + 'px'}
     style:width={assetLayouts.containerWidth - 1 + 'px'}
+    inert={$isViewerOpen}
   >
     {#each assetLayouts.assetLayout as layout, index (layout.asset.id + '-' + index)}
       {@const asset = layout.asset}
@@ -492,17 +492,15 @@
 
 <!-- Overlay Asset Viewer -->
 {#if $isViewerOpen}
-  <Portal target="body">
-    <AssetViewer
-      asset={$viewingAsset}
-      onAction={handleAction}
-      onPrevious={handlePrevious}
-      onNext={handleNext}
-      onRandom={handleRandom}
-      onClose={() => {
-        assetViewingStore.showAssetViewer(false);
-        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-      }}
-    />
-  </Portal>
+  <AssetViewer
+    asset={$viewingAsset}
+    onAction={handleAction}
+    onPrevious={handlePrevious}
+    onNext={handleNext}
+    onRandom={handleRandom}
+    onClose={() => {
+      assetViewingStore.showAssetViewer(false);
+      handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+    }}
+  />
 {/if}

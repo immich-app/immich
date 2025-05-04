@@ -3,6 +3,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { vite as vidstack } from 'vidstack/plugins';
 import { defineConfig } from 'vite';
 
 const upstream = {
@@ -35,6 +36,7 @@ export default defineConfig({
     allowedHosts: true,
   },
   plugins: [
+    vidstack(),
     sveltekit(),
     process.env.BUILD_STATS === 'true'
       ? visualizer({
