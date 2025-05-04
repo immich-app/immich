@@ -192,8 +192,8 @@ export class AssetDateGroup {
     return { moveAssets, processedIds, unprocessedIds, changedGeometry };
   }
 
-  layout(options: CommonLayoutOptions) {
-    if (!this.bucket.intersecting) {
+  layout(options: CommonLayoutOptions, noDefer: boolean) {
+    if (!noDefer && !this.bucket.intersecting) {
       this.deferredLayout = true;
       return;
     }
@@ -497,10 +497,15 @@ export class AssetBucket {
   }
 
   findAssetAbsolutePosition(assetId: string) {
+    this.store.clearDeferredLayout(this);
     for (const group of this.dateGroups) {
       const intersectingAsset = group.intersetingAssets.find((asset) => asset.id === assetId);
       if (intersectingAsset) {
-        return this.top + group.top + intersectingAsset.position!.top + this.store.headerHeight;
+        if (!intersectingAsset.position) {
+          console.warn('No position for asset');
+          break;
+        }
+        return this.top + group.top + intersectingAsset.position.top + this.store.headerHeight;
       }
     }
     return -1;
@@ -862,6 +867,16 @@ export class AssetStore {
     );
   }
 
+  clearDeferredLayout(bucket: AssetBucket) {
+    const hasDeferred = bucket.dateGroups.some((group) => group.deferredLayout);
+    if (hasDeferred) {
+      this.#updateGeometry(bucket, true, true);
+      for (const group of bucket.dateGroups) {
+        group.deferredLayout = false;
+      }
+    }
+  }
+
   #updateIntersection(bucket: AssetBucket) {
     const actuallyIntersecting = this.#calculateIntersecting(bucket, 0, 0);
     let preIntersecting = false;
@@ -871,13 +886,7 @@ export class AssetStore {
     bucket.intersecting = actuallyIntersecting || preIntersecting;
     bucket.actuallyIntersecting = actuallyIntersecting;
     if (preIntersecting || actuallyIntersecting) {
-      const hasDeferred = bucket.dateGroups.some((group) => group.deferredLayout);
-      if (hasDeferred) {
-        this.#updateGeometry(bucket, true);
-        for (const group of bucket.dateGroups) {
-          group.deferredLayout = false;
-        }
-      }
+      this.clearDeferredLayout(bucket);
     }
   }
 
@@ -1009,7 +1018,7 @@ export class AssetStore {
       rowWidth: Math.floor(viewportWidth),
     };
   }
-  #updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
+  #updateGeometry(bucket: AssetBucket, invalidateHeight: boolean, noDefer: boolean = false) {
     if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
     }
@@ -1024,10 +1033,10 @@ export class AssetStore {
       }
       return;
     }
-    this.#layoutBucket(bucket);
+    this.#layoutBucket(bucket, noDefer);
   }
 
-  #layoutBucket(bucket: AssetBucket) {
+  #layoutBucket(bucket: AssetBucket, noDefer: boolean = false) {
     // these are top offsets, for each row
     let cummulativeHeight = 0;
     // these are left offsets of each group, for each row
@@ -1042,7 +1051,7 @@ export class AssetStore {
     rowSpaceRemaining.fill(this.viewportWidth, 0, bucket.dateGroups.length);
     const options = this.createLayoutOptions();
     for (const assetGroup of bucket.dateGroups) {
-      assetGroup.layout(options);
+      assetGroup.layout(options, noDefer);
       rowSpaceRemaining[dateGroupRow] -= assetGroup.width - 1;
       if (dateGroupCol > 0) {
         rowSpaceRemaining[dateGroupRow] -= this.gap;

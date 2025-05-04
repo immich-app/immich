@@ -1,8 +1,8 @@
 <script lang="ts">
+  import DateInput from '$lib/components/elements/date-input.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
-  import DateInput from '../elements/date-input.svelte';
-  import ConfirmDialog from './dialog/confirm-dialog.svelte';
 
   interface Props {
     initialDate?: DateTime;
