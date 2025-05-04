@@ -42,7 +42,8 @@ class MemoryService {
         if (dbAssets.isNotEmpty) {
           final String title = yearsAgo <= 1
               ? 'memories_year_ago'.tr()
-              : 'memories_years_ago'.tr(args: [yearsAgo.toString()]);
+              : 'memories_years_ago'
+                  .tr(namedArgs: {'years': yearsAgo.toString()});
           memories.add(
             Memory(
               title: title,

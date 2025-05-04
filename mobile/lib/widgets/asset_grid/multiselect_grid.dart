@@ -7,24 +7,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/collection_extensions.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/services/stack.service.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
-import 'package:immich_mobile/models/asset_selection_state.dart';
-import 'package:immich_mobile/providers/multiselect.provider.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
+import 'package:immich_mobile/models/asset_selection_state.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
+import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
+import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class MultiselectGrid extends HookConsumerWidget {
   const MultiselectGrid({
@@ -190,8 +190,9 @@ class MultiselectGrid extends HookConsumerWidget {
             context: context,
             msg: force
                 ? 'assets_deleted_permanently'
-                    .tr(args: ["${selection.value.length}"])
-                : 'assets_trashed'.tr(args: ["${selection.value.length}"]),
+                    .tr(namedArgs: {'count': "${selection.value.length}"})
+                : 'assets_trashed'
+                    .tr(namedArgs: {'count': "${selection.value.length}"}),
             gravity: ToastGravity.BOTTOM,
           );
           selectionEnabledHook.value = false;
@@ -225,7 +226,7 @@ class MultiselectGrid extends HookConsumerWidget {
           ImmichToast.show(
             context: context,
             msg: 'assets_removed_permanently_from_device'
-                .tr(args: ["$deletedCount"]),
+                .tr(namedArgs: {'count': "$deletedCount"}),
             gravity: ToastGravity.BOTTOM,
           );
 
@@ -254,8 +255,9 @@ class MultiselectGrid extends HookConsumerWidget {
             context: context,
             msg: shouldDeletePermanently
                 ? 'assets_deleted_permanently_from_server'
-                    .tr(args: ["${toDelete.length}"])
-                : 'assets_trashed_from_server'.tr(args: ["${toDelete.length}"]),
+                    .tr(namedArgs: {'count': "${toDelete.length}"})
+                : 'assets_trashed_from_server'
+                    .tr(namedArgs: {'count': "${toDelete.length}"}),
             gravity: ToastGravity.BOTTOM,
           );
         }
