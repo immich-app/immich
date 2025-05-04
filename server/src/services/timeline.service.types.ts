@@ -16,13 +16,14 @@ export type TimeBucketAssets = {
   isFavorite: number[];
   isArchived: number[];
   isTrashed: number[];
-  isVideo: number[];
   isImage: number[];
   thumbhash: (string | null)[];
   localDateTime: string[];
-  stack: (TimelineStack | null)[];
+  stackCount?: number[];
+  stackId?: (string | null)[];
   duration: (string | null)[];
   projectionType: (string | null)[];
   livePhotoVideoId: (string | null)[];
-  description: AssetDescription[];
+  city: (string | null)[];
+  country: (string | null)[];
 };

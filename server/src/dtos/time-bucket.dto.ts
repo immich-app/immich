@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { IsEnum, IsInt, IsString, Min } from 'class-validator';
 import { AssetOrder } from 'src/enum';
-import { AssetDescription, TimeBucketAssets, TimelineStack } from 'src/services/timeline.service.types';
+import { TimeBucketAssets, TimelineStack } from 'src/services/timeline.service.types';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
@@ -49,73 +49,56 @@ export class TimeBucketAssetDto extends TimeBucketDto {
   page?: number;
 
   @IsInt()
+  @Min(1)
   @Optional()
   pageSize?: number;
 }
 
 export class TimelineStackResponseDto implements TimelineStack {
-  @ApiProperty()
   id!: string;
-
-  @ApiProperty()
   primaryAssetId!: string;
-
-  @ApiProperty()
   assetCount!: number;
 }
 
-export class TimelineAssetDescriptionDto implements AssetDescription {
-  @ApiProperty()
-  city!: string | null;
-  @ApiProperty()
-  country!: string | null;
-}
-
 export class TimeBucketAssetResponseDto implements TimeBucketAssets {
-  @ApiProperty({ type: [String] })
-  id: string[] = [];
+  id!: string[];
 
-  @ApiProperty({ type: [String] })
-  ownerId: string[] = [];
+  ownerId!: string[];
 
-  @ApiProperty()
-  ratio: number[] = [];
+  ratio!: number[];
 
-  @ApiProperty()
-  isFavorite: number[] = [];
+  isFavorite!: number[];
 
-  @ApiProperty()
-  isArchived: number[] = [];
+  isArchived!: number[];
 
-  @ApiProperty()
-  isTrashed: number[] = [];
+  isTrashed!: number[];
 
-  @ApiProperty()
-  isImage: number[] = [];
+  isImage!: number[];
 
-  @ApiProperty()
-  isVideo: number[] = [];
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  thumbhash!: (string | null)[];
 
-  @ApiProperty({ type: [String] })
-  thumbhash: (string | null)[] = [];
+  localDateTime!: string[];
 
-  @ApiProperty({ type: [String] })
-  localDateTime: string[] = [];
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  duration!: (string | null)[];
 
-  @ApiProperty({ type: [String] })
-  duration: (string | null)[] = [];
+  stackCount?: number[];
 
-  @ApiProperty({ type: [TimelineStackResponseDto] })
-  stack: (TimelineStackResponseDto | null)[] = [];
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  stackId?: (string | null)[];
 
-  @ApiProperty({ type: [String] })
-  projectionType: (string | null)[] = [];
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  projectionType!: (string | null)[];
 
-  @ApiProperty({ type: [String] })
-  livePhotoVideoId: (string | null)[] = [];
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  livePhotoVideoId!: (string | null)[];
 
-  @ApiProperty()
-  description: TimelineAssetDescriptionDto[] = [];
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  city!: (string | null)[];
+
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  country!: (string | null)[];
 }
 
 export class TimeBucketsResponseDto {
@@ -124,12 +107,4 @@ export class TimeBucketsResponseDto {
 
   @ApiProperty({ type: 'integer' })
   count!: number;
-}
-
-export class TimeBucketResponseDto {
-  @ApiProperty({ type: TimeBucketAssetResponseDto })
-  bucketAssets!: TimeBucketAssetResponseDto;
-
-  @ApiProperty()
-  hasNextPage!: boolean;
 }

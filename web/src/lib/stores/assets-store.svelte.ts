@@ -15,7 +15,7 @@ import {
   getTimeBucket,
   getTimeBuckets,
   type AssetStackResponseDto,
-  type TimeBucketResponseDto,
+  type TimeBucketAssetResponseDto,
 } from '@immich/sdk';
 import { clamp, debounce, isEqual, throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -81,11 +81,9 @@ export type TimelineAsset = {
   duration: string | null;
   projectionType: string | null;
   livePhotoVideoId: string | null;
-  description: {
-    city: string | null;
-    country: string | null;
-    people: string[];
-  };
+  city: string | null;
+  country: string | null;
+  people: string[];
 };
 class IntersectingAsset {
   // --- public ---
@@ -420,28 +418,33 @@ export class AssetBucket {
   }
 
   // note - if the assets are not part of this bucket, they will not be added
-  addAssets(bucketResponse: TimeBucketResponseDto) {
+  addAssets(bucketAssets: TimeBucketAssetResponseDto) {
     const addContext = new AddContext();
-    for (let i = 0; i < bucketResponse.bucketAssets.id.length; i++) {
+    for (let i = 0; i < bucketAssets.id.length; i++) {
       const timelineAsset: TimelineAsset = {
-        description: {
-          ...bucketResponse.bucketAssets.description[i],
-          people: [],
-        },
-        duration: bucketResponse.bucketAssets.duration[i],
-        id: bucketResponse.bucketAssets.id[i],
-        isArchived: !!bucketResponse.bucketAssets.isArchived[i],
-        isFavorite: !!bucketResponse.bucketAssets.isFavorite[i],
-        isImage: !!bucketResponse.bucketAssets.isImage[i],
-        isTrashed: !!bucketResponse.bucketAssets.isTrashed[i],
-        isVideo: !!bucketResponse.bucketAssets.isVideo[i],
-        livePhotoVideoId: bucketResponse.bucketAssets.livePhotoVideoId[i],
-        localDateTime: bucketResponse.bucketAssets.localDateTime[i],
-        ownerId: bucketResponse.bucketAssets.ownerId[i],
-        projectionType: bucketResponse.bucketAssets.projectionType[i],
-        ratio: bucketResponse.bucketAssets.ratio[i],
-        stack: bucketResponse.bucketAssets.stack[i],
-        thumbhash: bucketResponse.bucketAssets.thumbhash[i],
+        city: bucketAssets.city[i],
+        country: bucketAssets.country[i],
+        duration: bucketAssets.duration[i],
+        id: bucketAssets.id[i],
+        isArchived: Boolean(bucketAssets.isArchived[i]),
+        isFavorite: Boolean(bucketAssets.isFavorite[i]),
+        isImage: Boolean(bucketAssets.isImage[i]),
+        isTrashed: Boolean(bucketAssets.isTrashed[i]),
+        isVideo: !bucketAssets.isImage[i],
+        livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
+        localDateTime: bucketAssets.localDateTime[i],
+        ownerId: bucketAssets.ownerId[i],
+        people: [],
+        projectionType: bucketAssets.projectionType[i],
+        ratio: bucketAssets.ratio[i],
+        stack: bucketAssets.stackId?.[i]
+          ? {
+              id: bucketAssets.stackId[i]!,
+              primaryAssetId: bucketAssets.id[i],
+              assetCount: bucketAssets.stackCount![i],
+            }
+          : null,
+        thumbhash: bucketAssets.thumbhash[i],
       };
       this.addTimelineAsset(timelineAsset, addContext);
     }
@@ -1144,7 +1147,7 @@ export class AssetStore {
             },
             { signal },
           );
-          for (const id of albumAssets.bucketAssets.id) {
+          for (const id of albumAssets.id) {
             this.albumAssets.add(id);
           }
         }

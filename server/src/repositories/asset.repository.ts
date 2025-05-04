@@ -11,7 +11,6 @@ import {
   anyUuid,
   asUuid,
   hasPeople,
-  hasPeopleNoJoin,
   removeUndefinedKeys,
   truncatedDate,
   unnest,
@@ -23,11 +22,9 @@ import {
   withOwner,
   withSmartSearch,
   withTagId,
-  withTagIdNoWhere,
   withTags,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
-import { PaginationOptions } from 'src/utils/pagination';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -584,84 +581,126 @@ export class AssetRepository {
   }
 
   @GenerateSql({
-    params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH, withStacked: true }, { skip: -1, take: 1000 }],
+    params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH, withStacked: true }, { skip: 0, take: 1000 }],
   })
-  async getTimeBucket(timeBucket: string, options: TimeBucketOptions, pagination: PaginationOptions) {
-    const paginate = pagination.skip! >= 1 && pagination.take >= 1;
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions) {
     const query = this.db
-      .selectFrom('assets')
-      .select([
-        'assets.id as id',
-        'assets.ownerId',
-        'assets.status',
-        'deletedAt',
-        'type',
-        'duration',
-        'isFavorite',
-        'isArchived',
-        'thumbhash',
-        'localDateTime',
-        'livePhotoVideoId',
-      ])
-      .leftJoin('exif', 'assets.id', 'exif.assetId')
-      .select([
-        'exif.exifImageHeight as height',
-        'exifImageWidth as width',
-        'exif.orientation',
-        'exif.projectionType',
-        'exif.city as city',
-        'exif.country as country',
-      ])
-      .select(sql<string>`to_json("localDateTime" at time zone 'UTC')#>>'{}'`.as('localDateTime'))
-      .$if(!!options.albumId, (qb) =>
+      .with('cte', (qb) =>
         qb
-          .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
-          .where('albums_assets_assets.albumsId', '=', options.albumId!),
+          .selectFrom('assets')
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .select((eb) => [
+            'assets.duration',
+            'assets.id',
+            sql`assets."isArchived"::int`.as('isArchived'),
+            sql`assets."isFavorite"::int`.as('isFavorite'),
+            sql`(assets.type = 'IMAGE')::int`.as('isImage'),
+            sql`(assets."deletedAt" is null)::int`.as('isTrashed'),
+            sql`(assets.type = 'VIDEO')::int`.as('isVideo'),
+            'assets.livePhotoVideoId',
+            'assets.localDateTime',
+            'assets.ownerId',
+            'assets.status',
+            eb.fn('encode', ['assets.thumbhash', sql.lit('base64')]).as('thumbhash'),
+            'exif.city',
+            'exif.country',
+            'exif.projectionType',
+            eb.fn
+              .coalesce(
+                eb
+                  .case()
+                  .when(sql`exif."exifImageHeight" = 0 or exif."exifImageWidth" = 0`)
+                  .then(eb.lit(1.0))
+                  .when('exif.orientation', 'in', sql<string>`('5', '6', '7', '8', '-90', '90')`)
+                  .then(sql`round(exif."exifImageHeight"::numeric / exif."exifImageWidth"::numeric, 3)`)
+                  .else(sql`round(exif."exifImageWidth"::numeric / exif."exifImageHeight"::numeric, 3)`)
+                  .end(),
+                eb.lit(1.0),
+              )
+              .as('ratio'),
+          ])
+          .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+          .where('assets.isVisible', '=', true)
+          .where(truncatedDate(TimeBucketSize.MONTH), '=', timeBucket.replace(/^[+-]/, ''))
+          .$if(!!options.albumId, (qb) =>
+            qb.where((eb) =>
+              eb.exists(
+                eb
+                  .selectFrom('albums_assets_assets')
+                  .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
+                  .where('albums_assets_assets.albumsId', '=', asUuid(options.albumId!)),
+              ),
+            ),
+          )
+          .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+          .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
+          .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
+          .$if(!!options.withStacked, (qb) =>
+            qb
+              .where((eb) =>
+                eb.not(
+                  eb.exists(
+                    eb
+                      .selectFrom('asset_stack')
+                      .whereRef('asset_stack.id', '=', 'assets.stackId')
+                      .whereRef('asset_stack.primaryAssetId', '!=', 'assets.id'),
+                  ),
+                ),
+              )
+              .leftJoinLateral(
+                (eb) =>
+                  eb
+                    .selectFrom('assets as stacked')
+                    .select((eb) => eb.fn.coalesce(eb.fn.count(eb.table('stacked')), eb.lit(0)).as('stackCount'))
+                    .whereRef('stacked.stackId', '=', 'assets.stackId')
+                    .where('stacked.deletedAt', 'is', null)
+                    .where('stacked.isArchived', '=', false)
+                    .as('stacked_assets'),
+                (join) => join.onTrue(),
+              )
+              .select(['assets.stackId', 'stackCount']),
+          )
+          .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
+          .$if(options.isDuplicate !== undefined, (qb) =>
+            qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
+          )
+          .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
+          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .orderBy('assets.localDateTime', options.order ?? 'desc'),
       )
-      .$if(!!options.personId, (qb) =>
-        qb.innerJoin(
-          () => hasPeopleNoJoin([options.personId!]),
-          (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
-        ),
-      )
-      .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-      .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
-      .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
-      .$if(!!options.withStacked, (qb) =>
+      .with('agg', (qb) =>
         qb
-          .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
-          .where((eb) =>
-            eb.or([eb('asset_stack.primaryAssetId', '=', eb.ref('assets.id')), eb('assets.stackId', 'is', null)]),
-          )
-          .leftJoinLateral(
-            (eb) =>
-              eb
-                .selectFrom('assets as stacked')
-                .selectAll('asset_stack')
-                .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
-                .whereRef('stacked.stackId', '=', 'asset_stack.id')
-                .where('stacked.deletedAt', 'is', null)
-                .where('stacked.isArchived', '=', false)
-                .groupBy('asset_stack.id')
-                .as('stacked_assets'),
-            (join) => join.on('asset_stack.id', 'is not', null),
-          )
-          .select((eb) => eb.fn.toJson(eb.table('stacked_assets').$castTo<Stack | null>()).as('stack')),
+          .selectFrom('cte')
+          .select((eb) => [
+            eb.fn.coalesce(eb.fn('array_agg', ['city']), sql.lit('{}')).as('city'),
+            eb.fn.coalesce(eb.fn('array_agg', ['country']), sql.lit('{}')).as('country'),
+            eb.fn.coalesce(eb.fn('array_agg', ['duration']), sql.lit('{}')).as('duration'),
+            eb.fn.coalesce(eb.fn('array_agg', ['id']), sql.lit('{}')).as('id'),
+            eb.fn.coalesce(eb.fn('array_agg', ['isArchived']), sql.lit('{}')).as('isArchived'),
+            eb.fn.coalesce(eb.fn('array_agg', ['isFavorite']), sql.lit('{}')).as('isFavorite'),
+            eb.fn.coalesce(eb.fn('array_agg', ['isImage']), sql.lit('{}')).as('isImage'),
+            // TODO: isTrashed is redundant as it will always be all 0s or 1s depending on the options
+            eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),
+            eb.fn.coalesce(eb.fn('array_agg', ['livePhotoVideoId']), sql.lit('{}')).as('livePhotoVideoId'),
+            eb.fn.coalesce(eb.fn('array_agg', ['localDateTime']), sql.lit('{}')).as('localDateTime'),
+            eb.fn.coalesce(eb.fn('array_agg', ['ownerId']), sql.lit('{}')).as('ownerId'),
+            eb.fn.coalesce(eb.fn('array_agg', ['projectionType']), sql.lit('{}')).as('projectionType'),
+            eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
+            eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
+            eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
+          ])
+          .$if(!!options.withStacked, (qb) =>
+            qb.select((eb) => [
+              eb.fn('array_agg', ['stackCount']).as('stackCount'),
+              eb.fn('array_agg', ['stackId']).as('stackId'),
+            ]),
+          ),
       )
-      .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
-      .$if(options.isDuplicate !== undefined, (qb) =>
-        qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
-      )
-      .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
-      .$if(!!options.tagId, (qb) => qb.where((eb) => withTagIdNoWhere(options.tagId!, eb.ref('assets.id'))))
-      .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-      .where('assets.isVisible', '=', true)
-      .where(truncatedDate(TimeBucketSize.MONTH), '=', timeBucket.replace(/^[+-]/, ''))
-      .orderBy('assets.localDateTime', options.order ?? 'desc')
-      .$if(paginate, (qb) => qb.offset(pagination.skip!))
-      .$if(paginate, (qb) => qb.limit(pagination.take + 1));
+      .selectFrom('agg')
+      .select(sql<string>`to_json(agg)::text`.as('assets'));
 
-    return await query.execute();
+    return query.executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

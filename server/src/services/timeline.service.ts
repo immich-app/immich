@@ -1,19 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { round } from 'lodash';
 import { Stack } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
-import {
-  TimeBucketAssetDto,
-  TimeBucketDto,
-  TimeBucketResponseDto,
-  TimeBucketsResponseDto,
-} from 'src/dtos/time-bucket.dto';
-import { AssetType, Permission } from 'src/enum';
+import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/dtos/time-bucket.dto';
+import { Permission } from 'src/enum';
 import { TimeBucketOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
-import { TimeBucketAssets } from 'src/services/timeline.service.types';
-import { getMyPartnerIds, isFlipped } from 'src/utils/asset.util';
-import { hexOrBufferToBase64 } from 'src/utils/bytes';
+import { getMyPartnerIds } from 'src/utils/asset.util';
 
 @Injectable()
 export class TimelineService extends BaseService {
@@ -23,76 +15,14 @@ export class TimelineService extends BaseService {
     return await this.assetRepository.getTimeBuckets(timeBucketOptions);
   }
 
-  async getTimeBucket(auth: AuthDto, dto: TimeBucketAssetDto): Promise<TimeBucketResponseDto> {
+  // pre-jsonified response
+  async getTimeBucket(auth: AuthDto, dto: TimeBucketAssetDto): Promise<string> {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, { ...dto });
 
-    const page = dto.page || 1;
-    const size = dto.pageSize || -1;
-    if (dto.pageSize === 0) {
-      throw new BadRequestException('pageSize must not be 0');
-    }
-    const paginate = page >= 1 && size >= 1;
-    const items = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions, {
-      skip: page,
-      take: size,
-    });
-
-    const hasNextPage = paginate && items.length > size;
-    if (paginate) {
-      items.splice(size);
-    }
-
-    const bucketAssets: TimeBucketAssets = {
-      id: [],
-      ownerId: [],
-      ratio: [],
-      isFavorite: [],
-      isArchived: [],
-      isTrashed: [],
-      isVideo: [],
-      isImage: [],
-      thumbhash: [],
-      localDateTime: [],
-      stack: [],
-      duration: [],
-      projectionType: [],
-      livePhotoVideoId: [],
-      description: [],
-    };
-    for (const item of items) {
-      let width = item.width!;
-      let height = item.height!;
-      if (isFlipped(item.orientation)) {
-        const w = item.width!;
-        const h = item.height!;
-        height = w;
-        width = h;
-      }
-      bucketAssets.id.push(item.id);
-      bucketAssets.ownerId.push(item.ownerId);
-      bucketAssets.ratio.push(round(width / height, 2));
-      bucketAssets.isArchived.push(item.isArchived ? 1 : 0);
-      bucketAssets.isFavorite.push(item.isFavorite ? 1 : 0);
-      bucketAssets.isTrashed.push(item.deletedAt === null ? 0 : 1);
-      bucketAssets.thumbhash.push(hexOrBufferToBase64(item.thumbhash));
-      bucketAssets.localDateTime.push(item.localDateTime);
-      bucketAssets.stack.push(this.mapStack(item.stack));
-      bucketAssets.duration.push(item.duration);
-      bucketAssets.projectionType.push(item.projectionType);
-      bucketAssets.livePhotoVideoId.push(item.livePhotoVideoId);
-      bucketAssets.isImage.push(item.type === AssetType.IMAGE ? 1 : 0);
-      bucketAssets.isVideo.push(item.type === AssetType.VIDEO ? 1 : 0);
-      bucketAssets.description.push({
-        city: item.city,
-        country: item.country,
-      });
-    }
-
-    return {
-      bucketAssets,
-      hasNextPage,
-    };
+    // TODO: use id cursor for pagination
+    const bucket = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
+    return bucket.assets;
   }
 
   mapStack(entity?: Stack | null) {
