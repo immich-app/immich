@@ -431,6 +431,21 @@ describe(AssetService.name, () => {
         { name: JobName.SIDECAR_WRITE, data: { id: 'asset-1', dateTimeOriginal, latitude: 30, longitude: 50 } },
       ]);
     });
+
+    it('should update Assets table if duplicateId is provided as null', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        latitude: 0,
+        longitude: 0,
+        isArchived: undefined,
+        isFavorite: undefined,
+        duplicateId: null,
+        rating: undefined,
+      });
+      expect(mocks.asset.updateAll).toHaveBeenCalled();
+    });
   });
 
   describe('deleteAll', () => {
