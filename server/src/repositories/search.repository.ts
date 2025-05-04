@@ -188,13 +188,23 @@ export class SearchRepository {
   })
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
-    const items = await searchAssetBuilder(this.db, options)
-      .orderBy('assets.fileCreatedAt', orderDirection)
-      .limit(pagination.size + 1)
-      .offset((pagination.page - 1) * pagination.size)
-      .execute();
 
-    return paginationHelper(items, pagination.size);
+    const { items, totalCount } = await this.db.transaction().execute(async (transaction) => {
+      const items = await searchAssetBuilder(transaction, options)
+        .orderBy('assets.fileCreatedAt', orderDirection)
+        .limit(pagination.size + 1)
+        .offset((pagination.page - 1) * pagination.size)
+        .execute();
+
+      const total = await searchAssetBuilder(transaction, options)
+        .clearSelect()
+        .select(transaction.fn.count('assets.id').as('count'))
+        .executeTakeFirst();
+
+      return { items, totalCount: Number(total?.count ?? 0) };
+    });
+
+    return paginationHelper(items, pagination.size, totalCount);
   }
 
   @GenerateSql({
@@ -242,14 +252,24 @@ export class SearchRepository {
       throw new Error(`Invalid value for 'size': ${pagination.size}`);
     }
 
-    const items = await searchAssetBuilder(this.db, options)
-      .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
-      .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
-      .limit(pagination.size + 1)
-      .offset((pagination.page - 1) * pagination.size)
-      .execute();
+    const { items, totalCount } = await this.db.transaction().execute(async (transaction) => {
+      const items = await searchAssetBuilder(transaction, options)
+        .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
+        .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
+        .limit(pagination.size + 1)
+        .offset((pagination.page - 1) * pagination.size)
+        .execute();
 
-    return paginationHelper(items, pagination.size);
+      const total = await searchAssetBuilder(transaction, options)
+        .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
+        .clearSelect()
+        .select(transaction.fn.count('assets.id').as('count'))
+        .executeTakeFirst();
+
+      return { items, totalCount: Number(total?.count ?? 0) };
+    });
+
+    return paginationHelper(items, pagination.size, totalCount);
   }
 
   @GenerateSql({
