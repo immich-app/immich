@@ -3,12 +3,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
+import 'package:immich_mobile/utils/url_helper.dart';
 
 @RoutePage()
 class ShareIntentPage extends HookConsumerWidget {
@@ -18,7 +17,7 @@ class ShareIntentPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentEndpoint = Store.get(StoreKey.serverEndpoint);
+    final currentEndpoint = getServerUrl() ?? '--';
     final candidates = ref.watch(shareIntentUploadProvider);
     final isUploaded = useState(false);
 
