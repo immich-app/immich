@@ -1,18 +1,18 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import ServerAboutModal from '$lib/components/shared-components/server-about-modal.svelte';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';
   import { requestServerInfo } from '$lib/utils/auth';
-  import { onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
   import {
     getAboutInfo,
     getVersionHistory,
     type ServerAboutResponseDto,
     type ServerVersionHistoryResponseDto,
   } from '@immich/sdk';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAlert } from '@mdi/js';
-  import { userInteraction } from '$lib/stores/user.svelte';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   const { serverVersion, connected } = websocketStore;
 
@@ -42,7 +42,7 @@
 {/if}
 
 <div
-  class="text-sm flex md:flex ps-5 pe-1 place-items-center place-content-center justify-between min-w-52 overflow-hidden"
+  class="text-sm flex md:flex ps-5 pe-1 place-items-center place-content-center justify-between min-w-52 overflow-hidden dark:text-immich-dark-fg"
 >
   {#if $connected}
     <div class="flex gap-2 place-items-center place-content-center">
