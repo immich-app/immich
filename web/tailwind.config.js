@@ -1,4 +1,5 @@
 import plugin from 'tailwindcss/plugin';
+import vidstackPlugin from 'vidstack/tailwind.cjs';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -60,6 +61,10 @@ export default {
     },
   },
   plugins: [
+    vidstackPlugin({
+      prefix: 'media',
+      webComponents: true,
+    }),
     plugin(({ matchUtilities, theme }) => {
       matchUtilities(
         {

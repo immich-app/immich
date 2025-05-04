@@ -59,5 +59,6 @@
     "*.ts": "${capture}.spec.ts,${capture}.mock.ts"
   },
   "svelte.enable-ts-plugin": true,
-  "typescript.preferences.importModuleSpecifier": "non-relative"
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "html.customData": [".web/node_modules/vidstack/vscode.html-data.json"]
 }

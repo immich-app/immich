@@ -11,7 +11,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2022",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "vidstack/svelte"]
   },
   "extends": "./.svelte-kit/tsconfig.json"
 }
