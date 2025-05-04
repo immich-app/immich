@@ -1384,35 +1384,23 @@ export type TagBulkAssetsResponseDto = {
 export type TagUpdateDto = {
     color?: string | null;
 };
-export type TimelineAssetDescriptionDto = {
-    city: string | null;
-    country: string | null;
-};
-export type TimelineStackResponseDto = {
-    assetCount: number;
-    id: string;
-    primaryAssetId: string;
-};
 export type TimeBucketAssetResponseDto = {
-    description: TimelineAssetDescriptionDto[];
-    duration: string[];
+    city: (string | null)[];
+    country: (string | null)[];
+    duration: (string | null)[];
     id: string[];
     isArchived: number[];
     isFavorite: number[];
     isImage: number[];
     isTrashed: number[];
-    isVideo: number[];
-    livePhotoVideoId: string[];
+    livePhotoVideoId: (string | null)[];
     localDateTime: string[];
     ownerId: string[];
-    projectionType: string[];
+    projectionType: (string | null)[];
     ratio: number[];
-    stack: TimelineStackResponseDto[];
-    thumbhash: string[];
-};
-export type TimeBucketResponseDto = {
-    bucketAssets: TimeBucketAssetResponseDto;
-    hasNextPage: boolean;
+    stackCount?: number[];
+    stackId?: (string | null)[];
+    thumbhash: (string | null)[];
 };
 export type TimeBucketsResponseDto = {
     count: number;
@@ -3290,7 +3278,7 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: TimeBucketResponseDto;
+        data: TimeBucketAssetResponseDto;
     }>(`/timeline/bucket${QS.query(QS.explode({
         albumId,
         isArchived,

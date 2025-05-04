@@ -13,24 +13,27 @@ part of openapi.api;
 class TimeBucketAssetResponseDto {
   /// Returns a new [TimeBucketAssetResponseDto] instance.
   TimeBucketAssetResponseDto({
-    this.description = const [],
+    this.city = const [],
+    this.country = const [],
     this.duration = const [],
     this.id = const [],
     this.isArchived = const [],
     this.isFavorite = const [],
     this.isImage = const [],
     this.isTrashed = const [],
-    this.isVideo = const [],
     this.livePhotoVideoId = const [],
     this.localDateTime = const [],
     this.ownerId = const [],
     this.projectionType = const [],
     this.ratio = const [],
-    this.stack = const [],
+    this.stackCount = const [],
+    this.stackId = const [],
     this.thumbhash = const [],
   });
 
-  List<TimelineAssetDescriptionDto> description;
+  List<String> city;
+
+  List<String> country;
 
   List<String> duration;
 
@@ -44,8 +47,6 @@ class TimeBucketAssetResponseDto {
 
   List<num> isTrashed;
 
-  List<num> isVideo;
-
   List<String> livePhotoVideoId;
 
   List<String> localDateTime;
@@ -56,66 +57,71 @@ class TimeBucketAssetResponseDto {
 
   List<num> ratio;
 
-  List<TimelineStackResponseDto> stack;
+  List<num> stackCount;
+
+  List<String> stackId;
 
   List<String> thumbhash;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TimeBucketAssetResponseDto &&
-    _deepEquality.equals(other.description, description) &&
+    _deepEquality.equals(other.city, city) &&
+    _deepEquality.equals(other.country, country) &&
     _deepEquality.equals(other.duration, duration) &&
     _deepEquality.equals(other.id, id) &&
     _deepEquality.equals(other.isArchived, isArchived) &&
     _deepEquality.equals(other.isFavorite, isFavorite) &&
     _deepEquality.equals(other.isImage, isImage) &&
     _deepEquality.equals(other.isTrashed, isTrashed) &&
-    _deepEquality.equals(other.isVideo, isVideo) &&
     _deepEquality.equals(other.livePhotoVideoId, livePhotoVideoId) &&
     _deepEquality.equals(other.localDateTime, localDateTime) &&
     _deepEquality.equals(other.ownerId, ownerId) &&
     _deepEquality.equals(other.projectionType, projectionType) &&
     _deepEquality.equals(other.ratio, ratio) &&
-    _deepEquality.equals(other.stack, stack) &&
+    _deepEquality.equals(other.stackCount, stackCount) &&
+    _deepEquality.equals(other.stackId, stackId) &&
     _deepEquality.equals(other.thumbhash, thumbhash);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (description.hashCode) +
+    (city.hashCode) +
+    (country.hashCode) +
     (duration.hashCode) +
     (id.hashCode) +
     (isArchived.hashCode) +
     (isFavorite.hashCode) +
     (isImage.hashCode) +
     (isTrashed.hashCode) +
-    (isVideo.hashCode) +
     (livePhotoVideoId.hashCode) +
     (localDateTime.hashCode) +
     (ownerId.hashCode) +
     (projectionType.hashCode) +
     (ratio.hashCode) +
-    (stack.hashCode) +
+    (stackCount.hashCode) +
+    (stackId.hashCode) +
     (thumbhash.hashCode);
 
   @override
-  String toString() => 'TimeBucketAssetResponseDto[description=$description, duration=$duration, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, isVideo=$isVideo, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash]';
+  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stackCount=$stackCount, stackId=$stackId, thumbhash=$thumbhash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'description'] = this.description;
+      json[r'city'] = this.city;
+      json[r'country'] = this.country;
       json[r'duration'] = this.duration;
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
       json[r'isFavorite'] = this.isFavorite;
       json[r'isImage'] = this.isImage;
       json[r'isTrashed'] = this.isTrashed;
-      json[r'isVideo'] = this.isVideo;
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
       json[r'localDateTime'] = this.localDateTime;
       json[r'ownerId'] = this.ownerId;
       json[r'projectionType'] = this.projectionType;
       json[r'ratio'] = this.ratio;
-      json[r'stack'] = this.stack;
+      json[r'stackCount'] = this.stackCount;
+      json[r'stackId'] = this.stackId;
       json[r'thumbhash'] = this.thumbhash;
     return json;
   }
@@ -129,7 +135,12 @@ class TimeBucketAssetResponseDto {
       final json = value.cast<String, dynamic>();
 
       return TimeBucketAssetResponseDto(
-        description: TimelineAssetDescriptionDto.listFromJson(json[r'description']),
+        city: json[r'city'] is Iterable
+            ? (json[r'city'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        country: json[r'country'] is Iterable
+            ? (json[r'country'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         duration: json[r'duration'] is Iterable
             ? (json[r'duration'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -148,9 +159,6 @@ class TimeBucketAssetResponseDto {
         isTrashed: json[r'isTrashed'] is Iterable
             ? (json[r'isTrashed'] as Iterable).cast<num>().toList(growable: false)
             : const [],
-        isVideo: json[r'isVideo'] is Iterable
-            ? (json[r'isVideo'] as Iterable).cast<num>().toList(growable: false)
-            : const [],
         livePhotoVideoId: json[r'livePhotoVideoId'] is Iterable
             ? (json[r'livePhotoVideoId'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -166,7 +174,12 @@ class TimeBucketAssetResponseDto {
         ratio: json[r'ratio'] is Iterable
             ? (json[r'ratio'] as Iterable).cast<num>().toList(growable: false)
             : const [],
-        stack: TimelineStackResponseDto.listFromJson(json[r'stack']),
+        stackCount: json[r'stackCount'] is Iterable
+            ? (json[r'stackCount'] as Iterable).cast<num>().toList(growable: false)
+            : const [],
+        stackId: json[r'stackId'] is Iterable
+            ? (json[r'stackId'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         thumbhash: json[r'thumbhash'] is Iterable
             ? (json[r'thumbhash'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -217,20 +230,19 @@ class TimeBucketAssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'description',
+    'city',
+    'country',
     'duration',
     'id',
     'isArchived',
     'isFavorite',
     'isImage',
     'isTrashed',
-    'isVideo',
     'livePhotoVideoId',
     'localDateTime',
     'ownerId',
     'projectionType',
     'ratio',
-    'stack',
     'thumbhash',
   };
 }

@@ -6963,6 +6963,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
               "type": "number"
             }
           },
@@ -7023,7 +7024,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TimeBucketResponseDto"
+                  "$ref": "#/components/schemas/TimeBucketAssetResponseDto"
                 }
               }
             },
@@ -13561,143 +13562,125 @@
       },
       "TimeBucketAssetResponseDto": {
         "properties": {
-          "description": {
-            "default": [],
+          "city": {
             "items": {
-              "$ref": "#/components/schemas/TimelineAssetDescriptionDto"
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "country": {
+            "items": {
+              "nullable": true,
+              "type": "string"
             },
             "type": "array"
           },
           "duration": {
-            "default": [],
             "items": {
+              "nullable": true,
               "type": "string"
             },
             "type": "array"
           },
           "id": {
-            "default": [],
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "isArchived": {
-            "default": [],
             "items": {
               "type": "number"
             },
             "type": "array"
           },
           "isFavorite": {
-            "default": [],
             "items": {
               "type": "number"
             },
             "type": "array"
           },
           "isImage": {
-            "default": [],
             "items": {
               "type": "number"
             },
             "type": "array"
           },
           "isTrashed": {
-            "default": [],
-            "items": {
-              "type": "number"
-            },
-            "type": "array"
-          },
-          "isVideo": {
-            "default": [],
             "items": {
               "type": "number"
             },
             "type": "array"
           },
           "livePhotoVideoId": {
-            "default": [],
             "items": {
+              "nullable": true,
               "type": "string"
             },
             "type": "array"
           },
           "localDateTime": {
-            "default": [],
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "ownerId": {
-            "default": [],
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "projectionType": {
-            "default": [],
             "items": {
+              "nullable": true,
               "type": "string"
             },
             "type": "array"
           },
           "ratio": {
-            "default": [],
             "items": {
               "type": "number"
             },
             "type": "array"
           },
-          "stack": {
-            "default": [],
+          "stackCount": {
             "items": {
-              "$ref": "#/components/schemas/TimelineStackResponseDto"
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "stackId": {
+            "items": {
+              "nullable": true,
+              "type": "string"
             },
             "type": "array"
           },
           "thumbhash": {
-            "default": [],
             "items": {
+              "nullable": true,
               "type": "string"
             },
             "type": "array"
           }
         },
         "required": [
-          "description",
+          "city",
+          "country",
           "duration",
           "id",
           "isArchived",
           "isFavorite",
           "isImage",
           "isTrashed",
-          "isVideo",
           "livePhotoVideoId",
           "localDateTime",
           "ownerId",
           "projectionType",
           "ratio",
-          "stack",
           "thumbhash"
-        ],
-        "type": "object"
-      },
-      "TimeBucketResponseDto": {
-        "properties": {
-          "bucketAssets": {
-            "$ref": "#/components/schemas/TimeBucketAssetResponseDto"
-          },
-          "hasNextPage": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "bucketAssets",
-          "hasNextPage"
         ],
         "type": "object"
       },
@@ -13713,42 +13696,6 @@
         "required": [
           "count",
           "timeBucket"
-        ],
-        "type": "object"
-      },
-      "TimelineAssetDescriptionDto": {
-        "properties": {
-          "city": {
-            "nullable": true,
-            "type": "string"
-          },
-          "country": {
-            "nullable": true,
-            "type": "string"
-          }
-        },
-        "required": [
-          "city",
-          "country"
-        ],
-        "type": "object"
-      },
-      "TimelineStackResponseDto": {
-        "properties": {
-          "assetCount": {
-            "type": "number"
-          },
-          "id": {
-            "type": "string"
-          },
-          "primaryAssetId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetCount",
-          "id",
-          "primaryAssetId"
         ],
         "type": "object"
       },

@@ -141,7 +141,7 @@ class TimelineApi {
   /// * [bool] withPartners:
   ///
   /// * [bool] withStacked:
-  Future<TimeBucketResponseDto?> getTimeBucket(String timeBucket, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, num? page, num? pageSize, String? personId, String? tagId, String? userId, bool? withPartners, bool? withStacked, }) async {
+  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, num? page, num? pageSize, String? personId, String? tagId, String? userId, bool? withPartners, bool? withStacked, }) async {
     final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, page: page, pageSize: pageSize, personId: personId, tagId: tagId, userId: userId, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -150,7 +150,7 @@ class TimelineApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TimeBucketResponseDto',) as TimeBucketResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TimeBucketAssetResponseDto',) as TimeBucketAssetResponseDto;
     
     }
     return null;
