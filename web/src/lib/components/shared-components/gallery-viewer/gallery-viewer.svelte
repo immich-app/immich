@@ -447,6 +447,7 @@
     style:position="relative"
     style:height={assetLayouts.containerHeight + 'px'}
     style:width={assetLayouts.containerWidth - 1 + 'px'}
+    inert={$isViewerOpen}
   >
     {#each assetLayouts.assetLayout as layout, index (layout.asset.id + '-' + index)}
       {@const asset = layout.asset}

@@ -694,7 +694,7 @@
   <ShowShortcuts onClose={() => (showShortcuts = !showShortcuts)} />
 {/if}
 
-{#if assetStore.buckets.length > 0}
+{#if assetStore.buckets.length > 0 && !$showAssetViewer}
   <Scrubber
     {assetStore}
     height={assetStore.viewportHeight}
@@ -734,6 +734,7 @@
   bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
   bind:this={element}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
+  inert={$showAssetViewer}
 >
   <section
     bind:this={timelineElement}
