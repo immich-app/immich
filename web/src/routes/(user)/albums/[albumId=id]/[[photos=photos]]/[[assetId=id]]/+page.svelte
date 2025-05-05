@@ -2,6 +2,7 @@
   import { afterNavigate, goto, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
+  import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
@@ -80,7 +81,6 @@
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import AlbumMap from '$lib/components/album-page/album-map.svelte';
 
   interface Props {
     data: PageData;
@@ -500,6 +500,7 @@
                 icon={mdiShareVariantOutline}
               />
             {/if}
+
             <AlbumMap {album} />
 
             {#if album.assetCount > 0}
