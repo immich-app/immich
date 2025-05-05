@@ -2,11 +2,14 @@ import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dial
 import { mount, unmount, type Component, type ComponentProps } from 'svelte';
 
 type OnCloseData<T> = T extends { onClose: (data: infer R) => void } ? R : never;
-// TODO make `props` optional if component only has `onClose`
-// type OptionalIfEmpty<T extends object> = keyof T extends never ? undefined : T;
+type OptionalIfEmpty<T extends object> = keyof T extends never ? undefined : T;
 
 class ModalManager {
-  open<T extends object, K = OnCloseData<T>>(Component: Component<T>, props: Omit<T, 'onClose'>) {
+  open<T extends object, K = OnCloseData<T>>(
+    Component: Component<T>,
+    props?: OptionalIfEmpty<Omit<T, 'onClose'>> | Record<string, never>,
+  ): Promise<K>;
+  open<T extends object, K = OnCloseData<T>>(Component: Component<T>, props: OptionalIfEmpty<Omit<T, 'onClose'>>) {
     return new Promise<K>((resolve) => {
       let modal: object = {};
 
@@ -18,7 +21,7 @@ class ModalManager {
       modal = mount(Component, {
         target: document.body,
         props: {
-          ...(props as T),
+          ...((props ?? {}) as T),
           onClose,
         },
       });
