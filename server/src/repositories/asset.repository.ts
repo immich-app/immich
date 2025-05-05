@@ -503,7 +503,6 @@ export class AssetRepository {
   }
 
   getStatistics(ownerId: string, { visibility, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
-    const visibilities = visibility == undefined ? [AssetVisibility.ARCHIVE, AssetVisibility.TIMELINE] : [visibility];
     return this.db
       .selectFrom('assets')
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
@@ -511,7 +510,15 @@ export class AssetRepository {
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
-      .where('visibility', 'in', visibilities)
+      .$if(visibility === undefined, (qb) =>
+        qb.where((qb) =>
+          qb.or([
+            qb('assets.visibility', '=', AssetVisibility.TIMELINE),
+            qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
+          ]),
+        ),
+      )
+      .$if(!!visibility, (qb) => qb.where('assets.visibility', '=', visibility!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
@@ -524,7 +531,7 @@ export class AssetRepository {
       .selectAll('assets')
       .$call(withExif)
       .where('ownerId', '=', anyUuid(userIds))
-      .where('visibility', '=', AssetVisibility.TIMELINE)
+      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .orderBy((eb) => eb.fn('random'))
       .limit(take)
@@ -541,7 +548,7 @@ export class AssetRepository {
             .select(truncatedDate<Date>(options.size).as('timeBucket'))
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-            .$if(options.visibility == undefined, (qb) =>
+            .$if(options.visibility === undefined, (qb) =>
               qb.where((qb) =>
                 qb.or([
                   qb('assets.visibility', '=', AssetVisibility.TIMELINE),
