@@ -149,24 +149,21 @@ describe('/timeline', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
-        bucketAssets: {
-          city: [],
-          country: [],
-          duration: [],
-          id: [],
-          isArchived: [],
-          isFavorite: [],
-          isImage: [],
-          isTrashed: [],
-          livePhotoVideoId: [],
-          localDateTime: [],
-          ownerId: [],
-          projectionType: [],
-          ratio: [],
-          status: [],
-          thumbhash: [],
-        },
-        hasNextPage: false,
+        city: [],
+        country: [],
+        duration: [],
+        id: [],
+        isArchived: [],
+        isFavorite: [],
+        isImage: [],
+        isTrashed: [],
+        livePhotoVideoId: [],
+        localDateTime: [],
+        ownerId: [],
+        projectionType: [],
+        ratio: [],
+        status: [],
+        thumbhash: [],
       });
     });
 
@@ -189,25 +186,21 @@ describe('/timeline', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
-        bucketAssets: {
-          city: [],
-          country: [],
-          duration: [],
-          id: [],
-          isArchived: [],
-          isFavorite: [],
-          isImage: [],
-          isTrashed: [],
-          isVideo: [],
-          livePhotoVideoId: [],
-          localDateTime: [],
-          ownerId: [],
-          projectionType: [],
-          ratio: [],
-          status: [],
-          thumbhash: [],
-        },
-        hasNextPage: false,
+        city: [],
+        country: [],
+        duration: [],
+        id: [],
+        isArchived: [],
+        isFavorite: [],
+        isImage: [],
+        isTrashed: [],
+        livePhotoVideoId: [],
+        localDateTime: [],
+        ownerId: [],
+        projectionType: [],
+        ratio: [],
+        status: [],
+        thumbhash: [],
       });
     });
   });

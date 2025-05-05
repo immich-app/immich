@@ -610,12 +610,12 @@ export class AssetRepository {
                 eb
                   .case()
                   .when(sql`exif."exifImageHeight" = 0 or exif."exifImageWidth" = 0`)
-                  .then(eb.lit(1.0))
+                  .then(eb.lit(1))
                   .when('exif.orientation', 'in', sql<string>`('5', '6', '7', '8', '-90', '90')`)
                   .then(sql`round(exif."exifImageHeight"::numeric / exif."exifImageWidth"::numeric, 3)`)
                   .else(sql`round(exif."exifImageWidth"::numeric / exif."exifImageHeight"::numeric, 3)`)
                   .end(),
-                eb.lit(1.0),
+                eb.lit(1),
               )
               .as('ratio'),
           ])
