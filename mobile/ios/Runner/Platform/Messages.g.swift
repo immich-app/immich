@@ -254,6 +254,7 @@ protocol ImHostService {
   func hasMediaChanges(completion: @escaping (Result<Bool, Error>) -> Void)
   func getMediaChanges(completion: @escaping (Result<SyncDelta, Error>) -> Void)
   func checkpointSync(completion: @escaping (Result<Void, Error>) -> Void)
+  func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -328,6 +329,25 @@ class ImHostServiceSetup {
       }
     } else {
       checkpointSyncChannel.setMessageHandler(nil)
+    }
+    let getAssetIdsForAlbumChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getAssetIdsForAlbumChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let albumIdArg = args[0] as! String
+        api.getAssetIdsForAlbum(albumId: albumIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getAssetIdsForAlbumChannel.setMessageHandler(nil)
     }
   }
 }

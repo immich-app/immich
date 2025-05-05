@@ -180,7 +180,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
 
           batch.insert(
             _db.remoteAssetEntity,
-            companion.copyWith(remoteId: Value(asset.id.toUuidByte())),
+            companion.copyWith(id: Value(asset.id.toUuidByte())),
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -191,9 +191,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
         for (final asset in assets) {
           batch.delete(
             _db.remoteAssetEntity,
-            RemoteAssetEntityCompanion(
-              remoteId: Value(asset.assetId.toUuidByte()),
-            ),
+            RemoteAssetEntityCompanion(id: Value(asset.assetId.toUuidByte())),
           );
         }
       });

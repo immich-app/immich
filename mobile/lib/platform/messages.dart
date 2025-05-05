@@ -7,7 +7,7 @@ import 'package:pigeon/pigeon.dart';
     swiftOut: 'ios/Runner/Platform/Messages.g.swift',
     swiftOptions: SwiftOptions(),
     kotlinOut:
-        'android/app/src/main/kotlin/app/alextran/immich/platform/messages.g.kt',
+        'android/app/src/main/kotlin/app/alextran/immich/platform/Messages.g.kt',
     kotlinOptions: KotlinOptions(),
     dartOptions: DartOptions(),
   ),
@@ -52,4 +52,8 @@ abstract class ImHostService {
 
   @async
   void checkpointSync();
+
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  List<String> getAssetIdsForAlbum(String albumId);
 }

@@ -41,4 +41,8 @@ class ImHostServiceImpl: ImHostService {
     }
   }
   
+  func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], any Error>) -> Void) {
+    // Android specific, ignore the call with an empty list
+    completion(.success([]))
+  }
 }

@@ -8,7 +8,7 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const LocalAssetEntity();
 
-  TextColumn get localId => text()();
+  TextColumn get id => text()();
 
   TextColumn get checksum => text().nullable()();
 
@@ -16,13 +16,13 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
 
   @override
-  Set<Column> get primaryKey => {localId};
+  Set<Column> get primaryKey => {id};
 }
 
 extension LocalAssetEntityX on LocalAssetEntityData {
   LocalAsset toDto() {
     return LocalAsset(
-      id: localId,
+      id: id,
       name: name,
       checksum: checksum,
       type: type,

@@ -12,6 +12,8 @@ abstract interface class ILocalAlbumRepository implements IDatabaseRepository {
 
   Future<List<LocalAsset>> getAssetsForAlbum(String albumId);
 
+  Future<List<String>> getAssetIdsForAlbum(String albumId);
+
   Future<void> update(LocalAlbum album);
 
   Future<void> updateAll(Iterable<LocalAlbum> albums);
@@ -19,6 +21,8 @@ abstract interface class ILocalAlbumRepository implements IDatabaseRepository {
   Future<void> handleSyncDelta(SyncDelta delta);
 
   Future<void> delete(String albumId);
+
+  Future<void> removeMissing(String albumId, Iterable<String> assetIds);
 
   Future<void> removeAssets(String albumId, Iterable<String> assetIds);
 }

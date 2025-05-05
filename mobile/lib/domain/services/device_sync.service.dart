@@ -9,10 +9,12 @@ import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/platform/messages.g.dart' as platform;
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
+import 'package:platform/platform.dart';
 
 class DeviceSyncService {
   final IAlbumMediaRepository _albumMediaRepository;
   final ILocalAlbumRepository _localAlbumRepository;
+  final Platform _platform;
   final platform.ImHostService _hostService;
   final Logger _log = Logger("SyncService");
 
@@ -20,8 +22,10 @@ class DeviceSyncService {
     required IAlbumMediaRepository albumMediaRepository,
     required ILocalAlbumRepository localAlbumRepository,
     required platform.ImHostService hostService,
+    Platform? platform,
   })  : _albumMediaRepository = albumMediaRepository,
         _localAlbumRepository = localAlbumRepository,
+        _platform = platform ?? const LocalPlatform(),
         _hostService = hostService;
 
   Future<void> sync() async {
@@ -41,6 +45,15 @@ class DeviceSyncService {
 
       final delta = await _hostService.getMediaChanges();
       await _localAlbumRepository.handleSyncDelta(delta);
+
+      if (_platform.isAndroid) {
+        final dbAlbums = await _localAlbumRepository.getAll();
+        for (final album in dbAlbums) {
+          final deviceIds = await _hostService.getAssetIdsForAlbum(album.id);
+          await _localAlbumRepository.removeMissing(album.id, deviceIds);
+        }
+      }
+
       await _hostService.checkpointSync();
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
@@ -69,7 +82,7 @@ class DeviceSyncService {
         onlySecond: addAlbum,
       );
 
-      _hostService.checkpointSync();
+      await _hostService.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
     } catch (e, s) {

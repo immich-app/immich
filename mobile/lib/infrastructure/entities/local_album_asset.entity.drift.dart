@@ -39,7 +39,7 @@ final class $$LocalAlbumAssetEntityTableReferences extends i0.BaseReferences<
                   .assetId,
               i4.ReadDatabaseContainer(db)
                   .resultSet<i3.$LocalAssetEntityTable>('local_asset_entity')
-                  .localId));
+                  .id));
 
   i3.$$LocalAssetEntityTableProcessedTableManager get assetId {
     final $_column = $_itemColumn<String>('asset_id')!;
@@ -49,7 +49,7 @@ final class $$LocalAlbumAssetEntityTableReferences extends i0.BaseReferences<
             $_db,
             i4.ReadDatabaseContainer($_db)
                 .resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'))
-        .filter((f) => f.localId.sqlEquals($_column));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_assetIdTable($_db));
     if (item == null) return manager;
     return i0.ProcessedTableManager(
@@ -99,7 +99,7 @@ class $$LocalAlbumAssetEntityTableFilterComposer
         getCurrentColumn: (t) => t.assetId,
         referencedTable: i4.ReadDatabaseContainer($db)
             .resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
-        getReferencedColumn: (t) => t.localId,
+        getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
@@ -154,7 +154,7 @@ class $$LocalAlbumAssetEntityTableOrderingComposer
             getCurrentColumn: (t) => t.assetId,
             referencedTable: i4.ReadDatabaseContainer($db)
                 .resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
-            getReferencedColumn: (t) => t.localId,
+            getReferencedColumn: (t) => t.id,
             builder: (joinBuilder,
                     {$addJoinBuilderToRootComposer,
                     $removeJoinBuilderFromRootComposer}) =>
@@ -212,7 +212,7 @@ class $$LocalAlbumAssetEntityTableAnnotationComposer
             getCurrentColumn: (t) => t.assetId,
             referencedTable: i4.ReadDatabaseContainer($db)
                 .resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
-            getReferencedColumn: (t) => t.localId,
+            getReferencedColumn: (t) => t.id,
             builder: (joinBuilder,
                     {$addJoinBuilderToRootComposer,
                     $removeJoinBuilderFromRootComposer}) =>
@@ -327,7 +327,7 @@ class $$LocalAlbumAssetEntityTableTableManager extends i0.RootTableManager<
                         ._assetIdTable(db),
                     referencedColumn: i1.$$LocalAlbumAssetEntityTableReferences
                         ._assetIdTable(db)
-                        .localId,
+                        .id,
                   ) as T;
                 }
                 if (albumId) {
@@ -385,7 +385,7 @@ class $LocalAlbumAssetEntityTable extends i2.LocalAlbumAssetEntity
       type: i0.DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'REFERENCES local_asset_entity (local_id) ON DELETE CASCADE'));
+          'REFERENCES local_asset_entity (id) ON DELETE CASCADE'));
   static const i0.VerificationMeta _albumIdMeta =
       const i0.VerificationMeta('albumId');
   @override

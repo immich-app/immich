@@ -10,6 +10,8 @@ class LocalAlbumEntity extends Table with DriftDefaultsMixin {
   TextColumn get name => text()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   IntColumn get backupSelection => intEnum<BackupSelection>()();
+
+  // Used for mark & sweep
   BoolColumn get marker_ => boolean().withDefault(const Constant(false))();
 
   @override

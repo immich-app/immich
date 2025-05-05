@@ -15,7 +15,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder
   i0.Value<DateTime> createdAt,
   i0.Value<DateTime> updatedAt,
   i0.Value<int?> durationInSeconds,
-  required String localId,
+  required String id,
   i0.Value<String?> checksum,
   i0.Value<bool> isFavorite,
 });
@@ -26,7 +26,7 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder
   i0.Value<DateTime> createdAt,
   i0.Value<DateTime> updatedAt,
   i0.Value<int?> durationInSeconds,
-  i0.Value<String> localId,
+  i0.Value<String> id,
   i0.Value<String?> checksum,
   i0.Value<bool> isFavorite,
 });
@@ -58,8 +58,8 @@ class $$LocalAssetEntityTableFilterComposer
       column: $table.durationInSeconds,
       builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<String> get localId => $composableBuilder(
-      column: $table.localId, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<String> get checksum => $composableBuilder(
       column: $table.checksum, builder: (column) => i0.ColumnFilters(column));
@@ -95,8 +95,8 @@ class $$LocalAssetEntityTableOrderingComposer
       column: $table.durationInSeconds,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get localId => $composableBuilder(
-      column: $table.localId, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
 
   i0.ColumnOrderings<String> get checksum => $composableBuilder(
       column: $table.checksum, builder: (column) => i0.ColumnOrderings(column));
@@ -130,8 +130,8 @@ class $$LocalAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<int> get durationInSeconds => $composableBuilder(
       column: $table.durationInSeconds, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get localId =>
-      $composableBuilder(column: $table.localId, builder: (column) => column);
+  i0.GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
 
   i0.GeneratedColumn<String> get checksum =>
       $composableBuilder(column: $table.checksum, builder: (column) => column);
@@ -174,7 +174,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime> createdAt = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<int?> durationInSeconds = const i0.Value.absent(),
-            i0.Value<String> localId = const i0.Value.absent(),
+            i0.Value<String> id = const i0.Value.absent(),
             i0.Value<String?> checksum = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
           }) =>
@@ -184,7 +184,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             createdAt: createdAt,
             updatedAt: updatedAt,
             durationInSeconds: durationInSeconds,
-            localId: localId,
+            id: id,
             checksum: checksum,
             isFavorite: isFavorite,
           ),
@@ -194,7 +194,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime> createdAt = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<int?> durationInSeconds = const i0.Value.absent(),
-            required String localId,
+            required String id,
             i0.Value<String?> checksum = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
           }) =>
@@ -204,7 +204,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             createdAt: createdAt,
             updatedAt: updatedAt,
             durationInSeconds: durationInSeconds,
-            localId: localId,
+            id: id,
             checksum: checksum,
             isFavorite: isFavorite,
           ),
@@ -274,11 +274,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
   late final i0.GeneratedColumn<int> durationInSeconds =
       i0.GeneratedColumn<int>('duration_in_seconds', aliasedName, true,
           type: i0.DriftSqlType.int, requiredDuringInsert: false);
-  static const i0.VerificationMeta _localIdMeta =
-      const i0.VerificationMeta('localId');
+  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
-  late final i0.GeneratedColumn<String> localId = i0.GeneratedColumn<String>(
-      'local_id', aliasedName, false,
+  late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
+      'id', aliasedName, false,
       type: i0.DriftSqlType.string, requiredDuringInsert: true);
   static const i0.VerificationMeta _checksumMeta =
       const i0.VerificationMeta('checksum');
@@ -303,7 +302,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         createdAt,
         updatedAt,
         durationInSeconds,
-        localId,
+        id,
         checksum,
         isFavorite
       ];
@@ -338,11 +337,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           durationInSeconds.isAcceptableOrUnknown(
               data['duration_in_seconds']!, _durationInSecondsMeta));
     }
-    if (data.containsKey('local_id')) {
-      context.handle(_localIdMeta,
-          localId.isAcceptableOrUnknown(data['local_id']!, _localIdMeta));
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
-      context.missing(_localIdMeta);
+      context.missing(_idMeta);
     }
     if (data.containsKey('checksum')) {
       context.handle(_checksumMeta,
@@ -358,7 +356,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {localId};
+  Set<i0.GeneratedColumn> get $primaryKey => {id};
   @override
   i1.LocalAssetEntityData map(Map<String, dynamic> data,
       {String? tablePrefix}) {
@@ -375,8 +373,8 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       durationInSeconds: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.int, data['${effectivePrefix}duration_in_seconds']),
-      localId: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}local_id'])!,
+      id: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
       checksum: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}checksum']),
       isFavorite: attachedDatabase.typeMapping
@@ -404,7 +402,7 @@ class LocalAssetEntityData extends i0.DataClass
   final DateTime createdAt;
   final DateTime updatedAt;
   final int? durationInSeconds;
-  final String localId;
+  final String id;
   final String? checksum;
   final bool isFavorite;
   const LocalAssetEntityData(
@@ -413,7 +411,7 @@ class LocalAssetEntityData extends i0.DataClass
       required this.createdAt,
       required this.updatedAt,
       this.durationInSeconds,
-      required this.localId,
+      required this.id,
       this.checksum,
       required this.isFavorite});
   @override
@@ -429,7 +427,7 @@ class LocalAssetEntityData extends i0.DataClass
     if (!nullToAbsent || durationInSeconds != null) {
       map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds);
     }
-    map['local_id'] = i0.Variable<String>(localId);
+    map['id'] = i0.Variable<String>(id);
     if (!nullToAbsent || checksum != null) {
       map['checksum'] = i0.Variable<String>(checksum);
     }
@@ -447,7 +445,7 @@ class LocalAssetEntityData extends i0.DataClass
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
-      localId: serializer.fromJson<String>(json['localId']),
+      id: serializer.fromJson<String>(json['id']),
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
     );
@@ -462,7 +460,7 @@ class LocalAssetEntityData extends i0.DataClass
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
-      'localId': serializer.toJson<String>(localId),
+      'id': serializer.toJson<String>(id),
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
     };
@@ -474,7 +472,7 @@ class LocalAssetEntityData extends i0.DataClass
           DateTime? createdAt,
           DateTime? updatedAt,
           i0.Value<int?> durationInSeconds = const i0.Value.absent(),
-          String? localId,
+          String? id,
           i0.Value<String?> checksum = const i0.Value.absent(),
           bool? isFavorite}) =>
       i1.LocalAssetEntityData(
@@ -485,7 +483,7 @@ class LocalAssetEntityData extends i0.DataClass
         durationInSeconds: durationInSeconds.present
             ? durationInSeconds.value
             : this.durationInSeconds,
-        localId: localId ?? this.localId,
+        id: id ?? this.id,
         checksum: checksum.present ? checksum.value : this.checksum,
         isFavorite: isFavorite ?? this.isFavorite,
       );
@@ -498,7 +496,7 @@ class LocalAssetEntityData extends i0.DataClass
       durationInSeconds: data.durationInSeconds.present
           ? data.durationInSeconds.value
           : this.durationInSeconds,
-      localId: data.localId.present ? data.localId.value : this.localId,
+      id: data.id.present ? data.id.value : this.id,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite:
           data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
@@ -513,7 +511,7 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('durationInSeconds: $durationInSeconds, ')
-          ..write('localId: $localId, ')
+          ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite')
           ..write(')'))
@@ -522,7 +520,7 @@ class LocalAssetEntityData extends i0.DataClass
 
   @override
   int get hashCode => Object.hash(name, type, createdAt, updatedAt,
-      durationInSeconds, localId, checksum, isFavorite);
+      durationInSeconds, id, checksum, isFavorite);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -532,7 +530,7 @@ class LocalAssetEntityData extends i0.DataClass
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.durationInSeconds == this.durationInSeconds &&
-          other.localId == this.localId &&
+          other.id == this.id &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite);
 }
@@ -544,7 +542,7 @@ class LocalAssetEntityCompanion
   final i0.Value<DateTime> createdAt;
   final i0.Value<DateTime> updatedAt;
   final i0.Value<int?> durationInSeconds;
-  final i0.Value<String> localId;
+  final i0.Value<String> id;
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
   const LocalAssetEntityCompanion({
@@ -553,7 +551,7 @@ class LocalAssetEntityCompanion
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     this.durationInSeconds = const i0.Value.absent(),
-    this.localId = const i0.Value.absent(),
+    this.id = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
   });
@@ -563,19 +561,19 @@ class LocalAssetEntityCompanion
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     this.durationInSeconds = const i0.Value.absent(),
-    required String localId,
+    required String id,
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
   })  : name = i0.Value(name),
         type = i0.Value(type),
-        localId = i0.Value(localId);
+        id = i0.Value(id);
   static i0.Insertable<i1.LocalAssetEntityData> custom({
     i0.Expression<String>? name,
     i0.Expression<int>? type,
     i0.Expression<DateTime>? createdAt,
     i0.Expression<DateTime>? updatedAt,
     i0.Expression<int>? durationInSeconds,
-    i0.Expression<String>? localId,
+    i0.Expression<String>? id,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
   }) {
@@ -585,7 +583,7 @@ class LocalAssetEntityCompanion
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
-      if (localId != null) 'local_id': localId,
+      if (id != null) 'id': id,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
     });
@@ -597,7 +595,7 @@ class LocalAssetEntityCompanion
       i0.Value<DateTime>? createdAt,
       i0.Value<DateTime>? updatedAt,
       i0.Value<int?>? durationInSeconds,
-      i0.Value<String>? localId,
+      i0.Value<String>? id,
       i0.Value<String?>? checksum,
       i0.Value<bool>? isFavorite}) {
     return i1.LocalAssetEntityCompanion(
@@ -606,7 +604,7 @@ class LocalAssetEntityCompanion
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
-      localId: localId ?? this.localId,
+      id: id ?? this.id,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
     );
@@ -631,8 +629,8 @@ class LocalAssetEntityCompanion
     if (durationInSeconds.present) {
       map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds.value);
     }
-    if (localId.present) {
-      map['local_id'] = i0.Variable<String>(localId.value);
+    if (id.present) {
+      map['id'] = i0.Variable<String>(id.value);
     }
     if (checksum.present) {
       map['checksum'] = i0.Variable<String>(checksum.value);
@@ -651,7 +649,7 @@ class LocalAssetEntityCompanion
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('durationInSeconds: $durationInSeconds, ')
-          ..write('localId: $localId, ')
+          ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite')
           ..write(')'))

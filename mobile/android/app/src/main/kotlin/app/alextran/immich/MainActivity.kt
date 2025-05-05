@@ -2,12 +2,12 @@ package app.alextran.immich
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
-import androidx.annotation.NonNull
+import app.alextran.immich.platform.MessagesImpl
 
 class MainActivity : FlutterActivity() {
-    override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         flutterEngine.plugins.add(BackgroundServicePlugin())
-        // No need to set up method channel here as it's now handled in the plugin
+        ImHostService.setUp(flutterEngine.dartExecutor.binaryMessenger, MessagesImpl(this))
     }
 }

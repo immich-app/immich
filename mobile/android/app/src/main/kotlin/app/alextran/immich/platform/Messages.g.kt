@@ -153,7 +153,7 @@ data class SyncDelta (
 
   override fun hashCode(): Int = toList().hashCode()
 }
-private open class messagesPigeonCodec : StandardMessageCodec() {
+private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       129.toByte() -> {
@@ -191,11 +191,12 @@ interface ImHostService {
   fun hasMediaChanges(callback: (Result<Boolean>) -> Unit)
   fun getMediaChanges(callback: (Result<SyncDelta>) -> Unit)
   fun checkpointSync(callback: (Result<Unit>) -> Unit)
+  fun getAssetIdsForAlbum(albumId: String, callback: (Result<List<String>>) -> Unit)
 
   companion object {
     /** The codec used by ImHostService. */
     val codec: MessageCodec<Any?> by lazy {
-      messagesPigeonCodec()
+      MessagesPigeonCodec()
     }
     /** Sets up an instance of `ImHostService` to handle messages through the `binaryMessenger`. */
     @JvmOverloads
@@ -266,6 +267,26 @@ interface ImHostService {
                 reply.reply(MessagesPigeonUtils.wrapError(error))
               } else {
                 reply.reply(MessagesPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.getAssetIdsForAlbum$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val albumIdArg = args[0] as String
+            api.getAssetIdsForAlbum(albumIdArg) { result: Result<List<String>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
               }
             }
           }

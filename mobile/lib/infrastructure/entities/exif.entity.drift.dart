@@ -71,7 +71,7 @@ final class $$ExifEntityTableReferences extends i0.BaseReferences<
                   .assetId,
               i5.ReadDatabaseContainer(db)
                   .resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity')
-                  .remoteId));
+                  .id));
 
   i4.$$RemoteAssetEntityTableProcessedTableManager get assetId {
     final $_column = $_itemColumn<i2.Uint8List>('asset_id')!;
@@ -81,7 +81,7 @@ final class $$ExifEntityTableReferences extends i0.BaseReferences<
             $_db,
             i5.ReadDatabaseContainer($_db)
                 .resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'))
-        .filter((f) => f.remoteId.sqlEquals($_column));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_assetIdTable($_db));
     if (item == null) return manager;
     return i0.ProcessedTableManager(
@@ -170,7 +170,7 @@ class $$ExifEntityTableFilterComposer
         getCurrentColumn: (t) => t.assetId,
         referencedTable: i5.ReadDatabaseContainer($db)
             .resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
-        getReferencedColumn: (t) => t.remoteId,
+        getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
@@ -270,7 +270,7 @@ class $$ExifEntityTableOrderingComposer
             getCurrentColumn: (t) => t.assetId,
             referencedTable: i5.ReadDatabaseContainer($db)
                 .resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
-            getReferencedColumn: (t) => t.remoteId,
+            getReferencedColumn: (t) => t.id,
             builder: (joinBuilder,
                     {$addJoinBuilderToRootComposer,
                     $removeJoinBuilderFromRootComposer}) =>
@@ -364,7 +364,7 @@ class $$ExifEntityTableAnnotationComposer
             getCurrentColumn: (t) => t.assetId,
             referencedTable: i5.ReadDatabaseContainer($db)
                 .resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
-            getReferencedColumn: (t) => t.remoteId,
+            getReferencedColumn: (t) => t.id,
             builder: (joinBuilder,
                     {$addJoinBuilderToRootComposer,
                     $removeJoinBuilderFromRootComposer}) =>
@@ -526,9 +526,8 @@ class $$ExifEntityTableTableManager extends i0.RootTableManager<
                     currentColumn: table.assetId,
                     referencedTable:
                         i1.$$ExifEntityTableReferences._assetIdTable(db),
-                    referencedColumn: i1.$$ExifEntityTableReferences
-                        ._assetIdTable(db)
-                        .remoteId,
+                    referencedColumn:
+                        i1.$$ExifEntityTableReferences._assetIdTable(db).id,
                   ) as T;
                 }
 
@@ -569,7 +568,7 @@ class $ExifEntityTable extends i3.ExifEntity
           type: i0.DriftSqlType.blob,
           requiredDuringInsert: true,
           defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-              'REFERENCES remote_asset_entity (remote_id) ON DELETE CASCADE'));
+              'REFERENCES remote_asset_entity (id) ON DELETE CASCADE'));
   static const i0.VerificationMeta _cityMeta =
       const i0.VerificationMeta('city');
   @override
