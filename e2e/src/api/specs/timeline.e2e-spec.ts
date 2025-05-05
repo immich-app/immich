@@ -150,20 +150,20 @@ describe('/timeline', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         bucketAssets: {
-          description: [],
+          city: [],
+          country: [],
           duration: [],
           id: [],
           isArchived: [],
           isFavorite: [],
           isImage: [],
           isTrashed: [],
-          isVideo: [],
           livePhotoVideoId: [],
           localDateTime: [],
           ownerId: [],
           projectionType: [],
           ratio: [],
-          stack: [],
+          status: [],
           thumbhash: [],
         },
         hasNextPage: false,
@@ -190,7 +190,8 @@ describe('/timeline', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         bucketAssets: {
-          description: [],
+          city: [],
+          country: [],
           duration: [],
           id: [],
           isArchived: [],
@@ -203,7 +204,7 @@ describe('/timeline', () => {
           ownerId: [],
           projectionType: [],
           ratio: [],
-          stack: [],
+          status: [],
           thumbhash: [],
         },
         hasNextPage: false,

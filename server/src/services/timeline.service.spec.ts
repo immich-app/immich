@@ -27,30 +27,23 @@ describe(TimelineService.name, () => {
   describe('getTimeBucket', () => {
     it('should return the assets for a album time bucket if user has album.read', async () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
+      const json = `[{ id: ['asset-id'] }]`;
+      mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
 
       await expect(sut.getTimeBucket(authStub.admin, { timeBucket: 'bucket', albumId: 'album-id' })).resolves.toEqual(
-        expect.objectContaining({
-          bucketAssets: expect.objectContaining({ id: expect.arrayContaining(['asset-id']) }),
-        }),
+        json,
       );
 
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-id']));
-      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
-        'bucket',
-        {
-          timeBucket: 'bucket',
-          albumId: 'album-id',
-        },
-        {
-          skip: 1,
-          take: -1,
-        },
-      );
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
+        timeBucket: 'bucket',
+        albumId: 'album-id',
+      });
     });
 
     it('should return the assets for a archive time bucket if user has archive.read', async () => {
-      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
+      const json = `[{ id: ['asset-id'] }]`;
+      mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
 
       await expect(
         sut.getTimeBucket(authStub.admin, {
@@ -58,11 +51,7 @@ describe(TimelineService.name, () => {
           isArchived: true,
           userId: authStub.admin.user.id,
         }),
-      ).resolves.toEqual(
-        expect.objectContaining({
-          bucketAssets: expect.objectContaining({ id: expect.arrayContaining(['asset-id']) }),
-        }),
-      );
+      ).resolves.toEqual(json);
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
         'bucket',
         expect.objectContaining({
@@ -70,15 +59,12 @@ describe(TimelineService.name, () => {
           isArchived: true,
           userIds: [authStub.admin.user.id],
         }),
-        {
-          skip: 1,
-          take: -1,
-        },
       );
     });
 
     it('should include partner shared assets', async () => {
-      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
+      const json = `[{ id: ['asset-id'] }]`;
+      mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
       mocks.partner.getAll.mockResolvedValue([]);
 
       await expect(
@@ -88,28 +74,18 @@ describe(TimelineService.name, () => {
           userId: authStub.admin.user.id,
           withPartners: true,
         }),
-      ).resolves.toEqual(
-        expect.objectContaining({
-          bucketAssets: expect.objectContaining({ id: expect.arrayContaining(['asset-id']) }),
-        }),
-      );
-      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
-        'bucket',
-        {
-          timeBucket: 'bucket',
-          isArchived: false,
-          withPartners: true,
-          userIds: [authStub.admin.user.id],
-        },
-        {
-          skip: 1,
-          take: -1,
-        },
-      );
+      ).resolves.toEqual(json);
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
+        timeBucket: 'bucket',
+        isArchived: false,
+        withPartners: true,
+        userIds: [authStub.admin.user.id],
+      });
     });
 
     it('should check permissions to read tag', async () => {
-      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
+      const json = `[{ id: ['asset-id'] }]`;
+      mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-123']));
 
       await expect(
@@ -118,48 +94,30 @@ describe(TimelineService.name, () => {
           userId: authStub.admin.user.id,
           tagId: 'tag-123',
         }),
-      ).resolves.toEqual(
-        expect.objectContaining({
-          bucketAssets: expect.objectContaining({ id: expect.arrayContaining(['asset-id']) }),
-        }),
-      );
-      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
-        'bucket',
-        {
-          tagId: 'tag-123',
-          timeBucket: 'bucket',
-          userIds: [authStub.admin.user.id],
-        },
-        {
-          skip: 1,
-          take: -1,
-        },
-      );
+      ).resolves.toEqual(json);
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
+        tagId: 'tag-123',
+        timeBucket: 'bucket',
+        userIds: [authStub.admin.user.id],
+      });
     });
 
     it('should return the assets for a library time bucket if user has library.read', async () => {
-      mocks.asset.getTimeBucket.mockResolvedValue([{ id: 'asset-id' } as any]);
+      const json = `[{ id: ['asset-id'] }]`;
+      mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
 
       await expect(
         sut.getTimeBucket(authStub.admin, {
           timeBucket: 'bucket',
           userId: authStub.admin.user.id,
         }),
-      ).resolves.toEqual(
-        expect.objectContaining({
-          bucketAssets: expect.objectContaining({ id: expect.arrayContaining(['asset-id']) }),
-        }),
-      );
+      ).resolves.toEqual(json);
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
         'bucket',
         expect.objectContaining({
           timeBucket: 'bucket',
           userIds: [authStub.admin.user.id],
         }),
-        {
-          skip: 1,
-          take: -1,
-        },
       );
     });
 
