@@ -437,11 +437,11 @@ export class AssetBucket {
         people: [],
         projectionType: bucketAssets.projectionType[i],
         ratio: bucketAssets.ratio[i],
-        stack: bucketAssets.stackId?.[i]
+        stack: bucketAssets.stack?.[i]
           ? {
-              id: bucketAssets.stackId[i]!,
+              id: bucketAssets.stack[i]![0] as string,
               primaryAssetId: bucketAssets.id[i],
-              assetCount: bucketAssets.stackCount![i],
+              assetCount: bucketAssets.stack[i]![1] as number,
             }
           : null,
         thumbhash: bucketAssets.thumbhash[i],

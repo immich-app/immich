@@ -652,14 +652,15 @@ export class AssetRepository {
                 (eb) =>
                   eb
                     .selectFrom('assets as stacked')
-                    .select((eb) => eb.fn.coalesce(eb.fn.count(eb.table('stacked')), eb.lit(0)).as('stackCount'))
+                    .select(sql`json_build_array(stacked."stackId", count('stacked'))`.as('stack'))
                     .whereRef('stacked.stackId', '=', 'assets.stackId')
                     .where('stacked.deletedAt', 'is', null)
                     .where('stacked.isArchived', '=', false)
+                    .groupBy('stacked.stackId')
                     .as('stacked_assets'),
                 (join) => join.onTrue(),
               )
-              .select(['assets.stackId', 'stackCount']),
+              .select('stack'),
           )
           .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
@@ -690,12 +691,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
           ])
-          .$if(!!options.withStacked, (qb) =>
-            qb.select((eb) => [
-              eb.fn('array_agg', ['stackCount']).as('stackCount'),
-              eb.fn('array_agg', ['stackId']).as('stackId'),
-            ]),
-          ),
+          .$if(!!options.withStacked, (qb) => qb.select((eb) => eb.fn('array_agg', ['stack']).as('stack'))),
       )
       .selectFrom('agg')
       .select(sql<string>`to_json(agg)::text`.as('assets'));
