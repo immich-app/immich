@@ -143,23 +143,20 @@ select
   "asset_faces"."boundingBoxY2" as "y2",
   "asset_faces"."imageWidth" as "oldWidth",
   "asset_faces"."imageHeight" as "oldHeight",
-  "exif"."exifImageWidth",
-  "exif"."exifImageHeight",
   "assets"."type",
   "assets"."originalPath",
-  "asset_files"."path" as "previewPath"
+  "asset_files"."path" as "previewPath",
+  "exif"."orientation" as "exifOrientation"
 from
   "person"
   inner join "asset_faces" on "asset_faces"."id" = "person"."faceAssetId"
   inner join "assets" on "asset_faces"."assetId" = "assets"."id"
-  inner join "exif" on "exif"."assetId" = "assets"."id"
-  inner join "asset_files" on "asset_files"."assetId" = "assets"."id"
+  left join "exif" on "exif"."assetId" = "assets"."id"
+  left join "asset_files" on "asset_files"."assetId" = "assets"."id"
 where
   "person"."id" = $1
   and "asset_faces"."deletedAt" is null
   and "asset_files"."type" = $2
-  and "exif"."exifImageWidth" > $3
-  and "exif"."exifImageHeight" > $4
 
 -- PersonRepository.reassignFace
 update "asset_faces"
