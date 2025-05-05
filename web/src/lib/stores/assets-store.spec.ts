@@ -1,6 +1,6 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { AbortError } from '$lib/utils';
-import { type AssetResponseDto, type TimeBucketResponseDto } from '@immich/sdk';
+import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { AssetStore, type TimelineAsset } from './assets-store.svelte';
 
@@ -23,7 +23,7 @@ describe('AssetStore', () => {
         .map((asset) => ({ ...asset, localDateTime: '2024-01-01T00:00:00.000Z' })),
     };
 
-    const bucketAssetsResponse: Record<string, TimeBucketResponseDto> = Object.fromEntries(
+    const bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
     );
 
@@ -75,7 +75,7 @@ describe('AssetStore', () => {
         .buildList(3)
         .map((asset) => ({ ...asset, localDateTime: '2024-01-01T00:00:00.000Z' })),
     };
-    const bucketAssetsResponse: Record<string, TimeBucketResponseDto> = Object.fromEntries(
+    const bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
     );
     beforeEach(async () => {
@@ -362,7 +362,7 @@ describe('AssetStore', () => {
         .buildList(3)
         .map((asset) => ({ ...asset, localDateTime: '2024-01-01T00:00:00.000Z' })),
     };
-    const bucketAssetsResponse: Record<string, TimeBucketResponseDto> = Object.fromEntries(
+    const bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
     );
 

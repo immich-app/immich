@@ -1,12 +1,6 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { faker } from '@faker-js/faker';
-import {
-  AssetTypeEnum,
-  type AssetResponseDto,
-  type TimeBucketAssetResponseDto,
-  type TimeBucketResponseDto,
-  type TimelineStackResponseDto,
-} from '@immich/sdk';
+import { AssetTypeEnum, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const assetFactory = Sync.makeFactory<AssetResponseDto>({
@@ -48,23 +42,21 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   stack: null,
   projectionType: null,
   livePhotoVideoId: Sync.each(() => faker.string.uuid()),
-  description: Sync.each(() => ({
-    city: faker.location.city(),
-    country: faker.location.country(),
-    people: [faker.person.fullName()],
-  })),
+  city: faker.location.city(),
+  country: faker.location.country(),
+  people: [faker.person.fullName()],
 });
 
 export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
   const bucketAssets: TimeBucketAssetResponseDto = {
-    description: [],
+    city: [],
+    country: [],
     duration: [],
     id: [],
     isArchived: [],
     isFavorite: [],
     isImage: [],
     isTrashed: [],
-    isVideo: [],
     livePhotoVideoId: [],
     localDateTime: [],
     ownerId: [],
@@ -74,25 +66,22 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     thumbhash: [],
   };
   for (const asset of timelineAsset) {
-    bucketAssets.description.push(asset.description);
+    bucketAssets.city.push(asset.city);
+    bucketAssets.country.push(asset.country);
     bucketAssets.duration.push(asset.duration!);
     bucketAssets.id.push(asset.id);
     bucketAssets.isArchived.push(asset.isArchived ? 1 : 0);
     bucketAssets.isFavorite.push(asset.isFavorite ? 1 : 0);
     bucketAssets.isImage.push(asset.isImage ? 1 : 0);
     bucketAssets.isTrashed.push(asset.isTrashed ? 1 : 0);
-    bucketAssets.isVideo.push(asset.isVideo ? 1 : 0);
     bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
     bucketAssets.localDateTime.push(asset.localDateTime);
     bucketAssets.ownerId.push(asset.ownerId);
     bucketAssets.projectionType.push(asset.projectionType!);
     bucketAssets.ratio.push(asset.ratio);
-    bucketAssets.stack.push(asset.stack as TimelineStackResponseDto);
+    bucketAssets.stack?.push(asset.stack ? [asset.stack.id, asset.stack.assetCount] : null);
     bucketAssets.thumbhash.push(asset.thumbhash!);
   }
-  const response: TimeBucketResponseDto = {
-    bucketAssets,
-    hasNextPage: false,
-  };
-  return response;
+
+  return bucketAssets;
 };

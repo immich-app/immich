@@ -72,11 +72,6 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   const country = assetResponse.exifInfo?.country;
   const people = assetResponse.people?.map((person) => person.name) || [];
 
-  const description = {
-    city: city || null,
-    country: country || null,
-    people,
-  };
   return {
     id: assetResponse.id,
     ownerId: assetResponse.ownerId,
@@ -92,7 +87,9 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     duration: assetResponse.duration || null,
     projectionType: assetResponse.exifInfo?.projectionType || null,
     livePhotoVideoId: assetResponse.livePhotoVideoId || null,
-    description,
+    city: city || null,
+    country: country || null,
+    people,
   };
 };
 export const isTimelineAsset = (arg: AssetResponseDto | TimelineAsset): arg is TimelineAsset =>
