@@ -175,7 +175,7 @@
 <MapLibre
   {hash}
   style=""
-  class="h-full"
+  class="h-full rounded-2xl"
   {center}
   {zoom}
   attributionControl={false}
@@ -232,7 +232,7 @@
       >
         {#snippet children({ feature })}
           <div
-            class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
+            class="rounded-full w-[40px] h-[40px] bg-immich-primary text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
           >
             {feature.properties?.point_count}
           </div>
