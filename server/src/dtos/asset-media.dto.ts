@@ -11,6 +11,7 @@ export enum AssetMediaSize {
   FULLSIZE = 'fullsize',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
+  WEB_XR = 'web_xr',
 }
 
 export class AssetMediaOptionsDto {

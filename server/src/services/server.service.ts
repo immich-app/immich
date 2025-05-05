@@ -18,7 +18,7 @@ import { UserStatsQueryResponse } from 'src/repositories/user.repository';
 import { BaseService } from 'src/services/base.service';
 import { asHumanReadable } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
+import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled, isSpatialImportEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class ServerService extends BaseService {
@@ -89,6 +89,7 @@ export class ServerService extends BaseService {
       passwordLogin: passwordLogin.enabled,
       configFile: !!configFile,
       email: notifications.smtp.enabled,
+      transcodeStatialMediaForWebXr: isSpatialImportEnabled(metadata),
     };
   }
 

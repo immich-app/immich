@@ -41,6 +41,7 @@ export enum AssetFileType {
   FULLSIZE = 'fullsize',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
+  WEB_XR = 'web_xr',
 }
 
 export enum AlbumUserRole {
@@ -258,6 +259,7 @@ export enum AssetPathType {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded_video',
   SIDECAR = 'sidecar',
+  WEB_XR = 'web_xr',
 }
 
 export enum PersonPathType {

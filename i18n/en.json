@@ -142,6 +142,8 @@
     "machine_learning_smart_search_enabled": "Enable smart search",
     "machine_learning_smart_search_enabled_description": "If disabled, images will not be encoded for smart search.",
     "machine_learning_url_description": "The URL of the machine learning server. If more than one URL is provided, each server will be attempted one-at-a-time until one responds successfully, in order from first to last. Servers that don't respond will be temporarily ignored until they come back online.",
+    "metadata_spatial_transcode_setting": "Enable spatial data transcoding for WebXR",
+    "metadata_spatial_transcode_setting_description": "Convert spatial media data for use in WebXR",
     "manage_concurrency": "Manage Concurrency",
     "manage_log_settings": "Manage log settings",
     "map_dark_style": "Dark style",

@@ -200,14 +200,14 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files ?? []);
-    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
+    const { fullsizeFile, previewFile, thumbnailFile, webXr } = getAssetFiles(asset.files ?? []);
+    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, webXr?.path, asset.encodedVideoPath];
 
     if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 
-    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: files.filter(Boolean) } });
 
     return JobStatus.SUCCESS;
   }

@@ -471,7 +471,16 @@
 
     {#if asset.exifInfo?.projectionType?.startsWith('SPATIAL')}
       <div class="flex gap-4 py-4">
-        <div><Icon path={mdiVideo3d} size="24" /></div>
+        <div>
+          <!-- TODO rework it -->
+          <a href={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.WebXr }) + '?size=web_xr'} target="_blank">
+            <Icon
+              path={mdiVideo3d}
+              size="24"
+              class="cursor-pointer hover:text-immich-primary dark:hover:text-immich-dark-primary"
+            />
+          </a>
+        </div>
         <div>
           <p>{$t('spatial_media')}</p>
           <p class="text-sm">{asset.exifInfo.projectionType || '-'}</p>

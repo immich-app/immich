@@ -213,9 +213,11 @@ export class AssetMediaService extends BaseService {
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
 
-    const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files ?? []);
+    const { thumbnailFile, previewFile, fullsizeFile, webXr } = getAssetFiles(asset.files ?? []);
     let filepath = previewFile?.path;
-    if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
+    if (size === AssetMediaSize.WEB_XR && webXr) {
+      filepath = webXr.path;
+    } else if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
       filepath = thumbnailFile.path;
     } else if (size === AssetMediaSize.FULLSIZE) {
       if (mimeTypes.isWebSupportedImage(asset.originalPath)) {
