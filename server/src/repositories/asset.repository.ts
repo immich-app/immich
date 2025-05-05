@@ -691,7 +691,9 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
           ])
-          .$if(!!options.withStacked, (qb) => qb.select((eb) => eb.fn('array_agg', ['stack']).as('stack'))),
+          .$if(!!options.withStacked, (qb) =>
+            qb.select((eb) => eb.fn.coalesce(eb.fn('array_agg', ['stack']), sql.lit('{}')).as('stack')),
+          ),
       )
       .selectFrom('agg')
       .select(sql<string>`to_json(agg)::text`.as('assets'));

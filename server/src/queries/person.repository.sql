@@ -17,8 +17,6 @@ VACUUM
 ANALYZE asset_faces,
 face_search,
 person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
 
 -- PersonRepository.delete
 delete from "person"
@@ -33,8 +31,6 @@ VACUUM
 ANALYZE asset_faces,
 face_search,
 person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
 
 -- PersonRepository.getAllWithoutFaces
 select
