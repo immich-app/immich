@@ -20,6 +20,7 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import AlbumMap from '$lib/components/album-page/album-map.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -91,7 +92,9 @@
             icon={mdiFolderDownloadOutline}
           />
         {/if}
-
+        {#if sharedLink.showMetadata}
+          <AlbumMap {album} />
+        {/if}
         <ThemeButton />
       {/snippet}
     </ControlAppBar>
