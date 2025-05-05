@@ -26,6 +26,13 @@
 
   let { onClose = () => {} }: Props = $props();
 
+  // Temporary variables to hold the settings - marked as reactive with $state() but initialized with store values
+  let tempSlideshowDelay = $state($slideshowDelay);
+  let tempShowProgressBar = $state($showProgressBar);
+  let tempSlideshowNavigation = $state($slideshowNavigation);
+  let tempSlideshowLook = $state($slideshowLook);
+  let tempSlideshowTransition = $state($slideshowTransition);
+
   const navigationOptions: Record<SlideshowNavigation, RenderedOption> = {
     [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: $t('shuffle') },
     [SlideshowNavigation.AscendingOrder]: { icon: mdiArrowUpThin, title: $t('backward') },
@@ -48,12 +55,6 @@
       }
     }
   };
-
-  let tempSlideshowDelay = $slideshowDelay;
-  let tempShowProgressBar = $showProgressBar;
-  let tempSlideshowNavigation = $slideshowNavigation;
-  let tempSlideshowLook = $slideshowLook;
-  let tempSlideshowTransition = $slideshowTransition;
 
   const applyChanges = () => {
     $slideshowDelay = tempSlideshowDelay;
@@ -95,6 +96,6 @@
   </div>
 
   {#snippet stickyBottom()}
-    <Button fullwidth color="primary" onclick={(_) => applyChanges()}>{$t('done')}</Button>
+    <Button fullwidth color="primary" onclick={applyChanges}>{$t('done')}</Button>
   {/snippet}
 </FullScreenModal>
