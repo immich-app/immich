@@ -24,7 +24,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
-const facesAssetFilepath = `${testAssetDir}/metadata/faces/portrait.jpg`;
+const facesAssetDir = `${testAssetDir}/metadata/faces`;
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -185,27 +185,19 @@ describe('/asset', () => {
       });
     });
 
-    it('should get the asset faces', async () => {
-      const config = await utils.getSystemConfig(admin.accessToken);
-      config.metadata.faces.import = true;
-      await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
-
-      // asset faces
-      const facesAsset = await utils.createAsset(admin.accessToken, {
-        assetData: {
+    describe('faces', () => {
+      const metadataFaceTests = [
+        {
+          description: 'without orientation',
           filename: 'portrait.jpg',
-          bytes: await readFile(facesAssetFilepath),
         },
-      });
-
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
-
-      const { status, body } = await request(app)
-        .get(`/assets/${facesAsset.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(200);
-      expect(body.id).toEqual(facesAsset.id);
-      expect(body.people).toMatchObject([
+        {
+          description: 'adjusting face regions to orientation',
+          filename: 'portrait-orientation-6.jpg',
+        },
+      ];
+      // should produce same resulting face region coordinates for any orientation
+      const expectedFaces = [
         {
           name: 'Marie Curie',
           birthDate: null,
@@ -240,7 +232,30 @@ describe('/asset', () => {
             },
           ],
         },
-      ]);
+      ];
+
+      it.each(metadataFaceTests)('should get the asset faces from $filename $description', async ({ filename }) => {
+        const config = await utils.getSystemConfig(admin.accessToken);
+        config.metadata.faces.import = true;
+        await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
+
+        const facesAsset = await utils.createAsset(admin.accessToken, {
+          assetData: {
+            filename,
+            bytes: await readFile(`${facesAssetDir}/${filename}`),
+          },
+        });
+
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
+
+        const { status, body } = await request(app)
+          .get(`/assets/${facesAsset.id}`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body.id).toEqual(facesAsset.id);
+        expect(body.people).toMatchObject(expectedFaces);
+      });
     });
 
     it('should work with a shared link', async () => {
