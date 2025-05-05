@@ -28,7 +28,7 @@ export interface MoveRequest {
 export type GeneratedImageType = AssetPathType.PREVIEW | AssetPathType.THUMBNAIL | AssetPathType.FULLSIZE;
 export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDEO;
 
-type ThumbnailPathEntity = { id: string; ownerId: string };
+export type ThumbnailPathEntity = { id: string; ownerId: string };
 
 let instance: StorageCore | null;
 
@@ -90,7 +90,7 @@ export class StorageCore {
     return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, person.ownerId, `${person.id}.jpeg`);
   }
 
-  static getImagePath(asset: ThumbnailPathEntity, type: GeneratedImageType, format: ImageFormat) {
+  static getImagePath(asset: ThumbnailPathEntity, type: GeneratedImageType, format: 'jpeg' | 'webp') {
     return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}-${type}.${format}`);
   }
 

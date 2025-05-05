@@ -261,15 +261,15 @@
       />
     </div>
 
-    <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-2'} flex items-center pl-6 transition-all">
+    <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
       <CircleIconButton title={$t('show_search_options')} icon={mdiTune} onclick={onFilterClick} size="20" />
     </div>
 
     {#if isFocus}
       <div
         class="absolute inset-y-0 flex items-center"
-        class:right-16={isFocus}
-        class:right-28={isFocus && value.length > 0}
+        class:end-16={isFocus}
+        class:end-28={isFocus && value.length > 0}
       >
         <p
           class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs z-10"
@@ -280,11 +280,11 @@
     {/if}
 
     {#if showClearIcon}
-      <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+      <div class="absolute inset-y-0 end-0 flex items-center pe-2">
         <CircleIconButton onclick={onClear} icon={mdiClose} title={$t('clear')} size="20" />
       </div>
     {/if}
-    <div class="absolute inset-y-0 left-0 flex items-center pl-2">
+    <div class="absolute inset-y-0 start-0 flex items-center ps-2">
       <CircleIconButton
         type="submit"
         disabled={showFilter}

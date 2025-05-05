@@ -13,9 +13,11 @@ import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EmailRepository } from 'src/repositories/email.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
@@ -34,7 +36,7 @@ import { Mocked } from 'vitest';
 const sha256 = (value: string) => createHash('sha256').update(value).digest('base64');
 
 // type Repositories = Omit<ServiceOverrides, 'access' | 'telemetry'>;
-type Repositories = {
+type RepositoriesTypes = {
   activity: ActivityRepository;
   album: AlbumRepository;
   asset: AssetRepository;
@@ -42,10 +44,12 @@ type Repositories = {
   config: ConfigRepository;
   crypto: CryptoRepository;
   database: DatabaseRepository;
+  email: EmailRepository;
   job: JobRepository;
   user: UserRepository;
   logger: LoggingRepository;
   memory: MemoryRepository;
+  notification: NotificationRepository;
   partner: PartnerRepository;
   person: PersonRepository;
   search: SearchRepository;
@@ -54,22 +58,22 @@ type Repositories = {
   systemMetadata: SystemMetadataRepository;
   versionHistory: VersionHistoryRepository;
 };
-type RepositoryMocks = { [K in keyof Repositories]: Mocked<RepositoryInterface<Repositories[K]>> };
-type RepositoryOptions = Partial<{ [K in keyof Repositories]: 'mock' | 'real' }>;
+type RepositoryMocks = { [K in keyof RepositoriesTypes]: Mocked<RepositoryInterface<RepositoriesTypes[K]>> };
+type RepositoryOptions = Partial<{ [K in keyof RepositoriesTypes]: 'mock' | 'real' }>;
 
 type ContextRepositoryMocks<R extends RepositoryOptions> = {
-  [K in keyof Repositories as R[K] extends 'mock' ? K : never]: Mocked<RepositoryInterface<Repositories[K]>>;
+  [K in keyof RepositoriesTypes as R[K] extends 'mock' ? K : never]: Mocked<RepositoryInterface<RepositoriesTypes[K]>>;
 };
 
 type ContextRepositories<R extends RepositoryOptions> = {
-  [K in keyof Repositories as R[K] extends 'real' ? K : never]: Repositories[K];
+  [K in keyof RepositoriesTypes as R[K] extends 'real' ? K : never]: RepositoriesTypes[K];
 };
 
 export type Context<R extends RepositoryOptions, S extends BaseService> = {
   sut: S;
   mocks: ContextRepositoryMocks<R>;
   repos: ContextRepositories<R>;
-  getRepository<T extends keyof Repositories>(key: T): Repositories[T];
+  getRepository<T extends keyof RepositoriesTypes>(key: T): RepositoriesTypes[T];
 };
 
 export const newMediumService = <R extends RepositoryOptions, S extends BaseService>(
@@ -79,7 +83,7 @@ export const newMediumService = <R extends RepositoryOptions, S extends BaseServ
     repos: R;
   },
 ): Context<R, S> => {
-  const repos: Partial<Repositories> = {};
+  const repos: Partial<RepositoriesTypes> = {};
   const mocks: Partial<RepositoryMocks> = {};
 
   const loggerMock = getRepositoryMock('logger') as Mocked<LoggingRepository>;
@@ -88,7 +92,7 @@ export const newMediumService = <R extends RepositoryOptions, S extends BaseServ
 
   for (const [_key, type] of Object.entries(options.repos)) {
     if (type === 'real') {
-      const key = _key as keyof Repositories;
+      const key = _key as keyof RepositoriesTypes;
       repos[key] = getRepository(key, options.database) as any;
       continue;
     }
@@ -100,7 +104,7 @@ export const newMediumService = <R extends RepositoryOptions, S extends BaseServ
     }
   }
 
-  const makeRepository = <K extends keyof Repositories>(key: K) => {
+  const makeRepository = <K extends keyof RepositoriesTypes>(key: K) => {
     return repos[key] || getRepository(key, options.database);
   };
 
@@ -115,7 +119,7 @@ export const newMediumService = <R extends RepositoryOptions, S extends BaseServ
   } as Context<R, S>;
 };
 
-export const getRepository = <K extends keyof Repositories>(key: K, db: Kysely<DB>) => {
+export const getRepository = <K extends keyof RepositoriesTypes>(key: K, db: Kysely<DB>) => {
   switch (key) {
     case 'activity': {
       return new ActivityRepository(db);
@@ -138,17 +142,23 @@ export const getRepository = <K extends keyof Repositories>(key: K, db: Kysely<D
     }
 
     case 'database': {
-      const configRepo = new ConfigRepository();
-      return new DatabaseRepository(db, new LoggingRepository(undefined, configRepo), configRepo);
+      return new DatabaseRepository(db, LoggingRepository.create(), new ConfigRepository());
+    }
+
+    case 'email': {
+      return new EmailRepository(LoggingRepository.create());
     }
 
     case 'logger': {
-      const configMock = { getEnv: () => ({ noColor: false }) };
-      return new LoggingRepository(undefined, configMock as ConfigRepository);
+      return LoggingRepository.create();
     }
 
     case 'memory': {
       return new MemoryRepository(db);
+    }
+
+    case 'notification': {
+      return new NotificationRepository(db);
     }
 
     case 'partner': {
@@ -160,7 +170,7 @@ export const getRepository = <K extends keyof Repositories>(key: K, db: Kysely<D
     }
 
     case 'search': {
-      return new SearchRepository(db);
+      return new SearchRepository(db, new ConfigRepository());
     }
 
     case 'session': {
@@ -189,10 +199,10 @@ export const getRepository = <K extends keyof Repositories>(key: K, db: Kysely<D
   }
 };
 
-const getRepositoryMock = <K extends keyof Repositories>(key: K) => {
+const getRepositoryMock = <K extends keyof RepositoryMocks>(key: K) => {
   switch (key) {
     case 'activity': {
-      return automock(ActivityRepository);
+      return automock(ActivityRepository) as Mocked<RepositoryInterface<ActivityRepository>>;
     }
 
     case 'album': {
@@ -221,6 +231,10 @@ const getRepositoryMock = <K extends keyof Repositories>(key: K) => {
       });
     }
 
+    case 'email': {
+      return automock(EmailRepository, { args: [{ setContext: () => {} }] });
+    }
+
     case 'job': {
       return automock(JobRepository, { args: [undefined, undefined, undefined, { setContext: () => {} }] });
     }
@@ -232,6 +246,10 @@ const getRepositoryMock = <K extends keyof Repositories>(key: K) => {
 
     case 'memory': {
       return automock(MemoryRepository);
+    }
+
+    case 'notification': {
+      return automock(NotificationRepository);
     }
 
     case 'partner': {
@@ -284,6 +302,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.crypto || getRepositoryMock('crypto'),
     repositories.database || getRepositoryMock('database'),
     repositories.downloadRepository,
+    repositories.email || getRepositoryMock('email'),
     repositories.event,
     repositories.job || getRepositoryMock('job'),
     repositories.library,
@@ -293,7 +312,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.memory || getRepositoryMock('memory'),
     repositories.metadata,
     repositories.move,
-    repositories.notification,
+    repositories.notification || getRepositoryMock('notification'),
     repositories.oauth,
     repositories.partner || getRepositoryMock('partner'),
     repositories.person || getRepositoryMock('person'),

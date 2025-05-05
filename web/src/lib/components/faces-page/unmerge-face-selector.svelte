@@ -120,7 +120,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
+  class="absolute start-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <ControlAppBar {onClose}>
     {#snippet leading()}
@@ -140,7 +140,7 @@
           {:else}
             <LoadingSpinner />
           {/if}
-          <span class="ml-2"> {$t('create_new_person')}</span></Button
+          <span class="ms-2"> {$t('create_new_person')}</span></Button
         >
         <Button
           size="sm"
@@ -155,7 +155,7 @@
           {:else}
             <LoadingSpinner />
           {/if}
-          <span class="ml-2"> {$t('reassign')}</span></Button
+          <span class="ms-2"> {$t('reassign')}</span></Button
         >
       </div>
     {/snippet}

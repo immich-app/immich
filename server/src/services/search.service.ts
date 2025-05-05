@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AssetMapOptions, AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetMapOptions, AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
 import {
@@ -14,9 +14,7 @@ import {
   SearchSuggestionType,
   SmartSearchDto,
 } from 'src/dtos/search.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetOrder } from 'src/enum';
-import { SearchExploreItem } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
@@ -33,10 +31,10 @@ export class SearchService extends BaseService {
     return places.map((place) => mapPlaces(place));
   }
 
-  async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
+  async getExploreData(auth: AuthDto) {
     const options = { maxFields: 12, minAssetsPerField: 5 };
     const cities = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
-    const assets = await this.assetRepository.getByIdsWithAllRelations(cities.items.map(({ data }) => data));
+    const assets = await this.assetRepository.getByIdsWithAllRelationsButStacks(cities.items.map(({ data }) => data));
     const items = assets.map((asset) => ({ value: asset.exifInfo!.city!, data: mapAsset(asset, { auth }) }));
     return [{ fieldName: cities.fieldName, items }];
   }
@@ -139,7 +137,7 @@ export class SearchService extends BaseService {
     return [auth.user.id, ...partnerIds];
   }
 
-  private mapResponse(assets: AssetEntity[], nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
+  private mapResponse(assets: MapAsset[], nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {

@@ -1,8 +1,7 @@
 import { writable } from 'svelte/store';
 
 type DialogActions = {
-  onConfirm: () => void;
-  onCancel: () => void;
+  onClose: (confirmed: boolean) => void;
 };
 
 type DialogOptions = {
@@ -24,13 +23,9 @@ function createDialogWrapper() {
     return new Promise<boolean>((resolve) => {
       const newDialog: Dialog = {
         ...options,
-        onConfirm: () => {
+        onClose: (confirmed) => {
           dialog.set(undefined);
-          resolve(true);
-        },
-        onCancel: () => {
-          dialog.set(undefined);
-          resolve(false);
+          resolve(confirmed);
         },
       };
 

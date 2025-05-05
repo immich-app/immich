@@ -1,14 +1,15 @@
 import { Selectable } from 'kysely';
-import { AssetJobStatus as DatabaseAssetJobStatus, Exif as DatabaseExif } from 'src/db';
-import { AssetEntity } from 'src/entities/asset.entity';
+import { Albums, Exif as DatabaseExif } from 'src/db';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
   AssetFileType,
-  AssetStatus,
   AssetType,
   MemoryType,
   Permission,
+  SharedLinkType,
   SourceType,
+  UserAvatarColor,
   UserStatus,
 } from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
@@ -44,7 +45,7 @@ export type Library = {
   exclusionPatterns: string[];
   deletedAt: Date | null;
   refreshedAt: Date | null;
-  assets?: Asset[];
+  assets?: MapAsset[];
 };
 
 export type AuthApiKey = {
@@ -96,13 +97,33 @@ export type Memory = {
   data: OnThisDayData;
   ownerId: string;
   isSaved: boolean;
-  assets: Asset[];
+  assets: MapAsset[];
+};
+
+export type Asset = {
+  id: string;
+  checksum: Buffer<ArrayBufferLike>;
+  deviceAssetId: string;
+  deviceId: string;
+  fileCreatedAt: Date;
+  fileModifiedAt: Date;
+  isExternal: boolean;
+  isVisible: boolean;
+  libraryId: string | null;
+  livePhotoVideoId: string | null;
+  localDateTime: Date;
+  originalFileName: string;
+  originalPath: string;
+  ownerId: string;
+  sidecarPath: string | null;
+  type: AssetType;
 };
 
 export type User = {
   id: string;
   name: string;
   email: string;
+  avatarColor: UserAvatarColor | null;
   profileImagePath: string;
   profileChangedAt: Date;
 };
@@ -128,39 +149,6 @@ export type StorageAsset = {
   encodedVideoPath: string | null;
 };
 
-export type Asset = {
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  id: string;
-  updateId: string;
-  status: AssetStatus;
-  checksum: Buffer<ArrayBufferLike>;
-  deviceAssetId: string;
-  deviceId: string;
-  duplicateId: string | null;
-  duration: string | null;
-  encodedVideoPath: string | null;
-  fileCreatedAt: Date | null;
-  fileModifiedAt: Date | null;
-  isArchived: boolean;
-  isExternal: boolean;
-  isFavorite: boolean;
-  isOffline: boolean;
-  isVisible: boolean;
-  libraryId: string | null;
-  livePhotoVideoId: string | null;
-  localDateTime: Date | null;
-  originalFileName: string;
-  originalPath: string;
-  ownerId: string;
-  sidecarPath: string | null;
-  stack?: Stack | null;
-  stackId: string | null;
-  thumbhash: Buffer<ArrayBufferLike> | null;
-  type: AssetType;
-};
-
 export type SidecarWriteAsset = {
   id: string;
   sidecarPath: string | null;
@@ -173,7 +161,7 @@ export type Stack = {
   primaryAssetId: string;
   owner?: User;
   ownerId: string;
-  assets: AssetEntity[];
+  assets: MapAsset[];
   assetCount?: number;
 };
 
@@ -185,6 +173,28 @@ export type AuthSharedLink = {
   allowUpload: boolean;
   allowDownload: boolean;
   password: string | null;
+};
+
+export type SharedLink = {
+  id: string;
+  album?: Album | null;
+  albumId: string | null;
+  allowDownload: boolean;
+  allowUpload: boolean;
+  assets: MapAsset[];
+  createdAt: Date;
+  description: string | null;
+  expiresAt: Date | null;
+  key: Buffer;
+  password: string | null;
+  showExif: boolean;
+  type: SharedLinkType;
+  userId: string;
+};
+
+export type Album = Selectable<Albums> & {
+  owner: User;
+  assets: MapAsset[];
 };
 
 export type AuthSession = {
@@ -256,13 +266,35 @@ export type AssetFace = {
   person?: Person | null;
 };
 
-export type AssetJobStatus = Selectable<DatabaseAssetJobStatus> & {
-  asset: AssetEntity;
-};
-
-const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
+const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;
+const userWithPrefixColumns = [
+  'users.id',
+  'users.name',
+  'users.email',
+  'users.avatarColor',
+  'users.profileImagePath',
+  'users.profileChangedAt',
+] as const;
 
 export const columns = {
+  asset: [
+    'assets.id',
+    'assets.checksum',
+    'assets.deviceAssetId',
+    'assets.deviceId',
+    'assets.fileCreatedAt',
+    'assets.fileModifiedAt',
+    'assets.isExternal',
+    'assets.isVisible',
+    'assets.libraryId',
+    'assets.livePhotoVideoId',
+    'assets.localDateTime',
+    'assets.originalFileName',
+    'assets.originalPath',
+    'assets.ownerId',
+    'assets.sidecarPath',
+    'assets.type',
+  ],
   assetFiles: ['asset_files.id', 'asset_files.path', 'asset_files.type'],
   authUser: [
     'users.id',
@@ -284,7 +316,7 @@ export const columns = {
     'shared_links.password',
   ],
   user: userColumns,
-  userWithPrefix: ['users.id', 'users.name', 'users.email', 'users.profileImagePath', 'users.profileChangedAt'],
+  userWithPrefix: userWithPrefixColumns,
   userAdmin: [
     ...userColumns,
     'createdAt',
@@ -301,6 +333,7 @@ export const columns = {
   ],
   tag: ['tags.id', 'tags.value', 'tags.createdAt', 'tags.updatedAt', 'tags.color', 'tags.parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
+  notification: ['id', 'createdAt', 'level', 'type', 'title', 'description', 'data', 'readAt'],
   syncAsset: [
     'id',
     'ownerId',

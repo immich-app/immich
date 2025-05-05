@@ -16,19 +16,23 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  packages: write
+permissions: {}
 
 jobs:
   publish:
     name: CLI Publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./cli
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -48,11 +52,16 @@ jobs:
   docker:
     name: Docker
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     needs: publish
 
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
@@ -87,7 +96,7 @@ jobs:
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
 
       - name: Build and push image
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1 # v6.16.0
         with:
           file: cli/Dockerfile
           platforms: linux/amd64,linux/arm64

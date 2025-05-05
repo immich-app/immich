@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto';
 import {
   Activity,
   ApiKey,
-  Asset,
   AuthApiKey,
   AuthSharedLink,
   AuthUser,
@@ -14,6 +13,7 @@ import {
   User,
   UserAdmin,
 } from 'src/database';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
 import { OnThisDayData } from 'src/types';
@@ -140,6 +140,7 @@ const userFactory = (user: Partial<User> = {}) => ({
   id: newUuid(),
   name: 'Test User',
   email: 'test@immich.cloud',
+  avatarColor: null,
   profileImagePath: '',
   profileChangedAt: newDate(),
   ...user,
@@ -155,6 +156,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     storageLabel = null,
     shouldChangePassword = false,
     isAdmin = false,
+    avatarColor = null,
     createdAt = newDate(),
     updatedAt = newDate(),
     deletedAt = null,
@@ -173,6 +175,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     storageLabel,
     shouldChangePassword,
     isAdmin,
+    avatarColor,
     createdAt,
     updatedAt,
     deletedAt,
@@ -184,7 +187,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
   };
 };
 
-const assetFactory = (asset: Partial<Asset> = {}) => ({
+const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
@@ -309,5 +312,14 @@ export const factory = {
   versionHistory: versionHistoryFactory,
   jobAssets: {
     sidecarWrite: assetSidecarWriteFactory,
+  },
+  uuid: newUuid,
+  date: newDate,
+  responses: {
+    badRequest: (message: any = null) => ({
+      error: 'Bad Request',
+      statusCode: 400,
+      message: message ?? expect.anything(),
+    }),
   },
 };

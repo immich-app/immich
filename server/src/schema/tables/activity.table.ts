@@ -5,7 +5,6 @@ import { UserTable } from 'src/schema/tables/user.table';
 import {
   Check,
   Column,
-  ColumnIndex,
   CreateDateColumn,
   ForeignKeyColumn,
   Index,
@@ -51,7 +50,6 @@ export class ActivityTable {
   @Column({ type: 'boolean', default: false })
   isLiked!: boolean;
 
-  @ColumnIndex('IDX_activity_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_activity_update_id' })
   updateId!: string;
 }

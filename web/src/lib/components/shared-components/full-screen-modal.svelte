@@ -77,7 +77,7 @@
   role="presentation"
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
-  class="fixed left-0 top-0 z-[9999] flex h-dvh w-dvw place-content-center place-items-center bg-black/40"
+  class="fixed start-0 top-0 z-[9999] flex h-dvh w-dvw place-content-center place-items-center bg-black/40"
   onkeydown={(event) => {
     event.stopPropagation();
   }}

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import QRCode from 'qrcode';
-  import { colorTheme } from '$lib/stores/preferences.store';
   import { Theme } from '$lib/constants';
+  import { themeManager } from '$lib/managers/theme-manager.svelte';
+  import QRCode from 'qrcode';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -14,7 +14,7 @@
 
   let promise = $derived(
     QRCode.toDataURL(value, {
-      color: { dark: $colorTheme.value === Theme.DARK ? '#ffffffff' : '#000000ff', light: '#00000000' },
+      color: { dark: themeManager.value === Theme.DARK ? '#ffffffff' : '#000000ff', light: '#00000000' },
       margin: 0,
       width,
     }),

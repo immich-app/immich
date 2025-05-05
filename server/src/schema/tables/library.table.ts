@@ -2,7 +2,6 @@ import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
@@ -41,7 +40,6 @@ export class LibraryTable {
   @Column({ type: 'timestamp with time zone', nullable: true })
   refreshedAt!: Date | null;
 
-  @ColumnIndex('IDX_libraries_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_libraries_update_id' })
   updateId?: string;
 }

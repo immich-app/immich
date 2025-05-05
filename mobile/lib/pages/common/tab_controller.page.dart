@@ -31,10 +31,10 @@ class TabControllerPage extends HookConsumerWidget {
         children: [
           icon,
           Positioned(
-            right: -14,
+            right: -18,
             child: SizedBox(
-              height: 12,
-              width: 12,
+              height: 20,
+              width: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(

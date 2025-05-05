@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsEnum, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AlbumUser, AuthSharedLink, User } from 'src/database';
+import { AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AlbumEntity } from 'src/entities/album.entity';
 import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
@@ -142,7 +142,23 @@ export class AlbumResponseDto {
   order?: AssetOrder;
 }
 
-export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
+export type MapAlbumDto = {
+  albumUsers?: AlbumUser[];
+  assets?: MapAsset[];
+  sharedLinks?: AuthSharedLink[];
+  albumName: string;
+  description: string;
+  albumThumbnailAssetId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  id: string;
+  ownerId: string;
+  owner: User;
+  isActivityEnabled: boolean;
+  order: AssetOrder;
+};
+
+export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
   const albumUsers: AlbumUserResponseDto[] = [];
 
   if (entity.albumUsers) {
@@ -159,7 +175,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
 
   const assets = entity.assets || [];
 
-  const hasSharedLink = entity.sharedLinks?.length > 0;
+  const hasSharedLink = !!entity.sharedLinks && entity.sharedLinks.length > 0;
   const hasSharedUser = albumUsers.length > 0;
 
   let startDate = assets.at(0)?.localDateTime;
@@ -190,5 +206,5 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
   };
 };
 
-export const mapAlbumWithAssets = (entity: AlbumEntity) => mapAlbum(entity, true);
-export const mapAlbumWithoutAssets = (entity: AlbumEntity) => mapAlbum(entity, false);
+export const mapAlbumWithAssets = (entity: MapAlbumDto) => mapAlbum(entity, true);
+export const mapAlbumWithoutAssets = (entity: MapAlbumDto) => mapAlbum(entity, false);

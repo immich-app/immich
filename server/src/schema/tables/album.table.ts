@@ -4,7 +4,6 @@ import { AssetTable } from 'src/schema/tables/asset.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
@@ -51,7 +50,6 @@ export class AlbumTable {
   @Column({ default: AssetOrder.DESC })
   order!: AssetOrder;
 
-  @ColumnIndex('IDX_albums_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_albums_update_id' })
   updateId?: string;
 }

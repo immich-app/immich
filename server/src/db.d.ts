@@ -11,6 +11,8 @@ import {
   AssetStatus,
   AssetType,
   MemoryType,
+  NotificationLevel,
+  NotificationType,
   Permission,
   SharedLinkType,
   SourceType,
@@ -143,8 +145,8 @@ export interface Assets {
   duplicateId: string | null;
   duration: string | null;
   encodedVideoPath: Generated<string | null>;
-  fileCreatedAt: Timestamp | null;
-  fileModifiedAt: Timestamp | null;
+  fileCreatedAt: Timestamp;
+  fileModifiedAt: Timestamp;
   id: Generated<string>;
   isArchived: Generated<boolean>;
   isExternal: Generated<boolean>;
@@ -153,7 +155,7 @@ export interface Assets {
   isVisible: Generated<boolean>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
-  localDateTime: Timestamp | null;
+  localDateTime: Timestamp;
   originalFileName: string;
   originalPath: string;
   ownerId: string;
@@ -261,6 +263,21 @@ export interface Memories {
   type: MemoryType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
+}
+
+export interface Notifications {
+  id: Generated<string>;
+  createdAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp>;
+  deletedAt: Timestamp | null;
+  updateId: Generated<string>;
+  userId: string;
+  level: Generated<NotificationLevel>;
+  type: NotificationType;
+  title: string;
+  description: string | null;
+  data: any | null;
+  readAt: Timestamp | null;
 }
 
 export interface MemoriesAssetsAssets {
@@ -463,6 +480,7 @@ export interface DB {
   memories: Memories;
   memories_assets_assets: MemoriesAssetsAssets;
   migrations: Migrations;
+  notifications: Notifications;
   move_history: MoveHistory;
   naturalearth_countries: NaturalearthCountries;
   partners_audit: PartnersAudit;

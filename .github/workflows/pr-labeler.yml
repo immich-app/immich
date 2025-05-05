@@ -1,6 +1,8 @@
 name: 'Pull Request Labeler'
 on:
-  - pull_request_target
+  - pull_request_target # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
+
+permissions: {}
 
 jobs:
   labeler:

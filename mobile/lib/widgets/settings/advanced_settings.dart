@@ -49,7 +49,7 @@ class AdvancedSettings extends HookConsumerWidget {
         DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
         int sdkVersion = androidInfo.version.sdkInt;
-        return sdkVersion >= 30;
+        return sdkVersion >= 31;
       }
       return false;
     }
@@ -74,7 +74,7 @@ class AdvancedSettings extends HookConsumerWidget {
                 if (value) {
                   final result = await ref
                       .read(localFilesManagerRepositoryProvider)
-                      .requestManageStoragePermission();
+                      .requestManageMediaPermission();
                   manageLocalMediaAndroid.value = result;
                 }
               },

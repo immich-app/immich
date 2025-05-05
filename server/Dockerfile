@@ -6,14 +6,14 @@ WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
 COPY server/patches ./patches
 RUN npm ci && \
-  # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
-  # they're marked as optional dependencies, so we need to copy them manually after pruning
-  rm -rf node_modules/@img/sharp-libvips* && \
-  rm -rf node_modules/@img/sharp-linuxmusl-x64
+    # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
+    # they're marked as optional dependencies, so we need to copy them manually after pruning
+    rm -rf node_modules/@img/sharp-libvips* && \
+    rm -rf node_modules/@img/sharp-linuxmusl-x64
 ENV PATH="${PATH}:/usr/src/app/bin" \
-  IMMICH_ENV=development \
-  NVIDIA_DRIVER_CAPABILITIES=all \
-  NVIDIA_VISIBLE_DEVICES=all
+    IMMICH_ENV=development \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
@@ -26,7 +26,7 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 COPY --from=dev /usr/src/app/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
 
 # web build
-FROM node:22.14.0-alpine3.20@sha256:40be979442621049f40b1d51a26b55e281246b5de4e5f51a18da7beb6e17e3f9 AS web
+FROM node:22.15.0-alpine3.20@sha256:686b8892b69879ef5bfd6047589666933508f9a5451c67320df3070ba0e9807b AS web
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
@@ -47,8 +47,8 @@ FROM ghcr.io/immich-app/base-server-prod:202504081114@sha256:8353bcbdb4e6579300a
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
-  NVIDIA_DRIVER_CAPABILITIES=all \
-  NVIDIA_VISIBLE_DEVICES=all
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin

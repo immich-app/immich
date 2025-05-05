@@ -2,7 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Insertable, Updateable } from 'kysely';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { AssetFaces, FaceSearch, Person } from 'src/db';
+import { Person } from 'src/database';
+import { AssetFaces, FaceSearch } from 'src/db';
 import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -24,7 +25,6 @@ import {
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
 import {
-  AssetFileType,
   AssetType,
   CacheControl,
   ImageFormat,
@@ -36,16 +36,13 @@ import {
   SourceType,
   SystemMetadataKey,
 } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
 import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class PersonService extends BaseService {
@@ -266,22 +263,18 @@ export class PersonService extends BaseService {
       await this.handlePersonCleanup();
     }
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force === false
-        ? this.assetRepository.getWithout(pagination, WithoutProperty.FACES)
-        : this.assetRepository.getAll(pagination, {
-            orderDirection: 'desc',
-            withFaces: true,
-            withArchived: true,
-            isVisible: true,
-          });
-    });
+    let jobs: JobItem[] = [];
+    const assets = this.assetJobRepository.streamForDetectFacesJob(force);
+    for await (const asset of assets) {
+      jobs.push({ name: JobName.FACE_DETECTION, data: { id: asset.id } });
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.FACE_DETECTION, data: { id: asset.id } })),
-      );
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
+      }
     }
+
+    await this.jobRepository.queueAll(jobs);
 
     if (force === undefined) {
       await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
@@ -297,10 +290,9 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = { exifInfo: true, faces: { person: false, withDeleted: true }, files: true };
-    const [asset] = await this.assetRepository.getByIds([id], relations);
-    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
-    if (!asset || !previewFile) {
+    const asset = await this.assetJobRepository.getForDetectFacesJob(id);
+    const previewFile = asset?.files[0];
+    if (!asset || asset.files.length !== 1 || !previewFile) {
       return JobStatus.FAILED;
     }
 
@@ -318,6 +310,7 @@ export class PersonService extends BaseService {
     const facesToAdd: (Insertable<AssetFaces> & { id: string })[] = [];
     const embeddings: FaceSearch[] = [];
     const mlFaceIds = new Set<string>();
+
     for (const face of asset.faces) {
       if (face.sourceType === SourceType.MACHINE_LEARNING) {
         mlFaceIds.add(face.id);
@@ -480,7 +473,7 @@ export class PersonService extends BaseService {
       embedding: face.faceSearch.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
-      minBirthDate: face.asset.fileCreatedAt,
+      minBirthDate: face.asset.fileCreatedAt ?? undefined,
     });
 
     // `matches` also includes the face itself
@@ -506,7 +499,7 @@ export class PersonService extends BaseService {
         maxDistance: machineLearning.facialRecognition.maxDistance,
         numResults: 1,
         hasPerson: true,
-        minBirthDate: face.asset.fileCreatedAt,
+        minBirthDate: face.asset.fileCreatedAt ?? undefined,
       });
 
       if (matchWithPerson.length > 0) {

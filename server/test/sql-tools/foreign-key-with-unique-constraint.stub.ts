@@ -60,7 +60,15 @@ export const schema: DatabaseSchema = {
           synchronize: true,
         },
       ],
-      indexes: [],
+      indexes: [
+        {
+          name: 'IDX_3fcca5cc563abf256fc346e3ff',
+          tableName: 'table2',
+          columnNames: ['parentId'],
+          unique: false,
+          synchronize: true,
+        },
+      ],
       triggers: [],
       constraints: [
         {

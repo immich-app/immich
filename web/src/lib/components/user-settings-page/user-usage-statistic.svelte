@@ -68,7 +68,7 @@
 <section class="my-6">
   <p class="text-xs dark:text-white uppercase">{$t('photos_and_videos')}</p>
   <div class="overflow-x-auto">
-    <table class="w-full text-left mt-4">
+    <table class="w-full text-start mt-4">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
@@ -92,7 +92,7 @@
     <p class="text-xs dark:text-white uppercase">{$t('albums')}</p>
   </div>
   <div class="overflow-x-auto">
-    <table class="w-full text-left mt-4">
+    <table class="w-full text-start mt-4">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >

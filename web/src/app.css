@@ -8,7 +8,6 @@
     --immich-primary: 66 80 175;
     --immich-bg: 255 255 255;
     --immich-fg: 0 0 0;
-    --immich-gray: 246 246 244;
     --immich-error: 229 115 115;
     --immich-success: 129 199 132;
     --immich-warning: 255 183 77;
@@ -33,6 +32,7 @@
     --immich-ui-warning: 255 170 0;
     --immich-ui-info: 14 165 233;
     --immich-ui-default-border: 209 213 219;
+    --immich-ui-gray: 246 246 246;
   }
 
   .dark {
@@ -45,6 +45,7 @@
     --immich-ui-warning: 255 170 0;
     --immich-ui-info: 14 165 233;
     --immich-ui-default-border: 55 65 81;
+    --immich-ui-gray: 33 33 33;
   }
 }
 
