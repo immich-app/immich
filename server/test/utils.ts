@@ -1,3 +1,6 @@
+import { CallHandler, Provider, ValidationPipe } from '@nestjs/common';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { Test } from '@nestjs/testing';
 import { ClassConstructor } from 'class-transformer';
 import { Kysely } from 'kysely';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
@@ -5,6 +8,9 @@ import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import postgres from 'postgres';
 import { DB } from 'src/db';
+import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
+import { AuthGuard } from 'src/middleware/auth.guard';
+import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -48,6 +54,7 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { AuthService } from 'src/services/auth.service';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
 import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
@@ -64,7 +71,47 @@ import { newStorageRepositoryMock } from 'test/repositories/storage.repository.m
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { ITelemetryRepositoryMock, newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools';
-import { assert, Mocked, vitest } from 'vitest';
+import { assert, Mock, Mocked, vitest } from 'vitest';
+
+export type ControllerContext = {
+  authenticate: Mock;
+  getHttpServer: () => any;
+  reset: () => void;
+  close: () => Promise<void>;
+};
+
+export const controllerSetup = async (controller: ClassConstructor<unknown>, providers: Provider[]) => {
+  const noopInterceptor = { intercept: (ctx: never, next: CallHandler<unknown>) => next.handle() };
+  const authenticate = vi.fn();
+  const moduleRef = await Test.createTestingModule({
+    controllers: [controller],
+    providers: [
+      { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
+      { provide: APP_GUARD, useClass: AuthGuard },
+      { provide: LoggingRepository, useValue: LoggingRepository.create() },
+      { provide: AuthService, useValue: { authenticate } },
+      ...providers,
+    ],
+  })
+    .overrideInterceptor(FileUploadInterceptor)
+    .useValue(noopInterceptor)
+    .overrideInterceptor(AssetUploadInterceptor)
+    .useValue(noopInterceptor)
+    .compile();
+  const app = moduleRef.createNestApplication();
+  await app.init();
+
+  return {
+    authenticate,
+    getHttpServer: () => app.getHttpServer(),
+    reset: () => {
+      authenticate.mockReset();
+    },
+    close: async () => {
+      await app.close();
+    },
+  };
+};
 
 const mockFn = (label: string, { strict }: { strict: boolean }) => {
   const message = `Called a mock function without a mock implementation (${label})`;
@@ -75,6 +122,10 @@ const mockFn = (label: string, { strict }: { strict: boolean }) => {
       // console.warn(message);
     }
   });
+};
+
+export const mockBaseService = <T extends BaseService>(service: ClassConstructor<T>) => {
+  return automock(service, { args: [{ setContext: () => {} }], strict: false });
 };
 
 export const automock = <T>(
