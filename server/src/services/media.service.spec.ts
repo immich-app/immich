@@ -916,7 +916,6 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         orientation: undefined,
         processInvalidImages: false,
-        size: 250,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         data,
@@ -932,6 +931,7 @@ describe(MediaService.name, () => {
           },
           raw: info,
           processInvalidImages: false,
+          size: 250,
         },
         'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
       );
@@ -956,7 +956,6 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         orientation: undefined,
         processInvalidImages: false,
-        size: 250,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         data,
@@ -972,6 +971,7 @@ describe(MediaService.name, () => {
           },
           raw: info,
           processInvalidImages: false,
+          size: 250,
         },
         'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
       );
@@ -993,7 +993,6 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         orientation: undefined,
         processInvalidImages: false,
-        size: 250,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         data,
@@ -1009,6 +1008,81 @@ describe(MediaService.name, () => {
           },
           raw: info,
           processInvalidImages: false,
+          size: 250,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should handle negative coordinates', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.negativeCoordinate);
+      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 4624, height: 3080 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.negativeCoordinate.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 0,
+            top: 62,
+            width: 412,
+            height: 412,
+          },
+          raw: info,
+          processInvalidImages: false,
+          size: 250,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should handle overflowing coordinate', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.overflowingCoordinate);
+      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 4624, height: 3080 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.overflowingCoordinate.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 4485,
+            top: 94,
+            width: 138,
+            height: 138,
+          },
+          raw: info,
+          processInvalidImages: false,
+          size: 250,
         },
         'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
       );
@@ -1035,7 +1109,6 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         orientation: ExifOrientation.Horizontal,
         processInvalidImages: false,
-        size: 250,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         data,
@@ -1051,6 +1124,7 @@ describe(MediaService.name, () => {
           },
           raw: info,
           processInvalidImages: false,
+          size: 250,
         },
         'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
       );
@@ -1088,7 +1162,6 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         orientation: undefined,
         processInvalidImages: false,
-        size: 250,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });
@@ -1113,7 +1186,6 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         orientation: undefined,
         processInvalidImages: false,
-        size: 250,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });

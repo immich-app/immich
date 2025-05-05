@@ -41,7 +41,7 @@ import {
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
+import { clamp, isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class MediaService extends BaseService {
@@ -346,7 +346,6 @@ export class MediaService extends BaseService {
     const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
       colorspace: image.colorspace,
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-      size: FACE_THUMBNAIL_SIZE,
       // if this is an extracted image, it may not have orientation metadata
       orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
     });
@@ -364,6 +363,7 @@ export class MediaService extends BaseService {
         { x1, y1, x2, y2 },
       ),
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+      size: FACE_THUMBNAIL_SIZE,
     };
 
     await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
@@ -373,14 +373,20 @@ export class MediaService extends BaseService {
   }
 
   private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {
+    // face bounding boxes can spill outside the image dimensions
+    const clampedX1 = clamp(x1, 0, dims.old.width);
+    const clampedY1 = clamp(y1, 0, dims.old.height);
+    const clampedX2 = clamp(x2, 0, dims.old.width);
+    const clampedY2 = clamp(y2, 0, dims.old.height);
+
     const widthScale = dims.new.width / dims.old.width;
     const heightScale = dims.new.height / dims.old.height;
 
-    const halfWidth = (widthScale * (x2 - x1)) / 2;
-    const halfHeight = (heightScale * (y2 - y1)) / 2;
+    const halfWidth = (widthScale * (clampedX2 - clampedX1)) / 2;
+    const halfHeight = (heightScale * (clampedY2 - clampedY1)) / 2;
 
-    const middleX = Math.round(widthScale * x1 + halfWidth);
-    const middleY = Math.round(heightScale * y1 + halfHeight);
+    const middleX = Math.round(widthScale * clampedX1 + halfWidth);
+    const middleY = Math.round(heightScale * clampedY1 + halfHeight);
 
     // zoom out 10%
     const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
