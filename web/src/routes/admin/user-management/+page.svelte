@@ -115,7 +115,7 @@
                 class="flex h-[80px] overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {immichUser.deletedAt
                   ? 'bg-red-300 dark:bg-red-900'
                   : index % 2 == 0
-                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                    ? 'bg-subtle'
                     : 'bg-immich-bg dark:bg-immich-dark-gray/50'}"
               >
                 <td class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-ellipsis break-all px-2 text-sm"
