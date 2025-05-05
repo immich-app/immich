@@ -39,7 +39,7 @@
     <HStack gap={0}>
       <Button
         leadingIcon={mdiPlus}
-        onclick={() => modalManager.open(JobCreateModal, {})}
+        onclick={() => modalManager.open(JobCreateModal)}
         size="small"
         variant="ghost"
         color="secondary"
