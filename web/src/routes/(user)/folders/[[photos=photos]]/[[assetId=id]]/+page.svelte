@@ -87,7 +87,7 @@
 </script>
 
 {#if assetInteraction.selectionActive}
-  <div class="fixed z-[910] top-0 left-0 w-full">
+  <div class="fixed z-[910] top-0 start-0 w-full">
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -133,7 +133,7 @@
     <SideBarSection>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
       <section>
-        <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
+        <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiFolderOutline, active: mdiFolder }}

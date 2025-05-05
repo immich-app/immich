@@ -1,1 +1,26 @@
-{}
+{
+  "about": "ಕುರಿತು",
+  "account": "ಖಾತೆ",
+  "account_settings": "ಖಾತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+  "acknowledge": "ಅಂಗೀಕರಿಸಿ",
+  "action": "ಕಾರ್ಯ",
+  "action_common_update": "ನವೀಕರಿಸಿ",
+  "actions": "ಕ್ರಿಯೆಗಳು",
+  "active": "ಸಕ್ರಿಯ",
+  "activity": "ಚಟುವಟಿಕೆ",
+  "add": "ಸೇರಿಸಿ",
+  "add_a_description": "ವಿವರಣೆಯನ್ನು ಸೇರಿಸಿ",
+  "add_a_location": "ಸ್ಥಳವನ್ನು ಸೇರಿಸಿ",
+  "add_a_name": "ಹೆಸರನ್ನು ಸೇರಿಸಿ",
+  "add_a_title": "ಶೀರ್ಷಿಕೆಯನ್ನು ಸೇರಿಸಿ",
+  "add_endpoint": "ಎಂಡ್‌ಪಾಯಿಂಟ್ ಸೇರಿಸಿ",
+  "add_exclusion_pattern": "ಹೊರಗಿಡುವಿಕೆ ಮಾದರಿಯನ್ನು ಸೇರಿಸಿ",
+  "add_import_path": "ಆಮದು ಮಾರ್ಗವನ್ನು ಸೇರಿಸಿ",
+  "add_location": "ಸ್ಥಳ ಸೇರಿಸಿ",
+  "add_more_users": "ಹೆಚ್ಚಿನ ಬಳಕೆದಾರರನ್ನು ಸೇರಿಸಿ",
+  "add_partner": "ಪಾಲುದಾರರನ್ನು ಸೇರಿಸಿ",
+  "add_path": "ಹಾದಿಯನ್ನು ಸೇರಿಸಿ",
+  "add_photos": "ಫೋಟೋಗಳನ್ನು ಸೇರಿಸಿ",
+  "add_to": "ಸೇರಿಸಿ…",
+  "add_to_album": "ಆಲ್ಬಮ್‌ಗೆ ಸೇರಿಸಿ"
+}

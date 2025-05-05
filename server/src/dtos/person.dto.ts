@@ -1,11 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { Selectable } from 'kysely';
 import { DateTime } from 'luxon';
+import { AssetFace, Person } from 'src/database';
+import { AssetFaces } from 'src/db';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
 import { asDateString } from 'src/utils/date';
 import {
@@ -219,7 +220,7 @@ export class PeopleResponseDto {
   hasNextPage?: boolean;
 }
 
-export function mapPerson(person: PersonEntity): PersonResponseDto {
+export function mapPerson(person: Person): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
@@ -232,7 +233,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   };
 }
 
-export function mapFacesWithoutPerson(face: AssetFaceEntity): AssetFaceWithoutPersonResponseDto {
+export function mapFacesWithoutPerson(face: Selectable<AssetFaces>): AssetFaceWithoutPersonResponseDto {
   return {
     id: face.id,
     imageHeight: face.imageHeight,
@@ -245,9 +246,16 @@ export function mapFacesWithoutPerson(face: AssetFaceEntity): AssetFaceWithoutPe
   };
 }
 
-export function mapFaces(face: AssetFaceEntity, auth: AuthDto): AssetFaceResponseDto {
+export function mapFaces(face: AssetFace, auth: AuthDto): AssetFaceResponseDto {
   return {
-    ...mapFacesWithoutPerson(face),
+    id: face.id,
+    imageHeight: face.imageHeight,
+    imageWidth: face.imageWidth,
+    boundingBoxX1: face.boundingBoxX1,
+    boundingBoxX2: face.boundingBoxX2,
+    boundingBoxY1: face.boundingBoxY1,
+    boundingBoxY2: face.boundingBoxY2,
+    sourceType: face.sourceType,
     person: face.person?.ownerId === auth.user.id ? mapPerson(face.person) : null,
   };
 }

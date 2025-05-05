@@ -76,13 +76,13 @@ export class LibraryRepository {
       .leftJoin('exif', 'exif.assetId', 'assets.id')
       .select((eb) =>
         eb.fn
-          .countAll()
+          .countAll<number>()
           .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.isVisible', '=', true)]))
           .as('photos'),
       )
       .select((eb) =>
         eb.fn
-          .countAll()
+          .countAll<number>()
           .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.VIDEO), eb('assets.isVisible', '=', true)]))
           .as('videos'),
       )
@@ -105,10 +105,10 @@ export class LibraryRepository {
     }
 
     return {
-      photos: Number(stats.photos),
-      videos: Number(stats.videos),
-      usage: Number(stats.usage),
-      total: Number(stats.photos) + Number(stats.videos),
+      photos: stats.photos,
+      videos: stats.videos,
+      usage: stats.usage,
+      total: stats.photos + stats.videos,
     };
   }
 

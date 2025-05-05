@@ -278,8 +278,8 @@ class TestOrtSession:
 
         assert session.provider_options == []
 
-    def test_sets_default_sess_options(self) -> None:
-        session = OrtSession("ViT-B-32__openai")
+    def test_sets_default_sess_options_if_cpu(self) -> None:
+        session = OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"])
 
         assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
         assert session.sess_options.inter_op_num_threads == 1

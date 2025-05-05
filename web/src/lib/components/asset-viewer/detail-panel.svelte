@@ -6,15 +6,19 @@
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences, user } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
+  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
   import {
     AssetMediaSize,
@@ -44,9 +48,6 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -84,7 +85,7 @@
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
     // TODO: check if reloading asset data is necessary
-    if (newAsset.id && !isSharedLink()) {
+    if (newAsset.id && !authManager.key) {
       const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
       unassignedFaces = data?.unassignedFaces || [];
@@ -187,7 +188,7 @@
   <DetailPanelDescription {asset} {isOwner} />
   <DetailPanelRating {asset} {isOwner} />
 
-  {#if !isSharedLink() && isOwner}
+  {#if !authManager.key && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
@@ -296,7 +297,7 @@
     {#if dateTime}
       <button
         type="button"
-        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
+        class="flex w-full text-start justify-between place-items-start gap-4 py-4"
         onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
         class:hover:dark:text-immich-dark-primary={isOwner}

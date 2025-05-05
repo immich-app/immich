@@ -26,7 +26,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ml-4 mt-4">
+      <div class="ms-4 mt-4">
         <SettingSwitch
           title={$t('admin.version_check_enabled_description')}
           subtitle={$t('admin.version_check_implications')}

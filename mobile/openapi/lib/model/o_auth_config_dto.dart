@@ -13,26 +13,58 @@ part of openapi.api;
 class OAuthConfigDto {
   /// Returns a new [OAuthConfigDto] instance.
   OAuthConfigDto({
+    this.codeChallenge,
     required this.redirectUri,
+    this.state,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? codeChallenge;
 
   String redirectUri;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? state;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthConfigDto &&
-    other.redirectUri == redirectUri;
+    other.codeChallenge == codeChallenge &&
+    other.redirectUri == redirectUri &&
+    other.state == state;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (redirectUri.hashCode);
+    (codeChallenge == null ? 0 : codeChallenge!.hashCode) +
+    (redirectUri.hashCode) +
+    (state == null ? 0 : state!.hashCode);
 
   @override
-  String toString() => 'OAuthConfigDto[redirectUri=$redirectUri]';
+  String toString() => 'OAuthConfigDto[codeChallenge=$codeChallenge, redirectUri=$redirectUri, state=$state]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.codeChallenge != null) {
+      json[r'codeChallenge'] = this.codeChallenge;
+    } else {
+    //  json[r'codeChallenge'] = null;
+    }
       json[r'redirectUri'] = this.redirectUri;
+    if (this.state != null) {
+      json[r'state'] = this.state;
+    } else {
+    //  json[r'state'] = null;
+    }
     return json;
   }
 
@@ -45,7 +77,9 @@ class OAuthConfigDto {
       final json = value.cast<String, dynamic>();
 
       return OAuthConfigDto(
+        codeChallenge: mapValueOfType<String>(json, r'codeChallenge'),
         redirectUri: mapValueOfType<String>(json, r'redirectUri')!,
+        state: mapValueOfType<String>(json, r'state'),
       );
     }
     return null;

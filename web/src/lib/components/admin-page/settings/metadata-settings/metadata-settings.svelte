@@ -26,7 +26,7 @@
 <div class="mt-2">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit} class="mx-4 mt-4">
-      <div class="ml-4 mt-4 flex flex-col gap-4">
+      <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.metadata_faces_import_setting')}
           subtitle={$t('admin.metadata_faces_import_setting_description')}

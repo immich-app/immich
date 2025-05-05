@@ -54,7 +54,7 @@
         circle
       />
       {#if person.isFavorite}
-        <div class="absolute top-4 left-4">
+        <div class="absolute top-4 start-4">
           <Icon path={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
@@ -62,7 +62,7 @@
   </a>
 
   {#if showVerticalDots}
-    <div class="absolute top-2 right-2">
+    <div class="absolute top-2 end-2">
       <ButtonContextMenu
         buttonClass="icon-white-drop-shadow focus:opacity-100 {showVerticalDots ? 'opacity-100' : 'opacity-0'}"
         color="opaque"

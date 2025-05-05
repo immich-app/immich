@@ -99,7 +99,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
+  class="absolute start-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <ControlAppBar onClose={onBack}>
     {#snippet leading()}
@@ -113,7 +113,7 @@
     {#snippet trailing()}
       <Button size="sm" disabled={!hasSelection} onclick={handleMerge}>
         <Icon path={mdiMerge} size={18} />
-        <span class="ml-2">{$t('merge')}</span></Button
+        <span class="ms-2">{$t('merge')}</span></Button
       >
     {/snippet}
   </ControlAppBar>

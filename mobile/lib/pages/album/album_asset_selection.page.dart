@@ -53,7 +53,7 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
         ),
         title: selected.value.isEmpty
             ? const Text(
-                'share_add_photos',
+                'add_photos',
                 style: TextStyle(fontSize: 18),
               ).tr()
             : const Text(
@@ -71,7 +71,7 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
                     .popForced<AssetSelectionPageResult>(payload);
               },
               child: Text(
-                canDeselect ? "share_done" : "share_add",
+                canDeselect ? "done" : "add",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: context.primaryColor,

@@ -1,6 +1,6 @@
 name: Docs deploy
 on:
-  workflow_run:
+  workflow_run: # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
     workflows: ['Docs build']
     types:
       - completed
@@ -9,6 +9,9 @@ jobs:
   checks:
     name: Docs Deploy Checks
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pull-requests: read
     outputs:
       parameters: ${{ steps.parameters.outputs.result }}
       artifact: ${{ steps.get-artifact.outputs.result }}
@@ -36,6 +39,8 @@ jobs:
       - name: Determine deploy parameters
         id: parameters
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         with:
           script: |
             const eventType = context.payload.workflow_run.event;
@@ -57,7 +62,8 @@ jobs:
             } else if (eventType == "pull_request") {
               let pull_number = context.payload.workflow_run.pull_requests[0]?.number;
               if(!pull_number) {
-                const response = await github.rest.search.issuesAndPullRequests({q: 'repo:${{ github.repository }} is:pr sha:${{ github.event.workflow_run.head_sha }}',per_page: 1,})
+                const {HEAD_SHA} = process.env;
+                const response = await github.rest.search.issuesAndPullRequests({q: `repo:${{ github.repository }} is:pr sha:${HEAD_SHA}`,per_page: 1,})
                 const items = response.data.items
                 if (items.length < 1) {
                   throw new Error("No pull request found for the commit")
@@ -95,30 +101,36 @@ jobs:
     name: Docs Deploy
     runs-on: ubuntu-latest
     needs: checks
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
     if: ${{ fromJson(needs.checks.outputs.artifact).found && fromJson(needs.checks.outputs.parameters).shouldDeploy }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Load parameters
         id: parameters
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        env:
+          PARAM_JSON: ${{ needs.checks.outputs.parameters }}
         with:
           script: |
-            const json = `${{ needs.checks.outputs.parameters }}`;
-            const parameters = JSON.parse(json);
+            const parameters = JSON.parse(process.env.PARAM_JSON);
             core.setOutput("event", parameters.event);
             core.setOutput("name", parameters.name);
             core.setOutput("shouldDeploy", parameters.shouldDeploy);
 
-      - run: |
-          echo "Starting docs deployment for ${{ steps.parameters.outputs.event }} ${{ steps.parameters.outputs.name }}"
-
       - name: Download artifact
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        env:
+          ARTIFACT_JSON: ${{ needs.checks.outputs.artifact }}
         with:
           script: |
-            let artifact = ${{ needs.checks.outputs.artifact }};
+            let artifact = JSON.parse(process.env.ARTIFACT_JSON);
             let download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
@@ -162,9 +174,11 @@ jobs:
 
       - name: Output Cleaning
         id: clean
+        env:
+          TG_OUTPUT: ${{ steps.docs-output.outputs.tg_action_output }}
         run: |
-          TG_OUT=$(echo '${{ steps.docs-output.outputs.tg_action_output }}' | sed 's|%0A|\n|g ; s|%3C|<|g' | jq -c .)
-          echo "output=$TG_OUT" >> $GITHUB_OUTPUT
+          CLEANED=$(echo "$TG_OUTPUT" | sed 's|%0A|\n|g ; s|%3C|<|g' | jq -c .)
+          echo "output=$CLEANED" >> $GITHUB_OUTPUT
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@f0a1cd58cd66095dee69bfa18fa5efd1dde93bca # v1

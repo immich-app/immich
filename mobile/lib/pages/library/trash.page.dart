@@ -57,8 +57,8 @@ class TrashPage extends HookConsumerWidget {
         context: context,
         builder: (context) => ConfirmDialog(
           onOk: () => onEmptyTrash(),
-          title: "trash_page_empty_trash_btn".tr(),
-          ok: "trash_page_empty_trash_dialog_ok".tr(),
+          title: "empty_trash".tr(),
+          ok: "ok".tr(),
           content: "trash_page_empty_trash_dialog_content".tr(),
         ),
       );
@@ -161,11 +161,11 @@ class TrashPage extends HookConsumerWidget {
                 return [
                   PopupMenuItem(
                     value: () => selectionEnabledHook.value = true,
-                    child: const Text('trash_page_select_btn').tr(),
+                    child: const Text('select').tr(),
                   ),
                   PopupMenuItem(
                     value: handleEmptyTrash,
-                    child: const Text('trash_page_empty_trash_btn').tr(),
+                    child: const Text('empty_trash').tr(),
                   ),
                 ];
               },
@@ -194,7 +194,7 @@ class TrashPage extends HookConsumerWidget {
                     label: Text(
                       selection.value.isEmpty
                           ? 'trash_page_delete_all'.tr()
-                          : 'trash_page_delete'.tr(),
+                          : 'delete'.tr(),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.red[400],
@@ -214,7 +214,7 @@ class TrashPage extends HookConsumerWidget {
                     label: Text(
                       selection.value.isEmpty
                           ? 'trash_page_restore_all'.tr()
-                          : 'trash_page_restore'.tr(),
+                          : 'restore'.tr(),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

@@ -48,7 +48,7 @@
         <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('people')}</p>
         <a
           href={AppRoute.PEOPLE}
-          class="pr-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+          class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
           draggable="false">{$t('view_all')}</a
         >
       </div>
@@ -64,7 +64,7 @@
                 widthStyle="100%"
               />
               {#if person.isFavorite}
-                <div class="absolute top-2 left-2">
+                <div class="absolute top-2 start-2">
                   <Icon path={mdiHeart} size="24" class="text-white" />
                 </div>
               {/if}
@@ -82,7 +82,7 @@
         <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('places')}</p>
         <a
           href={AppRoute.PLACES}
-          class="pr-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+          class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
           draggable="false">{$t('view_all')}</a
         >
       </div>

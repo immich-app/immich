@@ -53,22 +53,12 @@ describe(DatabaseService.name, () => {
           mockEnvData({
             database: {
               config: {
-                kysely: {
-                  host: 'database',
-                  port: 5432,
-                  user: 'postgres',
-                  password: 'postgres',
-                  database: 'immich',
-                },
-                typeorm: {
-                  connectionType: 'parts',
-                  type: 'postgres',
-                  host: 'database',
-                  port: 5432,
-                  username: 'postgres',
-                  password: 'postgres',
-                  database: 'immich',
-                },
+                connectionType: 'parts',
+                host: 'database',
+                port: 5432,
+                username: 'postgres',
+                password: 'postgres',
+                database: 'immich',
               },
               skipMigrations: false,
               vectorExtension: extension,
@@ -292,22 +282,12 @@ describe(DatabaseService.name, () => {
         mockEnvData({
           database: {
             config: {
-              kysely: {
-                host: 'database',
-                port: 5432,
-                user: 'postgres',
-                password: 'postgres',
-                database: 'immich',
-              },
-              typeorm: {
-                connectionType: 'parts',
-                type: 'postgres',
-                host: 'database',
-                port: 5432,
-                username: 'postgres',
-                password: 'postgres',
-                database: 'immich',
-              },
+              connectionType: 'parts',
+              host: 'database',
+              port: 5432,
+              username: 'postgres',
+              password: 'postgres',
+              database: 'immich',
             },
             skipMigrations: true,
             vectorExtension: DatabaseExtension.VECTORS,
@@ -325,22 +305,12 @@ describe(DatabaseService.name, () => {
         mockEnvData({
           database: {
             config: {
-              kysely: {
-                host: 'database',
-                port: 5432,
-                user: 'postgres',
-                password: 'postgres',
-                database: 'immich',
-              },
-              typeorm: {
-                connectionType: 'parts',
-                type: 'postgres',
-                host: 'database',
-                port: 5432,
-                username: 'postgres',
-                password: 'postgres',
-                database: 'immich',
-              },
+              connectionType: 'parts',
+              host: 'database',
+              port: 5432,
+              username: 'postgres',
+              password: 'postgres',
+              database: 'immich',
             },
             skipMigrations: true,
             vectorExtension: DatabaseExtension.VECTOR,

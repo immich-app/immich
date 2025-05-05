@@ -42,6 +42,12 @@ docker run -it -v "$(pwd)":/import:ro -e IMMICH_INSTANCE_URL=https://your-immich
 
 Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variables as suitable. You can also use a Docker env file to store your sensitive API key.
 
+This `docker run` command will directly run the command `immich` inside the container. You can directly append the desired parameters (see under "usage") to the commandline like this:
+
+```bash
+docker run -it -v "$(pwd)":/import:ro -e IMMICH_INSTANCE_URL=https://your-immich-instance/api -e IMMICH_API_KEY=your-api-key ghcr.io/immich-app/immich-cli:latest upload -a -c 5 --recursive directory/
+```
+
 ## Usage
 
 <details>
@@ -112,7 +118,7 @@ You begin by authenticating to your Immich server. For instance:
 immich login http://192.168.1.216:2283/api HFEJ38DNSDUEG
 ```
 
-This will store your credentials in a `auth.yml` file in the configuration directory which defaults to `~/.config/`. The directory can be set with the `-d` option or the environment variable `IMMICH_CONFIG_DIR`. Please keep the file secure, either by performing the logout command after you are done, or deleting it manually.
+This will store your credentials in a `auth.yml` file in the configuration directory which defaults to `~/.config/immich/`. The directory can be set with the `-d` option or the environment variable `IMMICH_CONFIG_DIR`. Please keep the file secure, either by performing the logout command after you are done, or deleting it manually.
 
 Once you are authenticated, you can upload assets to your Immich server.
 

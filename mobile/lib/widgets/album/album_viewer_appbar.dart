@@ -76,13 +76,13 @@ class AlbumViewerAppbar extends HookConsumerWidget
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('album_viewer_appbar_share_delete').tr(),
+            title: const Text('delete_album').tr(),
             content: const Text('album_viewer_appbar_delete_confirm').tr(),
             actions: <Widget>[
               TextButton(
                 onPressed: () => context.pop('Cancel'),
                 child: Text(
-                  'action_common_cancel',
+                  'cancel',
                   style: TextStyle(
                     color: context.primaryColor,
                     fontWeight: FontWeight.bold,
@@ -95,7 +95,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   deleteAlbum();
                 },
                 child: Text(
-                  'action_common_confirm',
+                  'confirm',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: context.colorScheme.error,
@@ -131,7 +131,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             ? ListTile(
                 leading: const Icon(Icons.delete_forever_rounded),
                 title: const Text(
-                  'album_viewer_appbar_share_delete',
+                  'delete_album',
                   style: TextStyle(fontWeight: FontWeight.w500),
                 ).tr(),
                 onTap: onDeleteAlbumPressed,
@@ -203,7 +203,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
           leading: const Icon(Icons.settings_rounded),
           onTap: () => context.navigateTo(const AlbumOptionsRoute()),
           title: const Text(
-            "translated_text_options",
+            "options",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
@@ -220,7 +220,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             }
           },
           title: const Text(
-            "share_add_photos",
+            "add_photos",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),

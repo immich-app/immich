@@ -1,17 +1,17 @@
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
   PrimaryGeneratedColumn,
   Table,
   UpdateDateColumn,
-  UpdateIdColumn,
 } from 'src/sql-tools';
 
 @Table('libraries')
+@UpdatedAtTrigger('libraries_updated_at')
 export class LibraryTable {
   @PrimaryGeneratedColumn()
   id!: string;
@@ -34,13 +34,12 @@ export class LibraryTable {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @ColumnIndex('IDX_libraries_update_id')
-  @UpdateIdColumn()
-  updateId?: string;
-
   @DeleteDateColumn()
   deletedAt?: Date;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   refreshedAt!: Date | null;
+
+  @UpdateIdColumn({ indexName: 'IDX_libraries_update_id' })
+  updateId?: string;
 }

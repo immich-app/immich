@@ -19,7 +19,7 @@
 <div class="relative w-full">
   <input
     {...rest}
-    class="immich-form-input w-full !pr-12"
+    class="immich-form-input w-full !pe-12"
     type={showPassword ? 'text' : 'password'}
     {required}
     value={password}

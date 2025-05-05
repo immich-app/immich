@@ -33,8 +33,7 @@
   title={$t('restore_user')}
   confirmText={$t('continue')}
   confirmColor="success"
-  onConfirm={handleRestoreUser}
-  {onCancel}
+  onClose={(confirmed) => (confirmed ? handleRestoreUser() : onCancel())}
 >
   {#snippet promptSnippet()}
     <p>

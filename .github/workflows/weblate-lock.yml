@@ -4,30 +4,32 @@ on:
   pull_request:
     branches: [main]
 
+permissions: {}
+
 jobs:
   pre-job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       should_run: ${{ steps.found_paths.outputs.i18n == 'true' && github.head_ref != 'chore/translations'}}
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
       - id: found_paths
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
           filters: |
             i18n:
               - 'i18n/!(en)**\.json'
-      - name: Debug
-        run: |
-          echo "Should run: ${{ steps.found_paths.outputs.i18n == 'true' && github.head_ref != 'chore/translations'}}"
-          echo "Found i18n paths: ${{ steps.found_paths.outputs.i18n }}"
-          echo "Head ref: ${{ github.head_ref }}"
 
   enforce-lock:
     name: Check Weblate Lock
     needs: [pre-job]
     runs-on: ubuntu-latest
+    permissions: {}
     if: ${{ needs.pre-job.outputs.should_run == 'true' }}
     steps:
       - name: Check weblate lock
@@ -47,6 +49,7 @@ jobs:
     name: Weblate Lock Check Success
     needs: [enforce-lock]
     runs-on: ubuntu-latest
+    permissions: {}
     if: always()
     steps:
       - name: Any jobs failed?
@@ -54,4 +57,5 @@ jobs:
         run: exit 1
       - name: All jobs passed or skipped
         if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
         run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"

@@ -12,6 +12,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -29,6 +30,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -61,6 +63,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -78,6 +81,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -112,6 +116,7 @@ returning
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -129,6 +134,7 @@ returning
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -156,6 +162,7 @@ returning
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -173,6 +180,7 @@ returning
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from

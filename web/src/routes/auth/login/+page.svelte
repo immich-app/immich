@@ -2,10 +2,11 @@
   import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
-  import { login } from '@immich/sdk';
+  import { login, type LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -24,7 +25,11 @@
   let loading = $state(false);
   let oauthLoading = $state(true);
 
-  const onSuccess = async () => await goto(AppRoute.PHOTOS, { invalidateAll: true });
+  const onSuccess = async (user: LoginResponseDto) => {
+    await goto(AppRoute.PHOTOS, { invalidateAll: true });
+    eventManager.emit('auth.login', user);
+  };
+
   const onFirstLogin = async () => await goto(AppRoute.AUTH_CHANGE_PASSWORD);
   const onOnboarding = async () => await goto(AppRoute.AUTH_ONBOARDING);
 
@@ -36,8 +41,8 @@
 
     if (oauth.isCallback(globalThis.location)) {
       try {
-        await oauth.login(globalThis.location);
-        await onSuccess();
+        const user = await oauth.login(globalThis.location);
+        await onSuccess(user);
         return;
       } catch (error) {
         console.error('Error [login-form] [oauth.callback]', error);
@@ -74,7 +79,7 @@
         await onFirstLogin();
         return;
       }
-      await onSuccess();
+      await onSuccess(user);
       return;
     } catch (error) {
       errorMessage = getServerErrorMessage(error) || $t('errors.incorrect_email_or_password');
@@ -132,7 +137,7 @@
           <div class="inline-flex w-full items-center justify-center my-4">
             <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
             <span
-              class="absolute left-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white"
+              class="absolute start-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white"
             >
               {$t('or').toUpperCase()}
             </span>

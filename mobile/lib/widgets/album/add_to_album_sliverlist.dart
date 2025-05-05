@@ -37,7 +37,7 @@ class AddToAlbumSliverList extends HookConsumerWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: ExpansionTile(
-              title: Text('common_shared'.tr()),
+              title: Text('shared'.tr()),
               tilePadding: const EdgeInsets.symmetric(horizontal: 10.0),
               leading: const Icon(Icons.group),
               children: [

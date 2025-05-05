@@ -68,7 +68,7 @@
               class="flex gap-4 rounded-lg px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <UserAvatar user={partner} size="lg" />
-              <div class="text-left">
+              <div class="text-start">
                 <p class="text-immich-fg dark:text-immich-dark-fg">
                   {partner.name}
                 </p>

@@ -1,7 +1,7 @@
 import { ArrayMinSize } from 'class-validator';
+import { Stack } from 'src/database';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { StackEntity } from 'src/entities/stack.entity';
 import { ValidateUUID } from 'src/validation';
 
 export class StackCreateDto {
@@ -27,7 +27,7 @@ export class StackResponseDto {
   assets!: AssetResponseDto[];
 }
 
-export const mapStack = (stack: StackEntity, { auth }: { auth?: AuthDto }) => {
+export const mapStack = (stack: Stack, { auth }: { auth?: AuthDto }) => {
   const primary = stack.assets.filter((asset) => asset.id === stack.primaryAssetId);
   const others = stack.assets.filter((asset) => asset.id !== stack.primaryAssetId);
 

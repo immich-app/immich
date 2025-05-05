@@ -14,11 +14,12 @@ import { SystemConfig } from 'src/config';
 import { EventConfig } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { NotificationDto } from 'src/dtos/notification.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { ImmichWorker, MetadataKey, QueueName } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { JobItem } from 'src/types';
+import { JobItem, JobSource } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
@@ -47,7 +48,7 @@ type EventMap = {
   'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  'album.update': [{ id: string; recipientIds: string[] }];
+  'album.update': [{ id: string; recipientId: string }];
   'album.invite': [{ id: string; userId: string }];
 
   // asset events
@@ -57,6 +58,7 @@ type EventMap = {
   'asset.show': [{ assetId: string; userId: string }];
   'asset.trash': [{ assetId: string; userId: string }];
   'asset.delete': [{ assetId: string; userId: string }];
+  'asset.metadataExtracted': [{ assetId: string; userId: string; source?: JobSource }];
 
   // asset bulk events
   'assets.trash': [{ assetIds: string[]; userId: string }];
@@ -64,6 +66,7 @@ type EventMap = {
   'assets.restore': [{ assetIds: string[]; userId: string }];
 
   'job.start': [QueueName, JobItem];
+  'job.failed': [{ job: JobItem; error: Error | any }];
 
   // session events
   'session.delete': [{ sessionId: string }];
@@ -104,6 +107,7 @@ export interface ClientEventMap {
   on_server_version: [ServerVersionResponseDto];
   on_config_update: [];
   on_new_release: [ReleaseNotification];
+  on_notification: [NotificationDto];
   on_session_delete: [string];
 }
 

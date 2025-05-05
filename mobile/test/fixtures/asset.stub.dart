@@ -1,3 +1,4 @@
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 
 final class AssetStub {
@@ -17,6 +18,7 @@ final class AssetStub {
     isFavorite: true,
     isArchived: false,
     isTrashed: false,
+    exifInfo: const ExifInfo(isFlipped: false),
   );
 
   static final image2 = Asset(
@@ -33,6 +35,7 @@ final class AssetStub {
     isFavorite: false,
     isArchived: false,
     isTrashed: false,
+    exifInfo: const ExifInfo(isFlipped: true),
   );
 
   static final image3 = Asset(

@@ -9,7 +9,12 @@ export class Table1 {
 
 export const description = 'should create a check constraint with a default name';
 export const schema: DatabaseSchema = {
-  name: 'public',
+  name: 'postgres',
+  schemaName: 'public',
+  functions: [],
+  enums: [],
+  extensions: [],
+  parameters: [],
   tables: [
     {
       name: 'table1',
@@ -25,6 +30,7 @@ export const schema: DatabaseSchema = {
         },
       ],
       indexes: [],
+      triggers: [],
       constraints: [
         {
           type: DatabaseConstraintType.CHECK,

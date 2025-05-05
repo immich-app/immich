@@ -1,27 +1,27 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import {
-    updateAlbumInfo,
+    AlbumUserRole,
+    AssetOrder,
     removeUserFromAlbum,
+    updateAlbumInfo,
+    updateAlbumUser,
     type AlbumResponseDto,
     type UserResponseDto,
-    AssetOrder,
-    AlbumUserRole,
-    updateAlbumUser,
   } from '@immich/sdk';
-  import { mdiArrowDownThin, mdiArrowUpThin, mdiPlus, mdiDotsVertical } from '@mdi/js';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import SettingDropdown from '../shared-components/settings/setting-dropdown.svelte';
-  import type { RenderedOption } from '../elements/dropdown.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import { mdiArrowDownThin, mdiArrowUpThin, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { findKey } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+  import type { RenderedOption } from '../elements/dropdown.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import SettingDropdown from '../shared-components/settings/setting-dropdown.svelte';
 
   interface Props {
     album: AlbumResponseDto;
@@ -195,7 +195,6 @@
     title={$t('album_remove_user')}
     prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
     confirmText={$t('remove_user')}
-    onConfirm={handleRemoveUser}
-    onCancel={() => (selectedRemoveUser = null)}
+    onClose={(confirmed) => (confirmed ? handleRemoveUser() : (selectedRemoveUser = null))}
   />
 {/if}

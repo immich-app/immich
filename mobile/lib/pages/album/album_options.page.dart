@@ -140,7 +140,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
           style: TextStyle(color: context.colorScheme.onSurfaceSecondary),
         ),
         trailing: Text(
-          "shared_album_section_people_owner_label",
+          "owner",
           style: context.textTheme.labelLarge,
         ).tr(),
       );
@@ -195,7 +195,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
           onPressed: () => context.maybePop(null),
         ),
         centerTitle: true,
-        title: Text("translated_text_options".tr()),
+        title: Text("options".tr()),
       ),
       body: ListView(
         children: [
@@ -215,12 +215,12 @@ class AlbumOptionsPage extends HookConsumerWidget {
                   : context.themeData.disabledColor,
               dense: true,
               title: Text(
-                "shared_album_activity_setting_title",
+                "comments_and_likes",
                 style: context.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w500),
               ).tr(),
               subtitle: Text(
-                "shared_album_activity_setting_subtitle",
+                "let_others_respond",
                 style: context.textTheme.labelLarge?.copyWith(
                   color: context.colorScheme.onSurfaceSecondary,
                 ),

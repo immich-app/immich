@@ -23,7 +23,7 @@ describe(ActivityService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
       mocks.activity.search.mockResolvedValue([]);
 
-      await expect(sut.getAll(factory.auth({ id: userId }), { assetId, albumId })).resolves.toEqual([]);
+      await expect(sut.getAll(factory.auth({ user: { id: userId } }), { assetId, albumId })).resolves.toEqual([]);
 
       expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: undefined });
     });
@@ -35,7 +35,7 @@ describe(ActivityService.name, () => {
       mocks.activity.search.mockResolvedValue([]);
 
       await expect(
-        sut.getAll(factory.auth({ id: userId }), { assetId, albumId, type: ReactionType.LIKE }),
+        sut.getAll(factory.auth({ user: { id: userId } }), { assetId, albumId, type: ReactionType.LIKE }),
       ).resolves.toEqual([]);
 
       expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: true });
@@ -80,7 +80,7 @@ describe(ActivityService.name, () => {
       mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
       mocks.activity.create.mockResolvedValue(activity);
 
-      await sut.create(factory.auth({ id: userId }), {
+      await sut.create(factory.auth({ user: { id: userId } }), {
         albumId,
         assetId,
         type: ReactionType.COMMENT,
@@ -116,7 +116,7 @@ describe(ActivityService.name, () => {
       mocks.activity.create.mockResolvedValue(activity);
       mocks.activity.search.mockResolvedValue([]);
 
-      await sut.create(factory.auth({ id: userId }), { albumId, assetId, type: ReactionType.LIKE });
+      await sut.create(factory.auth({ user: { id: userId } }), { albumId, assetId, type: ReactionType.LIKE });
 
       expect(mocks.activity.create).toHaveBeenCalledWith({ userId: activity.userId, albumId, assetId, isLiked: true });
     });

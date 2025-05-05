@@ -1,4 +1,5 @@
 import { SourceType } from 'src/enum';
+import { asset_face_source_type } from 'src/schema/enums';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { Column, DeleteDateColumn, ForeignKeyColumn, Index, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
@@ -7,8 +8,22 @@ import { Column, DeleteDateColumn, ForeignKeyColumn, Index, PrimaryGeneratedColu
 @Index({ name: 'IDX_asset_faces_assetId_personId', columns: ['assetId', 'personId'] })
 @Index({ columns: ['personId', 'assetId'] })
 export class AssetFaceTable {
-  @PrimaryGeneratedColumn()
-  id!: string;
+  @ForeignKeyColumn(() => AssetTable, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    // [assetId, personId] is the PK constraint
+    index: false,
+  })
+  assetId!: string;
+
+  @ForeignKeyColumn(() => PersonTable, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+    nullable: true,
+    // [personId, assetId] makes this redundant
+    index: false,
+  })
+  personId!: string | null;
 
   @Column({ default: 0, type: 'integer' })
   imageWidth!: number;
@@ -28,14 +43,11 @@ export class AssetFaceTable {
   @Column({ default: 0, type: 'integer' })
   boundingBoxY2!: number;
 
-  @Column({ default: SourceType.MACHINE_LEARNING, enumName: 'sourcetype', enum: SourceType })
+  @PrimaryGeneratedColumn()
+  id!: string;
+
+  @Column({ default: SourceType.MACHINE_LEARNING, enum: asset_face_source_type })
   sourceType!: SourceType;
-
-  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  assetId!: string;
-
-  @ForeignKeyColumn(() => PersonTable, { onDelete: 'SET NULL', onUpdate: 'CASCADE', nullable: true })
-  personId!: string | null;
 
   @DeleteDateColumn()
   deletedAt!: Date | null;

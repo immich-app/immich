@@ -48,7 +48,7 @@
     <button
       type="button"
       onclick={() => toggleAlbumGroupCollapsing(group.id)}
-      class="w-full text-left mt-2 pt-2 pr-2 pb-2 rounded-md transition-colors cursor-pointer dark:text-immich-dark-fg hover:text-immich-primary dark:hover:text-immich-dark-primary hover:bg-immich-gray dark:hover:bg-immich-dark-gray"
+      class="w-full text-start mt-2 pt-2 pe-2 pb-2 rounded-md transition-colors cursor-pointer dark:text-immich-dark-fg hover:text-immich-primary dark:hover:text-immich-dark-primary hover:bg-immich-gray dark:hover:bg-immich-dark-gray"
       aria-expanded={!isCollapsed}
     >
       <Icon
@@ -57,7 +57,7 @@
         class="inline-block -mt-2.5 transition-all duration-[250ms] {iconRotation}"
       />
       <span class="font-bold text-3xl text-black dark:text-white">{group.name}</span>
-      <span class="ml-1.5">({$t('albums_count', { values: { count: albums.length } })})</span>
+      <span class="ms-1.5">({$t('albums_count', { values: { count: albums.length } })})</span>
     </button>
     <hr class="dark:border-immich-dark-gray" />
   </div>

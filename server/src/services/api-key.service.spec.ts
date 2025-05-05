@@ -54,7 +54,7 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should throw an error if the api key does not have sufficient permissions', async () => {
-      const auth = factory.auth({ apiKey: factory.authApiKey({ permissions: [Permission.ASSET_READ] }) });
+      const auth = factory.auth({ apiKey: { permissions: [Permission.ASSET_READ] } });
 
       await expect(sut.create(auth, { permissions: [Permission.ASSET_UPDATE] })).rejects.toBeInstanceOf(
         BadRequestException,

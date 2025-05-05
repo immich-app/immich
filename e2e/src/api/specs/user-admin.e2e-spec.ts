@@ -215,6 +215,19 @@ describe('/admin/users', () => {
       const user = await getMyUser({ headers: asBearerAuth(token.accessToken) });
       expect(user).toMatchObject({ email: nonAdmin.userEmail });
     });
+
+    it('should update the avatar color', async () => {
+      const { status, body } = await request(app)
+        .put(`/admin/users/${admin.userId}`)
+        .send({ avatarColor: 'orange' })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ avatarColor: 'orange' });
+
+      const after = await getUserAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ avatarColor: 'orange' });
+    });
   });
 
   describe('PUT /admin/users/:id/preferences', () => {
@@ -238,19 +251,6 @@ describe('/admin/users', () => {
 
       const after = await getUserPreferencesAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
       expect(after).toMatchObject({ memories: { enabled: false } });
-    });
-
-    it('should update the avatar color', async () => {
-      const { status, body } = await request(app)
-        .put(`/admin/users/${admin.userId}/preferences`)
-        .send({ avatar: { color: 'orange' } })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toMatchObject({ avatar: { color: 'orange' } });
-
-      const after = await getUserPreferencesAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
-      expect(after).toMatchObject({ avatar: { color: 'orange' } });
     });
 
     it('should update download archive size', async () => {

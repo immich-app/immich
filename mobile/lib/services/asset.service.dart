@@ -256,7 +256,7 @@ class AssetService {
 
       for (var element in assets) {
         element.fileCreatedAt = DateTime.parse(updatedDt);
-        element.exifInfo ??= element.exifInfo
+        element.exifInfo = element.exifInfo
             ?.copyWith(dateTimeOriginal: DateTime.parse(updatedDt));
       }
 
@@ -283,7 +283,7 @@ class AssetService {
       );
 
       for (var element in assets) {
-        element.exifInfo ??= element.exifInfo?.copyWith(
+        element.exifInfo = element.exifInfo?.copyWith(
           latitude: location.latitude,
           longitude: location.longitude,
         );
@@ -514,9 +514,9 @@ class AssetService {
     return _assetRepository.watchAsset(id, fireImmediately: fireImmediately);
   }
 
-  Future<List<Asset>> getRecentlyAddedAssets() {
+  Future<List<Asset>> getRecentlyTakenAssets() {
     final me = _userService.getMyUser();
-    return _assetRepository.getRecentlyAddedAssets(me.id);
+    return _assetRepository.getRecentlyTakenAssets(me.id);
   }
 
   Future<List<Asset>> getMotionAssets() {

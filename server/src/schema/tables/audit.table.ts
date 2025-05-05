@@ -4,7 +4,7 @@ import { Column, CreateDateColumn, Index, PrimaryColumn, Table } from 'src/sql-t
 @Table('audit')
 @Index({ name: 'IDX_ownerId_createdAt', columns: ['ownerId', 'createdAt'] })
 export class AuditTable {
-  @PrimaryColumn({ type: 'integer', default: 'increment', synchronize: false })
+  @PrimaryColumn({ type: 'serial', synchronize: false })
   id!: number;
 
   @Column()

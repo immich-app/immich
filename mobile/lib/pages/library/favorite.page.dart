@@ -21,7 +21,7 @@ class FavoritesPage extends HookConsumerWidget {
         centerTitle: true,
         automaticallyImplyLeading: false,
         title: const Text(
-          'favorites_page_title',
+          'favorites',
         ).tr(),
       );
     }

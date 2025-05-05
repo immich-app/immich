@@ -96,7 +96,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     buildSettingButton() {
       return buildActionButton(
         Icons.settings_outlined,
-        "profile_drawer_settings",
+        "settings",
         () => context.pushRoute(const SettingsRoute()),
       );
     }
@@ -112,7 +112,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     buildSignOutButton() {
       return buildActionButton(
         Icons.logout_rounded,
-        "profile_drawer_sign_out",
+        "sign_out",
         () async {
           if (isLoggingOut.value) {
             return;
@@ -124,7 +124,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               return ConfirmDialog(
                 title: "app_bar_signout_dialog_title",
                 content: "app_bar_signout_dialog_content",
-                ok: "app_bar_signout_dialog_ok",
+                ok: "yes",
                 onOk: () async {
                   isLoggingOut.value = true;
                   await ref
@@ -229,7 +229,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 );
               },
               child: Text(
-                "profile_drawer_documentation",
+                "documentation",
                 style: context.textTheme.bodySmall,
               ).tr(),
             ),

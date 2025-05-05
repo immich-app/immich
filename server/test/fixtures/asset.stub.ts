@@ -1,50 +1,40 @@
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
-import { StackEntity } from 'src/entities/stack.entity';
+import { AssetFace, AssetFile, Exif } from 'src/database';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
-const previewFile: AssetFileEntity = {
+export const previewFile: AssetFile = {
   id: 'file-1',
-  assetId: 'asset-id',
   type: AssetFileType.PREVIEW,
   path: '/uploads/user-id/thumbs/path.jpg',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const thumbnailFile: AssetFileEntity = {
+const thumbnailFile: AssetFile = {
   id: 'file-2',
-  assetId: 'asset-id',
   type: AssetFileType.THUMBNAIL,
   path: '/uploads/user-id/webp/path.ext',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const fullsizeFile: AssetFileEntity = {
+const fullsizeFile: AssetFile = {
   id: 'file-3',
-  assetId: 'asset-id',
   type: AssetFileType.FULLSIZE,
   path: '/uploads/user-id/fullsize/path.webp',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
 };
 
-const files: AssetFileEntity[] = [fullsizeFile, previewFile, thumbnailFile];
+const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];
 
-export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity => {
+export const stackStub = (stackId: string, assets: (MapAsset & { exifInfo: Exif })[]) => {
   return {
     id: stackId,
     assets,
-    owner: assets[0].owner,
     ownerId: assets[0].ownerId,
     primaryAsset: assets[0],
     primaryAssetId: assets[0].id,
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
   };
 };
 
@@ -64,7 +54,7 @@ export const assetStub = {
     fileSizeInByte: 12_345,
     ...asset,
   }),
-  noResizePath: Object.freeze<AssetEntity>({
+  noResizePath: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     originalFileName: 'IMG_123.jpg',
@@ -89,17 +79,20 @@ export const assetStub = {
     isVisible: true,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     faces: [],
+    exifInfo: {} as Exif,
     sidecarPath: null,
     deletedAt: null,
     isExternal: false,
     duplicateId: null,
     isOffline: false,
+    libraryId: null,
+    stackId: null,
+    updateId: '42',
   }),
 
-  noWebpPath: Object.freeze<AssetEntity>({
+  noWebpPath: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -123,7 +116,6 @@ export const assetStub = {
     isVisible: true,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'IMG_456.jpg',
     faces: [],
@@ -131,13 +123,16 @@ export const assetStub = {
     isExternal: false,
     exifInfo: {
       fileSizeInByte: 123_000,
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    libraryId: null,
+    stackId: null,
+    updateId: '42',
   }),
 
-  noThumbhash: Object.freeze<AssetEntity>({
+  noThumbhash: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -162,7 +157,6 @@ export const assetStub = {
     isExternal: false,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.ext',
     faces: [],
@@ -170,9 +164,12 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    libraryId: null,
+    stackId: null,
+    updateId: '42',
   }),
 
-  primaryImage: Object.freeze<AssetEntity>({
+  primaryImage: Object.freeze({
     id: 'primary-asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -197,7 +194,6 @@ export const assetStub = {
     isExternal: false,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
     faces: [],
@@ -207,18 +203,20 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 1000,
       exifImageWidth: 1000,
-    } as ExifEntity,
+    } as Exif,
     stackId: 'stack-1',
     stack: stackStub('stack-1', [
-      { id: 'primary-asset-id' } as AssetEntity,
-      { id: 'stack-child-asset-1' } as AssetEntity,
-      { id: 'stack-child-asset-2' } as AssetEntity,
+      { id: 'primary-asset-id' } as MapAsset & { exifInfo: Exif },
+      { id: 'stack-child-asset-1' } as MapAsset & { exifInfo: Exif },
+      { id: 'stack-child-asset-2' } as MapAsset & { exifInfo: Exif },
     ]),
     duplicateId: null,
     isOffline: false,
+    updateId: '42',
+    libraryId: null,
   }),
 
-  image: Object.freeze<AssetEntity>({
+  image: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -243,7 +241,9 @@ export const assetStub = {
     isExternal: false,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
+    updateId: 'foo',
+    libraryId: null,
+    stackId: null,
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
     faces: [],
@@ -253,12 +253,13 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 3840,
       exifImageWidth: 2160,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
+    stack: null,
   }),
 
-  trashed: Object.freeze<AssetEntity>({
+  trashed: Object.freeze({
     id: 'asset-id',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -283,7 +284,6 @@ export const assetStub = {
     isExternal: false,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
     faces: [],
@@ -292,13 +292,16 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 3840,
       exifImageWidth: 2160,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
     status: AssetStatus.TRASHED,
+    libraryId: null,
+    stackId: null,
+    updateId: '42',
   }),
 
-  trashedOffline: Object.freeze<AssetEntity>({
+  trashedOffline: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -325,7 +328,6 @@ export const assetStub = {
     isExternal: false,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
     faces: [],
@@ -334,11 +336,13 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 3840,
       exifImageWidth: 2160,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: true,
+    stackId: null,
+    updateId: '42',
   }),
-  archived: Object.freeze<AssetEntity>({
+  archived: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -363,7 +367,6 @@ export const assetStub = {
     isExternal: false,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
     faces: [],
@@ -373,12 +376,15 @@ export const assetStub = {
       fileSizeInByte: 5000,
       exifImageHeight: 3840,
       exifImageWidth: 2160,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
+    libraryId: null,
+    stackId: null,
+    updateId: '42',
   }),
 
-  external: Object.freeze<AssetEntity>({
+  external: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -404,7 +410,6 @@ export const assetStub = {
     livePhotoVideo: null,
     livePhotoVideoId: null,
     libraryId: 'library-id',
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
     faces: [],
@@ -412,12 +417,15 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
+    updateId: '42',
+    stackId: null,
+    stack: null,
   }),
 
-  image1: Object.freeze<AssetEntity>({
+  image1: Object.freeze({
     id: 'asset-id-1',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -443,19 +451,22 @@ export const assetStub = {
     livePhotoVideo: null,
     livePhotoVideoId: null,
     isExternal: false,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
+    updateId: '42',
+    stackId: null,
+    libraryId: null,
+    stack: null,
   }),
 
-  imageFrom2015: Object.freeze<AssetEntity>({
+  imageFrom2015: Object.freeze({
     id: 'asset-id-1',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -480,20 +491,19 @@ export const assetStub = {
     isVisible: true,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
   }),
 
-  video: Object.freeze<AssetEntity>({
+  video: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     originalFileName: 'asset-id.ext',
@@ -519,7 +529,6 @@ export const assetStub = {
     isVisible: true,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     faces: [],
     sidecarPath: null,
@@ -527,10 +536,13 @@ export const assetStub = {
       fileSizeInByte: 100_000,
       exifImageHeight: 2160,
       exifImageWidth: 3840,
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    updateId: '42',
+    libraryId: null,
+    stackId: null,
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -546,7 +558,8 @@ export const assetStub = {
       fileSizeInByte: 100_000,
       timeZone: `America/New_York`,
     },
-  } as AssetEntity),
+    libraryId: null,
+  } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif }),
 
   livePhotoStillAsset: Object.freeze({
     id: 'live-photo-still-asset',
@@ -563,7 +576,8 @@ export const assetStub = {
       timeZone: `America/New_York`,
     },
     files,
-  } as AssetEntity),
+    faces: [] as AssetFace[],
+  } as MapAsset & { faces: AssetFace[] }),
 
   livePhotoWithOriginalFileName: Object.freeze({
     id: 'live-photo-still-asset',
@@ -580,9 +594,11 @@ export const assetStub = {
       fileSizeInByte: 25_000,
       timeZone: `America/New_York`,
     },
-  } as AssetEntity),
+    libraryId: null,
+    faces: [] as AssetFace[],
+  } as MapAsset & { faces: AssetFace[] }),
 
-  withLocation: Object.freeze<AssetEntity>({
+  withLocation: Object.freeze({
     id: 'asset-with-favorite-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -608,7 +624,9 @@ export const assetStub = {
     isVisible: true,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
+    updateId: 'foo',
+    libraryId: null,
+    stackId: null,
     sharedLinks: [],
     originalFileName: 'asset-id.ext',
     faces: [],
@@ -619,13 +637,14 @@ export const assetStub = {
       city: 'test-city',
       state: 'test-state',
       country: 'test-country',
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    tags: [],
   }),
 
-  sidecar: Object.freeze<AssetEntity>({
+  sidecar: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -650,7 +669,6 @@ export const assetStub = {
     isVisible: true,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.ext',
     faces: [],
@@ -658,9 +676,12 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    updateId: 'foo',
+    libraryId: null,
+    stackId: null,
   }),
 
-  sidecarWithoutExt: Object.freeze<AssetEntity>({
+  sidecarWithoutExt: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -685,7 +706,6 @@ export const assetStub = {
     isVisible: true,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.ext',
     faces: [],
@@ -695,7 +715,7 @@ export const assetStub = {
     isOffline: false,
   }),
 
-  hasEncodedVideo: Object.freeze<AssetEntity>({
+  hasEncodedVideo: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     originalFileName: 'asset-id.ext',
@@ -721,19 +741,22 @@ export const assetStub = {
     isVisible: true,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     faces: [],
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 100_000,
-    } as ExifEntity,
+    } as Exif,
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    updateId: '42',
+    libraryId: null,
+    stackId: null,
+    stack: null,
   }),
 
-  hasFileExtension: Object.freeze<AssetEntity>({
+  hasFileExtension: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -759,7 +782,6 @@ export const assetStub = {
     livePhotoVideo: null,
     livePhotoVideoId: null,
     libraryId: 'library-id',
-    tags: [],
     sharedLinks: [],
     originalFileName: 'photo.jpg',
     faces: [],
@@ -767,12 +789,12 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 5000,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
   }),
 
-  imageDng: Object.freeze<AssetEntity>({
+  imageDng: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -797,7 +819,6 @@ export const assetStub = {
     isExternal: false,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.dng',
     faces: [],
@@ -807,12 +828,15 @@ export const assetStub = {
       fileSizeInByte: 5000,
       profileDescription: 'Adobe RGB',
       bitsPerSample: 14,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
+    updateId: '42',
+    libraryId: null,
+    stackId: null,
   }),
 
-  imageHif: Object.freeze<AssetEntity>({
+  imageHif: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
@@ -837,7 +861,6 @@ export const assetStub = {
     isExternal: false,
     livePhotoVideo: null,
     livePhotoVideoId: null,
-    tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.hif',
     faces: [],
@@ -847,92 +870,11 @@ export const assetStub = {
       fileSizeInByte: 5000,
       profileDescription: 'Adobe RGB',
       bitsPerSample: 14,
-    } as ExifEntity,
+    } as Exif,
     duplicateId: null,
     isOffline: false,
-  }),
-
-  hasEmbedding: Object.freeze<AssetEntity>({
-    id: 'asset-id-embedding',
-    status: AssetStatus.ACTIVE,
-    deviceAssetId: 'device-asset-id',
-    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
-    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    owner: userStub.user1,
-    ownerId: 'user-id',
-    deviceId: 'device-id',
-    originalPath: '/original/path.jpg',
-    checksum: Buffer.from('file hash', 'utf8'),
-    type: AssetType.IMAGE,
-    files,
-    thumbhash: Buffer.from('blablabla', 'base64'),
-    encodedVideoPath: null,
-    createdAt: new Date('2023-02-23T05:06:29.716Z'),
-    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    localDateTime: new Date('2023-02-23T05:06:29.716Z'),
-    isFavorite: true,
-    isArchived: false,
-    duration: null,
-    isVisible: true,
-    isExternal: false,
-    livePhotoVideo: null,
-    livePhotoVideoId: null,
-    tags: [],
-    sharedLinks: [],
-    originalFileName: 'asset-id.jpg',
-    faces: [],
-    deletedAt: null,
-    sidecarPath: null,
-    exifInfo: {
-      fileSizeInByte: 5000,
-    } as ExifEntity,
-    duplicateId: null,
-    smartSearch: {
-      assetId: 'asset-id',
-      embedding: '[1, 2, 3, 4]',
-    },
-    isOffline: false,
-  }),
-
-  hasDupe: Object.freeze<AssetEntity>({
-    id: 'asset-id-dupe',
-    status: AssetStatus.ACTIVE,
-    deviceAssetId: 'device-asset-id',
-    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
-    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    owner: userStub.user1,
-    ownerId: 'user-id',
-    deviceId: 'device-id',
-    originalPath: '/original/path.jpg',
-    checksum: Buffer.from('file hash', 'utf8'),
-    type: AssetType.IMAGE,
-    files,
-    thumbhash: Buffer.from('blablabla', 'base64'),
-    encodedVideoPath: null,
-    createdAt: new Date('2023-02-23T05:06:29.716Z'),
-    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    localDateTime: new Date('2023-02-23T05:06:29.716Z'),
-    isFavorite: true,
-    isArchived: false,
-    duration: null,
-    isVisible: true,
-    isExternal: false,
-    livePhotoVideo: null,
-    livePhotoVideoId: null,
-    tags: [],
-    sharedLinks: [],
-    originalFileName: 'asset-id.jpg',
-    faces: [],
-    deletedAt: null,
-    sidecarPath: null,
-    exifInfo: {
-      fileSizeInByte: 5000,
-    } as ExifEntity,
-    duplicateId: 'duplicate-id',
-    smartSearch: {
-      assetId: 'asset-id',
-      embedding: '[1, 2, 3, 4]',
-    },
-    isOffline: false,
+    updateId: '42',
+    libraryId: null,
+    stackId: null,
   }),
 };

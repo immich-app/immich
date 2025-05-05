@@ -19,7 +19,7 @@ class AllPlacesPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'curated_location_page_title',
+          'places',
         ).tr(),
         leading: IconButton(
           onPressed: () => context.maybePop(),

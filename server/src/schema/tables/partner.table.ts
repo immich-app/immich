@@ -1,17 +1,24 @@
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { partners_delete_audit } from 'src/schema/functions';
 import { UserTable } from 'src/schema/tables/user.table';
-import {
-  Column,
-  ColumnIndex,
-  CreateDateColumn,
-  ForeignKeyColumn,
-  Table,
-  UpdateDateColumn,
-  UpdateIdColumn,
-} from 'src/sql-tools';
+import { AfterDeleteTrigger, Column, CreateDateColumn, ForeignKeyColumn, Table, UpdateDateColumn } from 'src/sql-tools';
 
 @Table('partners')
+@UpdatedAtTrigger('partners_updated_at')
+@AfterDeleteTrigger({
+  name: 'partners_delete_audit',
+  scope: 'statement',
+  function: partners_delete_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() = 0',
+})
 export class PartnerTable {
-  @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', primary: true })
+  @ForeignKeyColumn(() => UserTable, {
+    onDelete: 'CASCADE',
+    primary: true,
+    // [sharedById, sharedWithId] is the PK constraint
+    index: false,
+  })
   sharedById!: string;
 
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', primary: true })
@@ -23,10 +30,9 @@ export class PartnerTable {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @ColumnIndex('IDX_partners_update_id')
-  @UpdateIdColumn()
-  updateId!: string;
-
   @Column({ type: 'boolean', default: false })
   inTimeline!: boolean;
+
+  @UpdateIdColumn({ indexName: 'IDX_partners_update_id' })
+  updateId!: string;
 }

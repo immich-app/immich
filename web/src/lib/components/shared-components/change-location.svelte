@@ -1,20 +1,20 @@
 <script lang="ts">
-  import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import { timeDebounceOnSearch } from '$lib/constants';
-  import { handleError } from '$lib/utils/handle-error';
   import { lastChosenLocation } from '$lib/stores/asset-editor.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import ConfirmDialog from './dialog/confirm-dialog.svelte';
 
   import { clickOutside } from '$lib/actions/click-outside';
-  import LoadingSpinner from './loading-spinner.svelte';
-  import { delay } from '$lib/utils/asset-utils';
-  import { timeToLoadTheMap } from '$lib/constants';
-  import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
-  import SearchBar from '../elements/search-bar.svelte';
   import { listNavigation } from '$lib/actions/list-navigation';
-  import { t } from 'svelte-i18n';
   import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
   import type Map from '$lib/components/shared-components/map/map.svelte';
+  import { timeToLoadTheMap } from '$lib/constants';
+  import { delay } from '$lib/utils/asset-utils';
+  import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
+  import SearchBar from '../elements/search-bar.svelte';
+  import LoadingSpinner from './loading-spinner.svelte';
   interface Point {
     lng: number;
     lat: number;
@@ -112,7 +112,12 @@
   };
 </script>
 
-<ConfirmDialog confirmColor="primary" title={$t('change_location')} width="wide" onConfirm={handleConfirm} {onCancel}>
+<ConfirmDialog
+  confirmColor="primary"
+  title={$t('change_location')}
+  size="medium"
+  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
+>
   {#snippet promptSnippet()}
     <div class="flex flex-col w-full h-full gap-2">
       <div class="relative w-64 sm:w-96">
@@ -147,7 +152,7 @@
                   : ''}"
                 onclick={() => handleUseSuggested(place.latitude, place.longitude)}
               >
-                <p class="ml-4 text-sm text-gray-700 dark:text-gray-100 truncate">
+                <p class="ms-4 text-sm text-gray-700 dark:text-gray-100 truncate">
                   {getLocation(place.name, place.admin1name, place.admin2name)}
                 </p>
               </button>
@@ -189,7 +194,7 @@
         {/await}
       </div>
 
-      <div class="grid sm:grid-cols-2 gap-4 text-sm text-left mt-4">
+      <div class="grid sm:grid-cols-2 gap-4 text-sm text-start mt-4">
         <CoordinatesInput
           lat={point ? point.lat : assetLat}
           lng={point ? point.lng : assetLng}

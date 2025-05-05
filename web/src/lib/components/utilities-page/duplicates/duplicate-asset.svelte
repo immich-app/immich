@@ -44,14 +44,14 @@
 
       <!-- FAVORITE ICON -->
       {#if asset.isFavorite}
-        <div class="absolute bottom-2 left-2">
+        <div class="absolute bottom-2 start-2">
           <Icon path={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
 
       <!-- OVERLAY CHIP -->
       <div
-        class="absolute bottom-1 right-3 px-4 py-1 rounded-xl text-xs transition-colors {isSelected
+        class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors {isSelected
           ? 'bg-green-400/90'
           : 'bg-red-300/90'}"
       >
@@ -59,7 +59,7 @@
       </div>
 
       <!-- EXTERNAL LIBRARY / STACK COUNT CHIP -->
-      <div class="absolute top-2 right-3">
+      <div class="absolute top-2 end-3">
         {#if isFromExternalLibrary}
           <div class="bg-immich-primary/90 px-2 py-1 rounded-xl text-xs text-white">
             {$t('external')}
@@ -68,7 +68,7 @@
         {#if asset.stack?.assetCount}
           <div class="bg-immich-primary/90 px-2 py-1 my-0.5 rounded-xl text-xs text-white">
             <div class="flex items-center justify-center">
-              <div class="mr-1">{asset.stack.assetCount}</div>
+              <div class="me-1">{asset.stack.assetCount}</div>
               <Icon path={mdiImageMultipleOutline} size="18" />
             </div>
           </div>
@@ -79,7 +79,7 @@
     <button
       type="button"
       onclick={() => onViewAsset(asset)}
-      class="absolute rounded-full top-1 left-1 text-gray-200 p-2 hover:text-white bg-black/35 hover:bg-black/50"
+      class="absolute rounded-full top-1 start-1 text-gray-200 p-2 hover:text-white bg-black/35 hover:bg-black/50"
       title={$t('view')}
     >
       <Icon ariaLabel={$t('view')} path={mdiMagnifyPlus} flipped size="18" />

@@ -61,7 +61,7 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<List<Asset>> getTrashAssets(String userId);
 
-  Future<List<Asset>> getRecentlyAddedAssets(String userId);
+  Future<List<Asset>> getRecentlyTakenAssets(String userId);
   Future<List<Asset>> getMotionAssets(String userId);
 }
 

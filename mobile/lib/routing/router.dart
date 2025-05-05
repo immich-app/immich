@@ -58,7 +58,7 @@ import 'package:immich_mobile/pages/search/all_videos.page.dart';
 import 'package:immich_mobile/pages/search/map/map.page.dart';
 import 'package:immich_mobile/pages/search/map/map_location_picker.page.dart';
 import 'package:immich_mobile/pages/search/person_result.page.dart';
-import 'package:immich_mobile/pages/search/recently_added.page.dart';
+import 'package:immich_mobile/pages/search/recently_taken.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -160,7 +160,7 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
-      page: RecentlyAddedRoute.page,
+      page: RecentlyTakenRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     CustomRoute(

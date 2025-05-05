@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Activity } from 'src/database';
 import {
   ActivityCreateDto,
   ActivityDto,
@@ -13,7 +14,6 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { ActivityItem } from 'src/types';
 
 @Injectable()
 export class ActivityService extends BaseService {
@@ -43,7 +43,7 @@ export class ActivityService extends BaseService {
       albumId: dto.albumId,
     };
 
-    let activity: ActivityItem | undefined;
+    let activity: Activity | undefined;
     let duplicate = false;
 
     if (dto.type === ReactionType.LIKE) {

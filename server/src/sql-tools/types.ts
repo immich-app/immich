@@ -55,6 +55,42 @@ export type PostgresDB = {
     conindid: number;
   };
 
+  pg_description: {
+    objoid: string;
+    classoid: string;
+    objsubid: number;
+    description: string;
+  };
+
+  pg_trigger: {
+    oid: string;
+    tgisinternal: boolean;
+    tginitdeferred: boolean;
+    tgdeferrable: boolean;
+    tgrelid: string;
+    tgfoid: string;
+    tgname: string;
+    tgenabled: string;
+    tgtype: number;
+    tgconstraint: string;
+    tgdeferred: boolean;
+    tgargs: Buffer;
+    tgoldtable: string;
+    tgnewtable: string;
+    tgqual: string;
+  };
+
+  'pg_catalog.pg_extension': {
+    oid: string;
+    extname: string;
+    extowner: string;
+    extnamespace: string;
+    extrelocatable: boolean;
+    extversion: string;
+    extconfig: string[];
+    extcondition: string[];
+  };
+
   pg_enum: {
     oid: string;
     enumtypid: string;
@@ -97,6 +133,38 @@ export type PostgresDB = {
     typtype: string;
     typcategory: string;
     typarray: string;
+  };
+
+  pg_depend: {
+    objid: string;
+    deptype: string;
+  };
+
+  pg_proc: {
+    oid: string;
+    proname: string;
+    pronamespace: string;
+    prokind: string;
+  };
+
+  pg_settings: {
+    name: string;
+    setting: string;
+    unit: string | null;
+    category: string;
+    short_desc: string | null;
+    extra_desc: string | null;
+    context: string;
+    vartype: string;
+    source: string;
+    min_val: string | null;
+    max_val: string | null;
+    enumvals: string[] | null;
+    boot_val: string | null;
+    reset_val: string | null;
+    sourcefile: string | null;
+    sourceline: number | null;
+    pending_restart: PostgresYesOrNo;
   };
 
   'information_schema.tables': {
@@ -142,11 +210,30 @@ export type PostgresDB = {
     collection_type_identifier: string;
     data_type: string;
   };
+
+  'information_schema.routines': {
+    specific_catalog: string;
+    specific_schema: string;
+    specific_name: string;
+    routine_catalog: string;
+    routine_schema: string;
+    routine_name: string;
+    routine_type: string;
+    data_type: string;
+    type_udt_catalog: string;
+    type_udt_schema: string;
+    type_udt_name: string;
+    dtd_identifier: string;
+    routine_body: string;
+    routine_definition: string;
+    external_name: string;
+    external_language: string;
+    is_deterministic: PostgresYesOrNo;
+    security_type: string;
+  };
 };
 
 type PostgresYesOrNo = 'YES' | 'NO';
-
-export type ColumnDefaultValue = null | boolean | string | number | object | Date | (() => string);
 
 export type DatabaseClient = Kysely<PostgresDB>;
 
@@ -165,7 +252,9 @@ export enum DatabaseActionType {
   SET_DEFAULT = 'SET DEFAULT',
 }
 
-export type DatabaseColumnType =
+export type ColumnStorage = 'default' | 'external' | 'extended' | 'main' | 'default';
+
+export type ColumnType =
   | 'bigint'
   | 'boolean'
   | 'bytea'
@@ -188,64 +277,55 @@ export type DatabaseColumnType =
   | 'enum'
   | 'serial';
 
-export type TableOptions = {
-  name?: string;
-  primaryConstraintName?: string;
-  synchronize?: boolean;
-};
-
-type ColumnBaseOptions = {
-  name?: string;
-  primary?: boolean;
-  type?: DatabaseColumnType;
-  nullable?: boolean;
-  length?: number;
-  default?: ColumnDefaultValue;
-  synchronize?: boolean;
-};
-
-export type ColumnOptions = ColumnBaseOptions & {
-  enum?: object;
-  enumName?: string;
-  array?: boolean;
-  unique?: boolean;
-  uniqueConstraintName?: string;
-};
-
-export type GenerateColumnOptions = Omit<ColumnOptions, 'type'> & {
-  type?: 'v4' | 'v7';
-};
-
-export type ColumnIndexOptions = {
-  name?: string;
-  unique?: boolean;
-  expression?: string;
-  using?: string;
-  where?: string;
-  synchronize?: boolean;
-};
-
-export type IndexOptions = ColumnIndexOptions & {
-  columns?: string[];
-  synchronize?: boolean;
-};
-
-export type UniqueOptions = {
-  name?: string;
-  columns: string[];
-  synchronize?: boolean;
-};
-
-export type CheckOptions = {
-  name?: string;
-  expression: string;
-  synchronize?: boolean;
-};
-
 export type DatabaseSchema = {
   name: string;
+  schemaName: string;
+  functions: DatabaseFunction[];
+  enums: DatabaseEnum[];
   tables: DatabaseTable[];
+  extensions: DatabaseExtension[];
+  parameters: DatabaseParameter[];
   warnings: string[];
+};
+
+export type SchemaDiffOptions = {
+  tables?: DiffOptions;
+  functions?: DiffOptions;
+  enums?: DiffOptions;
+  extension?: DiffOptions;
+  parameters?: DiffOptions;
+};
+
+export type DiffOptions = {
+  ignoreExtra?: boolean;
+  ignoreMissing?: boolean;
+};
+
+export type DatabaseParameter = {
+  name: string;
+  databaseName: string;
+  value: string | number | null | undefined;
+  scope: ParameterScope;
+  synchronize: boolean;
+};
+
+export type ParameterScope = 'database' | 'user';
+
+export type DatabaseEnum = {
+  name: string;
+  values: string[];
+  synchronize: boolean;
+};
+
+export type DatabaseFunction = {
+  name: string;
+  expression: string;
+  synchronize: boolean;
+};
+
+export type DatabaseExtension = {
+  name: string;
+  synchronize: boolean;
 };
 
 export type DatabaseTable = {
@@ -253,6 +333,7 @@ export type DatabaseTable = {
   columns: DatabaseColumn[];
   indexes: DatabaseIndex[];
   constraints: DatabaseConstraint[];
+  triggers: DatabaseTrigger[];
   synchronize: boolean;
 };
 
@@ -266,17 +347,19 @@ export type DatabaseColumn = {
   primary?: boolean;
   name: string;
   tableName: string;
+  comment?: string;
 
-  type: DatabaseColumnType;
+  type: ColumnType;
   nullable: boolean;
   isArray: boolean;
   synchronize: boolean;
 
   default?: string;
   length?: number;
+  storage?: ColumnStorage;
+  identity?: boolean;
 
   // enum values
-  enumValues?: string[];
   enumName?: string;
 
   // numeric types
@@ -284,9 +367,11 @@ export type DatabaseColumn = {
   numericScale?: number;
 };
 
-export type DatabaseColumnChanges = {
+export type ColumnChanges = {
   nullable?: boolean;
   default?: string;
+  comment?: string;
+  storage?: ColumnStorage;
 };
 
 type ColumBasedConstraint = {
@@ -322,6 +407,22 @@ export type DatabaseCheckConstraint = {
   synchronize: boolean;
 };
 
+export type DatabaseTrigger = {
+  name: string;
+  tableName: string;
+  timing: TriggerTiming;
+  actions: TriggerAction[];
+  scope: TriggerScope;
+  referencingNewTableAs?: string;
+  referencingOldTableAs?: string;
+  when?: string;
+  functionName: string;
+  synchronize: boolean;
+};
+export type TriggerTiming = 'before' | 'after' | 'instead of';
+export type TriggerAction = 'insert' | 'update' | 'delete' | 'truncate';
+export type TriggerScope = 'row' | 'statement';
+
 export type DatabaseIndex = {
   name: string;
   tableName: string;
@@ -329,6 +430,7 @@ export type DatabaseIndex = {
   expression?: string;
   unique: boolean;
   using?: string;
+  with?: string;
   where?: string;
   synchronize: boolean;
 };
@@ -342,22 +444,35 @@ export type SchemaDiffToSqlOptions = {
 };
 
 export type SchemaDiff = { reason: string } & (
-  | { type: 'table.create'; tableName: string; columns: DatabaseColumn[] }
+  | { type: 'extension.create'; extension: DatabaseExtension }
+  | { type: 'extension.drop'; extensionName: string }
+  | { type: 'function.create'; function: DatabaseFunction }
+  | { type: 'function.drop'; functionName: string }
+  | { type: 'table.create'; table: DatabaseTable }
   | { type: 'table.drop'; tableName: string }
   | { type: 'column.add'; column: DatabaseColumn }
-  | { type: 'column.alter'; tableName: string; columnName: string; changes: DatabaseColumnChanges }
+  | { type: 'column.alter'; tableName: string; columnName: string; changes: ColumnChanges }
   | { type: 'column.drop'; tableName: string; columnName: string }
   | { type: 'constraint.add'; constraint: DatabaseConstraint }
   | { type: 'constraint.drop'; tableName: string; constraintName: string }
   | { type: 'index.create'; index: DatabaseIndex }
   | { type: 'index.drop'; indexName: string }
+  | { type: 'trigger.create'; trigger: DatabaseTrigger }
+  | { type: 'trigger.drop'; tableName: string; triggerName: string }
+  | { type: 'parameter.set'; parameter: DatabaseParameter }
+  | { type: 'parameter.reset'; databaseName: string; parameterName: string }
+  | { type: 'enum.create'; enum: DatabaseEnum }
+  | { type: 'enum.drop'; enumName: string }
 );
 
-type Action = 'CASCADE' | 'SET NULL' | 'SET DEFAULT' | 'RESTRICT' | 'NO ACTION';
-export type ForeignKeyColumnOptions = ColumnBaseOptions & {
-  onUpdate?: Action;
-  onDelete?: Action;
-  constraintName?: string;
-  unique?: boolean;
-  uniqueConstraintName?: string;
+export type CompareFunction<T> = (source: T, target: T) => SchemaDiff[];
+export type Comparer<T> = {
+  onMissing: (source: T) => SchemaDiff[];
+  onExtra: (target: T) => SchemaDiff[];
+  onCompare: CompareFunction<T>;
 };
+
+export enum Reason {
+  MissingInSource = 'missing in source',
+  MissingInTarget = 'missing in target',
+}

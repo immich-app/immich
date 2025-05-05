@@ -1,1 +1,16 @@
-{}
+{
+  "add_photos": "суреттерді қосу",
+  "add_to": "қосу…",
+  "add_to_album": "альбомға қосу",
+  "add_to_album_bottom_sheet_added": "{album}'ға қосылған",
+  "add_to_album_bottom_sheet_already_exists": "Онсыз да {album} болған",
+  "add_to_shared_album": "бөліскен альбомға қосу",
+  "add_url": "URL таңдау",
+  "added_to_archive": "Архивке жіберілген",
+  "added_to_favorites": "таңдаулыларға қосылған",
+  "admin": {
+    "check_all": "Бәрін тексеріп алу",
+    "create_job": "Жұмысты бастау"
+  },
+  "zoom_image": "суретті үлкейту"
+}

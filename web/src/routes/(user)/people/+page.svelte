@@ -458,7 +458,7 @@
   <dialog
     open
     transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
-    class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
+    class="absolute start-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
     aria-modal="true"
     aria-labelledby="manage-visibility-title"
     use:focusTrap

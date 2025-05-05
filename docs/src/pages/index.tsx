@@ -4,6 +4,7 @@ import Layout from '@theme/Layout';
 import { discordPath, discordViewBox } from '@site/src/components/svg-paths';
 import ThemedImage from '@theme/ThemedImage';
 import Icon from '@mdi/react';
+import { mdiAndroid } from '@mdi/js';
 function HomepageHeader() {
   return (
     <header>
@@ -88,9 +89,16 @@ function HomepageHeader() {
               <img className="h-24" alt="Get it on Google Play" src="/img/google-play-badge.png" />
             </a>
           </div>
+
           <div className="h-24">
             <a href="https://apps.apple.com/sg/app/immich/id1613945652">
               <img className="h-24 sm:p-3.5 p-3" alt="Download on the App Store" src="/img/ios-app-store-badge.svg" />
+            </a>
+          </div>
+
+          <div className="h-24">
+            <a href="https://github.com/immich-app/immich/releases/latest">
+              <img className="h-24 sm:p-3.5 p-3" alt="Download APK" src="/img/download-apk-github.svg" />
             </a>
           </div>
         </div>

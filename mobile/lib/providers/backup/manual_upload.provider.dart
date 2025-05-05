@@ -301,7 +301,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             (!ok && !state.cancelToken.isCancelled)) {
           await _localNotificationService.showOrUpdateManualUploadStatus(
             "backup_manual_title".tr(),
-            "backup_manual_failed".tr(),
+            "failed".tr(),
             presentBanner: true,
           );
           hasErrors = true;
@@ -370,7 +370,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
       debugPrint("[uploadAssets] could not acquire lock, exiting");
       ImmichToast.show(
         context: context,
-        msg: "backup_manual_failed".tr(),
+        msg: "failed".tr(),
         toastType: ToastType.info,
         gravity: ToastGravity.BOTTOM,
         durationInSecond: 3,

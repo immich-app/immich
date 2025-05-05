@@ -6,15 +6,15 @@ import {
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
-  UpdateAlbumDto,
   mapAlbum,
+  MapAlbumDto,
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
+  UpdateAlbumDto,
+  UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumUserEntity } from 'src/entities/album-user.entity';
-import { AlbumEntity } from 'src/entities/album.entity';
 import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
@@ -39,7 +39,7 @@ export class AlbumService extends BaseService {
   async getAll({ user: { id: ownerId } }: AuthDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
-    let albums: AlbumEntity[];
+    let albums: MapAlbumDto[];
     if (assetId) {
       albums = await this.albumRepository.getByAssetId(ownerId, assetId);
     } else if (shared === true) {
@@ -140,7 +140,7 @@ export class AlbumService extends BaseService {
       order: dto.order,
     });
 
-    return mapAlbumWithoutAssets(updatedAlbum);
+    return mapAlbumWithoutAssets({ ...updatedAlbum, assets: album.assets });
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
@@ -170,8 +170,8 @@ export class AlbumService extends BaseService {
         (userId) => userId !== auth.user.id,
       );
 
-      if (allUsersExceptUs.length > 0) {
-        await this.eventRepository.emit('album.update', { id, recipientIds: allUsersExceptUs });
+      for (const recipientId of allUsersExceptUs) {
+        await this.eventRepository.emit('album.update', { id, recipientId });
       }
     }
 
@@ -247,7 +247,7 @@ export class AlbumService extends BaseService {
     await this.albumUserRepository.delete({ albumsId: id, usersId: userId });
   }
 
-  async updateUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
+  async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [id] });
     await this.albumUserRepository.update({ albumsId: id, usersId: userId }, { role: dto.role });
   }

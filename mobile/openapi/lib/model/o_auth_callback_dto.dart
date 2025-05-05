@@ -13,25 +13,57 @@ part of openapi.api;
 class OAuthCallbackDto {
   /// Returns a new [OAuthCallbackDto] instance.
   OAuthCallbackDto({
+    this.codeVerifier,
+    this.state,
     required this.url,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? codeVerifier;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? state;
 
   String url;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthCallbackDto &&
+    other.codeVerifier == codeVerifier &&
+    other.state == state &&
     other.url == url;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (codeVerifier == null ? 0 : codeVerifier!.hashCode) +
+    (state == null ? 0 : state!.hashCode) +
     (url.hashCode);
 
   @override
-  String toString() => 'OAuthCallbackDto[url=$url]';
+  String toString() => 'OAuthCallbackDto[codeVerifier=$codeVerifier, state=$state, url=$url]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.codeVerifier != null) {
+      json[r'codeVerifier'] = this.codeVerifier;
+    } else {
+    //  json[r'codeVerifier'] = null;
+    }
+    if (this.state != null) {
+      json[r'state'] = this.state;
+    } else {
+    //  json[r'state'] = null;
+    }
       json[r'url'] = this.url;
     return json;
   }
@@ -45,6 +77,8 @@ class OAuthCallbackDto {
       final json = value.cast<String, dynamic>();
 
       return OAuthCallbackDto(
+        codeVerifier: mapValueOfType<String>(json, r'codeVerifier'),
+        state: mapValueOfType<String>(json, r'state'),
         url: mapValueOfType<String>(json, r'url')!,
       );
     }

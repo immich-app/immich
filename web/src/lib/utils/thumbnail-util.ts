@@ -1,6 +1,7 @@
+import { locale } from '$lib/stores/preferences.store';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
-import { derived } from 'svelte/store';
+import { derived, get } from 'svelte/store';
 import { fromLocalDateTime } from './timeline-util';
 
 /**
@@ -43,7 +44,7 @@ export const getAltText = derived(t, ($t) => {
       return asset.exifInfo.description;
     }
 
-    const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
+    const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' }, { locale: get(locale) });
     const hasPlace = !!asset.exifInfo?.city && !!asset.exifInfo?.country;
     const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
     const peopleCount = names.length;

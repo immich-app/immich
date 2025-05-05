@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ExifEntity } from 'src/entities/exif.entity';
+import { Exif } from 'src/database';
 
 export class ExifResponseDto {
   make?: string | null = null;
@@ -28,7 +28,7 @@ export class ExifResponseDto {
   rating?: number | null = null;
 }
 
-export function mapExif(entity: ExifEntity): ExifResponseDto {
+export function mapExif(entity: Exif): ExifResponseDto {
   return {
     make: entity.make,
     model: entity.model,
@@ -55,7 +55,7 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
   };
 }
 
-export function mapSanitizedExif(entity: ExifEntity): ExifResponseDto {
+export function mapSanitizedExif(entity: Exif): ExifResponseDto {
   return {
     fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,

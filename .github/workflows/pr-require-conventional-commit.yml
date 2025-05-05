@@ -4,9 +4,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
 
+permissions: {}
+
 jobs:
   validate-pr-title:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: PR Conventional Commit Validation
         uses: ytanikin/PRConventionalCommits@b628c5a234cc32513014b7bfdd1e47b532124d98 # 1.3.0

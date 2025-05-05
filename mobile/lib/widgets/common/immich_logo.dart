@@ -12,14 +12,11 @@ class ImmichLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Hero(
-      tag: heroTag,
-      child: Image(
-        image: const AssetImage('assets/immich-logo.png'),
-        width: size,
-        filterQuality: FilterQuality.high,
-        isAntiAlias: true,
-      ),
+    return Image(
+      image: const AssetImage('assets/immich-logo.png'),
+      width: size,
+      filterQuality: FilterQuality.high,
+      isAntiAlias: true,
     );
   }
 }

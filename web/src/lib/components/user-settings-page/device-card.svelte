@@ -31,7 +31,7 @@
 </script>
 
 <div class="flex w-full flex-row">
-  <div class="hidden items-center justify-center pr-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
+  <div class="hidden items-center justify-center pe-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
     {#if device.deviceOS === 'Android'}
       <Icon path={mdiAndroid} size="40" />
     {:else if device.deviceOS === 'iOS' || device.deviceOS === 'macOS'}
@@ -50,7 +50,7 @@
       <Icon path={mdiHelp} size="40" />
     {/if}
   </div>
-  <div class="flex grow flex-row justify-between gap-1 pl-4 sm:pl-0">
+  <div class="flex grow flex-row justify-between gap-1 ps-4 sm:ps-0">
     <div class="flex flex-col justify-center gap-1 dark:text-white">
       <span class="text-sm">
         {#if device.deviceType || device.deviceOS}
@@ -64,7 +64,9 @@
         <span>{DateTime.fromISO(device.updatedAt, { locale: $locale }).toRelativeCalendar(options)}</span>
         <span class="text-xs text-gray-500 dark:text-gray-400"> - </span>
         <span class="text-xs text-gray-500 dark:text-gray-400">
-          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED)}
+          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED, {
+            locale: $locale,
+          })}
         </span>
       </div>
     </div>

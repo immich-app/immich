@@ -54,7 +54,7 @@
             <UserAvatar {user} size="lg" />
           {/if}
 
-          <div class="text-left">
+          <div class="text-start">
             <p class="text-immich-fg dark:text-immich-dark-fg">
               {user.name}
             </p>

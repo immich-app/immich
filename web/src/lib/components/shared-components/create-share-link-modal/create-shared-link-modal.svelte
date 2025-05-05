@@ -1,20 +1,20 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import QrCodeModal from '$lib/components/shared-components/qr-code-modal.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
-  import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
+  import { makeSharedLinkUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button, HStack, IconButton, Input } from '@immich/ui';
-  import { mdiContentCopy, mdiLink } from '@mdi/js';
+  import { Button } from '@immich/ui';
+  import { mdiLink } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import { NotificationType, notificationController } from '../notification/notification';
   import SettingInputField from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
-  import QRCode from '$lib/components/shared-components/qrcode.svelte';
 
   interface Props {
     onClose: () => void;
@@ -41,7 +41,6 @@
   let password = $state('');
   let shouldChangeExpirationTime = $state(false);
   let enablePassword = $state(false);
-  let modalWidth = $state(0);
 
   const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
     [30, 'minutes'],
@@ -248,26 +247,5 @@
     {/snippet}
   </FullScreenModal>
 {:else}
-  <FullScreenModal title={getTitle()} icon={mdiLink} {onClose}>
-    <div class="w-full">
-      <div class="w-full py-2 px-10">
-        <div bind:clientWidth={modalWidth} class="w-full">
-          <QRCode value={sharedLink} width={modalWidth} />
-        </div>
-      </div>
-      <HStack class="w-full pt-3" gap={1}>
-        <Input bind:value={sharedLink} disabled class="flex flex-row" />
-        <div>
-          <IconButton
-            variant="ghost"
-            shape="round"
-            color="secondary"
-            icon={mdiContentCopy}
-            onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}
-            aria-label={$t('copy_link_to_clipboard')}
-          />
-        </div>
-      </HStack>
-    </div>
-  </FullScreenModal>
+  <QrCodeModal title={$t('view_link')} {onClose} value={sharedLink} />
 {/if}

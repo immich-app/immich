@@ -1,13 +1,29 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
+import { mapAsset } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import {
+  mapNotification,
+  NotificationDeleteAllDto,
+  NotificationDto,
+  NotificationSearchDto,
+  NotificationUpdateAllDto,
+  NotificationUpdateDto,
+} from 'src/dtos/notification.dto';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
-import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetFileType, JobName, JobStatus, QueueName } from 'src/enum';
+import {
+  AssetFileType,
+  JobName,
+  JobStatus,
+  NotificationLevel,
+  NotificationType,
+  Permission,
+  QueueName,
+} from 'src/enum';
+import { EmailTemplate } from 'src/repositories/email.repository';
 import { ArgOf } from 'src/repositories/event.repository';
-import { EmailTemplate } from 'src/repositories/notification.repository';
 import { BaseService } from 'src/services/base.service';
-import { EmailImageAttachment, IEntityJob, INotifyAlbumUpdateJob, JobItem, JobOf } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
+import { EmailImageAttachment, JobOf } from 'src/types';
 import { getFilenameExtension } from 'src/utils/file';
 import { getExternalDomain } from 'src/utils/misc';
 import { isEqualObject } from 'src/utils/object';
@@ -16,6 +32,80 @@ import { getPreferences } from 'src/utils/preferences';
 @Injectable()
 export class NotificationService extends BaseService {
   private static albumUpdateEmailDelayMs = 300_000;
+
+  async search(auth: AuthDto, dto: NotificationSearchDto): Promise<NotificationDto[]> {
+    const items = await this.notificationRepository.search(auth.user.id, dto);
+    return items.map((item) => mapNotification(item));
+  }
+
+  async updateAll(auth: AuthDto, dto: NotificationUpdateAllDto) {
+    await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NOTIFICATION_UPDATE });
+    await this.notificationRepository.updateAll(dto.ids, {
+      readAt: dto.readAt,
+    });
+  }
+
+  async deleteAll(auth: AuthDto, dto: NotificationDeleteAllDto) {
+    await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NOTIFICATION_DELETE });
+    await this.notificationRepository.deleteAll(dto.ids);
+  }
+
+  async get(auth: AuthDto, id: string) {
+    await this.requireAccess({ auth, ids: [id], permission: Permission.NOTIFICATION_READ });
+    const item = await this.notificationRepository.get(id);
+    if (!item) {
+      throw new BadRequestException('Notification not found');
+    }
+    return mapNotification(item);
+  }
+
+  async update(auth: AuthDto, id: string, dto: NotificationUpdateDto) {
+    await this.requireAccess({ auth, ids: [id], permission: Permission.NOTIFICATION_UPDATE });
+    const item = await this.notificationRepository.update(id, {
+      readAt: dto.readAt,
+    });
+    return mapNotification(item);
+  }
+
+  async delete(auth: AuthDto, id: string) {
+    await this.requireAccess({ auth, ids: [id], permission: Permission.NOTIFICATION_DELETE });
+    await this.notificationRepository.delete(id);
+  }
+
+  @OnJob({ name: JobName.NOTIFICATIONS_CLEANUP, queue: QueueName.BACKGROUND_TASK })
+  async onNotificationsCleanup() {
+    await this.notificationRepository.cleanup();
+  }
+
+  @OnEvent({ name: 'job.failed' })
+  async onJobFailed({ job, error }: ArgOf<'job.failed'>) {
+    const admin = await this.userRepository.getAdmin();
+    if (!admin) {
+      return;
+    }
+
+    this.logger.error(`Unable to run job handler (${job.name}): ${error}`, error?.stack, JSON.stringify(job.data));
+
+    switch (job.name) {
+      case JobName.BACKUP_DATABASE: {
+        const errorMessage = error instanceof Error ? error.message : error;
+        const item = await this.notificationRepository.create({
+          userId: admin.id,
+          type: NotificationType.JobFailed,
+          level: NotificationLevel.Error,
+          title: 'Job Failed',
+          description: `Job ${[job.name]} failed with error: ${errorMessage}`,
+        });
+
+        this.eventRepository.clientSend('on_notification', admin.id, mapNotification(item));
+        break;
+      }
+
+      default: {
+        return;
+      }
+    }
+  }
 
   @OnEvent({ name: 'config.update' })
   onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
@@ -30,7 +120,7 @@ export class NotificationService extends BaseService {
         newConfig.notifications.smtp.enabled &&
         !isEqualObject(oldConfig.notifications.smtp, newConfig.notifications.smtp)
       ) {
-        await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
+        await this.emailRepository.verifySmtp(newConfig.notifications.smtp.transport);
       }
     } catch (error: Error | any) {
       this.logger.error(`Failed to validate SMTP configuration: ${error}`, error?.stack);
@@ -61,6 +151,18 @@ export class NotificationService extends BaseService {
   @OnEvent({ name: 'assets.trash' })
   onAssetsTrash({ assetIds, userId }: ArgOf<'assets.trash'>) {
     this.eventRepository.clientSend('on_asset_trash', userId, assetIds);
+  }
+
+  @OnEvent({ name: 'asset.metadataExtracted' })
+  async onAssetMetadataExtracted({ assetId, userId, source }: ArgOf<'asset.metadataExtracted'>) {
+    if (source !== 'sidecar-write') {
+      return;
+    }
+
+    const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId]);
+    if (asset) {
+      this.eventRepository.clientSend('on_asset_update', userId, mapAsset(asset));
+    }
   }
 
   @OnEvent({ name: 'assets.restore' })
@@ -96,30 +198,12 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'album.update' })
-  async onAlbumUpdate({ id, recipientIds }: ArgOf<'album.update'>) {
-    // if recipientIds is empty, album likely only has one user part of it, don't queue notification if so
-    if (recipientIds.length === 0) {
-      return;
-    }
-
-    const job: JobItem = {
+  async onAlbumUpdate({ id, recipientId }: ArgOf<'album.update'>) {
+    await this.jobRepository.removeJob(JobName.NOTIFY_ALBUM_UPDATE, `${id}/${recipientId}`);
+    await this.jobRepository.queue({
       name: JobName.NOTIFY_ALBUM_UPDATE,
-      data: { id, recipientIds, delay: NotificationService.albumUpdateEmailDelayMs },
-    };
-
-    const previousJobData = await this.jobRepository.removeJob(id, JobName.NOTIFY_ALBUM_UPDATE);
-    if (previousJobData && this.isAlbumUpdateJob(previousJobData)) {
-      for (const id of previousJobData.recipientIds) {
-        if (!recipientIds.includes(id)) {
-          recipientIds.push(id);
-        }
-      }
-    }
-    await this.jobRepository.queue(job);
-  }
-
-  private isAlbumUpdateJob(job: IEntityJob): job is INotifyAlbumUpdateJob {
-    return 'recipientIds' in job;
+      data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
+    });
   }
 
   @OnEvent({ name: 'album.invite' })
@@ -140,13 +224,13 @@ export class NotificationService extends BaseService {
     }
 
     try {
-      await this.notificationRepository.verifySmtp(dto.transport);
+      await this.emailRepository.verifySmtp(dto.transport);
     } catch (error) {
       throw new BadRequestException('Failed to verify SMTP configuration', { cause: error });
     }
 
     const { server } = await this.getConfig({ withCache: false });
-    const { html, text } = await this.notificationRepository.renderEmail({
+    const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
         baseUrl: getExternalDomain(server),
@@ -154,7 +238,7 @@ export class NotificationService extends BaseService {
       },
       customTemplate: tempTemplate!,
     });
-    const { messageId } = await this.notificationRepository.sendEmail({
+    const { messageId } = await this.emailRepository.sendEmail({
       to: user.email,
       subject: 'Test email from Immich',
       html,
@@ -174,7 +258,7 @@ export class NotificationService extends BaseService {
 
     switch (name) {
       case EmailTemplate.WELCOME: {
-        const { html: _welcomeHtml } = await this.notificationRepository.renderEmail({
+        const { html: _welcomeHtml } = await this.emailRepository.renderEmail({
           template: EmailTemplate.WELCOME,
           data: {
             baseUrl: getExternalDomain(server),
@@ -189,7 +273,7 @@ export class NotificationService extends BaseService {
         break;
       }
       case EmailTemplate.ALBUM_UPDATE: {
-        const { html: _updateAlbumHtml } = await this.notificationRepository.renderEmail({
+        const { html: _updateAlbumHtml } = await this.emailRepository.renderEmail({
           template: EmailTemplate.ALBUM_UPDATE,
           data: {
             baseUrl: getExternalDomain(server),
@@ -205,7 +289,7 @@ export class NotificationService extends BaseService {
       }
 
       case EmailTemplate.ALBUM_INVITE: {
-        const { html } = await this.notificationRepository.renderEmail({
+        const { html } = await this.emailRepository.renderEmail({
           template: EmailTemplate.ALBUM_INVITE,
           data: {
             baseUrl: getExternalDomain(server),
@@ -237,7 +321,7 @@ export class NotificationService extends BaseService {
     }
 
     const { server, templates } = await this.getConfig({ withCache: true });
-    const { html, text } = await this.notificationRepository.renderEmail({
+    const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
         baseUrl: getExternalDomain(server),
@@ -273,7 +357,7 @@ export class NotificationService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { emailNotifications } = getPreferences(recipient.email, recipient.metadata);
+    const { emailNotifications } = getPreferences(recipient.metadata);
 
     if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
       return JobStatus.SKIPPED;
@@ -282,7 +366,7 @@ export class NotificationService extends BaseService {
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server, templates } = await this.getConfig({ withCache: false });
-    const { html, text } = await this.notificationRepository.renderEmail({
+    const { html, text } = await this.emailRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
         baseUrl: getExternalDomain(server),
@@ -310,7 +394,7 @@ export class NotificationService extends BaseService {
   }
 
   @OnJob({ name: JobName.NOTIFY_ALBUM_UPDATE, queue: QueueName.NOTIFICATION })
-  async handleAlbumUpdate({ id, recipientIds }: JobOf<JobName.NOTIFY_ALBUM_UPDATE>) {
+  async handleAlbumUpdate({ id, recipientId }: JobOf<JobName.NOTIFY_ALBUM_UPDATE>) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
 
     if (!album) {
@@ -322,48 +406,43 @@ export class NotificationService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) =>
-      recipientIds.includes(user.id),
-    );
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server, templates } = await this.getConfig({ withCache: false });
 
-    for (const recipient of recipients) {
-      const user = await this.userRepository.get(recipient.id, { withDeleted: false });
-      if (!user) {
-        continue;
-      }
-
-      const { emailNotifications } = getPreferences(user.email, user.metadata);
-
-      if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
-        continue;
-      }
-
-      const { html, text } = await this.notificationRepository.renderEmail({
-        template: EmailTemplate.ALBUM_UPDATE,
-        data: {
-          baseUrl: getExternalDomain(server),
-          albumId: album.id,
-          albumName: album.albumName,
-          recipientName: recipient.name,
-          cid: attachment ? attachment.cid : undefined,
-        },
-        customTemplate: templates.email.albumUpdateTemplate,
-      });
-
-      await this.jobRepository.queue({
-        name: JobName.SEND_EMAIL,
-        data: {
-          to: recipient.email,
-          subject: `New media has been added to an album - ${album.albumName}`,
-          html,
-          text,
-          imageAttachments: attachment ? [attachment] : undefined,
-        },
-      });
+    const user = await this.userRepository.get(recipientId, { withDeleted: false });
+    if (!user) {
+      return JobStatus.SKIPPED;
     }
+
+    const { emailNotifications } = getPreferences(user.metadata);
+
+    if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
+      return JobStatus.SKIPPED;
+    }
+
+    const { html, text } = await this.emailRepository.renderEmail({
+      template: EmailTemplate.ALBUM_UPDATE,
+      data: {
+        baseUrl: getExternalDomain(server),
+        albumId: album.id,
+        albumName: album.albumName,
+        recipientName: user.name,
+        cid: attachment ? attachment.cid : undefined,
+      },
+      customTemplate: templates.email.albumUpdateTemplate,
+    });
+
+    await this.jobRepository.queue({
+      name: JobName.SEND_EMAIL,
+      data: {
+        to: user.email,
+        subject: `New media has been added to an album - ${album.albumName}`,
+        html,
+        text,
+        imageAttachments: attachment ? [attachment] : undefined,
+      },
+    });
 
     return JobStatus.SUCCESS;
   }
@@ -376,7 +455,7 @@ export class NotificationService extends BaseService {
     }
 
     const { to, subject, html, text: plain } = data;
-    const response = await this.notificationRepository.sendEmail({
+    const response = await this.emailRepository.sendEmail({
       to,
       subject,
       html,
@@ -392,24 +471,25 @@ export class NotificationService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private async getAlbumThumbnailAttachment(album: AlbumEntity): Promise<EmailImageAttachment | undefined> {
+  private async getAlbumThumbnailAttachment(album: {
+    albumThumbnailAssetId: string | null;
+  }): Promise<EmailImageAttachment | undefined> {
     if (!album.albumThumbnailAssetId) {
       return;
     }
 
-    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId, { files: true });
-    if (!albumThumbnail) {
-      return;
-    }
+    const albumThumbnailFiles = await this.assetJobRepository.getAlbumThumbnailFiles(
+      album.albumThumbnailAssetId,
+      AssetFileType.THUMBNAIL,
+    );
 
-    const thumbnailFile = getAssetFile(albumThumbnail.files, AssetFileType.THUMBNAIL);
-    if (!thumbnailFile) {
+    if (albumThumbnailFiles.length !== 1) {
       return;
     }
 
     return {
-      filename: `album-thumbnail${getFilenameExtension(thumbnailFile.path)}`,
-      path: thumbnailFile.path,
+      filename: `album-thumbnail${getFilenameExtension(albumThumbnailFiles[0].path)}`,
+      path: albumThumbnailFiles[0].path,
       cid: 'album-thumbnail',
     };
   }

@@ -35,7 +35,7 @@ describe(MapService.name, () => {
 
     it('should include partner assets', async () => {
       const partner = factory.partner();
-      const auth = factory.auth({ id: partner.sharedWithId });
+      const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       const asset = assetStub.withLocation;
       const marker = {

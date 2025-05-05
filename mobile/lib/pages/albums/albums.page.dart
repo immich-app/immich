@@ -233,7 +233,7 @@ class AlbumsPage extends HookConsumerWidget {
                                         args: ['${sorted[index].assetCount}'],
                                       ) : 'album_thumbnail_card_items'.tr(
                                         args: ['${sorted[index].assetCount}'],
-                                      ))} • ${sorted[index].ownerId != userId ? 'album_thumbnail_shared_by'.tr(args: [sorted[index].ownerName!]) : 'album_thumbnail_owned'.tr()}',
+                                      ))} • ${sorted[index].ownerId != userId ? 'album_thumbnail_shared_by'.tr(args: [sorted[index].ownerName!]) : 'owned'.tr()}',
                                     overflow: TextOverflow.ellipsis,
                                     style:
                                         context.textTheme.bodyMedium?.copyWith(

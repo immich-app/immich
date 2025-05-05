@@ -35,13 +35,13 @@
   onclick={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
   {oncontextmenu}
 >
-  <td class="text-md text-ellipsis text-left w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%] items-center">
+  <td class="text-md text-ellipsis text-start w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%] items-center">
     {album.albumName}
     {#if album.shared}
       <Icon
         path={mdiShareVariantOutline}
         size="16"
-        class="inline ml-1 opacity-70"
+        class="inline ms-1 opacity-70"
         title={album.ownerId === $user.id
           ? $t('shared_by_you')
           : $t('shared_by_user', { values: { user: album.owner.name } })}

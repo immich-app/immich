@@ -1,7 +1,7 @@
+import { Tag } from 'src/database';
 import { TagResponseDto } from 'src/dtos/tag.dto';
-import { TagItem } from 'src/types';
 
-const parent = Object.freeze<TagItem>({
+const parent = Object.freeze<Tag>({
   id: 'tag-parent',
   createdAt: new Date('2021-01-01T00:00:00Z'),
   updatedAt: new Date('2021-01-01T00:00:00Z'),
@@ -10,7 +10,7 @@ const parent = Object.freeze<TagItem>({
   parentId: null,
 });
 
-const child = Object.freeze<TagItem>({
+const child = Object.freeze<Tag>({
   id: 'tag-child',
   createdAt: new Date('2021-01-01T00:00:00Z'),
   updatedAt: new Date('2021-01-01T00:00:00Z'),

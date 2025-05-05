@@ -227,7 +227,7 @@
             <div
               role="button"
               tabindex={index}
-              class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
+              class="absolute start-0 top-0 h-[90px] w-[90px] cursor-default"
               onfocus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
               onmouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
               onmouseleave={() => ($boundingBoxesArray = [])}
@@ -303,7 +303,7 @@
                 </p>
               {/if}
 
-              <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full">
+              <div class="absolute -end-[5px] -top-[5px] h-[20px] w-[20px] rounded-full">
                 {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
                   <CircleIconButton
                     color="primary"
@@ -311,7 +311,7 @@
                     title={$t('reset')}
                     size="18"
                     padding="1"
-                    class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                     onclick={() => handleReset(face.id)}
                   />
                 {:else}
@@ -321,29 +321,29 @@
                     title={$t('select_new_face')}
                     size="18"
                     padding="1"
-                    class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                     onclick={() => handleFacePicker(face)}
                   />
                 {/if}
               </div>
-              <div class="absolute right-[25px] -top-[5px] h-[20px] w-[20px] rounded-full">
+              <div class="absolute end-[25px] -top-[5px] h-[20px] w-[20px] rounded-full">
                 {#if !selectedPersonToCreate[face.id] && !selectedPersonToReassign[face.id] && !face.person}
                   <div
-                    class="flex place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="flex place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                   >
                     <Icon color="primary" path={mdiAccountOff} ariaHidden size="18" />
                   </div>
                 {/if}
               </div>
               {#if face.person != null}
-                <div class="absolute -right-[5px] top-[25px] h-[20px] w-[20px] rounded-full">
+                <div class="absolute -end-[5px] top-[25px] h-[20px] w-[20px] rounded-full">
                   <CircleIconButton
                     color="red"
                     icon={mdiTrashCan}
                     title={$t('delete_face')}
                     size="18"
                     padding="1"
-                    class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                     onclick={() => deleteAssetFace(face)}
                   />
                 </div>

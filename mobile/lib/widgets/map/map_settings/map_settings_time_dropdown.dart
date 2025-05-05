@@ -21,7 +21,7 @@ class MapTimeDropDown extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 20),
           child: Text(
-            "map_settings_only_relative_range".tr(),
+            "date_range".tr(),
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
@@ -35,7 +35,7 @@ class MapTimeDropDown extends StatelessWidget {
             dropdownMenuEntries: [
               DropdownMenuEntry(
                 value: 0,
-                label: "map_settings_date_range_option_all".tr(),
+                label: "all".tr(),
               ),
               DropdownMenuEntry(
                 value: 1,

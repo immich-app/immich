@@ -1,13 +1,13 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { getKey } from '$lib/utils';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { removeSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiDeleteOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import { NotificationType, notificationController } from '../../shared-components/notification/notification';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -34,7 +34,7 @@
         assetIdsDto: {
           assetIds: [...getAssets()].map((asset) => asset.id),
         },
-        key: getKey(),
+        key: authManager.key,
       });
 
       for (const result of results) {

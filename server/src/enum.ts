@@ -8,6 +8,8 @@ export enum ImmichCookie {
   AUTH_TYPE = 'immich_auth_type',
   IS_AUTHENTICATED = 'immich_is_authenticated',
   SHARED_LINK_TOKEN = 'immich_shared_link_token',
+  OAUTH_STATE = 'immich_oauth_state',
+  OAUTH_CODE_VERIFIER = 'immich_oauth_code_verifier',
 }
 
 export enum ImmichHeader {
@@ -123,6 +125,11 @@ export enum Permission {
   MEMORY_READ = 'memory.read',
   MEMORY_UPDATE = 'memory.update',
   MEMORY_DELETE = 'memory.delete',
+
+  NOTIFICATION_CREATE = 'notification.create',
+  NOTIFICATION_READ = 'notification.read',
+  NOTIFICATION_UPDATE = 'notification.update',
+  NOTIFICATION_DELETE = 'notification.delete',
 
   PARTNER_CREATE = 'partner.create',
   PARTNER_READ = 'partner.read',
@@ -330,6 +337,11 @@ export enum ImageFormat {
   WEBP = 'webp',
 }
 
+export enum RawExtractedFormat {
+  JPEG = 'jpeg',
+  JXL = 'jxl',
+}
+
 export enum LogLevel {
   VERBOSE = 'verbose',
   DEBUG = 'debug',
@@ -405,6 +417,8 @@ export enum DatabaseExtension {
 export enum BootstrapEventPriority {
   // Database service should be initialized before anything else, most other services need database access
   DatabaseService = -200,
+  // Other services may need to queue jobs on bootstrap.
+  JobService = -190,
   // Initialise config after other bootstrap services, stop other services from using config on bootstrap
   SystemConfig = 100,
 }
@@ -511,6 +525,7 @@ export enum JobName {
   NOTIFY_SIGNUP = 'notify-signup',
   NOTIFY_ALBUM_INVITE = 'notify-album-invite',
   NOTIFY_ALBUM_UPDATE = 'notify-album-update',
+  NOTIFICATIONS_CLEANUP = 'notifications-cleanup',
   SEND_EMAIL = 'notification-send-email',
 
   // Version check
@@ -575,4 +590,23 @@ export enum SyncEntityType {
   PartnerAssetV1 = 'PartnerAssetV1',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
+}
+
+export enum NotificationLevel {
+  Success = 'success',
+  Error = 'error',
+  Warning = 'warning',
+  Info = 'info',
+}
+
+export enum NotificationType {
+  JobFailed = 'JobFailed',
+  BackupFailed = 'BackupFailed',
+  SystemMessage = 'SystemMessage',
+  Custom = 'Custom',
+}
+
+export enum OAuthTokenEndpointAuthMethod {
+  CLIENT_SECRET_POST = 'client_secret_post',
+  CLIENT_SECRET_BASIC = 'client_secret_basic',
 }

@@ -5,9 +5,9 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
-  import { preferences, user } from '$lib/stores/user.store';
+  import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteProfileImage, updateMyPreferences, type UserAvatarColor } from '@immich/sdk';
+  import { deleteProfileImage, updateMyUser, type UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -30,8 +30,7 @@
         await deleteProfileImage();
       }
 
-      $preferences = await updateMyPreferences({ userPreferencesUpdateDto: { avatar: { color } } });
-      $user = { ...$user, profileImagePath: '', avatarColor: $preferences.avatar.color };
+      $user = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
       isShowSelectAvatar = false;
 
       notificationController.show({
@@ -48,7 +47,7 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute right-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute end-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   use:focusTrap
 >
   <div
@@ -56,7 +55,7 @@
   >
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
-      <div class="absolute z-10 bottom-0 right-0 rounded-full w-6 h-6">
+      <div class="absolute z-10 bottom-0 end-0 rounded-full w-6 h-6">
         <CircleIconButton
           color="primary"
           icon={mdiPencil}

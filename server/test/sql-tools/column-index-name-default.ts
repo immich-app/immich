@@ -1,15 +1,19 @@
-import { Column, ColumnIndex, DatabaseSchema, Table } from 'src/sql-tools';
+import { Column, DatabaseSchema, Table } from 'src/sql-tools';
 
 @Table()
 export class Table1 {
-  @ColumnIndex()
-  @Column()
+  @Column({ index: true })
   column1!: string;
 }
 
 export const description = 'should create a column with an index';
 export const schema: DatabaseSchema = {
-  name: 'public',
+  name: 'postgres',
+  schemaName: 'public',
+  functions: [],
+  enums: [],
+  extensions: [],
+  parameters: [],
   tables: [
     {
       name: 'table1',
@@ -33,6 +37,7 @@ export const schema: DatabaseSchema = {
           synchronize: true,
         },
       ],
+      triggers: [],
       constraints: [],
       synchronize: true,
     },

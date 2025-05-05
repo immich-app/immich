@@ -34,6 +34,7 @@ export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, Byte
  * * de: `1,5 KiB`
  *
  * @param bytes number of bytes
+ * @param locale locale to use, default is `navigator.language`
  * @param maxPrecision maximum number of decimal places, default is `1`
  * @returns localized bytes with unit as string
  */

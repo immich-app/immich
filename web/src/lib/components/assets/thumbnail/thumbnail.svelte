@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -17,9 +17,12 @@
   } from '@mdi/js';
 
   import { thumbhash } from '$lib/actions/thumbhash';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { focusNext } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
+  import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
@@ -32,7 +35,6 @@
     thumbnailWidth?: number | undefined;
     thumbnailHeight?: number | undefined;
     selected?: boolean;
-    focussed?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
     disableLinkMouseOver?: boolean;
@@ -40,6 +42,7 @@
     showArchiveIcon?: boolean;
     showStackedIcon?: boolean;
     imageClass?: ClassValue;
+    brokenAssetClass?: ClassValue;
     dimmed?: boolean;
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
@@ -54,7 +57,6 @@
     thumbnailWidth = undefined,
     thumbnailHeight = undefined,
     selected = false,
-    focussed = false,
     selectionCandidate = false,
     disabled = false,
     disableLinkMouseOver = false,
@@ -66,6 +68,7 @@
     onMouseEvent = undefined,
     handleFocus = undefined,
     imageClass = '',
+    brokenAssetClass = '',
     dimmed = false,
   }: Props = $props();
 
@@ -74,15 +77,10 @@
   } = TUNABLES;
 
   let usingMobileDevice = $derived(mobileDevice.pointerCoarse);
-  let focussableElement: HTMLElement | undefined = $state();
+  let element: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
-
-  $effect(() => {
-    if (focussed && document.activeElement !== focussableElement) {
-      focussableElement?.focus();
-    }
-  });
+  let thumbError = $state(false);
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -124,24 +122,71 @@
     mouseOver = false;
   };
 
+  let timer: ReturnType<typeof setTimeout>;
+
+  const preventContextMenu = (evt: Event) => evt.preventDefault();
+  let disposeables: (() => void)[] = [];
+
+  const clearLongPressTimer = () => {
+    clearTimeout(timer);
+    for (const dispose of disposeables) {
+      dispose();
+    }
+    disposeables = [];
+  };
+
+  let startX: number = 0;
+  let startY: number = 0;
   function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
-    let timer: ReturnType<typeof setTimeout>;
-    const start = (event: TouchEvent) => {
+    let didPress = false;
+    const start = (evt: PointerEvent) => {
+      startX = evt.clientX;
+      startY = evt.clientY;
+      didPress = false;
       timer = setTimeout(() => {
         onLongPress();
-        event.preventDefault();
+        element.addEventListener('contextmenu', preventContextMenu, { once: true });
+        disposeables.push(() => element.removeEventListener('contextmenu', preventContextMenu));
+        didPress = true;
       }, 350);
     };
-    const end = () => clearTimeout(timer);
-    element.addEventListener('touchstart', start);
-    element.addEventListener('touchend', end);
+    const click = (e: MouseEvent) => {
+      if (!didPress) {
+        return;
+      }
+      e.stopPropagation();
+      e.preventDefault();
+    };
+    element.addEventListener('click', click);
+    element.addEventListener('pointerdown', start, true);
+    element.addEventListener('pointerup', clearLongPressTimer, true);
     return {
       destroy: () => {
-        element.removeEventListener('touchstart', start);
-        element.removeEventListener('touchend', end);
+        element.removeEventListener('click', click);
+        element.removeEventListener('pointerdown', start, true);
+        element.removeEventListener('pointerup', clearLongPressTimer, true);
       },
     };
   }
+  function moveHandler(e: PointerEvent) {
+    var diffX = Math.abs(startX - e.clientX);
+    var diffY = Math.abs(startY - e.clientY);
+    if (diffX >= 10 || diffY >= 10) {
+      clearLongPressTimer();
+    }
+  }
+  onMount(() => {
+    document.addEventListener('scroll', clearLongPressTimer, true);
+    document.addEventListener('wheel', clearLongPressTimer, true);
+    document.addEventListener('contextmenu', clearLongPressTimer, true);
+    document.addEventListener('pointermove', moveHandler, true);
+    return () => {
+      document.removeEventListener('scroll', clearLongPressTimer, true);
+      document.removeEventListener('wheel', clearLongPressTimer, true);
+      document.removeEventListener('contextmenu', clearLongPressTimer, true);
+      document.removeEventListener('pointermove', moveHandler, true);
+    };
+  });
 </script>
 
 <div
@@ -153,10 +198,10 @@
   style:width="{width}px"
   style:height="{height}px"
 >
-  {#if !loaded && asset.thumbhash}
+  {#if (!loaded || thumbError) && asset.thumbhash}
     <canvas
       use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-      class="absolute object-cover z-10"
+      class="absolute object-cover"
       style:width="{width}px"
       style:height="{height}px"
       out:fade={{ duration: THUMBHASH_FADE_DURATION }}
@@ -183,11 +228,14 @@
       if (evt.key === 'x') {
         onSelect?.(asset);
       }
+      if (document.activeElement === element && evt.key === 'Escape') {
+        focusNext((element) => element.dataset.thumbnailFocusContainer === undefined, true);
+      }
     }}
     onclick={handleClick}
-    bind:this={focussableElement}
+    bind:this={element}
     onfocus={handleFocus}
-    data-testid="container-with-tabindex"
+    data-thumbnail-focus-container
     tabindex={0}
     role="link"
   >
@@ -259,21 +307,21 @@
         ></div>
 
         <!-- Favorite asset star -->
-        {#if !isSharedLink() && asset.isFavorite}
-          <div class="absolute bottom-2 left-2 z-10">
+        {#if !authManager.key && asset.isFavorite}
+          <div class="absolute bottom-2 start-2 z-10">
             <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
-        {#if !isSharedLink() && showArchiveIcon && asset.isArchived}
-          <div class={['absolute left-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+        {#if !authManager.key && showArchiveIcon && asset.isArchived}
+          <div class={['absolute start-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
-          <div class="absolute right-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
-            <span class="pr-2 pt-2">
+          <div class="absolute end-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
               <Icon path={mdiRotate360} size="24" />
             </span>
           </div>
@@ -284,10 +332,10 @@
           <div
             class={[
               'absolute z-10 flex place-items-center gap-1 text-xs font-medium text-white',
-              asset.type == AssetTypeEnum.Image && !asset.livePhotoVideoId ? 'top-0 right-0' : 'top-7 right-1',
+              asset.type == AssetTypeEnum.Image && !asset.livePhotoVideoId ? 'top-0 end-0' : 'top-7 end-1',
             ]}
           >
-            <span class="pr-2 pt-2 flex place-items-center gap-1">
+            <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
               <Icon path={mdiCameraBurst} size="24" />
             </span>
@@ -296,12 +344,13 @@
       </div>
       <ImageThumbnail
         class={imageClass}
+        {brokenAssetClass}
         url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
         curve={selected}
-        onComplete={() => (loaded = true)}
+        onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.type === AssetTypeEnum.Video}
         <div class="absolute top-0 h-full w-full">

@@ -1,26 +1,29 @@
-import { AssetEntity } from 'src/entities/asset.entity';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetFileType } from 'src/enum';
+import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   ForeignKeyColumn,
   PrimaryGeneratedColumn,
   Table,
   Unique,
   UpdateDateColumn,
-  UpdateIdColumn,
 } from 'src/sql-tools';
 
-@Unique({ name: 'UQ_assetId_type', columns: ['assetId', 'type'] })
 @Table('asset_files')
+@Unique({ name: 'UQ_assetId_type', columns: ['assetId', 'type'] })
+@UpdatedAtTrigger('asset_files_updated_at')
 export class AssetFileTable {
   @PrimaryGeneratedColumn()
   id!: string;
 
-  @ColumnIndex('IDX_asset_files_assetId')
-  @ForeignKeyColumn(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  assetId?: AssetEntity;
+  @ForeignKeyColumn(() => AssetTable, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    indexName: 'IDX_asset_files_assetId',
+  })
+  assetId?: string;
 
   @CreateDateColumn()
   createdAt!: Date;
@@ -28,13 +31,12 @@ export class AssetFileTable {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @ColumnIndex('IDX_asset_files_update_id')
-  @UpdateIdColumn()
-  updateId?: string;
-
   @Column()
   type!: AssetFileType;
 
   @Column()
   path!: string;
+
+  @UpdateIdColumn({ indexName: 'IDX_asset_files_update_id' })
+  updateId?: string;
 }

@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Selectable } from 'kysely';
+import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
@@ -10,9 +12,7 @@ import {
 } from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetType } from 'src/enum';
+import { AssetStatus, AssetType } from 'src/enum';
 import { mimeTypes } from 'src/utils/mime-types';
 
 export class SanitizedAssetResponseDto {
@@ -56,6 +56,44 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   resized?: boolean;
 }
 
+export type MapAsset = {
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  id: string;
+  updateId: string;
+  status: AssetStatus;
+  checksum: Buffer<ArrayBufferLike>;
+  deviceAssetId: string;
+  deviceId: string;
+  duplicateId: string | null;
+  duration: string | null;
+  encodedVideoPath: string | null;
+  exifInfo?: Selectable<Exif> | null;
+  faces?: AssetFace[];
+  fileCreatedAt: Date;
+  fileModifiedAt: Date;
+  files?: AssetFile[];
+  isArchived: boolean;
+  isExternal: boolean;
+  isFavorite: boolean;
+  isOffline: boolean;
+  isVisible: boolean;
+  libraryId: string | null;
+  livePhotoVideoId: string | null;
+  localDateTime: Date;
+  originalFileName: string;
+  originalPath: string;
+  owner?: User | null;
+  ownerId: string;
+  sidecarPath: string | null;
+  stack?: Stack | null;
+  stackId: string | null;
+  tags?: Tag[];
+  thumbhash: Buffer<ArrayBufferLike> | null;
+  type: AssetType;
+};
+
 export class AssetStackResponseDto {
   id!: string;
 
@@ -71,7 +109,8 @@ export type AssetMapOptions = {
   auth?: AuthDto;
 };
 
-const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[] => {
+// TODO: this is inefficient
+const peopleWithFaces = (faces?: AssetFace[]): PersonWithFacesResponseDto[] => {
   const result: PersonWithFacesResponseDto[] = [];
   if (faces) {
     for (const face of faces) {
@@ -89,7 +128,7 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
   return result;
 };
 
-const mapStack = (entity: AssetEntity) => {
+const mapStack = (entity: { stack?: Stack | null }) => {
   if (!entity.stack) {
     return null;
   }
@@ -110,7 +149,7 @@ export const hexOrBufferToBase64 = (encoded: string | Buffer) => {
   return encoded.toString('base64');
 };
 
-export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
+export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
 
   if (stripMetadata) {
@@ -159,11 +198,4 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     duplicateId: entity.duplicateId,
     resized: true,
   };
-}
-
-export class MemoryLaneResponseDto {
-  @ApiProperty({ type: 'integer' })
-  yearsAgo!: number;
-
-  assets!: AssetResponseDto[];
 }

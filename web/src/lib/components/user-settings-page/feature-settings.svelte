@@ -63,14 +63,14 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ml-4 mt-4 flex flex-col">
+      <div class="ms-4 mt-4 flex flex-col">
         <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
-          <div class="ml-4 mt-6">
+          <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={foldersEnabled} />
           </div>
 
           {#if foldersEnabled}
-            <div class="ml-4 mt-6">
+            <div class="ms-4 mt-6">
               <SettingSwitch
                 title={$t('sidebar')}
                 subtitle={$t('sidebar_display_description')}
@@ -81,18 +81,18 @@
         </SettingAccordion>
 
         <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
-          <div class="ml-4 mt-6">
+          <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={memoriesEnabled} />
           </div>
         </SettingAccordion>
 
         <SettingAccordion key="people" title={$t('people')} subtitle={$t('people_feature_description')}>
-          <div class="ml-4 mt-6">
+          <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={peopleEnabled} />
           </div>
 
           {#if peopleEnabled}
-            <div class="ml-4 mt-6">
+            <div class="ms-4 mt-6">
               <SettingSwitch
                 title={$t('sidebar')}
                 subtitle={$t('sidebar_display_description')}
@@ -103,17 +103,17 @@
         </SettingAccordion>
 
         <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('rating_description')}>
-          <div class="ml-4 mt-6">
+          <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={ratingsEnabled} />
           </div>
         </SettingAccordion>
 
         <SettingAccordion key="shared-links" title={$t('shared_links')} subtitle={$t('shared_links_description')}>
-          <div class="ml-4 mt-6">
+          <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={sharedLinksEnabled} />
           </div>
           {#if sharedLinksEnabled}
-            <div class="ml-4 mt-6">
+            <div class="ms-4 mt-6">
               <SettingSwitch
                 title={$t('sidebar')}
                 subtitle={$t('sidebar_display_description')}
@@ -124,11 +124,11 @@
         </SettingAccordion>
 
         <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('tag_feature_description')}>
-          <div class="ml-4 mt-6">
+          <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={tagsEnabled} />
           </div>
           {#if tagsEnabled}
-            <div class="ml-4 mt-6">
+            <div class="ms-4 mt-6">
               <SettingSwitch
                 title={$t('sidebar')}
                 subtitle={$t('sidebar_display_description')}

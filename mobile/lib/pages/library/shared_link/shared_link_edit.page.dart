@@ -49,7 +49,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
           return Row(
             children: [
               const Text(
-                'shared_link_public_album',
+                'public_album',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ).tr(),
               const Text(
@@ -94,7 +94,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
 
       return const Text(
-        "shared_link_create_info",
+        "create_link_to_share_description",
         style: TextStyle(fontWeight: FontWeight.bold),
       ).tr();
     }
@@ -107,7 +107,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         textInputAction: TextInputAction.done,
         autofocus: false,
         decoration: InputDecoration(
-          labelText: 'shared_link_edit_description'.tr(),
+          labelText: 'description'.tr(),
           labelStyle: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
@@ -133,7 +133,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         enabled: newShareLink.value.isEmpty,
         autofocus: false,
         decoration: InputDecoration(
-          labelText: 'shared_link_edit_password'.tr(),
+          labelText: 'password'.tr(),
           labelStyle: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
@@ -161,7 +161,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "shared_link_edit_show_meta",
+          "show_metadata",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -177,7 +177,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "shared_link_edit_allow_download",
+          "allow_public_user_to_download",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -193,7 +193,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "shared_link_edit_allow_upload",
+          "allow_public_user_to_upload",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -209,7 +209,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "shared_link_edit_change_expiry",
+          "change_expiration_time",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -219,7 +219,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     Widget buildExpiryAfterButton() {
       return DropdownMenu(
         label: Text(
-          "shared_link_edit_expire_after",
+          "expire_after",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
@@ -237,7 +237,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         dropdownMenuEntries: [
           DropdownMenuEntry(
             value: 0,
-            label: "shared_link_edit_expire_after_option_never".tr(),
+            label: "never".tr(),
           ),
           DropdownMenuEntry(
             value: 30,
@@ -324,7 +324,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                   context.maybePop();
                 },
                 child: const Text(
-                  "share_done",
+                  "done",
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -430,9 +430,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          existingLink == null
-              ? "shared_link_create_app_bar_title"
-              : "shared_link_edit_app_bar_title",
+          existingLink == null ? "create_link_to_share" : "edit_link",
         ).tr(),
         elevation: 0,
         leading: const CloseButton(),
@@ -505,7 +503,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                     child: Text(
                       existingLink != null
                           ? "shared_link_edit_submit_button"
-                          : "shared_link_create_submit_button",
+                          : "create_link",
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

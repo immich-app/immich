@@ -17,6 +17,7 @@ import { MapService } from 'src/services/map.service';
 import { MediaService } from 'src/services/media.service';
 import { MemoryService } from 'src/services/memory.service';
 import { MetadataService } from 'src/services/metadata.service';
+import { NotificationAdminService } from 'src/services/notification-admin.service';
 import { NotificationService } from 'src/services/notification.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
@@ -60,6 +61,7 @@ export const services = [
   MemoryService,
   MetadataService,
   NotificationService,
+  NotificationAdminService,
   PartnerService,
   PersonService,
   SearchService,
