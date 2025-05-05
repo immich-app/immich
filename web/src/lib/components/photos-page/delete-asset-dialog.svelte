@@ -1,9 +1,9 @@
 <script lang="ts">
-  import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
   import Checkbox from '$lib/components/elements/checkbox.svelte';
-  import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { showDeleteModal } from '$lib/stores/preferences.store';
+  import { t } from 'svelte-i18n';
+  import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
 
   interface Props {
     size: number;
@@ -26,8 +26,7 @@
 <ConfirmDialog
   title={$t('permanently_delete_assets_count', { values: { count: size } })}
   confirmText={$t('delete')}
-  onConfirm={handleConfirm}
-  {onCancel}
+  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
 >
   {#snippet promptSnippet()}
     <p>

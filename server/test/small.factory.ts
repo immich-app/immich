@@ -314,4 +314,11 @@ export const factory = {
   },
   uuid: newUuid,
   date: newDate,
+  responses: {
+    badRequest: (message: any = null) => ({
+      error: 'Bad Request',
+      statusCode: 400,
+      message: message ?? expect.anything(),
+    }),
+  },
 };

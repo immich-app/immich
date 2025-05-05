@@ -6,20 +6,20 @@
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import PasswordResetSuccess from '$lib/forms/password-reset-success.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { copyToClipboard } from '$lib/utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, Code, IconButton, Text } from '@immich/ui';
-  import { mdiContentCopy, mdiDeleteRestore, mdiInfinity, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { Button, IconButton } from '@immich/ui';
+  import { mdiDeleteRestore, mdiInfinity, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -32,13 +32,9 @@
   let { data }: Props = $props();
 
   let allUsers: UserAdminResponseDto[] = $state([]);
-  let shouldShowEditUserForm = $state(false);
-  let shouldShowCreateUserForm = $state(false);
-  let shouldShowPasswordResetSuccess = $state(false);
   let shouldShowDeleteConfirmDialog = $state(false);
   let shouldShowRestoreDialog = $state(false);
   let selectedUser = $state<UserAdminResponseDto>();
-  let newPassword = $state('');
 
   const refresh = async () => {
     allUsers = await searchUsersAdmin({ withDeleted: true });
@@ -65,25 +61,23 @@
     return DateTime.fromISO(deletedAt).plus({ days: $serverConfig.userDeleteDelay }).toJSDate();
   };
 
-  const onUserCreated = async () => {
+  const handleCreate = async () => {
+    await modalManager.open(CreateUserForm, {});
     await refresh();
-    shouldShowCreateUserForm = false;
   };
 
-  const editUserHandler = (user: UserAdminResponseDto) => {
-    selectedUser = user;
-    shouldShowEditUserForm = true;
-  };
-
-  const onEditUserSuccess = async () => {
-    await refresh();
-    shouldShowEditUserForm = false;
-  };
-
-  const onEditPasswordSuccess = async () => {
-    await refresh();
-    shouldShowEditUserForm = false;
-    shouldShowPasswordResetSuccess = true;
+  const handleEdit = async (dto: UserAdminResponseDto) => {
+    const result = await modalManager.open(EditUserForm, { user: dto, canResetPassword: dto.id !== $user.id });
+    switch (result?.action) {
+      case 'resetPassword': {
+        await modalManager.open(PasswordResetSuccess, { newPassword: result.data });
+        break;
+      }
+      case 'update': {
+        await refresh();
+        break;
+      }
+    }
   };
 
   const deleteUserHandler = (user: UserAdminResponseDto) => {
@@ -110,26 +104,6 @@
 <UserPageLayout title={data.meta.title} admin>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
-      {#if shouldShowCreateUserForm}
-        <CreateUserForm
-          onSubmit={onUserCreated}
-          onCancel={() => (shouldShowCreateUserForm = false)}
-          onClose={() => (shouldShowCreateUserForm = false)}
-          oauthEnabled={$featureFlags.oauth}
-        />
-      {/if}
-
-      {#if shouldShowEditUserForm && selectedUser}
-        <EditUserForm
-          user={selectedUser}
-          bind:newPassword
-          canResetPassword={selectedUser?.id !== $user.id}
-          onEditSuccess={onEditUserSuccess}
-          onResetPasswordSuccess={onEditPasswordSuccess}
-          onClose={() => (shouldShowEditUserForm = false)}
-        />
-      {/if}
-
       {#if shouldShowDeleteConfirmDialog && selectedUser}
         <DeleteConfirmDialog
           user={selectedUser}
@@ -146,38 +120,6 @@
           onFail={onUserRestore}
           onCancel={() => (shouldShowRestoreDialog = false)}
         />
-      {/if}
-
-      {#if shouldShowPasswordResetSuccess}
-        <ConfirmDialog
-          title={$t('password_reset_success')}
-          confirmText={$t('done')}
-          onConfirm={() => (shouldShowPasswordResetSuccess = false)}
-          onCancel={() => (shouldShowPasswordResetSuccess = false)}
-          hideCancelButton={true}
-          confirmColor="success"
-        >
-          {#snippet promptSnippet()}
-            <div class="flex flex-col gap-4">
-              <Text>{$t('admin.user_password_has_been_reset')}</Text>
-
-              <div class="flex justify-center gap-2 items-center">
-                <Code color="primary">{newPassword}</Code>
-                <IconButton
-                  icon={mdiContentCopy}
-                  shape="round"
-                  color="secondary"
-                  variant="ghost"
-                  onclick={() => copyToClipboard(newPassword)}
-                  title={$t('copy_password')}
-                  aria-label={$t('copy_password')}
-                />
-              </div>
-
-              <Text>{$t('admin.user_password_reset_description')}</Text>
-            </div>
-          {/snippet}
-        </ConfirmDialog>
       {/if}
 
       <table class="my-5 w-full text-start">
@@ -225,7 +167,7 @@
                       size="small"
                       icon={mdiPencilOutline}
                       title={$t('edit_user')}
-                      onclick={() => editUserHandler(immichUser)}
+                      onclick={() => handleEdit(immichUser)}
                       aria-label={$t('edit_user')}
                     />
                     {#if immichUser.id !== $user.id}
@@ -257,7 +199,7 @@
           {/if}
         </tbody>
       </table>
-      <Button shape="round" size="small" onclick={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
+      <Button shape="round" size="small" onclick={handleCreate}>{$t('create_user')}</Button>
     </section>
   </section>
 </UserPageLayout>

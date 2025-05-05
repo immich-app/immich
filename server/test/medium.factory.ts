@@ -142,18 +142,15 @@ export const getRepository = <K extends keyof RepositoriesTypes>(key: K, db: Kys
     }
 
     case 'database': {
-      const configRepo = new ConfigRepository();
-      return new DatabaseRepository(db, new LoggingRepository(undefined, configRepo), configRepo);
+      return new DatabaseRepository(db, LoggingRepository.create(), new ConfigRepository());
     }
 
     case 'email': {
-      const logger = new LoggingRepository(undefined, new ConfigRepository());
-      return new EmailRepository(logger);
+      return new EmailRepository(LoggingRepository.create());
     }
 
     case 'logger': {
-      const configMock = { getEnv: () => ({ noColor: false }) };
-      return new LoggingRepository(undefined, configMock as ConfigRepository);
+      return LoggingRepository.create();
     }
 
     case 'memory': {
