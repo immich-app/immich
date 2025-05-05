@@ -13648,11 +13648,14 @@
           "stack": {
             "description": "(stack ID, stack asset count) tuple",
             "items": {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "string"
+              },
               "nullable": true,
-              "type": "string"
+              "type": "array"
             },
-            "maxItems": 2,
-            "minItems": 2,
             "type": "array"
           },
           "thumbhash": {

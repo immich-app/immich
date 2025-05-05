@@ -57,7 +57,7 @@ class TimeBucketAssetResponseDto {
   List<num> ratio;
 
   /// (stack ID, stack asset count) tuple
-  List<String> stack;
+  List<List<String>> stack;
 
   List<String> thumbhash;
 
@@ -169,9 +169,11 @@ class TimeBucketAssetResponseDto {
         ratio: json[r'ratio'] is Iterable
             ? (json[r'ratio'] as Iterable).cast<num>().toList(growable: false)
             : const [],
-        stack: json[r'stack'] is Iterable
-            ? (json[r'stack'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        stack: json[r'stack'] is List
+          ? (json[r'stack'] as List).map((e) =>
+              e == null ? null : (e as List).cast<String>()
+            ).toList()
+          :  const [],
         thumbhash: json[r'thumbhash'] is Iterable
             ? (json[r'thumbhash'] as Iterable).cast<String>().toList(growable: false)
             : const [],

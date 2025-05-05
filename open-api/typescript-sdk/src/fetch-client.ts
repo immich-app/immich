@@ -1399,7 +1399,7 @@ export type TimeBucketAssetResponseDto = {
     projectionType: (string | null)[];
     ratio: number[];
     /** (stack ID, stack asset count) tuple */
-    stack?: (string | null)[];
+    stack?: (string[] | null)[];
     thumbhash: (string | null)[];
 };
 export type TimeBucketsResponseDto = {
