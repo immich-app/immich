@@ -229,7 +229,7 @@ from
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
   "ownerId" = any ($1::uuid[])
-  and "visibility" = $2
+  and "visibility" != $2
   and "deletedAt" is null
   and "state" is not null
 
@@ -241,7 +241,7 @@ from
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
   "ownerId" = any ($1::uuid[])
-  and "visibility" = $2
+  and "visibility" != $2
   and "deletedAt" is null
   and "city" is not null
 
@@ -253,7 +253,7 @@ from
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
   "ownerId" = any ($1::uuid[])
-  and "visibility" = $2
+  and "visibility" != $2
   and "deletedAt" is null
   and "make" is not null
 
@@ -265,6 +265,6 @@ from
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
   "ownerId" = any ($1::uuid[])
-  and "visibility" = $2
+  and "visibility" != $2
   and "deletedAt" is null
   and "model" is not null
