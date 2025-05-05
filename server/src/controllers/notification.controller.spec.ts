@@ -7,15 +7,15 @@ import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils'
 
 describe(NotificationController.name, () => {
   let ctx: ControllerContext;
+  const service = mockBaseService(NotificationService);
 
   beforeAll(async () => {
-    ctx = await controllerSetup(NotificationController, [
-      { provide: NotificationService, useValue: mockBaseService(NotificationService) },
-    ]);
+    ctx = await controllerSetup(NotificationController, [{ provide: NotificationService, useValue: service }]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
+    service.resetAllMocks();
     ctx.reset();
   });
 

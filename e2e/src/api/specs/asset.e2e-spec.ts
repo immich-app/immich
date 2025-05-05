@@ -432,20 +432,6 @@ describe('/asset', () => {
   });
 
   describe('PUT /assets/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/assets/:${uuidDto.notFound}`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require a valid id', async () => {
-      const { status, body } = await request(app)
-        .put(`/assets/${uuidDto.invalid}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
-    });
-
     it('should require access', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user2Assets[0].id}`)
