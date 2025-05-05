@@ -644,6 +644,7 @@
   "comments_are_disabled": "Comments are disabled",
   "common_create_new_album": "Create new album",
   "common_server_error": "Please check your network connection, make sure the server is reachable and app/server versions are compatible.",
+  "spatial_media": "Spatial Media",
   "completed": "Completed",
   "confirm": "Confirm",
   "confirm_admin_password": "Confirm Admin Password",

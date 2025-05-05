@@ -256,6 +256,12 @@ export class MetadataService extends BaseService {
       autoStackId: this.getAutoStackId(exifTags),
     };
 
+    if (this.isSpatialPhoto(exifTags)) {
+      exifData.projectionType = 'SPATIAL_APPLE_PHOTO';
+    } else if (this.isSpatialAppleVideo(exifTags)) {
+      exifData.projectionType = 'SPATIAL_APPLE_VIDEO';
+    }
+
     const promises: Promise<unknown>[] = [
       this.assetRepository.upsertExif(exifData),
       this.assetRepository.update({
@@ -458,6 +464,45 @@ export class MetadataService extends BaseService {
 
   private isMotionPhoto(asset: { type: AssetType }, tags: ImmichTags): boolean {
     return asset.type === AssetType.IMAGE && !!(tags.MotionPhoto || tags.MicroVideo);
+  }
+
+  /**
+   * Apple Spatial Photo (Vision Pro) = Stereo + Depth + matrices/distortions.
+   * Rough but-works-in-practice heuristic:
+   *   • DepthDataVersion               - depth exists;
+   *   • Intrinsic/Extrinsic/Lens…      - lens calibration;
+   *   • PhotosAppFeatureFlags = 1|3    - "advanced features";
+   *   • AuxiliaryImageType 'auxid:2'   - auxiliary depth/spatial layer;
+   *   • HEVC brand `unif` (multi-view) - frequently present.
+   */
+  private isSpatialPhoto(tags: ImmichTags): boolean {
+    const hasDepth = tags.DepthDataVersion != null;
+    const hasCalib =
+      Array.isArray(tags.IntrinsicMatrix) &&
+      tags.IntrinsicMatrix.length === 9 &&
+      Array.isArray(tags.ExtrinsicMatrix) &&
+      tags.ExtrinsicMatrix.length >= 9 &&
+      Array.isArray(tags.LensDistortionCoefficients);
+    const auxSpatial =
+      typeof tags.AuxiliaryImageType === 'string' && /(auxid:?2|spatial)/i.test(tags.AuxiliaryImageType);
+    const photoFlags = tags.PhotosAppFeatureFlags === 1 || tags.PhotosAppFeatureFlags === 3;
+    const brandSpatial =
+      Array.isArray(tags.CompatibleBrands) && tags.CompatibleBrands.some((b) => /unif|miv1|spat/i.test(String(b)));
+
+    return (hasDepth && hasCalib && photoFlags) || auxSpatial || brandSpatial;
+  }
+  
+  /**
+   * Determines if the video is an Apple Spatial Video based on ffprobe tags
+   * @param tags object with ffprobe tags
+   * @returns true if this is a Spatial Apple Video
+   */
+  private isSpatialAppleVideo(tags: ImmichTags): boolean {
+    // Check various tag variations that may indicate a Spatial Video
+    return (
+      (tags['SpatialFormat-version'] === 1) ||
+      (tags['SpatialAggressors-seen'] === 1)
+    );
   }
 
   private async applyMotionPhotos(asset: Asset, tags: ImmichTags, dates: Dates, stats: Stats) {

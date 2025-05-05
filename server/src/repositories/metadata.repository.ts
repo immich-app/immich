@@ -71,6 +71,17 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
 
   AndroidMake?: string;
   AndroidModel?: string;
+
+  /** Spatial Tags */
+  DepthDataVersion?: number;
+  IntrinsicMatrix?: number[];
+  ExtrinsicMatrix?: number[];
+  LensDistortionCoefficients?: number[];
+  AuxiliaryImageType?: string;
+
+  /** QuickTime Spatial Video Tags */
+  'SpatialFormat-version'?: number;
+  'SpatialAggressors-seen'?: number;
 }
 
 @Injectable()
