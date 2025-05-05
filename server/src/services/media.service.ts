@@ -362,7 +362,7 @@ export class MediaService extends BaseService {
         { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
         { x1, y1, x2, y2 },
       ),
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+      processInvalidImages: false,
       size: FACE_THUMBNAIL_SIZE,
     };
 
