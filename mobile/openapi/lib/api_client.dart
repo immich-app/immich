@@ -620,6 +620,8 @@ class ApiClient {
           return TestEmailResponseDto.fromJson(value);
         case 'TimeBucketAssetResponseDto':
           return TimeBucketAssetResponseDto.fromJson(value);
+        case 'TimeBucketAssetResponseDtoStackInnerInner':
+          return TimeBucketAssetResponseDtoStackInnerInner.fromJson(value);
         case 'TimeBucketsResponseDto':
           return TimeBucketsResponseDto.fromJson(value);
         case 'ToneMapping':

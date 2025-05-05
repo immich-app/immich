@@ -282,6 +282,7 @@ part 'model/template_dto.dart';
 part 'model/template_response_dto.dart';
 part 'model/test_email_response_dto.dart';
 part 'model/time_bucket_asset_response_dto.dart';
+part 'model/time_bucket_asset_response_dto_stack_inner_inner.dart';
 part 'model/time_buckets_response_dto.dart';
 part 'model/tone_mapping.dart';
 part 'model/transcode_hw_accel.dart';

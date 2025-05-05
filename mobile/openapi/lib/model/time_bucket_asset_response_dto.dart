@@ -26,8 +26,7 @@ class TimeBucketAssetResponseDto {
     this.ownerId = const [],
     this.projectionType = const [],
     this.ratio = const [],
-    this.stackCount = const [],
-    this.stackId = const [],
+    this.stack = const [],
     this.thumbhash = const [],
   });
 
@@ -57,9 +56,8 @@ class TimeBucketAssetResponseDto {
 
   List<num> ratio;
 
-  List<num> stackCount;
-
-  List<String> stackId;
+  /// The stack ID and stack asset count as a tuple
+  List<List<TimeBucketAssetResponseDtoStackInnerInner>> stack;
 
   List<String> thumbhash;
 
@@ -78,8 +76,7 @@ class TimeBucketAssetResponseDto {
     _deepEquality.equals(other.ownerId, ownerId) &&
     _deepEquality.equals(other.projectionType, projectionType) &&
     _deepEquality.equals(other.ratio, ratio) &&
-    _deepEquality.equals(other.stackCount, stackCount) &&
-    _deepEquality.equals(other.stackId, stackId) &&
+    _deepEquality.equals(other.stack, stack) &&
     _deepEquality.equals(other.thumbhash, thumbhash);
 
   @override
@@ -98,12 +95,11 @@ class TimeBucketAssetResponseDto {
     (ownerId.hashCode) +
     (projectionType.hashCode) +
     (ratio.hashCode) +
-    (stackCount.hashCode) +
-    (stackId.hashCode) +
+    (stack.hashCode) +
     (thumbhash.hashCode);
 
   @override
-  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stackCount=$stackCount, stackId=$stackId, thumbhash=$thumbhash]';
+  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -120,8 +116,7 @@ class TimeBucketAssetResponseDto {
       json[r'ownerId'] = this.ownerId;
       json[r'projectionType'] = this.projectionType;
       json[r'ratio'] = this.ratio;
-      json[r'stackCount'] = this.stackCount;
-      json[r'stackId'] = this.stackId;
+      json[r'stack'] = this.stack;
       json[r'thumbhash'] = this.thumbhash;
     return json;
   }
@@ -174,12 +169,11 @@ class TimeBucketAssetResponseDto {
         ratio: json[r'ratio'] is Iterable
             ? (json[r'ratio'] as Iterable).cast<num>().toList(growable: false)
             : const [],
-        stackCount: json[r'stackCount'] is Iterable
-            ? (json[r'stackCount'] as Iterable).cast<num>().toList(growable: false)
-            : const [],
-        stackId: json[r'stackId'] is Iterable
-            ? (json[r'stackId'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        stack: json[r'stack'] is List
+          ? (json[r'stack'] as List).map((e) =>
+              TimeBucketAssetResponseDtoStackInnerInner.listFromJson(json[r'stack'])
+            ).toList()
+          :  const [],
         thumbhash: json[r'thumbhash'] is Iterable
             ? (json[r'thumbhash'] as Iterable).cast<String>().toList(growable: false)
             : const [],

@@ -13645,16 +13645,23 @@
             },
             "type": "array"
           },
-          "stackCount": {
+          "stack": {
+            "description": "The stack ID and stack asset count as a tuple",
             "items": {
-              "type": "number"
-            },
-            "type": "array"
-          },
-          "stackId": {
-            "items": {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
               "nullable": true,
-              "type": "string"
+              "type": "array"
             },
             "type": "array"
           },
