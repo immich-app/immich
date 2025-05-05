@@ -13646,23 +13646,13 @@
             "type": "array"
           },
           "stack": {
-            "description": "The stack ID and stack asset count as a tuple",
+            "description": "(stack ID, stack asset count) tuple",
             "items": {
-              "items": {
-                "maxItems": 2,
-                "minItems": 2,
-                "oneOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              },
               "nullable": true,
-              "type": "array"
+              "type": "string"
             },
+            "maxItems": 2,
+            "minItems": 2,
             "type": "array"
           },
           "thumbhash": {

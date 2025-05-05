@@ -652,7 +652,7 @@ export class AssetRepository {
                 (eb) =>
                   eb
                     .selectFrom('assets as stacked')
-                    .select(sql`json_build_array(stacked."stackId", count('stacked'))`.as('stack'))
+                    .select(sql`array[stacked."stackId"::text, count('stacked')::text]`.as('stack'))
                     .whereRef('stacked.stackId', '=', 'assets.stackId')
                     .where('stacked.deletedAt', 'is', null)
                     .where('stacked.isArchived', '=', false)

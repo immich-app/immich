@@ -87,13 +87,14 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
   @ApiProperty({
     type: 'array',
     items: {
-      type: 'array',
+      type: 'string',
       nullable: true,
-      items: { oneOf: [{ type: 'string' }, { type: 'number' }], minItems: 2, maxItems: 2 },
     },
-    description: 'The stack ID and stack asset count as a tuple',
+    maxItems: 2,
+    minItems: 2,
+    description: '(stack ID, stack asset count) tuple',
   })
-  stack?: ([string, number] | null)[];
+  stack?: ([string, string] | null)[];
 
   @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
   projectionType!: (string | null)[];

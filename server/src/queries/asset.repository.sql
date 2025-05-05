@@ -293,7 +293,7 @@ with
       inner join "exif" on "assets"."id" = "exif"."assetId"
       left join lateral (
         select
-          json_build_array(stacked."stackId", count('stacked')) as "stack"
+          array[stacked."stackId"::text, count('stacked')::text] as "stack"
         from
           "assets" as "stacked"
         where

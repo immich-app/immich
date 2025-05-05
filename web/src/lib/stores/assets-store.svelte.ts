@@ -439,9 +439,9 @@ export class AssetBucket {
         ratio: bucketAssets.ratio[i],
         stack: bucketAssets.stack?.[i]
           ? {
-              id: bucketAssets.stack[i]![0] as string,
+              id: bucketAssets.stack[i]![0],
               primaryAssetId: bucketAssets.id[i],
-              assetCount: bucketAssets.stack[i]![1] as number,
+              assetCount: Number.parseInt(bucketAssets.stack[i]![1]),
             }
           : null,
         thumbhash: bucketAssets.thumbhash[i],

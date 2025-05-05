@@ -1398,8 +1398,8 @@ export type TimeBucketAssetResponseDto = {
     ownerId: string[];
     projectionType: (string | null)[];
     ratio: number[];
-    /** The stack ID and stack asset count as a tuple */
-    stack?: ((string | number)[] | null)[];
+    /** (stack ID, stack asset count) tuple */
+    stack?: (string | null)[];
     thumbhash: (string | null)[];
 };
 export type TimeBucketsResponseDto = {
