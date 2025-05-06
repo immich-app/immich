@@ -17,7 +17,7 @@ import { parse } from 'pg-connection-string';
 import postgres, { Notice } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
 import { DB } from 'src/db';
-import { AssetFileType, DatabaseExtension } from 'src/enum';
+import { AssetFileType, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DatabaseConnectionParams, VectorExtension } from 'src/types';
@@ -35,7 +35,7 @@ export const asPostgresConnectionConfig = (params: DatabaseConnectionParams) => 
       username: params.username,
       password: params.password,
       database: params.database,
-      ssl: undefined,
+      ssl: params.ssl === DatabaseSslMode.Disable ? false : params.ssl,
     };
   }
 
