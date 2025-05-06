@@ -6,7 +6,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB, UserMetadata as DbUserMetadata } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetType, UserStatus } from 'src/enum';
+import { AssetType, AssetVisibility, UserStatus } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import { UserMetadata, UserMetadataItem } from 'src/types';
 import { asUuid } from 'src/utils/database';
@@ -205,13 +205,19 @@ export class UserRepository {
         eb.fn
           .countAll<number>()
           .filterWhere((eb) =>
-            eb.and([eb('assets.type', '=', sql.lit(AssetType.IMAGE)), eb('assets.isVisible', '=', sql.lit(true))]),
+            eb.and([
+              eb('assets.type', '=', sql.lit(AssetType.IMAGE)),
+              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+            ]),
           )
           .as('photos'),
         eb.fn
           .countAll<number>()
           .filterWhere((eb) =>
-            eb.and([eb('assets.type', '=', sql.lit(AssetType.VIDEO)), eb('assets.isVisible', '=', sql.lit(true))]),
+            eb.and([
+              eb('assets.type', '=', sql.lit(AssetType.VIDEO)),
+              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+            ]),
           )
           .as('videos'),
         eb.fn

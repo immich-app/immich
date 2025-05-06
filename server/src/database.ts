@@ -5,6 +5,7 @@ import {
   AlbumUserRole,
   AssetFileType,
   AssetType,
+  AssetVisibility,
   MemoryType,
   Permission,
   SharedLinkType,
@@ -108,7 +109,7 @@ export type Asset = {
   fileCreatedAt: Date;
   fileModifiedAt: Date;
   isExternal: boolean;
-  isVisible: boolean;
+  visibility: AssetVisibility;
   libraryId: string | null;
   livePhotoVideoId: string | null;
   localDateTime: Date;
@@ -285,7 +286,7 @@ export const columns = {
     'assets.fileCreatedAt',
     'assets.fileModifiedAt',
     'assets.isExternal',
-    'assets.isVisible',
+    'assets.visibility',
     'assets.libraryId',
     'assets.livePhotoVideoId',
     'assets.localDateTime',
@@ -345,7 +346,7 @@ export const columns = {
     'type',
     'deletedAt',
     'isFavorite',
-    'isVisible',
+    'visibility',
     'updateId',
   ],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],

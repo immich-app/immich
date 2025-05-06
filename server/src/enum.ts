@@ -618,3 +618,13 @@ export enum DatabaseSslMode {
   Require = 'require',
   VerifyFull = 'verify-full',
 }
+
+export enum AssetVisibility {
+  ARCHIVE = 'archive',
+  TIMELINE = 'timeline',
+
+  /**
+   * Video part of the LivePhotos and MotionPhotos
+   */
+  HIDDEN = 'hidden',
+}

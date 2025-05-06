@@ -17,7 +17,7 @@ import { parse } from 'pg-connection-string';
 import postgres, { Notice } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
 import { DB } from 'src/db';
-import { AssetFileType, DatabaseExtension, DatabaseSslMode } from 'src/enum';
+import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DatabaseConnectionParams, VectorExtension } from 'src/types';
@@ -155,6 +155,15 @@ export function toJson<DB, TB extends keyof DB & string, T extends TB | Expressi
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 // TODO come up with a better query that only selects the fields we need
 
+export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
+  return qb.where((qb) =>
+    qb.or([
+      qb('assets.visibility', '=', AssetVisibility.TIMELINE),
+      qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
+    ]),
+  );
+}
+
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('exif', 'assets.id', 'exif.assetId')
@@ -280,12 +289,14 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
-  options.isArchived ??= options.withArchived ? undefined : false;
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
+  const visibility = options.visibility == null ? AssetVisibility.TIMELINE : options.visibility;
+
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('assets')
     .selectAll('assets')
+    .where('assets.visibility', '=', visibility)
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
@@ -356,8 +367,6 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('assets.isOffline', '=', options.isOffline!))
-    .$if(options.isVisible !== undefined, (qb) => qb.where('assets.isVisible', '=', options.isVisible!))
-    .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
     .$if(options.isEncoded !== undefined, (qb) =>
       qb.where('assets.encodedVideoPath', options.isEncoded ? 'is not' : 'is', null),
     )

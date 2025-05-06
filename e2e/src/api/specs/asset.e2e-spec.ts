@@ -3,6 +3,7 @@ import {
   AssetMediaStatus,
   AssetResponseDto,
   AssetTypeEnum,
+  AssetVisibility,
   getAssetInfo,
   getMyUser,
   LoginResponseDto,
@@ -119,9 +120,9 @@ describe('/asset', () => {
       // stats
       utils.createAsset(statsUser.accessToken),
       utils.createAsset(statsUser.accessToken, { isFavorite: true }),
-      utils.createAsset(statsUser.accessToken, { isArchived: true }),
+      utils.createAsset(statsUser.accessToken, { visibility: AssetVisibility.Archive }),
       utils.createAsset(statsUser.accessToken, {
-        isArchived: true,
+        visibility: AssetVisibility.Archive,
         isFavorite: true,
         assetData: { filename: 'example.mp4' },
       }),
@@ -309,7 +310,7 @@ describe('/asset', () => {
       });
 
       it('disallows viewing archived assets', async () => {
-        const asset = await utils.createAsset(user1.accessToken, { isArchived: true });
+        const asset = await utils.createAsset(user1.accessToken, { visibility: AssetVisibility.Archive });
 
         const { status } = await request(app)
           .get(`/assets/${asset.id}`)
@@ -353,7 +354,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
         .set('Authorization', `Bearer ${statsUser.accessToken}`)
-        .query({ isArchived: true });
+        .query({ visibility: AssetVisibility.Archive });
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 1, videos: 1, total: 2 });
@@ -363,7 +364,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
         .set('Authorization', `Bearer ${statsUser.accessToken}`)
-        .query({ isFavorite: true, isArchived: true });
+        .query({ isFavorite: true, visibility: AssetVisibility.Archive });
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 0, videos: 1, total: 1 });
@@ -373,7 +374,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
         .set('Authorization', `Bearer ${statsUser.accessToken}`)
-        .query({ isFavorite: false, isArchived: false });
+        .query({ isFavorite: false, visibility: AssetVisibility.Timeline });
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 1, videos: 0, total: 1 });
@@ -459,7 +460,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ isArchived: true });
+        .send({ visibility: AssetVisibility.Archive });
       expect(body).toMatchObject({ id: user1Assets[0].id, isArchived: true });
       expect(status).toEqual(200);
     });
