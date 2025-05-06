@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common'
-import { Kysely } from 'kysely'
-import { InjectKysely } from 'nestjs-kysely'
-import { DB } from 'src/db'
-import { DummyValue, GenerateSql } from 'src/decorators'
-import { DatabaseAction, EntityType } from 'src/enum'
+import { Injectable } from '@nestjs/common';
+import { Kysely } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { DB } from 'src/db';
+import { DummyValue, GenerateSql } from 'src/decorators';
+import { DatabaseAction, EntityType } from 'src/enum';
 
 export interface AuditSearch {
   action?: DatabaseAction;

@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common'
-import { Insertable, Kysely, SelectQueryBuilder, sql } from 'kysely'
-import { InjectKysely } from 'nestjs-kysely'
-import { columns } from 'src/database'
-import { DB, SessionSyncCheckpoints } from 'src/db'
-import { DummyValue, GenerateSql } from 'src/decorators'
-import { SyncEntityType } from 'src/enum'
-import { SyncAck } from 'src/types'
+import { Injectable } from '@nestjs/common';
+import { Insertable, Kysely, SelectQueryBuilder, sql } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
+import { DB, SessionSyncCheckpoints } from 'src/db';
+import { DummyValue, GenerateSql } from 'src/decorators';
+import { SyncEntityType } from 'src/enum';
+import { SyncAck } from 'src/types';
 
 type auditTables = 'users_audit' | 'partners_audit' | 'assets_audit';
 type upsertTables = 'users' | 'partners' | 'assets' | 'exif';
