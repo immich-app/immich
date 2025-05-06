@@ -264,8 +264,8 @@ export class PersonRepository {
       .selectFrom('person')
       .innerJoin('asset_faces', 'asset_faces.id', 'person.faceAssetId')
       .innerJoin('assets', 'asset_faces.assetId', 'assets.id')
-      .innerJoin('exif', 'exif.assetId', 'assets.id')
-      .innerJoin('asset_files', 'asset_files.assetId', 'assets.id')
+      .leftJoin('exif', 'exif.assetId', 'assets.id')
+      .leftJoin('asset_files', 'asset_files.assetId', 'assets.id')
       .select([
         'person.ownerId',
         'asset_faces.boundingBoxX1 as x1',
@@ -274,17 +274,14 @@ export class PersonRepository {
         'asset_faces.boundingBoxY2 as y2',
         'asset_faces.imageWidth as oldWidth',
         'asset_faces.imageHeight as oldHeight',
-        'exif.exifImageWidth',
-        'exif.exifImageHeight',
         'assets.type',
         'assets.originalPath',
         'asset_files.path as previewPath',
+        'exif.orientation as exifOrientation',
       ])
       .where('person.id', '=', id)
       .where('asset_faces.deletedAt', 'is', null)
       .where('asset_files.type', '=', AssetFileType.PREVIEW)
-      .where('exif.exifImageWidth', '>', 0)
-      .where('exif.exifImageHeight', '>', 0)
       .$narrowType<{ exifImageWidth: NotNull; exifImageHeight: NotNull }>()
       .executeTakeFirst();
   }
