@@ -20,7 +20,7 @@
   });
 </script>
 
-<div class="flex h-[140px] w-[250px] flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">
+<div class="flex h-[140px] w-[250px] flex-col justify-between rounded-3xl bg-subtle p-5 dark:bg-immich-dark-gray">
   <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
     <Icon path={icon} size="40" />
     <p>{title}</p>

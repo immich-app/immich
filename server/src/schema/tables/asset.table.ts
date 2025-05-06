@@ -1,5 +1,6 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetStatus, AssetType } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { asset_visibility_enum } from 'src/schema';
 import { assets_status_enum } from 'src/schema/enums';
 import { assets_delete_audit } from 'src/schema/functions';
 import { LibraryTable } from 'src/schema/tables/library.table';
@@ -95,9 +96,6 @@ export class AssetTable {
   @Column({ type: 'bytea', index: true })
   checksum!: Buffer; // sha1 checksum
 
-  @Column({ type: 'boolean', default: true })
-  isVisible!: boolean;
-
   @ForeignKeyColumn(() => AssetTable, { nullable: true, onUpdate: 'CASCADE', onDelete: 'SET NULL' })
   livePhotoVideoId!: string | null;
 
@@ -106,9 +104,6 @@ export class AssetTable {
 
   @CreateDateColumn()
   createdAt!: Date;
-
-  @Column({ type: 'boolean', default: false })
-  isArchived!: boolean;
 
   @Column({ index: true })
   originalFileName!: string;
@@ -145,4 +140,7 @@ export class AssetTable {
 
   @UpdateIdColumn({ indexName: 'IDX_assets_update_id' })
   updateId?: string;
+
+  @Column({ enum: asset_visibility_enum, default: AssetVisibility.TIMELINE })
+  visibility!: AssetVisibility;
 }

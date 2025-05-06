@@ -6,13 +6,15 @@ import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils'
 
 describe(AlbumController.name, () => {
   let ctx: ControllerContext;
+  const service = mockBaseService(AlbumService);
 
   beforeAll(async () => {
-    ctx = await controllerSetup(AlbumController, [{ provide: AlbumService, useValue: mockBaseService(AlbumService) }]);
+    ctx = await controllerSetup(AlbumController, [{ provide: AlbumService, useValue: service }]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
+    service.resetAllMocks();
     ctx.reset();
   });
 
