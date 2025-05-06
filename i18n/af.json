@@ -29,7 +29,7 @@
   "added_to_favorites_count": "Het {count, number} by gunstelinge gevoeg",
   "admin": {
     "add_exclusion_pattern_description": "Voeg uitsluitingspatrone by. Globbing met *, ** en ? word ondersteun. Om alle lêers in enige lêergids genaamd \"Raw\" te ignoreer, gebruik \"**/Raw/**\". Om alle lêers wat op \".tif\" eindig, te ignoreer, gebruik \"**/*.tif\". Om 'n absolute pad te ignoreer, gebruik \"/path/to/ignore/**\".",
-    "asset_offline_description": "Hierdie eksterne biblioteekbate word nie meer op skyf gevind nie en is na die asblik geskuif. As die lêer binne die biblioteek geskuif is, gaan jou tydlyn na vir die nuwe ooreenstemmende bate. Om hierdie bate te herstel, maak asseblief seker dat die lêerpad hieronder deur PixelUnion verkry kan word en skandeer die biblioteek.",
+    "asset_offline_description": "Hierdie eksterne biblioteekbate word nie meer op skyf gevind nie en is na die asblik geskuif. As die lêer binne die biblioteek geskuif is, gaan jou tydlyn na vir die nuwe ooreenstemmende bate. Om hierdie bate te herstel, maak asseblief seker dat die lêerpad hieronder deur Immich verkry kan word en skandeer die biblioteek.",
     "authentication_settings": "Verifikasie instellings",
     "authentication_settings_description": "Bestuur wagwoord, OAuth en ander verifikasie instellings",
     "authentication_settings_disable_all": "Is jy seker jy wil alle aanmeldmetodes deaktiveer? Aanmelding sal heeltemal gedeaktiveer word.",
@@ -44,7 +44,7 @@
     "cleared_jobs": "Poste gevee vir: {job}",
     "config_set_by_file": "Config word tans deur 'n konfigurasielêer gestel",
     "confirm_delete_library": "Is jy seker jy wil {library}-biblioteek uitvee?",
-    "confirm_delete_library_assets": "Is jy seker jy wil hierdie biblioteek uitvee? Dit sal {count, plural, one {# bevatte base} other {# bevatte bates}} uit PixelUnion uitvee en kan nie ongedaan gemaak word nie. Lêers sal op skyf bly.",
+    "confirm_delete_library_assets": "Is jy seker jy wil hierdie biblioteek uitvee? Dit sal {count, plural, one {# bevatte base} other {# bevatte bates}} uit Immich uitvee en kan nie ongedaan gemaak word nie. Lêers sal op skyf bly.",
     "confirm_email_below": "Om te bevestig, tik \"{email}\" hieronder",
     "confirm_reprocess_all_faces": "Is jy seker jy wil alle gesigte herverwerk? Dit sal ook genoemde mense skoonmaak.",
     "confirm_user_password_reset": "Is jy seker jy wil {user} se wagwoord terugstel?",
