@@ -23,7 +23,7 @@
   "added_to_favorites": "Idinagdag sa mga paborito",
   "added_to_favorites_count": "Idinagdag ang {count, number} sa mga paborito",
   "admin": {
-    "asset_offline_description": "Ang external library asset na ito ay hindi na makikita sa disk at nailipat na sa trash. Kung ang file ay nailipat sa loob ng library, tignan ang iyong timeline para sa kaukulang asset. Para maibalik ang asset na ito, siguraduhin na ang file path ay maa-access ng Immich para iscan ang library.",
+    "asset_offline_description": "Ang external library asset na ito ay hindi na makikita sa disk at nailipat na sa trash. Kung ang file ay nailipat sa loob ng library, tignan ang iyong timeline para sa kaukulang asset. Para maibalik ang asset na ito, siguraduhin na ang file path ay maa-access ng PixelUnion para iscan ang library.",
     "authentication_settings_disable_all": "Sigurado ka bang gusto mo patayin lahat ng paraan ng pag-login? Ang pag-login ay ganap na idi-disable.",
     "authentication_settings_reenable": "Para i-enable ulit, gamitin ang <link>Server Command</link>.",
     "cleared_jobs": "Lahat nang mga trabaho para sa {job} ay tinanggal na",
