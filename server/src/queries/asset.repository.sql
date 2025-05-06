@@ -335,7 +335,7 @@ with
       coalesce(array_agg("ratio"), '{}') as "ratio",
       coalesce(array_agg("status"), '{}') as "status",
       coalesce(array_agg("thumbhash"), '{}') as "thumbhash",
-      coalesce(array_agg("stack"), '{}') as "stack"
+      coalesce(json_agg("stack"), '[]') as "stack"
     from
       "cte"
   )

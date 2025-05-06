@@ -79,7 +79,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.ownerId.push(asset.ownerId);
     bucketAssets.projectionType.push(asset.projectionType!);
     bucketAssets.ratio.push(asset.ratio);
-    bucketAssets.stack?.push(asset.stack ? [asset.stack.id, asset.stack.assetCount] : null);
+    bucketAssets.stack?.push(asset.stack ? [asset.stack.id, asset.stack.assetCount.toString()] : null);
     bucketAssets.thumbhash.push(asset.thumbhash!);
   }
 
