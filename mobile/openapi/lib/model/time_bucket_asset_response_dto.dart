@@ -30,11 +30,11 @@ class TimeBucketAssetResponseDto {
     this.thumbhash = const [],
   });
 
-  List<String> city;
+  List<String?> city;
 
-  List<String> country;
+  List<String?> country;
 
-  List<String> duration;
+  List<String?> duration;
 
   List<String> id;
 
@@ -46,20 +46,20 @@ class TimeBucketAssetResponseDto {
 
   List<num> isTrashed;
 
-  List<String> livePhotoVideoId;
+  List<String?> livePhotoVideoId;
 
   List<String> localDateTime;
 
   List<String> ownerId;
 
-  List<String> projectionType;
+  List<String?> projectionType;
 
   List<num> ratio;
 
   /// (stack ID, stack asset count) tuple
-  List<List<String>> stack;
+  List<List<String>?> stack;
 
-  List<String> thumbhash;
+  List<String?> thumbhash;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TimeBucketAssetResponseDto &&

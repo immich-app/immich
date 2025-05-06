@@ -13649,10 +13649,10 @@
             "description": "(stack ID, stack asset count) tuple",
             "items": {
               "items": {
-                "maxItems": 2,
-                "minItems": 2,
                 "type": "string"
               },
+              "maxItems": 2,
+              "minItems": 2,
               "nullable": true,
               "type": "array"
             },

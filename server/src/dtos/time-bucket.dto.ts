@@ -88,7 +88,9 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
     type: 'array',
     items: {
       type: 'array',
-      items: { type: 'string', maxItems: 2, minItems: 2 },
+      items: { type: 'string' },
+      minItems: 2,
+      maxItems: 2,
       nullable: true,
     },
     description: '(stack ID, stack asset count) tuple',

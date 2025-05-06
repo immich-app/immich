@@ -8,6 +8,7 @@ function dart {
   cd ./templates/mobile/serialization/native
   wget -O native_class.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/dart2/serialization/native/native_class.mustache
   patch --no-backup-if-mismatch -u native_class.mustache <native_class.mustache.patch
+  patch --no-backup-if-mismatch -u native_class.mustache <native_class_default_value_for_array_items.patch
 
   cd ../../
   wget -O api.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/dart2/api.mustache
