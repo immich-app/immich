@@ -93,6 +93,17 @@ describe('getEnv', () => {
       });
     });
 
+    it('should validate DB_SSL_MODE', () => {
+      process.env.DB_SSL_MODE = 'invalid';
+      expect(() => getEnv()).toThrowError('Invalid environment variables: DB_SSL_MODE');
+    });
+
+    it('should accept a valid DB_SSL_MODE', () => {
+      process.env.DB_SSL_MODE = 'prefer';
+      const { database } = getEnv();
+      expect(database.config).toMatchObject(expect.objectContaining({ ssl: 'prefer' }));
+    });
+
     it('should allow skipping migrations', () => {
       process.env.DB_SKIP_MIGRATIONS = 'true';
       const { database } = getEnv();

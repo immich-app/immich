@@ -2,6 +2,7 @@ import { SystemConfig } from 'src/config';
 import {
   AssetType,
   DatabaseExtension,
+  DatabaseSslMode,
   ExifOrientation,
   ImageFormat,
   JobName,
@@ -373,8 +374,6 @@ export type DatabaseConnectionURL = {
   url: string;
 };
 
-type SSL = 'disable' | 'allow' | 'prefer' | 'require' | 'verify-ca' | 'verify-full';
-
 export type DatabaseConnectionParts = {
   connectionType: 'parts';
   host: string;
@@ -382,7 +381,7 @@ export type DatabaseConnectionParts = {
   username: string;
   password: string;
   database: string;
-  ssl?: SSL;
+  ssl?: DatabaseSslMode;
 };
 
 export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;
