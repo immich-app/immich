@@ -174,9 +174,9 @@ export const onBeforeUnlink = async (
 
 export const onAfterUnlink = async (
   { asset: assetRepository, event: eventRepository }: AssetHookRepositories,
-  { userId, livePhotoVideoId }: { userId: string; livePhotoVideoId: string },
+  { userId, livePhotoVideoId, visibility }: { userId: string; livePhotoVideoId: string; visibility: AssetVisibility },
 ) => {
-  await assetRepository.update({ id: livePhotoVideoId, visibility: AssetVisibility.TIMELINE });
+  await assetRepository.update({ id: livePhotoVideoId, visibility });
   await eventRepository.emit('asset.show', { assetId: livePhotoVideoId, userId });
 };
 

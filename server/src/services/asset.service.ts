@@ -93,7 +93,11 @@ export class AssetService extends BaseService {
     const asset = await this.assetRepository.update({ id, ...rest });
 
     if (previousMotion) {
-      await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
+      await onAfterUnlink(repos, {
+        userId: auth.user.id,
+        livePhotoVideoId: previousMotion.id,
+        visibility: previousMotion.visibility,
+      });
     }
 
     if (!asset) {
