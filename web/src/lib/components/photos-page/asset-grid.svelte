@@ -27,6 +27,7 @@
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { focusNext } from '$lib/utils/focus-util';
+  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -382,7 +383,6 @@
 
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAsset($viewingAsset);
-
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
@@ -802,26 +802,28 @@
   </section>
 </section>
 
-<Portal target="body">
-  {#if $showAssetViewer}
-    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer
-        {withStacked}
-        asset={$viewingAsset}
-        preloadAssets={$preloadAssets}
-        {isShared}
-        {album}
-        {person}
-        preAction={handlePreAction}
-        onAction={handleAction}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onRandom={handleRandom}
-        onClose={handleClose}
-      />
-    {/await}
-  {/if}
-</Portal>
+{#if !albumMapViewManager.isInMapView}
+  <Portal target="body">
+    {#if $showAssetViewer}
+      {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+        <AssetViewer
+          {withStacked}
+          asset={$viewingAsset}
+          preloadAssets={$preloadAssets}
+          {isShared}
+          {album}
+          {person}
+          preAction={handlePreAction}
+          onAction={handleAction}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onRandom={handleRandom}
+          onClose={handleClose}
+        />
+      {/await}
+    {/if}
+  </Portal>
+{/if}
 
 <style>
   #asset-grid {

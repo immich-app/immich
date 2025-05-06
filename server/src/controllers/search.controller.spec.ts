@@ -6,15 +6,15 @@ import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils'
 
 describe(SearchController.name, () => {
   let ctx: ControllerContext;
+  const service = mockBaseService(SearchService);
 
   beforeAll(async () => {
-    ctx = await controllerSetup(SearchController, [
-      { provide: SearchService, useValue: mockBaseService(SearchService) },
-    ]);
+    ctx = await controllerSetup(SearchController, [{ provide: SearchService, useValue: service }]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
+    service.resetAllMocks();
     ctx.reset();
   });
 
