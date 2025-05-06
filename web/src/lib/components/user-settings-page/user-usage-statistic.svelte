@@ -56,7 +56,7 @@
 
 {#snippet row(viewName: string, stats: AssetStatsResponseDto)}
   <tr
-    class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg odd:bg-immich-bg even:bg-immich-gray odd:dark:bg-immich-dark-gray/50 even:dark:bg-immich-dark-gray/75"
+    class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg odd:bg-immich-bg even:bg-subtle odd:dark:bg-immich-dark-gray/50 even:dark:bg-immich-dark-gray/75"
   >
     <td class="w-1/4 px-4 text-sm">{viewName}</td>
     <td class="w-1/4 px-4 text-sm">{stats.images.toLocaleString($locale)}</td>
