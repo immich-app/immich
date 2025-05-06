@@ -201,8 +201,8 @@ class AssetAccess {
       .where('partner.sharedWithId', '=', userId)
       .where((eb) =>
         eb.or([
-          eb('assets.visibility', '=', AssetVisibility.TIMELINE),
-          eb('assets.visibility', '=', AssetVisibility.HIDDEN),
+          eb('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE)),
+          eb('assets.visibility', '=', sql.lit(AssetVisibility.HIDDEN)),
         ]),
       )
 

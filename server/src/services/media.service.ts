@@ -153,7 +153,7 @@ export class MediaService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (asset.visibility == AssetVisibility.HIDDEN) {
+    if (asset.visibility === AssetVisibility.HIDDEN) {
       this.logger.verbose(`Thumbnail generation skipped for asset ${id}: not visible`);
       return JobStatus.SKIPPED;
     }

@@ -14,6 +14,7 @@ import {
   removeUndefinedKeys,
   truncatedDate,
   unnest,
+  withDefaultVisibility,
   withExif,
   withFaces,
   withFacesAndPeople,
@@ -510,14 +511,7 @@ export class AssetRepository {
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
-      .$if(visibility === undefined, (qb) =>
-        qb.where((qb) =>
-          qb.or([
-            qb('assets.visibility', '=', AssetVisibility.TIMELINE),
-            qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
-          ]),
-        ),
-      )
+      .$if(visibility === undefined, withDefaultVisibility)
       .$if(!!visibility, (qb) => qb.where('assets.visibility', '=', visibility!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
@@ -548,14 +542,7 @@ export class AssetRepository {
             .select(truncatedDate<Date>(options.size).as('timeBucket'))
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-            .$if(options.visibility === undefined, (qb) =>
-              qb.where((qb) =>
-                qb.or([
-                  qb('assets.visibility', '=', AssetVisibility.TIMELINE),
-                  qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
-                ]),
-              ),
-            )
+            .$if(options.visibility === undefined, withDefaultVisibility)
             .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
             .$if(!!options.albumId, (qb) =>
               qb
@@ -636,14 +623,7 @@ export class AssetRepository {
       .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
       .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
       .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-      .$if(options.visibility == undefined, (qb) =>
-        qb.where((qb) =>
-          qb.or([
-            qb('assets.visibility', '=', AssetVisibility.TIMELINE),
-            qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
-          ]),
-        ),
-      )
+      .$if(options.visibility == undefined, withDefaultVisibility)
       .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
       .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
       .orderBy('assets.localDateTime', options.order ?? 'desc')

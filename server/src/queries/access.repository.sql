@@ -111,10 +111,10 @@ from
 where
   "partner"."sharedWithId" = $1
   and (
-    "assets"."visibility" = $2
-    or "assets"."visibility" = $3
+    "assets"."visibility" = 'timeline'
+    or "assets"."visibility" = 'hidden'
   )
-  and "assets"."id" in ($4)
+  and "assets"."id" in ($2)
 
 -- AccessRepository.asset.checkSharedLinkAccess
 select
