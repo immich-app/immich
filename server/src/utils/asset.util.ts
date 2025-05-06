@@ -21,6 +21,7 @@ export const getAssetFiles = (files: AssetFile[]) => ({
   fullsizeFile: getAssetFile(files, AssetFileType.FULLSIZE),
   previewFile: getAssetFile(files, AssetFileType.PREVIEW),
   thumbnailFile: getAssetFile(files, AssetFileType.THUMBNAIL),
+  webXr: getAssetFile(files, AssetFileType.WEB_XR),
 });
 
 export const addAssets = async (

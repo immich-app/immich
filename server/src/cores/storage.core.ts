@@ -25,7 +25,7 @@ export interface MoveRequest {
   };
 }
 
-export type GeneratedImageType = AssetPathType.PREVIEW | AssetPathType.THUMBNAIL | AssetPathType.FULLSIZE;
+export type GeneratedImageType = AssetPathType.PREVIEW | AssetPathType.THUMBNAIL | AssetPathType.FULLSIZE | AssetPathType.WEB_XR;
 export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDEO;
 
 export type ThumbnailPathEntity = { id: string; ownerId: string };
@@ -90,7 +90,7 @@ export class StorageCore {
     return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, person.ownerId, `${person.id}.jpeg`);
   }
 
-  static getImagePath(asset: ThumbnailPathEntity, type: GeneratedImageType, format: 'jpeg' | 'webp') {
+  static getImagePath(asset: ThumbnailPathEntity, type: GeneratedImageType, format: 'jpeg' | 'webp' | 'mov') {
     return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}-${type}.${format}`);
   }
 

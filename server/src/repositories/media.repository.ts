@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+// TODO solve type problem, or find a better way to extract each image from heic container
+// @ts-ignore
+import * as libheif from 'libheif-js';
 import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Exif } from 'src/database';
-import { Colorspace, LogLevel, RawExtractedFormat } from 'src/enum';
+import { Colorspace, ImageFormat, LogLevel, RawExtractedFormat } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
@@ -19,6 +22,32 @@ import {
   VideoInfo,
 } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
+
+interface HeifDecoder {
+  decode(data: Uint8Array): HeifImage[];
+}
+
+interface HeifImage {
+  get_width(): number;
+  get_height(): number;
+  display(options: HeifDisplayOptions, callback: (data: HeifDisplayData | null) => void): void;
+}
+
+interface HeifDisplayOptions {
+  data: Uint8Array;
+  width: number;
+  height: number;
+}
+
+interface HeifDisplayData {
+  data: Uint8Array;
+  width: number;
+  height: number;
+}
+
+interface HeifModule {
+  HeifDecoder: new () => HeifDecoder;
+}
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
@@ -40,6 +69,22 @@ export type ExtractResult = {
   buffer: Buffer;
   format: RawExtractedFormat;
 };
+
+export interface StereoscopicResult {
+  leftEye: Buffer;
+  rightEye: Buffer;
+  dimensions: {
+    width: number;
+    height: number;
+  };
+}
+
+export interface StereoImageOptions {
+  colorspace: Colorspace;
+  format: ImageFormat;
+  quality: number;
+  size?: number;
+}
 
 @Injectable()
 export class MediaRepository {
@@ -133,6 +178,181 @@ export class MediaRepository {
         chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
       })
       .toFile(output);
+  }
+
+  async extractStereoscopicImage(
+    input: string | Buffer,
+    options: StereoImageOptions
+  ): Promise<StereoscopicResult> {
+    const { info, data } = await this.decodeImage(input, {
+      colorspace: options.colorspace,
+      processInvalidImages: false,
+      size: options.size
+    });
+
+    if (info.width % 2 !== 0) {
+      throw new Error('Invalid stereoscopic image: width must be even');
+    }
+
+    const halfWidth = info.width / 2;
+    
+    const leftEye = await sharp(data, { raw: info })
+      .extract({ left: 0, top: 0, width: halfWidth, height: info.height })
+      .toFormat(options.format, { quality: options.quality })
+      .toBuffer();
+
+    const rightEye = await sharp(data, { raw: info })  
+      .extract({ left: halfWidth, top: 0, width: halfWidth, height: info.height })
+      .toFormat(options.format, { quality: options.quality })
+      .toBuffer();
+
+    return {
+      leftEye,
+      rightEye,
+      dimensions: {
+        width: halfWidth,
+        height: info.height
+      }
+    };
+  }
+
+  private async processHeicImage(data: Buffer): Promise<Buffer[]> {
+    const heif = libheif;
+    
+    const decoder = new heif.HeifDecoder();
+    this.logger.debug('Decoding HEIC image');
+    this.logger.debug(`File size: ${data.length} bytes`);
+    this.logger.debug(`First 100 bytes: ${data.slice(0, 100).toString('hex')}`);
+
+
+    const images = decoder.decode(new Uint8Array(data));
+    
+    if (!images || !images.length) {
+      throw new Error("No images found in HEIC file");
+    }
+
+    // Filter only valid images
+    const validImages: HeifImage[] = images.filter((img: HeifImage) => {
+      try {
+        return img.get_width() > 0 && img.get_height() > 0;
+      } catch (e) {
+        return false;
+      }
+    });
+
+    if (validImages.length === 0) {
+      throw new Error("No valid images found in HEIC file");
+    }
+
+    // Process each valid image
+    const processedImages = await Promise.all(validImages.map(async (img: HeifImage) => {
+      const width = img.get_width();
+      const height = img.get_height();
+
+      // Create raw buffer for the image data
+      const rawData = new Uint8Array(width * height * 4);
+      
+      // Setup RGBA data
+      for (let i = 3; i < rawData.length; i += 4) {
+        rawData[i] = 255; // Set alpha channel
+      }
+
+      // Use display method to get pixel data
+      return new Promise<Buffer>((resolve, reject) => {
+        img.display({ data: rawData, width, height }, async (displayData: HeifDisplayData | null) => {
+          if (!displayData) {
+            reject(new Error("Failed to process image"));
+            return;
+          }
+
+          // Convert to sharp-compatible format
+          try {
+            // Log the data before passing to sharp
+            this.logger.debug(`Processing image chunk: ${displayData.width}x${displayData.height}, channels: 4, data length: ${displayData.data.length}`);
+            this.logger.debug(`First 16 bytes of displayData: ${Buffer.from(displayData.data.slice(0, 16)).toString('hex')}`);
+
+            const sharpImage = sharp(Buffer.from(displayData.data), {
+              raw: {
+                width: displayData.width,
+                height: displayData.height,
+                channels: 4
+              }
+            });
+
+            // Convert to JPEG buffer before resolving
+            const buffer = await sharpImage.jpeg().toBuffer();
+            resolve(buffer);
+          } catch (err) {
+            this.logger.error(`Sharp processing error in processHeicImage: ${err}`); // Add specific error logging
+            reject(err);
+          }
+        });
+      });
+    }));
+
+    return processedImages; // Return all processed images
+  }
+
+  async generateWebXrThumbnail(input: string | Buffer, outputPath: string, options: GenerateThumbnailOptions): Promise<void> {
+    try {
+      // Convert input to Buffer if it's a file path
+      const inputBuffer = typeof input === 'string' ? await fs.readFile(input) : input;
+      
+      // Process HEIC image - expecting an array of buffers (views)
+      const processedBuffers = await this.processHeicImage(inputBuffer);
+
+      // Check if we got exactly two images (left and right eye)
+      if (processedBuffers.length < 2) {
+        throw new Error(`Expected at least 2 images for stereo thumbnail, but found ${processedBuffers.length}`);
+      }
+
+      // Assuming the order is [primary, left, right] or just [left, right] if no primary
+      // Swap the assignment to correct the eye order
+      const rightEyeBuffer = processedBuffers.length === 3 ? processedBuffers[1] : processedBuffers[0]; // This was left, now right
+      const leftEyeBuffer = processedBuffers.length === 3 ? processedBuffers[2] : processedBuffers[1]; // This was right, now left
+      const primaryBuffer = processedBuffers.length === 3 ? processedBuffers[0] : null; // Keep track if primary exists
+
+      this.logger.debug(`Using Left eye buffer size: ${leftEyeBuffer.length}`); // Log remains the same variable name
+      this.logger.debug(`Using Right eye buffer size: ${rightEyeBuffer.length}`); // Log remains the same variable name
+      if (primaryBuffer) {
+        this.logger.debug(`Primary buffer size: ${primaryBuffer.length}`);
+      }
+
+
+      // Get dimensions from the left eye image buffer (now expected to be JPEG)
+      const imageInfo = await sharp(leftEyeBuffer).metadata();
+      const width = imageInfo.width || 0; // Width of a single eye
+      const height = imageInfo.height || 0; // Height of a single eye
+
+      // Note: HEIC stereo images are usually full width per eye,
+      // so the final composite width is width * 2.
+      const compositeWidth = width * 2;
+
+      // Create final composite image
+      await sharp({
+        create: {
+          width: compositeWidth,
+          height: height,
+          channels: 4,
+          background: { r: 0, g: 0, b: 0, alpha: 0 }
+        }
+      })
+      .composite([
+        // Input buffers are now expected to be JPEG or similar
+        // Swap the inputs in the composite array as well
+        { input: leftEyeBuffer, left: 0, top: 0 },         // Left eye buffer goes first (position 0)
+        { input: rightEyeBuffer, left: width, top: 0 }      // Right eye buffer goes second (position width)
+      ])
+      .toFormat(options.format, { // Output format as requested by options
+        quality: options.quality,
+        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0'
+      })
+      .toFile(outputPath);
+
+    } catch (error) {
+      this.logger.error('Error generating WebXR thumbnail:', error);
+      throw error;
+    }
   }
 
   private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
@@ -256,6 +476,41 @@ export class MediaRepository {
     const { width = 0, height = 0 } = await sharp(input).metadata();
     return { width, height };
   }
+
+  async transcodeSpatialVideoToSBS(input: string, output: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.configureFfmpegCall(input, output, {
+        inputOptions: [
+          // Increase analysis time for proper spatial video processing
+          '-analyzeduration', '10000000',
+          '-probesize', '10000000'
+        ],
+        outputOptions: [
+          // Extract both views from spatial video and combine them
+          '-filter_complex', '[0:v:view:0][0:v:view:1]hstack',
+          // Copy the main audio stream
+          '-map', '0:a:0',
+          '-c:v', 'libx264',
+          '-preset', 'slower', // Higher quality encoding
+          '-b:v', '20M', // Video bitrate 20 Mbps
+          '-maxrate', '20M', // Maximum bitrate
+          '-bufsize', '20M', // Buffer size
+          '-c:a', 'aac',
+          '-b:a', '192k',
+          '-movflags', '+faststart'
+        ],
+        progress: {
+          frameCount: 0,
+          percentInterval: 10
+        },
+        twoPass: false
+      })
+      .on('error', reject)
+      .on('end', () => resolve())
+      .run();
+    });
+  }
+
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
     const ffmpegCall = ffmpeg(input, { niceness: 10 })

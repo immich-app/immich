@@ -19,6 +19,7 @@ export const featureFlags = writable<FeatureFlags>({
   configFile: false,
   trash: true,
   email: false,
+  transcodeStatialMediaForWebXr: false,
 });
 
 export type ServerConfig = ServerConfigDto & { loaded: boolean };

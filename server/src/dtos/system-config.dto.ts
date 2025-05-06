@@ -410,11 +410,20 @@ class SystemConfigFacesDto {
   import!: boolean;
 }
 
+class SystemConfigSpatialDto {
+  @IsBoolean()
+  import!: boolean;
+}
 class SystemConfigMetadataDto {
   @Type(() => SystemConfigFacesDto)
   @ValidateNested()
   @IsObject()
   faces!: SystemConfigFacesDto;
+
+  @Type(() => SystemConfigSpatialDto)
+  @ValidateNested()
+  @IsObject()
+  spatial!: SystemConfigSpatialDto;
 }
 
 class SystemConfigServerDto {

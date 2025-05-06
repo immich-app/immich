@@ -96,6 +96,8 @@ export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machi
   isSmartSearchEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
 export const isFaceImportEnabled = (metadata: SystemConfig['metadata']) => metadata.faces.import;
 
+export const isSpatialImportEnabled = (metadata: SystemConfig['metadata']) => metadata.spatial.import;
+
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
 export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingRepository): void => {

@@ -58,9 +58,9 @@ export class MediaService extends BaseService {
     };
 
     for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
-      const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
-
-      if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
+      const { previewFile, thumbnailFile, webXr } = getAssetFiles(asset.files);
+      
+      if (!previewFile || !thumbnailFile || !webXr || !asset.thumbhash || force) {
         jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id: asset.id } });
       }
 
@@ -162,6 +162,7 @@ export class MediaService extends BaseService {
       previewPath: string;
       thumbnailPath: string;
       fullsizePath?: string;
+      webXrPath?: string;
       thumbhash: Buffer;
     };
     if (asset.type === AssetType.VIDEO || asset.originalFileName.toLowerCase().endsWith('.gif')) {
@@ -173,7 +174,7 @@ export class MediaService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files);
+    const { previewFile, thumbnailFile, fullsizeFile, webXr } = getAssetFiles(asset.files);
     const toUpsert: UpsertFileOptions[] = [];
     if (previewFile?.path !== generated.previewPath) {
       toUpsert.push({ assetId: asset.id, path: generated.previewPath, type: AssetFileType.PREVIEW });
@@ -185,6 +186,10 @@ export class MediaService extends BaseService {
 
     if (generated.fullsizePath && fullsizeFile?.path !== generated.fullsizePath) {
       toUpsert.push({ assetId: asset.id, path: generated.fullsizePath, type: AssetFileType.FULLSIZE });
+    }
+    
+    if (generated && generated.webXrPath && webXr?.path !== generated.webXrPath) {
+      toUpsert.push({ assetId: asset.id, path: generated.webXrPath, type: AssetFileType.WEB_XR });
     }
 
     if (toUpsert.length > 0) {
@@ -208,6 +213,14 @@ export class MediaService extends BaseService {
       if (!generated.fullsizePath) {
         // did not generate a new fullsize image, delete the existing record
         await this.assetRepository.deleteFiles([fullsizeFile]);
+      }
+    }
+
+    if (webXr && webXr.path !== generated.webXrPath) {
+      pathsToDelete.push(webXr.path);
+      if (!generated.webXrPath) {
+        // did not generate a new webXR image, delete the existing record
+        await this.assetRepository.deleteFiles([webXr]);
       }
     }
 
@@ -257,6 +270,7 @@ export class MediaService extends BaseService {
     const { image } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
+    const webXrPath = StorageCore.getImagePath(asset, AssetPathType.WEB_XR, 'jpeg');
     this.storageCore.ensureFolders(previewPath);
 
     // Handle embedded preview extraction for RAW files
@@ -302,16 +316,24 @@ export class MediaService extends BaseService {
         fullsizePath,
       );
     }
+    // TODO add check global config feature to enable/disable webXR transcoding
+    if (asset.exifInfo.projectionType === 'SPATIAL_APPLE_PHOTO') {
+      // create left eye and right eye images for webXR
+      promises.push(
+        this.mediaRepository.generateWebXrThumbnail(asset.originalPath, webXrPath, { ...image.preview, ...thumbnailOptions}),
+      );
+    }
 
     const outputs = await Promise.all(promises);
 
-    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
+    return { previewPath, thumbnailPath, fullsizePath, webXrPath, thumbhash: outputs[0] as Buffer };
   }
 
-  private async generateVideoThumbnails(asset: ThumbnailPathEntity & { originalPath: string }) {
+  private async generateVideoThumbnails(asset: ThumbnailPathEntity & { originalPath: string, exifInfo: Exif }) {
     const { image, ffmpeg } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
+    const webXrPath = StorageCore.getImagePath(asset, AssetPathType.WEB_XR, 'mov');
     this.storageCore.ensureFolders(previewPath);
 
     const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
@@ -334,12 +356,18 @@ export class MediaService extends BaseService {
     await this.mediaRepository.transcode(asset.originalPath, previewPath, previewOptions);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailPath, thumbnailOptions);
 
+    // TODO add check global config feature to enable/disable webXR transcoding
+    if (asset.exifInfo.projectionType === 'SPATIAL_APPLE_VIDEO') {
+      // create left eye and right eye video tracks for webXR
+      await this.mediaRepository.transcodeSpatialVideoToSBS(asset.originalPath, webXrPath);
+    }
+
     const thumbhash = await this.mediaRepository.generateThumbhash(previewPath, {
       colorspace: image.colorspace,
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
     });
 
-    return { previewPath, thumbnailPath, thumbhash };
+    return { previewPath, thumbnailPath, webXrPath, thumbhash };
   }
 
   @OnJob({ name: JobName.QUEUE_VIDEO_CONVERSION, queue: QueueName.VIDEO_CONVERSION })

@@ -8801,7 +8801,8 @@
         "enum": [
           "fullsize",
           "preview",
-          "thumbnail"
+          "thumbnail",
+          "web_xr"
         ],
         "type": "string"
       },
@@ -11529,6 +11530,9 @@
           "smartSearch": {
             "type": "boolean"
           },
+          "transcodeStatialMediaForWebXr": {
+            "type": "boolean"
+          },
           "trash": {
             "type": "boolean"
           }
@@ -13037,10 +13041,14 @@
         "properties": {
           "faces": {
             "$ref": "#/components/schemas/SystemConfigFacesDto"
+          },
+          "spatial": {
+            "$ref": "#/components/schemas/SystemConfigSpatialDto"
           }
         },
         "required": [
-          "faces"
+          "faces",
+          "spatial"
         ],
         "type": "object"
       },
@@ -13239,6 +13247,17 @@
           "password",
           "port",
           "username"
+        ],
+        "type": "object"
+      },
+      "SystemConfigSpatialDto": {
+        "properties": {
+          "import": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "import"
         ],
         "type": "object"
       },

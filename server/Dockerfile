@@ -1,11 +1,13 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202504081114@sha256:250ab051cb0bdefdaf7d4069f3de9eada4c0288360ba1143a0e607a202b305b1 AS dev
+# TODO revert to release version with ffmpeg 7.1
+FROM ghcr.io/immich-app/base-server-dev:pr-202 AS dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
 COPY server/patches ./patches
-RUN npm ci && \
+# TODO fix it - problem in my mac if use npm ci
+RUN npm i && \
     # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
     # they're marked as optional dependencies, so we need to copy them manually after pruning
     rm -rf node_modules/@img/sharp-libvips* && \
@@ -43,7 +45,8 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:202504081114@sha256:8353bcbdb4e6579300adfa0d8b5892abefa42ebfc99740050cbfb38ab83a0605
+# TODO revert to release version with ffmpeg 7.1
+FROM ghcr.io/immich-app/base-server-prod:pr-202
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

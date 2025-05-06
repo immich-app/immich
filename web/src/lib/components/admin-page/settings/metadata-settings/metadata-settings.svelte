@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import type { SystemConfigDto } from '@immich/sdk';
+  import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -33,12 +33,20 @@
           bind:checked={config.metadata.faces.import}
           {disabled}
         />
+
+        <SettingSwitch
+          title={$t('admin.metadata_spatial_transcode_setting')}
+          subtitle={$t('admin.metadata_spatial_transcode_setting_description')}
+          bind:checked={config.metadata.spatial.import}
+          {disabled}
+        />
       </div>
 
       <SettingButtonsRow
         onReset={(options) => onReset({ ...options, configKeys: ['metadata'] })}
         onSave={() => onSave({ metadata: config.metadata })}
-        showResetToDefault={!isEqual(savedConfig.metadata.faces.import, defaultConfig.metadata.faces.import)}
+        showResetToDefault={!isEqual(savedConfig.metadata.faces.import, defaultConfig.metadata.faces.import) ||
+          !isEqual(savedConfig.metadata.spatial.import, defaultConfig.metadata.spatial.import)}
         {disabled}
       />
     </form>

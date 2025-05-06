@@ -71,6 +71,7 @@
     "js-yaml": "^4.1.0",
     "kysely": "^0.28.0",
     "kysely-postgres-js": "^2.0.0",
+    "libheif-js": "^1.18.2",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
     "nest-commander": "^3.16.0",

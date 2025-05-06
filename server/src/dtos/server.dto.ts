@@ -164,6 +164,7 @@ export class ServerFeaturesDto {
   sidecar!: boolean;
   search!: boolean;
   email!: boolean;
+  transcodeStatialMediaForWebXr?: boolean;
 }
 
 export interface ReleaseNotification {

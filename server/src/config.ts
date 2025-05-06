@@ -82,6 +82,9 @@ export interface SystemConfig {
     faces: {
       import: boolean;
     };
+    spatial: {
+      import: boolean;
+    };
   };
   oauth: {
     autoLaunch: boolean;
@@ -244,6 +247,9 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   metadata: {
     faces: {
+      import: false,
+    },
+    spatial: {
       import: false,
     },
   },
