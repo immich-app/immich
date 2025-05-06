@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, SelectQueryBuilder, sql } from 'kysely';
-import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DB, SessionSyncCheckpoints } from 'src/db';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { SyncEntityType } from 'src/enum';
-import { SyncAck } from 'src/types';
+import { Injectable } from '@nestjs/common'
+import { Insertable, Kysely, SelectQueryBuilder, sql } from 'kysely'
+import { InjectKysely } from 'nestjs-kysely'
+import { columns } from 'src/database'
+import { DB, SessionSyncCheckpoints } from 'src/db'
+import { DummyValue, GenerateSql } from 'src/decorators'
+import { SyncEntityType } from 'src/enum'
+import { SyncAck } from 'src/types'
 
 type auditTables = 'users_audit' | 'partners_audit' | 'assets_audit';
 type upsertTables = 'users' | 'partners' | 'assets' | 'exif';
@@ -159,7 +159,7 @@ export class SyncRepository {
     return builder
       .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
       .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
-      .orderBy(['id asc']) as SelectQueryBuilder<DB, T, D>;
+      .orderBy('id', 'asc') as SelectQueryBuilder<DB, T, D>;
   }
 
   private upsertTableFilters<T extends keyof Pick<DB, upsertTables>, D>(
@@ -170,6 +170,6 @@ export class SyncRepository {
     return builder
       .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
       .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
-      .orderBy(['updateId asc']) as SelectQueryBuilder<DB, T, D>;
+      .orderBy('updateId', 'asc') as SelectQueryBuilder<DB, T, D>;
   }
 }

@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
-import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { DatabaseAction, EntityType } from 'src/enum';
+import { Injectable } from '@nestjs/common'
+import { Kysely } from 'kysely'
+import { InjectKysely } from 'nestjs-kysely'
+import { DB } from 'src/db'
+import { DummyValue, GenerateSql } from 'src/decorators'
+import { DatabaseAction, EntityType } from 'src/enum'
 
 export interface AuditSearch {
   action?: DatabaseAction;
@@ -29,7 +29,9 @@ export class AuditRepository {
       .$if(!!options.entityType, (qb) => qb.where('audit.entityType', '=', options.entityType!))
       .where('audit.ownerId', 'in', options.userIds)
       .distinctOn(['audit.entityId', 'audit.entityType'])
-      .orderBy(['audit.entityId desc', 'audit.entityType desc', 'audit.createdAt desc'])
+      .orderBy('audit.entityId', 'desc')
+      .orderBy('audit.entityType', 'desc')
+      .orderBy('audit.createdAt', 'desc')
       .select('audit.entityId')
       .execute();
 
