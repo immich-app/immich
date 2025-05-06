@@ -4,12 +4,13 @@ import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { UserEntity } from 'src/entities/user.entity';
+import { UserAdmin } from 'src/database';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -17,6 +18,7 @@ import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { DownloadRepository } from 'src/repositories/download.repository';
+import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
@@ -27,7 +29,6 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
-import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -62,12 +63,14 @@ export class BaseService {
     protected albumUserRepository: AlbumUserRepository,
     protected apiKeyRepository: ApiKeyRepository,
     protected assetRepository: AssetRepository,
+    protected assetJobRepository: AssetJobRepository,
     protected auditRepository: AuditRepository,
     protected configRepository: ConfigRepository,
     protected cronRepository: CronRepository,
     protected cryptoRepository: CryptoRepository,
     protected databaseRepository: DatabaseRepository,
     protected downloadRepository: DownloadRepository,
+    protected emailRepository: EmailRepository,
     protected eventRepository: EventRepository,
     protected jobRepository: JobRepository,
     protected libraryRepository: LibraryRepository,
@@ -77,7 +80,6 @@ export class BaseService {
     protected memoryRepository: MemoryRepository,
     protected metadataRepository: MetadataRepository,
     protected moveRepository: MoveRepository,
-    protected notificationRepository: NotificationRepository,
     protected oauthRepository: OAuthRepository,
     protected partnerRepository: PartnerRepository,
     protected personRepository: PersonRepository,
@@ -138,7 +140,7 @@ export class BaseService {
     return checkAccess(this.accessRepository, request);
   }
 
-  async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserEntity> {
+  async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {
     const user = await this.userRepository.getByEmail(dto.email);
     if (user) {
       throw new BadRequestException('User exists');

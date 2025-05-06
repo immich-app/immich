@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ClassConstructor } from 'class-transformer';
 import { snakeCase } from 'lodash';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
 import {
   AssetType,
+  BootstrapEventPriority,
   ImmichWorker,
   JobCommand,
   JobName,
@@ -51,6 +53,8 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 
 @Injectable()
 export class JobService extends BaseService {
+  private services: ClassConstructor<unknown>[] = [];
+
   @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
   onConfigInit({ newConfig: config }: ArgOf<'config.init'>) {
     this.logger.debug(`Updating queue concurrency settings`);
@@ -67,6 +71,18 @@ export class JobService extends BaseService {
   @OnEvent({ name: 'config.update', server: true, workers: [ImmichWorker.MICROSERVICES] })
   onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
     this.onConfigInit({ newConfig: config });
+  }
+
+  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.JobService })
+  onBootstrap() {
+    this.jobRepository.setup(this.services);
+    if (this.worker === ImmichWorker.MICROSERVICES) {
+      this.jobRepository.startWorkers();
+    }
+  }
+
+  setServices(services: ClassConstructor<unknown>[]) {
+    this.services = services;
   }
 
   async create(dto: JobCreateDto): Promise<void> {
@@ -254,7 +270,7 @@ export class JobService extends BaseService {
 
       case JobName.METADATA_EXTRACTION: {
         if (item.data.source === 'sidecar-write') {
-          const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
+          const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([item.data.id]);
           if (asset) {
             this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
           }
@@ -284,7 +300,7 @@ export class JobService extends BaseService {
           break;
         }
 
-        const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
+        const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([item.data.id]);
         if (!asset) {
           this.logger.warn(`Could not find asset ${item.data.id} after generating thumbnails`);
           break;
@@ -297,8 +313,6 @@ export class JobService extends BaseService {
 
         if (asset.type === AssetType.VIDEO) {
           jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
-        } else if (asset.livePhotoVideoId) {
-          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
         }
 
         await this.jobRepository.queueAll(jobs);

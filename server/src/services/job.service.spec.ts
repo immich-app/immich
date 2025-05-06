@@ -230,7 +230,7 @@ describe(JobService.name, () => {
       expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
-    const tests: Array<{ item: JobItem; jobs: JobName[] }> = [
+    const tests: Array<{ item: JobItem; jobs: JobName[]; stub?: any }> = [
       {
         item: { name: JobName.SIDECAR_SYNC, data: { id: 'asset-1' } },
         jobs: [JobName.METADATA_EXTRACTION],
@@ -258,14 +258,22 @@ describe(JobService.name, () => {
       {
         item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1' } },
         jobs: [],
+        stub: [assetStub.image],
+      },
+      {
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1' } },
+        jobs: [],
+        stub: [assetStub.video],
+      },
+      {
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1', source: 'upload' } },
+        jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION],
+        stub: [assetStub.livePhotoStillAsset],
       },
       {
         item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1', source: 'upload' } },
         jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION, JobName.VIDEO_CONVERSION],
-      },
-      {
-        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-live-image', source: 'upload' } },
-        jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION, JobName.VIDEO_CONVERSION],
+        stub: [assetStub.video],
       },
       {
         item: { name: JobName.SMART_SEARCH, data: { id: 'asset-1' } },
@@ -281,14 +289,10 @@ describe(JobService.name, () => {
       },
     ];
 
-    for (const { item, jobs } of tests) {
+    for (const { item, jobs, stub } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        if (item.name === JobName.GENERATE_THUMBNAILS && item.data.source === 'upload') {
-          if (item.data.id === 'asset-live-image') {
-            mocks.asset.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoStillAsset]);
-          } else {
-            mocks.asset.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoMotionAsset]);
-          }
+        if (stub) {
+          mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue(stub);
         }
 
         mocks.job.run.mockResolvedValue(JobStatus.SUCCESS);

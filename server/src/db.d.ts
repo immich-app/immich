@@ -4,15 +4,24 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { AssetType, MemoryType, Permission, SyncEntityType } from 'src/enum';
+import {
+  AlbumUserRole,
+  AssetFileType,
+  AssetOrder,
+  AssetStatus,
+  AssetType,
+  MemoryType,
+  Permission,
+  SharedLinkType,
+  SourceType,
+  SyncEntityType,
+} from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
-import { OnThisDayData } from 'src/types';
+import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
 export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S[], I[], U[]> : T[];
-
-export type AssetsStatusEnum = 'active' | 'deleted' | 'trashed';
 
 export type Generated<T> =
   T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
@@ -30,8 +39,6 @@ export type JsonObject = {
 export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
-
-export type Sourcetype = 'exif' | 'machine-learning' | 'manual';
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
@@ -58,7 +65,7 @@ export interface Albums {
   description: Generated<string>;
   id: Generated<string>;
   isActivityEnabled: Generated<boolean>;
-  order: Generated<string>;
+  order: Generated<AssetOrder>;
   ownerId: string;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
@@ -72,7 +79,7 @@ export interface AlbumsAssetsAssets {
 
 export interface AlbumsSharedUsersUsers {
   albumsId: string;
-  role: Generated<string>;
+  role: Generated<AlbumUserRole>;
   usersId: string;
 }
 
@@ -98,7 +105,7 @@ export interface AssetFaces {
   imageHeight: Generated<number>;
   imageWidth: Generated<number>;
   personId: string | null;
-  sourceType: Generated<Sourcetype>;
+  sourceType: Generated<SourceType>;
 }
 
 export interface AssetFiles {
@@ -106,7 +113,7 @@ export interface AssetFiles {
   createdAt: Generated<Timestamp>;
   id: Generated<string>;
   path: string;
-  type: string;
+  type: AssetFileType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }
@@ -136,8 +143,8 @@ export interface Assets {
   duplicateId: string | null;
   duration: string | null;
   encodedVideoPath: Generated<string | null>;
-  fileCreatedAt: Timestamp | null;
-  fileModifiedAt: Timestamp | null;
+  fileCreatedAt: Timestamp;
+  fileModifiedAt: Timestamp;
   id: Generated<string>;
   isArchived: Generated<boolean>;
   isExternal: Generated<boolean>;
@@ -146,13 +153,13 @@ export interface Assets {
   isVisible: Generated<boolean>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
-  localDateTime: Timestamp | null;
+  localDateTime: Timestamp;
   originalFileName: string;
   originalPath: string;
   ownerId: string;
   sidecarPath: string | null;
   stackId: string | null;
-  status: Generated<AssetsStatusEnum>;
+  status: Generated<AssetStatus>;
   thumbhash: Buffer | null;
   type: AssetType;
   updatedAt: Generated<Timestamp>;
@@ -350,7 +357,7 @@ export interface SharedLinks {
   key: Buffer;
   password: string | null;
   showExif: Generated<boolean>;
-  type: string;
+  type: SharedLinkType;
   userId: string;
 }
 
@@ -405,10 +412,8 @@ export interface TypeormMetadata {
   value: string | null;
 }
 
-export interface UserMetadata {
-  key: string;
+export interface UserMetadata extends UserMetadataItem {
   userId: string;
-  value: Json;
 }
 
 export interface UsersAudit {

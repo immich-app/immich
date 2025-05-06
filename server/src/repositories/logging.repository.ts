@@ -1,4 +1,4 @@
-import { ConsoleLogger, Injectable, Scope } from '@nestjs/common';
+import { ConsoleLogger, Inject, Injectable, Scope } from '@nestjs/common';
 import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
 import { ClsService } from 'nestjs-cls';
 import { Telemetry } from 'src/decorators';
@@ -26,7 +26,7 @@ export class MyConsoleLogger extends ConsoleLogger {
   private isColorEnabled: boolean;
 
   constructor(
-    private cls: ClsService,
+    private cls: ClsService | undefined,
     options?: { color?: boolean; context?: string },
   ) {
     super(options?.context || MyConsoleLogger.name);
@@ -74,9 +74,19 @@ export class MyConsoleLogger extends ConsoleLogger {
 export class LoggingRepository {
   private logger: MyConsoleLogger;
 
-  constructor(cls: ClsService, configRepository: ConfigRepository) {
-    const { noColor } = configRepository.getEnv();
+  constructor(
+    @Inject(ClsService) cls: ClsService | undefined,
+    @Inject(ConfigRepository) configRepository: ConfigRepository | undefined,
+  ) {
+    let noColor = false;
+    if (configRepository) {
+      noColor = configRepository.getEnv().noColor;
+    }
     this.logger = new MyConsoleLogger(cls, { context: LoggingRepository.name, color: !noColor });
+  }
+
+  static create() {
+    return new LoggingRepository(undefined, undefined);
   }
 
   setAppName(name: string): void {

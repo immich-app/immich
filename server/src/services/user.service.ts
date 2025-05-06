@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
@@ -8,12 +9,11 @@ import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
-import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum';
 import { UserFindOptions } from 'src/repositories/user.repository';
+import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
+import { JobOf, UserMetadataItem } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
@@ -50,7 +50,7 @@ export class UserService extends BaseService {
       }
     }
 
-    const update: Partial<UserEntity> = {
+    const update: Updateable<UserTable> = {
       email: dto.email,
       name: dto.name,
     };
@@ -135,7 +135,7 @@ export class UserService extends BaseService {
     const metadata = await this.userRepository.getMetadata(auth.user.id);
 
     const license = metadata.find(
-      (item): item is UserMetadataEntity<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
+      (item): item is UserMetadataItem<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
     );
     if (!license) {
       throw new NotFoundException();
@@ -230,7 +230,7 @@ export class UserService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private isReadyForDeletion(user: UserEntity, deleteDelay: number): boolean {
+  private isReadyForDeletion(user: { id: string; deletedAt?: Date | null }, deleteDelay: number): boolean {
     if (!user.deletedAt) {
       return false;
     }

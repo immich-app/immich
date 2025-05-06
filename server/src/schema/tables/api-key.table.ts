@@ -1,29 +1,26 @@
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { Permission } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
-  ColumnIndex,
   CreateDateColumn,
   ForeignKeyColumn,
   PrimaryGeneratedColumn,
   Table,
   UpdateDateColumn,
-  UpdateIdColumn,
 } from 'src/sql-tools';
 
 @Table('api_keys')
+@UpdatedAtTrigger('api_keys_updated_at')
 export class APIKeyTable {
-  @PrimaryGeneratedColumn()
-  id!: string;
-
   @Column()
   name!: string;
 
   @Column()
   key!: string;
 
-  @Column({ array: true, type: 'character varying' })
-  permissions!: Permission[];
+  @ForeignKeyColumn(() => UserTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  userId!: string;
 
   @CreateDateColumn()
   createdAt!: Date;
@@ -31,10 +28,12 @@ export class APIKeyTable {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @ColumnIndex({ name: 'IDX_api_keys_update_id' })
-  @UpdateIdColumn()
-  updateId?: string;
+  @PrimaryGeneratedColumn()
+  id!: string;
 
-  @ForeignKeyColumn(() => UserTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  userId!: string;
+  @Column({ array: true, type: 'character varying' })
+  permissions!: Permission[];
+
+  @UpdateIdColumn({ indexName: 'IDX_api_keys_update_id' })
+  updateId?: string;
 }

@@ -2,12 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetFileType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -107,8 +106,8 @@ export class SmartInfoService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id], { files: true });
-    if (!asset) {
+    const asset = await this.assetJobRepository.getForClipEncoding(id);
+    if (!asset || asset.files.length !== 1) {
       return JobStatus.FAILED;
     }
 
@@ -116,14 +115,9 @@ export class SmartInfoService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
-    if (!previewFile) {
-      return JobStatus.FAILED;
-    }
-
     const embedding = await this.machineLearningRepository.encodeImage(
       machineLearning.urls,
-      previewFile.path,
+      asset.files[0].path,
       machineLearning.clip,
     );
 

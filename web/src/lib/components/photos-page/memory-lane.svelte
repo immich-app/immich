@@ -38,7 +38,7 @@
   <section
     id="memory-lane"
     bind:this={memoryLaneElement}
-    class="relative mt-5 overflow-x-scroll overflow-y-hidden whitespace-nowrap transition-all"
+    class="relative mt-5 mx-2 overflow-x-scroll overflow-y-hidden whitespace-nowrap transition-all"
     style="scrollbar-width:none"
     use:resizeObserver={({ width }) => (offsetWidth = width)}
     onscroll={onScroll}
@@ -76,7 +76,7 @@
     <div class="inline-block" use:resizeObserver={({ width }) => (innerWidth = width)}>
       {#each memoryStore.memories as memory (memory.id)}
         <a
-          class="memory-card relative mr-8 last:mr-0 inline-block aspect-[3/4] md:aspect-[4/3] xl:aspect-video h-[215px] rounded-xl"
+          class="memory-card relative mr-2 md:mr-4 last:mr-0 inline-block aspect-[3/4] md:aspect-[4/3] max-md:h-[150px] xl:aspect-video h-[215px] rounded-xl"
           href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
         >
           <img
@@ -85,7 +85,7 @@
             alt={$t('memory_lane_title', { values: { title: $getAltText(memory.assets[0]) } })}
             draggable="false"
           />
-          <p class="absolute bottom-2 left-4 z-10 text-lg text-white">
+          <p class="absolute bottom-2 left-4 z-10 text-lg text-white max-md:text-sm">
             {$memoryLaneTitle(memory)}
           </p>
           <div

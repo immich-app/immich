@@ -1,7 +1,7 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
   import { goto } from '$app/navigation';
-  import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
+  import { searchStore } from '$lib/stores/search.svelte';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterModal from './search-filter-modal.svelte';
@@ -13,7 +13,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
   import { generateId } from '$lib/utils/generate-id';
-  import { tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
 
   interface Props {
     value?: string;
@@ -35,50 +35,46 @@
 
   const listboxId = generateId();
 
+  onDestroy(() => {
+    searchStore.isSearchEnabled = false;
+  });
+
   const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     const params = getMetadataSearchQuery(payload);
 
     closeDropdown();
     showFilter = false;
-    $isSearchEnabled = false;
+    searchStore.isSearchEnabled = false;
     await goto(`${AppRoute.SEARCH}?${params}`);
   };
 
   const clearSearchTerm = (searchTerm: string) => {
     input?.focus();
-    $savedSearchTerms = $savedSearchTerms.filter((item) => item !== searchTerm);
+    searchStore.savedSearchTerms = searchStore.savedSearchTerms.filter((item) => item !== searchTerm);
   };
 
   const saveSearchTerm = (saveValue: string) => {
-    const filteredSearchTerms = $savedSearchTerms.filter((item) => item.toLowerCase() !== saveValue.toLowerCase());
-    $savedSearchTerms = [saveValue, ...filteredSearchTerms];
+    const filteredSearchTerms = searchStore.savedSearchTerms.filter(
+      (item) => item.toLowerCase() !== saveValue.toLowerCase(),
+    );
+    searchStore.savedSearchTerms = [saveValue, ...filteredSearchTerms];
 
-    if ($savedSearchTerms.length > 5) {
-      $savedSearchTerms = $savedSearchTerms.slice(0, 5);
+    if (searchStore.savedSearchTerms.length > 5) {
+      searchStore.savedSearchTerms = searchStore.savedSearchTerms.slice(0, 5);
     }
   };
 
   const clearAllSearchTerms = () => {
     input?.focus();
-    $savedSearchTerms = [];
+    searchStore.savedSearchTerms = [];
   };
 
   const onFocusIn = () => {
-    $isSearchEnabled = true;
+    searchStore.isSearchEnabled = true;
   };
 
   const onFocusOut = () => {
-    const focusOutTimer = setTimeout(() => {
-      if ($isSearchEnabled) {
-        $preventRaceConditionSearchBar = true;
-      }
-
-      closeDropdown();
-      $isSearchEnabled = false;
-      showFilter = false;
-    }, 100);
-
-    clearTimeout(focusOutTimer);
+    searchStore.isSearchEnabled = false;
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {
@@ -225,7 +221,9 @@
         class="w-full transition-all border-2 px-14 py-4 max-md:py-2 text-immich-fg/75 dark:text-immich-dark-fg
         {grayTheme ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
         {showSuggestions && isSearchSuggestions ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
-        {$isSearchEnabled && !showFilter ? 'border-gray-200 dark:border-gray-700 bg-white' : 'border-transparent'}"
+        {searchStore.isSearchEnabled && !showFilter
+          ? 'border-gray-200 dark:border-gray-700 bg-white'
+          : 'border-transparent'}"
         placeholder={$t('search_your_photos')}
         required
         pattern="^(?!m:$).*$"

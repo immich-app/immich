@@ -51,7 +51,7 @@
 </header>
 <main
   tabindex="-1"
-  class="relative grid h-screen grid-cols-[theme(spacing.18)_auto] overflow-hidden bg-immich-bg max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
+  class="relative grid h-dvh grid-cols-[theme(spacing.0)_auto] overflow-hidden bg-immich-bg max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
 >
   {#if sidebar}{@render sidebar()}{:else if admin}
     <AdminSideBar />
@@ -62,11 +62,11 @@
   <section class="relative">
     {#if title || buttons}
       <div
-        class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div class="flex gap-2 items-center">
           {#if title}
-            <div class="font-medium" tabindex="-1" id={headerId}>{title}</div>
+            <div class="font-medium outline-none" tabindex="-1" id={headerId}>{title}</div>
           {/if}
           {#if description}
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
@@ -76,7 +76,7 @@
       </div>
     {/if}
 
-    <div class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
       {@render children?.()}
     </div>
   </section>

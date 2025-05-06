@@ -5,13 +5,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Stats } from 'node:fs';
+import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetFileType, AssetStatus, AssetType, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
+import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -166,14 +167,14 @@ const assetEntity = Object.freeze({
   isArchived: false,
   encodedVideoPath: '',
   duration: '0:00:00.000000',
-  files: [] as AssetFileEntity[],
+  files: [] as AssetFile[],
   exifInfo: {
     latitude: 49.533_547,
     longitude: 10.703_075,
   },
   livePhotoVideoId: null,
   sidecarPath: null,
-}) as AssetEntity;
+} as MapAsset);
 
 const existingAsset = Object.freeze({
   ...assetEntity,
@@ -182,18 +183,18 @@ const existingAsset = Object.freeze({
   checksum: Buffer.from('_getExistingAsset', 'utf8'),
   libraryId: 'libraryId',
   originalFileName: 'existing-filename.jpeg',
-}) as AssetEntity;
+}) as MapAsset;
 
 const sidecarAsset = Object.freeze({
   ...existingAsset,
   sidecarPath: 'sidecar-path',
   checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
-}) as AssetEntity;
+}) as MapAsset;
 
 const copiedAsset = Object.freeze({
   id: 'copied-asset',
   originalPath: 'copied-path',
-}) as AssetEntity;
+}) as MapAsset;
 
 describe(AssetMediaService.name, () => {
   let sut: AssetMediaService;
@@ -535,12 +536,9 @@ describe(AssetMediaService.name, () => {
         ...assetStub.image,
         files: [
           {
-            assetId: assetStub.image.id,
-            createdAt: assetStub.image.fileCreatedAt,
             id: '42',
             path: '/path/to/preview',
             type: AssetFileType.THUMBNAIL,
-            updatedAt: new Date(),
           },
         ],
       });
@@ -555,12 +553,9 @@ describe(AssetMediaService.name, () => {
         ...assetStub.image,
         files: [
           {
-            assetId: assetStub.image.id,
-            createdAt: assetStub.image.fileCreatedAt,
             id: '42',
             path: '/path/to/preview.jpg',
             type: AssetFileType.PREVIEW,
-            updatedAt: new Date(),
           },
         ],
       });
@@ -669,9 +664,18 @@ describe(AssetMediaService.name, () => {
   });
 
   describe('replaceAsset', () => {
-    it('should error when update photo does not exist', async () => {
+    it('should fail the auth check when update photo does not exist', async () => {
       await expect(sut.replaceAsset(authStub.user1, 'id', replaceDto, fileStub.photo)).rejects.toThrow(
         'Not found or no asset.update access',
+      );
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+    });
+
+    it('should fail if asset cannot be fetched', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, fileStub.photo)).rejects.toThrow(
+        'Asset not found',
       );
 
       expect(mocks.asset.create).not.toHaveBeenCalled();
@@ -816,8 +820,8 @@ describe(AssetMediaService.name, () => {
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
       mocks.asset.getByChecksums.mockResolvedValue([
-        { id: 'asset-1', checksum: file1 } as AssetEntity,
-        { id: 'asset-2', checksum: file2 } as AssetEntity,
+        { id: 'asset-1', checksum: file1, deletedAt: null },
+        { id: 'asset-2', checksum: file2, deletedAt: null },
       ]);
 
       await expect(
@@ -853,7 +857,7 @@ describe(AssetMediaService.name, () => {
       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
-      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1 } as AssetEntity]);
+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1, deletedAt: null }]);
 
       await expect(
         sut.bulkUploadCheck(authStub.admin, {

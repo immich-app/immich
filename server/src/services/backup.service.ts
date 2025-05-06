@@ -70,7 +70,7 @@ export class BackupService extends BaseService {
   async handleBackupDatabase(): Promise<JobStatus> {
     this.logger.debug(`Database Backup Started`);
     const { database } = this.configRepository.getEnv();
-    const config = database.config.typeorm;
+    const config = database.config;
 
     const isUrlConnection = config.connectionType === 'url';
 

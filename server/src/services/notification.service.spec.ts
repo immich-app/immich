@@ -1,10 +1,9 @@
 import { plainToInstance } from 'class-transformer';
 import { defaults, SystemConfig } from 'src/config';
+import { AlbumUser } from 'src/database';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
-import { AlbumUserEntity } from 'src/entities/album-user.entity';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
-import { EmailTemplate } from 'src/repositories/notification.repository';
+import { EmailTemplate } from 'src/repositories/email.repository';
 import { NotificationService } from 'src/services/notification.service';
 import { INotifyAlbumUpdateJob } from 'src/types';
 import { albumStub } from 'test/fixtures/album.stub';
@@ -75,18 +74,18 @@ describe(NotificationService.name, () => {
       const oldConfig = configs.smtpDisabled;
       const newConfig = configs.smtpEnabled;
 
-      mocks.notification.verifySmtp.mockResolvedValue(true);
+      mocks.email.verifySmtp.mockResolvedValue(true);
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
-      expect(mocks.notification.verifySmtp).toHaveBeenCalledWith(newConfig.notifications.smtp.transport);
+      expect(mocks.email.verifySmtp).toHaveBeenCalledWith(newConfig.notifications.smtp.transport);
     });
 
     it('validates smtp config when transport changes', async () => {
       const oldConfig = configs.smtpEnabled;
       const newConfig = configs.smtpTransport;
 
-      mocks.notification.verifySmtp.mockResolvedValue(true);
+      mocks.email.verifySmtp.mockResolvedValue(true);
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
-      expect(mocks.notification.verifySmtp).toHaveBeenCalledWith(newConfig.notifications.smtp.transport);
+      expect(mocks.email.verifySmtp).toHaveBeenCalledWith(newConfig.notifications.smtp.transport);
     });
 
     it('skips smtp validation when there are no changes', async () => {
@@ -94,7 +93,7 @@ describe(NotificationService.name, () => {
       const newConfig = { ...configs.smtpEnabled };
 
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
-      expect(mocks.notification.verifySmtp).not.toHaveBeenCalled();
+      expect(mocks.email.verifySmtp).not.toHaveBeenCalled();
     });
 
     it('skips smtp validation with DTO when there are no changes', async () => {
@@ -102,7 +101,7 @@ describe(NotificationService.name, () => {
       const newConfig = plainToInstance(SystemConfigDto, configs.smtpEnabled);
 
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
-      expect(mocks.notification.verifySmtp).not.toHaveBeenCalled();
+      expect(mocks.email.verifySmtp).not.toHaveBeenCalled();
     });
 
     it('skips smtp validation when smtp is disabled', async () => {
@@ -110,14 +109,14 @@ describe(NotificationService.name, () => {
       const newConfig = { ...configs.smtpDisabled };
 
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
-      expect(mocks.notification.verifySmtp).not.toHaveBeenCalled();
+      expect(mocks.email.verifySmtp).not.toHaveBeenCalled();
     });
 
     it('should fail if smtp configuration is invalid', async () => {
       const oldConfig = configs.smtpDisabled;
       const newConfig = configs.smtpEnabled;
 
-      mocks.notification.verifySmtp.mockRejectedValue(new Error('Failed validating smtp'));
+      mocks.email.verifySmtp.mockRejectedValue(new Error('Failed validating smtp'));
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).rejects.toBeInstanceOf(Error);
     });
   });
@@ -249,7 +248,7 @@ describe(NotificationService.name, () => {
 
     it('should throw error if smtp validation fails', async () => {
       mocks.user.get.mockResolvedValue(userStub.admin);
-      mocks.notification.verifySmtp.mockRejectedValue('');
+      mocks.email.verifySmtp.mockRejectedValue('');
 
       await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).rejects.toThrow(
         'Failed to verify SMTP configuration',
@@ -258,16 +257,16 @@ describe(NotificationService.name, () => {
 
     it('should send email to default domain', async () => {
       mocks.user.get.mockResolvedValue(userStub.admin);
-      mocks.notification.verifySmtp.mockResolvedValue(true);
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.notification.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
+      mocks.email.verifySmtp.mockResolvedValue(true);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
 
       await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).resolves.not.toThrow();
-      expect(mocks.notification.renderEmail).toHaveBeenCalledWith({
+      expect(mocks.email.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
         data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
       });
-      expect(mocks.notification.sendEmail).toHaveBeenCalledWith(
+      expect(mocks.email.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
           subject: 'Test email from Immich',
           smtp: configs.smtpTransport.notifications.smtp.transport,
@@ -277,17 +276,17 @@ describe(NotificationService.name, () => {
 
     it('should send email to external domain', async () => {
       mocks.user.get.mockResolvedValue(userStub.admin);
-      mocks.notification.verifySmtp.mockResolvedValue(true);
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.verifySmtp.mockResolvedValue(true);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.systemMetadata.get.mockResolvedValue({ server: { externalDomain: 'https://demo.immich.app' } });
-      mocks.notification.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
+      mocks.email.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
 
       await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).resolves.not.toThrow();
-      expect(mocks.notification.renderEmail).toHaveBeenCalledWith({
+      expect(mocks.email.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
         data: { baseUrl: 'https://demo.immich.app', displayName: userStub.admin.name },
       });
-      expect(mocks.notification.sendEmail).toHaveBeenCalledWith(
+      expect(mocks.email.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
           subject: 'Test email from Immich',
           smtp: configs.smtpTransport.notifications.smtp.transport,
@@ -297,18 +296,18 @@ describe(NotificationService.name, () => {
 
     it('should send email with replyTo', async () => {
       mocks.user.get.mockResolvedValue(userStub.admin);
-      mocks.notification.verifySmtp.mockResolvedValue(true);
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.notification.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
+      mocks.email.verifySmtp.mockResolvedValue(true);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
 
       await expect(
         sut.sendTestEmail('', { ...configs.smtpTransport.notifications.smtp, replyTo: 'demo@immich.app' }),
       ).resolves.not.toThrow();
-      expect(mocks.notification.renderEmail).toHaveBeenCalledWith({
+      expect(mocks.email.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
         data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
       });
-      expect(mocks.notification.sendEmail).toHaveBeenCalledWith(
+      expect(mocks.email.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
           subject: 'Test email from Immich',
           smtp: configs.smtpTransport.notifications.smtp.transport,
@@ -326,7 +325,7 @@ describe(NotificationService.name, () => {
     it('should be successful', async () => {
       mocks.user.get.mockResolvedValue(userStub.admin);
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
 
       await expect(sut.handleUserSignup({ id: '' })).resolves.toBe(JobStatus.SUCCESS);
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -357,8 +356,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: false, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -374,8 +371,6 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: false } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
@@ -391,13 +386,11 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -414,18 +407,18 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
-        files: true,
-      });
+      expect(mocks.assetJob.getAlbumThumbnailFiles).toHaveBeenCalledWith(
+        albumStub.emptyWithValidThumbnail.albumThumbnailAssetId,
+        AssetFileType.THUMBNAIL,
+      );
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -443,22 +436,20 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.asset.getById.mockResolvedValue({
-        ...assetStub.image,
-        files: [{ assetId: 'asset-id', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' } as AssetFileEntity],
-      });
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([
+        { id: '1', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' },
+      ]);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
-        files: true,
-      });
+      expect(mocks.assetJob.getAlbumThumbnailFiles).toHaveBeenCalledWith(
+        albumStub.emptyWithValidThumbnail.albumThumbnailAssetId,
+        AssetFileType.THUMBNAIL,
+      );
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -476,19 +467,18 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumInvite: true } },
-            userId: userStub.user1.id,
-            user: userStub.user1,
           },
         ],
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([assetStub.image.files[2]]);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.asset.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
-        files: true,
-      });
+      expect(mocks.assetJob.getAlbumThumbnailFiles).toHaveBeenCalledWith(
+        albumStub.emptyWithValidThumbnail.albumThumbnailAssetId,
+        AssetFileType.THUMBNAIL,
+      );
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -515,20 +505,21 @@ describe(NotificationService.name, () => {
     it('should skip recipient that could not be looked up', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUserEntity],
+        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValueOnce(userStub.user1);
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
       await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(mocks.user.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
-      expect(mocks.notification.renderEmail).not.toHaveBeenCalled();
+      expect(mocks.email.renderEmail).not.toHaveBeenCalled();
     });
 
     it('should skip recipient with disabled email notifications', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUserEntity],
+        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
@@ -536,22 +527,21 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: false, albumUpdate: true } },
-            user: userStub.user1,
-            userId: userStub.user1.id,
           },
         ],
       });
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
       await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(mocks.user.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
-      expect(mocks.notification.renderEmail).not.toHaveBeenCalled();
+      expect(mocks.email.renderEmail).not.toHaveBeenCalled();
     });
 
     it('should skip recipient with disabled email notifications for the album update event', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUserEntity],
+        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
@@ -559,29 +549,29 @@ describe(NotificationService.name, () => {
           {
             key: UserMetadataKey.PREFERENCES,
             value: { emailNotifications: { enabled: true, albumUpdate: false } },
-            user: userStub.user1,
-            userId: userStub.user1.id,
           },
         ],
       });
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
       await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(mocks.user.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
-      expect(mocks.notification.renderEmail).not.toHaveBeenCalled();
+      expect(mocks.email.renderEmail).not.toHaveBeenCalled();
     });
 
     it('should send email', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUserEntity],
+        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue(userStub.user1);
-      mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
       await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(mocks.user.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
-      expect(mocks.notification.renderEmail).toHaveBeenCalled();
+      expect(mocks.email.renderEmail).toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalled();
     });
 
@@ -609,24 +599,20 @@ describe(NotificationService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         notifications: { smtp: { enabled: true, from: 'test@immich.app' } },
       });
-      mocks.notification.sendEmail.mockResolvedValue({ messageId: '', response: '' });
+      mocks.email.sendEmail.mockResolvedValue({ messageId: '', response: '' });
 
       await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.notification.sendEmail).toHaveBeenCalledWith(
-        expect.objectContaining({ replyTo: 'test@immich.app' }),
-      );
+      expect(mocks.email.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ replyTo: 'test@immich.app' }));
     });
 
     it('should send mail with replyTo successfully', async () => {
       mocks.systemMetadata.get.mockResolvedValue({
         notifications: { smtp: { enabled: true, from: 'test@immich.app', replyTo: 'demo@immich.app' } },
       });
-      mocks.notification.sendEmail.mockResolvedValue({ messageId: '', response: '' });
+      mocks.email.sendEmail.mockResolvedValue({ messageId: '', response: '' });
 
       await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.notification.sendEmail).toHaveBeenCalledWith(
-        expect.objectContaining({ replyTo: 'demo@immich.app' }),
-      );
+      expect(mocks.email.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ replyTo: 'demo@immich.app' }));
     });
   });
 });

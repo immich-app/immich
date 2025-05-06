@@ -9,11 +9,9 @@ import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { Exif } from 'src/db';
+import { Asset, AssetFace } from 'src/database';
+import { AssetFaces, Exif, Person } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { PersonEntity } from 'src/entities/person.entity';
 import {
   AssetType,
   DatabaseLock,
@@ -44,6 +42,8 @@ const EXIF_DATE_TAGS: Array<keyof Tags> = [
   'SubSecMediaCreateDate',
   'MediaCreateDate',
   'DateTimeCreated',
+  // Undocumented, non-standard tag from insta360 in xmp.GPano namespace
+  'SourceImageCreateTime' as keyof Tags,
 ];
 
 const validate = <T>(value: T): NonNullable<T> | null => {
@@ -74,6 +74,19 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
   }
 
   return val;
+};
+
+const getLensModel = (exifTags: ImmichTags): string | null => {
+  const lensModel = String(
+    exifTags.LensID ?? exifTags.LensType ?? exifTags.LensSpec ?? exifTags.LensModel ?? '',
+  ).trim();
+  if (lensModel === '----') {
+    return null;
+  }
+  if (lensModel.startsWith('Unknown')) {
+    return null;
+  }
+  return lensModel || null;
 };
 
 type ImmichTagsWithFaces = ImmichTags & { RegionInfo: NonNullable<ImmichTags['RegionInfo']> };
@@ -117,10 +130,14 @@ export class MetadataService extends BaseService {
       this.logger.log(`Initialized local reverse geocoder`);
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
+      throw new Error(`Metadata service init failed`);
     }
   }
 
-  private async linkLivePhotos(asset: AssetEntity, exifInfo: Insertable<Exif>): Promise<void> {
+  private async linkLivePhotos(
+    asset: { id: string; type: AssetType; ownerId: string; libraryId: string | null },
+    exifInfo: Insertable<Exif>,
+  ): Promise<void> {
     if (!exifInfo.livePhotoCID) {
       return;
     }
@@ -168,9 +185,9 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
   async handleMetadataExtraction(data: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
-    const [{ metadata, reverseGeocoding }, [asset]] = await Promise.all([
+    const [{ metadata, reverseGeocoding }, asset] = await Promise.all([
       this.getConfig({ withCache: true }),
-      this.assetRepository.getByIds([data.id], { faces: { person: false } }),
+      this.assetJobRepository.getForMetadataExtraction(data.id),
     ]);
 
     if (!asset) {
@@ -186,15 +203,15 @@ export class MetadataService extends BaseService {
     const dates = this.getDates(asset, exifTags, stats);
 
     const { width, height } = this.getImageDimensions(exifTags);
-    let geo: ReverseGeocodeResult, latitude: number | null, longitude: number | null;
-    if (reverseGeocoding.enabled && this.hasGeo(exifTags)) {
+    let geo: ReverseGeocodeResult = { country: null, state: null, city: null },
+      latitude: number | null = null,
+      longitude: number | null = null;
+    if (this.hasGeo(exifTags)) {
       latitude = exifTags.GPSLatitude;
       longitude = exifTags.GPSLongitude;
-      geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
-    } else {
-      latitude = null;
-      longitude = null;
-      geo = { country: null, state: null, city: null };
+      if (reverseGeocoding.enabled) {
+        geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
+      }
     }
 
     const exifData: Insertable<Exif> = {
@@ -227,7 +244,7 @@ export class MetadataService extends BaseService {
       fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
-      lensModel: exifTags.LensModel ?? null,
+      lensModel: getLensModel(exifTags),
       fNumber: validate(exifTags.FNumber),
       focalLength: validate(exifTags.FocalLength),
 
@@ -315,7 +332,7 @@ export class MetadataService extends BaseService {
   @OnJob({ name: JobName.SIDECAR_WRITE, queue: QueueName.SIDECAR })
   async handleSidecarWrite(job: JobOf<JobName.SIDECAR_WRITE>): Promise<JobStatus> {
     const { id, description, dateTimeOriginal, latitude, longitude, rating, tags } = job;
-    const [asset] = await this.assetRepository.getByIds([id], { tags: true });
+    const asset = await this.assetJobRepository.getForSidecarWriteJob(id);
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -362,7 +379,11 @@ export class MetadataService extends BaseService {
     return { width, height };
   }
 
-  private getExifTags(asset: AssetEntity): Promise<ImmichTags> {
+  private getExifTags(asset: {
+    originalPath: string;
+    sidecarPath: string | null;
+    type: AssetType;
+  }): Promise<ImmichTags> {
     if (!asset.sidecarPath && asset.type === AssetType.IMAGE) {
       return this.metadataRepository.readTags(asset.originalPath);
     }
@@ -370,7 +391,11 @@ export class MetadataService extends BaseService {
     return this.mergeExifTags(asset);
   }
 
-  private async mergeExifTags(asset: AssetEntity): Promise<ImmichTags> {
+  private async mergeExifTags(asset: {
+    originalPath: string;
+    sidecarPath: string | null;
+    type: AssetType;
+  }): Promise<ImmichTags> {
     const [mediaTags, sidecarTags, videoTags] = await Promise.all([
       this.metadataRepository.readTags(asset.originalPath),
       asset.sidecarPath ? this.metadataRepository.readTags(asset.sidecarPath) : null,
@@ -420,7 +445,7 @@ export class MetadataService extends BaseService {
     return tags;
   }
 
-  private async applyTagList(asset: AssetEntity, exifTags: ImmichTags) {
+  private async applyTagList(asset: { id: string; ownerId: string }, exifTags: ImmichTags) {
     const tags = this.getTagList(exifTags);
     const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
     await this.tagRepository.replaceAssetTags(
@@ -429,11 +454,11 @@ export class MetadataService extends BaseService {
     );
   }
 
-  private isMotionPhoto(asset: AssetEntity, tags: ImmichTags): boolean {
+  private isMotionPhoto(asset: { type: AssetType }, tags: ImmichTags): boolean {
     return asset.type === AssetType.IMAGE && !!(tags.MotionPhoto || tags.MicroVideo);
   }
 
-  private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags, dates: Dates, stats: Stats) {
+  private async applyMotionPhotos(asset: Asset, tags: ImmichTags, dates: Dates, stats: Stats) {
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
@@ -549,7 +574,9 @@ export class MetadataService extends BaseService {
         this.storageCore.ensureFolders(motionAsset.originalPath);
         await this.storageRepository.createFile(motionAsset.originalPath, video);
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
+
+        await this.handleMetadataExtraction({ id: motionAsset.id });
+        await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: motionAsset.id } });
       }
 
       this.logger.debug(`Finished motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
@@ -567,15 +594,18 @@ export class MetadataService extends BaseService {
     );
   }
 
-  private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
+  private async applyTaggedFaces(
+    asset: { id: string; ownerId: string; faces: AssetFace[]; originalPath: string },
+    tags: ImmichTags,
+  ) {
     if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {
       return;
     }
 
-    const facesToAdd: (Partial<AssetFaceEntity> & { assetId: string })[] = [];
+    const facesToAdd: (Insertable<AssetFaces> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: (Partial<PersonEntity> & { ownerId: string })[] = [];
+    const missing: (Insertable<Person> & { ownerId: string })[] = [];
     const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
     for (const region of tags.RegionInfo.RegionList) {
       if (!region.Name) {
@@ -634,7 +664,7 @@ export class MetadataService extends BaseService {
     }
   }
 
-  private getDates(asset: AssetEntity, exifTags: ImmichTags, stats: Stats) {
+  private getDates(asset: { id: string; originalPath: string }, exifTags: ImmichTags, stats: Stats) {
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
     this.logger.verbose(`Date and time is ${dateTime} for asset ${asset.id}: ${asset.originalPath}`);
 
