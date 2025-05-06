@@ -125,6 +125,16 @@
 
           <Button type="submit" size="large" shape="round" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>
         </form>
+
+        <p class="text-center mt-4">
+          <a
+            href="https://pixelunion.eu/support/forgot-password/"
+            target="_blank"
+            class="text-blue-500 hover:underline"
+          >
+            Forgot your password? Click here for assistance.
+          </a>
+        </p>
       {/if}
 
       {#if $featureFlags.oauth}
