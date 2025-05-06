@@ -357,7 +357,7 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
-        visibility: AssetVisibility.TIMELINE,
+        visibility: assetStub.livePhotoStillAsset.visibility,
       });
       expect(mocks.event.emit).toHaveBeenCalledWith('asset.show', {
         assetId: assetStub.livePhotoMotionAsset.id,
@@ -461,7 +461,6 @@ describe(AssetService.name, () => {
         ids: ['asset-1'],
         latitude: 0,
         longitude: 0,
-        isArchived: undefined,
         isFavorite: undefined,
         duplicateId: null,
         rating: undefined,
