@@ -781,7 +781,12 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = this.getToneMapping(videoStream);
-    options.push('hwupload=extra_hw_frames=64');
+    if (videoStream.codecName === VideoCodec.HEVC) {
+      options.push('format=nv12');
+      options.push('hwupload=extra_hw_frames=64');
+    } else {
+      options.push('hwupload=extra_hw_frames=64');
+    }
     if (this.shouldScale(videoStream)) {
       options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`);
     }
