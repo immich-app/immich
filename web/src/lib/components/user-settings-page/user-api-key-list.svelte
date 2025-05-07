@@ -1,6 +1,9 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import ApiKeyModal from '$lib/modals/ApiKeyModal.svelte';
+  import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import {
     createApiKey,
@@ -15,8 +18,6 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
-  import APIKeyForm from '../forms/api-key-form.svelte';
-  import APIKeySecret from '../forms/api-key-secret.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
   interface Props {
@@ -24,10 +25,6 @@
   }
 
   let { keys = $bindable() }: Props = $props();
-
-  let newKey: { name: string } | null = $state(null);
-  let editKey: ApiKeyResponseDto | null = $state(null);
-  let secret = $state('');
 
   const format: Intl.DateTimeFormatOptions = {
     month: 'short',
@@ -39,30 +36,46 @@
     keys = await getApiKeys();
   }
 
-  const handleCreate = async ({ name }: { name: string }) => {
-    try {
-      const data = await createApiKey({
-        apiKeyCreateDto: {
-          name,
-          permissions: [Permission.All],
-        },
-      });
-      secret = data.secret;
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_create_api_key'));
-    } finally {
-      await refreshKeys();
-      newKey = null;
-    }
-  };
+  const handleCreate = async () => {
+    const result = await modalManager.open(ApiKeyModal, {
+      title: $t('new_api_key'),
+      apiKey: { name: 'API Key' },
+      submitText: $t('create'),
+    });
 
-  const handleUpdate = async (detail: Partial<ApiKeyResponseDto>) => {
-    if (!editKey || !detail.name) {
+    if (!result) {
       return;
     }
 
     try {
-      await updateApiKey({ id: editKey.id, apiKeyUpdateDto: { name: detail.name } });
+      const { secret } = await createApiKey({
+        apiKeyCreateDto: {
+          name: result.name,
+          permissions: [Permission.All],
+        },
+      });
+
+      await modalManager.open(ApiKeySecretModal, { secret });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_create_api_key'));
+    } finally {
+      await refreshKeys();
+    }
+  };
+
+  const handleUpdate = async (key: ApiKeyResponseDto) => {
+    const result = await modalManager.open(ApiKeyModal, {
+      title: $t('api_key'),
+      submitText: $t('save'),
+      apiKey: key,
+    });
+
+    if (!result) {
+      return;
+    }
+
+    try {
+      await updateApiKey({ id: key.id, apiKeyUpdateDto: { name: result.name } });
       notificationController.show({
         message: $t('saved_api_key'),
         type: NotificationType.Info,
@@ -71,7 +84,6 @@
       handleError(error, $t('errors.unable_to_save_api_key'));
     } finally {
       await refreshKeys();
-      editKey = null;
     }
   };
 
@@ -95,34 +107,10 @@
   };
 </script>
 
-{#if newKey}
-  <APIKeyForm
-    title={$t('new_api_key')}
-    submitText={$t('create')}
-    apiKey={newKey}
-    onSubmit={(key) => handleCreate(key)}
-    onCancel={() => (newKey = null)}
-  />
-{/if}
-
-{#if secret}
-  <APIKeySecret {secret} onDone={() => (secret = '')} />
-{/if}
-
-{#if editKey}
-  <APIKeyForm
-    title={$t('api_key')}
-    submitText={$t('save')}
-    apiKey={editKey}
-    onSubmit={(key) => handleUpdate(key)}
-    onCancel={() => (editKey = null)}
-  />
-{/if}
-
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
-      <Button shape="round" size="small" onclick={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
+      <Button shape="round" size="small" onclick={() => handleCreate()}>{$t('new_api_key')}</Button>
     </div>
 
     {#if keys.length > 0}
@@ -153,7 +141,7 @@
                   icon={mdiPencilOutline}
                   title={$t('edit_key')}
                   size="16"
-                  onclick={() => (editKey = key)}
+                  onclick={() => handleUpdate(key)}
                 />
                 <CircleIconButton
                   color="primary"
