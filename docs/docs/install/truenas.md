@@ -188,7 +188,7 @@ className="border rounded-xl"
 
 Accept the default **CPU** limit of `2` threads or specify the number of threads (CPUs with Multi-/Hyper-threading have 2 threads per core).
 
-Accept the default **Memory** limit of `4096` MB or specify the number of MB of RAM. If you're using Machine Learning you should probably set this above 8000 MB.
+Specify the **Memory** limit in MB of RAM. Immich recommends at least 6000 MB (6GB). If you selected **Enable Machine Learning** in **Immich Configuration**, you should probably set this above 8000 MB.
 
 :::info Older TrueNAS Versions
 Before TrueNAS Community Edition version 24.10 Electric Eel:
