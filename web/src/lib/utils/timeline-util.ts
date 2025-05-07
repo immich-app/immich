@@ -20,6 +20,8 @@ export const fromLocalDateTime = (localDateTime: string) =>
 export const fromDateTimeOriginal = (dateTimeOriginal: string, timeZone: string) =>
   DateTime.fromISO(dateTimeOriginal, { zone: timeZone });
 
+export const startOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth());
+
 export function formatGroupTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
@@ -77,7 +79,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     ownerId: assetResponse.ownerId,
     ratio,
     thumbhash: assetResponse.thumbhash,
-    localDateTime: assetResponse.localDateTime,
+    localDateTime: new Date(assetResponse.localDateTime),
     isFavorite: assetResponse.isFavorite,
     visibility: assetResponse.isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline,
     isTrashed: assetResponse.isTrashed,

@@ -8,7 +8,7 @@ import {
   type CommonLayoutOptions,
   type CommonPosition,
 } from '$lib/utils/layout-utils';
-import { formatDateGroupTitle, toTimelineAsset } from '$lib/utils/timeline-util';
+import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { TUNABLES } from '$lib/utils/tunables';
 import {
   AssetOrder,
@@ -76,7 +76,7 @@ export type TimelineAsset = {
   ownerId: string;
   ratio: number;
   thumbhash: string | null;
-  localDateTime: string;
+  localDateTime: Date;
   visibility: AssetVisibility;
   isFavorite: boolean;
   isTrashed: boolean;
@@ -131,7 +131,8 @@ export class AssetDateGroup {
   // --- public
   readonly bucket: AssetBucket;
   readonly index: number;
-  readonly date: DateTime;
+  readonly date: Date;
+  readonly groupTitle: string;
   readonly dayOfMonth: number;
   intersetingAssets: IntersectingAsset[] = $state([]);
 
@@ -146,24 +147,23 @@ export class AssetDateGroup {
   col = $state(0);
   deferredLayout = false;
 
-  constructor(bucket: AssetBucket, index: number, date: DateTime, dayOfMonth: number) {
+  constructor(bucket: AssetBucket, index: number, date: Date, dayOfMonth: number) {
     this.index = index;
     this.bucket = bucket;
     this.date = date;
     this.dayOfMonth = dayOfMonth;
+    this.groupTitle = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()).toLocaleString(
+      get(locale),
+      { timeZone: 'UTC', weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' },
+    );
   }
 
   sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
-    this.intersetingAssets.sort((a, b) => {
-      const aDate = DateTime.fromISO(a.asset!.localDateTime).toUTC();
-      const bDate = DateTime.fromISO(b.asset!.localDateTime).toUTC();
-
-      if (sortOrder === AssetOrder.Asc) {
-        return aDate.diff(bDate).milliseconds;
-      }
-
-      return bDate.diff(aDate).milliseconds;
-    });
+    if (sortOrder === AssetOrder.Asc) {
+      this.intersetingAssets.sort((a, b) => a.asset!.localDateTime.valueOf() - b.asset!.localDateTime.valueOf());
+    } else {
+      this.intersetingAssets.sort((a, b) => b.asset!.localDateTime.valueOf() - a.asset!.localDateTime.valueOf());
+    }
   }
 
   getFirstAsset() {
@@ -194,26 +194,27 @@ export class AssetDateGroup {
     let changedGeometry = false;
     for (const assetId of unprocessedIds) {
       const index = this.intersetingAssets.findIndex((ia) => ia.id == assetId);
-      if (index !== -1) {
-        const asset = this.intersetingAssets[index].asset!;
-        const oldTime = asset.localDateTime;
-        let { remove } = operation(asset);
-        const newTime = asset.localDateTime;
-        if (oldTime !== newTime) {
-          const utc = DateTime.fromISO(asset.localDateTime).toUTC().startOf('month');
-          const year = utc.get('year');
-          const month = utc.get('month');
-          if (this.bucket.year !== year || this.bucket.month !== month) {
-            remove = true;
-            moveAssets.push({ asset, year, month });
-          }
+      if (index === -1) {
+        continue;
+      }
+
+      const asset = this.intersetingAssets[index].asset!;
+      const oldTime = asset.localDateTime;
+      let { remove } = operation(asset);
+      const newTime = asset.localDateTime;
+      if (oldTime.valueOf() !== newTime.valueOf()) {
+        const year = newTime.getUTCFullYear();
+        const month = newTime.getUTCMonth();
+        if (this.bucket.year !== year || this.bucket.month !== month) {
+          remove = true;
+          moveAssets.push({ asset, year, month });
         }
-        unprocessedIds.delete(assetId);
-        processedIds.add(assetId);
-        if (remove || this.bucket.store.isExcluded(asset)) {
-          this.intersetingAssets.splice(index, 1);
-          changedGeometry = true;
-        }
+      }
+      unprocessedIds.delete(assetId);
+      processedIds.add(assetId);
+      if (remove || this.bucket.store.isExcluded(asset)) {
+        this.intersetingAssets.splice(index, 1);
+        changedGeometry = true;
       }
     }
     return { moveAssets, processedIds, unprocessedIds, changedGeometry };
@@ -236,10 +237,6 @@ export class AssetDateGroup {
 
   get absoluteDateGroupTop() {
     return this.bucket.top + this.top;
-  }
-
-  get groupTitle() {
-    return formatDateGroupTitle(this.date);
   }
 }
 
@@ -344,22 +341,20 @@ export class AssetBucket {
   readonly month: number;
   readonly year: number;
 
-  constructor(store: AssetStore, utcDate: DateTime, initialCount: number, order: AssetOrder = AssetOrder.Desc) {
+  constructor(store: AssetStore, date: Date, initialCount: number, order: AssetOrder = AssetOrder.Desc) {
     this.store = store;
     this.#initialCount = initialCount;
     this.#sortOrder = order;
 
-    const year = utcDate.get('year');
-    const month = utcDate.get('month');
-    const bucketDateFormatted = utcDate.toJSDate().toLocaleString(get(locale), {
+    const bucketDateFormatted = date.toLocaleString(get(locale), {
       month: 'short',
       year: 'numeric',
       timeZone: 'UTC',
     });
-    this.bucketDate = utcDate.toISO()!.toString();
+    this.bucketDate = date.toISOString();
     this.bucketDateFormatted = bucketDateFormatted;
-    this.month = month;
-    this.year = year;
+    this.month = date.getUTCMonth();
+    this.year = date.getUTCFullYear();
 
     this.loader = new CancellableTask(
       () => {
@@ -411,10 +406,10 @@ export class AssetBucket {
 
   sortDateGroups() {
     if (this.#sortOrder === AssetOrder.Asc) {
-      return this.dateGroups.sort((a, b) => a.date.diff(b.date).milliseconds);
+      return this.dateGroups.sort((a, b) => a.date.valueOf() - b.date.valueOf());
     }
 
-    return this.dateGroups.sort((a, b) => b.date.diff(a.date).milliseconds);
+    return this.dateGroups.sort((a, b) => b.date.valueOf() - a.date.valueOf());
   }
 
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
@@ -459,6 +454,7 @@ export class AssetBucket {
   }
 
   addAssets(bucketAssets: TimeBucketAssetResponseDto) {
+    const time1 = performance.now();
     const addContext = new AddContext();
     const people: string[] = [];
     for (let i = 0; i < bucketAssets.id.length; i++) {
@@ -473,7 +469,7 @@ export class AssetBucket {
         isTrashed: bucketAssets.isTrashed[i],
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
-        localDateTime: bucketAssets.localDateTime[i],
+        localDateTime: new Date(bucketAssets.localDateTime[i]),
         ownerId: bucketAssets.ownerId[i],
         people,
         projectionType: bucketAssets.projectionType[i],
@@ -500,27 +496,30 @@ export class AssetBucket {
 
     addContext.sort(this, this.#sortOrder);
 
+    const time2 = performance.now();
+    const time = time2 - time1;
+    console.log(`AssetBucket.addAssets took ${time}ms`);
     return addContext.unprocessedAssets;
   }
 
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: AddContext) {
     const { localDateTime } = timelineAsset;
-    const date = DateTime.fromISO(localDateTime).toUTC();
-    const month = date.get('month');
-    const year = date.get('year');
+
+    const month = localDateTime.getUTCMonth();
+    const year = localDateTime.getUTCFullYear();
 
     if (this.month !== month || this.year !== year) {
       addContext.unprocessedAssets.push(timelineAsset);
       return;
     }
 
-    const day = date.get('day');
+    const day = timelineAsset.localDateTime.getUTCDay();
     let dateGroup = addContext.getDateGroup(year, month, day) || this.findDateGroupByDay(day);
 
     if (dateGroup) {
       addContext.setDateGroup(dateGroup, year, month, day);
     } else {
-      dateGroup = new AssetDateGroup(this, this.dateGroups.length, date, day);
+      dateGroup = new AssetDateGroup(this, this.dateGroups.length, localDateTime, day);
       this.dateGroups.push(dateGroup);
       addContext.setDateGroup(dateGroup, year, month, day);
       addContext.newDateGroups.add(dateGroup);
@@ -624,12 +623,12 @@ export class AssetBucket {
     return this.assets().find((asset) => asset.id === assetDescriptor.id);
   }
 
-  findClosest(target: DateTime) {
+  findClosest(target: Date) {
     let closest = undefined;
     let smallestDiff = Infinity;
     for (const current of this.assets()) {
-      const currentDate = DateTime.fromISO(current.localDateTime).toUTC();
-      const diff = Math.abs(target.diff(currentDate).milliseconds);
+      const currentDate = current.localDateTime;
+      const diff = Math.abs(target.valueOf() - currentDate.valueOf());
       if (diff < smallestDiff) {
         smallestDiff = diff;
         closest = current;
@@ -914,10 +913,9 @@ export class AssetStore {
     }
   }
 
-  #findBucketForDate(date: DateTime) {
+  #findBucketForDate(date: Date) {
     for (const bucket of this.buckets) {
-      const bucketDate = DateTime.fromISO(bucket.bucketDate).toUTC();
-      if (bucketDate.hasSame(date, 'month') && bucketDate.hasSame(date, 'year')) {
+      if (bucket.month === date.getUTCMonth() && bucket.year === date.getUTCFullYear()) {
         return bucket;
       }
     }
@@ -1020,8 +1018,7 @@ export class AssetStore {
     });
 
     this.buckets = timebuckets.map((bucket) => {
-      const utcDate = DateTime.fromISO(bucket.timeBucket).toUTC();
-      return new AssetBucket(this, utcDate, bucket.count, this.#options.order);
+      return new AssetBucket(this, new Date(bucket.timeBucket), bucket.count, this.#options.order);
     });
     this.albumAssets.clear();
     this.#updateViewportGeometry(false);
@@ -1055,6 +1052,7 @@ export class AssetStore {
       await this.#initialiazeTimeBuckets();
     }, true);
   }
+
   public destroy() {
     this.disconnect();
     this.isInitialized = false;
@@ -1203,9 +1201,9 @@ export class AssetStore {
       cancelable = options.cancelable;
     }
 
-    const date = DateTime.fromISO(bucketDate).toUTC();
-    const year = date.get('year');
-    const month = date.get('month');
+    const date = new Date(bucketDate);
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth();
     const bucket = this.getBucketByDate(year, month);
     if (!bucket) {
       return;
@@ -1281,13 +1279,12 @@ export class AssetStore {
     const updatedBuckets = new Set<AssetBucket>();
     const bucketCount = this.buckets.length;
     for (const asset of assets) {
-      const utc = DateTime.fromISO(asset.localDateTime).toUTC().startOf('month');
-      const year = utc.get('year');
-      const month = utc.get('month');
+      const year = asset.localDateTime.getUTCFullYear();
+      const month = asset.localDateTime.getUTCMonth();
       let bucket = this.getBucketByDate(year, month);
 
       if (!bucket) {
-        bucket = new AssetBucket(this, utc, 1, this.#options.order);
+        bucket = new AssetBucket(this, asset.localDateTime, 1, this.#options.order);
         this.buckets.push(bucket);
       }
 
@@ -1336,14 +1333,12 @@ export class AssetStore {
     }
   }
 
-  async #loadBucketAtTime(localDateTime: string, options?: { cancelable: boolean }) {
-    let date = DateTime.fromISO(localDateTime).toUTC();
+  async #loadBucketAtTime(localDateTime: Date, options?: { cancelable: boolean }) {
     // Only support TimeBucketSize.Month
-    date = date.set({ day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 });
-    const iso = date.toISO()!;
-    const year = date.get('year');
-    const month = date.get('month');
-    await this.loadBucket(iso, options);
+    const year = localDateTime.getUTCFullYear();
+    const month = localDateTime.getUTCMonth();
+    localDateTime = new Date(year, month);
+    await this.loadBucket(localDateTime.toISOString(), options);
     return this.getBucketByDate(year, month);
   }
 
@@ -1456,7 +1451,7 @@ export class AssetStore {
     return this.#getAssetWithOffset(assetDescriptor, magnitude, 'backward');
   }
 
-  async getClosestAssetToDate(date: DateTime) {
+  async getClosestAssetToDate(date: Date) {
     let bucket = this.#findBucketForDate(date);
     if (!bucket) {
       return;
@@ -1508,7 +1503,7 @@ export class AssetStore {
   }
 
   async #getAssetByDayOffset(asset: TimelineAsset, bucket: AssetBucket, direction: Direction) {
-    const currentDate = DateTime.fromISO(asset.localDateTime).toUTC();
+    const currentDate = DateTime.fromJSDate(asset.localDateTime).toUTC();
     const targetDate =
       direction === 'forward'
         ? currentDate.plus({ days: 1 }) // Moving forward in time (previous in UI)
@@ -1551,7 +1546,7 @@ export class AssetStore {
   }
 
   async #getAssetByYearOffset(asset: TimelineAsset, bucket: AssetBucket, direction: Direction) {
-    const currentDate = DateTime.fromISO(asset.localDateTime).toUTC();
+    const currentDate = DateTime.fromJSDate(asset.localDateTime).toUTC();
     const targetYear = currentDate.get('year') + (direction === 'forward' ? 1 : -1);
     const bucketIndex = this.buckets.indexOf(bucket);
 

@@ -39,7 +39,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   ratio: Sync.each(() => faker.number.int()),
   ownerId: Sync.each(() => faker.string.uuid()),
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
-  localDateTime: Sync.each(() => faker.date.past().toISOString()),
+  localDateTime: Sync.each(() => faker.date.past()),
   isFavorite: Sync.each(() => faker.datatype.boolean()),
   visibility: AssetVisibility.Timeline,
   isTrashed: false,
@@ -82,7 +82,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.isImage.push(asset.isImage);
     bucketAssets.isTrashed.push(asset.isTrashed);
     bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
-    bucketAssets.localDateTime.push(asset.localDateTime);
+    bucketAssets.localDateTime.push(asset.localDateTime.toISOString());
     bucketAssets.ownerId.push(asset.ownerId);
     bucketAssets.projectionType.push(asset.projectionType!);
     bucketAssets.ratio.push(asset.ratio);

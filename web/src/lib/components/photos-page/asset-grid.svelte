@@ -402,7 +402,8 @@
 
     if (laterAsset) {
       const preloadAsset = await assetStore.getLaterAsset(laterAsset);
-      assetViewingStore.setAsset(laterAsset, preloadAsset ? [preloadAsset] : []);
+      const asset = await getAssetInfo({ id: laterAsset.id, key: authManager.key });
+      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: laterAsset.id });
     }
 
@@ -413,7 +414,8 @@
     const earlierAsset = await assetStore.getEarlierAsset($viewingAsset);
     if (earlierAsset) {
       const preloadAsset = await assetStore.getEarlierAsset(earlierAsset);
-      assetViewingStore.setAsset(earlierAsset, preloadAsset ? [preloadAsset] : []);
+      const asset = await getAssetInfo({ id: earlierAsset.id, key: authManager.key });
+      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
     }
 
@@ -424,9 +426,8 @@
     const randomAsset = await assetStore.getRandomAsset();
 
     if (randomAsset) {
-      const preloadAsset = await assetStore.getNextAsset(randomAsset);
       const asset = await getAssetInfo({ id: randomAsset.id, key: authManager.key });
-      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
+      assetViewingStore.setAsset(asset);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
       return asset;
     }
@@ -748,8 +749,8 @@
     timezoneInput={false}
     onConfirm={async (dateString: string) => {
       isShowSelectDate = false;
-      const date = DateTime.fromISO(dateString).toUTC();
-      const asset = await assetStore.getClosestAssetToDate(date);
+
+      const asset = await assetStore.getClosestAssetToDate(new Date(dateString));
       if (asset) {
         await setFocusAsset(asset);
       }
