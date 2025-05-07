@@ -165,6 +165,12 @@ export type Stack = {
   assetCount?: number;
 };
 
+export type TimelineStack = {
+  id: string;
+  primaryAssetId: string;
+  assetCount: number;
+};
+
 export type AuthSharedLink = {
   id: string;
   expiresAt: Date | null;

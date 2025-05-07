@@ -14,7 +14,6 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
 import { isStartUpError, useSwagger } from 'src/utils/misc';
-
 async function bootstrap() {
   process.title = 'immich-api';
 
