@@ -13,6 +13,7 @@
   import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
@@ -22,11 +23,9 @@
   import { mdiBellBadge, mdiBellOutline, mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import { notificationManager } from '$lib/stores/notification-manager.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -35,7 +34,6 @@
 
   let { showUploadButton = true, onUploadClick }: Props = $props();
 
-  let shouldShowAccountInfo = $state(false);
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowHelpPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
@@ -55,10 +53,7 @@
   <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} {info} />
 {/if}
 
-<nav
-  id="dashboard-navbar"
-  class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm"
->
+<nav id="dashboard-navbar" class="z-auto max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm">
   <SkipLink text={$t('skip_to_content')} />
   <div
     class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
@@ -180,27 +175,13 @@
           <button
             type="button"
             class="flex ps-2"
-            onmouseover={() => (shouldShowAccountInfo = true)}
-            onfocus={() => (shouldShowAccountInfo = true)}
-            onblur={() => (shouldShowAccountInfo = false)}
-            onmouseleave={() => (shouldShowAccountInfo = false)}
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
+            title={`${$user.name} (${$user.email})`}
           >
             {#key $user}
               <UserAvatar user={$user} size="md" showTitle={false} interactive />
             {/key}
           </button>
-
-          {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
-            <div
-              in:fade={{ delay: 500, duration: 150 }}
-              out:fade={{ delay: 200, duration: 150 }}
-              class="absolute -bottom-12 end-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
-            >
-              <p>{$user.name}</p>
-              <p>{$user.email}</p>
-            </div>
-          {/if}
 
           {#if shouldShowAccountInfoPanel}
             <AccountInfoPanel onLogout={() => authManager.logout()} />

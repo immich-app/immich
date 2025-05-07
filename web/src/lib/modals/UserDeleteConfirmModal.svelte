@@ -9,12 +9,10 @@
 
   interface Props {
     user: UserResponseDto;
-    onSuccess: () => void;
-    onFail: () => void;
-    onCancel: () => void;
+    onClose: (confirmed?: true) => void;
   }
 
-  let { user, onSuccess, onFail, onCancel }: Props = $props();
+  let { user, onClose }: Props = $props();
 
   let forceDelete = $state(false);
   let deleteButtonDisabled = $state(false);
@@ -27,14 +25,11 @@
         userAdminDeleteDto: { force: forceDelete },
       });
 
-      if (deletedAt == undefined) {
-        onFail();
-      } else {
-        onSuccess();
+      if (deletedAt !== undefined) {
+        onClose(true);
       }
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_user'));
-      onFail();
     }
   };
 
@@ -47,8 +42,7 @@
 <ConfirmDialog
   title={$t('delete_user')}
   confirmText={forceDelete ? $t('permanently_delete') : $t('delete')}
-  onConfirm={handleDeleteUser}
-  {onCancel}
+  onClose={(confirmed) => (confirmed ? handleDeleteUser() : onClose())}
   disabled={deleteButtonDisabled}
 >
   {#snippet promptSnippet()}
