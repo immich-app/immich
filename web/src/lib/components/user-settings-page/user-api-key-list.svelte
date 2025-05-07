@@ -37,7 +37,7 @@
   }
 
   const handleCreate = async () => {
-    const result = await modalManager.open(ApiKeyModal, {
+    const result = await modalManager.show(ApiKeyModal, {
       title: $t('new_api_key'),
       apiKey: { name: 'API Key' },
       submitText: $t('create'),
@@ -55,7 +55,7 @@
         },
       });
 
-      await modalManager.open(ApiKeySecretModal, { secret });
+      await modalManager.show(ApiKeySecretModal, { secret });
     } catch (error) {
       handleError(error, $t('errors.unable_to_create_api_key'));
     } finally {
@@ -64,7 +64,7 @@
   };
 
   const handleUpdate = async (key: ApiKeyResponseDto) => {
-    const result = await modalManager.open(ApiKeyModal, {
+    const result = await modalManager.show(ApiKeyModal, {
       title: $t('api_key'),
       submitText: $t('save'),
       apiKey: key,

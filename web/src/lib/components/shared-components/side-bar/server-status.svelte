@@ -56,7 +56,7 @@
     {#if $connected && version}
       <button
         type="button"
-        onclick={() => info && modalManager.open(ServerAboutModal, { versions, info })}
+        onclick={() => info && modalManager.show(ServerAboutModal, { versions, info })}
         class="dark:text-immich-gray flex gap-1"
       >
         {#if isMain}

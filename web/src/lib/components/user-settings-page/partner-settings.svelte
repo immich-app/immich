@@ -99,7 +99,7 @@
   };
 
   const handleCreatePartners = async () => {
-    const users = await modalManager.open(PartnerSelectionModal, { user });
+    const users = await modalManager.show(PartnerSelectionModal, { user });
 
     if (!users) {
       return;

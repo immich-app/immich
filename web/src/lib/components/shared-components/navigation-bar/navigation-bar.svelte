@@ -132,7 +132,7 @@
             variant="ghost"
             size="medium"
             icon={mdiHelpCircleOutline}
-            onclick={() => info && modalManager.open(HelpAndFeedbackModal, { info })}
+            onclick={() => info && modalManager.show(HelpAndFeedbackModal, { info })}
             aria-label={$t('support_and_feedback')}
           />
         </div>

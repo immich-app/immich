@@ -196,7 +196,7 @@
   }
 
   const handleSettingsClick = async () => {
-    const settings = await modalManager.open(MapSettingsModal, { settings: { ...$mapSettings } });
+    const settings = await modalManager.show(MapSettingsModal, { settings: { ...$mapSettings } });
     if (settings) {
       const shouldUpdate = !isEqual(omit(settings, 'allowDarkMode'), omit($mapSettings, 'allowDarkMode'));
       $mapSettings = settings;
