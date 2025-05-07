@@ -14,20 +14,21 @@ PlatformException _createConnectionError(String channelName) {
     message: 'Unable to establish connection on channel: "$channelName".',
   );
 }
+
 bool _deepEquals(Object? a, Object? b) {
   if (a is List && b is List) {
     return a.length == b.length &&
         a.indexed
-        .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
+            .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
   }
   if (a is Map && b is Map) {
-    return a.length == b.length && a.entries.every((MapEntry<Object?, Object?> entry) =>
-        (b as Map<Object?, Object?>).containsKey(entry.key) &&
-        _deepEquals(entry.value, b[entry.key]));
+    return a.length == b.length &&
+        a.entries.every((MapEntry<Object?, Object?> entry) =>
+            (b as Map<Object?, Object?>).containsKey(entry.key) &&
+            _deepEquals(entry.value, b[entry.key]));
   }
   return a == b;
 }
-
 
 class Asset {
   Asset({
@@ -67,7 +68,8 @@ class Asset {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static Asset decode(Object result) {
     result as List<Object?>;
@@ -96,15 +98,17 @@ class Asset {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
 }
 
 class SyncDelta {
   SyncDelta({
+    this.hasChanges = false,
     this.updates = const [],
     this.deletes = const [],
   });
+
+  bool hasChanges;
 
   List<Asset> updates;
 
@@ -112,19 +116,22 @@ class SyncDelta {
 
   List<Object?> _toList() {
     return <Object?>[
+      hasChanges,
       updates,
       deletes,
     ];
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static SyncDelta decode(Object result) {
     result as List<Object?>;
     return SyncDelta(
-      updates: (result[0] as List<Object?>?)!.cast<Asset>(),
-      deletes: (result[1] as List<Object?>?)!.cast<String>(),
+      hasChanges: result[0]! as bool,
+      updates: (result[1] as List<Object?>?)!.cast<Asset>(),
+      deletes: (result[2] as List<Object?>?)!.cast<String>(),
     );
   }
 
@@ -142,10 +149,8 @@ class SyncDelta {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
 }
-
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -154,10 +159,10 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is Asset) {
+    } else if (value is Asset) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    }    else if (value is SyncDelta) {
+    } else if (value is SyncDelta) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else {
@@ -168,9 +173,9 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129: 
+      case 129:
         return Asset.decode(readValue(buffer)!);
-      case 130: 
+      case 130:
         return SyncDelta.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -182,9 +187,11 @@ class ImHostService {
   /// Constructor for [ImHostService].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  ImHostService({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  ImHostService(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -192,36 +199,10 @@ class ImHostService {
   final String pigeonVar_messageChannelSuffix;
 
   Future<bool> shouldFullSync() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.ImHostService.shouldFullSync$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-      pigeonVar_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: pigeonVar_binaryMessenger,
-    );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
-    if (pigeonVar_replyList == null) {
-      throw _createConnectionError(pigeonVar_channelName);
-    } else if (pigeonVar_replyList.length > 1) {
-      throw PlatformException(
-        code: pigeonVar_replyList[0]! as String,
-        message: pigeonVar_replyList[1] as String?,
-        details: pigeonVar_replyList[2],
-      );
-    } else if (pigeonVar_replyList[0] == null) {
-      throw PlatformException(
-        code: 'null-error',
-        message: 'Host platform returned null value for non-null return value.',
-      );
-    } else {
-      return (pigeonVar_replyList[0] as bool?)!;
-    }
-  }
-
-  Future<bool> hasMediaChanges() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.ImHostService.hasMediaChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.ImHostService.shouldFullSync$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -248,8 +229,10 @@ class ImHostService {
   }
 
   Future<SyncDelta> getMediaChanges() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.ImHostService.getMediaChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.ImHostService.getMediaChanges$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -276,8 +259,10 @@ class ImHostService {
   }
 
   Future<void> checkpointSync() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.ImHostService.checkpointSync$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.ImHostService.checkpointSync$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -299,13 +284,16 @@ class ImHostService {
   }
 
   Future<List<String>> getAssetIdsForAlbum(String albumId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.ImHostService.getAssetIdsForAlbum$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.ImHostService.getAssetIdsForAlbum$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[albumId]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {

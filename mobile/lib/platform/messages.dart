@@ -33,7 +33,12 @@ class Asset {
 }
 
 class SyncDelta {
-  SyncDelta({this.updates = const [], this.deletes = const []});
+  SyncDelta({
+    this.hasChanges = false,
+    this.updates = const [],
+    this.deletes = const [],
+  });
+  bool hasChanges;
   List<Asset> updates;
   List<String> deletes;
 }
@@ -42,9 +47,6 @@ class SyncDelta {
 abstract class ImHostService {
   @async
   bool shouldFullSync();
-
-  @async
-  bool hasMediaChanges();
 
   @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

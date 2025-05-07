@@ -35,15 +35,14 @@ class DeviceSyncService {
         return await fullSync();
       }
 
-      if (!await _hostService.hasMediaChanges()) {
+      final delta = await _hostService.getMediaChanges();
+      if (!delta.hasChanges) {
         _log.fine("No media changes detected. Skipping sync");
         return;
       }
 
       final deviceAlbums = await _albumMediaRepository.getAll();
       await _localAlbumRepository.updateAll(deviceAlbums);
-
-      final delta = await _hostService.getMediaChanges();
       await _localAlbumRepository.handleSyncDelta(delta);
 
       if (_platform.isAndroid) {

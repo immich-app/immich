@@ -179,22 +179,26 @@ struct Asset: Hashable {
 
 /// Generated class from Pigeon that represents data sent in messages.
 struct SyncDelta: Hashable {
+  var hasChanges: Bool
   var updates: [Asset]
   var deletes: [String]
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> SyncDelta? {
-    let updates = pigeonVar_list[0] as! [Asset]
-    let deletes = pigeonVar_list[1] as! [String]
+    let hasChanges = pigeonVar_list[0] as! Bool
+    let updates = pigeonVar_list[1] as! [Asset]
+    let deletes = pigeonVar_list[2] as! [String]
 
     return SyncDelta(
+      hasChanges: hasChanges,
       updates: updates,
       deletes: deletes
     )
   }
   func toList() -> [Any?] {
     return [
+      hasChanges,
       updates,
       deletes,
     ]
@@ -251,7 +255,6 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ImHostService {
   func shouldFullSync(completion: @escaping (Result<Bool, Error>) -> Void)
-  func hasMediaChanges(completion: @escaping (Result<Bool, Error>) -> Void)
   func getMediaChanges(completion: @escaping (Result<SyncDelta, Error>) -> Void)
   func checkpointSync(completion: @escaping (Result<Void, Error>) -> Void)
   func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], Error>) -> Void)
@@ -282,21 +285,6 @@ class ImHostServiceSetup {
       }
     } else {
       shouldFullSyncChannel.setMessageHandler(nil)
-    }
-    let hasMediaChangesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.hasMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      hasMediaChangesChannel.setMessageHandler { _, reply in
-        api.hasMediaChanges { result in
-          switch result {
-          case .success(let res):
-            reply(wrapResult(res))
-          case .failure(let error):
-            reply(wrapError(error))
-          }
-        }
-      }
-    } else {
-      hasMediaChangesChannel.setMessageHandler(nil)
     }
     let getMediaChangesChannel = taskQueue == nil
       ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)

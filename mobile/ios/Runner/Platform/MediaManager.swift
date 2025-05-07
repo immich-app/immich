@@ -1,26 +1,24 @@
 import Photos
 
 class MediaManager {
-  let _defaults: UserDefaults
-  
-  let _changeTokenKey = "immich:changeToken";
+  private let _defaults: UserDefaults
+  private let _changeTokenKey = "immich:changeToken"
   
   init(with defaults: UserDefaults = .standard) {
-    _defaults = defaults
+    self._defaults = defaults
   }
   
   @available(iOS 16, *)
   func _getChangeToken() -> PHPersistentChangeToken? {
     guard let encodedToken = _defaults.data(forKey: _changeTokenKey) else {
-        print("_getChangeToken: Change token not available in UserDefaults")
+        print("MediaManager::_getChangeToken: Change token not available in UserDefaults")
         return nil
     }
 
     do {
-        let changeToken = try NSKeyedUnarchiver.unarchivedObject(ofClass: PHPersistentChangeToken.self, from: encodedToken)
-        return changeToken
+        return try NSKeyedUnarchiver.unarchivedObject(ofClass: PHPersistentChangeToken.self, from: encodedToken)
     } catch {
-        print("_getChangeToken: Cannot decode the token from UserDefaults")
+        print("MediaManager::_getChangeToken: Cannot decode the token from UserDefaults")
         return nil
     }
   }
@@ -30,9 +28,9 @@ class MediaManager {
     do {
         let encodedToken = try NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true)
         _defaults.set(encodedToken, forKey: _changeTokenKey)
-        print("_setChangeToken: Change token saved to UserDefaults")
+        print("MediaManager::_setChangeToken: Change token saved to UserDefaults")
     } catch {
-        print("_setChangeToken: Failed to persist the token to UserDefaults: \(error)")
+        print("MediaManager::_setChangeToken: Failed to persist the token to UserDefaults: \(error)")
     }
   }
   
@@ -52,7 +50,7 @@ class MediaManager {
     
     guard let storedToken = _getChangeToken() else {
        // No token exists, perform the initial full sync
-       print("shouldUseOldSync: No token found")
+       print("MediaManager::shouldUseOldSync: No token found. Full sync required")
        completion(.success(true))
        return
     }
@@ -62,44 +60,40 @@ class MediaManager {
       completion(.success(false))
     } catch {
       // fallback to using old sync when we cannot detect changes using the available token
-      print("shouldUseOldSync: fetchPersistentChanges failed with error (\(error))")
+      print("MediaManager::shouldUseOldSync: fetchPersistentChanges failed with error (\(error))")
       completion(.success(true))
     }
     
   }
 
   @available(iOS 16, *)
-  func hasMediaChanges(completion: @escaping (Result<Bool, Error>) -> Void) {
-    guard PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized else {
-      completion(.failure(PigeonError(code: "1", message: "No photo library access", details: nil)))
-      return
-    }
-
-    let storedToken = _getChangeToken()
-    let currentToken = PHPhotoLibrary.shared().currentChangeToken
-    completion(.success(storedToken != currentToken))
-  }
-
-  @available(iOS 16, *)
   func getMediaChanges(completion: @escaping (Result<SyncDelta, Error>) -> Void) {
     guard PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized else {
-      completion(.failure(PigeonError(code: "1", message: "No photo library access", details: nil)))
+      completion(.failure(PigeonError(code: "NO_AUTH", message: "No photo library access", details: nil)))
       return
     }
     
     guard let storedToken = _getChangeToken() else {
        // No token exists, definitely need a full sync
-       print("getMediaChanges: No token found")
-       completion(.failure(PigeonError(code: "2", message: "No stored change token", details: nil)))
+       print("MediaManager::getMediaChanges: No token found")
+       completion(.failure(PigeonError(code: "NO_TOKEN", message: "No stored change token", details: nil)))
        return
+    }
+    
+    let currentToken = PHPhotoLibrary.shared().currentChangeToken
+    if storedToken == currentToken {
+      completion(.success(SyncDelta(hasChanges: false, updates: [], deletes: [])))
+      return
     }
 
     do {
       let result = try PHPhotoLibrary.shared().fetchPersistentChanges(since: storedToken)
-      
       let dateFormatter = ISO8601DateFormatter()
       dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-      var delta = SyncDelta(updates: [], deletes: [])
+
+      var updatedArr: [Asset] = []
+      var deletedArr: [String] = []
+
       for changes in result {
         let details = try changes.changeDetails(for: PHObjectType.asset)
         let updated = details.updatedLocalIdentifiers.union(details.insertedLocalIdentifiers)
@@ -108,8 +102,7 @@ class MediaManager {
         let options = PHFetchOptions()
         options.includeHiddenAssets = true
         let updatedAssets = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: options)
-        
-        var updates: [Asset] = []
+
         updatedAssets.enumerateObjects { (asset, _, _) in
           let id = asset.localIdentifier
           let name = PHAssetResource.assetResources(for: asset).first?.originalFilename ?? asset.title()
@@ -118,33 +111,41 @@ class MediaManager {
           let updatedAt = asset.modificationDate.map { dateFormatter.string(from: $0) }
           let durationInSeconds: Int64 = Int64(asset.duration)
           
-          let dAsset = Asset(id: id, name: name, type: type, createdAt: createdAt, updatedAt: updatedAt,  durationInSeconds: durationInSeconds, albumIds: self._getAlbumIdsForAsset(asset: asset))  
-          updates.append(dAsset)
+          let domainAsset = Asset(
+              id: id,
+              name: name,
+              type: type,
+              createdAt: createdAt,
+              updatedAt: updatedAt,
+              durationInSeconds: durationInSeconds,
+              albumIds: self._getAlbumIds(forAsset: asset)
+          )
+          updatedArr.append(domainAsset)
         }
         
-        delta.updates.append(contentsOf: updates)
-        delta.deletes.append(contentsOf: deleted)
+        deletedArr.append(contentsOf: details.deletedLocalIdentifiers)
       }
 
+      let delta = SyncDelta(hasChanges: true, updates: updatedArr, deletes: deletedArr)
       completion(.success(delta))
       return
     } catch {
-      print("getMediaChanges: Error fetching persistent changes: \(error)")
+      print("MediaManager::getMediaChanges: Error fetching persistent changes: \(error)")
       completion(.failure(PigeonError(code: "3", message: error.localizedDescription, details: nil)))
       return
     }
   }
   
   @available(iOS 16, *)
-  func _getAlbumIdsForAsset(asset: PHAsset) -> [String] {
+  func _getAlbumIds(forAsset: PHAsset) -> [String] {
     var albumIds: [String] = []
-    var albums = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: .album, options: nil)
-    albums.enumerateObjects { (album, _, _) in
+    let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
+
+    albumTypes.forEach { type in
+      let collections = PHAssetCollection.fetchAssetCollectionsContaining(forAsset, with: type, options: nil)
+      collections.enumerateObjects { (album, _, _) in
         albumIds.append(album.localIdentifier)
-    }
-    albums = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: .smartAlbum, options: nil)
-    albums.enumerateObjects { (album, _, _) in
-        albumIds.append(album.localIdentifier)
+      }
     }
     return albumIds
   }

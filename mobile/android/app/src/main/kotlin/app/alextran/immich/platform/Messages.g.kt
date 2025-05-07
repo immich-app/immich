@@ -125,19 +125,22 @@ data class Asset (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class SyncDelta (
+  val hasChanges: Boolean,
   val updates: List<Asset>,
   val deletes: List<String>
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): SyncDelta {
-      val updates = pigeonVar_list[0] as List<Asset>
-      val deletes = pigeonVar_list[1] as List<String>
-      return SyncDelta(updates, deletes)
+      val hasChanges = pigeonVar_list[0] as Boolean
+      val updates = pigeonVar_list[1] as List<Asset>
+      val deletes = pigeonVar_list[2] as List<String>
+      return SyncDelta(hasChanges, updates, deletes)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
+      hasChanges,
       updates,
       deletes,
     )
@@ -188,7 +191,6 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ImHostService {
   fun shouldFullSync(callback: (Result<Boolean>) -> Unit)
-  fun hasMediaChanges(callback: (Result<Boolean>) -> Unit)
   fun getMediaChanges(callback: (Result<SyncDelta>) -> Unit)
   fun checkpointSync(callback: (Result<Unit>) -> Unit)
   fun getAssetIdsForAlbum(albumId: String, callback: (Result<List<String>>) -> Unit)
@@ -208,24 +210,6 @@ interface ImHostService {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.shouldFullSync{ result: Result<Boolean> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(MessagesPigeonUtils.wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(MessagesPigeonUtils.wrapResult(data))
-              }
-            }
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.hasMediaChanges$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            api.hasMediaChanges{ result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(MessagesPigeonUtils.wrapError(error))
