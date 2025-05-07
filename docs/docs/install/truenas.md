@@ -27,7 +27,7 @@ You may also configure environment variables at any time after deploying the app
 
 ### Setting up Storage Datasets
 
-Before beginning app installation, [create the datasets](https://www.truenas.com/docs/TrueNAS/TrueNAStutorials/storage/datasets/datasetsTrueNAS/) to use in the **Storage Configuration** section during installation.
+Before beginning app installation, [create the datasets](https://www.truenas.com/docs/scale/scaletutorials/storage/datasets/datasetsscale/)) to use in the **Storage Configuration** section during installation.
 Immich requires seven datasets: `library`, `upload`, `thumbs`, `profile`, `video`, `backups`, and `pgData`.
 You can organize these as one parent with seven child datasets, for example `/mnt/tank/immich/library`, `/mnt/tank/immich/upload`, and so on.
 
