@@ -90,12 +90,13 @@ export class UserRepository {
   }
 
   @GenerateSql({ params: [DummyValue.EMAIL] })
-  getByEmail(email: string, withPassword?: boolean) {
+  getByEmail(email: string, withPassword?: boolean, withPincode?: boolean) {
     return this.db
       .selectFrom('users')
       .select(columns.userAdmin)
       .select(withMetadata)
       .$if(!!withPassword, (eb) => eb.select('password'))
+      .$if(!!withPincode, (eb) => eb.select('pincode'))
       .where('email', '=', email)
       .where('users.deletedAt', 'is', null)
       .executeTakeFirst();

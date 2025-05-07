@@ -63,6 +63,141 @@ class AuthenticationApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /auth/change-pincode' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [ChangePincodeDto] changePincodeDto (required):
+  Future<Response> changePincodeWithHttpInfo(ChangePincodeDto changePincodeDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/change-pincode';
+
+    // ignore: prefer_final_locals
+    Object? postBody = changePincodeDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [ChangePincodeDto] changePincodeDto (required):
+  Future<UserAdminResponseDto?> changePincode(ChangePincodeDto changePincodeDto,) async {
+    final response = await changePincodeWithHttpInfo(changePincodeDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'POST /auth/create-pincode' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [CreatePincodeDto] createPincodeDto (required):
+  Future<Response> createPincodeWithHttpInfo(CreatePincodeDto createPincodeDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/create-pincode';
+
+    // ignore: prefer_final_locals
+    Object? postBody = createPincodeDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [CreatePincodeDto] createPincodeDto (required):
+  Future<UserAdminResponseDto?> createPincode(CreatePincodeDto createPincodeDto,) async {
+    final response = await createPincodeWithHttpInfo(createPincodeDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /auth/has-pincode' operation and returns the [Response].
+  Future<Response> hasPincodeWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/has-pincode';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<bool?> hasPincode() async {
+    final response = await hasPincodeWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'POST /auth/login' operation and returns the [Response].
   /// Parameters:
   ///

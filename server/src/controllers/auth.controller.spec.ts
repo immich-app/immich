@@ -142,4 +142,25 @@ describe(AuthController.name, () => {
       expect(ctx.authenticate).toHaveBeenCalled();
     });
   });
+
+  describe('POST /auth/change-pincode', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).post('/auth/change-pincode').send({ pincode: '123456', newPincode: '654321' });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /auth/create-pincode', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).post('/auth/create-pincode').send({ pincode: '123456' });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /auth/has-pincode', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get('/auth/has-pincode');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
 });

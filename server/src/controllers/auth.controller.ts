@@ -1,9 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
   AuthDto,
   ChangePasswordDto,
+  ChangePincodeDto,
+  createPincodeDto,
   LoginCredentialDto,
   LoginResponseDto,
   LogoutResponseDto,
@@ -73,5 +75,25 @@ export class AuthController {
       ImmichCookie.AUTH_TYPE,
       ImmichCookie.IS_AUTHENTICATED,
     ]);
+  }
+
+  @Post('create-pincode')
+  @HttpCode(HttpStatus.CREATED)
+  @Authenticated()
+  createPincode(@Auth() auth: AuthDto, @Body() dto: createPincodeDto): Promise<UserAdminResponseDto> {
+    return this.service.createPincode(auth, dto);
+  }
+
+  @Post('change-pincode')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated()
+  changePincode(@Auth() auth: AuthDto, @Body() dto: ChangePincodeDto): Promise<UserAdminResponseDto> {
+    return this.service.changePincode(auth, dto);
+  }
+
+  @Get('has-pincode')
+  @Authenticated()
+  hasPincode(@Auth() auth: AuthDto): Promise<boolean> {
+    return this.service.hasPincode(auth);
   }
 }

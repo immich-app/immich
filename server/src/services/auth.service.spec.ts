@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { SALT_ROUNDS } from 'src/constants';
 import { UserAdmin } from 'src/database';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { AuthType, Permission } from 'src/enum';
@@ -857,6 +858,73 @@ describe(AuthService.name, () => {
       await sut.unlink(auth);
 
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+    });
+  });
+
+  describe('pincode', () => {
+    it('should create a pincode', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { pincode: 'new-pincode' };
+
+      mocks.user.getByEmail.mockResolvedValue({ ...user, pincode: '' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.createPincode(auth, dto);
+
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, false, true);
+      expect(mocks.crypto.hashBcrypt).toHaveBeenCalledWith('new-pincode', SALT_ROUNDS);
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pincode: expect.any(String) });
+    });
+
+    it('should check the user has a pincode', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+
+      mocks.user.getByEmail.mockResolvedValue({
+        pincode: '123456',
+      } as UserAdmin & { pincode: string });
+
+      await expect(sut.createPincode(auth, { pincode: '123456' })).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it('should change the pincode', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { pincode: 'old-pincode', newPincode: 'new-pincode' };
+
+      mocks.user.getByEmail.mockResolvedValue({ ...user, pincode: 'hash-pincode' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.changePincode(auth, dto);
+
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, false, true);
+      expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-pincode', 'hash-pincode');
+    });
+
+    it('should throw when auth user email is not found', async () => {
+      const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
+      const dto = { pincode: 'old-pincode', newPincode: 'new-pincode' };
+
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+
+      await expect(sut.changePincode(auth, dto)).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should throw when pincode does not match existing pincode', async () => {
+      const auth = { user: { email: 'test@imimch.com' } as UserAdmin };
+      const dto = { pincode: 'old-pincode', newPincode: 'new-pincode' };
+
+      mocks.crypto.compareBcrypt.mockReturnValue(false);
+
+      mocks.user.getByEmail.mockResolvedValue({
+        email: 'test@immich.com',
+        pincode: 'hash-pincode',
+      } as UserAdmin & { pincode: string });
+
+      await expect(sut.changePincode(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 });

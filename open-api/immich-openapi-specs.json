@@ -2231,6 +2231,122 @@
         ]
       }
     },
+    "/auth/change-pincode": {
+      "post": {
+        "operationId": "changePincode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePincodeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/create-pincode": {
+      "post": {
+        "operationId": "createPincode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createPincodeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/has-pincode": {
+      "get": {
+        "operationId": "hasPincode",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -9123,6 +9239,27 @@
         ],
         "type": "object"
       },
+      "ChangePincodeDto": {
+        "properties": {
+          "newPincode": {
+            "example": "123456",
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          },
+          "pincode": {
+            "example": "123456",
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          }
+        },
+        "required": [
+          "newPincode",
+          "pincode"
+        ],
+        "type": "object"
+      },
       "CheckExistingAssetsDto": {
         "properties": {
           "deviceAssetIds": {
@@ -14233,6 +14370,20 @@
           "webm"
         ],
         "type": "string"
+      },
+      "createPincodeDto": {
+        "properties": {
+          "pincode": {
+            "example": "123456",
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          }
+        },
+        "required": [
+          "pincode"
+        ],
+        "type": "object"
       }
     }
   }

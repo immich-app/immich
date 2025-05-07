@@ -10,11 +10,13 @@ import { UserAdmin } from 'src/database';
 import {
   AuthDto,
   ChangePasswordDto,
+  ChangePincodeDto,
   LoginCredentialDto,
   LogoutResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
   SignUpDto,
+  createPincodeDto,
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
@@ -101,6 +103,52 @@ export class AuthService extends BaseService {
     const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
 
     return mapUserAdmin(updatedUser);
+  }
+
+  async createPincode(auth: AuthDto, { pincode }: createPincodeDto): Promise<UserAdminResponseDto> {
+    const user = await this.userRepository.getByEmail(auth.user.email, false, true);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    if (user.pincode) {
+      throw new BadRequestException('Pincode already exists');
+    }
+
+    const hashedPincode = await this.cryptoRepository.hashBcrypt(pincode.toString(), SALT_ROUNDS);
+
+    const updatedUser = await this.userRepository.update(user.id, { pincode: hashedPincode });
+
+    return mapUserAdmin(updatedUser);
+  }
+
+  async changePincode(auth: AuthDto, dto: ChangePincodeDto): Promise<UserAdminResponseDto> {
+    const { pincode, newPincode } = dto;
+
+    const user = await this.userRepository.getByEmail(auth.user.email, false, true);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const valid = this.validatePincode(pincode, user);
+    if (!valid) {
+      throw new BadRequestException('Wrong pincode');
+    }
+
+    const hasedPincode = await this.cryptoRepository.hashBcrypt(newPincode.toString(), SALT_ROUNDS);
+
+    const updatedUser = await this.userRepository.update(user.id, { pincode: hasedPincode });
+
+    return mapUserAdmin(updatedUser);
+  }
+
+  async hasPincode(auth: AuthDto): Promise<boolean> {
+    const user = await this.userRepository.getByEmail(auth.user.email, false, true);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return !!user.pincode;
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
@@ -376,6 +424,13 @@ export class AuthService extends BaseService {
       return false;
     }
     return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
+  }
+
+  private validatePincode(inputPincode: string, user: { pincode?: string | null }): boolean {
+    if (!user || !user.pincode) {
+      return false;
+    }
+    return this.cryptoRepository.compareBcrypt(inputPincode, user.pincode);
   }
 
   private async validateSession(tokenValue: string): Promise<AuthDto> {

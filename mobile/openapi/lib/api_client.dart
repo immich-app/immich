@@ -284,6 +284,8 @@ class ApiClient {
           return CQModeTypeTransformer().decode(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
+        case 'ChangePincodeDto':
+          return ChangePincodeDto.fromJson(value);
         case 'CheckExistingAssetsDto':
           return CheckExistingAssetsDto.fromJson(value);
         case 'CheckExistingAssetsResponseDto':
@@ -294,6 +296,8 @@ class ApiClient {
           return CreateAlbumDto.fromJson(value);
         case 'CreateLibraryDto':
           return CreateLibraryDto.fromJson(value);
+        case 'CreatePincodeDto':
+          return CreatePincodeDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'DatabaseBackupConfig':

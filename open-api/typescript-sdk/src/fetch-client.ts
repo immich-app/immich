@@ -493,6 +493,13 @@ export type ChangePasswordDto = {
     newPassword: string;
     password: string;
 };
+export type ChangePincodeDto = {
+    newPincode: string;
+    pincode: string;
+};
+export type CreatePincodeDto = {
+    pincode: string;
+};
 export type LoginCredentialDto = {
     email: string;
     password: string;
@@ -1995,6 +2002,38 @@ export function changePassword({ changePasswordDto }: {
         method: "POST",
         body: changePasswordDto
     })));
+}
+export function changePincode({ changePincodeDto }: {
+    changePincodeDto: ChangePincodeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>("/auth/change-pincode", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: changePincodeDto
+    })));
+}
+export function createPincode({ createPincodeDto }: {
+    createPincodeDto: CreatePincodeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: UserAdminResponseDto;
+    }>("/auth/create-pincode", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: createPincodeDto
+    })));
+}
+export function hasPincode(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: boolean;
+    }>("/auth/has-pincode", {
+        ...opts
+    }));
 }
 export function login({ loginCredentialDto }: {
     loginCredentialDto: LoginCredentialDto;

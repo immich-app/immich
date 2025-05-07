@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Length, MinLength } from 'class-validator';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import { ImmichCookie } from 'src/enum';
 import { Optional, toEmail } from 'src/validation';
@@ -76,6 +76,28 @@ export class ChangePasswordDto {
   @MinLength(8)
   @ApiProperty({ example: 'password' })
   newPassword!: string;
+}
+
+export class createPincodeDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(6, 6)
+  @ApiProperty({ example: '123456' })
+  pincode!: string;
+}
+
+export class ChangePincodeDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(6, 6)
+  @ApiProperty({ example: '123456' })
+  pincode!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(6, 6)
+  @ApiProperty({ example: '123456' })
+  newPincode!: string;
 }
 
 export class ValidateAccessTokenResponseDto {

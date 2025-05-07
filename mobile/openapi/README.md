@@ -109,6 +109,9 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | 
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
+*AuthenticationApi* | [**changePincode**](doc//AuthenticationApi.md#changepincode) | **POST** /auth/change-pincode | 
+*AuthenticationApi* | [**createPincode**](doc//AuthenticationApi.md#createpincode) | **POST** /auth/create-pincode | 
+*AuthenticationApi* | [**hasPincode**](doc//AuthenticationApi.md#haspincode) | **GET** /auth/has-pincode | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
@@ -310,11 +313,13 @@ Class | Method | HTTP request | Description
  - [CLIPConfig](doc//CLIPConfig.md)
  - [CQMode](doc//CQMode.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
+ - [ChangePincodeDto](doc//ChangePincodeDto.md)
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [Colorspace](doc//Colorspace.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
+ - [CreatePincodeDto](doc//CreatePincodeDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [DatabaseBackupConfig](doc//DatabaseBackupConfig.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
