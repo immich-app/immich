@@ -517,6 +517,9 @@ export type LogoutResponseDto = {
     redirectUri: string;
     successful: boolean;
 };
+export type AuthStatusResponseDto = {
+    hasPincode: boolean;
+};
 export type ValidateAccessTokenResponseDto = {
     authStatus: boolean;
 };
@@ -2027,14 +2030,6 @@ export function createPincode({ createPincodeDto }: {
         body: createPincodeDto
     })));
 }
-export function hasPincode(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: boolean;
-    }>("/auth/has-pincode", {
-        ...opts
-    }));
-}
 export function login({ loginCredentialDto }: {
     loginCredentialDto: LoginCredentialDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2054,6 +2049,14 @@ export function logout(opts?: Oazapfts.RequestOpts) {
     }>("/auth/logout", {
         ...opts,
         method: "POST"
+    }));
+}
+export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AuthStatusResponseDto;
+    }>("/auth/status", {
+        ...opts
     }));
 }
 export function validateAccessToken(opts?: Oazapfts.RequestOpts) {

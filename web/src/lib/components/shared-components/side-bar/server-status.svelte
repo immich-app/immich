@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import ServerAboutModal from '$lib/components/shared-components/server-about-modal.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';
   import { requestServerInfo } from '$lib/utils/auth';
@@ -16,7 +17,6 @@
 
   const { serverVersion, connected } = websocketStore;
 
-  let isOpen = $state(false);
   let info: ServerAboutResponseDto | undefined = $state();
   let versions: ServerVersionHistoryResponseDto[] = $state([]);
 
@@ -37,10 +37,6 @@
   );
 </script>
 
-{#if isOpen && info}
-  <ServerAboutModal onClose={() => (isOpen = false)} {info} {versions} />
-{/if}
-
 <div
   class="text-sm flex md:flex ps-5 pe-1 place-items-center place-content-center justify-between min-w-52 overflow-hidden dark:text-immich-dark-fg"
 >
@@ -58,7 +54,11 @@
 
   <div class="flex justify-between justify-items-center">
     {#if $connected && version}
-      <button type="button" onclick={() => (isOpen = true)} class="dark:text-immich-gray flex gap-1">
+      <button
+        type="button"
+        onclick={() => info && modalManager.open(ServerAboutModal, { versions, info })}
+        class="dark:text-immich-gray flex gap-1"
+      >
         {#if isMain}
           <Icon path={mdiAlert} size="1.5em" color="#ffcc4d" /> {info?.sourceRef}
         {:else}

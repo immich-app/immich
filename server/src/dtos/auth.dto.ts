@@ -100,6 +100,12 @@ export class ChangePincodeDto {
   newPincode!: string;
 }
 
+export class ResetPincodeDto {
+  @IsString()
+  @IsNotEmpty()
+  userId!: string;
+}
+
 export class ValidateAccessTokenResponseDto {
   authStatus!: boolean;
 }
@@ -135,4 +141,8 @@ export class OAuthConfigDto {
 
 export class OAuthAuthorizeResponseDto {
   url!: string;
+}
+
+export class AuthStatusResponseDto {
+  hasPincode!: boolean;
 }

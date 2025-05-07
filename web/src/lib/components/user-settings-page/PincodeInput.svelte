@@ -1,0 +1,111 @@
+<script lang="ts">
+  interface Props {
+    label: string;
+    value?: string;
+    pinLength?: number;
+    tabindexStart?: number;
+  }
+
+  let { label, value = $bindable(''), pinLength = 6, tabindexStart = 0 }: Props = $props();
+
+  let pinValues = $state(Array.from({ length: pinLength }).fill(''));
+  let pincodeInputElements: HTMLInputElement[] = $state([]);
+
+  export function reset() {
+    pinValues = Array.from({ length: pinLength }).fill('');
+    value = '';
+  }
+
+  const focusNext = (index: number) => {
+    if (index < pinLength - 1) {
+      pincodeInputElements[index + 1]?.focus();
+    }
+  };
+
+  const focusPrev = (index: number) => {
+    if (index > 0) {
+      pincodeInputElements[index - 1]?.focus();
+    }
+  };
+
+  const handleInput = (event: Event, index: number) => {
+    const target = event.target as HTMLInputElement;
+    let currentPinValue = target.value;
+
+    if (target.value.length > 1) {
+      currentPinValue = value.slice(0, 1);
+    }
+
+    if (!/^\d*$/.test(value)) {
+      pinValues[index] = '';
+      target.value = '';
+      return;
+    }
+
+    pinValues[index] = currentPinValue;
+
+    value = pinValues.join('').trim();
+
+    if (value && index < pinLength - 1) {
+      focusNext(index);
+    }
+  };
+
+  function handleKeydown(event: KeyboardEvent & { currentTarget: EventTarget & HTMLInputElement }) {
+    const target = event.currentTarget as HTMLInputElement;
+    const index = pincodeInputElements.indexOf(target);
+
+    if (event.key === 'Tab') {
+      return;
+    }
+
+    if (event.key === 'Backspace') {
+      if (target.value === '' && index > 0) {
+        focusPrev(index);
+        pinValues[index - 1] = '';
+      } else if (target.value !== '') {
+        pinValues[index] = '';
+      }
+
+      return;
+    }
+
+    if (event.key === 'ArrowLeft' && index > 0) {
+      focusPrev(index);
+      return;
+    }
+    if (event.key === 'ArrowRight' && index < pinLength - 1) {
+      focusNext(index);
+      return;
+    }
+
+    if (!/^\d$/.test(event.key) && event.key !== 'Backspace') {
+      event.preventDefault();
+      return;
+    }
+  }
+</script>
+
+<div class="flex flex-col gap-1">
+  {#if label}
+    <label class="text-xs text-dark" for={pincodeInputElements[0]?.id}>{label.toUpperCase()}</label>
+  {/if}
+  <div class="flex gap-2">
+    {#each { length: pinLength } as _, index (index)}
+      <input
+        tabindex={tabindexStart + index}
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="1"
+        bind:this={pincodeInputElements[index]}
+        id="pincode-{index}"
+        class="h-12 w-10 rounded-xl border-2 border-suble dark:border-gray-700 bg-transparent text-center text-lg font-medium focus:border-immich-primary focus:ring-primary dark:focus:border-primary font-mono"
+        bind:value={pinValues[index]}
+        onkeydown={handleKeydown}
+        oninput={(event) => handleInput(event, index)}
+        aria-label={`PIN digit ${index + 1} of ${pinLength}${label ? ` for ${label}` : ''}`}
+      />
+    {/each}
+  </div>
+</div>

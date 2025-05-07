@@ -3,12 +3,14 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
   AuthDto,
+  AuthStatusResponseDto,
   ChangePasswordDto,
   ChangePincodeDto,
   createPincodeDto,
   LoginCredentialDto,
   LoginResponseDto,
   LogoutResponseDto,
+  ResetPincodeDto,
   SignUpDto,
   ValidateAccessTokenResponseDto,
 } from 'src/dtos/auth.dto';
@@ -91,9 +93,16 @@ export class AuthController {
     return this.service.changePincode(auth, dto);
   }
 
-  @Get('has-pincode')
+  @Post('reset-pincode')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated({ admin: true })
+  resetPincode(@Auth() auth: AuthDto, @Body() dto: ResetPincodeDto): Promise<UserAdminResponseDto> {
+    return this.service.resetPincode(auth, dto);
+  }
+
+  @Get('status')
   @Authenticated()
-  hasPincode(@Auth() auth: AuthDto): Promise<boolean> {
-    return this.service.hasPincode(auth);
+  getAuthStatus(@Auth() auth: AuthDto): Promise<AuthStatusResponseDto> {
+    return this.service.getAuthStatus(auth);
   }
 }

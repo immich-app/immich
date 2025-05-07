@@ -111,7 +111,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**changePincode**](doc//AuthenticationApi.md#changepincode) | **POST** /auth/change-pincode | 
 *AuthenticationApi* | [**createPincode**](doc//AuthenticationApi.md#createpincode) | **POST** /auth/create-pincode | 
-*AuthenticationApi* | [**hasPincode**](doc//AuthenticationApi.md#haspincode) | **GET** /auth/has-pincode | 
+*AuthenticationApi* | [**getAuthStatus**](doc//AuthenticationApi.md#getauthstatus) | **GET** /auth/status | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
@@ -307,6 +307,7 @@ Class | Method | HTTP request | Description
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AssetVisibility](doc//AssetVisibility.md)
  - [AudioCodec](doc//AudioCodec.md)
+ - [AuthStatusResponseDto](doc//AuthStatusResponseDto.md)
  - [AvatarUpdate](doc//AvatarUpdate.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)

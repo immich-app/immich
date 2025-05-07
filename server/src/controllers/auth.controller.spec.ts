@@ -143,13 +143,6 @@ describe(AuthController.name, () => {
     });
   });
 
-  describe('POST /auth/change-pincode', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/auth/change-pincode').send({ pincode: '123456', newPincode: '654321' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('POST /auth/create-pincode', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).post('/auth/create-pincode').send({ pincode: '123456' });
@@ -157,9 +150,30 @@ describe(AuthController.name, () => {
     });
   });
 
-  describe('GET /auth/has-pincode', () => {
+  describe('POST /auth/change-pincode', () => {
     it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/auth/has-pincode');
+      await request(ctx.getHttpServer()).post('/auth/change-pincode').send({ pincode: '123456', newPincode: '654321' });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /auth/reset-pincode', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).post('/auth/reset-pincode').send({ userId: '123456' });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require a userId', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/auth/reset-pincode').send({ name: 'admin' });
+
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorDto.badRequest(['userId should not be empty', 'userId must be a string']));
+    });
+  });
+
+  describe('GET /auth/status', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get('/auth/status');
       expect(ctx.authenticate).toHaveBeenCalled();
     });
   });

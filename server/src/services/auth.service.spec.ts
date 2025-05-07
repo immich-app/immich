@@ -926,5 +926,27 @@ describe(AuthService.name, () => {
 
       await expect(sut.changePincode(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
+
+    it('should reset the pincode', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user: { isAdmin: true } });
+      const dto = { userId: '123' };
+
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.resetPincode(auth, dto);
+
+      expect(mocks.user.update).toHaveBeenCalledWith(dto.userId, { pincode: null });
+    });
+
+    it('should throw if reset pincode by a non-admin user', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user: { isAdmin: false } });
+      const dto = { userId: '123' };
+
+      mocks.user.update.mockResolvedValue(user);
+
+      await expect(sut.resetPincode(auth, dto)).rejects.toBeInstanceOf(ForbiddenException);
+    });
   });
 });

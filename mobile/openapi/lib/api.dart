@@ -108,6 +108,7 @@ part 'model/asset_stats_response_dto.dart';
 part 'model/asset_type_enum.dart';
 part 'model/asset_visibility.dart';
 part 'model/audio_codec.dart';
+part 'model/auth_status_response_dto.dart';
 part 'model/avatar_update.dart';
 part 'model/bulk_id_response_dto.dart';
 part 'model/bulk_ids_dto.dart';

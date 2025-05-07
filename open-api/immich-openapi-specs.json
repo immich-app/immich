@@ -2315,38 +2315,6 @@
         ]
       }
     },
-    "/auth/has-pincode": {
-      "get": {
-        "operationId": "hasPincode",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -2388,6 +2356,80 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LogoutResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/reset-pincode": {
+      "post": {
+        "operationId": "resetPincode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPincodeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/status": {
+      "get": {
+        "operationId": "getAuthStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthStatusResponseDto"
                 }
               }
             },
@@ -9147,6 +9189,17 @@
         ],
         "type": "string"
       },
+      "AuthStatusResponseDto": {
+        "properties": {
+          "hasPincode": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hasPincode"
+        ],
+        "type": "object"
+      },
       "AvatarUpdate": {
         "properties": {
           "color": {
@@ -11333,6 +11386,17 @@
           "like"
         ],
         "type": "string"
+      },
+      "ResetPincodeDto": {
+        "properties": {
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "type": "object"
       },
       "ReverseGeocodingStateResponseDto": {
         "properties": {

@@ -9,12 +9,14 @@ import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
 import {
   AuthDto,
+  AuthStatusResponseDto,
   ChangePasswordDto,
   ChangePincodeDto,
   LoginCredentialDto,
   LogoutResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
+  ResetPincodeDto,
   SignUpDto,
   createPincodeDto,
   mapLoginResponse,
@@ -136,19 +138,9 @@ export class AuthService extends BaseService {
     }
 
     const hasedPincode = await this.cryptoRepository.hashBcrypt(newPincode.toString(), SALT_ROUNDS);
-
     const updatedUser = await this.userRepository.update(user.id, { pincode: hasedPincode });
 
     return mapUserAdmin(updatedUser);
-  }
-
-  async hasPincode(auth: AuthDto): Promise<boolean> {
-    const user = await this.userRepository.getByEmail(auth.user.email, false, true);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    return !!user.pincode;
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
@@ -482,5 +474,31 @@ export class AuthService extends BaseService {
       return url.replace(/app\.immich:\/+oauth-callback/, mobileRedirectUri);
     }
     return url;
+  }
+
+  async getAuthStatus(auth: AuthDto): Promise<AuthStatusResponseDto> {
+    const hasPincode = await this.hasPincode(auth);
+
+    return {
+      hasPincode,
+    };
+  }
+
+  private async hasPincode(auth: AuthDto): Promise<boolean> {
+    const user = await this.userRepository.getByEmail(auth.user.email, false, true);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return !!user.pincode;
+  }
+
+  async resetPincode(auth: AuthDto, dto: ResetPincodeDto): Promise<UserAdminResponseDto> {
+    if (!auth.user.isAdmin) {
+      throw new ForbiddenException('Only admin can reset pincode');
+    }
+
+    const updatedUser = await this.userRepository.update(dto.userId, { pincode: null });
+    return mapUserAdmin(updatedUser);
   }
 }

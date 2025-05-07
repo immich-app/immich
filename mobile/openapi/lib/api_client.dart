@@ -272,6 +272,8 @@ class ApiClient {
           return AssetVisibilityTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
+        case 'AuthStatusResponseDto':
+          return AuthStatusResponseDto.fromJson(value);
         case 'AvatarUpdate':
           return AvatarUpdate.fromJson(value);
         case 'BulkIdResponseDto':

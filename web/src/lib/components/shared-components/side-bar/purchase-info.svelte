@@ -4,9 +4,10 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import LicenseModal from '$lib/components/shared-components/purchasing/purchase-modal.svelte';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
   import { AppRoute } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAccountAge } from '$lib/utils/auth';
@@ -19,7 +20,6 @@
   import { fade } from 'svelte/transition';
 
   let showMessage = $state(false);
-  let isOpen = $state(false);
   let hoverMessage = $state(false);
   let hoverButton = $state(false);
 
@@ -27,8 +27,8 @@
 
   const { isPurchased } = purchaseStore;
 
-  const openPurchaseModal = () => {
-    isOpen = true;
+  const openPurchaseModal = async () => {
+    await modalManager.open(PurchaseModal);
     showMessage = false;
   };
 
@@ -73,10 +73,6 @@
     }
   });
 </script>
-
-{#if isOpen}
-  <LicenseModal onClose={() => (isOpen = false)} />
-{/if}
 
 <div class="license-status ps-4 text-sm">
   {#if $isPurchased && $preferences.purchase.showSupportBadge}

@@ -157,10 +157,10 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /auth/has-pincode' operation and returns the [Response].
-  Future<Response> hasPincodeWithHttpInfo() async {
+  /// Performs an HTTP 'GET /auth/status' operation and returns the [Response].
+  Future<Response> getAuthStatusWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/auth/has-pincode';
+    final apiPath = r'/auth/status';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -183,8 +183,8 @@ class AuthenticationApi {
     );
   }
 
-  Future<bool?> hasPincode() async {
-    final response = await hasPincodeWithHttpInfo();
+  Future<AuthStatusResponseDto?> getAuthStatus() async {
+    final response = await getAuthStatusWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -192,7 +192,7 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AuthStatusResponseDto',) as AuthStatusResponseDto;
     
     }
     return null;
