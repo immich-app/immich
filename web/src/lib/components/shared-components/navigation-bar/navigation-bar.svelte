@@ -49,7 +49,10 @@
 
 <svelte:window bind:innerWidth />
 
-<nav id="dashboard-navbar" class="z-auto max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm overflow-hidden">
+<nav
+  id="dashboard-navbar"
+  class="z-auto max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm overflow-hidden"
+>
   <SkipLink text={$t('skip_to_content')} />
   <div
     class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
