@@ -1,5 +1,21 @@
 import Photos
 
+class WrapperAsset: Hashable, Equatable {
+  var asset: Asset
+  
+  init(with asset: Asset) {
+    self.asset = asset
+  }
+  
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(self.asset.id)
+  }
+  
+  static func == (lhs: WrapperAsset, rhs: WrapperAsset) -> Bool {
+    return lhs.asset.id == rhs.asset.id
+  }
+}
+
 class MediaManager {
   private let _defaults: UserDefaults
   private let _changeTokenKey = "immich:changeToken"
@@ -7,7 +23,7 @@ class MediaManager {
   init(with defaults: UserDefaults = .standard) {
     self._defaults = defaults
   }
-  
+
   @available(iOS 16, *)
   func _getChangeToken() -> PHPersistentChangeToken? {
     guard let encodedToken = _defaults.data(forKey: _changeTokenKey) else {
@@ -91,19 +107,22 @@ class MediaManager {
       let dateFormatter = ISO8601DateFormatter()
       dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
-      var updatedArr: [Asset] = []
-      var deletedArr: [String] = []
+      var updatedArr: Set<WrapperAsset> = []
+      var deletedArr: Set<String> = []
 
       for changes in result {
         let details = try changes.changeDetails(for: PHObjectType.asset)
+
         let updated = details.updatedLocalIdentifiers.union(details.insertedLocalIdentifiers)
         let deleted = details.deletedLocalIdentifiers
       
         let options = PHFetchOptions()
-        options.includeHiddenAssets = true
+        options.includeHiddenAssets = false
+        
         let updatedAssets = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: options)
 
         updatedAssets.enumerateObjects { (asset, _, _) in
+   
           let id = asset.localIdentifier
           let name = PHAssetResource.assetResources(for: asset).first?.originalFilename ?? asset.title()
           let type: Int64 = Int64(asset.mediaType.rawValue)
@@ -111,7 +130,7 @@ class MediaManager {
           let updatedAt = asset.modificationDate.map { dateFormatter.string(from: $0) }
           let durationInSeconds: Int64 = Int64(asset.duration)
           
-          let domainAsset = Asset(
+          let domainAsset = WrapperAsset(with: Asset(
               id: id,
               name: name,
               type: type,
@@ -119,14 +138,16 @@ class MediaManager {
               updatedAt: updatedAt,
               durationInSeconds: durationInSeconds,
               albumIds: self._getAlbumIds(forAsset: asset)
-          )
-          updatedArr.append(domainAsset)
+          ))
+          
+          updatedArr.insert(domainAsset)
         }
         
-        deletedArr.append(contentsOf: details.deletedLocalIdentifiers)
+        deletedArr.formUnion(deleted)
       }
 
-      let delta = SyncDelta(hasChanges: true, updates: updatedArr, deletes: deletedArr)
+      let delta = SyncDelta(hasChanges: true, updates: Array(updatedArr.map { $0.asset }), deletes: Array(deletedArr))
+    
       completion(.success(delta))
       return
     } catch {
