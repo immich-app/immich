@@ -11,7 +11,6 @@ import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/thumbhash_placeholder.dart';
 import 'package:octo_image/octo_image.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_people.provider.dart';
 
 class ImmichThumbnail extends HookConsumerWidget {
   const ImmichThumbnail({
@@ -79,15 +78,11 @@ class ImmichThumbnail extends HookConsumerWidget {
       );
     }
 
-    final people = ref
-        .watch(assetPeopleNotifierProvider(asset!))
-        .value
-        ?.where((p) => !p.isHidden);
     final assetAltText = getAltText(
       asset!.exifInfo,
       asset!.fileCreatedAt,
       asset!.type,
-      people?.map((p) => p.name).toList() ?? [],
+      [],
     );
 
     return Semantics(
