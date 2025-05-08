@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { handleError } from '$lib/utils/handle-error';
-  import ServerPurchaseOptionCard from './server-purchase-option-card.svelte';
-  import UserPurchaseOptionCard from './individual-purchase-option-card.svelte';
-  import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
   import { t } from 'svelte-i18n';
+  import UserPurchaseOptionCard from './individual-purchase-option-card.svelte';
+  import ServerPurchaseOptionCard from './server-purchase-option-card.svelte';
 
   interface Props {
     onActivate: () => void;
@@ -39,13 +39,13 @@
 <section class="p-4">
   <div>
     {#if showTitle}
-      <h1 class="text-4xl font-bold text-immich-primary dark:text-immich-dark-primary tracking-wider">
+      <h1 class="text-4xl font-bold tracking-wider">
         {$t('purchase_option_title')}
       </h1>
     {/if}
 
     {#if showMessage}
-      <div class="mt-2 dark:text-immich-gray">
+      <div class="mt-2">
         <p>
           {$t('purchase_panel_info_1')}
         </p>

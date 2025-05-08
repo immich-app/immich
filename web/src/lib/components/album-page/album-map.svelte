@@ -130,6 +130,7 @@
               clickable={false}
               bind:mapMarkers
               onSelect={onViewAssets}
+              showSettings={false}
             />
           {/await}
         </div>
