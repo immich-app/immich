@@ -66,13 +66,13 @@ runs:
         SUFFIX: ${{ steps.cache-key-suffix.outputs.suffix }}
         PLATFORM_PAIR: ${{ steps.prepare.outputs.platform-pair }}
       run: |
+        HASH=$(sha256sum <<< "${BUILD_ARGS}" | cut -d' ' -f1)
+        CACHE_KEY="${PLATFORM_PAIR}-${HASH}"
+        echo "cache-key-base=${CACHE_KEY}" >> $GITHUB_OUTPUT
         if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
           # Essentially just ignore the cache output (forks can't write to registry cache)
           echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
         else
-          HASH=$(sha256sum <<< "${BUILD_ARGS}" | cut -d' ' -f1)
-          CACHE_KEY="${PLATFORM_PAIR}-${HASH}"
-          echo "cache-key-base=${CACHE_KEY}" >> $GITHUB_OUTPUT
           echo "cache-to=type=registry,ref=${IMAGE}-build-cache:${CACHE_KEY}-${SUFFIX},mode=max,compression=zstd" >> $GITHUB_OUTPUT
         fi
 
