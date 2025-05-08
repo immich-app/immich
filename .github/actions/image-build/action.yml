@@ -92,7 +92,7 @@ runs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-to: ${{ steps.cache-target.outputs.cache-to }}
         cache-from: |
-          type=registry,ref=${{ inputs.image }}-build-cache:${{ steps.cache-target.outputs.cache-key-base }}-${{ env.CACHE_KEY_SUFFIX }}
+          type=registry,ref=${{ inputs.image }}-build-cache:${{ steps.cache-target.outputs.cache-key-base }}-${{ steps.cache-key-suffix.outputs.suffix }}
           type=registry,ref=${{ inputs.image }}-build-cache:${{ steps.cache-target.outputs.cache-key-base }}-main
         outputs: type=image,"name=${{ inputs.image }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
         build-args: |
