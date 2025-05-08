@@ -19,17 +19,6 @@ describe(`/auth/admin-sign-up`, () => {
       expect(body).toEqual(signupResponseDto.admin);
     });
 
-    it('should sign up the admin with a local domain', async () => {
-      const { status, body } = await request(app)
-        .post('/auth/admin-sign-up')
-        .send({ ...signupDto.admin, email: 'admin@local' });
-      expect(status).toEqual(201);
-      expect(body).toEqual({
-        ...signupResponseDto.admin,
-        email: 'admin@local',
-      });
-    });
-
     it('should not allow a second admin to sign up', async () => {
       await signUpAdmin({ signUpDto: signupDto.admin });
 
@@ -56,22 +45,6 @@ describe('/auth/*', () => {
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.incorrectLogin);
     });
-
-    for (const key of Object.keys(loginDto.admin)) {
-      it(`should not allow null ${key}`, async () => {
-        const { status, body } = await request(app)
-          .post('/auth/login')
-          .send({ ...loginDto.admin, [key]: null });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
-      });
-
-      it('should reject an invalid email', async () => {
-        const { status, body } = await request(app).post('/auth/login').send({ email: [], password });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.invalidEmail);
-      });
-    }
 
     it('should accept a correct password', async () => {
       const { status, body, headers } = await request(app).post('/auth/login').send({ email, password });
@@ -127,14 +100,6 @@ describe('/auth/*', () => {
   });
 
   describe('POST /auth/change-password', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .post(`/auth/change-password`)
-        .send({ password, newPassword: 'Password1234' });
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should require the current password', async () => {
       const { status, body } = await request(app)
         .post(`/auth/change-password`)

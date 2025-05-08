@@ -4,9 +4,9 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, SourceType } from 'src/enum';
+import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
 import { removeUndefinedKeys } from 'src/utils/database';
-import { PaginationOptions } from 'src/utils/pagination';
+import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
   minimumFaceCount: number;
@@ -157,7 +157,7 @@ export class PersonRepository {
       .innerJoin('assets', (join) =>
         join
           .onRef('asset_faces.assetId', '=', 'assets.id')
-          .on('assets.isArchived', '=', false)
+          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE)
           .on('assets.deletedAt', 'is', null),
       )
       .where('person.ownerId', '=', userId)
@@ -200,11 +200,7 @@ export class PersonRepository {
       .limit(pagination.take + 1)
       .execute();
 
-    if (items.length > pagination.take) {
-      return { items: items.slice(0, -1), hasNextPage: true };
-    }
-
-    return { items, hasNextPage: false };
+    return paginationHelper(items, pagination.take);
   }
 
   @GenerateSql()
@@ -252,7 +248,7 @@ export class PersonRepository {
         jsonObjectFrom(
           eb
             .selectFrom('assets')
-            .select(['assets.ownerId', 'assets.isArchived', 'assets.fileCreatedAt'])
+            .select(['assets.ownerId', 'assets.visibility', 'assets.fileCreatedAt'])
             .whereRef('assets.id', '=', 'asset_faces.assetId'),
         ).as('asset'),
       )
@@ -268,8 +264,8 @@ export class PersonRepository {
       .selectFrom('person')
       .innerJoin('asset_faces', 'asset_faces.id', 'person.faceAssetId')
       .innerJoin('assets', 'asset_faces.assetId', 'assets.id')
-      .innerJoin('exif', 'exif.assetId', 'assets.id')
-      .innerJoin('asset_files', 'asset_files.assetId', 'assets.id')
+      .leftJoin('exif', 'exif.assetId', 'assets.id')
+      .leftJoin('asset_files', 'asset_files.assetId', 'assets.id')
       .select([
         'person.ownerId',
         'asset_faces.boundingBoxX1 as x1',
@@ -278,17 +274,14 @@ export class PersonRepository {
         'asset_faces.boundingBoxY2 as y2',
         'asset_faces.imageWidth as oldWidth',
         'asset_faces.imageHeight as oldHeight',
-        'exif.exifImageWidth',
-        'exif.exifImageHeight',
         'assets.type',
         'assets.originalPath',
         'asset_files.path as previewPath',
+        'exif.orientation as exifOrientation',
       ])
       .where('person.id', '=', id)
       .where('asset_faces.deletedAt', 'is', null)
       .where('asset_files.type', '=', AssetFileType.PREVIEW)
-      .where('exif.exifImageWidth', '>', 0)
-      .where('exif.exifImageHeight', '>', 0)
       .$narrowType<{ exifImageWidth: NotNull; exifImageHeight: NotNull }>()
       .executeTakeFirst();
   }
@@ -350,7 +343,7 @@ export class PersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('asset_faces.personId', '=', personId)
-          .on('assets.isArchived', '=', false)
+          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE)
           .on('assets.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
@@ -373,7 +366,7 @@ export class PersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('assets.deletedAt', 'is', null)
-          .on('assets.isArchived', '=', false),
+          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['person.id'])).as('total'))
       .select((eb) =>

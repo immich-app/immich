@@ -10,7 +10,10 @@ import {
   AssetOrder,
   AssetStatus,
   AssetType,
+  AssetVisibility,
   MemoryType,
+  NotificationLevel,
+  NotificationType,
   Permission,
   SharedLinkType,
   SourceType,
@@ -146,11 +149,10 @@ export interface Assets {
   fileCreatedAt: Timestamp;
   fileModifiedAt: Timestamp;
   id: Generated<string>;
-  isArchived: Generated<boolean>;
   isExternal: Generated<boolean>;
   isFavorite: Generated<boolean>;
   isOffline: Generated<boolean>;
-  isVisible: Generated<boolean>;
+  visibility: Generated<AssetVisibility>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
   localDateTime: Timestamp;
@@ -261,6 +263,21 @@ export interface Memories {
   type: MemoryType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
+}
+
+export interface Notifications {
+  id: Generated<string>;
+  createdAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp>;
+  deletedAt: Timestamp | null;
+  updateId: Generated<string>;
+  userId: string;
+  level: Generated<NotificationLevel>;
+  type: NotificationType;
+  title: string;
+  description: string | null;
+  data: any | null;
+  readAt: Timestamp | null;
 }
 
 export interface MemoriesAssetsAssets {
@@ -463,6 +480,7 @@ export interface DB {
   memories: Memories;
   memories_assets_assets: MemoriesAssetsAssets;
   migrations: Migrations;
+  notifications: Notifications;
   move_history: MoveHistory;
   naturalearth_countries: NaturalearthCountries;
   partners_audit: PartnersAudit;

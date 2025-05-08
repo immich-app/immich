@@ -116,6 +116,11 @@ export class StorageTemplateService extends BaseService {
     return { ...storageTokens, presetOptions: storagePresets };
   }
 
+  @OnEvent({ name: 'asset.metadataExtracted' })
+  async onAssetMetadataExtracted({ source, assetId }: ArgOf<'asset.metadataExtracted'>) {
+    await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { source, id: assetId } });
+  }
+
   @OnJob({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, queue: QueueName.STORAGE_TEMPLATE_MIGRATION })
   async handleMigrationSingle({ id }: JobOf<JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: true });

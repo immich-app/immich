@@ -1,5 +1,6 @@
 import { DatabaseExtension } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { vectorIndexQuery } from 'src/utils/database';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
@@ -8,7 +9,6 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     if (vectorExtension === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
-      await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
     }
 
     const hasEmbeddings = async (tableName: string): Promise<boolean> => {
@@ -47,21 +47,14 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE real[]`);
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512)`);
 
-    await queryRunner.query(`
-      CREATE INDEX IF NOT EXISTS clip_index ON smart_search
-      USING hnsw (embedding vector_cosine_ops)
-      WITH (ef_construction = 300, m = 16)`);
+    await queryRunner.query(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: 'clip_index' }));
 
-    await queryRunner.query(`
-      CREATE INDEX face_index ON face_search
-      USING hnsw (embedding vector_cosine_ops)
-      WITH (ef_construction = 300, m = 16)`);
+    await queryRunner.query(vectorIndexQuery({ vectorExtension, table: 'face_search', indexName: 'face_index' }));
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     if (vectorExtension === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
-      await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
     }
 
     await queryRunner.query(`ALTER TABLE asset_faces ADD COLUMN "embedding" vector(512)`);
@@ -74,9 +67,6 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
       WHERE id = fs."faceId"`);
     await queryRunner.query(`DROP TABLE face_search`);
 
-    await queryRunner.query(`
-      CREATE INDEX face_index ON asset_faces
-      USING hnsw (embedding vector_cosine_ops)
-      WITH (ef_construction = 300, m = 16)`);
+    await queryRunner.query(vectorIndexQuery({ vectorExtension, table: 'asset_faces', indexName: 'face_index' }));
   }
 }

@@ -48,7 +48,7 @@
       }
       uploadAssetsStore.reset();
     }}
-    class="fixed bottom-6 right-16 z-[10000]"
+    class="fixed bottom-6 end-16 z-[10000]"
   >
     {#if showDetail}
       <div
@@ -136,7 +136,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="absolute -left-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
+          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
         >
           {$remainingUploads.toLocaleString($locale)}
         </button>
@@ -145,7 +145,7 @@
             type="button"
             in:scale={{ duration: 250, easing: quartInOut }}
             onclick={() => (showDetail = true)}
-            class="absolute -right-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
+            class="absolute -end-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
           >
             {$stats.errors.toLocaleString($locale)}
           </button>

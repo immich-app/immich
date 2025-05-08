@@ -28,7 +28,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
+      <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingSwitch title={$t('admin.trash_enabled_description')} {disabled} bind:checked={config.trash.enabled} />
 
         <hr />

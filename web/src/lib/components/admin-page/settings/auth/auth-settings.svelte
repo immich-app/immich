@@ -1,16 +1,17 @@
 <script lang="ts">
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { type SystemConfigDto } from '@immich/sdk';
+  import { SettingInputFieldType } from '$lib/constants';
+  import { OAuthTokenEndpointAuthMethod, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import { t } from 'svelte-i18n';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -48,8 +49,7 @@
 {#if isConfirmOpen}
   <ConfirmDialog
     title={$t('admin.disable_login')}
-    onCancel={() => (isConfirmOpen = false)}
-    onConfirm={() => handleSave(true)}
+    onClose={(confirmed) => (confirmed ? handleSave(true) : (isConfirmOpen = false))}
   >
     {#snippet promptSnippet()}
       <div class="flex flex-col gap-4">
@@ -76,13 +76,13 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={(e) => e.preventDefault()}>
-      <div class="ml-4 mt-4 flex flex-col">
+      <div class="ms-4 mt-4 flex flex-col">
         <SettingAccordion
           key="oauth"
           title={$t('admin.oauth_settings')}
           subtitle={$t('admin.oauth_settings_description')}
         >
-          <div class="ml-4 mt-4 flex flex-col gap-4">
+          <div class="ms-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
               <FormatMessage key="admin.oauth_settings_more_details">
                 {#snippet children({ message })}
@@ -108,7 +108,7 @@
               <hr />
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_issuer_url').toUpperCase()}
+                label="ISSUER_URL"
                 bind:value={config.oauth.issuerUrl}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -117,7 +117,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_client_id').toUpperCase()}
+                label="CLIENT_ID"
                 bind:value={config.oauth.clientId}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -126,16 +126,30 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_client_secret').toUpperCase()}
+                label="CLIENT_SECRET"
+                description={$t('admin.oauth_client_secret_description')}
                 bind:value={config.oauth.clientSecret}
-                required={true}
                 disabled={disabled || !config.oauth.enabled}
                 isEdited={!(config.oauth.clientSecret == savedConfig.oauth.clientSecret)}
               />
 
+              {#if config.oauth.clientSecret}
+                <SettingSelect
+                  label="TOKEN_ENDPOINT_AUTH_METHOD"
+                  bind:value={config.oauth.tokenEndpointAuthMethod}
+                  disabled={disabled || !config.oauth.enabled || !config.oauth.clientSecret}
+                  isEdited={!(config.oauth.tokenEndpointAuthMethod == savedConfig.oauth.tokenEndpointAuthMethod)}
+                  options={[
+                    { value: OAuthTokenEndpointAuthMethod.ClientSecretPost, text: 'client_secret_post' },
+                    { value: OAuthTokenEndpointAuthMethod.ClientSecretBasic, text: 'client_secret_basic' },
+                  ]}
+                  name="tokenEndpointAuthMethod"
+                />
+              {/if}
+
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_scope').toUpperCase()}
+                label="SCOPE"
                 bind:value={config.oauth.scope}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -144,7 +158,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_signing_algorithm').toUpperCase()}
+                label="ID_TOKEN_SIGNED_RESPONSE_ALG"
                 bind:value={config.oauth.signingAlgorithm}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -153,12 +167,21 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_profile_signing_algorithm').toUpperCase()}
-                description={$t('admin.oauth_profile_signing_algorithm_description')}
+                label="USERINFO_SIGNED_RESPONSE_ALG"
                 bind:value={config.oauth.profileSigningAlgorithm}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
                 isEdited={!(config.oauth.profileSigningAlgorithm == savedConfig.oauth.profileSigningAlgorithm)}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
+                label={$t('admin.oauth_timeout').toUpperCase()}
+                description={$t('admin.oauth_timeout_description')}
+                required={true}
+                bind:value={config.oauth.timeout}
+                disabled={disabled || !config.oauth.enabled}
+                isEdited={!(config.oauth.timeout == savedConfig.oauth.timeout)}
               />
 
               <SettingInputField
@@ -243,8 +266,8 @@
           title={$t('admin.password_settings')}
           subtitle={$t('admin.password_settings_description')}
         >
-          <div class="ml-4 mt-4 flex flex-col gap-4">
-            <div class="ml-4 mt-4 flex flex-col">
+          <div class="ms-4 mt-4 flex flex-col gap-4">
+            <div class="ms-4 mt-4 flex flex-col">
               <SettingSwitch
                 title={$t('admin.password_enable_description')}
                 {disabled}

@@ -34,12 +34,14 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import {
+    AssetVisibility,
     getPersonStatistics,
     mergePerson,
     searchPerson,
@@ -59,11 +61,10 @@
     mdiHeartOutline,
     mdiPlus,
   } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { locale } from '$lib/stores/preferences.store';
-  import { DateTime } from 'luxon';
 
   interface Props {
     data: PageData;
@@ -75,7 +76,7 @@
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   const assetStore = new AssetStore();
-  $effect(() => void assetStore.updateOptions({ isArchived: false, personId: data.person.id }));
+  $effect(() => void assetStore.updateOptions({ visibility: AssetVisibility.Timeline, personId: data.person.id }));
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
@@ -486,7 +487,7 @@
 </header>
 
 <main
-  class="relative h-dvh overflow-hidden bg-immich-bg tall:ml-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  class="relative h-dvh overflow-hidden bg-immich-bg tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
   use:scrollMemoryClearer={{
     routeStartsWith: AppRoute.PEOPLE,
     beforeClear: () => {
@@ -542,7 +543,7 @@
                     heightStyle="3.375rem"
                   />
                   <div
-                    class="flex flex-col justify-center text-left px-4 text-immich-primary dark:text-immich-dark-primary"
+                    class="flex flex-col justify-center text-start px-4 text-immich-primary dark:text-immich-dark-primary"
                   >
                     <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
                     <p class="text-sm text-gray-500 dark:text-immich-gray">
@@ -598,7 +599,7 @@
                         widthStyle="2rem"
                         heightStyle="2rem"
                       />
-                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                      <p class="ms-4 text-gray-700 dark:text-gray-100">{person.name}</p>
                     </button>
                   {/each}
                 </div>

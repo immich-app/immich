@@ -110,8 +110,11 @@ from
   and "assets"."deletedAt" is null
 where
   "partner"."sharedWithId" = $1
-  and "assets"."isArchived" = $2
-  and "assets"."id" in ($3)
+  and (
+    "assets"."visibility" = 'timeline'
+    or "assets"."visibility" = 'hidden'
+  )
+  and "assets"."id" in ($2)
 
 -- AccessRepository.asset.checkSharedLinkAccess
 select
@@ -156,6 +159,15 @@ where
   "memories"."id" in ($1)
   and "memories"."ownerId" = $2
   and "memories"."deletedAt" is null
+
+-- AccessRepository.notification.checkOwnerAccess
+select
+  "notifications"."id"
+from
+  "notifications"
+where
+  "notifications"."id" in ($1)
+  and "notifications"."userId" = $2
 
 -- AccessRepository.person.checkOwnerAccess
 select
