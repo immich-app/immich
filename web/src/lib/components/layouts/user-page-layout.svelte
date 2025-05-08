@@ -52,7 +52,7 @@
 <div
   tabindex="-1"
   class="relative grid grid-cols-[theme(spacing.0)_auto] overflow-hidden bg-immich-bg dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]
-    h-{hideNavbar ? 'dvh' : '[calc(100dvh-var(--navbar-height))]'}
+    {hideNavbar ? 'h-dvh' : 'h-[calc(100dvh-var(--navbar-height))]'}
     {hideNavbar ? 'pt-[var(--navbar-height)]' : ''}
     {hideNavbar ? 'max-md:pt-[var(--navbar-height-md)]' : ''}"
 >
