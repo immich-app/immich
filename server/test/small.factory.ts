@@ -15,7 +15,7 @@ import {
 } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserStatus } from 'src/enum';
 import { OnThisDayData } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
@@ -202,11 +202,9 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   encodedVideoPath: null,
   fileCreatedAt: newDate(),
   fileModifiedAt: newDate(),
-  isArchived: false,
   isExternal: false,
   isFavorite: false,
   isOffline: false,
-  isVisible: true,
   libraryId: null,
   livePhotoVideoId: null,
   localDateTime: newDate(),
@@ -217,6 +215,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   stackId: null,
   thumbhash: null,
   type: AssetType.IMAGE,
+  visibility: AssetVisibility.TIMELINE,
   ...asset,
 });
 

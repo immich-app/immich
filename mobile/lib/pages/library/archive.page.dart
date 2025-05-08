@@ -24,7 +24,7 @@ class ArchivePage extends HookConsumerWidget {
         automaticallyImplyLeading: false,
         title: const Text(
           'archive_page_title',
-        ).tr(args: [count]),
+        ).tr(namedArgs: {'count': count}),
       );
     }
 

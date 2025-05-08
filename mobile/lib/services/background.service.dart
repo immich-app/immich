@@ -562,7 +562,7 @@ class BackgroundService {
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     _showErrorNotification(
       title: "backup_background_service_upload_failure_notification"
-          .tr(args: [errorAssetInfo.fileName]),
+          .tr(namedArgs: {'filename': errorAssetInfo.fileName}),
       individualTag: errorAssetInfo.id,
     );
   }
@@ -577,7 +577,7 @@ class BackgroundService {
 
     _throttledDetailNotify.title =
         "backup_background_service_current_upload_notification"
-            .tr(args: [currentUploadAsset.fileName]);
+            .tr(namedArgs: {'filename': currentUploadAsset.fileName});
     _throttledDetailNotify.progress = 0;
     _throttledDetailNotify.total = 0;
   }

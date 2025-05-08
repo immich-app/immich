@@ -85,7 +85,8 @@ class AdvancedSettings extends HookConsumerWidget {
         },
       ),
       SettingsSliderListTile(
-        text: "advanced_settings_log_level_title".tr(args: [logLevel]),
+        text: "advanced_settings_log_level_title"
+            .tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,
         maxValue: 8,
         minValue: 1,

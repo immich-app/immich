@@ -1782,14 +1782,6 @@
         "operationId": "getAssetStatistics",
         "parameters": [
           {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -1803,6 +1795,14 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
             }
           }
         ],
@@ -6910,14 +6910,6 @@
             }
           },
           {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -6993,6 +6985,14 @@
             }
           },
           {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            }
+          },
+          {
             "name": "withPartners",
             "required": false,
             "in": "query",
@@ -7051,14 +7051,6 @@
             "schema": {
               "format": "uuid",
               "type": "string"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
             }
           },
           {
@@ -7126,6 +7118,14 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
             }
           },
           {
@@ -8273,9 +8273,6 @@
             },
             "type": "array"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -8289,6 +8286,13 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -8713,13 +8717,7 @@
             "format": "date-time",
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isFavorite": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "livePhotoVideoId": {
@@ -8729,6 +8727,13 @@
           "sidecarData": {
             "format": "binary",
             "type": "string"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -9006,6 +9011,14 @@
           "VIDEO",
           "AUDIO",
           "OTHER"
+        ],
+        "type": "string"
+      },
+      "AssetVisibility": {
+        "enum": [
+          "archive",
+          "timeline",
+          "hidden"
         ],
         "type": "string"
       },
@@ -10204,9 +10217,6 @@
             "format": "uuid",
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -10220,9 +10230,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "lensModel": {
@@ -10324,9 +10331,12 @@
             "format": "date-time",
             "type": "string"
           },
-          "withArchived": {
-            "default": false,
-            "type": "boolean"
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           },
           "withDeleted": {
             "type": "boolean"
@@ -11041,9 +11051,6 @@
           "deviceId": {
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -11057,9 +11064,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "lensModel": {
@@ -11137,9 +11141,12 @@
             "format": "date-time",
             "type": "string"
           },
-          "withArchived": {
-            "default": false,
-            "type": "boolean"
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           },
           "withDeleted": {
             "type": "boolean"
@@ -11989,9 +11996,6 @@
           "deviceId": {
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -12005,9 +12009,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "language": {
@@ -12095,9 +12096,12 @@
             "format": "date-time",
             "type": "string"
           },
-          "withArchived": {
-            "default": false,
-            "type": "boolean"
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           },
           "withDeleted": {
             "type": "boolean"
@@ -12381,9 +12385,6 @@
           "isFavorite": {
             "type": "boolean"
           },
-          "isVisible": {
-            "type": "boolean"
-          },
           "localDateTime": {
             "format": "date-time",
             "nullable": true,
@@ -12404,6 +12405,14 @@
               "OTHER"
             ],
             "type": "string"
+          },
+          "visibility": {
+            "enum": [
+              "archive",
+              "timeline",
+              "hidden"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -12413,11 +12422,11 @@
           "fileModifiedAt",
           "id",
           "isFavorite",
-          "isVisible",
           "localDateTime",
           "ownerId",
           "thumbhash",
-          "type"
+          "type",
+          "visibility"
         ],
         "type": "object"
       },
@@ -13671,9 +13680,6 @@
           "description": {
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -13692,6 +13698,13 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "type": "object"

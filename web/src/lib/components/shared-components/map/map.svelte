@@ -9,15 +9,20 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
+  import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { type MapMarkerResponseDto } from '@immich/sdk';
+  import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
+  import { isEqual, omit } from 'lodash-es';
+  import { DateTime, Duration } from 'luxon';
   import maplibregl, { GlobeControl, type GeoJSONSource, type LngLatLike } from 'maplibre-gl';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import {
     AttributionControl,
@@ -36,8 +41,8 @@
   } from 'svelte-maplibre';
 
   interface Props {
-    mapMarkers: MapMarkerResponseDto[];
-    showSettingsModal?: boolean | undefined;
+    mapMarkers?: MapMarkerResponseDto[];
+    showSettings?: boolean;
     zoom?: number | undefined;
     center?: LngLatLike | undefined;
     hash?: boolean;
@@ -51,8 +56,8 @@
   }
 
   let {
-    mapMarkers = $bindable(),
-    showSettingsModal = $bindable(undefined),
+    mapMarkers = $bindable([]),
+    showSettings = true,
     zoom = undefined,
     center = $bindable(undefined),
     hash = false,
@@ -67,6 +72,7 @@
 
   let map: maplibregl.Map | undefined = $state();
   let marker: maplibregl.Marker | null = null;
+  let abortController: AbortController;
 
   const theme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.LIGHT);
   const styleUrl = $derived(theme === Theme.DARK ? $serverConfig.mapDarkStyleUrl : $serverConfig.mapLightStyleUrl);
@@ -143,6 +149,72 @@
     };
   };
 
+  function getFileCreatedDates() {
+    const { relativeDate, dateAfter, dateBefore } = $mapSettings;
+
+    if (relativeDate) {
+      const duration = Duration.fromISO(relativeDate);
+      return {
+        fileCreatedAfter: duration.isValid ? DateTime.now().minus(duration).toISO() : undefined,
+      };
+    }
+
+    try {
+      return {
+        fileCreatedAfter: dateAfter ? new Date(dateAfter).toISOString() : undefined,
+        fileCreatedBefore: dateBefore ? new Date(dateBefore).toISOString() : undefined,
+      };
+    } catch {
+      $mapSettings.dateAfter = '';
+      $mapSettings.dateBefore = '';
+      return {};
+    }
+  }
+
+  async function loadMapMarkers() {
+    if (abortController) {
+      abortController.abort();
+    }
+    abortController = new AbortController();
+
+    const { includeArchived, onlyFavorites, withPartners, withSharedAlbums } = $mapSettings;
+    const { fileCreatedAfter, fileCreatedBefore } = getFileCreatedDates();
+
+    return await getMapMarkers(
+      {
+        isArchived: includeArchived && undefined,
+        isFavorite: onlyFavorites || undefined,
+        fileCreatedAfter: fileCreatedAfter || undefined,
+        fileCreatedBefore,
+        withPartners: withPartners || undefined,
+        withSharedAlbums: withSharedAlbums || undefined,
+      },
+      {
+        signal: abortController.signal,
+      },
+    );
+  }
+
+  const handleSettingsClick = async () => {
+    const settings = await modalManager.show(MapSettingsModal, { settings: { ...$mapSettings } });
+    if (settings) {
+      const shouldUpdate = !isEqual(omit(settings, 'allowDarkMode'), omit($mapSettings, 'allowDarkMode'));
+      $mapSettings = settings;
+
+      if (shouldUpdate) {
+        mapMarkers = await loadMapMarkers();
+      }
+    }
+  };
+
+  onMount(async () => {
+    mapMarkers = await loadMapMarkers();
+  });
+
+  onDestroy(() => {
+    abortController.abort();
+  });
+
   $effect(() => {
     map?.setStyle(styleUrl, {
       transformStyle: (previousStyle, nextStyle) => {
@@ -199,10 +271,10 @@
       <AttributionControl compact={false} />
     {/if}
 
-    {#if showSettingsModal !== undefined}
+    {#if showSettings}
       <Control>
         <ControlGroup>
-          <ControlButton onclick={() => (showSettingsModal = true)}><Icon path={mdiCog} size="100%" /></ControlButton>
+          <ControlButton onclick={handleSettingsClick}><Icon path={mdiCog} size="100%" /></ControlButton>
         </ControlGroup>
       </Control>
     {/if}

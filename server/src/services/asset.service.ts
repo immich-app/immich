@@ -92,8 +92,12 @@ export class AssetService extends BaseService {
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
-    if (previousMotion) {
-      await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
+    if (previousMotion && asset) {
+      await onAfterUnlink(repos, {
+        userId: auth.user.id,
+        livePhotoVideoId: previousMotion.id,
+        visibility: asset.visibility,
+      });
     }
 
     if (!asset) {
@@ -115,10 +119,10 @@ export class AssetService extends BaseService {
     }
 
     if (
-      options.isArchived != undefined ||
-      options.isFavorite != undefined ||
-      options.duplicateId != undefined ||
-      options.rating != undefined
+      options.visibility !== undefined ||
+      options.isFavorite !== undefined ||
+      options.duplicateId !== undefined ||
+      options.rating !== undefined
     ) {
       await this.assetRepository.updateAll(ids, options);
     }

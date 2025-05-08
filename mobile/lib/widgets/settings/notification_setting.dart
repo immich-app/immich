@@ -4,11 +4,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NotificationSetting extends HookConsumerWidget {
@@ -90,7 +90,7 @@ class NotificationSetting extends HookConsumerWidget {
         enabled: hasPermission,
         valueNotifier: sliderValue,
         text: 'setting_notifications_notify_failures_grace_period'
-            .tr(args: [formattedValue]),
+            .tr(namedArgs: {'duration': formattedValue}),
         maxValue: 5.0,
         noDivisons: 5,
         label: formattedValue,
@@ -105,13 +105,14 @@ String _formatSliderValue(double v) {
   if (v == 0.0) {
     return 'setting_notifications_notify_immediately'.tr();
   } else if (v == 1.0) {
-    return 'setting_notifications_notify_minutes'.tr(args: const ['30']);
+    return 'setting_notifications_notify_minutes'
+        .tr(namedArgs: {'count': '30'});
   } else if (v == 2.0) {
-    return 'setting_notifications_notify_hours'.tr(args: const ['2']);
+    return 'setting_notifications_notify_hours'.tr(namedArgs: {'count': '2'});
   } else if (v == 3.0) {
-    return 'setting_notifications_notify_hours'.tr(args: const ['8']);
+    return 'setting_notifications_notify_hours'.tr(namedArgs: {'count': '8'});
   } else if (v == 4.0) {
-    return 'setting_notifications_notify_hours'.tr(args: const ['24']);
+    return 'setting_notifications_notify_hours'.tr(namedArgs: {'count': '24'});
   } else {
     return 'setting_notifications_notify_never'.tr();
   }
