@@ -1,7 +1,6 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { asset_visibility_enum } from 'src/schema';
-import { assets_status_enum } from 'src/schema/enums';
+import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import { assets_delete_audit } from 'src/schema/functions';
 import { LibraryTable } from 'src/schema/tables/library.table';
 import { StackTable } from 'src/schema/tables/stack.table';

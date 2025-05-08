@@ -11,7 +11,6 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  let pincodeFormElement = $state<HTMLFormElement | null>(null);
   let hasPincode = $state(false);
   let currentPincode = $state('');
   let newPincode = $state('');
@@ -99,13 +98,12 @@
     currentPincode = '';
     newPincode = '';
     confirmPincode = '';
-    pincodeFormElement?.reset();
   };
 </script>
 
 <section class="my-4">
   <div in:fade={{ duration: 200 }}>
-    <form bind:this={pincodeFormElement} autocomplete="off" onsubmit={onSubmit} class="mt-6">
+    <form autocomplete="off" onsubmit={onSubmit} class="mt-6">
       <div class="flex flex-col gap-6 place-items-center place-content-center">
         {#if hasPincode}
           <p class="text-dark">Change PIN code</p>
@@ -127,7 +125,10 @@
         {/if}
       </div>
 
-      <div class="flex justify-end">
+      <div class="flex justify-end gap-2 mt-4">
+        <Button shape="round" color="secondary" type="button" size="small" onclick={resetForm}>
+          {$t('clear')}
+        </Button>
         <Button shape="round" type="submit" size="small" loading={isLoading} disabled={!canSubmit}>
           {hasPincode ? $t('save') : $t('create_pincode')}
         </Button>

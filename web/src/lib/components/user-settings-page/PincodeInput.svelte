@@ -11,10 +11,11 @@
   let pinValues = $state(Array.from({ length: pinLength }).fill(''));
   let pincodeInputElements: HTMLInputElement[] = $state([]);
 
-  export function reset() {
-    pinValues = Array.from({ length: pinLength }).fill('');
-    value = '';
-  }
+  $effect(() => {
+    if (value === '') {
+      pinValues = Array.from({ length: pinLength }).fill('');
+    }
+  });
 
   const focusNext = (index: number) => {
     if (index < pinLength - 1) {
@@ -55,33 +56,37 @@
     const target = event.currentTarget as HTMLInputElement;
     const index = pincodeInputElements.indexOf(target);
 
-    if (event.key === 'Tab') {
-      return;
-    }
-
-    if (event.key === 'Backspace') {
-      if (target.value === '' && index > 0) {
-        focusPrev(index);
-        pinValues[index - 1] = '';
-      } else if (target.value !== '') {
-        pinValues[index] = '';
+    switch (event.key) {
+      case 'Tab': {
+        return;
       }
-
-      return;
-    }
-
-    if (event.key === 'ArrowLeft' && index > 0) {
-      focusPrev(index);
-      return;
-    }
-    if (event.key === 'ArrowRight' && index < pinLength - 1) {
-      focusNext(index);
-      return;
-    }
-
-    if (!/^\d$/.test(event.key) && event.key !== 'Backspace') {
-      event.preventDefault();
-      return;
+      case 'Backspace': {
+        if (target.value === '' && index > 0) {
+          focusPrev(index);
+          pinValues[index - 1] = '';
+        } else if (target.value !== '') {
+          pinValues[index] = '';
+        }
+        return;
+      }
+      case 'ArrowLeft': {
+        if (index > 0) {
+          focusPrev(index);
+        }
+        return;
+      }
+      case 'ArrowRight': {
+        if (index < pinLength - 1) {
+          focusNext(index);
+        }
+        return;
+      }
+      default: {
+        if (!/^\d$/.test(event.key)) {
+          event.preventDefault();
+        }
+        break;
+      }
     }
   }
 </script>

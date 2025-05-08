@@ -4,16 +4,19 @@
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
-  import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { resetPincode, updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
-  import { mdiAccountEditOutline } from '@mdi/js';
+  import { mdiAccountEditOutline, mdiLockSmart, mdiOnepassword } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
     user: UserAdminResponseDto;
     canResetPassword?: boolean;
     onClose: (
-      data?: { action: 'update'; data: UserAdminResponseDto } | { action: 'resetPassword'; data: string },
+      data?:
+        | { action: 'update'; data: UserAdminResponseDto }
+        | { action: 'resetPassword'; data: string }
+        | { action: 'resetPincode' },
     ) => void;
   }
 
@@ -73,6 +76,28 @@
       onClose({ action: 'resetPassword', data: newPassword });
     } catch (error) {
       handleError(error, $t('errors.unable_to_reset_password'));
+    }
+  };
+
+  const resetUserPincode = async () => {
+    const isConfirmed = await modalManager.openDialog({
+      prompt: $t('admin.confirm_user_pincode_reset', { values: { user: user.name } }),
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      await resetPincode({
+        resetPincodeDto: {
+          userId: user.id,
+        },
+      });
+
+      onClose({ action: 'resetPincode' });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_reset_pincode'));
     }
   };
 
@@ -151,13 +176,34 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
-      {#if canResetPassword}
-        <Button shape="round" color="warning" variant="filled" fullWidth onclick={resetPassword}
-          >{$t('reset_password')}</Button
+    <div class="w-full">
+      <div class="flex gap-3 w-full">
+        {#if canResetPassword}
+          <Button
+            shape="round"
+            color="warning"
+            variant="filled"
+            fullWidth
+            onclick={resetPassword}
+            leadingIcon={mdiOnepassword}
+          >
+            {$t('reset_password')}</Button
+          >
+        {/if}
+
+        <Button
+          shape="round"
+          color="warning"
+          variant="filled"
+          fullWidth
+          onclick={resetUserPincode}
+          leadingIcon={mdiLockSmart}>{$t('reset_pincode')}</Button
         >
-      {/if}
-      <Button type="submit" shape="round" fullWidth form="edit-user-form">{$t('confirm')}</Button>
+      </div>
+
+      <div class="w-full mt-4">
+        <Button type="submit" shape="round" fullWidth form="edit-user-form">{$t('confirm')}</Button>
+      </div>
     </div>
   </ModalFooter>
 </Modal>

@@ -517,6 +517,9 @@ export type LogoutResponseDto = {
     redirectUri: string;
     successful: boolean;
 };
+export type ResetPincodeDto = {
+    userId: string;
+};
 export type AuthStatusResponseDto = {
     hasPincode: boolean;
 };
@@ -2050,6 +2053,18 @@ export function logout(opts?: Oazapfts.RequestOpts) {
         ...opts,
         method: "POST"
     }));
+}
+export function resetPincode({ resetPincodeDto }: {
+    resetPincodeDto: ResetPincodeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>("/auth/reset-pincode", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: resetPincodeDto
+    })));
 }
 export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{

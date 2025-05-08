@@ -6,12 +6,13 @@
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
-  import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import NotificationPanel from '$lib/components/shared-components/navigation-bar/notification-panel.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -35,7 +36,6 @@
   let { showUploadButton = true, onUploadClick }: Props = $props();
 
   let shouldShowAccountInfoPanel = $state(false);
-  let shouldShowHelpPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
   const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
@@ -48,10 +48,6 @@
 </script>
 
 <svelte:window bind:innerWidth />
-
-{#if shouldShowHelpPanel && info}
-  <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} {info} />
-{/if}
 
 <nav id="dashboard-navbar" class="z-auto max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm">
   <SkipLink text={$t('skip_to_content')} />
@@ -129,18 +125,14 @@
 
         <ThemeButton padding="2" />
 
-        <div
-          use:clickOutside={{
-            onEscape: () => (shouldShowHelpPanel = false),
-          }}
-        >
+        <div>
           <IconButton
             shape="round"
             color="secondary"
             variant="ghost"
             size="medium"
             icon={mdiHelpCircleOutline}
-            onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
+            onclick={() => info && modalManager.show(HelpAndFeedbackModal, { info })}
             aria-label={$t('support_and_feedback')}
           />
         </div>

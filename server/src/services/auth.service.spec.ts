@@ -119,7 +119,7 @@ describe(AuthService.name, () => {
 
       await sut.changePassword(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, true);
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, { withPassword: true });
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
@@ -872,7 +872,7 @@ describe(AuthService.name, () => {
 
       await sut.createPincode(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, false, true);
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, { withPincode: true });
       expect(mocks.crypto.hashBcrypt).toHaveBeenCalledWith('new-pincode', SALT_ROUNDS);
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pincode: expect.any(String) });
     });
@@ -900,7 +900,7 @@ describe(AuthService.name, () => {
 
       await sut.changePincode(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, false, true);
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, { withPincode: true });
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-pincode', 'hash-pincode');
     });
 

@@ -190,6 +190,7 @@
             simplified={true}
             clickable={true}
             onClickPoint={(selected) => (point = selected)}
+            showSettings={false}
           />
         {/await}
       </div>

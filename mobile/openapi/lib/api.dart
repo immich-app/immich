@@ -199,6 +199,7 @@ part 'model/ratings_response.dart';
 part 'model/ratings_update.dart';
 part 'model/reaction_level.dart';
 part 'model/reaction_type.dart';
+part 'model/reset_pincode_dto.dart';
 part 'model/reverse_geocoding_state_response_dto.dart';
 part 'model/search_album_response_dto.dart';
 part 'model/search_asset_response_dto.dart';
