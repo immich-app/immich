@@ -276,7 +276,9 @@
     {#if showSettings}
       <Control>
         <ControlGroup>
-          <ControlButton onclick={handleSettingsClick}><Icon path={mdiCog} size="100%" /></ControlButton>
+          <ControlButton onclick={handleSettingsClick}
+            ><Icon path={mdiCog} size="100%" class="text-black/80" /></ControlButton
+          >
         </ControlGroup>
       </Control>
     {/if}
@@ -285,7 +287,7 @@
       <Control position="top-right">
         <ControlGroup>
           <ControlButton onclick={() => onOpenInMapView()}>
-            <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" />
+            <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" class="text-black/80" />
           </ControlButton>
         </ControlGroup>
       </Control>
