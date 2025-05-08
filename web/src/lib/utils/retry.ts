@@ -1,4 +1,4 @@
-export const retry = <R, A = unknown>(
+export const retry = <R, A>(
   fn: (arg: A) => R,
   interval: number = 10,
   timeout: number = 1000,

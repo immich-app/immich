@@ -12,7 +12,7 @@ export const setDefaultTabbleOptions = (options: TabbableOpts) => {
 export const getTabbable = (container: Element, includeContainer: boolean = false) =>
   tabbable(container, { ...defaultOpts, includeContainer });
 
-export const focusNext = (selector: (element: HTMLElement | SVGElement) => boolean, forwardDirection: boolean) => {
+export const moveFocus = (selector: (element: HTMLElement | SVGElement) => boolean, forwardDirection: boolean) => {
   const focusElements = focusable(document.body, { includeContainer: true });
   const current = document.activeElement as HTMLElement;
   const index = focusElements.indexOf(current);

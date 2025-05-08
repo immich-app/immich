@@ -1,5 +1,5 @@
 import type { AssetStore } from '$lib/stores/assets-store.svelte';
-import { focusNext } from '$lib/utils/focus-util';
+import { moveFocus } from '$lib/utils/focus-util';
 import { InvocationTracker } from '$lib/utils/invocationTracker';
 import { retry } from '$lib/utils/retry';
 
@@ -12,9 +12,9 @@ const getFocusedThumb = () => {
   }
 };
 
-export const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+export const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
 export const focusPreviousAsset = () =>
-  focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
+  moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
 export const setFocusToAsset = async (scrollToAsset: (id: string) => Promise<boolean>, asset: { id: string }) => {
   const scrolled = await scrollToAsset(asset.id);
@@ -40,25 +40,30 @@ export const setFocusTo = async (
   }
 
   const invocation = tracker.startInvocation();
+  const id = thumb.dataset.asset;
+  if (!thumb || !id) {
+    invocation.endInvocation();
+    return;
+  }
   try {
-    if (thumb) {
-      const id = thumb?.dataset.asset;
-      if (id) {
-        const asset =
-          direction === 'next' ? await store.getNextAsset({ id }, skip) : await store.getPreviousAsset({ id }, skip);
-        invocation.checkStillValid();
-        if (asset) {
-          const scrolled = await scrollToAsset(asset.id);
-          invocation.checkStillValid();
-          if (scrolled) {
-            invocation.checkStillValid();
-            const element = await waitForElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
-            invocation.checkStillValid();
-            element?.focus();
-          }
-        }
-      }
+    const asset =
+      direction === 'next' ? await store.getNextAsset({ id }, skip) : await store.getPreviousAsset({ id }, skip);
+    invocation.checkStillValid();
+
+    if (!asset) {
+      invocation.endInvocation();
+      return;
     }
+
+    const scrolled = await scrollToAsset(asset.id);
+    invocation.checkStillValid();
+
+    if (scrolled) {
+      const element = await waitForElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
+      invocation.checkStillValid();
+      element?.focus();
+    }
+
     invocation.endInvocation();
   } catch (error: unknown) {
     if (invocation.isInvalidInvocationError(error)) {

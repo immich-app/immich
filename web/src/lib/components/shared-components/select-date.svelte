@@ -12,18 +12,16 @@
   }
 
   let { initialDate = DateTime.now(), onCancel, onConfirm }: Props = $props();
-
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm"));
 
+  // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
+  const date = $derived(DateTime.fromISO(selectedDate));
+
   const handleConfirm = () => {
-    const value = date;
-    if (value) {
-      onConfirm(value);
+    if (date) {
+      onConfirm(date);
     }
   };
-
-  // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
-  let date = $derived(DateTime.fromISO(selectedDate));
 </script>
 
 <ConfirmDialog
