@@ -72,7 +72,7 @@
 {#if $featureFlags.loaded && $featureFlags.map}
   <UserPageLayout title={data.meta.title}>
     <div class="isolate h-full w-full">
-      <Map hash onSelect={onViewAssets} />
+      <Map hash onSelect={onViewAssets} rounded />
     </div>
   </UserPageLayout>
   <Portal target="body">
