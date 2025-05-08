@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
-import { StorageCore } from 'src/cores/storage.core';
+import { GeneratedImageType, StorageCore } from 'src/cores/storage.core';
+import { AssetFile } from 'src/database';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
-import { AssetFileType, AssetType, Permission } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility, Permission } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -13,14 +13,14 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile } from 'src/types';
 import { checkAccess } from 'src/utils/access';
 
-const getFileByType = (files: AssetFileEntity[] | undefined, type: AssetFileType) => {
-  return (files || []).find((file) => file.type === type);
+export const getAssetFile = (files: AssetFile[], type: AssetFileType | GeneratedImageType) => {
+  return files.find((file) => file.type === type);
 };
 
-export const getAssetFiles = (files?: AssetFileEntity[]) => ({
-  fullsizeFile: getFileByType(files, AssetFileType.FULLSIZE),
-  previewFile: getFileByType(files, AssetFileType.PREVIEW),
-  thumbnailFile: getFileByType(files, AssetFileType.THUMBNAIL),
+export const getAssetFiles = (files: AssetFile[]) => ({
+  fullsizeFile: getAssetFile(files, AssetFileType.FULLSIZE),
+  previewFile: getAssetFile(files, AssetFileType.PREVIEW),
+  thumbnailFile: getAssetFile(files, AssetFileType.THUMBNAIL),
 });
 
 export const addAssets = async (
@@ -150,8 +150,8 @@ export const onBeforeLink = async (
     throw new BadRequestException('Live photo video does not belong to the user');
   }
 
-  if (motionAsset?.isVisible) {
-    await assetRepository.update({ id: livePhotoVideoId, isVisible: false });
+  if (motionAsset && motionAsset.visibility === AssetVisibility.TIMELINE) {
+    await assetRepository.update({ id: livePhotoVideoId, visibility: AssetVisibility.HIDDEN });
     await eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId });
   }
 };
@@ -174,9 +174,9 @@ export const onBeforeUnlink = async (
 
 export const onAfterUnlink = async (
   { asset: assetRepository, event: eventRepository }: AssetHookRepositories,
-  { userId, livePhotoVideoId }: { userId: string; livePhotoVideoId: string },
+  { userId, livePhotoVideoId, visibility }: { userId: string; livePhotoVideoId: string; visibility: AssetVisibility },
 ) => {
-  await assetRepository.update({ id: livePhotoVideoId, isVisible: true });
+  await assetRepository.update({ id: livePhotoVideoId, visibility });
   await eventRepository.emit('asset.show', { assetId: livePhotoVideoId, userId });
 };
 

@@ -1,19 +1,21 @@
 import { goto } from '$app/navigation';
 import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
 import type { InterpolationValues } from '$lib/components/i18n/format-message';
-import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
+import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { downloadManager } from '$lib/managers/download-manager.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { assetsSnapshot, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
-import { downloadManager } from '$lib/stores/download';
 import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, getKey, withError } from '$lib/utils';
+import { downloadRequest, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import {
   addAssetsToAlbum as addAssets,
+  AssetVisibility,
   createStack,
   deleteAssets,
   deleteStacks,
@@ -44,7 +46,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
     bulkIdsDto: {
       ids: assetIds,
     },
-    key: getKey(),
+    key: authManager.key,
   });
   const count = result.filter(({ success }) => success).length;
   const $t = get(t);
@@ -162,11 +164,23 @@ export const downloadBlob = (data: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+export const downloadUrl = (url: string, filename: string) => {
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+
+  URL.revokeObjectURL(url);
+};
+
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
   const $preferences = get<UserPreferencesResponseDto | undefined>(preferences);
   const dto = { ...options, archiveSize: $preferences?.download.archiveSize };
 
-  const [error, downloadInfo] = await withError(() => getDownloadInfo({ downloadInfoDto: dto, key: getKey() }));
+  const [error, downloadInfo] = await withError(() => getDownloadInfo({ downloadInfoDto: dto, key: authManager.key }));
   if (error) {
     const $t = get(t);
     handleError(error, $t('errors.unable_to_download_files'));
@@ -181,7 +195,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
     const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
-    const key = getKey();
+    const key = authManager.key;
 
     let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {
@@ -228,7 +242,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
   };
 
   if (asset.livePhotoVideoId) {
-    const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
+    const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: authManager.key });
     if (!isAndroidMotionVideo(motionAsset) || get(preferences)?.download.includeEmbeddedVideos) {
       assets.push({
         filename: motionAsset.originalFileName,
@@ -238,33 +252,18 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     }
   }
 
-  for (const { filename, id, size } of assets) {
-    const downloadKey = filename;
-
+  for (const { filename, id } of assets) {
     try {
-      const abort = new AbortController();
-      downloadManager.add(downloadKey, size, abort);
-      const key = getKey();
+      const key = authManager.key;
 
       notificationController.show({
         type: NotificationType.Info,
         message: $t('downloading_asset_filename', { values: { filename: asset.originalFileName } }),
       });
 
-      // TODO use sdk once it supports progress events
-      const { data } = await downloadRequest({
-        method: 'GET',
-        url: getBaseUrl() + `/assets/${id}/original` + (key ? `?key=${key}` : ''),
-        signal: abort.signal,
-        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
-      });
-
-      downloadBlob(data, filename);
+      downloadUrl(getBaseUrl() + `/assets/${id}/original` + (key ? `?key=${key}` : ''), filename);
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
-      downloadManager.clear(downloadKey);
-    } finally {
-      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   }
 };
@@ -509,7 +508,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     const data = await updateAsset({
       id: asset.id,
       updateAssetDto: {
-        isArchived: !asset.isArchived,
+        visibility: asset.isArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
       },
     });
 
@@ -533,7 +532,9 @@ export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean
 
   try {
     if (ids.length > 0) {
-      await updateAssets({ assetBulkUpdateDto: { ids, isArchived } });
+      await updateAssets({
+        assetBulkUpdateDto: { ids, visibility: isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline },
+      });
     }
 
     for (const asset of assets) {

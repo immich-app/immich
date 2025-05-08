@@ -147,10 +147,19 @@ class RenderList {
 
     if (groupBy == GroupAssetsBy.none) {
       final int total = assets?.length ?? query!.countSync();
+
+      final dateLoader = query != null
+          ? DateBatchLoader(
+              query: query,
+              batchSize: 1000 * sectionSize,
+            )
+          : null;
+
       for (int i = 0; i < total; i += sectionSize) {
         final date = assets != null
             ? assets[i].fileCreatedAt
-            : await query!.offset(i).fileCreatedAtProperty().findFirst();
+            : await dateLoader?.getDate(i);
+
         final int count = i + sectionSize > total ? total - i : sectionSize;
         if (date == null) break;
         elements.add(
@@ -318,5 +327,46 @@ class RenderList {
     allAssets?.remove(deleteAsset);
     _buf.clear();
     _bufOffset = 0;
+  }
+}
+
+class DateBatchLoader {
+  final QueryBuilder<Asset, Asset, QAfterSortBy> query;
+  final int batchSize;
+
+  List<DateTime> _buffer = [];
+  int _bufferStart = 0;
+
+  DateBatchLoader({
+    required this.query,
+    required this.batchSize,
+  });
+
+  Future<DateTime?> getDate(int index) async {
+    if (!_isIndexInBuffer(index)) {
+      await _loadBatch(index);
+    }
+
+    if (_isIndexInBuffer(index)) {
+      return _buffer[index - _bufferStart];
+    }
+
+    return null;
+  }
+
+  Future<void> _loadBatch(int targetIndex) async {
+    final batchStart = (targetIndex ~/ batchSize) * batchSize;
+
+    _buffer = await query
+        .offset(batchStart)
+        .limit(batchSize)
+        .fileCreatedAtProperty()
+        .findAll();
+
+    _bufferStart = batchStart;
+  }
+
+  bool _isIndexInBuffer(int index) {
+    return index >= _bufferStart && index < _bufferStart + _buffer.length;
   }
 }

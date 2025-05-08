@@ -10,19 +10,10 @@ select
       (
         select
           "id",
-          "email",
-          "createdAt",
-          "profileImagePath",
-          "isAdmin",
-          "shouldChangePassword",
-          "deletedAt",
-          "oauthId",
-          "updatedAt",
-          "storageLabel",
           "name",
-          "quotaSizeInBytes",
-          "quotaUsageInBytes",
-          "status",
+          "email",
+          "avatarColor",
+          "profileImagePath",
           "profileChangedAt"
         from
           "users"
@@ -36,7 +27,7 @@ select
     from
       (
         select
-          "album_users".*,
+          "album_users"."role",
           (
             select
               to_json(obj)
@@ -44,19 +35,10 @@ select
               (
                 select
                   "id",
-                  "email",
-                  "createdAt",
-                  "profileImagePath",
-                  "isAdmin",
-                  "shouldChangePassword",
-                  "deletedAt",
-                  "oauthId",
-                  "updatedAt",
-                  "storageLabel",
                   "name",
-                  "quotaSizeInBytes",
-                  "quotaUsageInBytes",
-                  "status",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
                   "profileChangedAt"
                 from
                   "users"
@@ -118,19 +100,10 @@ select
       (
         select
           "id",
-          "email",
-          "createdAt",
-          "profileImagePath",
-          "isAdmin",
-          "shouldChangePassword",
-          "deletedAt",
-          "oauthId",
-          "updatedAt",
-          "storageLabel",
           "name",
-          "quotaSizeInBytes",
-          "quotaUsageInBytes",
-          "status",
+          "email",
+          "avatarColor",
+          "profileImagePath",
           "profileChangedAt"
         from
           "users"
@@ -144,7 +117,7 @@ select
     from
       (
         select
-          "album_users".*,
+          "album_users"."role",
           (
             select
               to_json(obj)
@@ -152,19 +125,10 @@ select
               (
                 select
                   "id",
-                  "email",
-                  "createdAt",
-                  "profileImagePath",
-                  "isAdmin",
-                  "shouldChangePassword",
-                  "deletedAt",
-                  "oauthId",
-                  "updatedAt",
-                  "storageLabel",
                   "name",
-                  "quotaSizeInBytes",
-                  "quotaUsageInBytes",
-                  "status",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
                   "profileChangedAt"
                 from
                   "users"
@@ -229,19 +193,10 @@ select
       (
         select
           "id",
-          "email",
-          "createdAt",
-          "profileImagePath",
-          "isAdmin",
-          "shouldChangePassword",
-          "deletedAt",
-          "oauthId",
-          "updatedAt",
-          "storageLabel",
           "name",
-          "quotaSizeInBytes",
-          "quotaUsageInBytes",
-          "status",
+          "email",
+          "avatarColor",
+          "profileImagePath",
           "profileChangedAt"
         from
           "users"
@@ -255,7 +210,7 @@ select
     from
       (
         select
-          "album_users".*,
+          "album_users"."role",
           (
             select
               to_json(obj)
@@ -263,19 +218,10 @@ select
               (
                 select
                   "id",
-                  "email",
-                  "createdAt",
-                  "profileImagePath",
-                  "isAdmin",
-                  "shouldChangePassword",
-                  "deletedAt",
-                  "oauthId",
-                  "updatedAt",
-                  "storageLabel",
                   "name",
-                  "quotaSizeInBytes",
-                  "quotaUsageInBytes",
-                  "status",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
                   "profileChangedAt"
                 from
                   "users"
@@ -319,7 +265,7 @@ select
     from
       (
         select
-          "album_users".*,
+          "album_users"."role",
           (
             select
               to_json(obj)
@@ -327,19 +273,10 @@ select
               (
                 select
                   "id",
-                  "email",
-                  "createdAt",
-                  "profileImagePath",
-                  "isAdmin",
-                  "shouldChangePassword",
-                  "deletedAt",
-                  "oauthId",
-                  "updatedAt",
-                  "storageLabel",
                   "name",
-                  "quotaSizeInBytes",
-                  "quotaUsageInBytes",
-                  "status",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
                   "profileChangedAt"
                 from
                   "users"
@@ -360,19 +297,10 @@ select
       (
         select
           "id",
-          "email",
-          "createdAt",
-          "profileImagePath",
-          "isAdmin",
-          "shouldChangePassword",
-          "deletedAt",
-          "oauthId",
-          "updatedAt",
-          "storageLabel",
           "name",
-          "quotaSizeInBytes",
-          "quotaUsageInBytes",
-          "status",
+          "email",
+          "avatarColor",
+          "profileImagePath",
           "profileChangedAt"
         from
           "users"
@@ -431,19 +359,10 @@ select
       (
         select
           "id",
-          "email",
-          "createdAt",
-          "profileImagePath",
-          "isAdmin",
-          "shouldChangePassword",
-          "deletedAt",
-          "oauthId",
-          "updatedAt",
-          "storageLabel",
           "name",
-          "quotaSizeInBytes",
-          "quotaUsageInBytes",
-          "status",
+          "email",
+          "avatarColor",
+          "profileImagePath",
           "profileChangedAt"
         from
           "users"

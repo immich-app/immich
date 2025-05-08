@@ -20,7 +20,7 @@
   });
 </script>
 
-<div class="flex h-[140px] w-[250px] flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">
+<div class="flex h-[140px] w-[250px] flex-col justify-between rounded-3xl bg-subtle p-5 dark:bg-immich-dark-gray">
   <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
     <Icon path={icon} size="40" />
     <p>{title}</p>
@@ -31,7 +31,7 @@
       class="text-immich-primary dark:text-immich-dark-primary">{value}</span
     >
     {#if unit}
-      <span class="absolute -top-5 right-2 text-base font-light text-gray-400">{unit}</span>
+      <span class="absolute -top-5 end-2 text-base font-light text-gray-400">{unit}</span>
     {/if}
   </div>
 </div>

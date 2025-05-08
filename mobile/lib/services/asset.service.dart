@@ -197,7 +197,7 @@ class AssetService {
         ids: assets.map((e) => e.remoteId!).toList(),
         dateTimeOriginal: updateAssetDto.dateTimeOriginal,
         isFavorite: updateAssetDto.isFavorite,
-        isArchived: updateAssetDto.isArchived,
+        visibility: updateAssetDto.visibility,
         latitude: updateAssetDto.latitude,
         longitude: updateAssetDto.longitude,
       ),
@@ -229,7 +229,13 @@ class AssetService {
     bool isArchived,
   ) async {
     try {
-      await updateAssets(assets, UpdateAssetDto(isArchived: isArchived));
+      await updateAssets(
+        assets,
+        UpdateAssetDto(
+          visibility:
+              isArchived ? AssetVisibility.archive : AssetVisibility.timeline,
+        ),
+      );
 
       for (var element in assets) {
         element.isArchived = isArchived;
@@ -256,7 +262,7 @@ class AssetService {
 
       for (var element in assets) {
         element.fileCreatedAt = DateTime.parse(updatedDt);
-        element.exifInfo ??= element.exifInfo
+        element.exifInfo = element.exifInfo
             ?.copyWith(dateTimeOriginal: DateTime.parse(updatedDt));
       }
 
@@ -283,7 +289,7 @@ class AssetService {
       );
 
       for (var element in assets) {
-        element.exifInfo ??= element.exifInfo?.copyWith(
+        element.exifInfo = element.exifInfo?.copyWith(
           latitude: location.latitude,
           longitude: location.longitude,
         );
@@ -514,9 +520,9 @@ class AssetService {
     return _assetRepository.watchAsset(id, fireImmediately: fireImmediately);
   }
 
-  Future<List<Asset>> getRecentlyAddedAssets() {
+  Future<List<Asset>> getRecentlyTakenAssets() {
     final me = _userService.getMyUser();
-    return _assetRepository.getRecentlyAddedAssets(me.id);
+    return _assetRepository.getRecentlyTakenAssets(me.id);
   }
 
   Future<List<Asset>> getMotionAssets() {

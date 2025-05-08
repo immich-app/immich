@@ -59,7 +59,7 @@ export const sortOptionsMetadata: AlbumSortOptionMetadata[] = [
   {
     id: AlbumSortBy.Title,
     defaultOrder: SortOrder.Asc,
-    columnStyle: 'text-left w-8/12 sm:w-4/12 md:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]',
+    columnStyle: 'text-start w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]',
   },
   {
     id: AlbumSortBy.ItemCount,

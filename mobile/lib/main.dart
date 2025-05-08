@@ -11,6 +11,7 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -26,19 +27,22 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/download.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
+import 'package:worker_manager/worker_manager.dart';
 
 void main() async {
   ImmichWidgetsBinding();
   final db = await Bootstrap.initIsar();
   await Bootstrap.initDomain(db);
   await initApp();
+  // Warm-up isolate pool for worker manager
+  await workerManager.init(dynamicSpawning: true);
   await migrateDatabaseIfNeeded(db);
-  HttpOverrides.global = HttpSSLCertOverride();
+  HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
@@ -234,6 +238,7 @@ class MainWidget extends StatelessWidget {
       path: translationsPath,
       useFallbackTranslations: true,
       fallbackLocale: locales.values.first,
+      assetLoader: const CodegenLoader(),
       child: const ImmichApp(),
     );
   }

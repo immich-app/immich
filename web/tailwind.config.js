@@ -36,7 +36,7 @@ export default {
         danger: 'rgb(var(--immich-ui-danger) / <alpha-value>)',
         warning: 'rgb(var(--immich-ui-warning) / <alpha-value>)',
         info: 'rgb(var(--immich-ui-info) / <alpha-value>)',
-        subtle: 'rgb(var(--immich-gray) / <alpha-value>)',
+        subtle: 'rgb(var(--immich-ui-gray) / <alpha-value>)',
       },
       borderColor: ({ theme }) => ({
         ...theme('colors'),
@@ -55,6 +55,7 @@ export default {
         'max-lg': { max: '1023px' },
         'max-md': { max: '767px' },
         'max-sm': { max: '639px' },
+        sidebar: { min: '850px' },
       },
     },
   },

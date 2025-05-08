@@ -1,7 +1,7 @@
 # Database Queries
 
 :::danger
-Keep in mind that mucking around in the database might set the moon on fire. Avoid modifying the database directly when possible, and always have current backups.
+Keep in mind that mucking around in the database might set the Moon on fire. Avoid modifying the database directly when possible, and always have current backups.
 :::
 
 :::tip

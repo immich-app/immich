@@ -1,10 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ClassConstructor } from 'class-transformer';
 import { snakeCase } from 'lodash';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
 import {
   AssetType,
+  AssetVisibility,
+  BootstrapEventPriority,
   ImmichWorker,
   JobCommand,
   JobName,
@@ -51,6 +54,8 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 
 @Injectable()
 export class JobService extends BaseService {
+  private services: ClassConstructor<unknown>[] = [];
+
   @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
   onConfigInit({ newConfig: config }: ArgOf<'config.init'>) {
     this.logger.debug(`Updating queue concurrency settings`);
@@ -67,6 +72,18 @@ export class JobService extends BaseService {
   @OnEvent({ name: 'config.update', server: true, workers: [ImmichWorker.MICROSERVICES] })
   onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
     this.onConfigInit({ newConfig: config });
+  }
+
+  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.JobService })
+  onBootstrap() {
+    this.jobRepository.setup(this.services);
+    if (this.worker === ImmichWorker.MICROSERVICES) {
+      this.jobRepository.startWorkers();
+    }
+  }
+
+  setServices(services: ClassConstructor<unknown>[]) {
+    this.services = services;
   }
 
   async create(dto: JobCreateDto): Promise<void> {
@@ -199,11 +216,7 @@ export class JobService extends BaseService {
         await this.onDone(job);
       }
     } catch (error: Error | any) {
-      this.logger.error(
-        `Unable to run job handler (${queueName}/${job.name}): ${error}`,
-        error?.stack,
-        JSON.stringify(job.data),
-      );
+      await this.eventRepository.emit('job.failed', { job, error });
     } finally {
       this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
     }
@@ -252,17 +265,6 @@ export class JobService extends BaseService {
         break;
       }
 
-      case JobName.METADATA_EXTRACTION: {
-        if (item.data.source === 'sidecar-write') {
-          const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
-          if (asset) {
-            this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
-          }
-        }
-        await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
-        break;
-      }
-
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
           await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: item.data });
@@ -284,7 +286,7 @@ export class JobService extends BaseService {
           break;
         }
 
-        const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
+        const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([item.data.id]);
         if (!asset) {
           this.logger.warn(`Could not find asset ${item.data.id} after generating thumbnails`);
           break;
@@ -297,12 +299,10 @@ export class JobService extends BaseService {
 
         if (asset.type === AssetType.VIDEO) {
           jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
-        } else if (asset.livePhotoVideoId) {
-          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
         }
 
         await this.jobRepository.queueAll(jobs);
-        if (asset.isVisible) {
+        if (asset.visibility === AssetVisibility.TIMELINE || asset.visibility === AssetVisibility.ARCHIVE) {
           this.eventRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
         }
 

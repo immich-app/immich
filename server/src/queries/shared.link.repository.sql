@@ -100,7 +100,7 @@ order by
 -- SharedLinkRepository.getAll
 select distinct
   on ("shared_links"."createdAt") "shared_links".*,
-  to_json("assets") as "assets",
+  "assets"."assets",
   to_json("album") as "album"
 from
   "shared_links"

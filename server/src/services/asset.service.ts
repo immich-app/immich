@@ -3,12 +3,7 @@ import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import {
-  AssetResponseDto,
-  MemoryLaneResponseDto,
-  SanitizedAssetResponseDto,
-  mapAsset,
-} from 'src/dtos/asset-response.dto';
+import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -19,8 +14,6 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryLaneDto } from 'src/dtos/search.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
@@ -28,26 +21,6 @@ import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUn
 
 @Injectable()
 export class AssetService extends BaseService {
-  async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    const partnerIds = await getMyPartnerIds({
-      userId: auth.user.id,
-      repository: this.partnerRepository,
-      timelineEnabled: true,
-    });
-    const userIds = [auth.user.id, ...partnerIds];
-
-    const groups = await this.assetRepository.getByDayOfYear(userIds, dto);
-    return groups.map(({ year, assets }) => {
-      const yearsAgo = DateTime.utc().year - year;
-      return {
-        yearsAgo,
-        // TODO move this to clients
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-        assets: assets.map((asset) => mapAsset(asset as AssetEntity, { auth })),
-      };
-    });
-  }
-
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
     return mapStats(stats);
@@ -105,7 +78,7 @@ export class AssetService extends BaseService {
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
 
-    let previousMotion: AssetEntity | null = null;
+    let previousMotion: MapAsset | null = null;
     if (rest.livePhotoVideoId) {
       await onBeforeLink(repos, { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId });
     } else if (rest.livePhotoVideoId === null) {
@@ -119,8 +92,12 @@ export class AssetService extends BaseService {
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
-    if (previousMotion) {
-      await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
+    if (previousMotion && asset) {
+      await onAfterUnlink(repos, {
+        userId: auth.user.id,
+        livePhotoVideoId: previousMotion.id,
+        visibility: asset.visibility,
+      });
     }
 
     if (!asset) {
@@ -142,10 +119,10 @@ export class AssetService extends BaseService {
     }
 
     if (
-      options.isArchived != undefined ||
-      options.isFavorite != undefined ||
-      options.duplicateId != undefined ||
-      options.rating != undefined
+      options.visibility !== undefined ||
+      options.isFavorite !== undefined ||
+      options.duplicateId !== undefined ||
+      options.rating !== undefined
     ) {
       await this.assetRepository.updateAll(ids, options);
     }
@@ -172,7 +149,7 @@ export class AssetService extends BaseService {
       }
     };
 
-    const assets = this.assetRepository.streamDeletedAssets(trashedBefore);
+    const assets = this.assetJobRepository.streamForDeletedJob(trashedBefore);
     for await (const asset of assets) {
       chunk.push(asset);
       if (chunk.length >= JOBS_ASSET_PAGINATION_SIZE) {
@@ -189,13 +166,7 @@ export class AssetService extends BaseService {
   async handleAssetDeletion(job: JobOf<JobName.ASSET_DELETION>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
-    const asset = await this.assetRepository.getById(id, {
-      faces: { person: true },
-      library: true,
-      stack: { assets: true },
-      exifInfo: true,
-      files: true,
-    });
+    const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
       return JobStatus.FAILED;
@@ -203,7 +174,7 @@ export class AssetService extends BaseService {
 
     // Replace the parent of the stack children with a new asset
     if (asset.stack?.primaryAssetId === id) {
-      const stackAssetIds = asset.stack.assets.map((a) => a.id);
+      const stackAssetIds = asset.stack?.assets.map((a) => a.id) ?? [];
       if (stackAssetIds.length > 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
         await this.stackRepository.update(asset.stack.id, {
@@ -233,8 +204,8 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
-    const files = [thumbnailFile?.path, previewFile?.path, asset.encodedVideoPath];
+    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files ?? []);
+    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
 
     if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);

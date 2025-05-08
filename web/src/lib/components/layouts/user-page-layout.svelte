@@ -3,12 +3,12 @@
 </script>
 
 <script lang="ts">
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
-  import SideBar from '../shared-components/side-bar/side-bar.svelte';
-  import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { Snippet } from 'svelte';
+  import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
+  import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
+  import SideBar from '../shared-components/side-bar/side-bar.svelte';
 
   interface Props {
     hideNavbar?: boolean;
@@ -49,9 +49,9 @@
 
   {@render header?.()}
 </header>
-<main
+<div
   tabindex="-1"
-  class="relative grid h-screen grid-cols-[theme(spacing.18)_auto] overflow-hidden bg-immich-bg max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
+  class="relative grid h-[calc(100dvh-var(--navbar-height))] grid-cols-[theme(spacing.0)_auto] overflow-hidden bg-immich-bg dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
 >
   {#if sidebar}{@render sidebar()}{:else if admin}
     <AdminSideBar />
@@ -59,14 +59,14 @@
     <SideBar />
   {/if}
 
-  <section class="relative">
+  <main class="relative">
     {#if title || buttons}
       <div
-        class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div class="flex gap-2 items-center">
           {#if title}
-            <div class="font-medium" tabindex="-1" id={headerId}>{title}</div>
+            <div class="font-medium outline-none" tabindex="-1" id={headerId}>{title}</div>
           {/if}
           {#if description}
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
@@ -76,8 +76,8 @@
       </div>
     {/if}
 
-    <div class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
       {@render children?.()}
     </div>
-  </section>
-</main>
+  </main>
+</div>

@@ -4,16 +4,19 @@ on:
   pull_request:
     types: [labeled]
 
+permissions: {}
+
 jobs:
   fix-formatting:
     runs-on: ubuntu-latest
     if: ${{ github.event.label.name == 'fix:formatting' }}
     permissions:
+      contents: write
       pull-requests: write
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
@@ -23,9 +26,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: true
 
       - name: Setup Node
-        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: './server/.nvmrc'
 

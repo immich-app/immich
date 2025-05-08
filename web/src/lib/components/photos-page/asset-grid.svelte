@@ -6,7 +6,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetBucket, assetsSnapshot, AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { isSearchEnabled } from '$lib/stores/search.store';
+  import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
@@ -26,6 +26,8 @@
   import type { UpdatePayload } from 'vite';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { focusNext } from '$lib/utils/focus-util';
+  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -78,12 +80,27 @@
   let scrubBucketPercent = $state(0);
   let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
   let scrubOverallPercent: number = $state(0);
+  let scrubberWidth = $state(0);
 
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
+  const maxMd = $derived(mobileDevice.maxMd);
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+
+  $effect(() => {
+    const layoutOptions = maxMd
+      ? {
+          rowHeight: 100,
+          headerHeight: 32,
+        }
+      : {
+          rowHeight: 235,
+          headerHeight: 48,
+        };
+    assetStore.setLayoutOptions(layoutOptions);
+  });
 
   const scrollTo = (top: number) => {
     element?.scrollTo({ top });
@@ -115,10 +132,7 @@
   };
   beforeNavigate(() => (assetStore.suspendTransitions = true));
   afterNavigate((nav) => {
-    const { complete, type } = nav;
-    if (type === 'enter') {
-      return;
-    }
+    const { complete } = nav;
     complete.then(completeNav, completeNav);
   });
 
@@ -165,7 +179,13 @@
   const updateIsScrolling = () => (assetStore.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
-  const compensateScrollCallback = (delta: number) => element?.scrollBy(0, delta);
+  const compensateScrollCallback = ({ delta, top }: { delta?: number; top?: number }) => {
+    if (delta) {
+      element?.scrollBy(0, delta);
+    } else if (top) {
+      element?.scrollTo({ top });
+    }
+  };
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
 
   onMount(() => {
@@ -270,10 +290,21 @@
           bucket = assetStore.buckets[i];
           bucketHeight = assetStore.buckets[i].bucketHeight;
         }
+
         let next = top - bucketHeight * maxScrollPercent;
-        if (next < 0) {
+        // instead of checking for < 0, add a little wiggle room for subpixel resolution
+        if (next < -1 && bucket) {
           scrubBucket = bucket;
-          scrubBucketPercent = top / (bucketHeight * maxScrollPercent);
+
+          // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
+          scrubBucketPercent = Math.max(0, top / (bucketHeight * maxScrollPercent));
+
+          // compensate for lost precision/rouding errors advance to the next bucket, if present
+          if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
+            scrubBucket = assetStore.buckets[i + 1];
+            scrubBucketPercent = 0;
+          }
+
           found = true;
           break;
         }
@@ -352,7 +383,6 @@
 
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAsset($viewingAsset);
-
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
@@ -428,7 +458,7 @@
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if (searchStore.isSearchEnabled) {
       return;
     }
 
@@ -439,7 +469,7 @@
   };
 
   const onKeyUp = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if (searchStore.isSearchEnabled) {
       return;
     }
 
@@ -587,34 +617,8 @@
     }
   };
 
-  const focusNextAsset = async () => {
-    if (assetInteraction.focussedAssetId === null) {
-      const firstAsset = assetStore.getFirstAsset();
-      if (firstAsset) {
-        assetInteraction.focussedAssetId = firstAsset.id;
-      }
-    } else {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const nextAsset = await assetStore.getNextAsset(focussedAsset);
-        if (nextAsset) {
-          assetInteraction.focussedAssetId = nextAsset.id;
-        }
-      }
-    }
-  };
-
-  const focusPreviousAsset = async () => {
-    if (assetInteraction.focussedAssetId !== null) {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const previousAsset = await assetStore.getPreviousAsset(focussedAsset);
-        if (previousAsset) {
-          assetInteraction.focussedAssetId = previousAsset.id;
-        }
-      }
-    }
-  };
+  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
@@ -628,7 +632,7 @@
 
   let shortcutList = $derived(
     (() => {
-      if ($isSearchEnabled || $showAssetViewer) {
+      if (searchStore.isSearchEnabled || $showAssetViewer) {
         return [];
       }
 
@@ -692,7 +696,6 @@
 
 {#if assetStore.buckets.length > 0}
   <Scrubber
-    invisible={showSkeleton}
     {assetStore}
     height={assetStore.viewportHeight}
     timelineTopOffset={assetStore.topSectionHeight}
@@ -702,6 +705,7 @@
     {scrubBucketPercent}
     {scrubBucket}
     {onScrub}
+    bind:scrubberWidth
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
       let amount = 50;
@@ -723,12 +727,8 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class={[
-    'scrollbar-hidden h-full overflow-y-auto outline-none',
-    { 'm-0': isEmpty },
-    { 'ml-4 tall:ml-0': !isEmpty },
-    { 'mr-[60px]': !isEmpty && !usingMobileDevice },
-  ]}
+  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
+  style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={assetStore.viewportHeight}
   bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
@@ -766,7 +766,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <Skeleton height={bucket.bucketHeight} title={bucket.bucketDateFormatted} />
+          <Skeleton height={bucket.bucketHeight - bucket.store.headerHeight} title={bucket.bucketDateFormatted} />
         </div>
       {:else if display}
         <div
@@ -791,30 +791,39 @@
         </div>
       {/if}
     {/each}
-    <!-- <div class="h-[60px]" style:position="absolute" style:left="0" style:right="0" style:bottom="0"></div> -->
+    <!-- spacer for leadout -->
+    <div
+      class="h-[60px]"
+      style:position="absolute"
+      style:left="0"
+      style:right="0"
+      style:transform={`translate3d(0,${assetStore.timelineHeight}px,0)`}
+    ></div>
   </section>
 </section>
 
-<Portal target="body">
-  {#if $showAssetViewer}
-    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer
-        {withStacked}
-        asset={$viewingAsset}
-        preloadAssets={$preloadAssets}
-        {isShared}
-        {album}
-        {person}
-        preAction={handlePreAction}
-        onAction={handleAction}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onRandom={handleRandom}
-        onClose={handleClose}
-      />
-    {/await}
-  {/if}
-</Portal>
+{#if !albumMapViewManager.isInMapView}
+  <Portal target="body">
+    {#if $showAssetViewer}
+      {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+        <AssetViewer
+          {withStacked}
+          asset={$viewingAsset}
+          preloadAssets={$preloadAssets}
+          {isShared}
+          {album}
+          {person}
+          preAction={handlePreAction}
+          onAction={handleAction}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onRandom={handleRandom}
+          onClose={handleClose}
+        />
+      {/await}
+    {/if}
+  </Portal>
+{/if}
 
 <style>
   #asset-grid {

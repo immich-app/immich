@@ -3,6 +3,7 @@ import {
   AssetMediaStatus,
   AssetResponseDto,
   AssetTypeEnum,
+  AssetVisibility,
   getAssetInfo,
   getMyUser,
   LoginResponseDto,
@@ -22,27 +23,9 @@ import { app, asBearerAuth, tempDir, TEN_TIMES, testAssetDir, utils } from 'src/
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
-  const dto: Record<string, any> = {
-    deviceAssetId: 'example-image',
-    deviceId: 'TEST',
-    fileCreatedAt: new Date().toISOString(),
-    fileModifiedAt: new Date().toISOString(),
-    isFavorite: 'testing',
-    duration: '0:00:00.000000',
-  };
-
-  const omit = options?.omit;
-  if (omit) {
-    delete dto[omit];
-  }
-
-  return dto;
-};
-
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
-const facesAssetFilepath = `${testAssetDir}/metadata/faces/portrait.jpg`;
+const facesAssetDir = `${testAssetDir}/metadata/faces`;
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -137,9 +120,9 @@ describe('/asset', () => {
       // stats
       utils.createAsset(statsUser.accessToken),
       utils.createAsset(statsUser.accessToken, { isFavorite: true }),
-      utils.createAsset(statsUser.accessToken, { isArchived: true }),
+      utils.createAsset(statsUser.accessToken, { visibility: AssetVisibility.Archive }),
       utils.createAsset(statsUser.accessToken, {
-        isArchived: true,
+        visibility: AssetVisibility.Archive,
         isFavorite: true,
         assetData: { filename: 'example.mp4' },
       }),
@@ -160,13 +143,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id/original', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/assets/${uuidDto.notFound}/original`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should download the file', async () => {
       const response = await request(app)
         .get(`/assets/${user1Assets[0].id}/original`)
@@ -178,20 +154,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/assets/${uuidDto.notFound}`);
-      expect(body).toEqual(errorDto.unauthorized);
-      expect(status).toBe(401);
-    });
-
-    it('should require a valid id', async () => {
-      const { status, body } = await request(app)
-        .get(`/assets/${uuidDto.invalid}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
-    });
-
     it('should require access', async () => {
       const { status, body } = await request(app)
         .get(`/assets/${user2Assets[0].id}`)
@@ -224,27 +186,19 @@ describe('/asset', () => {
       });
     });
 
-    it('should get the asset faces', async () => {
-      const config = await utils.getSystemConfig(admin.accessToken);
-      config.metadata.faces.import = true;
-      await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
-
-      // asset faces
-      const facesAsset = await utils.createAsset(admin.accessToken, {
-        assetData: {
+    describe('faces', () => {
+      const metadataFaceTests = [
+        {
+          description: 'without orientation',
           filename: 'portrait.jpg',
-          bytes: await readFile(facesAssetFilepath),
         },
-      });
-
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
-
-      const { status, body } = await request(app)
-        .get(`/assets/${facesAsset.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(200);
-      expect(body.id).toEqual(facesAsset.id);
-      expect(body.people).toMatchObject([
+        {
+          description: 'adjusting face regions to orientation',
+          filename: 'portrait-orientation-6.jpg',
+        },
+      ];
+      // should produce same resulting face region coordinates for any orientation
+      const expectedFaces = [
         {
           name: 'Marie Curie',
           birthDate: null,
@@ -279,7 +233,30 @@ describe('/asset', () => {
             },
           ],
         },
-      ]);
+      ];
+
+      it.each(metadataFaceTests)('should get the asset faces from $filename $description', async ({ filename }) => {
+        const config = await utils.getSystemConfig(admin.accessToken);
+        config.metadata.faces.import = true;
+        await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
+
+        const facesAsset = await utils.createAsset(admin.accessToken, {
+          assetData: {
+            filename,
+            bytes: await readFile(`${facesAssetDir}/${filename}`),
+          },
+        });
+
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
+
+        const { status, body } = await request(app)
+          .get(`/assets/${facesAsset.id}`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body.id).toEqual(facesAsset.id);
+        expect(body.people).toMatchObject(expectedFaces);
+      });
     });
 
     it('should work with a shared link', async () => {
@@ -333,7 +310,7 @@ describe('/asset', () => {
       });
 
       it('disallows viewing archived assets', async () => {
-        const asset = await utils.createAsset(user1.accessToken, { isArchived: true });
+        const asset = await utils.createAsset(user1.accessToken, { visibility: AssetVisibility.Archive });
 
         const { status } = await request(app)
           .get(`/assets/${asset.id}`)
@@ -354,13 +331,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/statistics', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/assets/statistics');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should return stats of all assets', async () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
@@ -384,7 +354,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
         .set('Authorization', `Bearer ${statsUser.accessToken}`)
-        .query({ isArchived: true });
+        .query({ visibility: AssetVisibility.Archive });
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 1, videos: 1, total: 2 });
@@ -394,7 +364,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
         .set('Authorization', `Bearer ${statsUser.accessToken}`)
-        .query({ isFavorite: true, isArchived: true });
+        .query({ isFavorite: true, visibility: AssetVisibility.Archive });
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 0, videos: 1, total: 1 });
@@ -404,7 +374,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get('/assets/statistics')
         .set('Authorization', `Bearer ${statsUser.accessToken}`)
-        .query({ isFavorite: false, isArchived: false });
+        .query({ isFavorite: false, visibility: AssetVisibility.Timeline });
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 1, videos: 0, total: 1 });
@@ -423,13 +393,6 @@ describe('/asset', () => {
       ]);
 
       await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
-    });
-
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/assets/random');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it.each(TEN_TIMES)('should return 1 random assets', async () => {
@@ -467,31 +430,9 @@ describe('/asset', () => {
       expect(status).toBe(200);
       expect(body).toEqual([expect.objectContaining({ id: user2Assets[0].id })]);
     });
-
-    it('should return error', async () => {
-      const { status } = await request(app)
-        .get('/assets/random?count=ABC')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-
-      expect(status).toBe(400);
-    });
   });
 
   describe('PUT /assets/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/assets/:${uuidDto.notFound}`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require a valid id', async () => {
-      const { status, body } = await request(app)
-        .put(`/assets/${uuidDto.invalid}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
-    });
-
     it('should require access', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user2Assets[0].id}`)
@@ -519,7 +460,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ isArchived: true });
+        .send({ visibility: AssetVisibility.Archive });
       expect(body).toMatchObject({ id: user1Assets[0].id, isArchived: true });
       expect(status).toEqual(200);
     });
@@ -619,28 +560,6 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
-    it('should reject invalid gps coordinates', async () => {
-      for (const test of [
-        { latitude: 12 },
-        { longitude: 12 },
-        { latitude: 12, longitude: 'abc' },
-        { latitude: 'abc', longitude: 12 },
-        { latitude: null, longitude: 12 },
-        { latitude: 12, longitude: null },
-        { latitude: 91, longitude: 12 },
-        { latitude: -91, longitude: 12 },
-        { latitude: 12, longitude: -181 },
-        { latitude: 12, longitude: 181 },
-      ]) {
-        const { status, body } = await request(app)
-          .put(`/assets/${user1Assets[0].id}`)
-          .send(test)
-          .set('Authorization', `Bearer ${user1.accessToken}`);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
-      }
-    });
-
     it('should update gps data', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
@@ -712,17 +631,6 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
-    it('should reject invalid rating', async () => {
-      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: null }]) {
-        const { status, body } = await request(app)
-          .put(`/assets/${user1Assets[0].id}`)
-          .send(test)
-          .set('Authorization', `Bearer ${user1.accessToken}`);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
-      }
-    });
-
     it('should return tagged people', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
@@ -746,25 +654,6 @@ describe('/asset', () => {
   });
 
   describe('DELETE /assets', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .delete(`/assets`)
-        .send({ ids: [uuidDto.notFound] });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require a valid uuid', async () => {
-      const { status, body } = await request(app)
-        .delete(`/assets`)
-        .send({ ids: [uuidDto.invalid] })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['each value in ids must be a UUID']));
-    });
-
     it('should throw an error when the id is not found', async () => {
       const { status, body } = await request(app)
         .delete(`/assets`)
@@ -877,13 +766,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id/thumbnail', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/assets/${locationAsset.id}/thumbnail`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should not include gps data for webp thumbnails', async () => {
       await utils.waitForWebsocketEvent({
         event: 'assetUpload',
@@ -919,13 +801,6 @@ describe('/asset', () => {
   });
 
   describe('GET /assets/:id/original', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/assets/${locationAsset.id}/original`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should download the original', async () => {
       const { status, body, type } = await request(app)
         .get(`/assets/${locationAsset.id}/original`)
@@ -946,42 +821,8 @@ describe('/asset', () => {
     });
   });
 
-  describe('PUT /assets', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put('/assets');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-  });
-
   describe('POST /assets', () => {
     beforeAll(setupTests, 30_000);
-
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/assets`);
-      expect(body).toEqual(errorDto.unauthorized);
-      expect(status).toBe(401);
-    });
-
-    it.each([
-      { should: 'require `deviceAssetId`', dto: { ...makeUploadDto({ omit: 'deviceAssetId' }) } },
-      { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
-      { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
-      { should: 'require `fileModifiedAt`', dto: { ...makeUploadDto({ omit: 'fileModifiedAt' }) } },
-      { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
-      { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
-      { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
-      { should: 'throw if `isArchived` is not a boolean', dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' } },
-    ])('should $should', async ({ dto }) => {
-      const { status, body } = await request(app)
-        .post('/assets')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .attach('assetData', makeRandomImage(), 'example.png')
-        .field(dto);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest());
-    });
 
     const tests = [
       {
@@ -1141,7 +982,7 @@ describe('/asset', () => {
             fNumber: 8,
             focalLength: 97,
             iso: 100,
-            lensModel: 'E PZ 18-105mm F4 G OSS',
+            lensModel: 'Sony E PZ 18-105mm F4 G OSS',
             fileSizeInByte: 25_001_984,
             dateTimeOriginal: '2016-09-27T10:51:44+00:00',
             orientation: '1',
@@ -1163,7 +1004,7 @@ describe('/asset', () => {
             fNumber: 22,
             focalLength: 25,
             iso: 100,
-            lensModel: 'E 25mm F2',
+            lensModel: 'Zeiss Batis 25mm F2',
             fileSizeInByte: 49_512_448,
             dateTimeOriginal: '2016-01-08T14:08:01+00:00',
             orientation: '1',
@@ -1234,7 +1075,7 @@ describe('/asset', () => {
             focalLength: 18.3,
             iso: 100,
             latitude: 36.613_24,
-            lensModel: 'GR LENS 18.3mm F2.8',
+            lensModel: '18.3mm F2.8',
             longitude: -121.897_85,
             make: 'RICOH IMAGING COMPANY, LTD.',
             model: 'RICOH GR III',
@@ -1244,31 +1085,21 @@ describe('/asset', () => {
       },
     ];
 
-    it(`should upload and generate a thumbnail for different file types`, async () => {
-      // upload in parallel
-      const assets = await Promise.all(
-        tests.map(async ({ input }) => {
-          const filepath = join(testAssetDir, input);
-          return utils.createAsset(admin.accessToken, {
-            assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-          });
-        }),
-      );
+    it.each(tests)(`should upload and generate a thumbnail for different file types`, async ({ input, expected }) => {
+      const filepath = join(testAssetDir, input);
+      const response = await utils.createAsset(admin.accessToken, {
+        assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+      });
 
-      for (const { id, status } of assets) {
-        expect(status).toBe(AssetMediaStatus.Created);
-        // longer timeout as the thumbnail generation from full-size raw files can take a while
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
-      }
+      expect(response.status).toBe(AssetMediaStatus.Created);
+      const id = response.id;
+      // longer timeout as the thumbnail generation from full-size raw files can take a while
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
 
-      for (const [i, { id }] of assets.entries()) {
-        const { expected } = tests[i];
-        const asset = await utils.getAssetInfo(admin.accessToken, id);
-
-        expect(asset.exifInfo).toBeDefined();
-        expect(asset.exifInfo).toMatchObject(expected.exifInfo);
-        expect(asset).toMatchObject(expected);
-      }
+      const asset = await utils.getAssetInfo(admin.accessToken, id);
+      expect(asset.exifInfo).toBeDefined();
+      expect(asset.exifInfo).toMatchObject(expected.exifInfo);
+      expect(asset).toMatchObject(expected);
     });
 
     it('should handle a duplicate', async () => {

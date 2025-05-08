@@ -66,6 +66,10 @@ class Permission {
   static const memoryPeriodRead = Permission._(r'memory.read');
   static const memoryPeriodUpdate = Permission._(r'memory.update');
   static const memoryPeriodDelete = Permission._(r'memory.delete');
+  static const notificationPeriodCreate = Permission._(r'notification.create');
+  static const notificationPeriodRead = Permission._(r'notification.read');
+  static const notificationPeriodUpdate = Permission._(r'notification.update');
+  static const notificationPeriodDelete = Permission._(r'notification.delete');
   static const partnerPeriodCreate = Permission._(r'partner.create');
   static const partnerPeriodRead = Permission._(r'partner.read');
   static const partnerPeriodUpdate = Permission._(r'partner.update');
@@ -147,6 +151,10 @@ class Permission {
     memoryPeriodRead,
     memoryPeriodUpdate,
     memoryPeriodDelete,
+    notificationPeriodCreate,
+    notificationPeriodRead,
+    notificationPeriodUpdate,
+    notificationPeriodDelete,
     partnerPeriodCreate,
     partnerPeriodRead,
     partnerPeriodUpdate,
@@ -263,6 +271,10 @@ class PermissionTypeTransformer {
         case r'memory.read': return Permission.memoryPeriodRead;
         case r'memory.update': return Permission.memoryPeriodUpdate;
         case r'memory.delete': return Permission.memoryPeriodDelete;
+        case r'notification.create': return Permission.notificationPeriodCreate;
+        case r'notification.read': return Permission.notificationPeriodRead;
+        case r'notification.update': return Permission.notificationPeriodUpdate;
+        case r'notification.delete': return Permission.notificationPeriodDelete;
         case r'partner.create': return Permission.partnerPeriodCreate;
         case r'partner.read': return Permission.partnerPeriodRead;
         case r'partner.update': return Permission.partnerPeriodUpdate;

@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
+import { Insertable, Updateable } from 'kysely';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { Person } from 'src/database';
+import { AssetFaces, FaceSearch } from 'src/db';
 import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -21,14 +23,9 @@ import {
   PersonStatisticsResponseDto,
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { FaceSearchEntity } from 'src/entities/face-search.entity';
-import { PersonEntity } from 'src/entities/person.entity';
 import {
-  AssetType,
+  AssetVisibility,
   CacheControl,
-  ImageFormat,
   JobName,
   JobStatus,
   Permission,
@@ -37,16 +34,13 @@ import {
   SourceType,
   SystemMetadataKey,
 } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
-import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { JobItem, JobOf } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
+import { isFacialRecognitionEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class PersonService extends BaseService {
@@ -242,9 +236,9 @@ export class PersonService extends BaseService {
   }
 
   @Chunked()
-  private async delete(people: PersonEntity[]) {
+  private async delete(people: { id: string; thumbnailPath: string }[]) {
     await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
-    await this.personRepository.delete(people);
+    await this.personRepository.delete(people.map((person) => person.id));
     this.logger.debug(`Deleted ${people.length} people`);
   }
 
@@ -267,22 +261,18 @@ export class PersonService extends BaseService {
       await this.handlePersonCleanup();
     }
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force === false
-        ? this.assetRepository.getWithout(pagination, WithoutProperty.FACES)
-        : this.assetRepository.getAll(pagination, {
-            orderDirection: 'desc',
-            withFaces: true,
-            withArchived: true,
-            isVisible: true,
-          });
-    });
+    let jobs: JobItem[] = [];
+    const assets = this.assetJobRepository.streamForDetectFacesJob(force);
+    for await (const asset of assets) {
+      jobs.push({ name: JobName.FACE_DETECTION, data: { id: asset.id } });
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.FACE_DETECTION, data: { id: asset.id } })),
-      );
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
+      }
     }
+
+    await this.jobRepository.queueAll(jobs);
 
     if (force === undefined) {
       await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
@@ -298,14 +288,13 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = { exifInfo: true, faces: { person: false, withDeleted: true }, files: true };
-    const [asset] = await this.assetRepository.getByIds([id], relations);
-    const { previewFile } = getAssetFiles(asset.files);
-    if (!asset || !previewFile) {
+    const asset = await this.assetJobRepository.getForDetectFacesJob(id);
+    const previewFile = asset?.files[0];
+    if (!asset || asset.files.length !== 1 || !previewFile) {
       return JobStatus.FAILED;
     }
 
-    if (!asset.isVisible) {
+    if (asset.visibility === AssetVisibility.HIDDEN) {
       return JobStatus.SKIPPED;
     }
 
@@ -316,9 +305,10 @@ export class PersonService extends BaseService {
     );
     this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
 
-    const facesToAdd: (Partial<AssetFaceEntity> & { id: string; assetId: string })[] = [];
-    const embeddings: FaceSearchEntity[] = [];
+    const facesToAdd: (Insertable<AssetFaces> & { id: string })[] = [];
+    const embeddings: FaceSearch[] = [];
     const mlFaceIds = new Set<string>();
+
     for (const face of asset.faces) {
       if (face.sourceType === SourceType.MACHINE_LEARNING) {
         mlFaceIds.add(face.id);
@@ -376,7 +366,10 @@ export class PersonService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private iou(face: AssetFaceEntity, newBox: BoundingBox): number {
+  private iou(
+    face: { boundingBoxX1: number; boundingBoxY1: number; boundingBoxX2: number; boundingBoxY2: number },
+    newBox: BoundingBox,
+  ): number {
     const x1 = Math.max(face.boundingBoxX1, newBox.x1);
     const y1 = Math.max(face.boundingBoxY1, newBox.y1);
     const x2 = Math.min(face.boundingBoxX2, newBox.x2);
@@ -452,11 +445,7 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const face = await this.personRepository.getFaceByIdWithAssets(id, { faceSearch: true }, [
-      'id',
-      'personId',
-      'sourceType',
-    ]);
+    const face = await this.personRepository.getFaceForFacialRecognitionJob(id);
     if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return JobStatus.FAILED;
@@ -482,6 +471,7 @@ export class PersonService extends BaseService {
       embedding: face.faceSearch.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
+      minBirthDate: face.asset.fileCreatedAt ?? undefined,
     });
 
     // `matches` also includes the face itself
@@ -492,7 +482,9 @@ export class PersonService extends BaseService {
 
     this.logger.debug(`Face ${id} has ${matches.length} matches`);
 
-    const isCore = matches.length >= machineLearning.facialRecognition.minFaces && !face.asset.isArchived;
+    const isCore =
+      matches.length >= machineLearning.facialRecognition.minFaces &&
+      face.asset.visibility === AssetVisibility.TIMELINE;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core face ${id} for later processing`);
       await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
@@ -507,6 +499,7 @@ export class PersonService extends BaseService {
         maxDistance: machineLearning.facialRecognition.maxDistance,
         numResults: 1,
         hasPerson: true,
+        minBirthDate: face.asset.fileCreatedAt ?? undefined,
       });
 
       if (matchWithPerson.length > 0) {
@@ -537,64 +530,6 @@ export class PersonService extends BaseService {
     }
 
     await this.storageCore.movePersonFile(person, PersonPathType.FACE);
-
-    return JobStatus.SUCCESS;
-  }
-
-  @OnJob({ name: JobName.GENERATE_PERSON_THUMBNAIL, queue: QueueName.THUMBNAIL_GENERATION })
-  async handleGeneratePersonThumbnail(data: JobOf<JobName.GENERATE_PERSON_THUMBNAIL>): Promise<JobStatus> {
-    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
-    if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
-      return JobStatus.SKIPPED;
-    }
-
-    const person = await this.personRepository.getById(data.id);
-    if (!person?.faceAssetId) {
-      this.logger.error(`Could not generate person thumbnail: person ${person?.id} has no face asset`);
-      return JobStatus.FAILED;
-    }
-
-    const face = await this.personRepository.getFaceByIdWithAssets(person.faceAssetId);
-    if (!face) {
-      this.logger.error(`Could not generate person thumbnail: face ${person.faceAssetId} not found`);
-      return JobStatus.FAILED;
-    }
-
-    const {
-      assetId,
-      boundingBoxX1: x1,
-      boundingBoxX2: x2,
-      boundingBoxY1: y1,
-      boundingBoxY2: y2,
-      imageWidth: oldWidth,
-      imageHeight: oldHeight,
-    } = face;
-
-    const asset = await this.assetRepository.getById(assetId, {
-      exifInfo: true,
-      files: true,
-    });
-    if (!asset) {
-      this.logger.error(`Could not generate person thumbnail: asset ${assetId} does not exist`);
-      return JobStatus.FAILED;
-    }
-
-    const { width, height, inputPath } = await this.getInputDimensions(asset, { width: oldWidth, height: oldHeight });
-
-    const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
-    this.storageCore.ensureFolders(thumbnailPath);
-
-    const thumbnailOptions = {
-      colorspace: image.colorspace,
-      format: ImageFormat.JPEG,
-      size: FACE_THUMBNAIL_SIZE,
-      quality: image.thumbnail.quality,
-      crop: this.getCrop({ old: { width: oldWidth, height: oldHeight }, new: { width, height } }, { x1, y1, x2, y2 }),
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-    };
-
-    await this.mediaRepository.generateThumbnail(inputPath, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id: person.id, thumbnailPath });
 
     return JobStatus.SUCCESS;
   }
@@ -631,7 +566,7 @@ export class PersonService extends BaseService {
           continue;
         }
 
-        const update: Partial<PersonEntity> = {};
+        const update: Updateable<Person> & { id: string } = { id: primaryPerson.id };
         if (!primaryPerson.name && mergePerson.name) {
           update.name = mergePerson.name;
         }
@@ -641,7 +576,7 @@ export class PersonService extends BaseService {
         }
 
         if (Object.keys(update).length > 0) {
-          primaryPerson = await this.personRepository.update({ id: primaryPerson.id, ...update });
+          primaryPerson = await this.personRepository.update(update);
         }
 
         const mergeName = mergePerson.name || mergePerson.id;
@@ -667,58 +602,6 @@ export class PersonService extends BaseService {
       throw new BadRequestException('Person not found');
     }
     return person;
-  }
-
-  private async getInputDimensions(asset: AssetEntity, oldDims: ImageDimensions): Promise<InputDimensions> {
-    if (!asset.exifInfo?.exifImageHeight || !asset.exifInfo.exifImageWidth) {
-      throw new Error(`Asset ${asset.id} dimensions are unknown`);
-    }
-
-    const { previewFile } = getAssetFiles(asset.files);
-    if (!previewFile) {
-      throw new Error(`Asset ${asset.id} has no preview path`);
-    }
-
-    if (asset.type === AssetType.IMAGE) {
-      let { exifImageWidth: width, exifImageHeight: height } = asset.exifInfo;
-      if (oldDims.height > oldDims.width !== height > width) {
-        [width, height] = [height, width];
-      }
-
-      return { width, height, inputPath: asset.originalPath };
-    }
-
-    const { width, height } = await this.mediaRepository.getImageDimensions(previewFile.path);
-    return { width, height, inputPath: previewFile.path };
-  }
-
-  private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {
-    const widthScale = dims.new.width / dims.old.width;
-    const heightScale = dims.new.height / dims.old.height;
-
-    const halfWidth = (widthScale * (x2 - x1)) / 2;
-    const halfHeight = (heightScale * (y2 - y1)) / 2;
-
-    const middleX = Math.round(widthScale * x1 + halfWidth);
-    const middleY = Math.round(heightScale * y1 + halfHeight);
-
-    // zoom out 10%
-    const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
-
-    // get the longest distance from the center of the image without overflowing
-    const newHalfSize = Math.min(
-      middleX - Math.max(0, middleX - targetHalfSize),
-      middleY - Math.max(0, middleY - targetHalfSize),
-      Math.min(dims.new.width - 1, middleX + targetHalfSize) - middleX,
-      Math.min(dims.new.height - 1, middleY + targetHalfSize) - middleY,
-    );
-
-    return {
-      left: middleX - newHalfSize,
-      top: middleY - newHalfSize,
-      width: newHalfSize * 2,
-      height: newHalfSize * 2,
-    };
   }
 
   // TODO return a asset face response

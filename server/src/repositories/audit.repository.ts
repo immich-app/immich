@@ -29,7 +29,9 @@ export class AuditRepository {
       .$if(!!options.entityType, (qb) => qb.where('audit.entityType', '=', options.entityType!))
       .where('audit.ownerId', 'in', options.userIds)
       .distinctOn(['audit.entityId', 'audit.entityType'])
-      .orderBy(['audit.entityId desc', 'audit.entityType desc', 'audit.createdAt desc'])
+      .orderBy('audit.entityId', 'desc')
+      .orderBy('audit.entityType', 'desc')
+      .orderBy('audit.createdAt', 'desc')
       .select('audit.entityId')
       .execute();
 

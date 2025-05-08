@@ -1,12 +1,52 @@
 import _ from 'lodash';
 import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
-import { UserMetadataItem, UserPreferences, getDefaultPreferences } from 'src/entities/user-metadata.entity';
 import { UserMetadataKey } from 'src/enum';
-import { DeepPartial } from 'src/types';
+import { DeepPartial, UserMetadataItem, UserPreferences } from 'src/types';
+import { HumanReadableSize } from 'src/utils/bytes';
 import { getKeysDeep } from 'src/utils/misc';
 
-export const getPreferences = (email: string, metadata: UserMetadataItem[]): UserPreferences => {
-  const preferences = getDefaultPreferences({ email });
+const getDefaultPreferences = (): UserPreferences => {
+  return {
+    folders: {
+      enabled: false,
+      sidebarWeb: false,
+    },
+    memories: {
+      enabled: true,
+    },
+    people: {
+      enabled: true,
+      sidebarWeb: false,
+    },
+    sharedLinks: {
+      enabled: true,
+      sidebarWeb: false,
+    },
+    ratings: {
+      enabled: false,
+    },
+    tags: {
+      enabled: false,
+      sidebarWeb: false,
+    },
+    emailNotifications: {
+      enabled: true,
+      albumInvite: true,
+      albumUpdate: true,
+    },
+    download: {
+      archiveSize: HumanReadableSize.GiB * 4,
+      includeEmbeddedVideos: false,
+    },
+    purchase: {
+      showSupportBadge: true,
+      hideBuyButtonUntil: new Date(2022, 1, 12).toISOString(),
+    },
+  };
+};
+
+export const getPreferences = (metadata: UserMetadataItem[]): UserPreferences => {
+  const preferences = getDefaultPreferences();
   const item = metadata.find(({ key }) => key === UserMetadataKey.PREFERENCES);
   const partial = item?.value || {};
   for (const property of getKeysDeep(partial)) {
@@ -16,8 +56,8 @@ export const getPreferences = (email: string, metadata: UserMetadataItem[]): Use
   return preferences;
 };
 
-export const getPreferencesPartial = (user: { email: string }, newPreferences: UserPreferences) => {
-  const defaultPreferences = getDefaultPreferences(user);
+export const getPreferencesPartial = (newPreferences: UserPreferences) => {
+  const defaultPreferences = getDefaultPreferences();
   const partial: DeepPartial<UserPreferences> = {};
   for (const property of getKeysDeep(defaultPreferences)) {
     const newValue = _.get(newPreferences, property);

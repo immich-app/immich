@@ -8,6 +8,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/share.service.dart';
+import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
@@ -57,12 +58,13 @@ Future<void> handleArchiveAssets(
         .read(assetProvider.notifier)
         .toggleArchive(selection, shouldArchive);
 
-    final assetOrAssets = selection.length > 1 ? 'assets' : 'asset';
-    final archiveOrLibrary = shouldArchive ? 'archive' : 'library';
+    final message = shouldArchive
+        ? t('moved_to_archive', {'count': selection.length})
+        : t('moved_to_library', {'count': selection.length});
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: 'Moved ${selection.length} $assetOrAssets to $archiveOrLibrary',
+        msg: message,
         gravity: toastGravity,
       );
     }

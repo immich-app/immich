@@ -71,7 +71,7 @@ class _LocationPicker extends HookWidget {
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
-            "action_common_cancel",
+            "cancel",
             style: context.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: context.colorScheme.error,
@@ -203,7 +203,7 @@ class _ManualPicker extends HookWidget {
         const SizedBox(height: 12),
         _ManualPickerInput(
           initialValue: latlng.latitude.toStringAsFixed(4),
-          decorationText: "location_picker_latitude",
+          decorationText: "latitude",
           hintText: "location_picker_latitude_hint",
           errorText: "location_picker_latitude_error",
           focusNode: latitiudeFocusNode,
@@ -213,7 +213,7 @@ class _ManualPicker extends HookWidget {
         const SizedBox(height: 24),
         _ManualPickerInput(
           initialValue: latlng.longitude.toStringAsFixed(4),
-          decorationText: "location_picker_longitude",
+          decorationText: "longitude",
           hintText: "location_picker_longitude_hint",
           errorText: "location_picker_longitude_error",
           focusNode: longitudeFocusNode,

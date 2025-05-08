@@ -237,6 +237,9 @@ class PeopleCollectionCard extends ConsumerWidget {
                   ),
                 ),
                 child: people.widgetWhen(
+                  onLoading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
                   onData: (people) {
                     return GridView.count(
                       crossAxisCount: 2,
@@ -294,32 +297,34 @@ class LocalAlbumsCollectionCard extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
+              SizedBox(
                 height: size,
                 width: size,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [
-                      context.colorScheme.primary.withAlpha(30),
-                      context.colorScheme.primary.withAlpha(25),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                    gradient: LinearGradient(
+                      colors: [
+                        context.colorScheme.primary.withAlpha(30),
+                        context.colorScheme.primary.withAlpha(25),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                   ),
-                ),
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  padding: const EdgeInsets.all(12),
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: albums.take(4).map((album) {
-                    return AlbumThumbnailCard(
-                      album: album,
-                      showTitle: false,
-                    );
-                  }).toList(),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    padding: const EdgeInsets.all(12),
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: albums.take(4).map((album) {
+                      return AlbumThumbnailCard(
+                        album: album,
+                        showTitle: false,
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
               Padding(
@@ -351,27 +356,35 @@ class PlacesCollectionCard extends StatelessWidget {
         final size = context.width * widthFactor - 20.0;
 
         return GestureDetector(
-          onTap: () => context.pushRoute(const PlacesCollectionRoute()),
+          onTap: () => context.pushRoute(
+            PlacesCollectionRoute(
+              currentLocation: null,
+            ),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
+              SizedBox(
                 height: size,
                 width: size,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: context.colorScheme.secondaryContainer.withAlpha(100),
-                ),
-                child: IgnorePointer(
-                  child: MapThumbnail(
-                    zoom: 8,
-                    centre: const LatLng(
-                      21.44950,
-                      -157.91959,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                    color:
+                        context.colorScheme.secondaryContainer.withAlpha(100),
+                  ),
+                  child: IgnorePointer(
+                    child: MapThumbnail(
+                      zoom: 8,
+                      centre: const LatLng(
+                        21.44950,
+                        -157.91959,
+                      ),
+                      showAttribution: false,
+                      themeMode: context.isDarkTheme
+                          ? ThemeMode.dark
+                          : ThemeMode.light,
                     ),
-                    showAttribution: false,
-                    themeMode:
-                        context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                   ),
                 ),
               ),

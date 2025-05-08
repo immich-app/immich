@@ -43,21 +43,20 @@ with
           "asset_job_status"."previewAt" is not null
           and (assets."localDateTime" at time zone 'UTC')::date = today.date
           and "assets"."ownerId" = any ($3::uuid[])
-          and "assets"."isVisible" = $4
-          and "assets"."isArchived" = $5
+          and "assets"."visibility" = $4
           and exists (
             select
             from
               "asset_files"
             where
               "assetId" = "assets"."id"
-              and "asset_files"."type" = $6
+              and "asset_files"."type" = $5
           )
           and "assets"."deletedAt" is null
         order by
           (assets."localDateTime" at time zone 'UTC')::date desc
         limit
-          $7
+          $6
       ) as "a" on true
       inner join "exif" on "a"."id" = "exif"."assetId"
   )
@@ -82,27 +81,31 @@ from
 where
   "assets"."id" = any ($1::uuid[])
 
--- AssetRepository.getByIdsWithAllRelations
+-- AssetRepository.getByIdsWithAllRelationsButStacks
 select
   "assets".*,
   (
     select
-      jsonb_agg(
-        case
-          when "person"."id" is not null then jsonb_insert(
-            to_jsonb("asset_faces"),
-            '{person}'::text[],
-            to_jsonb("person")
-          )
-          else to_jsonb("asset_faces")
-        end
-      ) as "faces"
+      coalesce(json_agg(agg), '[]')
     from
-      "asset_faces"
-      left join "person" on "person"."id" = "asset_faces"."personId"
-    where
-      "asset_faces"."assetId" = "assets"."id"
-      and "asset_faces"."deletedAt" is null
+      (
+        select
+          "asset_faces".*,
+          "person" as "person"
+        from
+          "asset_faces"
+          left join lateral (
+            select
+              "person".*
+            from
+              "person"
+            where
+              "asset_faces"."personId" = "person"."id"
+          ) as "person" on true
+        where
+          "asset_faces"."assetId" = "assets"."id"
+          and "asset_faces"."deletedAt" is null
+      ) as agg
   ) as "faces",
   (
     select
@@ -110,7 +113,12 @@ select
     from
       (
         select
-          "tags".*
+          "tags"."id",
+          "tags"."value",
+          "tags"."createdAt",
+          "tags"."updatedAt",
+          "tags"."color",
+          "tags"."parentId"
         from
           "tags"
           inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
@@ -118,28 +126,13 @@ select
           "assets"."id" = "tag_asset"."assetsId"
       ) as agg
   ) as "tags",
-  to_json("exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
+  to_json("exif") as "exifInfo"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
   left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
-  left join lateral (
-    select
-      "asset_stack".*,
-      array_agg("stacked") as "assets"
-    from
-      "assets" as "stacked"
-    where
-      "stacked"."stackId" = "asset_stack"."id"
-      and "stacked"."id" != "asset_stack"."primaryAssetId"
-      and "stacked"."deletedAt" is null
-      and "stacked"."isArchived" = $1
-    group by
-      "asset_stack"."id"
-  ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."id" = any ($2::uuid[])
+  "assets"."id" = any ($1::uuid[])
 
 -- AssetRepository.deleteAll
 delete from "assets"
@@ -165,10 +158,7 @@ from
 where
   "ownerId" = $1::uuid
   and "deviceId" = $2
-  and "isVisible" = $3
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
+  and "visibility" != $3
   and "deletedAt" is null
 
 -- AssetRepository.getLivePhotoCount
@@ -241,25 +231,6 @@ where
 limit
   $3
 
--- AssetRepository.getWithout (sidecar)
-select
-  "assets".*
-from
-  "assets"
-where
-  (
-    "assets"."sidecarPath" = $1
-    or "assets"."sidecarPath" is null
-  )
-  and "assets"."isVisible" = $2
-  and "deletedAt" is null
-order by
-  "createdAt"
-limit
-  $3
-offset
-  $4
-
 -- AssetRepository.getTimeBuckets
 with
   "assets" as (
@@ -269,10 +240,10 @@ with
       "assets"
     where
       "assets"."deletedAt" is null
-      and "assets"."isVisible" = $2
-      and "assets"."fileCreatedAt" is not null
-      and "assets"."fileModifiedAt" is not null
-      and "assets"."localDateTime" is not null
+      and (
+        "assets"."visibility" = $2
+        or "assets"."visibility" = $3
+      )
   )
 select
   "timeBucket",
@@ -302,7 +273,7 @@ from
     where
       "stacked"."stackId" = "asset_stack"."id"
       and "stacked"."deletedAt" is null
-      and "stacked"."isArchived" = $1
+      and "stacked"."visibility" != $1
     group by
       "asset_stack"."id"
   ) as "stacked_assets" on "asset_stack"."id" is not null
@@ -312,8 +283,11 @@ where
     or "assets"."stackId" is null
   )
   and "assets"."deletedAt" is null
-  and "assets"."isVisible" = $2
-  and date_trunc($3, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
+  and (
+    "assets"."visibility" = $2
+    or "assets"."visibility" = $3
+  )
+  and date_trunc($4, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $5
 order by
   "assets"."localDateTime" desc
 
@@ -338,7 +312,7 @@ with
       "assets"."ownerId" = $1::uuid
       and "assets"."duplicateId" is not null
       and "assets"."deletedAt" is null
-      and "assets"."isVisible" = $2
+      and "assets"."visibility" != $2
       and "assets"."stackId" is null
     group by
       "assets"."duplicateId"
@@ -396,12 +370,11 @@ from
   inner join "cities" on "exif"."city" = "cities"."city"
 where
   "ownerId" = $2::uuid
-  and "isVisible" = $3
-  and "isArchived" = $4
-  and "type" = $5
+  and "visibility" = $3
+  and "type" = $4
   and "deletedAt" is null
 limit
-  $6
+  $5
 
 -- AssetRepository.getAllForUserFullSync
 select
@@ -425,10 +398,7 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = $1::uuid
-  and "assets"."isVisible" = $2
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
+  and "assets"."visibility" != $2
   and "assets"."updatedAt" <= $3
   and "assets"."id" > $4
 order by
@@ -458,10 +428,7 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = any ($1::uuid[])
-  and "assets"."isVisible" = $2
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
+  and "assets"."visibility" != $2
   and "assets"."updatedAt" > $3
 limit
   $4

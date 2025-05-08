@@ -1,15 +1,22 @@
 name: Docs destroy
 on:
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
     types: [closed]
+
+permissions: {}
 
 jobs:
   deploy:
     name: Docs Destroy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
 
       - name: Destroy Docs Subdomain
         env:

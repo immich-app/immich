@@ -20,6 +20,7 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import AlbumMap from '$lib/components/album-page/album-map.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -91,7 +92,9 @@
             icon={mdiFolderDownloadOutline}
           />
         {/if}
-
+        {#if sharedLink.showMetadata}
+          <AlbumMap {album} />
+        {/if}
         <ThemeButton />
       {/snippet}
     </ControlAppBar>
@@ -99,10 +102,10 @@
 </header>
 
 <main
-  class="relative h-screen overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  class="relative h-dvh overflow-hidden bg-immich-bg px-2 md:px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
 >
   <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
-    <section class="pt-8 md:pt-24">
+    <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
       <h1
         class="bg-immich-bg text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
@@ -117,7 +120,7 @@
       <!-- ALBUM DESCRIPTION -->
       {#if album.description}
         <p
-          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-left font-medium text-base text-black dark:text-gray-300"
+          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-start font-medium text-base text-black dark:text-gray-300"
         >
           {album.description}
         </p>

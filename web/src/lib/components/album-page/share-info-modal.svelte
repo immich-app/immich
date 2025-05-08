@@ -1,22 +1,22 @@
 <script lang="ts">
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
+    AlbumUserRole,
     getMyUser,
     removeUserFromAlbum,
+    updateAlbumUser,
     type AlbumResponseDto,
     type UserResponseDto,
-    updateAlbumUser,
-    AlbumUserRole,
   } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
-  import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { t } from 'svelte-i18n';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
 
   interface Props {
     album: AlbumResponseDto;
@@ -144,8 +144,7 @@
     title={$t('album_leave')}
     prompt={$t('album_leave_confirmation', { values: { album: album.albumName } })}
     confirmText={$t('leave')}
-    onConfirm={handleRemoveUser}
-    onCancel={() => (selectedRemoveUser = null)}
+    onClose={(confirmed) => (confirmed ? handleRemoveUser() : (selectedRemoveUser = null))}
   />
 {/if}
 
@@ -154,7 +153,6 @@
     title={$t('album_remove_user')}
     prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
     confirmText={$t('remove_user')}
-    onConfirm={handleRemoveUser}
-    onCancel={() => (selectedRemoveUser = null)}
+    onClose={(confirmed) => (confirmed ? handleRemoveUser() : (selectedRemoveUser = null))}
   />
 {/if}

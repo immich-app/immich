@@ -1,6 +1,7 @@
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:openapi/api.dart';
 
+// TODO: Move to repository once all classes are refactored
 abstract final class ExifDtoConverter {
   static ExifInfo fromDto(ExifResponseDto dto) {
     return ExifInfo(

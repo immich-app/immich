@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsString } from 'class-validator';
 import _ from 'lodash';
+import { SharedLink } from 'src/database';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SharedLinkType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
@@ -102,11 +102,8 @@ export class SharedLinkResponseDto {
   showMetadata!: boolean;
 }
 
-export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
+export function mapSharedLink(sharedLink: SharedLink): SharedLinkResponseDto {
   const linkAssets = sharedLink.assets || [];
-  const albumAssets = (sharedLink?.album?.assets || []).map((asset) => asset);
-
-  const assets = _.uniqBy([...linkAssets, ...albumAssets], (asset) => asset.id);
 
   return {
     id: sharedLink.id,
@@ -117,7 +114,7 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: assets.map((asset) => mapAsset(asset)),
+    assets: linkAssets.map((asset) => mapAsset(asset)),
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
@@ -125,7 +122,7 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
   };
 }
 
-export function mapSharedLinkWithoutMetadata(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
+export function mapSharedLinkWithoutMetadata(sharedLink: SharedLink): SharedLinkResponseDto {
   const linkAssets = sharedLink.assets || [];
   const albumAssets = (sharedLink?.album?.assets || []).map((asset) => asset);
 
@@ -140,7 +137,7 @@ export function mapSharedLinkWithoutMetadata(sharedLink: SharedLinkEntity): Shar
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: assets.map((asset) => mapAsset(asset, { stripMetadata: true })) as AssetResponseDto[],
+    assets: assets.map((asset) => mapAsset(asset, { stripMetadata: true })),
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,

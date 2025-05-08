@@ -7,11 +7,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
 class SharedLinkEditPage extends HookConsumerWidget {
@@ -49,7 +49,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
           return Row(
             children: [
               const Text(
-                'shared_link_public_album',
+                'public_album',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ).tr(),
               const Text(
@@ -94,7 +94,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
 
       return const Text(
-        "shared_link_create_info",
+        "create_link_to_share_description",
         style: TextStyle(fontWeight: FontWeight.bold),
       ).tr();
     }
@@ -107,7 +107,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         textInputAction: TextInputAction.done,
         autofocus: false,
         decoration: InputDecoration(
-          labelText: 'shared_link_edit_description'.tr(),
+          labelText: 'description'.tr(),
           labelStyle: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
@@ -133,7 +133,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         enabled: newShareLink.value.isEmpty,
         autofocus: false,
         decoration: InputDecoration(
-          labelText: 'shared_link_edit_password'.tr(),
+          labelText: 'password'.tr(),
           labelStyle: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
@@ -161,7 +161,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "shared_link_edit_show_meta",
+          "show_metadata",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -177,7 +177,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "shared_link_edit_allow_download",
+          "allow_public_user_to_download",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -193,7 +193,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "shared_link_edit_allow_upload",
+          "allow_public_user_to_upload",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -209,7 +209,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "shared_link_edit_change_expiry",
+          "change_expiration_time",
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -219,7 +219,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     Widget buildExpiryAfterButton() {
       return DropdownMenu(
         label: Text(
-          "shared_link_edit_expire_after",
+          "expire_after",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
@@ -237,12 +237,12 @@ class SharedLinkEditPage extends HookConsumerWidget {
         dropdownMenuEntries: [
           DropdownMenuEntry(
             value: 0,
-            label: "shared_link_edit_expire_after_option_never".tr(),
+            label: "never".tr(),
           ),
           DropdownMenuEntry(
             value: 30,
-            label:
-                "shared_link_edit_expire_after_option_minutes".tr(args: ["30"]),
+            label: "shared_link_edit_expire_after_option_minutes"
+                .tr(namedArgs: {'count': "30"}),
           ),
           DropdownMenuEntry(
             value: 60,
@@ -250,7 +250,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
           ),
           DropdownMenuEntry(
             value: 60 * 6,
-            label: "shared_link_edit_expire_after_option_hours".tr(args: ["6"]),
+            label: "shared_link_edit_expire_after_option_hours"
+                .tr(namedArgs: {'count': "6"}),
           ),
           DropdownMenuEntry(
             value: 60 * 24,
@@ -258,20 +259,23 @@ class SharedLinkEditPage extends HookConsumerWidget {
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 7,
-            label: "shared_link_edit_expire_after_option_days".tr(args: ["7"]),
+            label: "shared_link_edit_expire_after_option_days"
+                .tr(namedArgs: {'count': "7"}),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30,
-            label: "shared_link_edit_expire_after_option_days".tr(args: ["30"]),
+            label: "shared_link_edit_expire_after_option_days"
+                .tr(namedArgs: {'count': "30"}),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30 * 3,
-            label:
-                "shared_link_edit_expire_after_option_months".tr(args: ["3"]),
+            label: "shared_link_edit_expire_after_option_months"
+                .tr(namedArgs: {'count': "3"}),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30 * 12,
-            label: "shared_link_edit_expire_after_option_year".tr(args: ["1"]),
+            label: "shared_link_edit_expire_after_option_year"
+                .tr(namedArgs: {'count': "1"}),
           ),
         ],
       );
@@ -324,7 +328,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                   context.maybePop();
                 },
                 child: const Text(
-                  "share_done",
+                  "done",
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -430,9 +434,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          existingLink == null
-              ? "shared_link_create_app_bar_title"
-              : "shared_link_edit_app_bar_title",
+          existingLink == null ? "create_link_to_share" : "edit_link",
         ).tr(),
         elevation: 0,
         leading: const CloseButton(),
@@ -505,7 +507,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                     child: Text(
                       existingLink != null
                           ? "shared_link_edit_submit_button"
-                          : "shared_link_create_submit_button",
+                          : "create_link",
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

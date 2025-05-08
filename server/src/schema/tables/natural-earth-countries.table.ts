@@ -1,26 +1,8 @@
-import { Column, PrimaryColumn, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
+import { Column, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
 
-@Table({ name: 'naturalearth_countries', synchronize: false })
+@Table({ name: 'naturalearth_countries', primaryConstraintName: 'naturalearth_countries_pkey' })
 export class NaturalEarthCountriesTable {
-  @PrimaryColumn({ type: 'serial' })
-  id!: number;
-
-  @Column({ type: 'character varying', length: 50 })
-  admin!: string;
-
-  @Column({ type: 'character varying', length: 3 })
-  admin_a3!: string;
-
-  @Column({ type: 'character varying', length: 50 })
-  type!: string;
-
-  @Column({ type: 'polygon' })
-  coordinates!: string;
-}
-
-@Table({ name: 'naturalearth_countries_tmp', synchronize: false })
-export class NaturalEarthCountriesTempTable {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ strategy: 'identity' })
   id!: number;
 
   @Column({ type: 'character varying', length: 50 })
