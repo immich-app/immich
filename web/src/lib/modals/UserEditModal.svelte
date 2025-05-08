@@ -99,10 +99,10 @@
   };
 </script>
 
-<Modal title={$t('edit_user')} size="small" icon={mdiAccountEditOutline} {onClose}>
+<Modal title={$t('edit_user')} size="small" icon={mdiAccountEditOutline} {onClose} class="text-dark bg-light">
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
-      <div class="my-4 flex flex-col gap-2">
+      <div class="mb-4 flex flex-col gap-2">
         <label class="immich-form-label" for="email">{$t('email')}</label>
         <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
       </div>

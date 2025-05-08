@@ -197,7 +197,7 @@ class AssetService {
         ids: assets.map((e) => e.remoteId!).toList(),
         dateTimeOriginal: updateAssetDto.dateTimeOriginal,
         isFavorite: updateAssetDto.isFavorite,
-        isArchived: updateAssetDto.isArchived,
+        visibility: updateAssetDto.visibility,
         latitude: updateAssetDto.latitude,
         longitude: updateAssetDto.longitude,
       ),
@@ -229,7 +229,13 @@ class AssetService {
     bool isArchived,
   ) async {
     try {
-      await updateAssets(assets, UpdateAssetDto(isArchived: isArchived));
+      await updateAssets(
+        assets,
+        UpdateAssetDto(
+          visibility:
+              isArchived ? AssetVisibility.archive : AssetVisibility.timeline,
+        ),
+      );
 
       for (var element in assets) {
         element.isArchived = isArchived;

@@ -23,8 +23,8 @@ export class AuthController {
 
   @Post('login')
   async login(
-    @Body() loginCredential: LoginCredentialDto,
     @Res({ passthrough: true }) res: Response,
+    @Body() loginCredential: LoginCredentialDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
     const body = await this.service.login(loginCredential, loginDetails);

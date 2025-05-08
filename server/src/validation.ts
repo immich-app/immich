@@ -12,6 +12,7 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
+  IsEnum,
   IsHexColor,
   IsNotEmpty,
   IsOptional,
@@ -29,6 +30,7 @@ import {
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
+import { AssetVisibility } from 'src/enum';
 import { isIP, isIPRange } from 'validator';
 
 @Injectable()
@@ -143,6 +145,17 @@ export const ValidateDate = (options?: DateOptions) => {
     decorators.push(Optional({ nullable }));
   }
 
+  return applyDecorators(...decorators);
+};
+
+type AssetVisibilityOptions = { optional?: boolean };
+export const ValidateAssetVisibility = (options?: AssetVisibilityOptions) => {
+  const { optional } = { optional: false, ...options };
+  const decorators = [IsEnum(AssetVisibility), ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility })];
+
+  if (optional) {
+    decorators.push(Optional());
+  }
   return applyDecorators(...decorators);
 };
 

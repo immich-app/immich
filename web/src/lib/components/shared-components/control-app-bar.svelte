@@ -1,12 +1,12 @@
 <script lang="ts">
   import { browser } from '$app/environment';
 
-  import { onDestroy, onMount, type Snippet } from 'svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { fly } from 'svelte/transition';
-  import { mdiClose } from '@mdi/js';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import { mdiClose } from '@mdi/js';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { fly } from 'svelte/transition';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   interface Props {
     showBackButton?: boolean;
@@ -77,7 +77,7 @@
       appBarBorder,
       'mx-2 my-2 place-items-center rounded-lg p-2 max-md:p-0 transition-all',
       tailwindClasses,
-      forceDark ? 'bg-immich-dark-gray text-white' : 'bg-immich-gray dark:bg-immich-dark-gray',
+      forceDark ? 'bg-immich-dark-gray text-white' : 'bg-subtle dark:bg-immich-dark-gray',
     ]}
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">

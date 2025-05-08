@@ -268,6 +268,8 @@ class ApiClient {
           return AssetStatsResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
+        case 'AssetVisibility':
+          return AssetVisibilityTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
         case 'AvatarUpdate':

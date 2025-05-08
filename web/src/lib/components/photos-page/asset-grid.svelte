@@ -11,6 +11,7 @@
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import SelectDate from '$lib/components/shared-components/select-date.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetBucket, assetsSnapshot, AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
@@ -394,7 +395,6 @@
 
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAsset($viewingAsset);
-
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
@@ -836,26 +836,28 @@
   </section>
 </section>
 
-<Portal target="body">
-  {#if $showAssetViewer}
-    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer
-        {withStacked}
-        asset={$viewingAsset}
-        preloadAssets={$preloadAssets}
-        {isShared}
-        {album}
-        {person}
-        preAction={handlePreAction}
-        onAction={handleAction}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onRandom={handleRandom}
-        onClose={handleClose}
-      />
-    {/await}
-  {/if}
-</Portal>
+{#if !albumMapViewManager.isInMapView}
+  <Portal target="body">
+    {#if $showAssetViewer}
+      {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+        <AssetViewer
+          {withStacked}
+          asset={$viewingAsset}
+          preloadAssets={$preloadAssets}
+          {isShared}
+          {album}
+          {person}
+          preAction={handlePreAction}
+          onAction={handleAction}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onRandom={handleRandom}
+          onClose={handleClose}
+        />
+      {/await}
+    {/if}
+  </Portal>
+{/if}
 
 <style>
   #asset-grid {

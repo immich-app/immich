@@ -10,6 +10,7 @@ import { formatDateGroupTitle, fromLocalDateTime } from '$lib/utils/timeline-uti
 import { TUNABLES } from '$lib/utils/tunables';
 import {
   AssetOrder,
+  AssetVisibility,
   getAssetInfo,
   getTimeBucket,
   getTimeBuckets,
@@ -1585,7 +1586,7 @@ export class AssetStore {
 
   isExcluded(asset: AssetResponseDto) {
     return (
-      isMismatched(this.#options.isArchived, asset.isArchived) ||
+      isMismatched(this.#options.visibility === AssetVisibility.Archive, asset.isArchived) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );
