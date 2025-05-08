@@ -131,6 +131,7 @@
               bind:mapMarkers
               onSelect={onViewAssets}
               showSettings={false}
+              rounded
             />
           {/await}
         </div>

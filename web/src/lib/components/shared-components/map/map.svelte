@@ -53,6 +53,7 @@
     onSelect?: (assetIds: string[]) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
+    rounded?: boolean;
   }
 
   let {
@@ -68,6 +69,7 @@
     onSelect = () => {},
     onClickPoint = () => {},
     popup,
+    rounded = false,
   }: Props = $props();
 
   let map: maplibregl.Map | undefined = $state();
@@ -247,7 +249,7 @@
 <MapLibre
   {hash}
   style=""
-  class="h-full rounded-2xl"
+  class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
   {center}
   {zoom}
   attributionControl={false}
