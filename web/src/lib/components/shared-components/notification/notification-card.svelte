@@ -100,7 +100,7 @@
     />
   </div>
 
-  <p class="whitespace-pre-wrap ps-[28px] pe-[16px] text-sm text-light" data-testid="message">
+  <p class="whitespace-pre-wrap ps-[28px] pe-[16px] text-sm" data-testid="message">
     {#if isComponentNotification(notification)}
       <notification.component.type {...notification.component.props} />
     {:else}
