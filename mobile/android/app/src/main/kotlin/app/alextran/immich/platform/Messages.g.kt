@@ -82,8 +82,8 @@ data class Asset (
   val id: String,
   val name: String,
   val type: Long,
-  val createdAt: String? = null,
-  val updatedAt: String? = null,
+  val createdAt: Long? = null,
+  val updatedAt: Long? = null,
   val durationInSeconds: Long,
   val albumIds: List<String>
 )
@@ -93,8 +93,8 @@ data class Asset (
       val id = pigeonVar_list[0] as String
       val name = pigeonVar_list[1] as String
       val type = pigeonVar_list[2] as Long
-      val createdAt = pigeonVar_list[3] as String?
-      val updatedAt = pigeonVar_list[4] as String?
+      val createdAt = pigeonVar_list[3] as Long?
+      val updatedAt = pigeonVar_list[4] as Long?
       val durationInSeconds = pigeonVar_list[5] as Long
       val albumIds = pigeonVar_list[6] as List<String>
       return Asset(id, name, type, createdAt, updatedAt, durationInSeconds, albumIds)
@@ -187,13 +187,12 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
   }
 }
 
-
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ImHostService {
-  fun shouldFullSync(callback: (Result<Boolean>) -> Unit)
-  fun getMediaChanges(callback: (Result<SyncDelta>) -> Unit)
-  fun checkpointSync(callback: (Result<Unit>) -> Unit)
-  fun getAssetIdsForAlbum(albumId: String, callback: (Result<List<String>>) -> Unit)
+  fun shouldFullSync(): Boolean
+  fun getMediaChanges(): SyncDelta
+  fun checkpointSync()
+  fun getAssetIdsForAlbum(albumId: String): List<String>
 
   companion object {
     /** The codec used by ImHostService. */
@@ -209,15 +208,12 @@ interface ImHostService {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.shouldFullSync$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.shouldFullSync{ result: Result<Boolean> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(MessagesPigeonUtils.wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(MessagesPigeonUtils.wrapResult(data))
-              }
+            val wrapped: List<Any?> = try {
+              listOf(api.shouldFullSync())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
             }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -227,15 +223,12 @@ interface ImHostService {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.getMediaChanges$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.getMediaChanges{ result: Result<SyncDelta> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(MessagesPigeonUtils.wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(MessagesPigeonUtils.wrapResult(data))
-              }
+            val wrapped: List<Any?> = try {
+              listOf(api.getMediaChanges())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
             }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -245,14 +238,13 @@ interface ImHostService {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.checkpointSync$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.checkpointSync{ result: Result<Unit> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(MessagesPigeonUtils.wrapError(error))
-              } else {
-                reply.reply(MessagesPigeonUtils.wrapResult(null))
-              }
+            val wrapped: List<Any?> = try {
+              api.checkpointSync()
+              listOf(null)
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
             }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -264,15 +256,12 @@ interface ImHostService {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val albumIdArg = args[0] as String
-            api.getAssetIdsForAlbum(albumIdArg) { result: Result<List<String>> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(MessagesPigeonUtils.wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(MessagesPigeonUtils.wrapResult(data))
-              }
+            val wrapped: List<Any?> = try {
+              listOf(api.getAssetIdsForAlbum(albumIdArg))
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
             }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

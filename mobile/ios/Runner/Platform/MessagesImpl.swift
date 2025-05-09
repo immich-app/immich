@@ -1,39 +1,36 @@
 import Photos
 
 class ImHostServiceImpl: ImHostService {
-  let _mediaManager: MediaManager
+  private let mediaManager: MediaManager
   
   init() {
-    self._mediaManager = MediaManager()
+    self.mediaManager = MediaManager()
   }
   
-  func shouldFullSync(completion: @escaping (Result<Bool, Error>) -> Void) {
-    if #available(iOS 16, *) {
-      _mediaManager.shouldFullSync(completion: completion)
+  func shouldFullSync() throws -> Bool {
+    return if #available(iOS 16, *) {
+      mediaManager.shouldFullSync()
     } else {
       // Always fall back to full sync on older iOS versions
-      completion(.success(true))
+      true
     }
   }
 
-  func getMediaChanges(completion: @escaping (Result<SyncDelta, Error>) -> Void) {
+  func getMediaChanges() throws -> SyncDelta {
     guard #available(iOS 16, *) else {
-      completion(.failure(PigeonError(code: "UNSUPPORTED_OS", message: "This feature requires iOS 16 or later.", details: nil)))
-      return
+      throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature requires iOS 16 or later.", details: nil)
     }
-    _mediaManager.getMediaChanges(completion: completion)
+    return try mediaManager.getMediaChanges()
   }
   
-  func checkpointSync(completion: @escaping (Result<Void, any Error>) -> Void) {
+  func checkpointSync() throws {
     if #available(iOS 16, *) {
-      _mediaManager.checkpointSync(completion: completion)
-    } else {
-      completion(.success(()))
+      mediaManager.checkpointSync()
     }
   }
   
-  func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], any Error>) -> Void) {
+  func getAssetIdsForAlbum(albumId: String) throws -> [String] {
     // Android specific, empty list is safe no-op
-    completion(.success([]))
+    return []
   }
 }

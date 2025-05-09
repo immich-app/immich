@@ -16,8 +16,9 @@ class Asset {
   final String id;
   final String name;
   final int type; // follows AssetType enum from base_asset.model.dart
-  final String? createdAt;
-  final String? updatedAt;
+  // Seconds since epoch
+  final int? createdAt;
+  final int? updatedAt;
   final int durationInSeconds;
   final List<String> albumIds;
 
@@ -25,10 +26,10 @@ class Asset {
     required this.id,
     required this.name,
     required this.type,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.durationInSeconds,
-    required this.albumIds,
+    this.createdAt,
+    this.updatedAt,
+    this.durationInSeconds = 0,
+    this.albumIds = const [],
   });
 }
 
@@ -45,17 +46,13 @@ class SyncDelta {
 
 @HostApi()
 abstract class ImHostService {
-  @async
   bool shouldFullSync();
 
-  @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   SyncDelta getMediaChanges();
 
-  @async
   void checkpointSync();
 
-  @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<String> getAssetIdsForAlbum(String albumId);
 }

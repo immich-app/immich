@@ -1,7 +1,7 @@
 import Photos
 
-class WrapperAsset: Hashable, Equatable {
-  var asset: Asset
+struct AssetWrapper: Hashable, Equatable {
+  let asset: Asset
   
   init(with asset: Asset) {
     self.asset = asset
@@ -11,22 +11,22 @@ class WrapperAsset: Hashable, Equatable {
     hasher.combine(self.asset.id)
   }
   
-  static func == (lhs: WrapperAsset, rhs: WrapperAsset) -> Bool {
+  static func == (lhs: AssetWrapper, rhs: AssetWrapper) -> Bool {
     return lhs.asset.id == rhs.asset.id
   }
 }
 
 class MediaManager {
-  private let _defaults: UserDefaults
-  private let _changeTokenKey = "immich:changeToken"
+  private let defaults: UserDefaults
+  private let changeTokenKey = "immich:changeToken"
   
   init(with defaults: UserDefaults = .standard) {
-    self._defaults = defaults
+    self.defaults = defaults
   }
 
   @available(iOS 16, *)
-  func _getChangeToken() -> PHPersistentChangeToken? {
-    guard let encodedToken = _defaults.data(forKey: _changeTokenKey) else {
+  private func getChangeToken() -> PHPersistentChangeToken? {
+    guard let encodedToken = defaults.data(forKey: changeTokenKey) else {
         print("MediaManager::_getChangeToken: Change token not available in UserDefaults")
         return nil
     }
@@ -40,10 +40,10 @@ class MediaManager {
   }
   
   @available(iOS 16, *)
-  func _saveChangeToken(token: PHPersistentChangeToken) -> Void {
+  private func saveChangeToken(token: PHPersistentChangeToken) -> Void {
     do {
         let encodedToken = try NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true)
-        _defaults.set(encodedToken, forKey: _changeTokenKey)
+        defaults.set(encodedToken, forKey: changeTokenKey)
         print("MediaManager::_setChangeToken: Change token saved to UserDefaults")
     } catch {
         print("MediaManager::_setChangeToken: Failed to persist the token to UserDefaults: \(error)")
@@ -51,109 +51,96 @@ class MediaManager {
   }
   
   @available(iOS 16, *)
-  func checkpointSync(completion: @escaping (Result<Void, any Error>) -> Void) {
-    _saveChangeToken(token: PHPhotoLibrary.shared().currentChangeToken)
-    completion(.success(()))
+  func checkpointSync() {
+    saveChangeToken(token: PHPhotoLibrary.shared().currentChangeToken)
   }
   
   @available(iOS 16, *)
-  func shouldFullSync(completion: @escaping (Result<Bool, Error>) -> Void) {
+  func shouldFullSync() -> Bool {
     guard PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized else {
       // When we do not have access to photo library, return true to fallback to old sync
-      completion(.success(true))
-      return
+      return true
     }
     
-    guard let storedToken = _getChangeToken() else {
+    guard let storedToken = getChangeToken() else {
        // No token exists, perform the initial full sync
        print("MediaManager::shouldUseOldSync: No token found. Full sync required")
-       completion(.success(true))
-       return
+       return true
     }
 
     do {
         _ = try PHPhotoLibrary.shared().fetchPersistentChanges(since: storedToken)
-      completion(.success(false))
+      return false
     } catch {
       // fallback to using old sync when we cannot detect changes using the available token
       print("MediaManager::shouldUseOldSync: fetchPersistentChanges failed with error (\(error))")
-      completion(.success(true))
     }
-    
+    return true
   }
 
   @available(iOS 16, *)
-  func getMediaChanges(completion: @escaping (Result<SyncDelta, Error>) -> Void) {
+  func getMediaChanges() throws -> SyncDelta {
     guard PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized else {
-      completion(.failure(PigeonError(code: "NO_AUTH", message: "No photo library access", details: nil)))
-      return
+      throw PigeonError(code: "NO_AUTH", message: "No photo library access", details: nil)
     }
     
-    guard let storedToken = _getChangeToken() else {
+    guard let storedToken = getChangeToken() else {
        // No token exists, definitely need a full sync
        print("MediaManager::getMediaChanges: No token found")
-       completion(.failure(PigeonError(code: "NO_TOKEN", message: "No stored change token", details: nil)))
-       return
+       throw PigeonError(code: "NO_TOKEN", message: "No stored change token", details: nil)
     }
     
     let currentToken = PHPhotoLibrary.shared().currentChangeToken
     if storedToken == currentToken {
-      completion(.success(SyncDelta(hasChanges: false, updates: [], deletes: [])))
-      return
+      return SyncDelta(hasChanges: false, updates: [], deletes: [])
     }
 
     do {
-      let result = try PHPhotoLibrary.shared().fetchPersistentChanges(since: storedToken)
-      let dateFormatter = ISO8601DateFormatter()
-      dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-      var updatedArr: Set<WrapperAsset> = []
-      var deletedArr: Set<String> = []
-
-      for changes in result {
-        let details = try changes.changeDetails(for: PHObjectType.asset)
-
-        let updated = details.updatedLocalIdentifiers.union(details.insertedLocalIdentifiers)
-        let deleted = details.deletedLocalIdentifiers
+      let changes = try PHPhotoLibrary.shared().fetchPersistentChanges(since: storedToken)
       
-        let options = PHFetchOptions()
-        options.includeHiddenAssets = false
+      var updatedAssets: Set<AssetWrapper> = []
+      var deletedAssets: Set<String> = []
+      
+      for change in changes {
+        guard let details = try? change.changeDetails(for: PHObjectType.asset) else { continue }
         
-        let updatedAssets = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: options)
-
-        updatedAssets.enumerateObjects { (asset, _, _) in
-   
+        let updated = details.updatedLocalIdentifiers.union(details.insertedLocalIdentifiers)
+        if (updated.isEmpty) { continue }
+        
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: nil)
+        for i in 0..<result.count {
+          let asset = result.object(at: i)
+          
+          // Asset wrapper only uses the id for comparison. Multiple change can contain the same asset, skip duplicate changes
+          let predicate = Asset(id: asset.localIdentifier, name: "", type: 0, createdAt: nil, updatedAt: nil, durationInSeconds: 0, albumIds: [])
+          if (updatedAssets.contains(AssetWrapper(with: predicate))) {
+            continue
+          }
+          
           let id = asset.localIdentifier
           let name = PHAssetResource.assetResources(for: asset).first?.originalFilename ?? asset.title()
           let type: Int64 = Int64(asset.mediaType.rawValue)
-          let createdAt = asset.creationDate.map { dateFormatter.string(from: $0) }
-          let updatedAt = asset.modificationDate.map { dateFormatter.string(from: $0) }
+          let createdAt = asset.creationDate?.timeIntervalSince1970
+          let updatedAt = asset.modificationDate?.timeIntervalSince1970
           let durationInSeconds: Int64 = Int64(asset.duration)
           
-          let domainAsset = WrapperAsset(with: Asset(
-              id: id,
-              name: name,
-              type: type,
-              createdAt: createdAt,
-              updatedAt: updatedAt,
-              durationInSeconds: durationInSeconds,
-              albumIds: self._getAlbumIds(forAsset: asset)
+          let domainAsset = AssetWrapper(with: Asset(
+            id: id,
+            name: name,
+            type: type,
+            createdAt:  createdAt.map { Int64($0) },
+            updatedAt: updatedAt.map { Int64($0) },
+            durationInSeconds: durationInSeconds,
+            albumIds: self._getAlbumIds(forAsset: asset)
           ))
           
-          updatedArr.insert(domainAsset)
+          updatedAssets.insert(domainAsset)
         }
         
-        deletedArr.formUnion(deleted)
+        deletedAssets.formUnion(details.deletedLocalIdentifiers)
       }
-
-      let delta = SyncDelta(hasChanges: true, updates: Array(updatedArr.map { $0.asset }), deletes: Array(deletedArr))
-    
-      completion(.success(delta))
-      return
-    } catch {
-      print("MediaManager::getMediaChanges: Error fetching persistent changes: \(error)")
-      completion(.failure(PigeonError(code: "3", message: error.localizedDescription, details: nil)))
-      return
+      
+      return SyncDelta(hasChanges: true, updates: Array(updatedAssets.map { $0.asset }), deletes: Array(deletedAssets))
     }
   }
   

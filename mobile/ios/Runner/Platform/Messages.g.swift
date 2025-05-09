@@ -133,8 +133,8 @@ struct Asset: Hashable {
   var id: String
   var name: String
   var type: Int64
-  var createdAt: String? = nil
-  var updatedAt: String? = nil
+  var createdAt: Int64? = nil
+  var updatedAt: Int64? = nil
   var durationInSeconds: Int64
   var albumIds: [String]
 
@@ -144,8 +144,8 @@ struct Asset: Hashable {
     let id = pigeonVar_list[0] as! String
     let name = pigeonVar_list[1] as! String
     let type = pigeonVar_list[2] as! Int64
-    let createdAt: String? = nilOrValue(pigeonVar_list[3])
-    let updatedAt: String? = nilOrValue(pigeonVar_list[4])
+    let createdAt: Int64? = nilOrValue(pigeonVar_list[3])
+    let updatedAt: Int64? = nilOrValue(pigeonVar_list[4])
     let durationInSeconds = pigeonVar_list[5] as! Int64
     let albumIds = pigeonVar_list[6] as! [String]
 
@@ -251,13 +251,12 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
   static let shared = MessagesPigeonCodec(readerWriter: MessagesPigeonCodecReaderWriter())
 }
 
-
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ImHostService {
-  func shouldFullSync(completion: @escaping (Result<Bool, Error>) -> Void)
-  func getMediaChanges(completion: @escaping (Result<SyncDelta, Error>) -> Void)
-  func checkpointSync(completion: @escaping (Result<Void, Error>) -> Void)
-  func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], Error>) -> Void)
+  func shouldFullSync() throws -> Bool
+  func getMediaChanges() throws -> SyncDelta
+  func checkpointSync() throws
+  func getAssetIdsForAlbum(albumId: String) throws -> [String]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -274,13 +273,11 @@ class ImHostServiceSetup {
     let shouldFullSyncChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.shouldFullSync\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       shouldFullSyncChannel.setMessageHandler { _, reply in
-        api.shouldFullSync { result in
-          switch result {
-          case .success(let res):
-            reply(wrapResult(res))
-          case .failure(let error):
-            reply(wrapError(error))
-          }
+        do {
+          let result = try api.shouldFullSync()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
         }
       }
     } else {
@@ -291,13 +288,11 @@ class ImHostServiceSetup {
       : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
       getMediaChangesChannel.setMessageHandler { _, reply in
-        api.getMediaChanges { result in
-          switch result {
-          case .success(let res):
-            reply(wrapResult(res))
-          case .failure(let error):
-            reply(wrapError(error))
-          }
+        do {
+          let result = try api.getMediaChanges()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
         }
       }
     } else {
@@ -306,13 +301,11 @@ class ImHostServiceSetup {
     let checkpointSyncChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.checkpointSync\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       checkpointSyncChannel.setMessageHandler { _, reply in
-        api.checkpointSync { result in
-          switch result {
-          case .success:
-            reply(wrapResult(nil))
-          case .failure(let error):
-            reply(wrapError(error))
-          }
+        do {
+          try api.checkpointSync()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
         }
       }
     } else {
@@ -325,13 +318,11 @@ class ImHostServiceSetup {
       getAssetIdsForAlbumChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let albumIdArg = args[0] as! String
-        api.getAssetIdsForAlbum(albumId: albumIdArg) { result in
-          switch result {
-          case .success(let res):
-            reply(wrapResult(res))
-          case .failure(let error):
-            reply(wrapError(error))
-          }
+        do {
+          let result = try api.getAssetIdsForAlbum(albumId: albumIdArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
         }
       }
     } else {

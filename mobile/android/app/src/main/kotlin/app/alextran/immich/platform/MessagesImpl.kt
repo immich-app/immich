@@ -20,38 +20,27 @@ class MessagesImpl(context: Context) : ImHostService {
       IllegalStateException("Method not supported on this Android version.")
   }
 
-  override fun shouldFullSync(callback: (Result<Boolean>) -> Unit) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      mediaManager.shouldFullSync(callback)
-    } else {
-      callback(Result.success(true))
+  override fun shouldFullSync(): Boolean =
+    Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || mediaManager.shouldFullSync()
+
+  override fun getMediaChanges(): SyncDelta {
+    if (!isMediaChangesSupported()) {
+      throw unsupportedFeatureException()
     }
+    return mediaManager.getMediaChanges()
   }
 
-  override fun getMediaChanges(callback: (Result<SyncDelta>) -> Unit) {
-    if (isMediaChangesSupported()) {
-      mediaManager.getMediaChanges(callback)
-    } else {
-      callback(Result.failure(unsupportedFeatureException()))
+  override fun checkpointSync() {
+    if (!isMediaChangesSupported()) {
+      return
     }
+    mediaManager.checkpointSync()
   }
 
-  override fun checkpointSync(callback: (Result<Unit>) -> Unit) {
-    if (isMediaChangesSupported()) {
-      mediaManager.checkpointSync(callback)
-    } else {
-      callback(Result.success(Unit))
+  override fun getAssetIdsForAlbum(albumId: String): List<String> {
+    if (!isMediaChangesSupported()) {
+      throw unsupportedFeatureException()
     }
-  }
-
-  override fun getAssetIdsForAlbum(
-    albumId: String,
-    callback: (Result<List<String>>) -> Unit
-  ) {
-    if (isMediaChangesSupported()) {
-      mediaManager.getAssetIdsForAlbum(albumId, callback)
-    } else {
-      callback(Result.failure(unsupportedFeatureException()))
-    }
+    return mediaManager.getAssetIdsForAlbum(albumId)
   }
 }

@@ -354,10 +354,12 @@ extension on platform.Asset {
       id: id,
       name: name,
       type: AssetType.values.elementAtOrNull(type) ?? AssetType.other,
-      createdAt:
-          createdAt == null ? DateTime.now() : DateTime.parse(createdAt!),
-      updatedAt:
-          updatedAt == null ? DateTime.now() : DateTime.parse(updatedAt!),
+      createdAt: createdAt == null
+          ? DateTime.now()
+          : DateTime.fromMillisecondsSinceEpoch(createdAt! * 1000),
+      updatedAt: updatedAt == null
+          ? DateTime.now()
+          : DateTime.fromMillisecondsSinceEpoch(updatedAt! * 1000),
       durationInSeconds: durationInSeconds,
     );
   }
