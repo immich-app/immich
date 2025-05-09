@@ -164,7 +164,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
             name: album.name,
             updatedAt: Value(album.updatedAt),
             backupSelection: album.backupSelection,
-            marker_: const Value(true),
+            marker_: const Value(null),
           );
 
           batch.insert(
@@ -190,12 +190,12 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
                     .equalsExp(_db.localAlbumEntity.id),
               ),
             ]);
-          subQuery.where(_db.localAlbumEntity.marker_.equals(false));
+          subQuery.where(_db.localAlbumEntity.marker_.isNotNull());
           return localAsset.id.isInQuery(subQuery);
         });
       }
 
-      await _db.localAlbumEntity.deleteWhere((f) => f.marker_.equals(false));
+      await _db.localAlbumEntity.deleteWhere((f) => f.marker_.isNotNull());
     });
   }
 

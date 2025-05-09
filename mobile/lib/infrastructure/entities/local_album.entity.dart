@@ -12,7 +12,7 @@ class LocalAlbumEntity extends Table with DriftDefaultsMixin {
   IntColumn get backupSelection => intEnum<BackupSelection>()();
 
   // Used for mark & sweep
-  BoolColumn get marker_ => boolean().withDefault(const Constant(false))();
+  BoolColumn get marker_ => boolean().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

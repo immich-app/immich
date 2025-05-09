@@ -14,7 +14,7 @@ typedef $$LocalAlbumEntityTableCreateCompanionBuilder
   required String name,
   i0.Value<DateTime> updatedAt,
   required i2.BackupSelection backupSelection,
-  i0.Value<bool> marker_,
+  i0.Value<bool?> marker_,
 });
 typedef $$LocalAlbumEntityTableUpdateCompanionBuilder
     = i1.LocalAlbumEntityCompanion Function({
@@ -22,7 +22,7 @@ typedef $$LocalAlbumEntityTableUpdateCompanionBuilder
   i0.Value<String> name,
   i0.Value<DateTime> updatedAt,
   i0.Value<i2.BackupSelection> backupSelection,
-  i0.Value<bool> marker_,
+  i0.Value<bool?> marker_,
 });
 
 class $$LocalAlbumEntityTableFilterComposer
@@ -139,7 +139,7 @@ class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<i2.BackupSelection> backupSelection =
                 const i0.Value.absent(),
-            i0.Value<bool> marker_ = const i0.Value.absent(),
+            i0.Value<bool?> marker_ = const i0.Value.absent(),
           }) =>
               i1.LocalAlbumEntityCompanion(
             id: id,
@@ -153,7 +153,7 @@ class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
             required String name,
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             required i2.BackupSelection backupSelection,
-            i0.Value<bool> marker_ = const i0.Value.absent(),
+            i0.Value<bool?> marker_ = const i0.Value.absent(),
           }) =>
               i1.LocalAlbumEntityCompanion.insert(
             id: id,
@@ -222,12 +222,11 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
       const i0.VerificationMeta('marker_');
   @override
   late final i0.GeneratedColumn<bool> marker_ = i0.GeneratedColumn<bool>(
-      'marker', aliasedName, false,
+      'marker', aliasedName, true,
       type: i0.DriftSqlType.bool,
       requiredDuringInsert: false,
       defaultConstraints:
-          i0.GeneratedColumn.constraintIsAlways('CHECK ("marker" IN (0, 1))'),
-      defaultValue: const i4.Constant(false));
+          i0.GeneratedColumn.constraintIsAlways('CHECK ("marker" IN (0, 1))'));
   @override
   List<i0.GeneratedColumn> get $columns =>
       [id, name, updatedAt, backupSelection, marker_];
@@ -281,7 +280,7 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
           .fromSql(attachedDatabase.typeMapping.read(i0.DriftSqlType.int,
               data['${effectivePrefix}backup_selection'])!),
       marker_: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.bool, data['${effectivePrefix}marker'])!,
+          .read(i0.DriftSqlType.bool, data['${effectivePrefix}marker']),
     );
   }
 
@@ -306,13 +305,13 @@ class LocalAlbumEntityData extends i0.DataClass
   final String name;
   final DateTime updatedAt;
   final i2.BackupSelection backupSelection;
-  final bool marker_;
+  final bool? marker_;
   const LocalAlbumEntityData(
       {required this.id,
       required this.name,
       required this.updatedAt,
       required this.backupSelection,
-      required this.marker_});
+      this.marker_});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -324,7 +323,9 @@ class LocalAlbumEntityData extends i0.DataClass
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toSql(backupSelection));
     }
-    map['marker'] = i0.Variable<bool>(marker_);
+    if (!nullToAbsent || marker_ != null) {
+      map['marker'] = i0.Variable<bool>(marker_);
+    }
     return map;
   }
 
@@ -337,7 +338,7 @@ class LocalAlbumEntityData extends i0.DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       backupSelection: i1.$LocalAlbumEntityTable.$converterbackupSelection
           .fromJson(serializer.fromJson<int>(json['backupSelection'])),
-      marker_: serializer.fromJson<bool>(json['marker_']),
+      marker_: serializer.fromJson<bool?>(json['marker_']),
     );
   }
   @override
@@ -350,7 +351,7 @@ class LocalAlbumEntityData extends i0.DataClass
       'backupSelection': serializer.toJson<int>(i1
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toJson(backupSelection)),
-      'marker_': serializer.toJson<bool>(marker_),
+      'marker_': serializer.toJson<bool?>(marker_),
     };
   }
 
@@ -359,13 +360,13 @@ class LocalAlbumEntityData extends i0.DataClass
           String? name,
           DateTime? updatedAt,
           i2.BackupSelection? backupSelection,
-          bool? marker_}) =>
+          i0.Value<bool?> marker_ = const i0.Value.absent()}) =>
       i1.LocalAlbumEntityData(
         id: id ?? this.id,
         name: name ?? this.name,
         updatedAt: updatedAt ?? this.updatedAt,
         backupSelection: backupSelection ?? this.backupSelection,
-        marker_: marker_ ?? this.marker_,
+        marker_: marker_.present ? marker_.value : this.marker_,
       );
   LocalAlbumEntityData copyWithCompanion(i1.LocalAlbumEntityCompanion data) {
     return LocalAlbumEntityData(
@@ -411,7 +412,7 @@ class LocalAlbumEntityCompanion
   final i0.Value<String> name;
   final i0.Value<DateTime> updatedAt;
   final i0.Value<i2.BackupSelection> backupSelection;
-  final i0.Value<bool> marker_;
+  final i0.Value<bool?> marker_;
   const LocalAlbumEntityCompanion({
     this.id = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
@@ -449,7 +450,7 @@ class LocalAlbumEntityCompanion
       i0.Value<String>? name,
       i0.Value<DateTime>? updatedAt,
       i0.Value<i2.BackupSelection>? backupSelection,
-      i0.Value<bool>? marker_}) {
+      i0.Value<bool?>? marker_}) {
     return i1.LocalAlbumEntityCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
