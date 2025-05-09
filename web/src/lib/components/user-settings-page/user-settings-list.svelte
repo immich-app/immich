@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import ChangePincodeSettings from '$lib/components/user-settings-page/PincodeSettings.svelte';
+  import ChangePinCodeSettings from '$lib/components/user-settings-page/PinCodeSettings.svelte';
   import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
   import FeatureSettings from '$lib/components/user-settings-page/feature-settings.svelte';
   import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
@@ -139,12 +139,12 @@
 
   <SettingAccordion
     icon={mdiLockSmart}
-    key="user-pincode-settings"
-    title={$t('user_pincode_settings')}
-    subtitle={$t('user_pincode_settings_description')}
+    key="user-pin-code-settings"
+    title={$t('user_pin_code_settings')}
+    subtitle={$t('user_pin_code_settings_description')}
     autoScrollTo={true}
   >
-    <ChangePincodeSettings />
+    <ChangePinCodeSettings />
   </SettingAccordion>
 
   <SettingAccordion

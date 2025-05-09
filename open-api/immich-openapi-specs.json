@@ -2231,90 +2231,6 @@
         ]
       }
     },
-    "/auth/change-pincode": {
-      "post": {
-        "operationId": "changePincode",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangePincodeDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserAdminResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/auth/create-pincode": {
-      "post": {
-        "operationId": "createPincode",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/createPincodeDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserAdminResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -2378,15 +2294,15 @@
         ]
       }
     },
-    "/auth/reset-pincode": {
-      "post": {
-        "operationId": "resetPincode",
+    "/auth/pin-code": {
+      "delete": {
+        "operationId": "resetPinCode",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ResetPincodeDto"
+                "$ref": "#/components/schemas/PinCodeChangeDto"
               }
             }
           },
@@ -2394,13 +2310,72 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserAdminResponseDto"
-                }
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      },
+      "post": {
+        "operationId": "setupPinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeSetupDto"
               }
-            },
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      },
+      "put": {
+        "operationId": "changePinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeChangeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
             "description": ""
           }
         },
@@ -9191,12 +9166,16 @@
       },
       "AuthStatusResponseDto": {
         "properties": {
-          "hasPincode": {
+          "password": {
+            "type": "boolean"
+          },
+          "pinCode": {
             "type": "boolean"
           }
         },
         "required": [
-          "hasPincode"
+          "password",
+          "pinCode"
         ],
         "type": "object"
       },
@@ -9289,27 +9268,6 @@
         "required": [
           "newPassword",
           "password"
-        ],
-        "type": "object"
-      },
-      "ChangePincodeDto": {
-        "properties": {
-          "newPincode": {
-            "example": "123456",
-            "maxLength": 6,
-            "minLength": 6,
-            "type": "string"
-          },
-          "pincode": {
-            "example": "123456",
-            "maxLength": 6,
-            "minLength": 6,
-            "type": "string"
-          }
-        },
-        "required": [
-          "newPincode",
-          "pincode"
         ],
         "type": "object"
       },
@@ -11154,6 +11112,37 @@
         ],
         "type": "object"
       },
+      "PinCodeChangeDto": {
+        "properties": {
+          "newPinCode": {
+            "example": "123456",
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "newPinCode"
+        ],
+        "type": "object"
+      },
+      "PinCodeSetupDto": {
+        "properties": {
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pinCode"
+        ],
+        "type": "object"
+      },
       "PlacesResponseDto": {
         "properties": {
           "admin1name": {
@@ -11386,17 +11375,6 @@
           "like"
         ],
         "type": "string"
-      },
-      "ResetPincodeDto": {
-        "properties": {
-          "userId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "userId"
-        ],
-        "type": "object"
       },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
@@ -14159,6 +14137,11 @@
           "password": {
             "type": "string"
           },
+          "pinCode": {
+            "example": "123456",
+            "nullable": true,
+            "type": "string"
+          },
           "quotaSizeInBytes": {
             "format": "int64",
             "minimum": 0,
@@ -14434,20 +14417,6 @@
           "webm"
         ],
         "type": "string"
-      },
-      "createPincodeDto": {
-        "properties": {
-          "pincode": {
-            "example": "123456",
-            "maxLength": 6,
-            "minLength": 6,
-            "type": "string"
-          }
-        },
-        "required": [
-          "pincode"
-        ],
-        "type": "object"
       }
     }
   }

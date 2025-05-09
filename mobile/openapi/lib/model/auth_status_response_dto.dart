@@ -13,26 +13,32 @@ part of openapi.api;
 class AuthStatusResponseDto {
   /// Returns a new [AuthStatusResponseDto] instance.
   AuthStatusResponseDto({
-    required this.hasPincode,
+    required this.password,
+    required this.pinCode,
   });
 
-  bool hasPincode;
+  bool password;
+
+  bool pinCode;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AuthStatusResponseDto &&
-    other.hasPincode == hasPincode;
+    other.password == password &&
+    other.pinCode == pinCode;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (hasPincode.hashCode);
+    (password.hashCode) +
+    (pinCode.hashCode);
 
   @override
-  String toString() => 'AuthStatusResponseDto[hasPincode=$hasPincode]';
+  String toString() => 'AuthStatusResponseDto[password=$password, pinCode=$pinCode]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'hasPincode'] = this.hasPincode;
+      json[r'password'] = this.password;
+      json[r'pinCode'] = this.pinCode;
     return json;
   }
 
@@ -45,7 +51,8 @@ class AuthStatusResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AuthStatusResponseDto(
-        hasPincode: mapValueOfType<bool>(json, r'hasPincode')!,
+        password: mapValueOfType<bool>(json, r'password')!,
+        pinCode: mapValueOfType<bool>(json, r'pinCode')!,
       );
     }
     return null;
@@ -93,7 +100,8 @@ class AuthStatusResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'hasPincode',
+    'password',
+    'pinCode',
   };
 }
 

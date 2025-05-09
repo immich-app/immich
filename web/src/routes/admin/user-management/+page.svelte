@@ -74,11 +74,8 @@
         await refresh();
         break;
       }
-      case 'resetPincode': {
-        notificationController.show({
-          type: NotificationType.Info,
-          message: $t('pincode_reset_successfully'),
-        });
+      case 'resetPinCode': {
+        notificationController.show({ type: NotificationType.Info, message: $t('pin_code_reset_successfully') });
         break;
       }
     }

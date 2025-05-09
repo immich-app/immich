@@ -1,16 +1,15 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
   AuthDto,
   AuthStatusResponseDto,
   ChangePasswordDto,
-  ChangePincodeDto,
-  createPincodeDto,
   LoginCredentialDto,
   LoginResponseDto,
   LogoutResponseDto,
-  ResetPincodeDto,
+  PinCodeChangeDto,
+  PinCodeSetupDto,
   SignUpDto,
   ValidateAccessTokenResponseDto,
 } from 'src/dtos/auth.dto';
@@ -79,30 +78,27 @@ export class AuthController {
     ]);
   }
 
-  @Post('create-pincode')
-  @HttpCode(HttpStatus.CREATED)
-  @Authenticated()
-  createPincode(@Auth() auth: AuthDto, @Body() dto: createPincodeDto): Promise<UserAdminResponseDto> {
-    return this.service.createPincode(auth, dto);
-  }
-
-  @Post('change-pincode')
-  @HttpCode(HttpStatus.OK)
-  @Authenticated()
-  changePincode(@Auth() auth: AuthDto, @Body() dto: ChangePincodeDto): Promise<UserAdminResponseDto> {
-    return this.service.changePincode(auth, dto);
-  }
-
-  @Post('reset-pincode')
-  @HttpCode(HttpStatus.OK)
-  @Authenticated({ admin: true })
-  resetPincode(@Auth() auth: AuthDto, @Body() dto: ResetPincodeDto): Promise<UserAdminResponseDto> {
-    return this.service.resetPincode(auth, dto);
-  }
-
   @Get('status')
   @Authenticated()
   getAuthStatus(@Auth() auth: AuthDto): Promise<AuthStatusResponseDto> {
     return this.service.getAuthStatus(auth);
+  }
+
+  @Post('pin-code')
+  @Authenticated()
+  setupPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeSetupDto): Promise<void> {
+    return this.service.setupPinCode(auth, dto);
+  }
+
+  @Put('pin-code')
+  @Authenticated()
+  async changePinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeChangeDto): Promise<void> {
+    return this.service.changePinCode(auth, dto);
+  }
+
+  @Delete('pin-code')
+  @Authenticated()
+  async resetPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeChangeDto): Promise<void> {
+    return this.service.resetPinCode(auth, dto);
   }
 }

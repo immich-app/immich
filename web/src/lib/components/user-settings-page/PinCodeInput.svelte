@@ -9,7 +9,7 @@
   let { label, value = $bindable(''), pinLength = 6, tabindexStart = 0 }: Props = $props();
 
   let pinValues = $state(Array.from({ length: pinLength }).fill(''));
-  let pincodeInputElements: HTMLInputElement[] = $state([]);
+  let pinCodeInputElements: HTMLInputElement[] = $state([]);
 
   $effect(() => {
     if (value === '') {
@@ -18,12 +18,12 @@
   });
 
   const focusNext = (index: number) => {
-    pincodeInputElements[Math.min(index + 1, pinLength - 1)]?.focus();
+    pinCodeInputElements[Math.min(index + 1, pinLength - 1)]?.focus();
   };
 
   const focusPrev = (index: number) => {
     if (index > 0) {
-      pincodeInputElements[index - 1]?.focus();
+      pinCodeInputElements[index - 1]?.focus();
     }
   };
 
@@ -52,7 +52,7 @@
 
   function handleKeydown(event: KeyboardEvent & { currentTarget: EventTarget & HTMLInputElement }) {
     const target = event.currentTarget as HTMLInputElement;
-    const index = pincodeInputElements.indexOf(target);
+    const index = pinCodeInputElements.indexOf(target);
 
     switch (event.key) {
       case 'Tab': {
@@ -91,7 +91,7 @@
 
 <div class="flex flex-col gap-1">
   {#if label}
-    <label class="text-xs text-dark" for={pincodeInputElements[0]?.id}>{label.toUpperCase()}</label>
+    <label class="text-xs text-dark" for={pinCodeInputElements[0]?.id}>{label.toUpperCase()}</label>
   {/if}
   <div class="flex gap-2">
     {#each { length: pinLength } as _, index (index)}
@@ -101,8 +101,8 @@
         inputmode="numeric"
         pattern="[0-9]*"
         maxlength="1"
-        bind:this={pincodeInputElements[index]}
-        id="pincode-{index}"
+        bind:this={pinCodeInputElements[index]}
+        id="pin-code-{index}"
         class="h-12 w-10 rounded-xl border-2 border-suble dark:border-gray-700 bg-transparent text-center text-lg font-medium focus:border-immich-primary focus:ring-primary dark:focus:border-primary font-mono"
         bind:value={pinValues[index]}
         onkeydown={handleKeydown}

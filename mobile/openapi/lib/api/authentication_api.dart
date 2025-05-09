@@ -63,16 +63,16 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /auth/change-pincode' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /auth/pin-code' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [ChangePincodeDto] changePincodeDto (required):
-  Future<Response> changePincodeWithHttpInfo(ChangePincodeDto changePincodeDto,) async {
+  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  Future<Response> changePinCodeWithHttpInfo(PinCodeChangeDto pinCodeChangeDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/auth/change-pincode';
+    final apiPath = r'/auth/pin-code';
 
     // ignore: prefer_final_locals
-    Object? postBody = changePincodeDto;
+    Object? postBody = pinCodeChangeDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -83,7 +83,7 @@ class AuthenticationApi {
 
     return apiClient.invokeAPI(
       apiPath,
-      'POST',
+      'PUT',
       queryParams,
       postBody,
       headerParams,
@@ -94,67 +94,12 @@ class AuthenticationApi {
 
   /// Parameters:
   ///
-  /// * [ChangePincodeDto] changePincodeDto (required):
-  Future<UserAdminResponseDto?> changePincode(ChangePincodeDto changePincodeDto,) async {
-    final response = await changePincodeWithHttpInfo(changePincodeDto,);
+  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  Future<void> changePinCode(PinCodeChangeDto pinCodeChangeDto,) async {
+    final response = await changePinCodeWithHttpInfo(pinCodeChangeDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'POST /auth/create-pincode' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [CreatePincodeDto] createPincodeDto (required):
-  Future<Response> createPincodeWithHttpInfo(CreatePincodeDto createPincodeDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/auth/create-pincode';
-
-    // ignore: prefer_final_locals
-    Object? postBody = createPincodeDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [CreatePincodeDto] createPincodeDto (required):
-  Future<UserAdminResponseDto?> createPincode(CreatePincodeDto createPincodeDto,) async {
-    final response = await createPincodeWithHttpInfo(createPincodeDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
-    }
-    return null;
   }
 
   /// Performs an HTTP 'GET /auth/status' operation and returns the [Response].
@@ -286,16 +231,55 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /auth/reset-pincode' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /auth/pin-code' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [ResetPincodeDto] resetPincodeDto (required):
-  Future<Response> resetPincodeWithHttpInfo(ResetPincodeDto resetPincodeDto,) async {
+  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  Future<Response> resetPinCodeWithHttpInfo(PinCodeChangeDto pinCodeChangeDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/auth/reset-pincode';
+    final apiPath = r'/auth/pin-code';
 
     // ignore: prefer_final_locals
-    Object? postBody = resetPincodeDto;
+    Object? postBody = pinCodeChangeDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  Future<void> resetPinCode(PinCodeChangeDto pinCodeChangeDto,) async {
+    final response = await resetPinCodeWithHttpInfo(pinCodeChangeDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'POST /auth/pin-code' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [PinCodeSetupDto] pinCodeSetupDto (required):
+  Future<Response> setupPinCodeWithHttpInfo(PinCodeSetupDto pinCodeSetupDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/pin-code';
+
+    // ignore: prefer_final_locals
+    Object? postBody = pinCodeSetupDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -317,20 +301,12 @@ class AuthenticationApi {
 
   /// Parameters:
   ///
-  /// * [ResetPincodeDto] resetPincodeDto (required):
-  Future<UserAdminResponseDto?> resetPincode(ResetPincodeDto resetPincodeDto,) async {
-    final response = await resetPincodeWithHttpInfo(resetPincodeDto,);
+  /// * [PinCodeSetupDto] pinCodeSetupDto (required):
+  Future<void> setupPinCode(PinCodeSetupDto pinCodeSetupDto,) async {
+    final response = await setupPinCodeWithHttpInfo(pinCodeSetupDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
-    }
-    return null;
   }
 
   /// Performs an HTTP 'POST /auth/admin-sign-up' operation and returns the [Response].

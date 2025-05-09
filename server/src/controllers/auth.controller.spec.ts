@@ -143,31 +143,42 @@ describe(AuthController.name, () => {
     });
   });
 
-  describe('POST /auth/create-pincode', () => {
+  describe('POST /auth/pin-code', () => {
     it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/auth/create-pincode').send({ pincode: '123456' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('POST /auth/change-pincode', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/auth/change-pincode').send({ pincode: '123456', newPincode: '654321' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('POST /auth/reset-pincode', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/auth/reset-pincode').send({ userId: '123456' });
+      await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '123456' });
       expect(ctx.authenticate).toHaveBeenCalled();
     });
 
-    it('should require a userId', async () => {
-      const { status, body } = await request(ctx.getHttpServer()).post('/auth/reset-pincode').send({ name: 'admin' });
-
+    it('should reject 5 digits', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '12345' });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(['userId should not be empty', 'userId must be a string']));
+      expect(body).toEqual(errorDto.badRequest(['pinCode must be a 6-digit numeric string']));
+    });
+
+    it('should reject 7 digits', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '1234567' });
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorDto.badRequest(['pinCode must be a 6-digit numeric string']));
+    });
+
+    it('should reject non-numbers', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: 'A12345' });
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorDto.badRequest(['pinCode must be a 6-digit numeric string']));
+    });
+  });
+
+  describe('PUT /auth/pin-code', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).put('/auth/pin-code').send({ pinCode: '123456', newPinCode: '654321' });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('DELETE /auth/pin-code', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).delete('/auth/pin-code').send({ pinCode: '123456' });
+      expect(ctx.authenticate).toHaveBeenCalled();
     });
   });
 

@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, Length, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import { ImmichCookie } from 'src/enum';
-import { Optional, toEmail } from 'src/validation';
+import { Optional, PinCode, toEmail } from 'src/validation';
 
 export type CookieResponse = {
   isSecure: boolean;
@@ -78,32 +78,24 @@ export class ChangePasswordDto {
   newPassword!: string;
 }
 
-export class createPincodeDto {
-  @IsString()
-  @IsNotEmpty()
-  @Length(6, 6)
-  @ApiProperty({ example: '123456' })
-  pincode!: string;
+export class PinCodeSetupDto {
+  @PinCode()
+  pinCode!: string;
 }
 
-export class ChangePincodeDto {
-  @IsString()
-  @IsNotEmpty()
-  @Length(6, 6)
-  @ApiProperty({ example: '123456' })
-  pincode!: string;
+export class PinCodeResetDto {
+  @PinCode({ optional: true })
+  pinCode?: string;
 
+  @Optional()
   @IsString()
   @IsNotEmpty()
-  @Length(6, 6)
-  @ApiProperty({ example: '123456' })
-  newPincode!: string;
+  password?: string;
 }
 
-export class ResetPincodeDto {
-  @IsString()
-  @IsNotEmpty()
-  userId!: string;
+export class PinCodeChangeDto extends PinCodeResetDto {
+  @PinCode()
+  newPinCode!: string;
 }
 
 export class ValidateAccessTokenResponseDto {
@@ -144,5 +136,6 @@ export class OAuthAuthorizeResponseDto {
 }
 
 export class AuthStatusResponseDto {
-  hasPincode!: boolean;
+  pinCode!: boolean;
+  password!: boolean;
 }

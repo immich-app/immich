@@ -286,8 +286,6 @@ class ApiClient {
           return CQModeTypeTransformer().decode(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
-        case 'ChangePincodeDto':
-          return ChangePincodeDto.fromJson(value);
         case 'CheckExistingAssetsDto':
           return CheckExistingAssetsDto.fromJson(value);
         case 'CheckExistingAssetsResponseDto':
@@ -298,8 +296,6 @@ class ApiClient {
           return CreateAlbumDto.fromJson(value);
         case 'CreateLibraryDto':
           return CreateLibraryDto.fromJson(value);
-        case 'CreatePincodeDto':
-          return CreatePincodeDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'DatabaseBackupConfig':
@@ -436,6 +432,10 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'PersonWithFacesResponseDto':
           return PersonWithFacesResponseDto.fromJson(value);
+        case 'PinCodeChangeDto':
+          return PinCodeChangeDto.fromJson(value);
+        case 'PinCodeSetupDto':
+          return PinCodeSetupDto.fromJson(value);
         case 'PlacesResponseDto':
           return PlacesResponseDto.fromJson(value);
         case 'PurchaseResponse':
@@ -454,8 +454,6 @@ class ApiClient {
           return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':
           return ReactionTypeTypeTransformer().decode(value);
-        case 'ResetPincodeDto':
-          return ResetPincodeDto.fromJson(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'SearchAlbumResponseDto':

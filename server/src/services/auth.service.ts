@@ -11,14 +11,14 @@ import {
   AuthDto,
   AuthStatusResponseDto,
   ChangePasswordDto,
-  ChangePincodeDto,
   LoginCredentialDto,
   LogoutResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-  ResetPincodeDto,
+  PinCodeChangeDto,
+  PinCodeResetDto,
+  PinCodeSetupDto,
   SignUpDto,
-  createPincodeDto,
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
@@ -62,7 +62,7 @@ export class AuthService extends BaseService {
 
     let user = await this.userRepository.getByEmail(dto.email, { withPassword: true });
     if (user) {
-      const isAuthenticated = this.validateSecrect(dto.password, user.password);
+      const isAuthenticated = this.validateSecret(dto.password, user.password);
       if (!isAuthenticated) {
         user = undefined;
       }
@@ -95,7 +95,7 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException();
     }
 
-    const valid = this.validateSecrect(password, user.password);
+    const valid = this.validateSecret(password, user.password);
     if (!valid) {
       throw new BadRequestException('Wrong password');
     }
@@ -107,40 +107,54 @@ export class AuthService extends BaseService {
     return mapUserAdmin(updatedUser);
   }
 
-  async createPincode(auth: AuthDto, { pincode }: createPincodeDto): Promise<UserAdminResponseDto> {
-    const user = await this.userRepository.getByEmail(auth.user.email, { withPincode: true });
+  async setupPinCode(auth: AuthDto, { pinCode }: PinCodeSetupDto) {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    if (user.pincode) {
-      throw new BadRequestException('Pincode already exists');
+    if (user.pinCode) {
+      throw new BadRequestException('User already has a PIN code');
     }
 
-    const hashedPincode = await this.cryptoRepository.hashBcrypt(pincode.toString(), SALT_ROUNDS);
-
-    const updatedUser = await this.userRepository.update(user.id, { pincode: hashedPincode });
-
-    return mapUserAdmin(updatedUser);
+    const hashed = await this.cryptoRepository.hashBcrypt(pinCode, SALT_ROUNDS);
+    await this.userRepository.update(auth.user.id, { pinCode: hashed });
   }
 
-  async changePincode(auth: AuthDto, dto: ChangePincodeDto): Promise<UserAdminResponseDto> {
-    const { pincode, newPincode } = dto;
+  async resetPinCode(auth: AuthDto, dto: PinCodeResetDto) {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    this.resetPinChecks(user, dto);
 
-    const user = await this.userRepository.getByEmail(auth.user.email, { withPincode: true });
-    if (!user) {
-      throw new UnauthorizedException();
+    await this.userRepository.update(auth.user.id, { pinCode: null });
+  }
+
+  async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    this.resetPinChecks(user, dto);
+
+    const hashed = await this.cryptoRepository.hashBcrypt(dto.newPinCode, SALT_ROUNDS);
+    await this.userRepository.update(auth.user.id, { pinCode: hashed });
+  }
+
+  private resetPinChecks(
+    user: { pinCode: string | null; password: string | null },
+    dto: { pinCode?: string; password?: string },
+  ) {
+    if (!user.pinCode) {
+      throw new BadRequestException('User does not have a PIN code');
     }
 
-    const valid = this.validateSecrect(pincode, user.pincode);
-    if (!valid) {
-      throw new BadRequestException('Wrong pincode');
+    if (dto.password) {
+      if (!this.validateSecret(dto.password, user.password)) {
+        throw new BadRequestException('Wrong password');
+      }
+    } else if (dto.pinCode) {
+      if (!this.validateSecret(dto.pinCode, user.pinCode)) {
+        throw new BadRequestException('Wrong PIN code');
+      }
+    } else {
+      throw new BadRequestException('Either password or pinCode is required');
     }
-
-    const hashedPincode = await this.cryptoRepository.hashBcrypt(newPincode.toString(), SALT_ROUNDS);
-    const updatedUser = await this.userRepository.update(user.id, { pincode: hashedPincode });
-
-    return mapUserAdmin(updatedUser);
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
@@ -411,7 +425,7 @@ export class AuthService extends BaseService {
     throw new UnauthorizedException('Invalid API key');
   }
 
-  private validateSecrect(inputSecret: string, existingHash?: string | null): boolean {
+  private validateSecret(inputSecret: string, existingHash?: string | null): boolean {
     if (!existingHash) {
       return false;
     }
@@ -471,22 +485,14 @@ export class AuthService extends BaseService {
   }
 
   async getAuthStatus(auth: AuthDto): Promise<AuthStatusResponseDto> {
-    const user = await this.userRepository.getByEmail(auth.user.email, { withPincode: true });
+    const user = await this.userRepository.getForPinCode(auth.user.id);
     if (!user) {
       throw new UnauthorizedException();
     }
 
     return {
-      hasPincode: !!user.pincode,
+      pinCode: !!user.pinCode,
+      password: !!user.password,
     };
-  }
-
-  async resetPincode(auth: AuthDto, dto: ResetPincodeDto): Promise<UserAdminResponseDto> {
-    if (!auth.user.isAdmin) {
-      throw new ForbiddenException('Only admin can reset pincode');
-    }
-
-    const updatedUser = await this.userRepository.update(dto.userId, { pincode: null });
-    return mapUserAdmin(updatedUser);
   }
 }

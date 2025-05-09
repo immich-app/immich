@@ -861,92 +861,76 @@ describe(AuthService.name, () => {
     });
   });
 
-  describe('pincode', () => {
-    it('should create a pincode', async () => {
+  describe('setupPinCode', () => {
+    it('should setup a PIN code', async () => {
       const user = factory.userAdmin();
       const auth = factory.auth({ user });
-      const dto = { pincode: 'new-pincode' };
+      const dto = { pinCode: '123456' };
 
-      mocks.user.getByEmail.mockResolvedValue({ ...user, pincode: '' });
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: null, password: '' });
       mocks.user.update.mockResolvedValue(user);
 
-      await sut.createPincode(auth, dto);
+      await sut.setupPinCode(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, { withPincode: true });
-      expect(mocks.crypto.hashBcrypt).toHaveBeenCalledWith('new-pincode', SALT_ROUNDS);
-      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pincode: expect.any(String) });
+      expect(mocks.user.getForPinCode).toHaveBeenCalledWith(user.id);
+      expect(mocks.crypto.hashBcrypt).toHaveBeenCalledWith('123456', SALT_ROUNDS);
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: expect.any(String) });
     });
 
-    it('should check the user has a pincode', async () => {
+    it('should fail if the user already has a PIN code', async () => {
       const user = factory.userAdmin();
       const auth = factory.auth({ user });
 
-      mocks.user.getByEmail.mockResolvedValue({
-        pincode: '123456',
-      } as UserAdmin & { pincode: string });
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
 
-      await expect(sut.createPincode(auth, { pincode: '123456' })).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
+      await expect(sut.setupPinCode(auth, { pinCode: '123456' })).rejects.toThrow('User already has a PIN code');
     });
+  });
 
-    it('should change the pincode', async () => {
+  describe('changePinCode', () => {
+    it('should change the PIN code', async () => {
       const user = factory.userAdmin();
       const auth = factory.auth({ user });
-      const dto = { pincode: 'old-pincode', newPincode: 'new-pincode' };
+      const dto = { pinCode: '123456', newPinCode: '012345' };
 
-      mocks.user.getByEmail.mockResolvedValue({ ...user, pincode: 'hash-pincode' });
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
       mocks.user.update.mockResolvedValue(user);
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
 
-      await sut.changePincode(auth, dto);
+      await sut.changePinCode(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, { withPincode: true });
-      expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-pincode', 'hash-pincode');
+      expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('123456', '123456 (hashed)');
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: '012345 (hashed)' });
     });
 
-    it('should throw when auth user email is not found', async () => {
-      const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
-      const dto = { pincode: 'old-pincode', newPincode: 'new-pincode' };
-
-      mocks.user.getByEmail.mockResolvedValue(void 0);
-
-      await expect(sut.changePincode(auth, dto)).rejects.toBeInstanceOf(UnauthorizedException);
-    });
-
-    it('should throw when pincode does not match existing pincode', async () => {
-      const auth = { user: { email: 'test@imimch.com' } as UserAdmin };
-      const dto = { pincode: 'old-pincode', newPincode: 'new-pincode' };
-
-      mocks.crypto.compareBcrypt.mockReturnValue(false);
-
-      mocks.user.getByEmail.mockResolvedValue({
-        email: 'test@immich.com',
-        pincode: 'hash-pincode',
-      } as UserAdmin & { pincode: string });
-
-      await expect(sut.changePincode(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('should reset the pincode', async () => {
+    it('should fail if the PIN code does not match', async () => {
       const user = factory.userAdmin();
-      const auth = factory.auth({ user: { isAdmin: true } });
-      const dto = { userId: '123' };
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
 
-      mocks.user.update.mockResolvedValue(user);
+      await expect(
+        sut.changePinCode(factory.auth({ user }), { pinCode: '000000', newPinCode: '012345' }),
+      ).rejects.toThrow('Wrong PIN code');
+    });
+  });
 
-      await sut.resetPincode(auth, dto);
+  describe('resetPinCode', () => {
+    it('should reset the PIN code', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
 
-      expect(mocks.user.update).toHaveBeenCalledWith(dto.userId, { pincode: null });
+      await sut.resetPinCode(factory.auth({ user }), { pinCode: '123456' });
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: null });
     });
 
-    it('should throw if reset pincode by a non-admin user', async () => {
+    it('should throw if the PIN code does not match', async () => {
       const user = factory.userAdmin();
-      const auth = factory.auth({ user: { isAdmin: false } });
-      const dto = { userId: '123' };
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
 
-      mocks.user.update.mockResolvedValue(user);
-
-      await expect(sut.resetPincode(auth, dto)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.resetPinCode(factory.auth({ user }), { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
     });
   });
 });

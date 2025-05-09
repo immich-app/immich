@@ -4,7 +4,7 @@
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
-  import { resetPincode, updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiAccountEditOutline, mdiLockSmart, mdiOnepassword } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -16,7 +16,7 @@
       data?:
         | { action: 'update'; data: UserAdminResponseDto }
         | { action: 'resetPassword'; data: string }
-        | { action: 'resetPincode' },
+        | { action: 'resetPinCode' },
     ) => void;
   }
 
@@ -81,7 +81,7 @@
 
   const resetUserPincode = async () => {
     const isConfirmed = await modalManager.openDialog({
-      prompt: $t('admin.confirm_user_pincode_reset', { values: { user: user.name } }),
+      prompt: $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } }),
     });
 
     if (!isConfirmed) {
@@ -89,15 +89,11 @@
     }
 
     try {
-      await resetPincode({
-        resetPincodeDto: {
-          userId: user.id,
-        },
-      });
+      await updateUserAdmin({ id: user.id, userAdminUpdateDto: { pinCode: null } });
 
-      onClose({ action: 'resetPincode' });
+      onClose({ action: 'resetPinCode' });
     } catch (error) {
-      handleError(error, $t('errors.unable_to_reset_pincode'));
+      handleError(error, $t('errors.unable_to_reset_pin_code'));
     }
   };
 
@@ -197,7 +193,7 @@
           variant="filled"
           fullWidth
           onclick={resetUserPincode}
-          leadingIcon={mdiLockSmart}>{$t('reset_pincode')}</Button
+          leadingIcon={mdiLockSmart}>{$t('reset_pin_code')}</Button
         >
       </div>
 

@@ -123,6 +123,7 @@ export type UserAdminUpdateDto = {
     email?: string;
     name?: string;
     password?: string;
+    pinCode?: string | null;
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
@@ -493,13 +494,6 @@ export type ChangePasswordDto = {
     newPassword: string;
     password: string;
 };
-export type ChangePincodeDto = {
-    newPincode: string;
-    pincode: string;
-};
-export type CreatePincodeDto = {
-    pincode: string;
-};
 export type LoginCredentialDto = {
     email: string;
     password: string;
@@ -517,11 +511,17 @@ export type LogoutResponseDto = {
     redirectUri: string;
     successful: boolean;
 };
-export type ResetPincodeDto = {
-    userId: string;
+export type PinCodeChangeDto = {
+    newPinCode: string;
+    password?: string;
+    pinCode?: string;
+};
+export type PinCodeSetupDto = {
+    pinCode: string;
 };
 export type AuthStatusResponseDto = {
-    hasPincode: boolean;
+    password: boolean;
+    pinCode: boolean;
 };
 export type ValidateAccessTokenResponseDto = {
     authStatus: boolean;
@@ -2009,30 +2009,6 @@ export function changePassword({ changePasswordDto }: {
         body: changePasswordDto
     })));
 }
-export function changePincode({ changePincodeDto }: {
-    changePincodeDto: ChangePincodeDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserAdminResponseDto;
-    }>("/auth/change-pincode", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: changePincodeDto
-    })));
-}
-export function createPincode({ createPincodeDto }: {
-    createPincodeDto: CreatePincodeDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: UserAdminResponseDto;
-    }>("/auth/create-pincode", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: createPincodeDto
-    })));
-}
 export function login({ loginCredentialDto }: {
     loginCredentialDto: LoginCredentialDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2054,16 +2030,31 @@ export function logout(opts?: Oazapfts.RequestOpts) {
         method: "POST"
     }));
 }
-export function resetPincode({ resetPincodeDto }: {
-    resetPincodeDto: ResetPincodeDto;
+export function resetPinCode({ pinCodeChangeDto }: {
+    pinCodeChangeDto: PinCodeChangeDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserAdminResponseDto;
-    }>("/auth/reset-pincode", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: pinCodeChangeDto
+    })));
+}
+export function setupPinCode({ pinCodeSetupDto }: {
+    pinCodeSetupDto: PinCodeSetupDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
         ...opts,
         method: "POST",
-        body: resetPincodeDto
+        body: pinCodeSetupDto
+    })));
+}
+export function changePinCode({ pinCodeChangeDto }: {
+    pinCodeChangeDto: PinCodeChangeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: pinCodeChangeDto
     })));
 }
 export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
