@@ -31,7 +31,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await sql`CREATE EXTENSION IF NOT EXISTS "cube";`.execute(db);
   await sql`CREATE EXTENSION IF NOT EXISTS "earthdistance";`.execute(db);
   await sql`CREATE EXTENSION IF NOT EXISTS "pg_trgm";`.execute(db);
-  await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(vectorExtension)}`.execute(db);
+  await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(vectorExtension)} CASCADE`.execute(db);
   await sql`CREATE OR REPLACE FUNCTION immich_uuid_v7(p_timestamp timestamp with time zone default clock_timestamp())
   RETURNS uuid
   VOLATILE LANGUAGE SQL

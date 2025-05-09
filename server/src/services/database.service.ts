@@ -30,7 +30,7 @@ const messages = {
     Please ensure the Postgres instance has ${name} installed.
 
     If the Postgres instance already has ${name} installed, Immich may not have the necessary permissions to activate it.
-    In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${extension}' manually as a superuser.
+    In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${extension} CASCADE' manually as a superuser.
     See https://immich.app/docs/guides/database-queries for how to query the database.
 
     Alternatively, if your Postgres instance has any of ${otherExtensions.join(', ')}, you may use one of them instead by setting the environment variable 'DB_VECTOR_EXTENSION=<extension name>'.
