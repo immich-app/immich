@@ -23,13 +23,14 @@ import { fromAck, serialize } from 'src/utils/sync';
 
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 export const SYNC_TYPES_ORDER = [
-  //
   SyncRequestType.UsersV1,
   SyncRequestType.PartnersV1,
   SyncRequestType.AssetsV1,
   SyncRequestType.AssetExifsV1,
   SyncRequestType.PartnerAssetsV1,
   SyncRequestType.PartnerAssetExifsV1,
+  SyncRequestType.AlbumsV1,
+  SyncRequestType.AlbumUsersV1,
 ];
 
 const throwSessionRequired = () => {
@@ -200,6 +201,43 @@ export class SyncService extends BaseService {
           );
           for await (const { updateId, ...data } of upserts) {
             response.write(serialize({ type: SyncEntityType.PartnerAssetExifV1, updateId, data }));
+          }
+
+          break;
+        }
+
+        case SyncRequestType.AlbumsV1: {
+          const deletes = this.syncRepository.getAlbumDeletes(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AlbumDeleteV1],
+          );
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.AlbumDeleteV1, updateId: id, data }));
+          }
+
+          const upserts = this.syncRepository.getAlbumUpserts(auth.user.id, checkpointMap[SyncEntityType.AlbumV1]);
+          for await (const { updateId, ...data } of upserts) {
+            response.write(serialize({ type: SyncEntityType.AlbumV1, updateId, data }));
+          }
+
+          break;
+        }
+
+        case SyncRequestType.AlbumUsersV1: {
+          const deletes = this.syncRepository.getAlbumUserDeletes(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AlbumUserDeleteV1],
+          );
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.AlbumUserDeleteV1, updateId: id, data }));
+          }
+
+          const upserts = this.syncRepository.getAlbumUserUpserts(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AlbumUserV1],
+          );
+          for await (const { updateId, ...data } of upserts) {
+            response.write(serialize({ type: SyncEntityType.AlbumUserV1, updateId, data }));
           }
 
           break;

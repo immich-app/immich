@@ -577,6 +577,8 @@ export enum SyncRequestType {
   AssetExifsV1 = 'AssetExifsV1',
   PartnerAssetsV1 = 'PartnerAssetsV1',
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
+  AlbumsV1 = 'AlbumsV1',
+  AlbumUsersV1 = 'AlbumUsersV1',
 }
 
 export enum SyncEntityType {
@@ -593,6 +595,11 @@ export enum SyncEntityType {
   PartnerAssetV1 = 'PartnerAssetV1',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
+
+  AlbumV1 = 'AlbumV1',
+  AlbumDeleteV1 = 'AlbumDeleteV1',
+  AlbumUserV1 = 'AlbumUserV1',
+  AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
 }
 
 export enum NotificationLevel {
