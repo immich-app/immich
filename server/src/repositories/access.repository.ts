@@ -3,7 +3,7 @@ import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserRole } from 'src/enum';
+import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { asUuid } from 'src/utils/database';
 
 class ActivityAccess {
@@ -199,7 +199,13 @@ class AssetAccess {
       )
       .select('assets.id')
       .where('partner.sharedWithId', '=', userId)
-      .where('assets.isArchived', '=', false)
+      .where((eb) =>
+        eb.or([
+          eb('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE)),
+          eb('assets.visibility', '=', sql.lit(AssetVisibility.HIDDEN)),
+        ]),
+      )
+
       .where('assets.id', 'in', [...assetIds])
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
@@ -276,6 +282,26 @@ class AuthDeviceAccess {
       .where('sessions.id', 'in', [...deviceIds])
       .execute()
       .then((tokens) => new Set(tokens.map((token) => token.id)));
+  }
+}
+
+class NotificationAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, notificationIds: Set<string>) {
+    if (notificationIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('notifications')
+      .select('notifications.id')
+      .where('notifications.id', 'in', [...notificationIds])
+      .where('notifications.userId', '=', userId)
+      .execute()
+      .then((stacks) => new Set(stacks.map((stack) => stack.id)));
   }
 }
 
@@ -426,6 +452,7 @@ export class AccessRepository {
   asset: AssetAccess;
   authDevice: AuthDeviceAccess;
   memory: MemoryAccess;
+  notification: NotificationAccess;
   person: PersonAccess;
   partner: PartnerAccess;
   stack: StackAccess;
@@ -438,6 +465,7 @@ export class AccessRepository {
     this.asset = new AssetAccess(db);
     this.authDevice = new AuthDeviceAccess(db);
     this.memory = new MemoryAccess(db);
+    this.notification = new NotificationAccess(db);
     this.person = new PersonAccess(db);
     this.partner = new PartnerAccess(db);
     this.stack = new StackAccess(db);

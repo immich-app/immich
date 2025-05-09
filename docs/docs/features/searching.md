@@ -92,7 +92,7 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 
 **Execution Time (ms)**: After warming up the model with one pass, the mean execution time of 100 passes with the same input.
 
-**Memory (MiB)**: The peak RSS usage of the process afer performing the above timing benchmark. Does not include image decoding, concurrent processing, the web server, etc., which are relatively constant factors.
+**Memory (MiB)**: The peak RSS usage of the process after performing the above timing benchmark. Does not include image decoding, concurrent processing, the web server, etc., which are relatively constant factors.
 
 **Recall (%)**: Evaluated on Crossmodal-3600, the average of the recall@1, recall@5 and recall@10 results for zeroshot image retrieval. Chinese (Simplified), English, French, German, Italian, Japanese, Korean, Polish, Russian, Spanish and Turkish are additionally tested on XTD-10. Chinese (Simplified) and English are additionally tested on Flickr30k. The recall metrics are the average across all tested datasets.
 

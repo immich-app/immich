@@ -14,7 +14,7 @@
   let { items, parent = '', active = '', icons, getLink, getColor = () => undefined }: Props = $props();
 </script>
 
-<ul class="list-none ml-2">
+<ul class="list-none ms-2">
   <!-- eslint-disable-next-line svelte/require-each-key -->
   {#each Object.entries(items).sort() as [path, tree]}
     {@const value = normalizeTreePath(`${parent}/${path}`)}

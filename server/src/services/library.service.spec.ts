@@ -273,7 +273,6 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockImplementation(async function* generator() {});
-      mocks.asset.getAll.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(1) });
 
@@ -292,7 +291,6 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockImplementation(async function* generator() {});
-      mocks.asset.getAll.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
       mocks.asset.getLibraryAssetCount.mockResolvedValue(0);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(1) });
 

@@ -26,6 +26,8 @@
   import type { UpdatePayload } from 'vite';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { focusNext } from '$lib/utils/focus-util';
+  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -88,7 +90,16 @@
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
 
   $effect(() => {
-    assetStore.rowHeight = maxMd ? 100 : 235;
+    const layoutOptions = maxMd
+      ? {
+          rowHeight: 100,
+          headerHeight: 32,
+        }
+      : {
+          rowHeight: 235,
+          headerHeight: 48,
+        };
+    assetStore.setLayoutOptions(layoutOptions);
   });
 
   const scrollTo = (top: number) => {
@@ -288,7 +299,7 @@
           // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
           scrubBucketPercent = Math.max(0, top / (bucketHeight * maxScrollPercent));
 
-          // compensate for lost precision/rouding errors advance to the next bucket, if present
+          // compensate for lost precision/rounding errors advance to the next bucket, if present
           if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
             scrubBucket = assetStore.buckets[i + 1];
             scrubBucketPercent = 0;
@@ -372,7 +383,6 @@
 
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAsset($viewingAsset);
-
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
@@ -607,34 +617,8 @@
     }
   };
 
-  const focusNextAsset = async () => {
-    if (assetInteraction.focussedAssetId === null) {
-      const firstAsset = assetStore.getFirstAsset();
-      if (firstAsset) {
-        assetInteraction.focussedAssetId = firstAsset.id;
-      }
-    } else {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const nextAsset = await assetStore.getNextAsset(focussedAsset);
-        if (nextAsset) {
-          assetInteraction.focussedAssetId = nextAsset.id;
-        }
-      }
-    }
-  };
-
-  const focusPreviousAsset = async () => {
-    if (assetInteraction.focussedAssetId !== null) {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const previousAsset = await assetStore.getPreviousAsset(focussedAsset);
-        if (previousAsset) {
-          assetInteraction.focussedAssetId = previousAsset.id;
-        }
-      }
-    }
-  };
+  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
@@ -743,7 +727,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ml-0': !isEmpty }]}
+  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
   style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={assetStore.viewportHeight}
@@ -818,26 +802,28 @@
   </section>
 </section>
 
-<Portal target="body">
-  {#if $showAssetViewer}
-    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer
-        {withStacked}
-        asset={$viewingAsset}
-        preloadAssets={$preloadAssets}
-        {isShared}
-        {album}
-        {person}
-        preAction={handlePreAction}
-        onAction={handleAction}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onRandom={handleRandom}
-        onClose={handleClose}
-      />
-    {/await}
-  {/if}
-</Portal>
+{#if !albumMapViewManager.isInMapView}
+  <Portal target="body">
+    {#if $showAssetViewer}
+      {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+        <AssetViewer
+          {withStacked}
+          asset={$viewingAsset}
+          preloadAssets={$preloadAssets}
+          {isShared}
+          {album}
+          {person}
+          preAction={handlePreAction}
+          onAction={handleAction}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onRandom={handleRandom}
+          onClose={handleClose}
+        />
+      {/await}
+    {/if}
+  </Portal>
+{/if}
 
 <style>
   #asset-grid {

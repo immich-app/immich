@@ -5,10 +5,12 @@ import {
   AlbumUserRole,
   AssetFileType,
   AssetType,
+  AssetVisibility,
   MemoryType,
   Permission,
   SharedLinkType,
   SourceType,
+  UserAvatarColor,
   UserStatus,
 } from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
@@ -107,7 +109,7 @@ export type Asset = {
   fileCreatedAt: Date;
   fileModifiedAt: Date;
   isExternal: boolean;
-  isVisible: boolean;
+  visibility: AssetVisibility;
   libraryId: string | null;
   livePhotoVideoId: string | null;
   localDateTime: Date;
@@ -122,6 +124,7 @@ export type User = {
   id: string;
   name: string;
   email: string;
+  avatarColor: UserAvatarColor | null;
   profileImagePath: string;
   profileChangedAt: Date;
 };
@@ -264,7 +267,15 @@ export type AssetFace = {
   person?: Person | null;
 };
 
-const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
+const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;
+const userWithPrefixColumns = [
+  'users.id',
+  'users.name',
+  'users.email',
+  'users.avatarColor',
+  'users.profileImagePath',
+  'users.profileChangedAt',
+] as const;
 
 export const columns = {
   asset: [
@@ -275,7 +286,7 @@ export const columns = {
     'assets.fileCreatedAt',
     'assets.fileModifiedAt',
     'assets.isExternal',
-    'assets.isVisible',
+    'assets.visibility',
     'assets.libraryId',
     'assets.livePhotoVideoId',
     'assets.localDateTime',
@@ -306,7 +317,7 @@ export const columns = {
     'shared_links.password',
   ],
   user: userColumns,
-  userWithPrefix: ['users.id', 'users.name', 'users.email', 'users.profileImagePath', 'users.profileChangedAt'],
+  userWithPrefix: userWithPrefixColumns,
   userAdmin: [
     ...userColumns,
     'createdAt',
@@ -323,6 +334,7 @@ export const columns = {
   ],
   tag: ['tags.id', 'tags.value', 'tags.createdAt', 'tags.updatedAt', 'tags.color', 'tags.parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
+  notification: ['id', 'createdAt', 'level', 'type', 'title', 'description', 'data', 'readAt'],
   syncAsset: [
     'id',
     'ownerId',
@@ -334,7 +346,7 @@ export const columns = {
     'type',
     'deletedAt',
     'isFavorite',
-    'isVisible',
+    'visibility',
     'updateId',
   ],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],

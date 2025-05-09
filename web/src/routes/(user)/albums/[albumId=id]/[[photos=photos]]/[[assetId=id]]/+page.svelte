@@ -2,6 +2,7 @@
   import { afterNavigate, goto, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
+  import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
@@ -22,9 +23,10 @@
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
@@ -33,14 +35,16 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute, AlbumPageViewMode } from '$lib/constants';
-  import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
+  import { AlbumPageViewMode, AppRoute } from '$lib/constants';
+  import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
-  import { downloadAlbum, cancelMultiselect } from '$lib/utils/asset-utils';
+  import { confirmAlbumDelete } from '$lib/utils/album-utils';
+  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -53,18 +57,12 @@
   import {
     AlbumUserRole,
     AssetOrder,
-    ReactionLevel,
-    ReactionType,
+    AssetVisibility,
     addAssetsToAlbum,
     addUsersToAlbum,
-    createActivity,
-    deleteActivity,
     deleteAlbum,
-    getActivities,
-    getActivityStatistics,
     getAlbumInfo,
     updateAlbumInfo,
-    type ActivityResponseDto,
     type AlbumUserAddDto,
   } from '@immich/sdk';
   import {
@@ -80,13 +78,10 @@
     mdiPresentationPlay,
     mdiShareVariantOutline,
   } from '@mdi/js';
+  import { onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import { t } from 'svelte-i18n';
-  import { onDestroy } from 'svelte';
-  import { confirmAlbumDelete } from '$lib/utils/album-utils';
-  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     data: PageData;
@@ -103,8 +98,6 @@
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
-  let isLiked: ActivityResponseDto | null = $state(null);
-  let reactions: ActivityResponseDto[] = $state([]);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
 
   const assetInteraction = new AssetInteraction();
@@ -154,44 +147,15 @@
 
   const handleFavorite = async () => {
     try {
-      if (isLiked) {
-        const activityId = isLiked.id;
-        await deleteActivity({ id: activityId });
-        reactions = reactions.filter((reaction) => reaction.id !== activityId);
-        isLiked = null;
-      } else {
-        isLiked = await createActivity({
-          activityCreateDto: { albumId: album.id, type: ReactionType.Like },
-        });
-        reactions = [...reactions, isLiked];
-      }
+      await activityManager.toggleLike();
     } catch (error) {
       handleError(error, $t('errors.cant_change_asset_favorite'));
     }
   };
 
-  const getFavorite = async () => {
-    if ($user) {
-      try {
-        const data = await getActivities({
-          userId: $user.id,
-          albumId: album.id,
-          $type: ReactionType.Like,
-          level: ReactionLevel.Album,
-        });
-        if (data.length > 0) {
-          isLiked = data[0];
-        }
-      } catch (error) {
-        handleError(error, $t('errors.unable_to_load_liked_status'));
-      }
-    }
-  };
-
-  const getNumberOfComments = async () => {
+  const updateComments = async () => {
     try {
-      const { comments } = await getActivityStatistics({ albumId: album.id });
-      setNumberOfComments(comments);
+      await activityManager.refreshActivities(album.id);
     } catch (error) {
       handleError(error, $t('errors.cant_get_number_of_comments'));
     }
@@ -398,7 +362,7 @@
   let albumId = $derived(album.id);
 
   $effect(() => {
-    if (!album.isActivityEnabled && $numberOfComments === 0) {
+    if (!album.isActivityEnabled && activityManager.commentCount === 0) {
       isShowActivity = false;
     }
   });
@@ -409,18 +373,28 @@
     if (viewMode === AlbumPageViewMode.VIEW) {
       void assetStore.updateOptions({ albumId, order: albumOrder });
     } else if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
-      void assetStore.updateOptions({ isArchived: false, withPartners: true, timelineAlbumId: albumId });
+      void assetStore.updateOptions({
+        visibility: AssetVisibility.Timeline,
+        withPartners: true,
+        timelineAlbumId: albumId,
+      });
     }
   });
-  onDestroy(() => assetStore.destroy());
-  // let timelineStore = new AssetStore();
-  // $effect(() => void timelineStore.updateOptions({ isArchived: false, withPartners: true, timelineAlbumId: albumId }));
-  // onDestroy(() => timelineStore.destroy());
+
+  $effect(() => {
+    activityManager.reset();
+    activityManager.init(album.id);
+  });
+
+  onDestroy(() => {
+    activityManager.reset();
+    assetStore.destroy();
+  });
 
   let isOwned = $derived($user.id == album.ownerId);
 
   let showActivityStatus = $derived(
-    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0),
+    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || activityManager.commentCount > 0),
   );
   let isEditor = $derived(
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
@@ -430,8 +404,7 @@
   let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
   $effect(() => {
     if (album.albumUsers.length > 0) {
-      handlePromiseError(getFavorite());
-      handlePromiseError(getNumberOfComments());
+      handlePromiseError(updateComments());
     }
   });
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
@@ -529,6 +502,8 @@
                 icon={mdiShareVariantOutline}
               />
             {/if}
+
+            <AlbumMap {album} />
 
             {#if album.assetCount > 0}
               <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />
@@ -708,11 +683,11 @@
       </AssetGrid>
 
       {#if showActivityStatus}
-        <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
+        <div class="absolute z-[2] bottom-0 end-0 mb-6 me-6 justify-self-end">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
-            {isLiked}
-            numberOfComments={$numberOfComments}
+            isLiked={activityManager.isLiked}
+            numberOfComments={activityManager.commentCount}
             onFavorite={handleFavorite}
             onOpenActivityTab={handleOpenAndCloseActivityTab}
           />
@@ -725,7 +700,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
         translate="yes"
       >
         <ActivityViewer
@@ -733,11 +708,6 @@
           disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
-          {isLiked}
-          bind:reactions
-          onAddComment={() => updateNumberOfComments(1)}
-          onDeleteComment={() => updateNumberOfComments(-1)}
-          onDeleteLike={() => (isLiked = null)}
           onClose={handleOpenAndCloseActivityTab}
         />
       </div>

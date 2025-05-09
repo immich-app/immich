@@ -1,12 +1,12 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { type LibraryResponseDto } from '@immich/sdk';
   import { mdiPencilOutline } from '@mdi/js';
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     library: Partial<LibraryResponseDto>;
@@ -123,14 +123,12 @@
 {/if}
 
 <form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
-  <table class="w-full text-left">
+  <table class="w-full text-start">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each exclusionPatterns as exclusionPattern, listIndex (exclusionPattern)}
         <tr
           class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-            listIndex % 2 == 0
-              ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-              : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+            listIndex % 2 == 0 ? 'bg-subtle' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
           <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPattern}</td>
@@ -150,9 +148,7 @@
       {/each}
       <tr
         class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-          exclusionPatterns.length % 2 == 0
-            ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-            : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+          exclusionPatterns.length % 2 == 0 ? 'bg-subtle' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
         }`}
       >
         <td class="w-3/4 text-ellipsis px-4 text-sm">

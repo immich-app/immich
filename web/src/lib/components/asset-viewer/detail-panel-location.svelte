@@ -33,7 +33,7 @@
 {#if asset.exifInfo?.country}
   <button
     type="button"
-    class="flex w-full text-left justify-between place-items-start gap-4 py-4"
+    class="flex w-full text-start justify-between place-items-start gap-4 py-4"
     onclick={() => (isOwner ? (isShowChangeLocation = true) : null)}
     title={isOwner ? $t('edit_location') : ''}
     class:hover:dark:text-immich-dark-primary={isOwner}
@@ -68,7 +68,7 @@
 {:else if !asset.exifInfo?.city && isOwner}
   <button
     type="button"
-    class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
+    class="flex w-full text-start justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
     onclick={() => (isShowChangeLocation = true)}
     title={$t('add_location')}
   >

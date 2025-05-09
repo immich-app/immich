@@ -84,7 +84,7 @@ select
   "type",
   "deletedAt",
   "isFavorite",
-  "isVisible",
+  "visibility",
   "updateId"
 from
   "assets"
@@ -106,7 +106,7 @@ select
   "type",
   "deletedAt",
   "isFavorite",
-  "isVisible",
+  "visibility",
   "updateId"
 from
   "assets"

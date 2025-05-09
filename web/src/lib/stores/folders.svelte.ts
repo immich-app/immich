@@ -1,4 +1,4 @@
-import { eventManager } from '$lib/stores/event-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import {
   getAssetsByOriginalPath,
   getUniqueOriginalPaths,

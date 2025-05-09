@@ -1,8 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { mapFaces, mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
-import { CacheControl, Colorspace, ImageFormat, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
+import { CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
 import { DetectedFaces } from 'src/repositories/machine-learning.repository';
 import { FaceSearchResult } from 'src/repositories/search.repository';
 import { PersonService } from 'src/services/person.service';
@@ -10,7 +9,7 @@ import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
-import { personStub, personThumbnailStub } from 'test/fixtures/person.stub';
+import { personStub } from 'test/fixtures/person.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -455,14 +454,11 @@ describe(PersonService.name, () => {
     });
 
     it('should queue missing assets', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueDetectFaces({ force: false });
 
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.FACES);
+      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACE_DETECTION,
@@ -472,10 +468,7 @@ describe(PersonService.name, () => {
     });
 
     it('should queue all assets', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([assetStub.image]));
       mocks.person.getAllWithoutFaces.mockResolvedValue([personStub.withName]);
 
       await sut.handleQueueDetectFaces({ force: true });
@@ -483,7 +476,7 @@ describe(PersonService.name, () => {
       expect(mocks.person.deleteFaces).toHaveBeenCalledWith({ sourceType: SourceType.MACHINE_LEARNING });
       expect(mocks.person.delete).toHaveBeenCalledWith([personStub.withName.id]);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(personStub.withName.thumbnailPath);
-      expect(mocks.asset.getAll).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACE_DETECTION,
@@ -493,17 +486,14 @@ describe(PersonService.name, () => {
     });
 
     it('should refresh all assets', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueDetectFaces({ force: undefined });
 
       expect(mocks.person.delete).not.toHaveBeenCalled();
       expect(mocks.person.deleteFaces).not.toHaveBeenCalled();
       expect(mocks.storage.unlink).not.toHaveBeenCalled();
-      expect(mocks.asset.getAll).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACE_DETECTION,
@@ -516,16 +506,13 @@ describe(PersonService.name, () => {
     it('should delete existing people and faces if forced', async () => {
       mocks.person.getAll.mockReturnValue(makeStream([faceStub.face1.person, personStub.randomPerson]));
       mocks.person.getAllFaces.mockReturnValue(makeStream([faceStub.face1]));
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([assetStub.image]));
       mocks.person.getAllWithoutFaces.mockResolvedValue([personStub.randomPerson]);
       mocks.person.deleteFaces.mockResolvedValue();
 
       await sut.handleQueueDetectFaces({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACE_DETECTION,
@@ -1034,114 +1021,6 @@ describe(PersonService.name, () => {
       expect(mocks.search.searchFaces).toHaveBeenCalledTimes(2);
       expect(mocks.person.create).not.toHaveBeenCalled();
       expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('handleGeneratePersonThumbnail', () => {
-    it('should skip if machine learning is disabled', async () => {
-      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
-
-      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.SKIPPED);
-      expect(mocks.asset.getByIds).not.toHaveBeenCalled();
-      expect(mocks.systemMetadata.get).toHaveBeenCalled();
-    });
-
-    it('should skip a person not found', async () => {
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
-    });
-
-    it('should skip a person without a face asset id', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.noThumbnail);
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
-    });
-
-    it('should skip a person with face not found', async () => {
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
-    });
-
-    it('should generate a thumbnail', async () => {
-      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
-      mocks.media.generateThumbnail.mockResolvedValue();
-
-      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
-
-      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.primaryImage.originalPath,
-        {
-          colorspace: Colorspace.P3,
-          format: ImageFormat.JPEG,
-          size: 250,
-          quality: 80,
-          crop: {
-            left: 238,
-            top: 163,
-            width: 274,
-            height: 274,
-          },
-          processInvalidImages: false,
-        },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      );
-      expect(mocks.person.update).toHaveBeenCalledWith({
-        id: 'person-1',
-        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      });
-    });
-
-    it('should generate a thumbnail without going negative', async () => {
-      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailStart);
-      mocks.media.generateThumbnail.mockResolvedValue();
-
-      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
-
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.primaryImage.originalPath,
-        {
-          colorspace: Colorspace.P3,
-          format: ImageFormat.JPEG,
-          size: 250,
-          quality: 80,
-          crop: {
-            left: 0,
-            top: 85,
-            width: 510,
-            height: 510,
-          },
-          processInvalidImages: false,
-        },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      );
-    });
-
-    it('should generate a thumbnail without overflowing', async () => {
-      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailEnd);
-      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
-      mocks.media.generateThumbnail.mockResolvedValue();
-
-      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
-
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.primaryImage.originalPath,
-        {
-          colorspace: Colorspace.P3,
-          format: ImageFormat.JPEG,
-          size: 250,
-          quality: 80,
-          crop: {
-            left: 591,
-            top: 591,
-            width: 408,
-            height: 408,
-          },
-          processInvalidImages: false,
-        },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      );
     });
   });
 

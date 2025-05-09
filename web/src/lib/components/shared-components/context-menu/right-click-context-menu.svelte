@@ -38,7 +38,7 @@
     const elements = document.elementsFromPoint(event.x, event.y);
 
     if (menuContainer && elements.includes(menuContainer)) {
-      // User right-clicked on the context menu itself, we keep the context
+      // User end-clicked on the context menu itself, we keep the context
       // menu as is
       return;
     }
@@ -91,7 +91,7 @@
         },
       ]}
     >
-      <section class="fixed left-0 top-0 z-10 flex h-dvh w-dvw" {oncontextmenu} role="presentation">
+      <section class="fixed start-0 top-0 z-10 flex h-dvh w-dvw" {oncontextmenu} role="presentation">
         <ContextMenu
           {direction}
           {x}
