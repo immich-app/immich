@@ -1,33 +1,34 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetBucket, assetsSnapshot, AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { focusNext } from '$lib/utils/focus-util';
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
   import { onMount, type Snippet } from 'svelte';
+  import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
-  import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
-  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
-  import { page } from '$app/stores';
-  import type { UpdatePayload } from 'vite';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { focusNext } from '$lib/utils/focus-util';
-  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -75,7 +76,6 @@
   let element: HTMLElement | undefined = $state();
 
   let timelineElement: HTMLElement | undefined = $state();
-  let showShortcuts = $state(false);
   let showSkeleton = $state(true);
   let scrubBucketPercent = $state(0);
   let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
@@ -623,6 +623,17 @@
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
+  let isShortcutModalOpen = false;
+
+  const handleOpenShortcutModal = async () => {
+    if (isShortcutModalOpen) {
+      return;
+    }
+
+    isShortcutModalOpen = true;
+    await modalManager.show(ShortcutsModal, {});
+    isShortcutModalOpen = false;
+  };
 
   $effect(() => {
     if (isEmpty) {
@@ -638,7 +649,7 @@
 
       const shortcuts: ShortcutOptions[] = [
         { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-        { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
+        { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteraction) },
         { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
@@ -688,10 +699,6 @@
     onCancel={() => (isShowDeleteConfirmation = false)}
     onConfirm={() => handlePromiseError(trashOrDelete(true))}
   />
-{/if}
-
-{#if showShortcuts}
-  <ShowShortcuts onClose={() => (showShortcuts = !showShortcuts)} />
 {/if}
 
 {#if assetStore.buckets.length > 0}
