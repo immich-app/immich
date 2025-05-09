@@ -53,6 +53,7 @@
     onSelect?: (assetIds: string[]) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
+    rounded?: boolean;
   }
 
   let {
@@ -68,6 +69,7 @@
     onSelect = () => {},
     onClickPoint = () => {},
     popup,
+    rounded = false,
   }: Props = $props();
 
   let map: maplibregl.Map | undefined = $state();
@@ -247,7 +249,7 @@
 <MapLibre
   {hash}
   style=""
-  class="h-full rounded-2xl"
+  class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
   {center}
   {zoom}
   attributionControl={false}
@@ -274,7 +276,9 @@
     {#if showSettings}
       <Control>
         <ControlGroup>
-          <ControlButton onclick={handleSettingsClick}><Icon path={mdiCog} size="100%" /></ControlButton>
+          <ControlButton onclick={handleSettingsClick}
+            ><Icon path={mdiCog} size="100%" class="text-black/80" /></ControlButton
+          >
         </ControlGroup>
       </Control>
     {/if}
@@ -283,7 +287,7 @@
       <Control position="top-right">
         <ControlGroup>
           <ControlButton onclick={() => onOpenInMapView()}>
-            <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" />
+            <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" class="text-black/80" />
           </ControlButton>
         </ControlGroup>
       </Control>

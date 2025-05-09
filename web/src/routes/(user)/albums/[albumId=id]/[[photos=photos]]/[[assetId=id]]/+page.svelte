@@ -57,6 +57,7 @@
   import {
     AlbumUserRole,
     AssetOrder,
+    AssetVisibility,
     addAssetsToAlbum,
     addUsersToAlbum,
     deleteAlbum,
@@ -373,6 +374,7 @@
       void assetStore.updateOptions({ albumId, order: albumOrder });
     } else if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       void assetStore.updateOptions({
+        visibility: AssetVisibility.Timeline,
         withPartners: true,
         timelineAlbumId: albumId,
       });

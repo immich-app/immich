@@ -1,8 +1,8 @@
 <script lang="ts" module>
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
-  import type { SearchDateFilter } from './search-date-section.svelte';
-  import type { SearchDisplayFilters } from './search-display-section.svelte';
-  import type { SearchLocationFilter } from './search-location-section.svelte';
+  import type { SearchDateFilter } from '../components/shared-components/search-bar/search-date-section.svelte';
+  import type { SearchDisplayFilters } from '../components/shared-components/search-bar/search-display-section.svelte';
+  import type { SearchLocationFilter } from '../components/shared-components/search-bar/search-location-section.svelte';
 
   export type SearchFilter = {
     query: string;
@@ -20,6 +20,17 @@
 
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SearchCameraSection, {
+    type SearchCameraFilter,
+  } from '$lib/components/shared-components/search-bar/search-camera-section.svelte';
+  import SearchDateSection from '$lib/components/shared-components/search-bar/search-date-section.svelte';
+  import SearchDisplaySection from '$lib/components/shared-components/search-bar/search-display-section.svelte';
+  import SearchLocationSection from '$lib/components/shared-components/search-bar/search-location-section.svelte';
+  import SearchMediaSection from '$lib/components/shared-components/search-bar/search-media-section.svelte';
+  import SearchPeopleSection from '$lib/components/shared-components/search-bar/search-people-section.svelte';
+  import SearchRatingsSection from '$lib/components/shared-components/search-bar/search-ratings-section.svelte';
+  import SearchTagsSection from '$lib/components/shared-components/search-bar/search-tags-section.svelte';
+  import SearchTextSection from '$lib/components/shared-components/search-bar/search-text-section.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
@@ -28,23 +39,13 @@
   import { mdiTune } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-  import SearchCameraSection, { type SearchCameraFilter } from './search-camera-section.svelte';
-  import SearchDateSection from './search-date-section.svelte';
-  import SearchDisplaySection from './search-display-section.svelte';
-  import SearchLocationSection from './search-location-section.svelte';
-  import SearchMediaSection from './search-media-section.svelte';
-  import SearchPeopleSection from './search-people-section.svelte';
-  import SearchRatingsSection from './search-ratings-section.svelte';
-  import SearchTagsSection from './search-tags-section.svelte';
-  import SearchTextSection from './search-text-section.svelte';
 
   interface Props {
     searchQuery: MetadataSearchDto | SmartSearchDto;
-    onClose: () => void;
-    onSearch: (search: SmartSearchDto | MetadataSearchDto) => void;
+    onClose: (search?: SmartSearchDto | MetadataSearchDto) => void;
   }
 
-  let { searchQuery, onClose, onSearch }: Props = $props();
+  let { searchQuery, onClose }: Props = $props();
 
   const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
@@ -141,7 +142,7 @@
       rating: filter.rating,
     };
 
-    onSearch(payload);
+    onClose(payload);
   };
 
   const onreset = (event: Event) => {
