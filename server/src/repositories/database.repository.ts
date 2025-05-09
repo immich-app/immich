@@ -188,17 +188,21 @@ export class DatabaseRepository {
     for (const indexName of names) {
       const row = rows.find((index) => index.indexname === indexName);
       const table = VECTOR_INDEX_TABLES[indexName];
+      if (!row) {
+        promises.push(this.reindexVectors(indexName));
+        continue;
+      }
 
       switch (vectorExtension) {
         case DatabaseExtension.VECTOR:
         case DatabaseExtension.VECTORS: {
-          if (!row?.indexdef.toLowerCase().includes(keyword)) {
+          if (!row.indexdef.toLowerCase().includes(keyword)) {
             promises.push(this.reindexVectors(indexName));
           }
           break;
         }
         case DatabaseExtension.VECTORCHORD: {
-          const matches = row?.indexdef.match(/(?<=lists = \[)\d+/g);
+          const matches = row.indexdef.match(/(?<=lists = \[)\d+/g);
           const lists = matches && matches.length > 0 ? Number(matches[0]) : 1;
           promises.push(
             this.db
@@ -209,7 +213,7 @@ export class DatabaseRepository {
                 const targetLists = this.targetListCount(count);
                 this.logger.log(`targetLists=${targetLists}, current=${lists} for ${indexName} of ${count} rows`);
                 if (
-                  !row?.indexdef.toLowerCase().includes(keyword) ||
+                  !row.indexdef.toLowerCase().includes(keyword) ||
                   // slack factor is to avoid frequent reindexing if the count is borderline
                   (lists !== targetLists && lists !== this.targetListCount(count * VECTORCHORD_LIST_SLACK_FACTOR))
                 ) {
