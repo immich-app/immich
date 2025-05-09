@@ -11,11 +11,3 @@ WHERE
 
 -- DatabaseRepository.getPostgresVersion
 SHOW server_version
-
--- DatabaseRepository.shouldReindex
-SELECT
-  idx_status
-FROM
-  pg_vector_index_stat
-WHERE
-  indexname = $1

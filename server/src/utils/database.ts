@@ -397,12 +397,14 @@ export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: V
         lists = [${lists ?? 1}]
         spherical_centroids = true
         build_threads = 4
+        sampling_factor = 1024
         $$)`;
     }
     case DatabaseExtension.VECTORS: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
         USING vectors (embedding vector_cos_ops) WITH (options = $$
+        optimizing.optimizing_threads = 4
         [indexing.hnsw]
         m = 16
         ef_construction = 300
