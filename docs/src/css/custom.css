@@ -7,11 +7,20 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&display=swap');
+@font-face {
+  font-family: 'Overpass';
+  src: url('/fonts/overpass/Overpass.ttf') format('truetype-variations');
+  font-weight: 1 999;
+  font-style: normal;
+  ascent-override: 106.25%;
+  size-adjust: 106.25%;
+}
 
-body {
-  font-family: 'Overpass', sans-serif;
-  font-optical-sizing: auto;
+@font-face {
+  font-family: 'Overpass Mono';
+  src: url('/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
+  font-weight: 1 999;
+  font-style: normal;
   ascent-override: 106.25%;
   size-adjust: 106.25%;
 }
@@ -28,6 +37,7 @@ img {
 
 /* You can override the default Infima variables here. */
 :root {
+  font-family: 'Overpass', sans-serif;
   --ifm-color-primary: #4250af;
   --ifm-color-primary-dark: #4250af;
   --ifm-color-primary-darker: #4250af;
@@ -86,8 +96,8 @@ code {
 .buy-button {
   padding: 8px 14px;
   border: 1px solid transparent;
-  font-family: 'Overpass', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 500;
   cursor: pointer;
-  box-shadow: 1px 1px 5px 2px rgba(181, 206, 254, 0.4);
+  box-shadow: 0 0 5px 2px rgba(181, 206, 254, 0.4);
 }
