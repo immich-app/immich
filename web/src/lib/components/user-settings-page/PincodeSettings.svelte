@@ -34,10 +34,7 @@
   });
 
   const canSubmit = $derived(
-    (hasPincode ? currentPincode.length === 6 : true) &&
-      newPincode.length === 6 &&
-      confirmPincode.length === 6 &&
-      newPincode === confirmPincode,
+    (hasPincode ? currentPincode.length === 6 : true) && confirmPincode.length === 6 && newPincode === confirmPincode,
   );
 
   const handleCreatePincode = async () => {

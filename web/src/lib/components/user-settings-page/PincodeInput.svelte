@@ -18,9 +18,7 @@
   });
 
   const focusNext = (index: number) => {
-    if (index < pinLength - 1) {
-      pincodeInputElements[index + 1]?.focus();
-    }
+    pincodeInputElements[Math.min(index + 1, pinLength - 1)]?.focus();
   };
 
   const focusPrev = (index: number) => {
@@ -37,7 +35,7 @@
       currentPinValue = value.slice(0, 1);
     }
 
-    if (!/^\d*$/.test(value)) {
+    if (Number.isNaN(Number(value))) {
       pinValues[index] = '';
       target.value = '';
       return;
@@ -82,7 +80,7 @@
         return;
       }
       default: {
-        if (!/^\d$/.test(event.key)) {
+        if (Number.isNaN(Number(event.key))) {
           event.preventDefault();
         }
         break;
