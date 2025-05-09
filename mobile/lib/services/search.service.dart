@@ -68,7 +68,9 @@ class SearchService {
             model: filter.camera.model,
             takenAfter: filter.date.takenAfter,
             takenBefore: filter.date.takenBefore,
-            isArchived: filter.display.isArchive ? true : null,
+            visibility: filter.display.isArchive
+                ? AssetVisibility.archive
+                : AssetVisibility.timeline,
             isFavorite: filter.display.isFavorite ? true : null,
             isNotInAlbum: filter.display.isNotInAlbum ? true : null,
             personIds: filter.people.map((e) => e.id).toList(),
@@ -95,7 +97,9 @@ class SearchService {
             model: filter.camera.model,
             takenAfter: filter.date.takenAfter,
             takenBefore: filter.date.takenBefore,
-            isArchived: filter.display.isArchive ? true : null,
+            visibility: filter.display.isArchive
+                ? AssetVisibility.archive
+                : AssetVisibility.timeline,
             isFavorite: filter.display.isFavorite ? true : null,
             isNotInAlbum: filter.display.isNotInAlbum ? true : null,
             personIds: filter.people.map((e) => e.id).toList(),

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import {
+    AssetVisibility,
     getAlbumStatistics,
     getAssetStatistics,
     type AlbumStatisticsResponseDto,
@@ -41,9 +42,9 @@
 
   const getUsage = async () => {
     [timelineStats, favoriteStats, archiveStats, trashStats, albumStats] = await Promise.all([
-      getAssetStatistics({ isArchived: false }),
+      getAssetStatistics({ visibility: AssetVisibility.Timeline }),
       getAssetStatistics({ isFavorite: true }),
-      getAssetStatistics({ isArchived: true }),
+      getAssetStatistics({ visibility: AssetVisibility.Archive }),
       getAssetStatistics({ isTrashed: true }),
       getAlbumStatistics(),
     ]);

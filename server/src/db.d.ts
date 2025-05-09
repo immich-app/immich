@@ -10,6 +10,7 @@ import {
   AssetOrder,
   AssetStatus,
   AssetType,
+  AssetVisibility,
   MemoryType,
   NotificationLevel,
   NotificationType,
@@ -148,11 +149,10 @@ export interface Assets {
   fileCreatedAt: Timestamp;
   fileModifiedAt: Timestamp;
   id: Generated<string>;
-  isArchived: Generated<boolean>;
   isExternal: Generated<boolean>;
   isFavorite: Generated<boolean>;
   isOffline: Generated<boolean>;
-  isVisible: Generated<boolean>;
+  visibility: Generated<AssetVisibility>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
   localDateTime: Timestamp;

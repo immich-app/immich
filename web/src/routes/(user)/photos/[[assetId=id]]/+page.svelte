@@ -32,14 +32,14 @@
     type OnUnlink,
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { AssetTypeEnum } from '@immich/sdk';
+  import { AssetTypeEnum, AssetVisibility } from '@immich/sdk';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   const assetStore = new AssetStore();
-  void assetStore.updateOptions({ isArchived: false, withStacked: true, withPartners: true });
+  void assetStore.updateOptions({ visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true });
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();

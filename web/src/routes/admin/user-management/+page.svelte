@@ -59,15 +59,15 @@
   };
 
   const handleCreate = async () => {
-    await modalManager.open(UserCreateModal, {});
+    await modalManager.show(UserCreateModal, {});
     await refresh();
   };
 
   const handleEdit = async (dto: UserAdminResponseDto) => {
-    const result = await modalManager.open(UserEditModal, { user: dto, canResetPassword: dto.id !== $user.id });
+    const result = await modalManager.show(UserEditModal, { user: dto, canResetPassword: dto.id !== $user.id });
     switch (result?.action) {
       case 'resetPassword': {
-        await modalManager.open(PasswordResetSuccess, { newPassword: result.data });
+        await modalManager.show(PasswordResetSuccess, { newPassword: result.data });
         break;
       }
       case 'update': {
@@ -78,14 +78,14 @@
   };
 
   const handleDelete = async (user: UserAdminResponseDto) => {
-    const result = await modalManager.open(UserDeleteConfirmModal, { user });
+    const result = await modalManager.show(UserDeleteConfirmModal, { user });
     if (result) {
       await refresh();
     }
   };
 
   const handleRestore = async (user: UserAdminResponseDto) => {
-    const result = await modalManager.open(UserRestoreConfirmModal, { user });
+    const result = await modalManager.show(UserRestoreConfirmModal, { user });
     if (result) {
       await refresh();
     }

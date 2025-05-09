@@ -57,6 +57,7 @@
   import {
     AlbumUserRole,
     AssetOrder,
+    AssetVisibility,
     addAssetsToAlbum,
     addUsersToAlbum,
     deleteAlbum,
@@ -372,7 +373,11 @@
     if (viewMode === AlbumPageViewMode.VIEW) {
       void assetStore.updateOptions({ albumId, order: albumOrder });
     } else if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
-      void assetStore.updateOptions({ isArchived: false, withPartners: true, timelineAlbumId: albumId });
+      void assetStore.updateOptions({
+        visibility: AssetVisibility.Timeline,
+        withPartners: true,
+        timelineAlbumId: albumId,
+      });
     }
   });
 
@@ -385,9 +390,6 @@
     activityManager.reset();
     assetStore.destroy();
   });
-  // let timelineStore = new AssetStore();
-  // $effect(() => void timelineStore.updateOptions({ isArchived: false, withPartners: true, timelineAlbumId: albumId }));
-  // onDestroy(() => timelineStore.destroy());
 
   let isOwned = $derived($user.id == album.ownerId);
 

@@ -3,6 +3,7 @@ import {
   AssetMediaCreateDto,
   AssetMediaResponseDto,
   AssetResponseDto,
+  AssetVisibility,
   CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
@@ -429,7 +430,10 @@ export const utils = {
   },
 
   archiveAssets: (accessToken: string, ids: string[]) =>
-    updateAssets({ assetBulkUpdateDto: { ids, isArchived: true } }, { headers: asBearerAuth(accessToken) }),
+    updateAssets(
+      { assetBulkUpdateDto: { ids, visibility: AssetVisibility.Archive } },
+      { headers: asBearerAuth(accessToken) },
+    ),
 
   deleteAssets: (accessToken: string, ids: string[]) =>
     deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
