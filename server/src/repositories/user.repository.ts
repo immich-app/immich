@@ -89,13 +89,23 @@ export class UserRepository {
     return !!admin;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForPinCode(id: string) {
+    return this.db
+      .selectFrom('users')
+      .select(['users.pinCode', 'users.password'])
+      .where('users.id', '=', id)
+      .where('users.deletedAt', 'is', null)
+      .executeTakeFirstOrThrow();
+  }
+
   @GenerateSql({ params: [DummyValue.EMAIL] })
-  getByEmail(email: string, withPassword?: boolean) {
+  getByEmail(email: string, options?: { withPassword?: boolean }) {
     return this.db
       .selectFrom('users')
       .select(columns.userAdmin)
       .select(withMetadata)
-      .$if(!!withPassword, (eb) => eb.select('password'))
+      .$if(!!options?.withPassword, (eb) => eb.select('password'))
       .where('email', '=', email)
       .where('users.deletedAt', 'is', null)
       .executeTakeFirst();

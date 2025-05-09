@@ -123,6 +123,7 @@ export type UserAdminUpdateDto = {
     email?: string;
     name?: string;
     password?: string;
+    pinCode?: string | null;
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
@@ -509,6 +510,18 @@ export type LoginResponseDto = {
 export type LogoutResponseDto = {
     redirectUri: string;
     successful: boolean;
+};
+export type PinCodeChangeDto = {
+    newPinCode: string;
+    password?: string;
+    pinCode?: string;
+};
+export type PinCodeSetupDto = {
+    pinCode: string;
+};
+export type AuthStatusResponseDto = {
+    password: boolean;
+    pinCode: boolean;
 };
 export type ValidateAccessTokenResponseDto = {
     authStatus: boolean;
@@ -2015,6 +2028,41 @@ export function logout(opts?: Oazapfts.RequestOpts) {
     }>("/auth/logout", {
         ...opts,
         method: "POST"
+    }));
+}
+export function resetPinCode({ pinCodeChangeDto }: {
+    pinCodeChangeDto: PinCodeChangeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: pinCodeChangeDto
+    })));
+}
+export function setupPinCode({ pinCodeSetupDto }: {
+    pinCodeSetupDto: PinCodeSetupDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: pinCodeSetupDto
+    })));
+}
+export function changePinCode({ pinCodeChangeDto }: {
+    pinCodeChangeDto: PinCodeChangeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: pinCodeChangeDto
+    })));
+}
+export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AuthStatusResponseDto;
+    }>("/auth/status", {
+        ...opts
     }));
 }
 export function validateAccessToken(opts?: Oazapfts.RequestOpts) {

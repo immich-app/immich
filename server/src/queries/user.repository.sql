@@ -87,6 +87,16 @@ where
   "users"."isAdmin" = $1
   and "users"."deletedAt" is null
 
+-- UserRepository.getForPinCode
+select
+  "users"."pinCode",
+  "users"."password"
+from
+  "users"
+where
+  "users"."id" = $1
+  and "users"."deletedAt" is null
+
 -- UserRepository.getByEmail
 select
   "id",
