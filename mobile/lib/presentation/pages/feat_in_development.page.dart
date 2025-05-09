@@ -5,24 +5,30 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
   _Feature(
     name: 'Sync Local',
     icon: Icons.photo_album_rounded,
-    onTap: (ref) => ref.read(backgroundSyncProvider).syncLocal(),
+    onTap: (_, ref) => ref.read(backgroundSyncProvider).syncLocal(),
   ),
   _Feature(
     name: 'Sync Remote',
     icon: Icons.refresh_rounded,
-    onTap: (ref) => ref.read(backgroundSyncProvider).syncRemote(),
+    onTap: (_, ref) => ref.read(backgroundSyncProvider).syncRemote(),
   ),
   _Feature(
     name: 'WAL Checkpoint',
     icon: Icons.save_rounded,
-    onTap: (ref) => ref
+    onTap: (_, ref) => ref
         .read(driftProvider)
         .customStatement("pragma wal_checkpoint(truncate)"),
+  ),
+  _Feature(
+    name: 'Local Media Summary',
+    icon: Icons.table_chart_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const LocalMediaSummaryRoute()),
   ),
 ];
 
@@ -44,7 +50,7 @@ class FeatInDevPage extends StatelessWidget {
             builder: (ctx, ref, _) => ListTile(
               title: Text(feat.name),
               trailing: Icon(feat.icon),
-              onTap: () => unawaited(feat.onTap(ref)),
+              onTap: () => unawaited(feat.onTap(ctx, ref)),
             ),
           );
         },
@@ -63,5 +69,5 @@ class _Feature {
 
   final String name;
   final IconData icon;
-  final Future<void> Function(WidgetRef _) onTap;
+  final Future<void> Function(BuildContext, WidgetRef _) onTap;
 }
