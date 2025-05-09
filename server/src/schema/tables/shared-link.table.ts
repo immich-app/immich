@@ -16,7 +16,7 @@ export class SharedLinkTable {
   userId!: string;
 
   @Column({ type: 'bytea', indexName: 'IDX_sharedlink_key' })
-  key!: Buffer; // use to access the inidividual asset
+  key!: Buffer; // use to access the individual asset
 
   @Column()
   type!: SharedLinkType;

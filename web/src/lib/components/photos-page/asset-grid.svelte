@@ -299,7 +299,7 @@
           // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
           scrubBucketPercent = Math.max(0, top / (bucketHeight * maxScrollPercent));
 
-          // compensate for lost precision/rouding errors advance to the next bucket, if present
+          // compensate for lost precision/rounding errors advance to the next bucket, if present
           if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
             scrubBucket = assetStore.buckets[i + 1];
             scrubBucketPercent = 0;
