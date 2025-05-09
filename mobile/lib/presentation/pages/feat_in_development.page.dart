@@ -4,17 +4,25 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 
 final _features = [
-  _Features(
+  _Feature(
     name: 'Sync Local',
     icon: Icons.photo_album_rounded,
     onTap: (ref) => ref.read(backgroundSyncProvider).syncLocal(),
   ),
-  _Features(
+  _Feature(
     name: 'Sync Remote',
     icon: Icons.refresh_rounded,
     onTap: (ref) => ref.read(backgroundSyncProvider).syncRemote(),
+  ),
+  _Feature(
+    name: 'WAL Checkpoint',
+    icon: Icons.save_rounded,
+    onTap: (ref) => ref
+        .read(driftProvider)
+        .customStatement("pragma wal_checkpoint(truncate)"),
   ),
 ];
 
@@ -46,8 +54,8 @@ class FeatInDevPage extends StatelessWidget {
   }
 }
 
-class _Features {
-  const _Features({
+class _Feature {
+  const _Feature({
     required this.name,
     required this.icon,
     required this.onTap,

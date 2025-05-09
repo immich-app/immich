@@ -58,8 +58,9 @@ class Drift extends $Drift implements IDatabaseRepository {
   @override
   MigrationStrategy get migration => MigrationStrategy(
         beforeOpen: (details) async {
-          await customStatement('PRAGMA journal_mode = WAL');
           await customStatement('PRAGMA foreign_keys = ON');
+          await customStatement('PRAGMA synchronous = NORMAL');
+          await customStatement('PRAGMA journal_mode = WAL');
         },
       );
 }
