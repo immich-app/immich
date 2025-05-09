@@ -51,7 +51,7 @@
 
 <nav
   id="dashboard-navbar"
-  class="z-auto max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm overflow-hidden"
+  class="max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm overflow-hidden"
 >
   <SkipLink text={$t('skip_to_content')} />
   <div

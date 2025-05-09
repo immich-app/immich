@@ -59,7 +59,7 @@
 
 <div
   bind:clientHeight={height}
-  class="fixed z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
+  class="fixed min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
   style:left="{left}px"
   style:top="{top}px"
   transition:slide={{ duration: 250, easing: quintOut }}

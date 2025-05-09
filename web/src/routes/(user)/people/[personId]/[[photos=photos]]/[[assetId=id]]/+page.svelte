@@ -487,7 +487,7 @@
 </header>
 
 <main
-  class="relative h-dvh overflow-hidden bg-immich-bg tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  class="relative h-dvh overflow-hidden bg-immich-bg tall:ms-4 md:mt-[var(--navbar-height-md)] mt-[var(--navbar-height)] dark:bg-immich-dark-bg"
   use:scrollMemoryClearer={{
     routeStartsWith: AppRoute.PEOPLE,
     beforeClear: () => {
@@ -571,7 +571,7 @@
             {/if}
           </section>
           {#if isEditingName}
-            <div class="absolute z-[999] w-64 sm:w-96">
+            <div class="absolute w-64 sm:w-96">
               {#if isSearchingPeople}
                 <div
                   class="flex border h-14 rounded-b-lg border-gray-400 dark:border-immich-dark-gray place-items-center bg-gray-200 p-2 dark:bg-gray-700"

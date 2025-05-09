@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { getTabbable } from '$lib/utils/focus-util';
   import { t } from 'svelte-i18n';
   import Button from './button.svelte';
-  import { getTabbable } from '$lib/utils/focus-util';
 
   interface Props {
     /**
@@ -56,7 +56,7 @@
   };
 </script>
 
-<div class="absolute z-50 top-2 start-2 transition-transform {isFocused ? 'translate-y-0' : '-translate-y-10 sr-only'}">
+<div class="absolute top-2 start-2 transition-transform {isFocused ? 'translate-y-0' : '-translate-y-10 sr-only'}">
   <Button
     size="sm"
     rounded="none"
