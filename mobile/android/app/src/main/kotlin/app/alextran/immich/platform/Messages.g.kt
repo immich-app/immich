@@ -192,6 +192,7 @@ interface ImHostService {
   fun shouldFullSync(): Boolean
   fun getMediaChanges(): SyncDelta
   fun checkpointSync()
+  fun clearSyncCheckpoint()
   fun getAssetIdsForAlbum(albumId: String): List<String>
 
   companion object {
@@ -240,6 +241,22 @@ interface ImHostService {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               api.checkpointSync()
+              listOf(null)
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.clearSyncCheckpoint$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.clearSyncCheckpoint()
               listOf(null)
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)

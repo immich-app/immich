@@ -37,6 +37,10 @@ class MessagesImpl(context: Context) : ImHostService {
     mediaManager.checkpointSync()
   }
 
+  override fun clearSyncCheckpoint() {
+    mediaManager.clearSyncCheckpoint()
+  }
+
   override fun getAssetIdsForAlbum(albumId: String): List<String> {
     if (!isMediaChangesSupported()) {
       throw unsupportedFeatureException()

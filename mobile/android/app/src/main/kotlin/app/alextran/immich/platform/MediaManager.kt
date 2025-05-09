@@ -44,6 +44,14 @@ class MediaManager(context: Context) {
     }
   }
 
+  fun clearSyncCheckpoint() {
+    ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE).edit().apply {
+      remove(SHARED_PREF_MEDIA_STORE_VERSION_KEY)
+      remove(SHARED_PREF_MEDIA_STORE_GEN_KEY)
+      apply()
+    }
+  }
+
   @RequiresApi(Build.VERSION_CODES.Q)
   fun getAssetIdsForAlbum(albumId: String): List<String> {
     val uri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)

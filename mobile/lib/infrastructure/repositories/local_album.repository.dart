@@ -24,7 +24,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     final assetCount = _db.localAlbumAssetEntity.assetId.count();
 
     final query = _db.localAlbumEntity.select().join([
-      innerJoin(
+      leftOuterJoin(
         _db.localAlbumAssetEntity,
         _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
         useColumns: false,

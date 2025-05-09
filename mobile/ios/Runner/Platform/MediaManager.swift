@@ -50,6 +50,11 @@ class MediaManager {
     }
   }
   
+  func clearSyncCheckpoint() -> Void {
+    defaults.removeObject(forKey: changeTokenKey)
+    print("MediaManager::removeChangeToken: Change token removed from UserDefaults")
+  }
+  
   @available(iOS 16, *)
   func checkpointSync() {
     saveChangeToken(token: PHPhotoLibrary.shared().currentChangeToken)
@@ -150,9 +155,15 @@ class MediaManager {
     let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
 
     albumTypes.forEach { type in
-      let collections = PHAssetCollection.fetchAssetCollectionsContaining(forAsset, with: type, options: nil)
+      let collections = PHAssetCollection.fetchAssetCollections(with: type, subtype: .any, options: nil)
       collections.enumerateObjects { (album, _, _) in
-        albumIds.append(album.localIdentifier)
+        var options = PHFetchOptions()
+        options.fetchLimit = 1
+        options.predicate = NSPredicate(format: "localIdentifier == %@", forAsset.localIdentifier)
+        let result = PHAsset.fetchAssets(in: album, options: options)
+        if(result.count == 1) {
+          albumIds.append(album.localIdentifier)
+        }
       }
     }
     return albumIds

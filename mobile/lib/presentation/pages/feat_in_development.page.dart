@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
@@ -24,6 +26,21 @@ final _features = [
     onTap: (_, ref) => ref
         .read(driftProvider)
         .customStatement("pragma wal_checkpoint(truncate)"),
+  ),
+  _Feature(
+    name: 'Clear Delta Checkpoint',
+    icon: Icons.delete_rounded,
+    onTap: (_, ref) => ref.read(hostServiceProvider).clearSyncCheckpoint(),
+  ),
+  _Feature(
+    name: 'Clear Local Data',
+    icon: Icons.delete_forever_rounded,
+    onTap: (_, ref) async {
+      final db = ref.read(driftProvider);
+      await db.localAssetEntity.deleteAll();
+      await db.localAlbumEntity.deleteAll();
+      await db.localAlbumAssetEntity.deleteAll();
+    },
   ),
   _Feature(
     name: 'Local Media Summary',

@@ -256,6 +256,7 @@ protocol ImHostService {
   func shouldFullSync() throws -> Bool
   func getMediaChanges() throws -> SyncDelta
   func checkpointSync() throws
+  func clearSyncCheckpoint() throws
   func getAssetIdsForAlbum(albumId: String) throws -> [String]
 }
 
@@ -310,6 +311,19 @@ class ImHostServiceSetup {
       }
     } else {
       checkpointSyncChannel.setMessageHandler(nil)
+    }
+    let clearSyncCheckpointChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.clearSyncCheckpoint\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      clearSyncCheckpointChannel.setMessageHandler { _, reply in
+        do {
+          try api.clearSyncCheckpoint()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      clearSyncCheckpointChannel.setMessageHandler(nil)
     }
     let getAssetIdsForAlbumChannel = taskQueue == nil
       ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)

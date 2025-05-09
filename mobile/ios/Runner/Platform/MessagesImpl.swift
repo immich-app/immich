@@ -1,6 +1,7 @@
 import Photos
 
 class ImHostServiceImpl: ImHostService {
+
   private let mediaManager: MediaManager
   
   init() {
@@ -27,6 +28,10 @@ class ImHostServiceImpl: ImHostService {
     if #available(iOS 16, *) {
       mediaManager.checkpointSync()
     }
+  }
+  
+  func clearSyncCheckpoint() {
+      mediaManager.clearSyncCheckpoint()
   }
   
   func getAssetIdsForAlbum(albumId: String) throws -> [String] {

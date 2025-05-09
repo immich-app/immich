@@ -53,6 +53,8 @@ abstract class ImHostService {
 
   void checkpointSync();
 
+  void clearSyncCheckpoint();
+
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<String> getAssetIdsForAlbum(String albumId);
 }
