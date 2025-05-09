@@ -38,7 +38,7 @@
   <div>
     <p class="text-sm dark:text-immich-dark-fg">{$t('total_usage').toUpperCase()}</p>
 
-    <div class="mt-5 hidden justify-between lg:flex">
+    <div class="mt-5 hidden justify-between lg:flex gap-4">
       <StatsCard icon={mdiCameraIris} title={$t('photos').toUpperCase()} value={stats.photos} />
       <StatsCard icon={mdiPlayCircle} title={$t('videos').toUpperCase()} value={stats.videos} />
       <StatsCard icon={mdiChartPie} title={$t('storage').toUpperCase()} value={statsUsage} unit={statsUsageUnit} />
