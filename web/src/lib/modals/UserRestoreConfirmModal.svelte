@@ -14,11 +14,8 @@
 
   const handleRestoreUser = async () => {
     try {
-      const { deletedAt } = await restoreUserAdmin({ id: user.id });
-
-      if (deletedAt === undefined) {
-        onClose(true);
-      }
+      await restoreUserAdmin({ id: user.id });
+      onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_user'));
     }
