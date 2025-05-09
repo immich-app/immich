@@ -4,7 +4,6 @@
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-  import { serverConfig } from '$lib/stores/server-config.store';
   import { makeSharedLinkUrl } from '$lib/utils';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -17,8 +16,7 @@
     });
 
     if (sharedLink) {
-      const url = makeSharedLinkUrl($serverConfig.externalDomain, sharedLink.key);
-      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: url });
+      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
     }
   };
 </script>

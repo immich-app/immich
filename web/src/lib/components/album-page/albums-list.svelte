@@ -23,7 +23,6 @@
     locale,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
-  import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { makeSharedLinkUrl } from '$lib/utils';
@@ -367,9 +366,8 @@
         const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: albumToShare.id });
 
         if (sharedLink) {
-          const url = makeSharedLinkUrl($serverConfig.externalDomain, sharedLink.key);
           handleSharedLinkCreated(albumToShare);
-          await modalManager.show(QrCodeModal, { title: $t('view_link'), value: url });
+          await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
         }
         return;
       }

@@ -5,7 +5,6 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
-  import { serverConfig } from '$lib/stores/server-config.store';
   import { makeSharedLinkUrl } from '$lib/utils';
   import {
     AlbumUserRole,
@@ -34,7 +33,7 @@
 
   let sharedLinkUrl = $state('');
   const handleViewQrCode = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinkUrl = makeSharedLinkUrl($serverConfig.externalDomain, sharedLink.key);
+    sharedLinkUrl = makeSharedLinkUrl(sharedLink.key);
   };
 
   const roleOptions: Array<{ title: string; value: AlbumUserRole | 'none'; icon?: string }> = [

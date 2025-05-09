@@ -3,7 +3,6 @@
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-  import { serverConfig } from '$lib/stores/server-config.store';
   import { makeSharedLinkUrl } from '$lib/utils';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiShareVariantOutline } from '@mdi/js';
@@ -19,8 +18,7 @@
     const sharedLink = await modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] });
 
     if (sharedLink) {
-      const url = makeSharedLinkUrl($serverConfig.externalDomain, sharedLink.key);
-      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: url });
+      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
     }
   };
 </script>
