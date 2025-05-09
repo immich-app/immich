@@ -1,37 +1,37 @@
 <script lang="ts">
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
+  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
+  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
+  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
+  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
+  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
+  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
+  import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { foldersStore } from '$lib/stores/folders.svelte';
+  import { preferences } from '$lib/stores/user.store';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
-  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
-  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
-  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
-  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import { preferences } from '$lib/stores/user.store';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
-  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
-  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
-  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
 
   interface Props {
     data: PageData;
@@ -87,7 +87,7 @@
 </script>
 
 {#if assetInteraction.selectionActive}
-  <div class="fixed z-[910] top-0 start-0 w-full">
+  <div class="fixed top-0 start-0 w-full">
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}

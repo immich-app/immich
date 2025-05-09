@@ -4,11 +4,11 @@
 
 <script lang="ts">
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
+  import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
+  import AdminSideBar from '$lib/components/shared-components/side-bar/admin-side-bar.svelte';
+  import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { Snippet } from 'svelte';
-  import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
-  import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
-  import SideBar from '../shared-components/side-bar/side-bar.svelte';
 
   interface Props {
     hideNavbar?: boolean;
@@ -51,18 +51,24 @@
 </header>
 <div
   tabindex="-1"
-  class="relative grid grid-cols-[theme(spacing.0)_auto] overflow-hidden sidebar:grid-cols-[theme(spacing.64)_auto]
+  class="relative z-0 grid grid-cols-[theme(spacing.0)_auto] overflow-hidden sidebar:grid-cols-[theme(spacing.64)_auto]
     {hideNavbar ? 'h-dvh' : 'h-[calc(100dvh-var(--navbar-height))]'}
     {hideNavbar ? 'pt-[var(--navbar-height)]' : ''}
     {hideNavbar ? 'max-md:pt-[var(--navbar-height-md)]' : ''}"
 >
-  {#if sidebar}{@render sidebar()}{:else if admin}
+  {#if sidebar}
+    {@render sidebar()}
+  {:else if admin}
     <AdminSideBar />
   {:else}
     <SideBar />
   {/if}
 
   <main class="relative">
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
+      {@render children?.()}
+    </div>
+
     {#if title || buttons}
       <div
         class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 dark:border-immich-dark-gray dark:text-immich-dark-fg"
@@ -78,9 +84,5 @@
         {@render buttons?.()}
       </div>
     {/if}
-
-    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
-      {@render children?.()}
-    </div>
   </main>
 </div>

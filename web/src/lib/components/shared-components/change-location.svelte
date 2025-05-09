@@ -135,7 +135,7 @@
         {/if}
 
         <div
-          class="absolute z-[99] w-full"
+          class="absolute w-full"
           id="suggestion"
           bind:this={suggestionContainer}
           use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}

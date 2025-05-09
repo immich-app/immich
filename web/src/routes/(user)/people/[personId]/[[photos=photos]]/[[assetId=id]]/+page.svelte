@@ -401,91 +401,6 @@
   <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
 {/if}
 
-<header>
-  {#if assetInteraction.selectionActive}
-    <AssetSelectControlBar
-      assets={assetInteraction.selectedAssets}
-      clearSelect={() => assetInteraction.clearMultiselect()}
-    >
-      <CreateSharedLink />
-      <SelectAllAssets {assetStore} {assetInteraction} />
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum />
-        <AddToAlbum shared />
-      </ButtonContextMenu>
-      <FavoriteAction
-        removeFavorite={assetInteraction.isAllFavorite}
-        onFavorite={(ids, isFavorite) =>
-          assetStore.updateAssetOperation(ids, (asset) => {
-            asset.isFavorite = isFavorite;
-            return { remove: false };
-          })}
-      />
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-        <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
-        <MenuOption
-          icon={mdiAccountMultipleCheckOutline}
-          text={$t('fix_incorrect_match')}
-          onClick={handleReassignAssets}
-        />
-        <ChangeDate menuItem />
-        <ChangeLocation menuItem />
-        <ArchiveAction
-          menuItem
-          unarchive={assetInteraction.isAllArchived}
-          onArchive={(assetIds) => assetStore.removeAssets(assetIds)}
-        />
-        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
-        <DeleteAssets menuItem onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)} />
-      </ButtonContextMenu>
-    </AssetSelectControlBar>
-  {:else}
-    {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE || viewMode === PersonPageViewMode.BIRTH_DATE}
-      <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
-        {#snippet trailing()}
-          <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-            <MenuOption
-              text={$t('select_featured_photo')}
-              icon={mdiAccountBoxOutline}
-              onClick={() => (viewMode = PersonPageViewMode.SELECT_PERSON)}
-            />
-            <MenuOption
-              text={person.isHidden ? $t('unhide_person') : $t('hide_person')}
-              icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
-              onClick={() => toggleHidePerson()}
-            />
-            <MenuOption
-              text={$t('set_date_of_birth')}
-              icon={mdiCalendarEditOutline}
-              onClick={() => (viewMode = PersonPageViewMode.BIRTH_DATE)}
-            />
-            <MenuOption
-              text={$t('merge_people')}
-              icon={mdiAccountMultipleCheckOutline}
-              onClick={() => (viewMode = PersonPageViewMode.MERGE_PEOPLE)}
-            />
-            <MenuOption
-              icon={person.isFavorite ? mdiHeartMinusOutline : mdiHeartOutline}
-              text={person.isFavorite ? $t('unfavorite') : $t('to_favorite')}
-              onClick={handleToggleFavorite}
-            />
-          </ButtonContextMenu>
-        {/snippet}
-      </ControlAppBar>
-    {/if}
-
-    {#if viewMode === PersonPageViewMode.SELECT_PERSON}
-      <ControlAppBar onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}>
-        {#snippet leading()}
-          {$t('select_featured_photo')}
-        {/snippet}
-      </ControlAppBar>
-    {/if}
-  {/if}
-</header>
-
 <main
   class="relative h-dvh overflow-hidden tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]"
   use:scrollMemoryClearer={{
@@ -571,7 +486,7 @@
             {/if}
           </section>
           {#if isEditingName}
-            <div class="absolute z-[999] w-64 sm:w-96">
+            <div class="absolute w-64 sm:w-96">
               {#if isSearchingPeople}
                 <div
                   class="flex border h-14 rounded-b-lg border-gray-400 dark:border-immich-dark-gray place-items-center bg-gray-200 p-2 dark:bg-gray-700"
@@ -611,3 +526,88 @@
     </AssetGrid>
   {/key}
 </main>
+
+<header>
+  {#if assetInteraction.selectionActive}
+    <AssetSelectControlBar
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => assetInteraction.clearMultiselect()}
+    >
+      <CreateSharedLink />
+      <SelectAllAssets {assetStore} {assetInteraction} />
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
+        <AddToAlbum />
+        <AddToAlbum shared />
+      </ButtonContextMenu>
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={(ids, isFavorite) =>
+          assetStore.updateAssetOperation(ids, (asset) => {
+            asset.isFavorite = isFavorite;
+            return { remove: false };
+          })}
+      />
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+        <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
+        <MenuOption
+          icon={mdiAccountMultipleCheckOutline}
+          text={$t('fix_incorrect_match')}
+          onClick={handleReassignAssets}
+        />
+        <ChangeDate menuItem />
+        <ChangeLocation menuItem />
+        <ArchiveAction
+          menuItem
+          unarchive={assetInteraction.isAllArchived}
+          onArchive={(assetIds) => assetStore.removeAssets(assetIds)}
+        />
+        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
+        <DeleteAssets menuItem onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)} />
+      </ButtonContextMenu>
+    </AssetSelectControlBar>
+  {:else}
+    {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE || viewMode === PersonPageViewMode.BIRTH_DATE}
+      <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
+        {#snippet trailing()}
+          <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+            <MenuOption
+              text={$t('select_featured_photo')}
+              icon={mdiAccountBoxOutline}
+              onClick={() => (viewMode = PersonPageViewMode.SELECT_PERSON)}
+            />
+            <MenuOption
+              text={person.isHidden ? $t('unhide_person') : $t('hide_person')}
+              icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
+              onClick={() => toggleHidePerson()}
+            />
+            <MenuOption
+              text={$t('set_date_of_birth')}
+              icon={mdiCalendarEditOutline}
+              onClick={() => (viewMode = PersonPageViewMode.BIRTH_DATE)}
+            />
+            <MenuOption
+              text={$t('merge_people')}
+              icon={mdiAccountMultipleCheckOutline}
+              onClick={() => (viewMode = PersonPageViewMode.MERGE_PEOPLE)}
+            />
+            <MenuOption
+              icon={person.isFavorite ? mdiHeartMinusOutline : mdiHeartOutline}
+              text={person.isFavorite ? $t('unfavorite') : $t('to_favorite')}
+              onClick={handleToggleFavorite}
+            />
+          </ButtonContextMenu>
+        {/snippet}
+      </ControlAppBar>
+    {/if}
+
+    {#if viewMode === PersonPageViewMode.SELECT_PERSON}
+      <ControlAppBar onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}>
+        {#snippet leading()}
+          {$t('select_featured_photo')}
+        {/snippet}
+      </ControlAppBar>
+    {/if}
+  {/if}
+</header>

@@ -112,7 +112,7 @@
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
 <div
-  class="fixed top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
+  class="fixed top-0 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
 >
   <div class="flex items-center">
     <CircleIconButton title={$t('close')} icon={mdiClose} onclick={onClose} />
