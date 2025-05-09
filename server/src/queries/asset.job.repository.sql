@@ -7,7 +7,7 @@ select
   "ownerId",
   "duplicateId",
   "stackId",
-  "isVisible",
+  "visibility",
   "smart_search"."embedding",
   (
     select
@@ -83,7 +83,7 @@ from
   inner join "asset_job_status" on "asset_job_status"."assetId" = "assets"."id"
 where
   "assets"."deletedAt" is null
-  and "assets"."isVisible" = $1
+  and "assets"."visibility" != $1
   and (
     "asset_job_status"."previewAt" is null
     or "asset_job_status"."thumbnailAt" is null
@@ -118,7 +118,7 @@ where
 -- AssetJobRepository.getForGenerateThumbnailJob
 select
   "assets"."id",
-  "assets"."isVisible",
+  "assets"."visibility",
   "assets"."originalFileName",
   "assets"."originalPath",
   "assets"."ownerId",
@@ -155,7 +155,7 @@ select
   "assets"."fileCreatedAt",
   "assets"."fileModifiedAt",
   "assets"."isExternal",
-  "assets"."isVisible",
+  "assets"."visibility",
   "assets"."libraryId",
   "assets"."livePhotoVideoId",
   "assets"."localDateTime",
@@ -201,7 +201,7 @@ from
   "assets"
   inner join "asset_job_status" as "job_status" on "assetId" = "assets"."id"
 where
-  "assets"."isVisible" = $1
+  "assets"."visibility" != $1
   and "assets"."deletedAt" is null
   and "job_status"."previewAt" is not null
   and not exists (
@@ -220,7 +220,7 @@ from
   "assets"
   inner join "asset_job_status" as "job_status" on "assetId" = "assets"."id"
 where
-  "assets"."isVisible" = $1
+  "assets"."visibility" != $1
   and "assets"."deletedAt" is null
   and "job_status"."previewAt" is not null
   and not exists (
@@ -234,7 +234,7 @@ where
 -- AssetJobRepository.getForClipEncoding
 select
   "assets"."id",
-  "assets"."isVisible",
+  "assets"."visibility",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -259,7 +259,7 @@ where
 -- AssetJobRepository.getForDetectFacesJob
 select
   "assets"."id",
-  "assets"."isVisible",
+  "assets"."visibility",
   to_json("exif") as "exifInfo",
   (
     select
@@ -312,7 +312,7 @@ where
 -- AssetJobRepository.getForAssetDeletion
 select
   "assets"."id",
-  "assets"."isVisible",
+  "assets"."visibility",
   "assets"."libraryId",
   "assets"."ownerId",
   "assets"."livePhotoVideoId",
@@ -372,7 +372,7 @@ from
       "assets" as "stacked"
     where
       "stacked"."deletedAt" is not null
-      and "stacked"."isArchived" = $1
+      and "stacked"."visibility" != $1
       and "stacked"."stackId" = "asset_stack"."id"
     group by
       "asset_stack"."id"
@@ -391,7 +391,7 @@ where
     "assets"."encodedVideoPath" is null
     or "assets"."encodedVideoPath" = $2
   )
-  and "assets"."isVisible" = $3
+  and "assets"."visibility" != $3
   and "assets"."deletedAt" is null
 
 -- AssetJobRepository.getForVideoConversion
@@ -417,7 +417,7 @@ where
     "asset_job_status"."metadataExtractedAt" is null
     or "asset_job_status"."assetId" is null
   )
-  and "assets"."isVisible" = $1
+  and "assets"."visibility" != $1
   and "assets"."deletedAt" is null
 
 -- AssetJobRepository.getForStorageTemplateJob
@@ -480,7 +480,7 @@ where
     "assets"."sidecarPath" = $1
     or "assets"."sidecarPath" is null
   )
-  and "assets"."isVisible" = $2
+  and "assets"."visibility" != $2
 
 -- AssetJobRepository.streamForDetectFacesJob
 select
@@ -489,7 +489,7 @@ from
   "assets"
   inner join "asset_job_status" as "job_status" on "assetId" = "assets"."id"
 where
-  "assets"."isVisible" = $1
+  "assets"."visibility" != $1
   and "assets"."deletedAt" is null
   and "job_status"."previewAt" is not null
   and "job_status"."facesRecognizedAt" is null

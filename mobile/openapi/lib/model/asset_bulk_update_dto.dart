@@ -17,11 +17,11 @@ class AssetBulkUpdateDto {
     this.dateTimeRelative,
     this.duplicateId,
     this.ids = const [],
-    this.isArchived,
     this.isFavorite,
     this.latitude,
     this.longitude,
     this.rating,
+    this.visibility,
   });
 
   ///
@@ -43,14 +43,6 @@ class AssetBulkUpdateDto {
   String? duplicateId;
 
   List<String> ids;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isArchived;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -86,17 +78,25 @@ class AssetBulkUpdateDto {
   ///
   num? rating;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AssetVisibility? visibility;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
     other.dateTimeOriginal == dateTimeOriginal &&
     other.dateTimeRelative == dateTimeRelative &&
     other.duplicateId == duplicateId &&
     _deepEquality.equals(other.ids, ids) &&
-    other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
     other.latitude == latitude &&
     other.longitude == longitude &&
-    other.rating == rating;
+    other.rating == rating &&
+    other.visibility == visibility;
 
   @override
   int get hashCode =>
@@ -105,14 +105,14 @@ class AssetBulkUpdateDto {
     (dateTimeRelative == null ? 0 : dateTimeRelative!.hashCode) +
     (duplicateId == null ? 0 : duplicateId!.hashCode) +
     (ids.hashCode) +
-    (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
-    (rating == null ? 0 : rating!.hashCode);
+    (rating == null ? 0 : rating!.hashCode) +
+    (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, dateTimeRelative=$dateTimeRelative, duplicateId=$duplicateId, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, dateTimeRelative=$dateTimeRelative, duplicateId=$duplicateId, ids=$ids, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -132,11 +132,6 @@ class AssetBulkUpdateDto {
     //  json[r'duplicateId'] = null;
     }
       json[r'ids'] = this.ids;
-    if (this.isArchived != null) {
-      json[r'isArchived'] = this.isArchived;
-    } else {
-    //  json[r'isArchived'] = null;
-    }
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
     } else {
@@ -157,6 +152,11 @@ class AssetBulkUpdateDto {
     } else {
     //  json[r'rating'] = null;
     }
+    if (this.visibility != null) {
+      json[r'visibility'] = this.visibility;
+    } else {
+    //  json[r'visibility'] = null;
+    }
     return json;
   }
 
@@ -175,11 +175,11 @@ class AssetBulkUpdateDto {
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
         rating: num.parse('${json[r'rating']}'),
+        visibility: AssetVisibility.fromJson(json[r'visibility']),
       );
     }
     return null;
