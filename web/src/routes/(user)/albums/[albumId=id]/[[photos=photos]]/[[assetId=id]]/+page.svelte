@@ -42,7 +42,6 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
-  import { serverConfig } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError, makeSharedLinkUrl } from '$lib/utils';
@@ -439,8 +438,7 @@
     const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
 
     if (sharedLink) {
-      const url = makeSharedLinkUrl($serverConfig.externalDomain, sharedLink.key);
-      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: url });
+      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
     }
   };
 </script>
