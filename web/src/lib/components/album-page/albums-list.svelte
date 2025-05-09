@@ -1,43 +1,47 @@
 <script lang="ts">
-  import { onMount, type Snippet } from 'svelte';
-  import { groupBy } from 'lodash-es';
-  import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
-  import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
+  import { goto } from '$app/navigation';
+  import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
+  import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
-  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
-  import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
-  import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
-  import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { downloadAlbum } from '$lib/utils/asset-utils';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { AppRoute } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
+  import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
+  import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import {
-    getSelectedAlbumGroupOption,
-    type AlbumGroup,
-    confirmAlbumDelete,
-    sortAlbums,
-    stringToSortOrder,
-  } from '$lib/utils/album-utils';
-  import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import { user } from '$lib/stores/user.store';
-  import {
+    AlbumFilter,
     AlbumGroupBy,
     AlbumSortBy,
-    AlbumFilter,
     AlbumViewMode,
     SortOrder,
     locale,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
+  import { serverConfig } from '$lib/stores/server-config.store';
+  import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
-  import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { makeSharedLinkUrl } from '$lib/utils';
+  import {
+    confirmAlbumDelete,
+    getSelectedAlbumGroupOption,
+    sortAlbums,
+    stringToSortOrder,
+    type AlbumGroup,
+  } from '$lib/utils/album-utils';
+  import { downloadAlbum } from '$lib/utils/asset-utils';
+  import type { ContextMenuPosition } from '$lib/utils/context-menu';
+  import { handleError } from '$lib/utils/handle-error';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { addUsersToAlbum, deleteAlbum, isHttpError, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
+  import { mdiDeleteOutline, mdiFolderDownloadOutline, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
+  import { groupBy } from 'lodash-es';
+  import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
 
@@ -139,8 +143,6 @@
   let groupedAlbums: AlbumGroup[] = $state([]);
 
   let albumGroupOption: string = $state(AlbumGroupBy.None);
-
-  let showShareByURLModal = $state(false);
 
   let albumToEdit: AlbumResponseDto | null = $state(null);
   let albumToShare: AlbumResponseDto | null = $state(null);
@@ -346,18 +348,32 @@
     updateAlbumInfo(album);
   };
 
-  const openShareModal = () => {
+  const openShareModal = async () => {
     if (!contextMenuTargetAlbum) {
       return;
     }
 
     albumToShare = contextMenuTargetAlbum;
     closeAlbumContextMenu();
-  };
+    const result = await modalManager.show(AlbumShareModal, { album: albumToShare });
 
-  const closeShareModal = () => {
-    albumToShare = null;
-    showShareByURLModal = false;
+    switch (result?.action) {
+      case 'sharedUsers': {
+        await handleAddUsers(result.data);
+        return;
+      }
+
+      case 'sharedLink': {
+        const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: albumToShare.id });
+
+        if (sharedLink) {
+          const url = makeSharedLinkUrl($serverConfig.externalDomain, sharedLink.key);
+          handleSharedLinkCreated(albumToShare);
+          await modalManager.show(QrCodeModal, { title: $t('view_link'), value: url });
+        }
+        return;
+      }
+    }
   };
 </script>
 
@@ -418,23 +434,5 @@
       onCancel={() => (albumToEdit = null)}
       onClose={() => (albumToEdit = null)}
     />
-  {/if}
-
-  <!-- Share Modal -->
-  {#if albumToShare}
-    {#if showShareByURLModal}
-      <CreateSharedLinkModal
-        albumId={albumToShare.id}
-        onClose={() => closeShareModal()}
-        onCreated={() => albumToShare && handleSharedLinkCreated(albumToShare)}
-      />
-    {:else}
-      <UserSelectionModal
-        album={albumToShare}
-        onSelect={handleAddUsers}
-        onShare={() => (showShareByURLModal = true)}
-        onClose={() => closeShareModal()}
-      />
-    {/if}
   {/if}
 {/if}
