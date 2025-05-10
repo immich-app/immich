@@ -1,14 +1,15 @@
-import {BadRequestException, Injectable, InternalServerErrorException, NotFoundException} from '@nestjs/common';
-import {BaseService} from 'src/services/base.service';
-import {AssetType, CacheControl, ImmichWorker, Permission, VideoCodec} from 'src/enum';
-import {ImmichFileResponse} from 'src/utils/file';
-import {VideoInfo, VideoInterfaces} from 'src/types';
-import {OnEvent} from 'src/decorators';
-import {ArgOf} from 'src/repositories/event.repository';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BaseService } from 'src/services/base.service';
+import { AssetType, ImmichWorker, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
+import { VideoInfo, VideoInterfaces } from 'src/types';
+import { OnEvent } from 'src/decorators';
+import { ArgOf } from 'src/repositories/event.repository';
 import child_process from 'node:child_process';
-import {sign} from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import fs from 'node:fs/promises';
-import {AuthDto} from 'src/dtos/auth.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { BaseConfig } from 'src/utils/media';
+import {createWriteStream} from 'fs'
 
 type VideoStream = VideoInfo['videoStreams'][0]
 type AudioStream = VideoInfo['audioStreams'][0]
@@ -76,12 +77,6 @@ export class TranscodingService extends BaseService {
     return playlist.join('\n');
   }
 
-  playbackPart(id: string, name: string): Promise<ImmichFileResponse> {
-    return Promise.resolve(new ImmichFileResponse({
-      path: `/tmp/video/${id}/${name}.mp4`, contentType: 'video/mp4', cacheControl: CacheControl.PRIVATE_WITH_CACHE,
-    }));
-  }
-
   async getPlaylist(id: string, quality: string, start: boolean): Promise<string> {
     const asset = await this.assetRepository.getById(id);
     if (!asset) {
@@ -96,7 +91,7 @@ export class TranscodingService extends BaseService {
       '#EXT-X-TARGETDURATION:10',
       '#EXT-X-PART-INF:PART-TARGET=0.5',
       '#EXT-X-PLAYLIST-TYPE:VOD',
-      `#EXT-X-MAP:URI=\"${quality}/init.mp4\"`,
+      `#EXT-X-MAP:URI="${quality}/init.mp4"`,
     );
 
     const s = child_process.spawn('ffprobe', [
@@ -197,13 +192,28 @@ export class TranscodingService extends BaseService {
     const { liveFfmpeg } = await this.getConfig({ withCache: true });
     liveFfmpeg.targetVideoCodec = codec;
 
+    const stats = await this.mediaRepository.probe(path);
+    if (stats.videoStreams.length === 0) {
+      throw new NotFoundException('No video streams in file');
+    }
+
     const args = [
       '-nostats', '-hide_banner', '-loglevel', 'warning',
       '-i', path];
     if (quality === 'original') {
       args.push('-vcodec', 'copy');
     } else {
-      args.push('-vcodec', 'libx264',
+      const videoStream = stats.videoStreams[0],
+        audioStream = stats.audioStreams[0];
+
+      const options = BaseConfig.create(liveFfmpeg, this.videoInterfaces).getCommand(TranscodeTarget.ALL, videoStream, audioStream);
+      for (const option of options.inputOptions) {
+        args.push(...option.split(' '))
+      }
+      for (const option of options.outputOptions) {
+        args.push(...option.split(' '))
+      }
+      args.push(
         //'-vf', `scale=${quality}:-2`,
         '-maxrate', '4000k', '-bufsize', '1835k');
     }
@@ -235,15 +245,15 @@ export class TranscodingService extends BaseService {
         this.logger.debug(`Segment ${data.split(',')[0]} ready`);
       }
     });
-    s.stderr.on('data', (data) => {
-      this.logger.error(`Error while transcoding video ${path}`, data);
-    });
+    var log = createWriteStream(`/tmp/video/${id}/transcoding.log`);
+    s.stderr.pipe(log)
     s.on('exit', (code) => {
       if (code === 0) {
         this.logger.debug(`Finished live transcoding of video ${path}`);
       } else {
         this.logger.error(`Can't live transcode video ${path}`);
       }
+      log.close();
     });
   }
 
