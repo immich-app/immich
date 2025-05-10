@@ -43,13 +43,13 @@ class DeviceSyncService {
 
       final deviceAlbums = await _albumMediaRepository.getAll();
       await _localAlbumRepository.updateAll(deviceAlbums);
-      await _localAlbumRepository.handleSyncDelta(delta);
+      await _localAlbumRepository.processDelta(delta);
 
       if (_platform.isAndroid) {
         final dbAlbums = await _localAlbumRepository.getAll();
         for (final album in dbAlbums) {
           final deviceIds = await _hostService.getAssetIdsForAlbum(album.id);
-          await _localAlbumRepository.removeMissing(album.id, deviceIds);
+          await _localAlbumRepository.syncAlbumDeletes(album.id, deviceIds);
         }
       }
 
@@ -98,7 +98,7 @@ class DeviceSyncService {
           ? await _albumMediaRepository.getAssetsForAlbum(album.id)
           : <LocalAsset>[];
 
-      await _localAlbumRepository.insert(album, assets);
+      await _localAlbumRepository.upsert(album, toUpsert: assets);
       _log.fine("Successfully added device album ${album.name}");
     } catch (e, s) {
       _log.warning("Error while adding device album", e, s);
@@ -185,9 +185,9 @@ class DeviceSyncService {
         return false;
       }
 
-      await _updateAlbum(
+      await _localAlbumRepository.upsert(
         deviceAlbum.copyWith(backupSelection: dbAlbum.backupSelection),
-        assetsToUpsert: newAssets,
+        toUpsert: newAssets,
       );
 
       return true;
@@ -213,9 +213,9 @@ class DeviceSyncService {
         _log.fine(
           "Device album ${deviceAlbum.name} is empty. Removing assets from DB.",
         );
-        await _updateAlbum(
+        await _localAlbumRepository.upsert(
           deviceAlbum.copyWith(backupSelection: dbAlbum.backupSelection),
-          assetIdsToDelete: assetsInDb.map((a) => a.id),
+          toDelete: assetsInDb.map((a) => a.id),
         );
         return true;
       }
@@ -228,7 +228,10 @@ class DeviceSyncService {
         _log.fine(
           "Device album ${deviceAlbum.name} is empty. Adding assets to DB.",
         );
-        await _updateAlbum(updatedDeviceAlbum, assetsToUpsert: assetsInDevice);
+        await _localAlbumRepository.upsert(
+          updatedDeviceAlbum,
+          toUpsert: assetsInDevice,
+        );
         return true;
       }
 
@@ -263,14 +266,14 @@ class DeviceSyncService {
         _log.fine(
           "No asset changes detected in album ${deviceAlbum.name}. Updating metadata.",
         );
-        _localAlbumRepository.update(updatedDeviceAlbum);
+        _localAlbumRepository.upsert(updatedDeviceAlbum);
         return true;
       }
 
-      await _updateAlbum(
+      await _localAlbumRepository.upsert(
         updatedDeviceAlbum,
-        assetsToUpsert: assetsToUpsert,
-        assetIdsToDelete: assetsToDelete,
+        toUpsert: assetsToUpsert,
+        toDelete: assetsToDelete,
       );
 
       return true;
@@ -279,17 +282,6 @@ class DeviceSyncService {
     }
     return true;
   }
-
-  Future<void> _updateAlbum(
-    LocalAlbum album, {
-    Iterable<LocalAsset> assetsToUpsert = const [],
-    Iterable<String> assetIdsToDelete = const [],
-  }) =>
-      _localAlbumRepository.transaction(() async {
-        await _localAlbumRepository.addAssets(album.id, assetsToUpsert);
-        await _localAlbumRepository.update(album);
-        await _localAlbumRepository.removeAssets(album.id, assetIdsToDelete);
-      });
 
   bool _assetsEqual(LocalAsset a, LocalAsset b) {
     return a.updatedAt.isAtSameMomentAs(b.updatedAt) &&

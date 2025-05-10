@@ -1,6 +1,6 @@
 package app.alextran.immich.platform
 
-import Asset
+import PlatformAsset
 import SyncDelta
 import android.content.Context
 import android.os.Build
@@ -78,7 +78,7 @@ class MediaManager(context: Context) {
   fun getMediaChanges(): SyncDelta {
     val genMap = getSavedGenerationMap(ctx)
     val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
-    val changed = mutableListOf<Asset>()
+    val changed = mutableListOf<PlatformAsset>()
     val deleted = mutableListOf<String>()
 
     var hasChanges = genMap.keys != currentVolumes
@@ -154,7 +154,7 @@ class MediaManager(context: Context) {
           val bucketId = cursor.getString(bucketIdColumn)
 
           changed.add(
-            Asset(
+            PlatformAsset(
               id,
               name,
               mediaType.toLong(),

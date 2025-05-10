@@ -78,7 +78,7 @@ class FlutterError (
 ) : Throwable()
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class Asset (
+data class PlatformAsset (
   val id: String,
   val name: String,
   val type: Long,
@@ -89,7 +89,7 @@ data class Asset (
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): Asset {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformAsset {
       val id = pigeonVar_list[0] as String
       val name = pigeonVar_list[1] as String
       val type = pigeonVar_list[2] as Long
@@ -97,7 +97,7 @@ data class Asset (
       val updatedAt = pigeonVar_list[4] as Long?
       val durationInSeconds = pigeonVar_list[5] as Long
       val albumIds = pigeonVar_list[6] as List<String>
-      return Asset(id, name, type, createdAt, updatedAt, durationInSeconds, albumIds)
+      return PlatformAsset(id, name, type, createdAt, updatedAt, durationInSeconds, albumIds)
     }
   }
   fun toList(): List<Any?> {
@@ -112,7 +112,7 @@ data class Asset (
     )
   }
   override fun equals(other: Any?): Boolean {
-    if (other !is Asset) {
+    if (other !is PlatformAsset) {
       return false
     }
     if (this === other) {
@@ -126,14 +126,14 @@ data class Asset (
 /** Generated class from Pigeon that represents data sent in messages. */
 data class SyncDelta (
   val hasChanges: Boolean,
-  val updates: List<Asset>,
+  val updates: List<PlatformAsset>,
   val deletes: List<String>
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): SyncDelta {
       val hasChanges = pigeonVar_list[0] as Boolean
-      val updates = pigeonVar_list[1] as List<Asset>
+      val updates = pigeonVar_list[1] as List<PlatformAsset>
       val deletes = pigeonVar_list[2] as List<String>
       return SyncDelta(hasChanges, updates, deletes)
     }
@@ -161,7 +161,7 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
     return when (type) {
       129.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          Asset.fromList(it)
+          PlatformAsset.fromList(it)
         }
       }
       130.toByte() -> {
@@ -174,7 +174,7 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is Asset -> {
+      is PlatformAsset -> {
         stream.write(129)
         writeValue(stream, value.toList())
       }

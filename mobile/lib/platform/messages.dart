@@ -12,7 +12,7 @@ import 'package:pigeon/pigeon.dart';
     dartOptions: DartOptions(),
   ),
 )
-class Asset {
+class PlatformAsset {
   final String id;
   final String name;
   final int type; // follows AssetType enum from base_asset.model.dart
@@ -22,7 +22,7 @@ class Asset {
   final int durationInSeconds;
   final List<String> albumIds;
 
-  const Asset({
+  const PlatformAsset({
     required this.id,
     required this.name,
     required this.type,
@@ -40,7 +40,7 @@ class SyncDelta {
     this.deletes = const [],
   });
   bool hasChanges;
-  List<Asset> updates;
+  List<PlatformAsset> updates;
   List<String> deletes;
 }
 

@@ -129,7 +129,7 @@ func deepHashMessages(value: Any?, hasher: inout Hasher) {
     
 
 /// Generated class from Pigeon that represents data sent in messages.
-struct Asset: Hashable {
+struct PlatformAsset: Hashable {
   var id: String
   var name: String
   var type: Int64
@@ -140,7 +140,7 @@ struct Asset: Hashable {
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> Asset? {
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformAsset? {
     let id = pigeonVar_list[0] as! String
     let name = pigeonVar_list[1] as! String
     let type = pigeonVar_list[2] as! Int64
@@ -149,7 +149,7 @@ struct Asset: Hashable {
     let durationInSeconds = pigeonVar_list[5] as! Int64
     let albumIds = pigeonVar_list[6] as! [String]
 
-    return Asset(
+    return PlatformAsset(
       id: id,
       name: name,
       type: type,
@@ -170,7 +170,7 @@ struct Asset: Hashable {
       albumIds,
     ]
   }
-  static func == (lhs: Asset, rhs: Asset) -> Bool {
+  static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
     return deepEqualsMessages(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashMessages(value: toList(), hasher: &hasher)
@@ -180,14 +180,14 @@ struct Asset: Hashable {
 /// Generated class from Pigeon that represents data sent in messages.
 struct SyncDelta: Hashable {
   var hasChanges: Bool
-  var updates: [Asset]
+  var updates: [PlatformAsset]
   var deletes: [String]
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> SyncDelta? {
     let hasChanges = pigeonVar_list[0] as! Bool
-    let updates = pigeonVar_list[1] as! [Asset]
+    let updates = pigeonVar_list[1] as! [PlatformAsset]
     let deletes = pigeonVar_list[2] as! [String]
 
     return SyncDelta(
@@ -214,7 +214,7 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
-      return Asset.fromList(self.readValue() as! [Any?])
+      return PlatformAsset.fromList(self.readValue() as! [Any?])
     case 130:
       return SyncDelta.fromList(self.readValue() as! [Any?])
     default:
@@ -225,7 +225,7 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
 
 private class MessagesPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? Asset {
+    if let value = value as? PlatformAsset {
       super.writeByte(129)
       super.writeValue(value.toList())
     } else if let value = value as? SyncDelta {

@@ -1,9 +1,9 @@
 import Photos
 
 struct AssetWrapper: Hashable, Equatable {
-  let asset: Asset
+  let asset: PlatformAsset
   
-  init(with asset: Asset) {
+  init(with asset: PlatformAsset) {
     self.asset = asset
   }
   
@@ -117,7 +117,7 @@ class MediaManager {
           let asset = result.object(at: i)
           
           // Asset wrapper only uses the id for comparison. Multiple change can contain the same asset, skip duplicate changes
-          let predicate = Asset(id: asset.localIdentifier, name: "", type: 0, createdAt: nil, updatedAt: nil, durationInSeconds: 0, albumIds: [])
+          let predicate = PlatformAsset(id: asset.localIdentifier, name: "", type: 0, createdAt: nil, updatedAt: nil, durationInSeconds: 0, albumIds: [])
           if (updatedAssets.contains(AssetWrapper(with: predicate))) {
             continue
           }
@@ -129,7 +129,7 @@ class MediaManager {
           let updatedAt = asset.modificationDate?.timeIntervalSince1970
           let durationInSeconds: Int64 = Int64(asset.duration)
           
-          let domainAsset = AssetWrapper(with: Asset(
+          let domainAsset = AssetWrapper(with: PlatformAsset(
             id: id,
             name: name,
             type: type,

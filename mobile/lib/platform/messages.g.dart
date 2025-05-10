@@ -29,8 +29,8 @@ bool _deepEquals(Object? a, Object? b) {
 }
 
 
-class Asset {
-  Asset({
+class PlatformAsset {
+  PlatformAsset({
     required this.id,
     required this.name,
     required this.type,
@@ -69,9 +69,9 @@ class Asset {
   Object encode() {
     return _toList();  }
 
-  static Asset decode(Object result) {
+  static PlatformAsset decode(Object result) {
     result as List<Object?>;
-    return Asset(
+    return PlatformAsset(
       id: result[0]! as String,
       name: result[1]! as String,
       type: result[2]! as int,
@@ -85,7 +85,7 @@ class Asset {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! Asset || other.runtimeType != runtimeType) {
+    if (other is! PlatformAsset || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
@@ -109,7 +109,7 @@ class SyncDelta {
 
   bool hasChanges;
 
-  List<Asset> updates;
+  List<PlatformAsset> updates;
 
   List<String> deletes;
 
@@ -128,7 +128,7 @@ class SyncDelta {
     result as List<Object?>;
     return SyncDelta(
       hasChanges: result[0]! as bool,
-      updates: (result[1] as List<Object?>?)!.cast<Asset>(),
+      updates: (result[1] as List<Object?>?)!.cast<PlatformAsset>(),
       deletes: (result[2] as List<Object?>?)!.cast<String>(),
     );
   }
@@ -159,7 +159,7 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is Asset) {
+    }    else if (value is PlatformAsset) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     }    else if (value is SyncDelta) {
@@ -174,7 +174,7 @@ class _PigeonCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 129: 
-        return Asset.decode(readValue(buffer)!);
+        return PlatformAsset.decode(readValue(buffer)!);
       case 130: 
         return SyncDelta.decode(readValue(buffer)!);
       default:
