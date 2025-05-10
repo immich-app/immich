@@ -2,7 +2,6 @@ import 'package:openapi/api.dart';
 
 class SyncEvent {
   final SyncEntityType type;
-  // ignore: avoid-dynamic
   final dynamic data;
   final String ack;
 

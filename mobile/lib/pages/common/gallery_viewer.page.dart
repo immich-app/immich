@@ -203,7 +203,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       });
     });
 
-    PhotoViewGalleryPageOptions buildImage(BuildContext context, Asset asset) {
+    PhotoViewGalleryPageOptions buildImage(Asset asset) {
       return PhotoViewGalleryPageOptions(
         onDragStart: (_, details, __) {
           localPosition.value = details.localPosition;
@@ -278,7 +278,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
 
       if (newAsset.isImage && !isPlayingMotionVideo) {
-        return buildImage(context, newAsset);
+        return buildImage(newAsset);
       }
       return buildVideo(context, newAsset);
     }
