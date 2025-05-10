@@ -58,7 +58,7 @@ export interface EnvData {
   database: {
     config: DatabaseConnectionParams;
     skipMigrations: boolean;
-    vectorExtension: VectorExtension;
+    vectorExtension?: VectorExtension;
   };
 
   licensePublicKey: {
@@ -196,6 +196,22 @@ const getEnv = (): EnvData => {
         ssl: dto.DB_SSL_MODE || undefined,
       };
 
+  let vectorExtension: VectorExtension | undefined;
+  switch (dto.DB_VECTOR_EXTENSION) {
+    case 'pgvector': {
+      vectorExtension = DatabaseExtension.VECTOR;
+      break;
+    }
+    case 'pgvecto.rs': {
+      vectorExtension = DatabaseExtension.VECTORS;
+      break;
+    }
+    case 'vectorchord': {
+      vectorExtension = DatabaseExtension.VECTORCHORD;
+      break;
+    }
+  }
+
   return {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
@@ -251,7 +267,7 @@ const getEnv = (): EnvData => {
     database: {
       config: databaseConnection,
       skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,
-      vectorExtension: dto.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS,
+      vectorExtension,
     },
 
     licensePublicKey: isProd ? productionKeys : stagingKeys,

@@ -600,7 +600,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
+        image: tensorchord/vchord-postgres:pg14-v0.3.0
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
