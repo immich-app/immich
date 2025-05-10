@@ -589,7 +589,7 @@
     {/if}
 
     <main
-      class="relative h-dvh overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+      class="relative h-dvh overflow-hidden bg-immich-bg px-6 max-md:mt-[var(--navbar-height-md)] mt-[var(--navbar-height)] dark:bg-immich-dark-bg"
     >
       <AssetGrid
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
@@ -692,7 +692,7 @@
       </AssetGrid>
 
       {#if showActivityStatus}
-        <div class="absolute z-[2] bottom-0 end-0 mb-6 me-6 justify-self-end">
+        <div class="absolute bottom-0 end-0 mb-6 me-6 justify-self-end">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
             isLiked={activityManager.isLiked}
@@ -709,7 +709,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
+        class="w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
         translate="yes"
       >
         <ActivityViewer
