@@ -5,6 +5,7 @@
   "new_pin_code": "New PIN code",
   "setup_pin_code": "Setup a PIN code",
   "confirm_new_pin_code": "Confirm new PIN code",
+  "change_pin_code": "Change PIN code",
   "unable_to_change_pin_code": "Unable to change PIN code",
   "unable_to_setup_pin_code": "Unable to setup PIN code",
   "pin_code_changed_successfully": "Successfully changed PIN code",
