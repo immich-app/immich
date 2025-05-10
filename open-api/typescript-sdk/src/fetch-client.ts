@@ -304,6 +304,7 @@ export type AssetResponseDto = {
     id: string;
     isArchived: boolean;
     isFavorite: boolean;
+    isLocked: boolean;
     isOffline: boolean;
     isTrashed: boolean;
     /** This property was deprecated in v1.106.0 */
@@ -520,6 +521,7 @@ export type PinCodeSetupDto = {
     pinCode: string;
 };
 export type AuthStatusResponseDto = {
+    hasElevatedPermission: boolean;
     password: boolean;
     pinCode: boolean;
 };
@@ -2055,6 +2057,15 @@ export function changePinCode({ pinCodeChangeDto }: {
         ...opts,
         method: "PUT",
         body: pinCodeChangeDto
+    })));
+}
+export function verifyPinCode({ pinCodeSetupDto }: {
+    pinCodeSetupDto: PinCodeSetupDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code/verify", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: pinCodeSetupDto
     })));
 }
 export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
@@ -3664,7 +3675,8 @@ export enum Permission {
 export enum AssetVisibility {
     Archive = "archive",
     Timeline = "timeline",
-    Hidden = "hidden"
+    Hidden = "hidden",
+    Locked = "locked"
 }
 export enum AssetMediaStatus {
     Created = "created",

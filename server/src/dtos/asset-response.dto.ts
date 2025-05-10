@@ -43,6 +43,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
+  isLocked!: boolean;
   exifInfo?: ExifResponseDto;
   tags?: TagResponseDto[];
   people?: PersonWithFacesResponseDto[];
@@ -184,6 +185,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
     isArchived: entity.visibility === AssetVisibility.ARCHIVE,
     isTrashed: !!entity.deletedAt,
+    isLocked: entity.visibility === AssetVisibility.LOCKED,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,

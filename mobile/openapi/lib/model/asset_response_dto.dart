@@ -25,6 +25,7 @@ class AssetResponseDto {
     required this.id,
     required this.isArchived,
     required this.isFavorite,
+    required this.isLocked,
     required this.isOffline,
     required this.isTrashed,
     this.libraryId,
@@ -75,6 +76,8 @@ class AssetResponseDto {
   bool isArchived;
 
   bool isFavorite;
+
+  bool isLocked;
 
   bool isOffline;
 
@@ -146,6 +149,7 @@ class AssetResponseDto {
     other.id == id &&
     other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
+    other.isLocked == isLocked &&
     other.isOffline == isOffline &&
     other.isTrashed == isTrashed &&
     other.libraryId == libraryId &&
@@ -180,6 +184,7 @@ class AssetResponseDto {
     (id.hashCode) +
     (isArchived.hashCode) +
     (isFavorite.hashCode) +
+    (isLocked.hashCode) +
     (isOffline.hashCode) +
     (isTrashed.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
@@ -200,7 +205,7 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isLocked=$isLocked, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -224,6 +229,7 @@ class AssetResponseDto {
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
       json[r'isFavorite'] = this.isFavorite;
+      json[r'isLocked'] = this.isLocked;
       json[r'isOffline'] = this.isOffline;
       json[r'isTrashed'] = this.isTrashed;
     if (this.libraryId != null) {
@@ -294,6 +300,7 @@ class AssetResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isLocked: mapValueOfType<bool>(json, r'isLocked')!,
         isOffline: mapValueOfType<bool>(json, r'isOffline')!,
         isTrashed: mapValueOfType<bool>(json, r'isTrashed')!,
         libraryId: mapValueOfType<String>(json, r'libraryId'),
@@ -369,6 +376,7 @@ class AssetResponseDto {
     'id',
     'isArchived',
     'isFavorite',
+    'isLocked',
     'isOffline',
     'isTrashed',
     'localDateTime',

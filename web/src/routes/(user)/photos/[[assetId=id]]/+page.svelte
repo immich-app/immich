@@ -12,6 +12,7 @@
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import LinkLivePhotoAction from '$lib/components/photos-page/actions/link-live-photo-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import StackAction from '$lib/components/photos-page/actions/stack-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
@@ -75,6 +76,11 @@
     assetStore.updateAssets([still]);
   };
 
+  const handleSetVisibility = (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+  };
+
   beforeNavigate(() => {
     isFaceEditMode.value = false;
   });
@@ -124,6 +130,7 @@
         <TagAction menuItem />
       {/if}
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <hr />
       <AssetJobActions />
     </ButtonContextMenu>

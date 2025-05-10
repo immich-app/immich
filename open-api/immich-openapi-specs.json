@@ -2395,6 +2395,41 @@
         ]
       }
     },
+    "/auth/pin-code/verify": {
+      "post": {
+        "operationId": "verifyPinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeSetupDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
     "/auth/status": {
       "get": {
         "operationId": "getAuthStatus",
@@ -8995,6 +9030,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isLocked": {
+            "type": "boolean"
+          },
           "isOffline": {
             "type": "boolean"
           },
@@ -9088,6 +9126,7 @@
           "id",
           "isArchived",
           "isFavorite",
+          "isLocked",
           "isOffline",
           "isTrashed",
           "localDateTime",
@@ -9151,7 +9190,8 @@
         "enum": [
           "archive",
           "timeline",
-          "hidden"
+          "hidden",
+          "locked"
         ],
         "type": "string"
       },
@@ -9166,6 +9206,9 @@
       },
       "AuthStatusResponseDto": {
         "properties": {
+          "hasElevatedPermission": {
+            "type": "boolean"
+          },
           "password": {
             "type": "boolean"
           },
@@ -9174,6 +9217,7 @@
           }
         },
         "required": [
+          "hasElevatedPermission",
           "password",
           "pinCode"
         ],
@@ -12589,7 +12633,8 @@
             "enum": [
               "archive",
               "timeline",
-              "hidden"
+              "hidden",
+              "locked"
             ],
             "type": "string"
           }

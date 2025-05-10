@@ -444,15 +444,61 @@ export class AuthService extends BaseService {
         await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
       }
 
+      // Pin check
+      let isPinExpired = true;
+      const pinExpiresAt = session.pinExpiresAt;
+
+      if (pinExpiresAt) {
+        const pinExpiresAtDate = DateTime.fromJSDate(pinExpiresAt);
+        const pinDiff = now.diff(pinExpiresAtDate, ['minutes']);
+
+        // Push another 5 minutes
+        if (pinDiff.minutes < 5) {
+          isPinExpired = false;
+          await this.sessionRepository.update(session.id, {
+            pinExpiresAt: new Date(DateTime.now().plus({ minutes: 5 }).toJSDate()),
+          });
+        }
+
+        if (pinDiff.minutes > 15) {
+          isPinExpired = true;
+          await this.sessionRepository.update(session.id, { pinExpiresAt: null });
+        }
+      }
+
       return {
         user: session.user,
         session: {
           id: session.id,
+          hasElevatedPermission: !isPinExpired,
         },
       };
     }
 
     throw new UnauthorizedException('Invalid user token');
+  }
+
+  async verifyPinCode(auth: AuthDto, dto: PinCodeSetupDto): Promise<void> {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    if (!user.pinCode) {
+      throw new BadRequestException('User does not have a PIN code');
+    }
+
+    if (!this.validateSecret(dto.pinCode, user.pinCode)) {
+      throw new BadRequestException('Wrong PIN code');
+    }
+
+    if (!auth.session) {
+      throw new BadRequestException('Session is missing');
+    }
+
+    await this.sessionRepository.update(auth.session.id, {
+      pinExpiresAt: new Date(DateTime.now().plus({ minutes: 15 }).toJSDate()),
+    });
   }
 
   private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
@@ -493,6 +539,7 @@ export class AuthService extends BaseService {
     return {
       pinCode: !!user.pinCode,
       password: !!user.password,
+      hasElevatedPermission: !!auth.session?.hasElevatedPermission,
     };
   }
 }

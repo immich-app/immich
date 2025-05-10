@@ -1,3 +1,4 @@
+import type { Color } from '@immich/ui';
 import { writable } from 'svelte/store';
 
 type DialogActions = {
@@ -8,6 +9,7 @@ type DialogOptions = {
   title?: string;
   prompt?: string;
   confirmText?: string;
+  confirmColor?: Color;
   cancelText?: string;
   hideCancelButton?: boolean;
   disable?: boolean;
