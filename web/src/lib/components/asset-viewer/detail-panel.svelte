@@ -37,6 +37,7 @@
     mdiInformationOutline,
     mdiPencil,
     mdiPlus,
+    mdiVideo3d,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -461,6 +462,16 @@
               </p>
             {/if}
           </div>
+        </div>
+      </div>
+    {/if}
+
+    {#if asset.exifInfo?.projectionType?.startsWith('SPATIAL')}
+      <div class="flex gap-4 py-4">
+        <div><Icon path={mdiVideo3d} size="24" /></div>
+        <div>
+          <p>{$t('spatial_media')}</p>
+          <p class="text-sm">{asset.exifInfo.projectionType || '-'}</p>
         </div>
       </div>
     {/if}
