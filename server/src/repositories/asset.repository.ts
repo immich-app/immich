@@ -141,7 +141,7 @@ export interface DayOfYearAssets {
 
 @Injectable()
 export class AssetRepository {
-  constructor(@InjectKysely() private db: Kysely<DB>) {}
+  constructor(@InjectKysely() private db: Kysely<DB>) { }
 
   async upsertExif(exif: Insertable<Exif>): Promise<void> {
     const value = { ...exif, assetId: asUuid(exif.assetId) };
@@ -528,6 +528,19 @@ export class AssetRepository {
       .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .orderBy((eb) => eb.fn('random'))
+      .limit(take)
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, 5] })
+  getLargeAssets(ownerId: string, take: number) {
+    return this.db
+      .selectFrom('assets')
+      .selectAll('assets')
+      .$call(withExif)
+      .where('ownerId', '=', ownerId)
+      .where('deletedAt', 'is', null)
+      .orderBy('exif.fileSizeInByte', 'desc')
       .limit(take)
       .execute();
   }

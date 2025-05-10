@@ -627,6 +627,9 @@ export type JobCommandDto = {
     command: JobCommand;
     force?: boolean;
 };
+export type LargeAssetsResponseDto = {
+    assets: AssetResponseDto[];
+};
 export type LibraryResponseDto = {
     assetCount: number;
     createdAt: string;
@@ -2185,6 +2188,14 @@ export function sendJobCommand({ id, jobCommandDto }: {
         method: "PUT",
         body: jobCommandDto
     })));
+}
+export function getLargeAssets(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LargeAssetsResponseDto;
+    }>("/large-assets", {
+        ...opts
+    }));
 }
 export function getAllLibraries(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
