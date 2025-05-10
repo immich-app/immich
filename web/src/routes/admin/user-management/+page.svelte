@@ -161,7 +161,7 @@
                   {#if immichUser.deletedAt && immichUser.status === UserStatus.Deleted}
                     <IconButton
                       shape="round"
-                      size="small"
+                      size="medium"
                       icon={mdiDeleteRestore}
                       title={$t('admin.user_restore_scheduled_removal', {
                         values: { date: getDeleteDate(immichUser.deletedAt) },
