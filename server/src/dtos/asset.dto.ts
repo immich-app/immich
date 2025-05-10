@@ -16,7 +16,7 @@ import {
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
-import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { IsNotSiblingOf, Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()
@@ -35,6 +35,7 @@ export class UpdateAssetBase {
   @ValidateAssetVisibility({ optional: true })
   visibility?: AssetVisibility;
 
+  @IsNotSiblingOf(['dateTimeRelative'])
   @Optional()
   @IsDateString()
   dateTimeOriginal?: string;
@@ -62,6 +63,11 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
 
   @Optional()
   duplicateId?: string | null;
+
+  @IsNotSiblingOf(['dateTimeOriginal'])
+  @Optional()
+  @IsInt()
+  dateTimeRelative?: number;
 }
 
 export class UpdateAssetDto extends UpdateAssetBase {
