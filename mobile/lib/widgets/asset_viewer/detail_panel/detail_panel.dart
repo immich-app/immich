@@ -4,6 +4,7 @@ import 'package:immich_mobile/widgets/asset_viewer/description_input.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/asset_date_time.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/asset_details.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/asset_location.dart';
+import 'package:immich_mobile/widgets/asset_viewer/detail_panel/asset_tags.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/people_info.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 
@@ -30,6 +31,7 @@ class DetailPanel extends HookConsumerWidget {
               PeopleInfo(asset: asset),
               AssetLocation(asset: asset),
               AssetDetails(asset: asset),
+              AssetTags(asset: asset),
             ],
           ),
         ),

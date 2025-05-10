@@ -108,6 +108,71 @@ class AssetService {
         : (changes.upserted.map(Asset.remote).toList(), changes.deleted);
   }
 
+  Future<void> untagAssets(
+      List<Asset> assets, List<TagResponseDto> tags) async {
+    final actual_assets = assets
+        .where((b) => b.remoteId != null)
+        .map<String>((a) => a.remoteId ?? "")
+        .toList();
+    final actual_tags = tags.map<String>((x) => x.id).toList();
+    for (String tag_id in actual_tags) {
+      try {
+        _apiService.tagsApi.untagAssets(tag_id, BulkIdsDto(ids: actual_assets));
+      } catch (error, stack) {
+        log.severe(
+          'Error while untagging remote assets: ${error.toString()}',
+          error,
+          stack,
+        );
+      }
+    }
+  }
+
+  Future<void> tagAssets(List<Asset> assets, List<TagResponseDto> tags) async {
+    final actual_assets = assets
+        .where((b) => b.remoteId != null)
+        .map<String>((a) => a.remoteId ?? "")
+        .toList();
+    final actual_tags = tags.map<String>((x) => x.id).toList();
+    final bulk_request =
+        TagBulkAssetsDto(assetIds: actual_assets, tagIds: actual_tags);
+    try {
+      _apiService.tagsApi.bulkTagAssets(bulk_request);
+    } catch (error, stack) {
+      log.severe(
+        'Error while tagging remote assets: ${error.toString()}',
+        error,
+        stack,
+      );
+    }
+  }
+
+  Future<List<TagResponseDto>> getAllTags() async {
+    List<TagResponseDto>? result = await _apiService.tagsApi.getAllTags();
+    return result ?? [];
+  }
+
+  /// Returns the list of tags of the given asset id.
+  // If the server is not reachable `null` is returned.
+  Future<Asset> getTagsOfAsset(Asset asset) async {
+    try {
+      if (asset.remoteId != null) {
+        final AssetResponseDto? dto =
+            await _apiService.assetsApi.getAssetInfo(asset.remoteId!);
+        if (dto != null) {
+          asset.tags = dto.tags;
+        }
+      }
+    } catch (error, stack) {
+      log.severe(
+        'Error while getting remote asset tags: ${error.toString()}',
+        error,
+        stack,
+      );
+    }
+    return asset;
+  }
+
   /// Returns the list of people of the given asset id.
   // If the server is not reachable `null` is returned.
   Future<List<PersonWithFacesResponseDto>?> getRemotePeopleOfAsset(
