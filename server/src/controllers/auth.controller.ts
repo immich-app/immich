@@ -1,12 +1,15 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
   AuthDto,
+  AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
   LoginResponseDto,
   LogoutResponseDto,
+  PinCodeChangeDto,
+  PinCodeSetupDto,
   SignUpDto,
   ValidateAccessTokenResponseDto,
 } from 'src/dtos/auth.dto';
@@ -73,5 +76,29 @@ export class AuthController {
       ImmichCookie.AUTH_TYPE,
       ImmichCookie.IS_AUTHENTICATED,
     ]);
+  }
+
+  @Get('status')
+  @Authenticated()
+  getAuthStatus(@Auth() auth: AuthDto): Promise<AuthStatusResponseDto> {
+    return this.service.getAuthStatus(auth);
+  }
+
+  @Post('pin-code')
+  @Authenticated()
+  setupPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeSetupDto): Promise<void> {
+    return this.service.setupPinCode(auth, dto);
+  }
+
+  @Put('pin-code')
+  @Authenticated()
+  async changePinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeChangeDto): Promise<void> {
+    return this.service.changePinCode(auth, dto);
+  }
+
+  @Delete('pin-code')
+  @Authenticated()
+  async resetPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeChangeDto): Promise<void> {
+    return this.service.resetPinCode(auth, dto);
   }
 }

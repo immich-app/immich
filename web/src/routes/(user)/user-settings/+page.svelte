@@ -1,19 +1,18 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import UserSettingsList from '$lib/components/user-settings-page/user-settings-list.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { mdiKeyboard } from '@mdi/js';
-  import type { PageData } from './$types';
-  import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
   }
 
   let { data }: Props = $props();
-
-  let isShowKeyboardShortcut = $state(false);
 </script>
 
 <UserPageLayout title={data.meta.title}>
@@ -21,7 +20,7 @@
     <CircleIconButton
       icon={mdiKeyboard}
       title={$t('show_keyboard_shortcuts')}
-      onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+      onclick={() => modalManager.show(ShortcutsModal, {})}
     />
   {/snippet}
   <section class="mx-4 flex place-content-center">
@@ -30,7 +29,3 @@
     </div>
   </section>
 </UserPageLayout>
-
-{#if isShowKeyboardShortcut}
-  <ShowShortcuts onClose={() => (isShowKeyboardShortcut = false)} />
-{/if}

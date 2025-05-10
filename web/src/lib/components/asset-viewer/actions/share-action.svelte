@@ -1,7 +1,9 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
+  import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import { makeSharedLinkUrl } from '$lib/utils';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -12,13 +14,13 @@
 
   let { asset }: Props = $props();
 
-  let showModal = $state(false);
+  const handleClick = async () => {
+    const sharedLink = await modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] });
+
+    if (sharedLink) {
+      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
+    }
+  };
 </script>
 
-<CircleIconButton color="opaque" icon={mdiShareVariantOutline} onclick={() => (showModal = true)} title={$t('share')} />
-
-{#if showModal}
-  <Portal target="body">
-    <CreateSharedLinkModal assetIds={[asset.id]} onClose={() => (showModal = false)} />
-  </Portal>
-{/if}
+<CircleIconButton color="opaque" icon={mdiShareVariantOutline} onclick={handleClick} title={$t('share')} />
