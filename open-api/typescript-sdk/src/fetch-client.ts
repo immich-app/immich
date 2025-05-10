@@ -304,6 +304,7 @@ export type AssetResponseDto = {
     id: string;
     isArchived: boolean;
     isFavorite: boolean;
+    isLocked: boolean;
     isOffline: boolean;
     isTrashed: boolean;
     /** This property was deprecated in v1.106.0 */
@@ -3664,7 +3665,8 @@ export enum Permission {
 export enum AssetVisibility {
     Archive = "archive",
     Timeline = "timeline",
-    Hidden = "hidden"
+    Hidden = "hidden",
+    Locked = "locked"
 }
 export enum AssetMediaStatus {
     Created = "created",

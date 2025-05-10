@@ -8995,6 +8995,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isLocked": {
+            "type": "boolean"
+          },
           "isOffline": {
             "type": "boolean"
           },
@@ -9088,6 +9091,7 @@
           "id",
           "isArchived",
           "isFavorite",
+          "isLocked",
           "isOffline",
           "isTrashed",
           "localDateTime",
@@ -9151,7 +9155,8 @@
         "enum": [
           "archive",
           "timeline",
-          "hidden"
+          "hidden",
+          "locked"
         ],
         "type": "string"
       },
@@ -12589,7 +12594,8 @@
             "enum": [
               "archive",
               "timeline",
-              "hidden"
+              "hidden",
+              "locked"
             ],
             "type": "string"
           }

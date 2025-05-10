@@ -1,36 +1,38 @@
 <script lang="ts">
+  import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
+  import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
+  import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { preferences } from '$lib/stores/user.store';
   import {
     mdiAccount,
-    mdiAccountOutline,
     mdiAccountMultiple,
     mdiAccountMultipleOutline,
+    mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
+    mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
     mdiImageAlbum,
     mdiImageMultiple,
     mdiImageMultipleOutline,
+    mdiLink,
+    mdiLock,
+    mdiLockOutline,
     mdiMagnify,
     mdiMap,
     mdiMapOutline,
-    mdiTrashCan,
-    mdiTrashCanOutline,
+    mdiTagMultipleOutline,
     mdiToolbox,
     mdiToolboxOutline,
-    mdiFolderOutline,
-    mdiTagMultipleOutline,
-    mdiLink,
+    mdiTrashCan,
+    mdiTrashCanOutline,
   } from '@mdi/js';
-  import SideBarSection from './side-bar-section.svelte';
-  import SideBarLink from './side-bar-link.svelte';
   import { t } from 'svelte-i18n';
-  import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
-  import { preferences } from '$lib/stores/user.store';
-  import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
-  import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import { fly } from 'svelte/transition';
+  import SideBarLink from './side-bar-link.svelte';
+  import SideBarSection from './side-bar-section.svelte';
 
   let isArchiveSelected: boolean = $state(false);
   let isFavoritesSelected: boolean = $state(false);
@@ -40,6 +42,7 @@
   let isSharingSelected: boolean = $state(false);
   let isTrashSelected: boolean = $state(false);
   let isUtilitiesSelected: boolean = $state(false);
+  let isLockedFolderSelected: boolean = $state(false);
 </script>
 
 <SideBarSection ariaLabel={$t('primary')}>
@@ -126,6 +129,13 @@
     routeId="/(user)/archive"
     bind:isSelected={isArchiveSelected}
     icon={isArchiveSelected ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
+  ></SideBarLink>
+
+  <SideBarLink
+    title={$t('locked_folder')}
+    routeId="/(user)/locked"
+    bind:isSelected={isLockedFolderSelected}
+    icon={isLockedFolderSelected ? mdiLock : mdiLockOutline}
   ></SideBarLink>
 
   {#if $featureFlags.trash}
