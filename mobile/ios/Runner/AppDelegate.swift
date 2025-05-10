@@ -22,6 +22,10 @@ import UIKit
     BackgroundServicePlugin.registerBackgroundProcessing()
 
     BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
+    
+    // Register pigeon handler
+    let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
+    ImHostServiceSetup.setUp(binaryMessenger: controller.binaryMessenger, api: ImHostServiceImpl())
 
     BackgroundServicePlugin.setPluginRegistrantCallback { registry in
       if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {

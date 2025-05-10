@@ -9,7 +9,7 @@ abstract final class LocalAssetStub {
         checksum: "image1-checksum",
         type: AssetType.image,
         createdAt: DateTime(2019),
-        updatedAt: DateTime.now(),
+        updatedAt: DateTime(2020),
         width: 1920,
         height: 1080,
         durationInSeconds: 0,

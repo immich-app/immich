@@ -41,16 +41,14 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
 
   @override
   Future<List<LocalAlbum>> getAll() {
-    final filter = AdvancedCustomFilter(
-      orderBy: [OrderByItem.asc(CustomColumns.base.id)],
-    );
-
-    return PhotoManager.getAssetPathList(hasAll: true, filterOption: filter)
-        .then((e) {
+    return PhotoManager.getAssetPathList(
+      hasAll: true,
+      filterOption: AdvancedCustomFilter(),
+    ).then((e) {
       if (_platform.isAndroid) {
         e.removeWhere((a) => a.isAll);
       }
-      return e.toDtoList();
+      return Future.wait(e.map((a) => a.toDto()));
     });
   }
 
@@ -77,7 +75,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
       lastPageCount = page.length;
       pageNumber++;
     } while (lastPageCount == kFetchLocalAssetsBatchSize);
-    return assets.toDtoList();
+    return Future.wait(assets.map((a) => a.toDto()));
   }
 
   @override
@@ -110,11 +108,6 @@ extension on AssetEntity {
       );
 }
 
-extension on List<AssetEntity> {
-  Future<List<asset.LocalAsset>> toDtoList() =>
-      Future.wait(map((a) => a.toDto()));
-}
-
 extension on AssetPathEntity {
   Future<LocalAlbum> toDto({bool withAssetCount = true}) async => LocalAlbum(
         id: id,
@@ -124,9 +117,4 @@ extension on AssetPathEntity {
         assetCount: withAssetCount ? await assetCountAsync : 0,
         backupSelection: BackupSelection.none,
       );
-}
-
-extension on List<AssetPathEntity> {
-  Future<List<LocalAlbum>> toDtoList({bool withAssetCount = true}) =>
-      Future.wait(map((a) => a.toDto(withAssetCount: withAssetCount)));
 }

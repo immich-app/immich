@@ -3,6 +3,7 @@ plugins {
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
     id 'com.google.devtools.ksp'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 def localProperties = new Properties()
@@ -89,6 +90,7 @@ dependencies {
     def concurrent_version = '1.2.0'
     def guava_version = '33.3.1-android'
     def glide_version = '4.16.0'
+    def serialization_version = '1.8.1'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
@@ -96,6 +98,7 @@ dependencies {
     implementation "androidx.concurrent:concurrent-futures:$concurrent_version"
     implementation "com.google.guava:guava:$guava_version"
     implementation "com.github.bumptech.glide:glide:$glide_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version"
     ksp "com.github.bumptech.glide:ksp:$glide_version"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
 }
