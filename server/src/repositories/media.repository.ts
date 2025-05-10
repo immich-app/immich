@@ -197,6 +197,12 @@ export class MediaRepository {
           width: this.parseInt(stream.width),
           codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
           codecType: stream.codec_type,
+          codecTag: stream.codec_tag_string,
+          profile: stream.profile as unknown as string, // In reality this is string like High/Baseline
+          fps: (stream.avg_frame_rate)
+            ? this.parseInt(stream.avg_frame_rate.split('/')[0])
+            : this.parseInt(stream.nb_frames) / this.parseInt(stream.duration),
+          level: this.parseInt(stream.level),
           frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
           rotation: this.parseInt(stream.rotation),
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
