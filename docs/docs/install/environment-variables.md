@@ -80,6 +80,7 @@ Information on the current workers can be found [here](/docs/administration/jobs
 | `DB_USERNAME`                       | Database user                                                            |  `postgres`  | server, database<sup>\*1</sup> |
 | `DB_PASSWORD`                       | Database password                                                        |  `postgres`  | server, database<sup>\*1</sup> |
 | `DB_DATABASE_NAME`                  | Database name                                                            |   `immich`   | server, database<sup>\*1</sup> |
+| `DB_SSL_MODE`                       | Database SSL mode                                                        |              | server                         |
 | `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server                         |
 | `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server                         |
 

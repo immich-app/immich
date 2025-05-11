@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AssetType, SyncEntityType, SyncRequestType } from 'src/enum';
+import { AssetType, AssetVisibility, SyncEntityType, SyncRequestType } from 'src/enum';
 import { Optional, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
@@ -67,7 +67,7 @@ export class SyncAssetV1 {
   type!: AssetType;
   deletedAt!: Date | null;
   isFavorite!: boolean;
-  isVisible!: boolean;
+  visibility!: AssetVisibility;
 }
 
 export class SyncAssetDeleteV1 {

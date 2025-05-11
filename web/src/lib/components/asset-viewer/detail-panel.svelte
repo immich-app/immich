@@ -6,7 +6,6 @@
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
@@ -355,14 +354,12 @@
     {/if}
 
     {#if isShowChangeDate}
-      <Portal>
-        <ChangeDate
-          initialDate={dateTime}
-          initialTimeZone={timeZone ?? ''}
-          onConfirm={handleConfirmChangeDate}
-          onCancel={() => (isShowChangeDate = false)}
-        />
-      </Portal>
+      <ChangeDate
+        initialDate={dateTime}
+        initialTimeZone={timeZone ?? ''}
+        onConfirm={handleConfirmChangeDate}
+        onCancel={() => (isShowChangeDate = false)}
+      />
     {/if}
 
     <div class="flex gap-4 py-4">
@@ -494,6 +491,7 @@
           },
         ]}
         center={latlng}
+        showSettings={false}
         zoom={12.5}
         simplified
         useLocationPin

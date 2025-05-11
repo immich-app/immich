@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { DB, Exif } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetStatus, AssetType } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { anyUuid, asUuid, searchAssetBuilder, vectorIndexQuery } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
@@ -26,17 +26,16 @@ export interface SearchUserIdOptions {
 export type SearchIdOptions = SearchAssetIdOptions & SearchUserIdOptions;
 
 export interface SearchStatusOptions {
-  isArchived?: boolean;
   isEncoded?: boolean;
   isFavorite?: boolean;
   isMotion?: boolean;
   isOffline?: boolean;
-  isVisible?: boolean;
   isNotInAlbum?: boolean;
   type?: AssetType;
   status?: AssetStatus;
   withArchived?: boolean;
   withDeleted?: boolean;
+  visibility?: AssetVisibility;
 }
 
 export interface SearchOneToOneRelationOptions {
@@ -276,7 +275,7 @@ export class SearchRepository {
           .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.deletedAt', 'is', null)
-          .where('assets.isVisible', '=', true)
+          .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
           .where('assets.type', '=', type)
           .where('assets.id', '!=', asUuid(assetId))
           .where('assets.stackId', 'is', null)
@@ -367,8 +366,7 @@ export class SearchRepository {
           .select(['city', 'assetId'])
           .innerJoin('assets', 'assets.id', 'exif.assetId')
           .where('assets.ownerId', '=', anyUuid(userIds))
-          .where('assets.isVisible', '=', true)
-          .where('assets.isArchived', '=', false)
+          .where('assets.visibility', '=', AssetVisibility.TIMELINE)
           .where('assets.type', '=', AssetType.IMAGE)
           .where('assets.deletedAt', 'is', null)
           .orderBy('city')
@@ -384,8 +382,7 @@ export class SearchRepository {
                 .select(['city', 'assetId'])
                 .innerJoin('assets', 'assets.id', 'exif.assetId')
                 .where('assets.ownerId', '=', anyUuid(userIds))
-                .where('assets.isVisible', '=', true)
-                .where('assets.isArchived', '=', false)
+                .where('assets.visibility', '=', AssetVisibility.TIMELINE)
                 .where('assets.type', '=', AssetType.IMAGE)
                 .where('assets.deletedAt', 'is', null)
                 .whereRef('exif.city', '>', 'cte.city')
@@ -518,7 +515,7 @@ export class SearchRepository {
       .distinctOn(field)
       .innerJoin('assets', 'assets.id', 'exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
-      .where('isVisible', '=', true)
+      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null);
   }

@@ -41,7 +41,7 @@ describe('Thumbnail component', () => {
     expect(container).not.toBeNull();
     expect(container!.getAttribute('tabindex')).toBe('0');
 
-    // Guarding against inserting extra tabbable elments in future in <Thumbnail/>
+    // Guarding against inserting extra tabbable elements in future in <Thumbnail/>
     const tabbables = getTabbable(container!);
     expect(tabbables.length).toBe(0);
   });

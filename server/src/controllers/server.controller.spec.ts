@@ -6,16 +6,20 @@ import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils'
 
 describe(ServerController.name, () => {
   let ctx: ControllerContext;
+  const serverService = mockBaseService(ServerService);
+  const versionService = mockBaseService(VersionService);
 
   beforeAll(async () => {
     ctx = await controllerSetup(ServerController, [
-      { provide: ServerService, useValue: mockBaseService(ServerService) },
-      { provide: VersionService, useValue: mockBaseService(VersionService) },
+      { provide: ServerService, useValue: serverService },
+      { provide: VersionService, useValue: versionService },
     ]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
+    serverService.resetAllMocks();
+    versionService.resetAllMocks();
     ctx.reset();
   });
 

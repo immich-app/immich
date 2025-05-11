@@ -6,27 +6,27 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
-import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
-import 'package:immich_mobile/repositories/file_media.repository.dart';
-import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/manual_upload_state.model.dart';
+import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
+import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
-import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
+import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/backup_album.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
@@ -170,7 +170,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
 
     if (state.showDetailedNotification) {
       final title = "backup_background_service_current_upload_notification"
-          .tr(args: [state.currentUploadAsset.fileName]);
+          .tr(namedArgs: {'filename': state.currentUploadAsset.fileName});
       _throttledDetailNotify(title: title, progress: sent, total: total);
     }
   }
@@ -186,7 +186,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     if (state.showDetailedNotification) {
       _throttledDetailNotify.title =
           "backup_background_service_current_upload_notification"
-              .tr(args: [currentUploadAsset.fileName]);
+              .tr(namedArgs: {'filename': currentUploadAsset.fileName});
       _throttledDetailNotify.progress = 0;
       _throttledDetailNotify.total = 0;
     }

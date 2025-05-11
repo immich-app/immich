@@ -7,11 +7,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
 class SharedLinkEditPage extends HookConsumerWidget {
@@ -241,8 +241,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
           ),
           DropdownMenuEntry(
             value: 30,
-            label:
-                "shared_link_edit_expire_after_option_minutes".tr(args: ["30"]),
+            label: "shared_link_edit_expire_after_option_minutes"
+                .tr(namedArgs: {'count': "30"}),
           ),
           DropdownMenuEntry(
             value: 60,
@@ -250,7 +250,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
           ),
           DropdownMenuEntry(
             value: 60 * 6,
-            label: "shared_link_edit_expire_after_option_hours".tr(args: ["6"]),
+            label: "shared_link_edit_expire_after_option_hours"
+                .tr(namedArgs: {'count': "6"}),
           ),
           DropdownMenuEntry(
             value: 60 * 24,
@@ -258,20 +259,23 @@ class SharedLinkEditPage extends HookConsumerWidget {
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 7,
-            label: "shared_link_edit_expire_after_option_days".tr(args: ["7"]),
+            label: "shared_link_edit_expire_after_option_days"
+                .tr(namedArgs: {'count': "7"}),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30,
-            label: "shared_link_edit_expire_after_option_days".tr(args: ["30"]),
+            label: "shared_link_edit_expire_after_option_days"
+                .tr(namedArgs: {'count': "30"}),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30 * 3,
-            label:
-                "shared_link_edit_expire_after_option_months".tr(args: ["3"]),
+            label: "shared_link_edit_expire_after_option_months"
+                .tr(namedArgs: {'count': "3"}),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30 * 12,
-            label: "shared_link_edit_expire_after_option_year".tr(args: ["1"]),
+            label: "shared_link_edit_expire_after_option_year"
+                .tr(namedArgs: {'count': "1"}),
           ),
         ],
       );

@@ -35,14 +35,14 @@ select
     where
       (
         "assets"."type" = $1
-        and "assets"."isVisible" = $2
+        and "assets"."visibility" != $2
       )
   ) as "photos",
   count(*) filter (
     where
       (
         "assets"."type" = $3
-        and "assets"."isVisible" = $4
+        and "assets"."visibility" != $4
       )
   ) as "videos",
   coalesce(sum("exif"."fileSizeInByte"), $5) as "usage"

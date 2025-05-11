@@ -301,3 +301,7 @@ export const globToSqlPattern = (glob: string) => {
   const tokens = picomatch.parse(glob).tokens;
   return tokens.map((token) => convertTokenToSqlPattern(token)).join('');
 };
+
+export function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}

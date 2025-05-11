@@ -100,38 +100,29 @@ describe(AssetMediaController.name, () => {
       expect(body).toEqual(factory.responses.badRequest());
     });
 
-    it('should throw if `isVisible` is not a boolean', async () => {
+    it('should throw if `visibility` is not an enum', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/assets')
         .attach('assetData', assetData, filename)
-        .field({ ...makeUploadDto(), isVisible: 'not-a-boolean' });
+        .field({ ...makeUploadDto(), visibility: 'not-a-boolean' });
       expect(status).toBe(400);
       expect(body).toEqual(factory.responses.badRequest());
     });
 
-    it('should throw if `isArchived` is not a boolean', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post('/assets')
-        .attach('assetData', assetData, filename)
-        .field({ ...makeUploadDto(), isArchived: 'not-a-boolean' });
-      expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest());
+    // TODO figure out how to deal with `sendFile`
+    describe.skip('GET /assets/:id/original', () => {
+      it('should be an authenticated route', async () => {
+        await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/original`);
+        expect(ctx.authenticate).toHaveBeenCalled();
+      });
     });
-  });
 
-  // TODO figure out how to deal with `sendFile`
-  describe.skip('GET /assets/:id/original', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/original`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  // TODO figure out how to deal with `sendFile`
-  describe.skip('GET /assets/:id/thumbnail', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
-      expect(ctx.authenticate).toHaveBeenCalled();
+    // TODO figure out how to deal with `sendFile`
+    describe.skip('GET /assets/:id/thumbnail', () => {
+      it('should be an authenticated route', async () => {
+        await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
+        expect(ctx.authenticate).toHaveBeenCalled();
+      });
     });
   });
 });

@@ -7,8 +7,9 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
@@ -27,7 +28,6 @@
 
   let { data = $bindable() }: Props = $props();
 
-  let isShowKeyboardShortcut = $state(false);
   let isShowDuplicateInfo = $state(false);
 
   interface Shortcuts {
@@ -185,7 +185,7 @@
         color="secondary"
         icon={mdiKeyboard}
         title={$t('show_keyboard_shortcuts')}
-        onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+        onclick={() => modalManager.show(ShortcutsModal, { shortcuts: duplicateShortcuts })}
         aria-label={$t('show_keyboard_shortcuts')}
       />
     </HStack>
@@ -222,9 +222,6 @@
   </div>
 </UserPageLayout>
 
-{#if isShowKeyboardShortcut}
-  <ShowShortcuts shortcuts={duplicateShortcuts} onClose={() => (isShowKeyboardShortcut = false)} />
-{/if}
 {#if isShowDuplicateInfo}
   <DuplicatesModal onClose={() => (isShowDuplicateInfo = false)} />
 {/if}

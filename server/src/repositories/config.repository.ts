@@ -193,6 +193,7 @@ const getEnv = (): EnvData => {
         username: dto.DB_USERNAME || 'postgres',
         password: dto.DB_PASSWORD || 'postgres',
         database: dto.DB_DATABASE_NAME || 'immich',
+        ssl: dto.DB_SSL_MODE || undefined,
       };
 
   return {

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import LibraryImportPathForm from '$lib/components/forms/library-import-path-form.svelte';
   import LibraryImportPathsForm from '$lib/components/forms/library-import-paths-form.svelte';
   import LibraryRenameForm from '$lib/components/forms/library-rename-form.svelte';
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
@@ -37,7 +38,6 @@
   import { t } from 'svelte-i18n';
   import { fade, slide } from 'svelte/transition';
   import type { PageData } from './$types';
-  import LibraryImportPathForm from '$lib/components/forms/library-import-path-form.svelte';
 
   interface Props {
     data: PageData;
@@ -299,9 +299,7 @@
             {#each libraries as library, index (library.id)}
               <tr
                 class={`grid grid-cols-6 h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-                  index % 2 == 0
-                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+                  index % 2 == 0 ? 'bg-subtle' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
                 }`}
               >
                 <td class="text-ellipsis px-4 text-sm">{library.name}</td>

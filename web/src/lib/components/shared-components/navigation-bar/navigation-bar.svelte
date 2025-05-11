@@ -6,13 +6,15 @@
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
-  import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import NotificationPanel from '$lib/components/shared-components/navigation-bar/notification-panel.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
@@ -22,11 +24,9 @@
   import { mdiBellBadge, mdiBellOutline, mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import { notificationManager } from '$lib/stores/notification-manager.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -35,9 +35,7 @@
 
   let { showUploadButton = true, onUploadClick }: Props = $props();
 
-  let shouldShowAccountInfo = $state(false);
   let shouldShowAccountInfoPanel = $state(false);
-  let shouldShowHelpPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
   const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
@@ -51,13 +49,9 @@
 
 <svelte:window bind:innerWidth />
 
-{#if shouldShowHelpPanel && info}
-  <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} {info} />
-{/if}
-
 <nav
   id="dashboard-navbar"
-  class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm"
+  class="z-auto max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm overflow-hidden"
 >
   <SkipLink text={$t('skip_to_content')} />
   <div
@@ -134,18 +128,14 @@
 
         <ThemeButton padding="2" />
 
-        <div
-          use:clickOutside={{
-            onEscape: () => (shouldShowHelpPanel = false),
-          }}
-        >
+        <div>
           <IconButton
             shape="round"
             color="secondary"
             variant="ghost"
             size="medium"
             icon={mdiHelpCircleOutline}
-            onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
+            onclick={() => info && modalManager.show(HelpAndFeedbackModal, { info })}
             aria-label={$t('support_and_feedback')}
           />
         </div>
@@ -180,27 +170,13 @@
           <button
             type="button"
             class="flex ps-2"
-            onmouseover={() => (shouldShowAccountInfo = true)}
-            onfocus={() => (shouldShowAccountInfo = true)}
-            onblur={() => (shouldShowAccountInfo = false)}
-            onmouseleave={() => (shouldShowAccountInfo = false)}
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
+            title={`${$user.name} (${$user.email})`}
           >
             {#key $user}
               <UserAvatar user={$user} size="md" showTitle={false} interactive />
             {/key}
           </button>
-
-          {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
-            <div
-              in:fade={{ delay: 500, duration: 150 }}
-              out:fade={{ delay: 200, duration: 150 }}
-              class="absolute -bottom-12 end-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
-            >
-              <p>{$user.name}</p>
-              <p>{$user.email}</p>
-            </div>
-          {/if}
 
           {#if shouldShowAccountInfoPanel}
             <AccountInfoPanel onLogout={() => authManager.logout()} />

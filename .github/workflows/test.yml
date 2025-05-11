@@ -346,7 +346,7 @@ jobs:
         working-directory: ./e2e
     strategy:
       matrix:
-        runner: [mich, ubuntu-24.04-arm]
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
@@ -394,7 +394,7 @@ jobs:
         working-directory: ./e2e
     strategy:
       matrix:
-        runner: [mich, ubuntu-24.04-arm]
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
@@ -593,8 +593,8 @@ jobs:
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
-  generated-typeorm-migrations-up-to-date:
-    name: TypeORM Checks
+  sql-schema-up-to-date:
+    name: SQL Schema Checks
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -641,7 +641,7 @@ jobs:
 
       - name: Generate new migrations
         continue-on-error: true
-        run: npm run migrations:generate TestMigration
+        run: npm run migrations:generate src/TestMigration
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20

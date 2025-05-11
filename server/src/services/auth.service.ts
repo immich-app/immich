@@ -9,11 +9,15 @@ import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
 import {
   AuthDto,
+  AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
   LogoutResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
+  PinCodeChangeDto,
+  PinCodeResetDto,
+  PinCodeSetupDto,
   SignUpDto,
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
@@ -56,9 +60,9 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Password login has been disabled');
     }
 
-    let user = await this.userRepository.getByEmail(dto.email, true);
+    let user = await this.userRepository.getByEmail(dto.email, { withPassword: true });
     if (user) {
-      const isAuthenticated = this.validatePassword(dto.password, user);
+      const isAuthenticated = this.validateSecret(dto.password, user.password);
       if (!isAuthenticated) {
         user = undefined;
       }
@@ -86,12 +90,12 @@ export class AuthService extends BaseService {
 
   async changePassword(auth: AuthDto, dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
     const { password, newPassword } = dto;
-    const user = await this.userRepository.getByEmail(auth.user.email, true);
+    const user = await this.userRepository.getByEmail(auth.user.email, { withPassword: true });
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    const valid = this.validatePassword(password, user);
+    const valid = this.validateSecret(password, user.password);
     if (!valid) {
       throw new BadRequestException('Wrong password');
     }
@@ -101,6 +105,56 @@ export class AuthService extends BaseService {
     const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
 
     return mapUserAdmin(updatedUser);
+  }
+
+  async setupPinCode(auth: AuthDto, { pinCode }: PinCodeSetupDto) {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    if (user.pinCode) {
+      throw new BadRequestException('User already has a PIN code');
+    }
+
+    const hashed = await this.cryptoRepository.hashBcrypt(pinCode, SALT_ROUNDS);
+    await this.userRepository.update(auth.user.id, { pinCode: hashed });
+  }
+
+  async resetPinCode(auth: AuthDto, dto: PinCodeResetDto) {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    this.resetPinChecks(user, dto);
+
+    await this.userRepository.update(auth.user.id, { pinCode: null });
+  }
+
+  async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    this.resetPinChecks(user, dto);
+
+    const hashed = await this.cryptoRepository.hashBcrypt(dto.newPinCode, SALT_ROUNDS);
+    await this.userRepository.update(auth.user.id, { pinCode: hashed });
+  }
+
+  private resetPinChecks(
+    user: { pinCode: string | null; password: string | null },
+    dto: { pinCode?: string; password?: string },
+  ) {
+    if (!user.pinCode) {
+      throw new BadRequestException('User does not have a PIN code');
+    }
+
+    if (dto.password) {
+      if (!this.validateSecret(dto.password, user.password)) {
+        throw new BadRequestException('Wrong password');
+      }
+    } else if (dto.pinCode) {
+      if (!this.validateSecret(dto.pinCode, user.pinCode)) {
+        throw new BadRequestException('Wrong PIN code');
+      }
+    } else {
+      throw new BadRequestException('Either password or pinCode is required');
+    }
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
@@ -371,11 +425,12 @@ export class AuthService extends BaseService {
     throw new UnauthorizedException('Invalid API key');
   }
 
-  private validatePassword(inputPassword: string, user: { password?: string }): boolean {
-    if (!user || !user.password) {
+  private validateSecret(inputSecret: string, existingHash?: string | null): boolean {
+    if (!existingHash) {
       return false;
     }
-    return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
+
+    return this.cryptoRepository.compareBcrypt(inputSecret, existingHash);
   }
 
   private async validateSession(tokenValue: string): Promise<AuthDto> {
@@ -427,5 +482,17 @@ export class AuthService extends BaseService {
       return url.replace(/app\.immich:\/+oauth-callback/, mobileRedirectUri);
     }
     return url;
+  }
+
+  async getAuthStatus(auth: AuthDto): Promise<AuthStatusResponseDto> {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return {
+      pinCode: !!user.pinCode,
+      password: !!user.password,
+    };
   }
 }

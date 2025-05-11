@@ -6,6 +6,7 @@ import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
 import {
   AssetType,
+  AssetVisibility,
   BootstrapEventPriority,
   ImmichWorker,
   JobCommand,
@@ -301,7 +302,7 @@ export class JobService extends BaseService {
         }
 
         await this.jobRepository.queueAll(jobs);
-        if (asset.isVisible) {
+        if (asset.visibility === AssetVisibility.TIMELINE || asset.visibility === AssetVisibility.ARCHIVE) {
           this.eventRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
         }
 

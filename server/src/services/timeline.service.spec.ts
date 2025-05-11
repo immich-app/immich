@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { AssetVisibility } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { TimelineService } from 'src/services/timeline.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -54,7 +55,7 @@ describe(TimelineService.name, () => {
         sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
           timeBucket: 'bucket',
-          isArchived: true,
+          visibility: AssetVisibility.ARCHIVE,
           userId: authStub.admin.user.id,
         }),
       ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
@@ -63,7 +64,7 @@ describe(TimelineService.name, () => {
         expect.objectContaining({
           size: TimeBucketSize.DAY,
           timeBucket: 'bucket',
-          isArchived: true,
+          visibility: AssetVisibility.ARCHIVE,
           userIds: [authStub.admin.user.id],
         }),
       );
@@ -77,7 +78,7 @@ describe(TimelineService.name, () => {
         sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
           timeBucket: 'bucket',
-          isArchived: false,
+          visibility: AssetVisibility.TIMELINE,
           userId: authStub.admin.user.id,
           withPartners: true,
         }),
@@ -85,7 +86,7 @@ describe(TimelineService.name, () => {
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
-        isArchived: false,
+        visibility: AssetVisibility.TIMELINE,
         withPartners: true,
         userIds: [authStub.admin.user.id],
       });
@@ -120,7 +121,7 @@ describe(TimelineService.name, () => {
       const buckets = await sut.getTimeBucket(auth, {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
-        isArchived: true,
+        visibility: AssetVisibility.ARCHIVE,
         albumId: 'album-id',
       });
 
@@ -129,7 +130,7 @@ describe(TimelineService.name, () => {
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
-        isArchived: true,
+        visibility: AssetVisibility.ARCHIVE,
         albumId: 'album-id',
       });
     });
@@ -154,12 +155,12 @@ describe(TimelineService.name, () => {
       );
     });
 
-    it('should throw an error if withParners is true and isArchived true or undefined', async () => {
+    it('should throw an error if withParners is true and visibility true or undefined', async () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
           timeBucket: 'bucket',
-          isArchived: true,
+          visibility: AssetVisibility.ARCHIVE,
           withPartners: true,
           userId: authStub.admin.user.id,
         }),
@@ -169,7 +170,7 @@ describe(TimelineService.name, () => {
         sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
           timeBucket: 'bucket',
-          isArchived: undefined,
+          visibility: undefined,
           withPartners: true,
           userId: authStub.admin.user.id,
         }),

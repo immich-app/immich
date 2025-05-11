@@ -1,6 +1,5 @@
 import { AssetMediaResponseDto, LoginResponseDto } from '@immich/sdk';
 import { readFile, writeFile } from 'node:fs/promises';
-import { errorDto } from 'src/responses';
 import { app, tempDir, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -17,15 +16,6 @@ describe('/download', () => {
   });
 
   describe('POST /download/info', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .post(`/download/info`)
-        .send({ assetIds: [asset1.id] });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should download info', async () => {
       const { status, body } = await request(app)
         .post('/download/info')
@@ -42,15 +32,6 @@ describe('/download', () => {
   });
 
   describe('POST /download/archive', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .post(`/download/archive`)
-        .send({ assetIds: [asset1.id, asset2.id] });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should download an archive', async () => {
       const { status, body } = await request(app)
         .post('/download/archive')

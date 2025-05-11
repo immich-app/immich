@@ -190,6 +190,8 @@
             simplified={true}
             clickable={true}
             onClickPoint={(selected) => (point = selected)}
+            showSettings={false}
+            rounded
           />
         {/await}
       </div>

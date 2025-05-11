@@ -56,9 +56,12 @@ class BackupAssetInfoTable extends ConsumerWidget {
                       fontSize: 10.0,
                     ),
                   ).tr(
-                    args: isUploadInProgress
-                        ? [asset.fileName, asset.fileType.toLowerCase()]
-                        : ["-", "-"],
+                    namedArgs: isUploadInProgress
+                        ? {
+                            'filename': asset.fileName,
+                            'size': asset.fileType.toLowerCase(),
+                          }
+                        : {'filename': "-", 'size': "-"},
                   ),
                 ),
               ),
@@ -78,9 +81,11 @@ class BackupAssetInfoTable extends ConsumerWidget {
                       fontSize: 10.0,
                     ),
                   ).tr(
-                    args: [
-                      isUploadInProgress ? _getAssetCreationDate(asset) : "-",
-                    ],
+                    namedArgs: {
+                      'date': isUploadInProgress
+                          ? _getAssetCreationDate(asset)
+                          : "-",
+                    },
                   ),
                 ),
               ),
@@ -99,9 +104,7 @@ class BackupAssetInfoTable extends ConsumerWidget {
                       fontSize: 10.0,
                     ),
                   ).tr(
-                    args: [
-                      isUploadInProgress ? asset.id : "-",
-                    ],
+                    namedArgs: {'id': isUploadInProgress ? asset.id : "-"},
                   ),
                 ),
               ),
