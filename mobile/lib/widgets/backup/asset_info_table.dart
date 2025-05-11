@@ -58,7 +58,7 @@ class BackupAssetInfoTable extends ConsumerWidget {
                   ).tr(
                     args: isUploadInProgress
                         ? [asset.fileName, asset.fileType.toLowerCase()]
-                        : ["-", "-"],
+                        : ['-', '-'],
                   ),
                 ),
               ),
@@ -71,7 +71,7 @@ class BackupAssetInfoTable extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
                   child: Text(
-                    "backup_controller_page_created",
+                    'backup_controller_page_created',
                     style: TextStyle(
                       color: context.colorScheme.onSurfaceSecondary,
                       fontWeight: FontWeight.bold,
@@ -79,7 +79,7 @@ class BackupAssetInfoTable extends ConsumerWidget {
                     ),
                   ).tr(
                     args: [
-                      isUploadInProgress ? _getAssetCreationDate(asset) : "-",
+                      isUploadInProgress ? _getAssetCreationDate(asset) : '-',
                     ],
                   ),
                 ),
@@ -92,7 +92,7 @@ class BackupAssetInfoTable extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
                   child: Text(
-                    "backup_controller_page_id",
+                    'backup_controller_page_id',
                     style: TextStyle(
                       color: context.colorScheme.onSurfaceSecondary,
                       fontWeight: FontWeight.bold,
@@ -100,7 +100,7 @@ class BackupAssetInfoTable extends ConsumerWidget {
                     ),
                   ).tr(
                     args: [
-                      isUploadInProgress ? asset.id : "-",
+                      isUploadInProgress ? asset.id : '-',
                     ],
                   ),
                 ),

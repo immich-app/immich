@@ -48,7 +48,7 @@ class AlbumInfoCard extends HookConsumerWidget {
           visualDensity: VisualDensity.compact,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           label: Text(
-            "album_info_card_backup_album_included",
+            'album_info_card_backup_album_included',
             style: TextStyle(
               fontSize: 10,
               color: isDarkTheme ? Colors.black : Colors.white,
@@ -62,7 +62,7 @@ class AlbumInfoCard extends HookConsumerWidget {
           visualDensity: VisualDensity.compact,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           label: Text(
-            "album_info_card_backup_album_excluded",
+            'album_info_card_backup_album_excluded',
             style: TextStyle(
               fontSize: 10,
               color: isDarkTheme ? Colors.black : Colors.white,
@@ -185,7 +185,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                           padding: const EdgeInsets.only(top: 2.0),
                           child: Text(
                             album.assetCount.toString() +
-                                (album.isAll ? " (${'all'.tr()})" : ""),
+                                (album.isAll ? " (${'all'.tr()})" : ''),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],

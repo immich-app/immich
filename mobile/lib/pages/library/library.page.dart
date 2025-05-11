@@ -187,7 +187,7 @@ class PartnerList extends ConsumerWidget {
           ),
           leading: userAvatar(context, partner, radius: 16),
           title: const Text(
-            "partner_list_user_photos",
+            'partner_list_user_photos',
             style: TextStyle(
               fontWeight: FontWeight.w500,
             ),

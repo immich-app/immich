@@ -43,7 +43,7 @@ final manualUploadProvider =
 });
 
 class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
-  final Logger _log = Logger("ManualUploadNotifier");
+  final Logger _log = Logger('ManualUploadNotifier');
   final LocalNotificationService _localNotificationService;
   final BackupNotifier _backupProvider;
   final BackupService _backupService;
@@ -59,7 +59,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   ) : super(
           ManualUploadState(
             progressInPercentage: 0,
-            progressInFileSize: "0 B / 0 B",
+            progressInFileSize: '0 B / 0 B',
             progressInFileSpeed: 0,
             progressInFileSpeeds: const [],
             progressInFileSpeedUpdateTime: DateTime.now(),
@@ -91,7 +91,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     // Guard against throttling calling this method after the upload is done
     if (_backupProvider.backupProgress == BackUpProgressEnum.manualInProgress) {
       _localNotificationService.showOrUpdateManualUploadStatus(
-        "backup_background_service_in_progress_notification".tr(),
+        'backup_background_service_in_progress_notification'.tr(),
         formatAssetBackupProgress(
           state.currentAssetIndex,
           state.totalAssetsToUpload,
@@ -107,7 +107,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     // Guard against throttling calling this method after the upload is done
     if (_backupProvider.backupProgress == BackUpProgressEnum.manualInProgress) {
       final String msg =
-          total > 0 ? humanReadableBytesProgress(progress, total) : "";
+          total > 0 ? humanReadableBytesProgress(progress, total) : '';
       // only update if message actually differs (to stop many useless notification updates on large assets or slow connections)
       if (msg != _lastPrintedDetailContent ||
           title != _lastPrintedDetailTitle) {
@@ -169,7 +169,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     );
 
     if (state.showDetailedNotification) {
-      final title = "backup_background_service_current_upload_notification"
+      final title = 'backup_background_service_current_upload_notification'
           .tr(args: [state.currentUploadAsset.fileName]);
       _throttledDetailNotify(title: title, progress: sent, total: total);
     }
@@ -185,7 +185,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     }
     if (state.showDetailedNotification) {
       _throttledDetailNotify.title =
-          "backup_background_service_current_upload_notification"
+          'backup_background_service_current_upload_notification'
               .tr(args: [currentUploadAsset.fileName]);
       _throttledDetailNotify.progress = 0;
       _throttledDetailNotify.total = 0;
@@ -232,14 +232,14 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         );
 
         if (uploadAssets.isEmpty) {
-          debugPrint("[_startUpload] No Assets to upload - Abort Process");
+          debugPrint('[_startUpload] No Assets to upload - Abort Process');
           _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
           return false;
         }
 
         state = state.copyWith(
           progressInPercentage: 0,
-          progressInFileSize: "0 B / 0 B",
+          progressInFileSize: '0 B / 0 B',
           progressInFileSpeed: 0,
           totalAssetsToUpload: uploadAssets.length,
           successfulUploads: 0,
@@ -292,32 +292,32 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         // User cancelled upload
         if (!ok && state.cancelToken.isCancelled) {
           await _localNotificationService.showOrUpdateManualUploadStatus(
-            "backup_manual_title".tr(),
-            "backup_manual_cancelled".tr(),
+            'backup_manual_title'.tr(),
+            'backup_manual_cancelled'.tr(),
             presentBanner: true,
           );
           hasErrors = true;
         } else if (state.successfulUploads == 0 ||
             (!ok && !state.cancelToken.isCancelled)) {
           await _localNotificationService.showOrUpdateManualUploadStatus(
-            "backup_manual_title".tr(),
-            "failed".tr(),
+            'backup_manual_title'.tr(),
+            'failed'.tr(),
             presentBanner: true,
           );
           hasErrors = true;
         } else {
           await _localNotificationService.showOrUpdateManualUploadStatus(
-            "backup_manual_title".tr(),
-            "backup_manual_success".tr(),
+            'backup_manual_title'.tr(),
+            'backup_manual_success'.tr(),
             presentBanner: true,
           );
         }
       } else {
         openAppSettings();
-        debugPrint("[_startUpload] Do not have permission to the gallery");
+        debugPrint('[_startUpload] Do not have permission to the gallery');
       }
     } catch (e) {
-      debugPrint("ERROR _startUpload: ${e.toString()}");
+      debugPrint('ERROR _startUpload: ${e.toString()}');
       hasErrors = true;
     } finally {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
@@ -351,7 +351,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     }
     state = state.copyWith(
       progressInPercentage: 0,
-      progressInFileSize: "0 B / 0 B",
+      progressInFileSize: '0 B / 0 B',
       progressInFileSpeed: 0,
       progressInFileSpeedUpdateTime: DateTime.now(),
       progressInFileSpeedUpdateSentBytes: 0,
@@ -367,10 +367,10 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     final bool hasLock =
         await ref.read(backgroundServiceProvider).acquireLock();
     if (!hasLock) {
-      debugPrint("[uploadAssets] could not acquire lock, exiting");
+      debugPrint('[uploadAssets] could not acquire lock, exiting');
       ImmichToast.show(
         context: context,
-        msg: "failed".tr(),
+        msg: 'failed'.tr(),
         toastType: ToastType.info,
         gravity: ToastGravity.BOTTOM,
         durationInSecond: 3,
@@ -382,18 +382,18 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
 
     // check if backup is already in process - then return
     if (_backupProvider.backupProgress == BackUpProgressEnum.manualInProgress) {
-      debugPrint("[uploadAssets] Manual upload is already running - abort");
+      debugPrint('[uploadAssets] Manual upload is already running - abort');
       showInProgress = true;
     }
 
     if (_backupProvider.backupProgress == BackUpProgressEnum.inProgress) {
-      debugPrint("[uploadAssets] Auto Backup is already in progress - abort");
+      debugPrint('[uploadAssets] Auto Backup is already in progress - abort');
       showInProgress = true;
       return false;
     }
 
     if (_backupProvider.backupProgress == BackUpProgressEnum.inBackground) {
-      debugPrint("[uploadAssets] Background backup is running - abort");
+      debugPrint('[uploadAssets] Background backup is running - abort');
       showInProgress = true;
     }
 
@@ -401,7 +401,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
       if (context.mounted) {
         ImmichToast.show(
           context: context,
-          msg: "backup_manual_in_progress".tr(),
+          msg: 'backup_manual_in_progress'.tr(),
           toastType: ToastType.info,
           gravity: ToastGravity.BOTTOM,
           durationInSecond: 3,

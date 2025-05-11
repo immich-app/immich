@@ -6,7 +6,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 
 class HttpSSLCertOverride extends HttpOverrides {
-  static final Logger _log = Logger("HttpSSLCertOverride");
+  static final Logger _log = Logger('HttpSSLCertOverride');
   final SSLClientCertStoreVal? _clientCert;
   late final SecurityContext? _ctxWithCert;
 
@@ -16,7 +16,7 @@ class HttpSSLCertOverride extends HttpOverrides {
       if (_ctxWithCert != null) {
         setClientCert(_ctxWithCert, _clientCert);
       } else {
-        _log.severe("Failed to create security context with client cert!");
+        _log.severe('Failed to create security context with client cert!');
       }
     } else {
       _ctxWithCert = null;
@@ -25,11 +25,11 @@ class HttpSSLCertOverride extends HttpOverrides {
 
   static bool setClientCert(SecurityContext ctx, SSLClientCertStoreVal cert) {
     try {
-      _log.info("Setting client certificate");
+      _log.info('Setting client certificate');
       ctx.usePrivateKeyBytes(cert.data, password: cert.password);
       ctx.useCertificateChainBytes(cert.data, password: cert.password);
     } catch (e) {
-      _log.severe("Failed to set SSL client cert: $e");
+      _log.severe('Failed to set SSL client cert: $e');
       return false;
     }
     return true;
@@ -59,13 +59,13 @@ class HttpSSLCertOverride extends HttpOverrides {
         // insecure SSL connections to services that are not the immich server.
         if (isLoggedIn && selfSignedCertsAllowed) {
           String serverHost =
-              Uri.parse(Store.tryGet(StoreKey.serverEndpoint) ?? "").host;
+              Uri.parse(Store.tryGet(StoreKey.serverEndpoint) ?? '').host;
 
           selfSignedCertsAllowed &= serverHost.contains(host);
         }
 
         if (!selfSignedCertsAllowed) {
-          _log.severe("Invalid SSL certificate for $host:$port");
+          _log.severe('Invalid SSL certificate for $host:$port');
         }
 
         return selfSignedCertsAllowed;

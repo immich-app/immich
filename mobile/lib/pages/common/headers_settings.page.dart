@@ -9,8 +9,8 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 class SettingsHeader {
-  String key = "";
-  String value = "";
+  String key = '';
+  String value = '';
 }
 
 @RoutePage()
@@ -23,7 +23,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     final headers = useState<List<SettingsHeader>>([]);
     final setInitialHeaders = useState(false);
 
-    var headersStr = Store.get(StoreKey.customHeaders, "");
+    var headersStr = Store.get(StoreKey.customHeaders, '');
     if (!setInitialHeaders.value) {
       if (headersStr.isNotEmpty) {
         var customHeaders = jsonDecode(headersStr) as Map;

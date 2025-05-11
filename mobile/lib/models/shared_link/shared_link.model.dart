@@ -70,8 +70,8 @@ class SharedLink {
             ? SharedLinkSource.album
             : SharedLinkSource.individual,
         title = dto.type == SharedLinkType.ALBUM
-            ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
-            : "INDIVIDUAL SHARE",
+            ? dto.album?.albumName.toUpperCase() ?? 'UNKNOWN SHARE'
+            : 'INDIVIDUAL SHARE',
         thumbAssetId = dto.type == SharedLinkType.ALBUM
             ? dto.album?.albumThumbnailAssetId
             : dto.assets.isNotEmpty

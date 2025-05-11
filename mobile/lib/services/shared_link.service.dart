@@ -11,7 +11,7 @@ final sharedLinkServiceProvider = Provider(
 
 class SharedLinkService {
   final ApiService _apiService;
-  final Logger _log = Logger("SharedLinkService");
+  final Logger _log = Logger('SharedLinkService');
 
   SharedLinkService(this._apiService);
 
@@ -22,7 +22,7 @@ class SharedLinkService {
           ? AsyncData(list.map(SharedLink.fromDto).toList())
           : const AsyncData([]);
     } catch (e, stack) {
-      _log.severe("Failed to fetch shared links", e, stack);
+      _log.severe('Failed to fetch shared links', e, stack);
       return AsyncError(e, stack);
     }
   }
@@ -31,7 +31,7 @@ class SharedLinkService {
     try {
       return await _apiService.sharedLinksApi.removeSharedLink(id);
     } catch (e) {
-      _log.severe("Failed to delete shared link id - $id", e);
+      _log.severe('Failed to delete shared link id - $id', e);
     }
   }
 
@@ -81,7 +81,7 @@ class SharedLinkService {
         }
       }
     } catch (e) {
-      _log.severe("Failed to create shared link", e);
+      _log.severe('Failed to create shared link', e);
     }
     return null;
   }
@@ -113,7 +113,7 @@ class SharedLinkService {
         return SharedLink.fromDto(responseDto);
       }
     } catch (e) {
-      _log.severe("Failed to update shared link id - $id", e);
+      _log.severe('Failed to update shared link id - $id', e);
     }
     return null;
   }

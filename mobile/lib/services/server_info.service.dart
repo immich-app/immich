@@ -25,7 +25,7 @@ class ServerInfoService {
         return ServerDiskInfo.fromDto(dto);
       }
     } catch (e) {
-      debugPrint("Error [getDiskInfo] ${e.toString()}");
+      debugPrint('Error [getDiskInfo] ${e.toString()}');
     }
     return null;
   }
@@ -37,7 +37,7 @@ class ServerInfoService {
         return ServerVersion.fromDto(dto);
       }
     } catch (e) {
-      debugPrint("Error [getServerVersion] ${e.toString()}");
+      debugPrint('Error [getServerVersion] ${e.toString()}');
     }
     return null;
   }
@@ -49,7 +49,7 @@ class ServerInfoService {
         return ServerFeatures.fromDto(dto);
       }
     } catch (e) {
-      debugPrint("Error [getServerFeatures] ${e.toString()}");
+      debugPrint('Error [getServerFeatures] ${e.toString()}');
     }
     return null;
   }
@@ -61,7 +61,7 @@ class ServerInfoService {
         return ServerConfig.fromDto(dto);
       }
     } catch (e) {
-      debugPrint("Error [getServerConfig] ${e.toString()}");
+      debugPrint('Error [getServerConfig] ${e.toString()}');
     }
     return null;
   }

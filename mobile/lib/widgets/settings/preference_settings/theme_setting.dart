@@ -31,8 +31,8 @@ class ThemeSetting extends HookConsumerWidget {
     useValueChanged(
       currentThemeString.value,
       (_, __) => currentTheme.value = switch (currentThemeString.value) {
-        "light" => ThemeMode.light,
-        "dark" => ThemeMode.dark,
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
         _ => ThemeMode.system,
       },
     );
@@ -46,16 +46,16 @@ class ThemeSetting extends HookConsumerWidget {
     void onThemeChange(bool isDark) {
       if (isDark) {
         ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.dark;
-        currentThemeString.value = "dark";
+        currentThemeString.value = 'dark';
       } else {
         ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.light;
-        currentThemeString.value = "light";
+        currentThemeString.value = 'light';
       }
     }
 
     void onSystemThemeChange(bool isSystem) {
       if (isSystem) {
-        currentThemeString.value = "system";
+        currentThemeString.value = 'system';
         isSystemTheme.value = true;
         ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.system;
       } else {
@@ -63,10 +63,10 @@ class ThemeSetting extends HookConsumerWidget {
         isSystemTheme.value = false;
         isDarkTheme.value = currentSystemBrightness == Brightness.dark;
         if (currentSystemBrightness == Brightness.light) {
-          currentThemeString.value = "light";
+          currentThemeString.value = 'light';
           ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.light;
         } else if (currentSystemBrightness == Brightness.dark) {
-          currentThemeString.value = "dark";
+          currentThemeString.value = 'dark';
           ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.dark;
         }
       }
@@ -81,7 +81,7 @@ class ThemeSetting extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: "theme".tr()),
+        SettingsSubTitle(title: 'theme'.tr()),
         SettingsSwitchListTile(
           valueNotifier: isSystemTheme,
           title: 'theme_setting_system_theme_switch'.tr(),
@@ -96,7 +96,7 @@ class ThemeSetting extends HookConsumerWidget {
         const PrimaryColorSetting(),
         SettingsSwitchListTile(
           valueNotifier: applyThemeToBackgroundProvider,
-          title: "theme_setting_colorful_interface_title".tr(),
+          title: 'theme_setting_colorful_interface_title'.tr(),
           subtitle: 'theme_setting_colorful_interface_subtitle'.tr(),
           onChanged: onSurfaceColorSettingChange,
         ),

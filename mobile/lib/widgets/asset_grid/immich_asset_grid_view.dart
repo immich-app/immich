@@ -222,7 +222,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   Text _labelBuilder(int pos) {
     final maxLength = widget.renderList.elements.length;
     if (pos < 0 || pos >= maxLength) {
-      return const Text("");
+      return const Text('');
     }
 
     final date = widget.renderList.elements[pos % maxLength].date;
@@ -314,7 +314,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
     if (date == null) {
       ImmichToast.show(
         context: context,
-        msg: "Scroll To Date failed, date is null.",
+        msg: 'Scroll To Date failed, date is null.',
         gravity: ToastGravity.BOTTOM,
         toastType: ToastType.error,
       );
@@ -344,7 +344,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       ImmichToast.show(
         context: context,
         msg:
-            "The date (${DateFormat.yMd().format(date)}) could not be found in the timeline.",
+            'The date (${DateFormat.yMd().format(date)}) could not be found in the timeline.',
         gravity: ToastGravity.BOTTOM,
         toastType: ToastType.error,
       );
@@ -752,7 +752,7 @@ class _MonthTitle extends StatelessWidget {
         : DateFormat.yMMMM();
     final String title = monthFormat.format(date);
     return Padding(
-      key: Key("month-$title"),
+      key: Key('month-$title'),
       padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
         toBeginningOfSentenceCase(title, context.locale.languageCode),

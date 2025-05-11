@@ -28,7 +28,7 @@ class TabNavigationObserver extends AutoRouterObserver {
         ref.read(userServiceProvider).refreshMyUser();
         ref.read(serverInfoProvider.notifier).getServerVersion();
       } catch (e) {
-        debugPrint("Error refreshing user info $e");
+        debugPrint('Error refreshing user info $e');
       }
     }
   }

@@ -32,16 +32,16 @@ class SharedLinkEditPage extends HookConsumerWidget {
     final themeData = context.themeData;
     final colorScheme = context.colorScheme;
     final descriptionController =
-        useTextEditingController(text: existingLink?.description ?? "");
+        useTextEditingController(text: existingLink?.description ?? '');
     final descriptionFocusNode = useFocusNode();
     final passwordController =
-        useTextEditingController(text: existingLink?.password ?? "");
+        useTextEditingController(text: existingLink?.password ?? '');
     final showMetadata = useState(existingLink?.showMetadata ?? true);
     final allowDownload = useState(existingLink?.allowDownload ?? true);
     final allowUpload = useState(existingLink?.allowUpload ?? false);
     final editExpiry = useState(false);
     final expiryAfter = useState(0);
-    final newShareLink = useState("");
+    final newShareLink = useState('');
 
     Widget buildLinkTitle() {
       if (existingLink != null) {
@@ -53,7 +53,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ).tr(),
               const Text(
-                " | ",
+                ' | ',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
@@ -75,12 +75,12 @@ class SharedLinkEditPage extends HookConsumerWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ).tr(),
               const Text(
-                " | ",
+                ' | ',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Expanded(
                 child: Text(
-                  existingLink!.description ?? "--",
+                  existingLink!.description ?? '--',
                   style: TextStyle(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
@@ -94,7 +94,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
 
       return const Text(
-        "create_link_to_share_description",
+        'create_link_to_share_description',
         style: TextStyle(fontWeight: FontWeight.bold),
       ).tr();
     }
@@ -161,7 +161,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "show_metadata",
+          'show_metadata',
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -177,7 +177,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "allow_public_user_to_download",
+          'allow_public_user_to_download',
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -193,7 +193,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "allow_public_user_to_upload",
+          'allow_public_user_to_upload',
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -209,7 +209,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         activeColor: colorScheme.primary,
         dense: true,
         title: Text(
-          "change_expiration_time",
+          'change_expiration_time',
           style: themeData.textTheme.labelLarge
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
@@ -219,7 +219,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     Widget buildExpiryAfterButton() {
       return DropdownMenu(
         label: Text(
-          "expire_after",
+          'expire_after',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.primary,
@@ -237,41 +237,41 @@ class SharedLinkEditPage extends HookConsumerWidget {
         dropdownMenuEntries: [
           DropdownMenuEntry(
             value: 0,
-            label: "never".tr(),
+            label: 'never'.tr(),
           ),
           DropdownMenuEntry(
             value: 30,
             label:
-                "shared_link_edit_expire_after_option_minutes".tr(args: ["30"]),
+                'shared_link_edit_expire_after_option_minutes'.tr(args: ['30']),
           ),
           DropdownMenuEntry(
             value: 60,
-            label: "shared_link_edit_expire_after_option_hour".tr(),
+            label: 'shared_link_edit_expire_after_option_hour'.tr(),
           ),
           DropdownMenuEntry(
             value: 60 * 6,
-            label: "shared_link_edit_expire_after_option_hours".tr(args: ["6"]),
+            label: 'shared_link_edit_expire_after_option_hours'.tr(args: ['6']),
           ),
           DropdownMenuEntry(
             value: 60 * 24,
-            label: "shared_link_edit_expire_after_option_day".tr(),
+            label: 'shared_link_edit_expire_after_option_day'.tr(),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 7,
-            label: "shared_link_edit_expire_after_option_days".tr(args: ["7"]),
+            label: 'shared_link_edit_expire_after_option_days'.tr(args: ['7']),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30,
-            label: "shared_link_edit_expire_after_option_days".tr(args: ["30"]),
+            label: 'shared_link_edit_expire_after_option_days'.tr(args: ['30']),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30 * 3,
             label:
-                "shared_link_edit_expire_after_option_months".tr(args: ["3"]),
+                'shared_link_edit_expire_after_option_months'.tr(args: ['3']),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30 * 12,
-            label: "shared_link_edit_expire_after_option_year".tr(args: ["1"]),
+            label: 'shared_link_edit_expire_after_option_year'.tr(args: ['1']),
           ),
         ],
       );
@@ -282,7 +282,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         context.scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
-              "shared_link_clipboard_copied_massage",
+              'shared_link_clipboard_copied_massage',
               style: context.textTheme.bodyLarge?.copyWith(
                 color: context.primaryColor,
               ),
@@ -324,7 +324,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                   context.maybePop();
                 },
                 child: const Text(
-                  "done",
+                  'done',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -367,7 +367,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         serverUrl += '/';
       }
       if (newLink != null && serverUrl != null) {
-        newShareLink.value = "${serverUrl}share/${newLink.key}";
+        newShareLink.value = '${serverUrl}share/${newLink.key}';
         copyLinkToClipboard();
       } else if (newLink == null) {
         ImmichToast.show(
@@ -430,7 +430,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          existingLink == null ? "create_link_to_share" : "edit_link",
+          existingLink == null ? 'create_link_to_share' : 'edit_link',
         ).tr(),
         elevation: 0,
         leading: const CloseButton(),
@@ -502,8 +502,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
                         existingLink != null ? handleEditLink : handleNewLink,
                     child: Text(
                       existingLink != null
-                          ? "shared_link_edit_submit_button"
-                          : "create_link",
+                          ? 'shared_link_edit_submit_button'
+                          : 'create_link',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

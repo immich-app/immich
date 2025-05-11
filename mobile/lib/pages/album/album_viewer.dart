@@ -46,7 +46,7 @@ class AlbumViewer extends HookConsumerWidget {
       if (!isSuccess) {
         ImmichToast.show(
           context: context,
-          msg: "album_viewer_appbar_share_err_remove".tr(),
+          msg: 'album_viewer_appbar_share_err_remove'.tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -102,21 +102,21 @@ class AlbumViewer extends HookConsumerWidget {
     return Stack(
       children: [
         MultiselectGrid(
-          key: const ValueKey("albumViewerMultiselectGrid"),
+          key: const ValueKey('albumViewerMultiselectGrid'),
           renderListProvider: albumTimelineProvider(album.id),
           topWidget: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AlbumTitle(
-                key: const ValueKey("albumTitle"),
+                key: const ValueKey('albumTitle'),
                 titleFocusNode: titleFocusNode,
               ),
               const AlbumDateRange(),
               const AlbumSharedUserIcons(),
               if (album.isRemote)
                 AlbumControlButton(
-                  key: const ValueKey("albumControlButton"),
+                  key: const ValueKey('albumControlButton'),
                   onAddPhotosPressed: onAddPhotosPressed,
                   onAddUsersPressed: onAddUsersPressed,
                 ),
@@ -126,13 +126,13 @@ class AlbumViewer extends HookConsumerWidget {
           editEnabled: album.ownerId == userId,
         ),
         AnimatedPositioned(
-          key: const ValueKey("albumViewerAppbarPositioned"),
+          key: const ValueKey('albumViewerAppbarPositioned'),
           duration: const Duration(milliseconds: 300),
           top: isMultiselecting ? -(kToolbarHeight + context.padding.top) : 0,
           left: 0,
           right: 0,
           child: AlbumViewerAppbar(
-            key: const ValueKey("albumViewerAppbar"),
+            key: const ValueKey('albumViewerAppbar'),
             titleFocusNode: titleFocusNode,
             userId: userId,
             onAddPhotos: onAddPhotosPressed,

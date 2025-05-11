@@ -88,7 +88,7 @@ class FolderPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentFolder.value?.name ?? tr("folders")),
+        title: Text(currentFolder.value?.name ?? tr('folders')),
         elevation: 0,
         centerTitle: false,
         actions: [
@@ -120,10 +120,10 @@ class FolderPage extends HookConsumerWidget {
         error: (error, stack) {
           ImmichToast.show(
             context: context,
-            msg: "failed_to_load_folder".tr(),
+            msg: 'failed_to_load_folder'.tr(),
             toastType: ToastType.error,
           );
-          return Center(child: const Text("failed_to_load_folder").tr());
+          return Center(child: const Text('failed_to_load_folder').tr());
         },
       ),
     );
@@ -159,7 +159,7 @@ class FolderContent extends HookConsumerWidget {
     );
 
     if (folder == null) {
-      return Center(child: const Text("folder_not_found").tr());
+      return Center(child: const Text('folder_not_found').tr());
     }
 
     getSubtitle(int subFolderCount) {
@@ -171,7 +171,7 @@ class FolderContent extends HookConsumerWidget {
         return "1 ${tr("folder")}".toLowerCase();
       }
 
-      return "";
+      return '';
     }
 
     return Column(
@@ -181,7 +181,7 @@ class FolderContent extends HookConsumerWidget {
           child: folderRenderlist.when(
             data: (list) {
               if (folder!.subfolders.isEmpty && list.isEmpty) {
-                return Center(child: const Text("empty_folder").tr());
+                return Center(child: const Text('empty_folder').tr());
               }
 
               return ListView(
@@ -264,10 +264,10 @@ class FolderContent extends HookConsumerWidget {
             error: (error, stack) {
               ImmichToast.show(
                 context: context,
-                msg: "failed_to_load_assets".tr(),
+                msg: 'failed_to_load_assets'.tr(),
                 toastType: ToastType.error,
               );
-              return Center(child: const Text("failed_to_load_assets").tr());
+              return Center(child: const Text('failed_to_load_assets').tr());
             },
           ),
         ),

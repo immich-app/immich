@@ -19,7 +19,7 @@ PersonService personService(Ref ref) => PersonService(
     );
 
 class PersonService {
-  final Logger _log = Logger("PersonService");
+  final Logger _log = Logger('PersonService');
   final IPersonApiRepository _personApiRepository;
   final IAssetApiRepository _assetApiRepository;
   final IAssetRepository _assetRepository;
@@ -34,7 +34,7 @@ class PersonService {
     try {
       return await _personApiRepository.getAll();
     } catch (error, stack) {
-      _log.severe("Error while fetching curated people", error, stack);
+      _log.severe('Error while fetching curated people', error, stack);
       return [];
     }
   }
@@ -45,7 +45,7 @@ class PersonService {
       return await _assetRepository
           .getAllByRemoteId(assets.map((a) => a.remoteId!));
     } catch (error, stack) {
-      _log.severe("Error while fetching person assets", error, stack);
+      _log.severe('Error while fetching person assets', error, stack);
     }
     return [];
   }
@@ -54,7 +54,7 @@ class PersonService {
     try {
       return await _personApiRepository.update(id, name: name);
     } catch (error, stack) {
-      _log.severe("Error while updating person name", error, stack);
+      _log.severe('Error while updating person name', error, stack);
     }
     return null;
   }

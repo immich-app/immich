@@ -3,45 +3,45 @@ import 'dart:developer';
 
 import 'package:easy_localization/easy_localization.dart';
 
-final NumberFormat numberFormat = NumberFormat("###0.##");
+final NumberFormat numberFormat = NumberFormat('###0.##');
 
 String formatAssetBackupProgress(int uploadedAssets, int assetsToUpload) {
   final int percent = (uploadedAssets * 100) ~/ assetsToUpload;
-  return "$percent% ($uploadedAssets/$assetsToUpload)";
+  return '$percent% ($uploadedAssets/$assetsToUpload)';
 }
 
 /// prints progress in useful (kilo/mega/giga)bytes
 String humanReadableFileBytesProgress(int bytes, int bytesTotal) {
-  String unit = "KB";
+  String unit = 'KB';
 
   if (bytesTotal >= 0x40000000) {
-    unit = "GB";
+    unit = 'GB';
     bytes >>= 20;
     bytesTotal >>= 20;
   } else if (bytesTotal >= 0x100000) {
-    unit = "MB";
+    unit = 'MB';
     bytes >>= 10;
     bytesTotal >>= 10;
   } else if (bytesTotal < 0x400) {
-    return "${(bytes).toStringAsFixed(2)} B / ${(bytesTotal).toStringAsFixed(2)} B";
+    return '${(bytes).toStringAsFixed(2)} B / ${(bytesTotal).toStringAsFixed(2)} B';
   }
 
-  return "${(bytes / 1024.0).toStringAsFixed(2)} $unit / ${(bytesTotal / 1024.0).toStringAsFixed(2)} $unit";
+  return '${(bytes / 1024.0).toStringAsFixed(2)} $unit / ${(bytesTotal / 1024.0).toStringAsFixed(2)} $unit';
 }
 
 /// prints percentage and absolute progress in useful (kilo/mega/giga)bytes
 String humanReadableBytesProgress(int bytes, int bytesTotal) {
-  String unit = "KB"; // Kilobyte
+  String unit = 'KB'; // Kilobyte
   if (bytesTotal >= 0x40000000) {
-    unit = "GB"; // Gigabyte
+    unit = 'GB'; // Gigabyte
     bytes >>= 20;
     bytesTotal >>= 20;
   } else if (bytesTotal >= 0x100000) {
-    unit = "MB"; // Megabyte
+    unit = 'MB'; // Megabyte
     bytes >>= 10;
     bytesTotal >>= 10;
   } else if (bytesTotal < 0x400) {
-    return "$bytes / $bytesTotal B";
+    return '$bytes / $bytesTotal B';
   }
   final int percent = (bytes * 100) ~/ bytesTotal;
   final String done = numberFormat.format(bytes / 1024.0);

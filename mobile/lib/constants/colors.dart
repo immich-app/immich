@@ -14,7 +14,7 @@ enum ImmichColorPreset {
 }
 
 const ImmichColorPreset defaultColorPreset = ImmichColorPreset.indigo;
-const String defaultColorPresetName = "indigo";
+const String defaultColorPresetName = 'indigo';
 
 const Color immichBrandColorLight = Color(0xFF4150AF);
 const Color immichBrandColorDark = Color(0xFFACCBFA);

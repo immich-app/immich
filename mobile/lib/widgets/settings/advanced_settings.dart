@@ -58,8 +58,8 @@ class AdvancedSettings extends HookConsumerWidget {
       SettingsSwitchListTile(
         enabled: true,
         valueNotifier: advancedTroubleshooting,
-        title: "advanced_settings_troubleshooting_title".tr(),
-        subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
+        title: 'advanced_settings_troubleshooting_title'.tr(),
+        subtitle: 'advanced_settings_troubleshooting_subtitle'.tr(),
       ),
       FutureBuilder<bool>(
         future: checkAndroidVersion(),
@@ -68,8 +68,8 @@ class AdvancedSettings extends HookConsumerWidget {
             return SettingsSwitchListTile(
               enabled: true,
               valueNotifier: manageLocalMediaAndroid,
-              title: "advanced_settings_sync_remote_deletions_title".tr(),
-              subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
+              title: 'advanced_settings_sync_remote_deletions_title'.tr(),
+              subtitle: 'advanced_settings_sync_remote_deletions_subtitle'.tr(),
               onChanged: (value) async {
                 if (value) {
                   final result = await ref
@@ -85,7 +85,7 @@ class AdvancedSettings extends HookConsumerWidget {
         },
       ),
       SettingsSliderListTile(
-        text: "advanced_settings_log_level_title".tr(args: [logLevel]),
+        text: 'advanced_settings_log_level_title'.tr(args: [logLevel]),
         valueNotifier: levelId,
         maxValue: 8,
         minValue: 1,
@@ -94,24 +94,24 @@ class AdvancedSettings extends HookConsumerWidget {
       ),
       SettingsSwitchListTile(
         valueNotifier: preferRemote,
-        title: "advanced_settings_prefer_remote_title".tr(),
-        subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
+        title: 'advanced_settings_prefer_remote_title'.tr(),
+        subtitle: 'advanced_settings_prefer_remote_subtitle'.tr(),
       ),
       const LocalStorageSettings(),
       SettingsSwitchListTile(
         enabled: !isLoggedIn,
         valueNotifier: allowSelfSignedSSLCert,
-        title: "advanced_settings_self_signed_ssl_title".tr(),
-        subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
+        title: 'advanced_settings_self_signed_ssl_title'.tr(),
+        subtitle: 'advanced_settings_self_signed_ssl_subtitle'.tr(),
         onChanged: (_) => HttpOverrides.global = HttpSSLCertOverride(),
       ),
       const CustomeProxyHeaderSettings(),
       SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
       SettingsSwitchListTile(
         valueNotifier: useAlternatePMFilter,
-        title: "advanced_settings_enable_alternate_media_filter_title".tr(),
+        title: 'advanced_settings_enable_alternate_media_filter_title'.tr(),
         subtitle:
-            "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
+            'advanced_settings_enable_alternate_media_filter_subtitle'.tr(),
       ),
     ];
 

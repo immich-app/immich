@@ -155,7 +155,7 @@ class _BottomBar extends StatelessWidget {
                 ValueListenableBuilder(
                   valueListenable: selectedLatLng,
                   builder: (_, value, __) => Text(
-                    "${value.latitude.toStringAsFixed(4)}, ${value.longitude.toStringAsFixed(4)}",
+                    '${value.latitude.toStringAsFixed(4)}, ${value.longitude.toStringAsFixed(4)}',
                   ),
                 ),
               ],
@@ -166,7 +166,7 @@ class _BottomBar extends StatelessWidget {
                 ElevatedButton(
                   onPressed: onUseLocation,
                   child:
-                      const Text("map_location_picker_page_use_location").tr(),
+                      const Text('map_location_picker_page_use_location').tr(),
                 ),
                 ElevatedButton(
                   onPressed: onGetCurrentLocation,

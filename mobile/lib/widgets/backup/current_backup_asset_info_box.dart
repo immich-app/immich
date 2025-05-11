@@ -25,7 +25,7 @@ class CurrentUploadingAssetInfoBox extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            "backup_controller_page_uploading_file_info",
+            'backup_controller_page_uploading_file_info',
             style: context.textTheme.titleSmall,
           ).tr(),
           const BackupErrorChip(),

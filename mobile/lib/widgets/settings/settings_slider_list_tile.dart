@@ -41,7 +41,7 @@ class SettingsSliderListTile extends StatelessWidget {
         max: maxValue,
         min: minValue,
         divisions: noDivisons,
-        label: label ?? "${valueNotifier.value}",
+        label: label ?? '${valueNotifier.value}',
         activeColor: context.primaryColor,
       ),
     );

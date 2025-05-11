@@ -7,7 +7,7 @@ import 'package:logging/logging.dart';
 
 class FolderStructureNotifier extends StateNotifier<AsyncValue<RootFolder>> {
   final FolderService _folderService;
-  final Logger _log = Logger("FolderStructureNotifier");
+  final Logger _log = Logger('FolderStructureNotifier');
 
   FolderStructureNotifier(this._folderService) : super(const AsyncLoading());
 
@@ -16,7 +16,7 @@ class FolderStructureNotifier extends StateNotifier<AsyncValue<RootFolder>> {
       final folders = await _folderService.getFolderStructure(order);
       state = AsyncData(folders);
     } catch (e, stack) {
-      _log.severe("Failed to build folder structure", e, stack);
+      _log.severe('Failed to build folder structure', e, stack);
       state = AsyncError(e, stack);
     }
   }
@@ -33,7 +33,7 @@ final folderStructureProvider =
 class FolderRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
   final FolderService _folderService;
   final RootFolder _folder;
-  final Logger _log = Logger("FolderAssetsNotifier");
+  final Logger _log = Logger('FolderAssetsNotifier');
 
   FolderRenderListNotifier(this._folderService, this._folder)
       : super(const AsyncLoading());
@@ -45,7 +45,7 @@ class FolderRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
           await RenderList.fromAssets(assets, GroupAssetsBy.none);
       state = AsyncData(renderList);
     } catch (e, stack) {
-      _log.severe("Failed to fetch folder assets", e, stack);
+      _log.severe('Failed to fetch folder assets', e, stack);
       state = AsyncError(e, stack);
     }
   }

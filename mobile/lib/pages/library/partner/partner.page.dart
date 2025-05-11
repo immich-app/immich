@@ -24,7 +24,7 @@ class PartnerPage extends HookConsumerWidget {
       if (users == null || users.isEmpty) {
         ImmichToast.show(
           context: context,
-          msg: "partner_page_no_more_users".tr(),
+          msg: 'partner_page_no_more_users'.tr(),
         );
         return;
       }
@@ -33,7 +33,7 @@ class PartnerPage extends HookConsumerWidget {
         context: context,
         builder: (context) {
           return SimpleDialog(
-            title: const Text("partner_page_select_partner").tr(),
+            title: const Text('partner_page_select_partner').tr(),
             children: [
               for (UserDto u in users)
                 SimpleDialogOption(
@@ -60,7 +60,7 @@ class PartnerPage extends HookConsumerWidget {
         } else {
           ImmichToast.show(
             context: context,
-            msg: "partner_page_partner_add_failed".tr(),
+            msg: 'partner_page_partner_add_failed'.tr(),
             toastType: ToastType.error,
           );
         }
@@ -72,8 +72,8 @@ class PartnerPage extends HookConsumerWidget {
         context: context,
         builder: (BuildContext context) {
           return ConfirmDialog(
-            title: "stop_photo_sharing",
-            content: "partner_page_stop_sharing_content".tr(args: [u.name]),
+            title: 'stop_photo_sharing',
+            content: 'partner_page_stop_sharing_content'.tr(args: [u.name]),
             onOk: () => ref.read(partnerServiceProvider).removePartner(u),
           );
         },
@@ -87,7 +87,7 @@ class PartnerPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 16.0),
             child: Text(
-              "partner_page_shared_to_title",
+              'partner_page_shared_to_title',
               style: context.textTheme.titleSmall?.copyWith(
                 color: context.colorScheme.onSurface.withAlpha(200),
               ),
@@ -120,7 +120,7 @@ class PartnerPage extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: const Text(
-                      "partner_page_empty_message",
+                      'partner_page_empty_message',
                       style: TextStyle(fontSize: 14),
                     ).tr(),
                   ),
@@ -131,7 +131,7 @@ class PartnerPage extends HookConsumerWidget {
                         data: (data) => addNewUsersHandler,
                       ),
                       icon: const Icon(Icons.person_add),
-                      label: const Text("add_partner").tr(),
+                      label: const Text('add_partner').tr(),
                     ),
                   ),
                 ],
@@ -143,7 +143,7 @@ class PartnerPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("partners").tr(),
+        title: const Text('partners').tr(),
         elevation: 0,
         centerTitle: false,
         actions: [
@@ -151,7 +151,7 @@ class PartnerPage extends HookConsumerWidget {
             onPressed:
                 availableUsers.whenOrNull(data: (data) => addNewUsersHandler),
             icon: const Icon(Icons.person_add),
-            tooltip: "add_partner".tr(),
+            tooltip: 'add_partner'.tr(),
           ),
         ],
       ),

@@ -20,7 +20,7 @@ class PartnerService {
   final IPartnerApiRepository _partnerApiRepository;
   final IPartnerRepository _partnerRepository;
   final IUserRepository _userRepository;
-  final Logger _log = Logger("PartnerService");
+  final Logger _log = Logger('PartnerService');
 
   PartnerService(
     this._partnerApiRepository,
@@ -49,7 +49,7 @@ class PartnerService {
       await _partnerApiRepository.delete(partner.id);
       await _userRepository.update(partner.copyWith(isPartnerSharedBy: false));
     } catch (e) {
-      _log.warning("Failed to remove partner ${partner.id}", e);
+      _log.warning('Failed to remove partner ${partner.id}', e);
       return false;
     }
     return true;
@@ -61,7 +61,7 @@ class PartnerService {
       await _userRepository.update(partner.copyWith(isPartnerSharedBy: true));
       return true;
     } catch (e) {
-      _log.warning("Failed to add partner ${partner.id}", e);
+      _log.warning('Failed to add partner ${partner.id}', e);
     }
     return false;
   }
@@ -79,7 +79,7 @@ class PartnerService {
           .update(partner.copyWith(inTimeline: dto.inTimeline));
       return true;
     } catch (e) {
-      _log.warning("Failed to update partner ${partner.id}", e);
+      _log.warning('Failed to update partner ${partner.id}', e);
     }
     return false;
   }

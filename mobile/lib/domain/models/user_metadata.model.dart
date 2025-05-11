@@ -2,16 +2,16 @@ import 'dart:ui';
 
 enum AvatarColor {
   // do not change this order or reuse indices for other purposes, adding is OK
-  primary("primary"),
-  pink("pink"),
-  red("red"),
-  yellow("yellow"),
-  blue("blue"),
-  green("green"),
-  purple("purple"),
-  orange("orange"),
-  gray("gray"),
-  amber("amber");
+  primary('primary'),
+  pink('pink'),
+  red('red'),
+  yellow('yellow'),
+  blue('blue'),
+  green('green'),
+  purple('purple'),
+  orange('orange'),
+  gray('gray'),
+  amber('amber');
 
   final String value;
   const AvatarColor(this.value);
@@ -76,30 +76,30 @@ class UserPreferences {
 
   Map<String, Object?> toMap() {
     final preferences = <String, Object?>{};
-    preferences["folders-Enabled"] = foldersEnabled;
-    preferences["memories-Enabled"] = memoriesEnabled;
-    preferences["people-Enabled"] = peopleEnabled;
-    preferences["ratings-Enabled"] = ratingsEnabled;
-    preferences["sharedLinks-Enabled"] = sharedLinksEnabled;
-    preferences["tags-Enabled"] = tagsEnabled;
-    preferences["avatar-Color"] = userAvatarColor.value;
-    preferences["purchase-ShowSupportBadge"] = showSupportBadge;
+    preferences['folders-Enabled'] = foldersEnabled;
+    preferences['memories-Enabled'] = memoriesEnabled;
+    preferences['people-Enabled'] = peopleEnabled;
+    preferences['ratings-Enabled'] = ratingsEnabled;
+    preferences['sharedLinks-Enabled'] = sharedLinksEnabled;
+    preferences['tags-Enabled'] = tagsEnabled;
+    preferences['avatar-Color'] = userAvatarColor.value;
+    preferences['purchase-ShowSupportBadge'] = showSupportBadge;
     return preferences;
   }
 
   factory UserPreferences.fromMap(Map<String, Object?> map) {
     return UserPreferences(
-      foldersEnabled: map["folders-Enabled"] as bool? ?? false,
-      memoriesEnabled: map["memories-Enabled"] as bool? ?? true,
-      peopleEnabled: map["people-Enabled"] as bool? ?? true,
-      ratingsEnabled: map["ratings-Enabled"] as bool? ?? false,
-      sharedLinksEnabled: map["sharedLinks-Enabled"] as bool? ?? true,
-      tagsEnabled: map["tags-Enabled"] as bool? ?? false,
+      foldersEnabled: map['folders-Enabled'] as bool? ?? false,
+      memoriesEnabled: map['memories-Enabled'] as bool? ?? true,
+      peopleEnabled: map['people-Enabled'] as bool? ?? true,
+      ratingsEnabled: map['ratings-Enabled'] as bool? ?? false,
+      sharedLinksEnabled: map['sharedLinks-Enabled'] as bool? ?? true,
+      tagsEnabled: map['tags-Enabled'] as bool? ?? false,
       userAvatarColor: AvatarColor.values.firstWhere(
-        (e) => e.value == map["avatar-Color"] as String?,
+        (e) => e.value == map['avatar-Color'] as String?,
         orElse: () => AvatarColor.primary,
       ),
-      showSupportBadge: map["purchase-ShowSupportBadge"] as bool? ?? true,
+      showSupportBadge: map['purchase-ShowSupportBadge'] as bool? ?? true,
     );
   }
 }

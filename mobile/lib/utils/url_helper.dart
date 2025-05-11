@@ -5,10 +5,10 @@ import 'package:punycode/punycode.dart';
 String sanitizeUrl(String url) {
   // Add schema if none is set
   final urlWithSchema =
-      url.trimLeft().startsWith(RegExp(r"https?://")) ? url : "https://$url";
+      url.trimLeft().startsWith(RegExp(r'https?://')) ? url : 'https://$url';
 
   // Remove trailing slash(es)
-  return urlWithSchema.trimRight().replaceFirst(RegExp(r"/+$"), "");
+  return urlWithSchema.trimRight().replaceFirst(RegExp(r'/+$'), '');
 }
 
 String? getServerUrl() {
@@ -20,8 +20,8 @@ String? getServerUrl() {
 
   return Uri.decodeFull(
     serverUri.hasPort
-        ? "${serverUri.scheme}://${serverUri.host}:${serverUri.port}"
-        : "${serverUri.scheme}://${serverUri.host}",
+        ? '${serverUri.scheme}://${serverUri.host}:${serverUri.port}'
+        : '${serverUri.scheme}://${serverUri.host}',
   );
 }
 

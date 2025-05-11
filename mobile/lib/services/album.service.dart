@@ -73,7 +73,7 @@ class AlbumService {
   Future<bool> refreshDeviceAlbums() async {
     if (!_localCompleter.isCompleted) {
       // guard against concurrent calls
-      _log.info("refreshDeviceAlbums is already in progress");
+      _log.info('refreshDeviceAlbums is already in progress');
       return _localCompleter.future;
     }
     _localCompleter = Completer();
@@ -89,7 +89,7 @@ class AlbumService {
             .then((value) => value.toSet()),
         _albumMediaRepository.getAll()
       ).wait;
-      _log.info("Found ${onDevice.length} device albums");
+      _log.info('Found ${onDevice.length} device albums');
       if (selectedIds.isEmpty) {
         final numLocal = await _albumRepository.count(local: true);
         if (numLocal > 0) {
@@ -108,12 +108,12 @@ class AlbumService {
           // albums and check every asset from any selected album against the set
           // of excluded assets
           excludedAssets = await _loadExcludedAssetIds(onDevice, excludedIds);
-          _log.info("Found ${excludedAssets.length} assets to exclude");
+          _log.info('Found ${excludedAssets.length} assets to exclude');
         }
         // remove all excluded albums
         onDevice.removeWhere((e) => excludedIds.contains(e.localId));
         _log.info(
-          "Ignoring ${excludedIds.length} excluded albums resulting in ${onDevice.length} device albums",
+          'Ignoring ${excludedIds.length} excluded albums resulting in ${onDevice.length} device albums',
         );
       }
 
@@ -133,11 +133,11 @@ class AlbumService {
       }
       changes =
           await _syncService.syncLocalAlbumAssetsToDb(onDevice, excludedAssets);
-      _log.info("Syncing completed. Changes: $changes");
+      _log.info('Syncing completed. Changes: $changes');
     } finally {
       _localCompleter.complete(changes);
     }
-    debugPrint("refreshDeviceAlbums took ${sw.elapsedMilliseconds}ms");
+    debugPrint('refreshDeviceAlbums took ${sw.elapsedMilliseconds}ms');
     return changes;
   }
 
@@ -197,7 +197,7 @@ class AlbumService {
     } finally {
       _remoteCompleter.complete(changes);
     }
-    debugPrint("refreshRemoteAlbums took ${sw.elapsedMilliseconds}ms");
+    debugPrint('refreshRemoteAlbums took ${sw.elapsedMilliseconds}ms');
     return changes;
   }
 
@@ -219,7 +219,7 @@ class AlbumService {
    * Creates names like Untitled, Untitled (1), Untitled (2), ...
    */
   Future<String> _getNextAlbumName() async {
-    const baseName = "Untitled";
+    const baseName = 'Untitled';
     for (int round = 0;; round++) {
       final proposedName = "$baseName${round == 0 ? "" : " ($round)"}";
 
@@ -260,7 +260,7 @@ class AlbumService {
         successfullyAdded: addedAssets.length,
       );
     } catch (e) {
-      debugPrint("Error addAssets  ${e.toString()}");
+      debugPrint('Error addAssets  ${e.toString()}');
     }
     return null;
   }
@@ -289,7 +289,7 @@ class AlbumService {
       await _albumRepository.update(album);
       return true;
     } catch (e) {
-      debugPrint("Error setActivityEnabled  ${e.toString()}");
+      debugPrint('Error setActivityEnabled  ${e.toString()}');
     }
     return false;
   }
@@ -322,17 +322,17 @@ class AlbumService {
       }
       return true;
     } catch (e) {
-      debugPrint("Error deleteAlbum  ${e.toString()}");
+      debugPrint('Error deleteAlbum  ${e.toString()}');
     }
     return false;
   }
 
   Future<bool> leaveAlbum(Album album) async {
     try {
-      await _albumApiRepository.removeUser(album.remoteId!, userId: "me");
+      await _albumApiRepository.removeUser(album.remoteId!, userId: 'me');
       return true;
     } catch (e) {
-      debugPrint("Error leaveAlbum ${e.toString()}");
+      debugPrint('Error leaveAlbum ${e.toString()}');
       return false;
     }
   }
@@ -351,7 +351,7 @@ class AlbumService {
       await _updateAssets(album.id, remove: toRemove.toList());
       return true;
     } catch (e) {
-      debugPrint("Error removeAssetFromAlbum ${e.toString()}");
+      debugPrint('Error removeAssetFromAlbum ${e.toString()}');
     }
     return false;
   }
@@ -374,7 +374,7 @@ class AlbumService {
 
       return true;
     } catch (error) {
-      debugPrint("Error removeUser  ${error.toString()}");
+      debugPrint('Error removeUser  ${error.toString()}');
       return false;
     }
   }
@@ -398,7 +398,7 @@ class AlbumService {
 
       return true;
     } catch (error) {
-      debugPrint("Error addUsers ${error.toString()}");
+      debugPrint('Error addUsers ${error.toString()}');
     }
     return false;
   }
@@ -417,7 +417,7 @@ class AlbumService {
       await _albumRepository.update(album);
       return true;
     } catch (e) {
-      debugPrint("Error changeTitleAlbum  ${e.toString()}");
+      debugPrint('Error changeTitleAlbum  ${e.toString()}');
       return false;
     }
   }
@@ -491,7 +491,7 @@ class AlbumService {
 
       return _albumRepository.update(album);
     } catch (error, stackTrace) {
-      _log.severe("Error updating album sort order", error, stackTrace);
+      _log.severe('Error updating album sort order', error, stackTrace);
     }
     return null;
   }

@@ -177,7 +177,7 @@ class UploadingText extends StatelessWidget {
       return element.status == UploadStatus.complete;
     }).length;
 
-    return const Text("shared_intent_upload_button_progress_text")
+    return const Text('shared_intent_upload_button_progress_text')
         .tr(args: [uploadedCount.toString(), candidates.length.toString()]);
   }
 }

@@ -48,14 +48,14 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
           ImmichToast.show(
             context: context,
             msg: 'add_to_album_bottom_sheet_already_exists'.tr(
-              namedArgs: {"album": album.name},
+              namedArgs: {'album': album.name},
             ),
           );
         } else {
           ImmichToast.show(
             context: context,
             msg: 'add_to_album_bottom_sheet_added'.tr(
-              namedArgs: {"album": album.name},
+              namedArgs: {'album': album.name},
             ),
           );
         }

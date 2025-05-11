@@ -57,14 +57,14 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
                 ),
                 const SizedBox(height: 16.0),
                 Text(
-                  "memories_all_caught_up",
+                  'memories_all_caught_up',
                   style: context.textTheme.headlineMedium?.copyWith(
                     color: Colors.white,
                   ),
                 ).tr(),
                 const SizedBox(height: 16.0),
                 Text(
-                  "memories_check_back_tomorrow",
+                  'memories_check_back_tomorrow',
                   style: context.textTheme.bodyMedium?.copyWith(
                     color: Colors.white,
                   ),
@@ -73,7 +73,7 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
                 TextButton(
                   onPressed: widget.onStartOver,
                   child: Text(
-                    "memories_start_over",
+                    'memories_start_over',
                     style: context.textTheme.displayMedium?.copyWith(
                       color: context.isDarkTheme
                           ? context.colorScheme.primary
@@ -110,7 +110,7 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
                     ),
                   ),
                   Text(
-                    "memories_swipe_to_close",
+                    'memories_swipe_to_close',
                     style: context.textTheme.bodyMedium?.copyWith(
                       color: Colors.white,
                     ),

@@ -77,7 +77,7 @@ class _ActivityTitle extends StatelessWidget {
         ),
         if (leftAlign)
           Text(
-            " • ",
+            ' • ',
             style: textStyle,
           ),
         Expanded(

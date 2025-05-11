@@ -11,7 +11,7 @@ import 'package:openapi/api.dart';
 
 class AuthGuard extends AutoRouteGuard {
   final ApiService _apiService;
-  final _log = Logger("AuthGuard");
+  final _log = Logger('AuthGuard');
   AuthGuard(this._apiService);
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
@@ -36,7 +36,7 @@ class AuthGuard extends AutoRouteGuard {
     } on ApiException catch (e) {
       // On an unauthorized request, take us to the login page
       if (e.code == HttpStatus.unauthorized) {
-        _log.warning("Unauthorized access token.");
+        _log.warning('Unauthorized access token.');
         router.replaceAll([const LoginRoute()]);
         return;
       }

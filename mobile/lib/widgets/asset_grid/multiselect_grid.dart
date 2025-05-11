@@ -63,7 +63,7 @@ class MultiselectGrid extends HookConsumerWidget {
       const Center(child: CircularProgressIndicator());
 
   Widget buildEmptyIndicator() =>
-      emptyIndicator ?? Center(child: const Text("no_assets_to_show").tr());
+      emptyIndicator ?? Center(child: const Text('no_assets_to_show').tr());
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -134,7 +134,7 @@ class MultiselectGrid extends HookConsumerWidget {
         handleShareAssets(ref, context, selection.value);
       } else {
         final ids =
-            remoteSelection(errorMessage: "home_page_share_err_local".tr())
+            remoteSelection(errorMessage: 'home_page_share_err_local'.tr())
                 .map((e) => e.remoteId!);
         context.pushRoute(SharedLinkEditRoute(assetsList: ids.toList()));
       }
@@ -190,8 +190,8 @@ class MultiselectGrid extends HookConsumerWidget {
             context: context,
             msg: force
                 ? 'assets_deleted_permanently'
-                    .tr(args: ["${selection.value.length}"])
-                : 'assets_trashed'.tr(args: ["${selection.value.length}"]),
+                    .tr(args: ['${selection.value.length}'])
+                : 'assets_trashed'.tr(args: ['${selection.value.length}']),
             gravity: ToastGravity.BOTTOM,
           );
           selectionEnabledHook.value = false;
@@ -225,7 +225,7 @@ class MultiselectGrid extends HookConsumerWidget {
           ImmichToast.show(
             context: context,
             msg: 'assets_removed_permanently_from_device'
-                .tr(args: ["$deletedCount"]),
+                .tr(args: ['$deletedCount']),
             gravity: ToastGravity.BOTTOM,
           );
 
@@ -254,8 +254,8 @@ class MultiselectGrid extends HookConsumerWidget {
             context: context,
             msg: shouldDeletePermanently
                 ? 'assets_deleted_permanently_from_server'
-                    .tr(args: ["${toDelete.length}"])
-                : 'assets_trashed_from_server'.tr(args: ["${toDelete.length}"]),
+                    .tr(args: ['${toDelete.length}'])
+                : 'assets_trashed_from_server'.tr(args: ['${toDelete.length}']),
             gravity: ToastGravity.BOTTOM,
           );
         }
@@ -282,7 +282,7 @@ class MultiselectGrid extends HookConsumerWidget {
       processing.value = true;
       try {
         final Iterable<Asset> assets = remoteSelection(
-          errorMessage: "home_page_add_to_album_err_local".tr(),
+          errorMessage: 'home_page_add_to_album_err_local'.tr(),
         );
         if (assets.isEmpty) {
           return;
@@ -296,21 +296,21 @@ class MultiselectGrid extends HookConsumerWidget {
           if (result.alreadyInAlbum.isNotEmpty) {
             ImmichToast.show(
               context: context,
-              msg: "home_page_add_to_album_conflicts".tr(
+              msg: 'home_page_add_to_album_conflicts'.tr(
                 namedArgs: {
-                  "album": album.name,
-                  "added": result.successfullyAdded.toString(),
-                  "failed": result.alreadyInAlbum.length.toString(),
+                  'album': album.name,
+                  'added': result.successfullyAdded.toString(),
+                  'failed': result.alreadyInAlbum.length.toString(),
                 },
               ),
             );
           } else {
             ImmichToast.show(
               context: context,
-              msg: "home_page_add_to_album_success".tr(
+              msg: 'home_page_add_to_album_success'.tr(
                 namedArgs: {
-                  "album": album.name,
-                  "added": result.successfullyAdded.toString(),
+                  'album': album.name,
+                  'added': result.successfullyAdded.toString(),
                 },
               ),
               toastType: ToastType.success,
@@ -327,7 +327,7 @@ class MultiselectGrid extends HookConsumerWidget {
       processing.value = true;
       try {
         final Iterable<Asset> assets = remoteSelection(
-          errorMessage: "home_page_add_to_album_err_local".tr(),
+          errorMessage: 'home_page_add_to_album_err_local'.tr(),
         );
         if (assets.isEmpty) {
           return;
@@ -438,7 +438,7 @@ class MultiselectGrid extends HookConsumerWidget {
               ),
           if (selectionEnabledHook.value)
             ControlBottomAppBar(
-              key: const ValueKey("controlBottomAppBar"),
+              key: const ValueKey('controlBottomAppBar'),
               onShare: onShareAssets,
               onFavorite: favoriteEnabled ? onFavoriteAssets : null,
               onArchive: archiveEnabled ? onArchiveAsset : null,

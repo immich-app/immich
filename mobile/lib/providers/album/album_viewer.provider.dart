@@ -5,7 +5,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 
 class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   AlbumViewerNotifier(this.ref)
-      : super(AlbumViewerPageState(editTitleText: "", isEditAlbum: false));
+      : super(AlbumViewerPageState(editTitleText: '', isEditAlbum: false));
 
   final Ref ref;
 
@@ -22,11 +22,11 @@ class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   }
 
   void remoteEditTitleText() {
-    state = state.copyWith(editTitleText: "");
+    state = state.copyWith(editTitleText: '');
   }
 
   void resetState() {
-    state = state.copyWith(editTitleText: "", isEditAlbum: false);
+    state = state.copyWith(editTitleText: '', isEditAlbum: false);
   }
 
   Future<bool> changeAlbumTitle(
@@ -38,12 +38,12 @@ class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
     bool isSuccess = await service.changeTitleAlbum(album, newAlbumTitle);
 
     if (isSuccess) {
-      state = state.copyWith(editTitleText: "", isEditAlbum: false);
+      state = state.copyWith(editTitleText: '', isEditAlbum: false);
 
       return true;
     }
 
-    state = state.copyWith(editTitleText: "", isEditAlbum: false);
+    state = state.copyWith(editTitleText: '', isEditAlbum: false);
     return false;
   }
 }

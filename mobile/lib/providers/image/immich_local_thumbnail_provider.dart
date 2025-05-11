@@ -19,7 +19,7 @@ class ImmichLocalThumbnailProvider
   final int height;
   final int width;
   final CacheManager? cacheManager;
-  final Logger log = Logger("ImmichLocalThumbnailProvider");
+  final Logger log = Logger('ImmichLocalThumbnailProvider');
   final String? userId;
 
   ImmichLocalThumbnailProvider({
@@ -81,7 +81,7 @@ class ImmichLocalThumbnailProvider
     );
     if (thumbnailBytes == null) {
       throw StateError(
-        "Loading thumb for local photo ${assetData.fileName} failed",
+        'Loading thumb for local photo ${assetData.fileName} failed',
       );
     }
 

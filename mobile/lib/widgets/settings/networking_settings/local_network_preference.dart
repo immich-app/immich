@@ -53,8 +53,8 @@ class LocalNetworkPreference extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wifiNameText = useState("");
-    final localEndpointText = useState("");
+    final wifiNameText = useState('');
+    final localEndpointText = useState('');
 
     useEffect(
       () {
@@ -88,8 +88,8 @@ class LocalNetworkPreference extends HookConsumerWidget {
     handleEditWifiName() async {
       final wifiName = await _showEditDialog(
         context,
-        "wifi_name".tr(),
-        "your_wifi_name".tr(),
+        'wifi_name'.tr(),
+        'your_wifi_name'.tr(),
         wifiNameText.value,
       );
 
@@ -101,8 +101,8 @@ class LocalNetworkPreference extends HookConsumerWidget {
     handleEditServerEndpoint() async {
       final localEndpoint = await _showEditDialog(
         context,
-        "server_endpoint".tr(),
-        "http://local-ip:2283",
+        'server_endpoint'.tr(),
+        'http://local-ip:2283',
         localEndpointText.value,
       );
 
@@ -118,7 +118,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
         context.showSnackBar(
           SnackBar(
             content: Text(
-              "get_wifiname_error".tr(),
+              'get_wifiname_error'.tr(),
               style: context.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
                 color: context.colorScheme.onSecondary,
@@ -175,7 +175,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                         horizontal: 24,
                       ),
                       child: Text(
-                        "local_network_sheet_info".tr(),
+                        'local_network_sheet_info'.tr(),
                         style: context.textTheme.bodyMedium,
                       ),
                     ),
@@ -187,9 +187,9 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       enabled: enabled,
                       contentPadding: const EdgeInsets.only(left: 24, right: 8),
                       leading: const Icon(Icons.wifi_rounded),
-                      title: Text("wifi_name".tr()),
+                      title: Text('wifi_name'.tr()),
                       subtitle: wifiNameText.value.isEmpty
-                          ? Text("enter_wifi_name".tr())
+                          ? Text('enter_wifi_name'.tr())
                           : Text(
                               wifiNameText.value,
                               style: context.textTheme.labelLarge?.copyWith(
@@ -210,9 +210,9 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       enabled: enabled,
                       contentPadding: const EdgeInsets.only(left: 24, right: 8),
                       leading: const Icon(Icons.lan_rounded),
-                      title: Text("server_endpoint".tr()),
+                      title: Text('server_endpoint'.tr()),
                       subtitle: localEndpointText.value.isEmpty
-                          ? const Text("http://local-ip:2283")
+                          ? const Text('http://local-ip:2283')
                           : Text(
                               localEndpointText.value,
                               style: context.textTheme.labelLarge?.copyWith(

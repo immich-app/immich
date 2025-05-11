@@ -85,15 +85,15 @@ class BackupControllerPage extends HookConsumerWidget {
     );
 
     Widget buildSelectedAlbumName() {
-      var text = "backup_controller_page_backup_selected".tr();
+      var text = 'backup_controller_page_backup_selected'.tr();
       var albums = ref.watch(backupProvider).selectedBackupAlbums;
 
       if (albums.isNotEmpty) {
         for (var album in albums) {
-          if (album.name == "Recent" || album.name == "Recents") {
+          if (album.name == 'Recent' || album.name == 'Recents') {
             text += "${album.name} (${'all'.tr()}), ";
           } else {
-            text += "${album.name}, ";
+            text += '${album.name}, ';
           }
         }
 
@@ -110,7 +110,7 @@ class BackupControllerPage extends HookConsumerWidget {
         return Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
-            "backup_controller_page_none_selected".tr(),
+            'backup_controller_page_none_selected'.tr(),
             style: context.textTheme.labelLarge?.copyWith(
               color: context.primaryColor,
             ),
@@ -120,12 +120,12 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     Widget buildExcludedAlbumName() {
-      var text = "backup_controller_page_excluded".tr();
+      var text = 'backup_controller_page_excluded'.tr();
       var albums = ref.watch(backupProvider).excludedBackupAlbums;
 
       if (albums.isNotEmpty) {
         for (var album in albums) {
-          text += "${album.name}, ";
+          text += '${album.name}, ';
         }
 
         return Padding(
@@ -158,7 +158,7 @@ class BackupControllerPage extends HookConsumerWidget {
           child: ListTile(
             minVerticalPadding: 18,
             title: Text(
-              "backup_controller_page_albums",
+              'backup_controller_page_albums',
               style: context.textTheme.titleMedium,
             ).tr(),
             subtitle: Padding(
@@ -167,7 +167,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "backup_controller_page_to_backup",
+                    'backup_controller_page_to_backup',
                     style: context.textTheme.bodyMedium?.copyWith(
                       color: context.colorScheme.onSurfaceSecondary,
                     ),
@@ -188,7 +188,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 ref.read(albumProvider.notifier).refreshDeviceAlbums();
               },
               child: const Text(
-                "select",
+                'select',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
@@ -231,7 +231,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     }
                   },
                   child: const Text(
-                    "cancel",
+                    'cancel',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -241,7 +241,7 @@ class BackupControllerPage extends HookConsumerWidget {
               : ElevatedButton(
                   onPressed: shouldBackup ? startBackup : null,
                   child: const Text(
-                    "backup_controller_page_start_backup",
+                    'backup_controller_page_start_backup',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -256,7 +256,7 @@ class BackupControllerPage extends HookConsumerWidget {
       return const ListTile(
         leading: Icon(Icons.info_outline_rounded),
         title: Text(
-          "Background backup is currently running, cannot start manual backup",
+          'Background backup is currently running, cannot start manual backup',
         ),
       );
     }
@@ -274,7 +274,7 @@ class BackupControllerPage extends HookConsumerWidget {
       appBar: AppBar(
         elevation: 0,
         title: const Text(
-          "backup_controller_page_backup",
+          'backup_controller_page_backup',
         ).tr(),
         leading: IconButton(
           onPressed: () {
@@ -309,25 +309,25 @@ class BackupControllerPage extends HookConsumerWidget {
                   ? [
                       buildFolderSelectionTile(),
                       BackupInfoCard(
-                        title: "total".tr(),
-                        subtitle: "backup_controller_page_total_sub".tr(),
+                        title: 'total'.tr(),
+                        subtitle: 'backup_controller_page_total_sub'.tr(),
                         info: ref.watch(backupProvider).availableAlbums.isEmpty
-                            ? "..."
-                            : "${backupState.allUniqueAssets.length}",
+                            ? '...'
+                            : '${backupState.allUniqueAssets.length}',
                       ),
                       BackupInfoCard(
-                        title: "backup_controller_page_backup".tr(),
-                        subtitle: "backup_controller_page_backup_sub".tr(),
+                        title: 'backup_controller_page_backup'.tr(),
+                        subtitle: 'backup_controller_page_backup_sub'.tr(),
                         info: ref.watch(backupProvider).availableAlbums.isEmpty
-                            ? "..."
-                            : "${backupState.selectedAlbumsBackupAssetsIds.length}",
+                            ? '...'
+                            : '${backupState.selectedAlbumsBackupAssetsIds.length}',
                       ),
                       BackupInfoCard(
-                        title: "backup_controller_page_remainder".tr(),
-                        subtitle: "backup_controller_page_remainder_sub".tr(),
+                        title: 'backup_controller_page_remainder'.tr(),
+                        subtitle: 'backup_controller_page_remainder_sub'.tr(),
                         info: ref.watch(backupProvider).availableAlbums.isEmpty
-                            ? "..."
-                            : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
+                            ? '...'
+                            : '${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}',
                       ),
                       const Divider(),
                       const CurrentUploadingAssetInfoBox(),

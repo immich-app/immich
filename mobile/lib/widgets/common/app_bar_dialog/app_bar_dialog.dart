@@ -96,7 +96,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     buildSettingButton() {
       return buildActionButton(
         Icons.settings_outlined,
-        "settings",
+        'settings',
         () => context.pushRoute(const SettingsRoute()),
       );
     }
@@ -104,7 +104,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     buildAppLogButton() {
       return buildActionButton(
         Icons.assignment_outlined,
-        "profile_drawer_app_logs",
+        'profile_drawer_app_logs',
         () => context.pushRoute(const AppLogRoute()),
       );
     }
@@ -112,7 +112,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     buildSignOutButton() {
       return buildActionButton(
         Icons.logout_rounded,
-        "sign_out",
+        'sign_out',
         () async {
           if (isLoggingOut.value) {
             return;
@@ -122,9 +122,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             context: context,
             builder: (BuildContext ctx) {
               return ConfirmDialog(
-                title: "app_bar_signout_dialog_title",
-                content: "app_bar_signout_dialog_content",
-                ok: "yes",
+                title: 'app_bar_signout_dialog_title',
+                content: 'app_bar_signout_dialog_content',
+                ok: 'yes',
                 onOk: () async {
                   isLoggingOut.value = true;
                   await ref
@@ -176,7 +176,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               color: theme.primaryColor,
             ),
             title: Text(
-              "backup_controller_page_server_storage",
+              'backup_controller_page_server_storage',
               style: context.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
@@ -229,14 +229,14 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 );
               },
               child: Text(
-                "documentation",
+                'documentation',
                 style: context.textTheme.bodySmall,
               ).tr(),
             ),
             const SizedBox(
               width: 20,
               child: Text(
-                "•",
+                '•',
                 textAlign: TextAlign.center,
               ),
             ),
@@ -249,7 +249,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 );
               },
               child: Text(
-                "profile_drawer_github",
+                'profile_drawer_github',
                 style: context.textTheme.bodySmall,
               ).tr(),
             ),

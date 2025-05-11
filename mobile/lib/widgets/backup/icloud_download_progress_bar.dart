@@ -39,7 +39,7 @@ class IcloudDownloadProgressBar extends ConsumerWidget {
           SizedBox(
             width: 110,
             child: Text(
-              "iCloud Download",
+              'iCloud Download',
               style: context.textTheme.labelSmall,
             ),
           ),
@@ -51,7 +51,7 @@ class IcloudDownloadProgressBar extends ConsumerWidget {
             ),
           ),
           Text(
-            " ${iCloudDownloadProgress ~/ 1}%",
+            ' ${iCloudDownloadProgress ~/ 1}%',
             style: const TextStyle(fontSize: 12),
           ),
         ],

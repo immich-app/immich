@@ -49,7 +49,7 @@ final backupServiceProvider = Provider(
 class BackupService {
   final httpClient = http.Client();
   final ApiService _apiService;
-  final Logger _log = Logger("BackupService");
+  final Logger _log = Logger('BackupService');
   final AppSettingsService _appSetting;
   final AlbumService _albumService;
   final IAlbumMediaRepository _albumMediaRepository;
@@ -223,8 +223,8 @@ class BackupService {
         !(await pm.Permission.accessMediaLocation.status).isGranted) {
       // double check that permission is granted here, to guard against
       // uploading corrupt assets without EXIF information
-      _log.warning("Media location permission is not granted. "
-          "Cannot access original assets for backup.");
+      _log.warning('Media location permission is not granted. '
+          'Cannot access original assets for backup.');
 
       return false;
     }
@@ -331,14 +331,14 @@ class BackupService {
           if (asset.local!.isLivePhoto) {
             if (livePhotoFile == null) {
               _log.warning(
-                "Failed to obtain motion part of the livePhoto - $originalFileName",
+                'Failed to obtain motion part of the livePhoto - $originalFileName',
               );
             }
           }
 
           final fileStream = file.openRead();
           final assetRawUploadData = http.MultipartFile(
-            "assetData",
+            'assetData',
             fileStream,
             file.lengthSync(),
             filename: originalFileName,
@@ -415,7 +415,7 @@ class BackupService {
               ),
             );
 
-            if (errorMessage == "Quota has been exceeded!") {
+            if (errorMessage == 'Quota has been exceeded!') {
               anyErrors = true;
               break;
             }
@@ -445,11 +445,11 @@ class BackupService {
           }
         }
       } on http.CancelledException {
-        debugPrint("Backup was cancelled by the user");
+        debugPrint('Backup was cancelled by the user');
         anyErrors = true;
         break;
       } catch (error, stackTrace) {
-        debugPrint("Error backup asset: ${error.toString()}: $stackTrace");
+        debugPrint('Error backup asset: ${error.toString()}: $stackTrace');
         anyErrors = true;
         continue;
       } finally {
@@ -458,7 +458,7 @@ class BackupService {
             await file?.delete();
             await livePhotoFile?.delete();
           } catch (e) {
-            debugPrint("ERROR deleting file: ${e.toString()}");
+            debugPrint('ERROR deleting file: ${e.toString()}');
           }
         }
       }
@@ -486,7 +486,7 @@ class BackupService {
     );
     final fileStream = livePhotoVideoFile.openRead();
     final livePhotoRawUploadData = http.MultipartFile(
-      "assetData",
+      'assetData',
       fileStream,
       livePhotoVideoFile.lengthSync(),
       filename: livePhotoTitle,
@@ -520,10 +520,10 @@ class BackupService {
   }
 
   String _getAssetType(AssetType assetType) => switch (assetType) {
-        AssetType.audio => "AUDIO",
-        AssetType.image => "IMAGE",
-        AssetType.video => "VIDEO",
-        AssetType.other => "OTHER",
+        AssetType.audio => 'AUDIO',
+        AssetType.image => 'IMAGE',
+        AssetType.video => 'VIDEO',
+        AssetType.other => 'OTHER',
       };
 }
 
