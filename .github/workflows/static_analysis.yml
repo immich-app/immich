@@ -74,39 +74,43 @@ jobs:
         run: make build
         working-directory: ./mobile
 
-      - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
-        id: verify-changed-files
+      - name: Perform checks
+        uses: qoomon/actions--parallel-steps@v1
         with:
-          files: |
-            mobile/**/*.g.dart
-            mobile/**/*.gr.dart
-            mobile/**/*.drift.dart
+          steps: |
+            - name: Find file changes
+              uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
+              id: verify-changed-files
+              with:
+                files: |
+                  mobile/**/*.g.dart
+                  mobile/**/*.gr.dart
+                  mobile/**/*.drift.dart
 
-      - name: Verify files have not changed
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
-        run: |
-          echo "ERROR: Generated files not up to date! Run make_build inside the mobile directory"
-          echo "Changed files: ${CHANGED_FILES}"
-          exit 1
+            - name: Verify files have not changed
+              if: steps.verify-changed-files.outputs.files_changed == 'true'
+              env:
+                CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
+              run: |
+                echo "ERROR: Generated files not up to date! Run make_build inside the mobile directory"
+                echo "Changed files: ${CHANGED_FILES}"
+                exit 1
 
-      - name: Run dart analyze
-        run: dart analyze --fatal-infos
-        working-directory: ./mobile
+            - name: Run dart analyze
+              run: dart analyze --fatal-infos
+              working-directory: ./mobile
 
-      - name: Run dart format
-        run: dart format lib/ --set-exit-if-changed
-        working-directory: ./mobile
+            - name: Run dart format
+              run: dart format lib/ --set-exit-if-changed
+              working-directory: ./mobile
 
-      - name: Run dart custom_lint
-        run: dart run custom_lint
-        working-directory: ./mobile
+            - name: Run dart custom_lint
+              run: dart run custom_lint
+              working-directory: ./mobile
 
-      - name: Run DCM
-        run: dcm analyze lib
-        working-directory: ./mobile
+            - name: Run DCM
+              run: dcm analyze lib
+              working-directory: ./mobile
 
   zizmor:
     name: zizmor
