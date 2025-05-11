@@ -1,24 +1,16 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import ChangePinCodeSettings from '$lib/components/user-settings-page/PinCodeSettings.svelte';
+  import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
+  import FeatureSettings from '$lib/components/user-settings-page/feature-settings.svelte';
+  import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
+  import UserPurchaseSettings from '$lib/components/user-settings-page/user-purchase-settings.svelte';
+  import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
   import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
   import { type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
-  import SettingAccordionState from '../shared-components/settings/setting-accordion-state.svelte';
-  import SettingAccordion from '../shared-components/settings/setting-accordion.svelte';
-  import AppSettings from './app-settings.svelte';
-  import ChangePasswordSettings from './change-password-settings.svelte';
-  import DeviceList from './device-list.svelte';
-  import OAuthSettings from './oauth-settings.svelte';
-  import PartnerSettings from './partner-settings.svelte';
-  import UserAPIKeyList from './user-api-key-list.svelte';
-  import UserProfileSettings from './user-profile-settings.svelte';
-  import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
-  import { t } from 'svelte-i18n';
-  import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
-  import UserPurchaseSettings from '$lib/components/user-settings-page/user-purchase-settings.svelte';
-  import FeatureSettings from '$lib/components/user-settings-page/feature-settings.svelte';
   import {
     mdiAccountGroupOutline,
     mdiAccountOutline,
@@ -29,11 +21,21 @@
     mdiDownload,
     mdiFeatureSearchOutline,
     mdiKeyOutline,
+    mdiLockSmart,
     mdiOnepassword,
     mdiServerOutline,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
-  import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
+  import { t } from 'svelte-i18n';
+  import SettingAccordionState from '../shared-components/settings/setting-accordion-state.svelte';
+  import SettingAccordion from '../shared-components/settings/setting-accordion.svelte';
+  import AppSettings from './app-settings.svelte';
+  import ChangePasswordSettings from './change-password-settings.svelte';
+  import DeviceList from './device-list.svelte';
+  import OAuthSettings from './oauth-settings.svelte';
+  import PartnerSettings from './partner-settings.svelte';
+  import UserAPIKeyList from './user-api-key-list.svelte';
+  import UserProfileSettings from './user-profile-settings.svelte';
 
   interface Props {
     keys?: ApiKeyResponseDto[];
@@ -133,6 +135,16 @@
     subtitle={$t('manage_sharing_with_partners')}
   >
     <PartnerSettings user={$user} />
+  </SettingAccordion>
+
+  <SettingAccordion
+    icon={mdiLockSmart}
+    key="user-pin-code-settings"
+    title={$t('user_pin_code_settings')}
+    subtitle={$t('user_pin_code_settings_description')}
+    autoScrollTo={true}
+  >
+    <ChangePinCodeSettings />
   </SettingAccordion>
 
   <SettingAccordion

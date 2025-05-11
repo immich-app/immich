@@ -2,6 +2,7 @@ import { SystemConfig } from 'src/config';
 import {
   AssetType,
   DatabaseExtension,
+  DatabaseSslMode,
   ExifOrientation,
   ImageFormat,
   JobName,
@@ -380,6 +381,7 @@ export type DatabaseConnectionParts = {
   username: string;
   password: string;
   database: string;
+  ssl?: DatabaseSslMode;
 };
 
 export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;

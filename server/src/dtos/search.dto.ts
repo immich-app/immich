@@ -5,8 +5,8 @@ import { Place } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AssetOrder, AssetType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
+import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true, nullable: true })
@@ -23,13 +23,6 @@ class BaseSearchDto {
   type?: AssetType;
 
   @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  @ApiProperty({ default: false })
-  withArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
   isEncoded?: boolean;
 
   @ValidateBoolean({ optional: true })
@@ -41,8 +34,8 @@ class BaseSearchDto {
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @ValidateBoolean({ optional: true })
-  isVisible?: boolean;
+  @ValidateAssetVisibility({ optional: true })
+  visibility?: AssetVisibility;
 
   @ValidateBoolean({ optional: true })
   withDeleted?: boolean;

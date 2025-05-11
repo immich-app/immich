@@ -610,3 +610,21 @@ export enum OAuthTokenEndpointAuthMethod {
   CLIENT_SECRET_POST = 'client_secret_post',
   CLIENT_SECRET_BASIC = 'client_secret_basic',
 }
+
+export enum DatabaseSslMode {
+  Disable = 'disable',
+  Allow = 'allow',
+  Prefer = 'prefer',
+  Require = 'require',
+  VerifyFull = 'verify-full',
+}
+
+export enum AssetVisibility {
+  ARCHIVE = 'archive',
+  TIMELINE = 'timeline',
+
+  /**
+   * Video part of the LivePhotos and MotionPhotos
+   */
+  HIDDEN = 'hidden',
+}

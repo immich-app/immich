@@ -1,24 +1,23 @@
 <script lang="ts">
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import QRCode from '$lib/components/shared-components/qrcode.svelte';
   import { copyToClipboard } from '$lib/utils';
-  import { HStack, IconButton, Input } from '@immich/ui';
+  import { HStack, IconButton, Input, Modal, ModalBody } from '@immich/ui';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {
     title: string;
-    onClose: () => void;
     value: string;
+    onClose: () => void;
   };
 
-  let { onClose, title, value }: Props = $props();
+  let { title, value, onClose }: Props = $props();
 
   let modalWidth = $state(0);
 </script>
 
-<FullScreenModal {title} icon={mdiLink} {onClose}>
-  <div class="w-full">
+<Modal {title} icon={mdiLink} {onClose} size="small">
+  <ModalBody>
     <div class="w-full py-2 px-10">
       <div bind:clientWidth={modalWidth} class="w-full">
         <QRCode {value} width={modalWidth} />
@@ -37,5 +36,5 @@
         />
       </div>
     </HStack>
-  </div>
-</FullScreenModal>
+  </ModalBody>
+</Modal>

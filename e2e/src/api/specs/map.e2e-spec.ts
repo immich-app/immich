@@ -1,4 +1,4 @@
-import { LoginResponseDto } from '@immich/sdk';
+import { AssetVisibility, LoginResponseDto } from '@immich/sdk';
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
@@ -44,7 +44,7 @@ describe('/map', () => {
     it('should get map markers for all non-archived assets', async () => {
       const { status, body } = await request(app)
         .get('/map/markers')
-        .query({ isArchived: false })
+        .query({ visibility: AssetVisibility.Timeline })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);

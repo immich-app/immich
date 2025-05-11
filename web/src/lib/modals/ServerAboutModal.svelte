@@ -1,12 +1,11 @@
 <script lang="ts">
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
-  import { DateTime } from 'luxon';
-  import { t } from 'svelte-i18n';
-  import { mdiAlert } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
+  import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
+  import { Modal, ModalBody } from '@immich/ui';
+  import { mdiAlert } from '@mdi/js';
+  import { DateTime } from 'luxon';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     onClose: () => void;
@@ -17,8 +16,8 @@
   let { onClose, info, versions }: Props = $props();
 </script>
 
-<Portal>
-  <FullScreenModal title={$t('about')} {onClose}>
+<Modal title={$t('about')} {onClose}>
+  <ModalBody>
     <div class="flex flex-col sm:grid sm:grid-cols-2 gap-1 text-immich-primary dark:text-immich-dark-primary">
       <div>
         <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-desc"
@@ -199,5 +198,5 @@
         </ul>
       </div>
     </div>
-  </FullScreenModal>
-</Portal>
+  </ModalBody>
+</Modal>

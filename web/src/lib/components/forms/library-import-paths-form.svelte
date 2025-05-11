@@ -178,9 +178,7 @@
       {#each validatedPaths as validatedPath, listIndex (validatedPath.importPath)}
         <tr
           class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-            listIndex % 2 == 0
-              ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-              : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+            listIndex % 2 == 0 ? 'bg-subtle' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
           }`}
         >
           <td class="w-1/8 text-ellipsis ps-8 text-sm">
@@ -218,9 +216,7 @@
       {/each}
       <tr
         class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-          importPaths.length % 2 == 0
-            ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-            : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+          importPaths.length % 2 == 0 ? 'bg-subtle' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
         }`}
       >
         <td class="w-4/5 text-ellipsis px-4 text-sm">

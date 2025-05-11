@@ -3,13 +3,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 
 @RoutePage()
 class AlbumAssetSelectionPage extends HookConsumerWidget {
@@ -59,7 +59,7 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
             : const Text(
                 'share_assets_selected',
                 style: TextStyle(fontSize: 18),
-              ).tr(args: [selected.value.length.toString()]),
+              ).tr(namedArgs: {'count': selected.value.length.toString()}),
         centerTitle: false,
         actions: [
           if (selected.value.isNotEmpty || canDeselect)

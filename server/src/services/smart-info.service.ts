@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
-import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
@@ -104,7 +104,7 @@ export class SmartInfoService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!asset.isVisible) {
+    if (asset.visibility === AssetVisibility.HIDDEN) {
       return JobStatus.SKIPPED;
     }
 

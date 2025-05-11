@@ -73,6 +73,9 @@ String parameterToString(dynamic value) {
   if (value is AssetTypeEnum) {
     return AssetTypeEnumTypeTransformer().encode(value).toString();
   }
+  if (value is AssetVisibility) {
+    return AssetVisibilityTypeTransformer().encode(value).toString();
+  }
   if (value is AudioCodec) {
     return AudioCodecTypeTransformer().encode(value).toString();
   }

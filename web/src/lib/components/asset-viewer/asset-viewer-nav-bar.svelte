@@ -7,6 +7,7 @@
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
+  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/restore-action.svelte';
   import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/set-person-featured-action.svelte';
@@ -14,7 +15,6 @@
   import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
-  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -22,6 +22,7 @@
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
+  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import {
     AssetJobName,
@@ -45,9 +46,8 @@
     mdiPresentationPlay,
     mdiUpload,
   } from '@mdi/js';
-  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
-  import { t } from 'svelte-i18n';
   import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     asset: AssetResponseDto;
@@ -104,7 +104,7 @@
 </script>
 
 <div
-  class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
+  class="flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
     {#if showCloseButton}

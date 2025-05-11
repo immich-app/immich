@@ -1,11 +1,10 @@
 <script lang="ts">
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { type ServerAboutResponseDto } from '@immich/sdk';
-  import { t } from 'svelte-i18n';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';
   import { discordPath, discordViewBox } from '$lib/assets/svg-paths';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { type ServerAboutResponseDto } from '@immich/sdk';
+  import { Modal, ModalBody } from '@immich/ui';
+  import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     onClose: () => void;
@@ -15,8 +14,8 @@
   let { onClose, info }: Props = $props();
 </script>
 
-<Portal>
-  <FullScreenModal title={$t('support_and_feedback')} {onClose}>
+<Modal title={$t('support_and_feedback')} {onClose} size="small">
+  <ModalBody>
     <p>{$t('official_immich_resources')}</p>
     <div class="flex flex-col sm:grid sm:grid-cols-2 gap-2 mt-5">
       <div>
@@ -130,5 +129,5 @@
         {/if}
       </div>
     {/if}
-  </FullScreenModal>
-</Portal>
+  </ModalBody>
+</Modal>

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -6,15 +7,15 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/widgets/search/thumbnail_with_info.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/search/thumbnail_with_info.dart';
 
 class SharedLinkItem extends ConsumerWidget {
   final SharedLink sharedLink;
@@ -44,17 +45,17 @@ class SharedLinkItem extends ConsumerWidget {
         if (difference.inHours % 24 > 12) {
           dayDifference += 1;
         }
-        expiresText =
-            "shared_link_expires_days".tr(args: [dayDifference.toString()]);
+        expiresText = "shared_link_expires_days"
+            .tr(namedArgs: {'count': dayDifference.toString()});
       } else if (difference.inHours > 0) {
         expiresText = "shared_link_expires_hours"
-            .tr(args: [difference.inHours.toString()]);
+            .tr(namedArgs: {'count': difference.inHours.toString()});
       } else if (difference.inMinutes > 0) {
         expiresText = "shared_link_expires_minutes"
-            .tr(args: [difference.inMinutes.toString()]);
+            .tr(namedArgs: {'count': difference.inMinutes.toString()});
       } else if (difference.inSeconds > 0) {
         expiresText = "shared_link_expires_seconds"
-            .tr(args: [difference.inSeconds.toString()]);
+            .tr(namedArgs: {'count': difference.inSeconds.toString()});
       }
     }
     return Text(

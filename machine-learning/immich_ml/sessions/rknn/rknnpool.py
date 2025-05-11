@@ -53,7 +53,7 @@ def init_rknn(model_path: str) -> "RKNNLite":
         ret = rknn_lite.init_runtime()  # Please do not set this parameter on other platforms.
 
     if ret != 0:
-        raise RuntimeError("Failed to inititalize RKNN runtime environment")
+        raise RuntimeError("Failed to initialize RKNN runtime environment")
 
     return rknn_lite
 

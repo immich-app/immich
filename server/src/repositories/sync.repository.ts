@@ -159,7 +159,7 @@ export class SyncRepository {
     return builder
       .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
       .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
-      .orderBy(['id asc']) as SelectQueryBuilder<DB, T, D>;
+      .orderBy('id', 'asc') as SelectQueryBuilder<DB, T, D>;
   }
 
   private upsertTableFilters<T extends keyof Pick<DB, upsertTables>, D>(
@@ -170,6 +170,6 @@ export class SyncRepository {
     return builder
       .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
       .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
-      .orderBy(['updateId asc']) as SelectQueryBuilder<DB, T, D>;
+      .orderBy('updateId', 'asc') as SelectQueryBuilder<DB, T, D>;
   }
 }

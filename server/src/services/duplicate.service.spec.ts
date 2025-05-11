@@ -1,4 +1,4 @@
-import { AssetFileType, AssetType, JobName, JobStatus } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -22,11 +22,11 @@ const hasEmbedding = {
       updateId: 'update-1',
     },
   ],
-  isVisible: true,
   stackId: null,
   type: AssetType.IMAGE,
   duplicateId: null,
   embedding: '[1, 2, 3, 4]',
+  visibility: AssetVisibility.TIMELINE,
 };
 
 const hasDupe = {
@@ -207,7 +207,10 @@ describe(SearchService.name, () => {
 
     it('should skip if asset is not visible', async () => {
       const id = assetStub.livePhotoMotionAsset.id;
-      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, isVisible: false });
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({
+        ...hasEmbedding,
+        visibility: AssetVisibility.HIDDEN,
+      });
 
       const result = await sut.handleSearchDuplicates({ id });
 

@@ -73,7 +73,8 @@ class PartnerPage extends HookConsumerWidget {
         builder: (BuildContext context) {
           return ConfirmDialog(
             title: "stop_photo_sharing",
-            content: "partner_page_stop_sharing_content".tr(args: [u.name]),
+            content: "partner_page_stop_sharing_content"
+                .tr(namedArgs: {'partner': u.name}),
             onOk: () => ref.read(partnerServiceProvider).removePartner(u),
           );
         },

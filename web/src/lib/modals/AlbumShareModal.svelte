@@ -3,9 +3,8 @@
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import QrCodeModal from '$lib/components/shared-components/qr-code-modal.svelte';
   import { AppRoute } from '$lib/constants';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import { makeSharedLinkUrl } from '$lib/utils';
   import {
     AlbumUserRole,
@@ -20,23 +19,21 @@
   import { mdiCheck, mdiEye, mdiLink, mdiPencil } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
+  import UserAvatar from '../components/shared-components/user-avatar.svelte';
 
   interface Props {
     album: AlbumResponseDto;
-    onClose: () => void;
-    onSelect: (selectedUsers: AlbumUserAddDto[]) => void;
-    onShare: () => void;
+    onClose: (result?: { action: 'sharedLink' } | { action: 'sharedUsers'; data: AlbumUserAddDto[] }) => void;
   }
 
-  let { album, onClose, onSelect, onShare }: Props = $props();
+  let { album, onClose }: Props = $props();
 
   let users: UserResponseDto[] = $state([]);
   let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = $state({});
 
   let sharedLinkUrl = $state('');
   const handleViewQrCode = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinkUrl = makeSharedLinkUrl($serverConfig.externalDomain, sharedLink.key);
+    sharedLinkUrl = makeSharedLinkUrl(sharedLink.key);
   };
 
   const roleOptions: Array<{ title: string; value: AlbumUserRole | 'none'; icon?: string }> = [
@@ -160,8 +157,10 @@
           shape="round"
           disabled={Object.keys(selectedUsers).length === 0}
           onclick={() =>
-            onSelect(Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })))}
-          >{$t('add')}</Button
+            onClose({
+              action: 'sharedUsers',
+              data: Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })),
+            })}>{$t('add')}</Button
         >
       </div>
     {/if}
@@ -182,7 +181,13 @@
         </Stack>
       {/if}
 
-      <Button leadingIcon={mdiLink} size="small" shape="round" fullWidth onclick={onShare}>{$t('create_link')}</Button>
+      <Button
+        leadingIcon={mdiLink}
+        size="small"
+        shape="round"
+        fullWidth
+        onclick={() => onClose({ action: 'sharedLink' })}>{$t('create_link')}</Button
+      >
     </Stack>
   </FullScreenModal>
 {/if}

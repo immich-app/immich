@@ -4,7 +4,7 @@ import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { defaults } from 'src/config';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
+import { AssetType, AssetVisibility, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -504,7 +504,10 @@ describe(MetadataService.name, () => {
     });
 
     it('should not apply motion photos if asset is video', async () => {
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({ ...assetStub.livePhotoMotionAsset, isVisible: true });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
+        ...assetStub.livePhotoMotionAsset,
+        visibility: AssetVisibility.TIMELINE,
+      });
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id });
@@ -513,7 +516,7 @@ describe(MetadataService.name, () => {
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalledWith(
-        expect.objectContaining({ assetType: AssetType.VIDEO, isVisible: false }),
+        expect.objectContaining({ assetType: AssetType.VIDEO, visibility: AssetVisibility.HIDDEN }),
       );
     });
 
@@ -580,7 +583,7 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         fileModifiedAt: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
         id: fileStub.livePhotoMotion.uuid,
-        isVisible: false,
+        visibility: AssetVisibility.HIDDEN,
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
@@ -638,7 +641,7 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         fileModifiedAt: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
         id: fileStub.livePhotoMotion.uuid,
-        isVisible: false,
+        visibility: AssetVisibility.HIDDEN,
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
@@ -696,7 +699,7 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         fileModifiedAt: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
         id: fileStub.livePhotoMotion.uuid,
-        isVisible: false,
+        visibility: AssetVisibility.HIDDEN,
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
@@ -773,14 +776,17 @@ describe(MetadataService.name, () => {
         MicroVideoOffset: 1,
       });
       mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
-      mocks.asset.getByChecksum.mockResolvedValue({ ...assetStub.livePhotoMotionAsset, isVisible: true });
+      mocks.asset.getByChecksum.mockResolvedValue({
+        ...assetStub.livePhotoMotionAsset,
+        visibility: AssetVisibility.TIMELINE,
+      });
       const video = randomBytes(512);
       mocks.storage.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
-        isVisible: false,
+        visibility: AssetVisibility.HIDDEN,
       });
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoStillAsset.id,
@@ -1301,7 +1307,9 @@ describe(MetadataService.name, () => {
 
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
       expect(mocks.asset.findLivePhotoMatch).not.toHaveBeenCalled();
-      expect(mocks.asset.update).not.toHaveBeenCalledWith(expect.objectContaining({ isVisible: false }));
+      expect(mocks.asset.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({ visibility: AssetVisibility.HIDDEN }),
+      );
       expect(mocks.album.removeAsset).not.toHaveBeenCalled();
     });
 
@@ -1320,7 +1328,9 @@ describe(MetadataService.name, () => {
         libraryId: null,
         type: AssetType.IMAGE,
       });
-      expect(mocks.asset.update).not.toHaveBeenCalledWith(expect.objectContaining({ isVisible: false }));
+      expect(mocks.asset.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({ visibility: AssetVisibility.HIDDEN }),
+      );
       expect(mocks.album.removeAsset).not.toHaveBeenCalled();
     });
 
@@ -1342,7 +1352,10 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: false });
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: assetStub.livePhotoMotionAsset.id,
+        visibility: AssetVisibility.HIDDEN,
+      });
       expect(mocks.album.removeAsset).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.id);
     });
 

@@ -15,12 +15,12 @@ class UpdateAssetDto {
   UpdateAssetDto({
     this.dateTimeOriginal,
     this.description,
-    this.isArchived,
     this.isFavorite,
     this.latitude,
     this.livePhotoVideoId,
     this.longitude,
     this.rating,
+    this.visibility,
   });
 
   ///
@@ -38,14 +38,6 @@ class UpdateAssetDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? description;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isArchived;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -83,31 +75,39 @@ class UpdateAssetDto {
   ///
   num? rating;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AssetVisibility? visibility;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
     other.dateTimeOriginal == dateTimeOriginal &&
     other.description == description &&
-    other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
     other.latitude == latitude &&
     other.livePhotoVideoId == livePhotoVideoId &&
     other.longitude == longitude &&
-    other.rating == rating;
+    other.rating == rating &&
+    other.visibility == visibility;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
-    (rating == null ? 0 : rating!.hashCode);
+    (rating == null ? 0 : rating!.hashCode) +
+    (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, longitude=$longitude, rating=$rating]';
+  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isFavorite=$isFavorite, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, longitude=$longitude, rating=$rating, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -120,11 +120,6 @@ class UpdateAssetDto {
       json[r'description'] = this.description;
     } else {
     //  json[r'description'] = null;
-    }
-    if (this.isArchived != null) {
-      json[r'isArchived'] = this.isArchived;
-    } else {
-    //  json[r'isArchived'] = null;
     }
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
@@ -151,6 +146,11 @@ class UpdateAssetDto {
     } else {
     //  json[r'rating'] = null;
     }
+    if (this.visibility != null) {
+      json[r'visibility'] = this.visibility;
+    } else {
+    //  json[r'visibility'] = null;
+    }
     return json;
   }
 
@@ -165,12 +165,12 @@ class UpdateAssetDto {
       return UpdateAssetDto(
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
         description: mapValueOfType<String>(json, r'description'),
-        isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         longitude: num.parse('${json[r'longitude']}'),
         rating: num.parse('${json[r'rating']}'),
+        visibility: AssetVisibility.fromJson(json[r'visibility']),
       );
     }
     return null;

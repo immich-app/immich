@@ -7,14 +7,22 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
-body {
-  font-family: 'Be Vietnam Pro', serif;
-  font-optical-sizing: auto;
-  /* font-size: 1.125rem;
+@font-face {
+  font-family: 'Overpass';
+  src: url('/fonts/overpass/Overpass.ttf') format('truetype-variations');
+  font-weight: 1 999;
+  font-style: normal;
   ascent-override: 106.25%;
-  size-adjust: 106.25%; */
+  size-adjust: 106.25%;
+}
+
+@font-face {
+  font-family: 'Overpass Mono';
+  src: url('/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
+  font-weight: 1 999;
+  font-style: normal;
+  ascent-override: 106.25%;
+  size-adjust: 106.25%;
 }
 
 .breadcrumbs__link {
@@ -29,6 +37,7 @@ img {
 
 /* You can override the default Infima variables here. */
 :root {
+  font-family: 'Overpass', sans-serif;
   --ifm-color-primary: #4250af;
   --ifm-color-primary-dark: #4250af;
   --ifm-color-primary-darker: #4250af;
@@ -59,14 +68,12 @@ div[class^='announcementBar_'] {
 }
 
 .menu__link {
-  padding: 10px;
-  padding-left: 16px;
+  padding: 10px 10px 10px 16px;
   border-radius: 24px;
   margin-right: 16px;
 }
 
 .menu__list-item-collapsible {
-  border-radius: 10px;
   margin-right: 16px;
   border-radius: 24px;
 }
@@ -82,4 +89,13 @@ div[class*='navbar__items'] > li:has(a[class*='version-switcher-34ab39']) {
 
 code {
   font-weight: 600;
+}
+
+.buy-button {
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  font-family: 'Overpass', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 0 5px 2px rgba(181, 206, 254, 0.4);
 }

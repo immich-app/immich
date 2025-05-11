@@ -6,15 +6,15 @@ import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils'
 
 describe(APIKeyController.name, () => {
   let ctx: ControllerContext;
+  const service = mockBaseService(ApiKeyService);
 
   beforeAll(async () => {
-    ctx = await controllerSetup(APIKeyController, [
-      { provide: ApiKeyService, useValue: mockBaseService(ApiKeyService) },
-    ]);
+    ctx = await controllerSetup(APIKeyController, [{ provide: ApiKeyService, useValue: service }]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
+    service.resetAllMocks();
     ctx.reset();
   });
 

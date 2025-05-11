@@ -1,0 +1,185 @@
+name: 'Multi-runner container image build'
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: 'Name of the image'
+        type: string
+        required: true
+      context:
+        description: 'Path to build context'
+        type: string
+        required: true
+      dockerfile:
+        description: 'Path to Dockerfile'
+        type: string
+        required: true
+      tag-suffix:
+        description: 'Suffix to append to the image tag'
+        type: string
+        default: ''
+      dockerhub-push:
+        description: 'Push to Docker Hub'
+        type: boolean
+        default: false
+      build-args:
+        description: 'Docker build arguments'
+        type: string
+        required: false
+      platforms:
+        description: 'Platforms to build for'
+        type: string
+      runner-mapping:
+        description: 'Mapping from platforms to runners'
+        type: string
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: false
+      DOCKERHUB_TOKEN:
+        required: false
+
+env:
+  GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.image }}
+  DOCKERHUB_IMAGE: altran1502/${{ inputs.image }}
+
+jobs:
+  matrix:
+    name: 'Generate matrix'
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      key: ${{ steps.artifact-key.outputs.base }}
+    steps:
+      - name: Generate build matrix
+        id: matrix
+        shell: bash
+        env:
+          PLATFORMS: ${{ inputs.platforms || 'linux/amd64,linux/arm64' }}
+          RUNNER_MAPPING: ${{ inputs.runner-mapping || '{"linux/amd64":"ubuntu-latest","linux/arm64":"ubuntu-24.04-arm"}' }}
+        run: |
+          matrix=$(jq -R -c \
+            --argjson runner_mapping "${RUNNER_MAPPING}" \
+            'split(",") | map({platform: ., runner: $runner_mapping[.]})' \
+            <<< "${PLATFORMS}")
+          echo "${matrix}"
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+
+      - name: Determine artifact key
+        id: artifact-key
+        shell: bash
+        env:
+          IMAGE: ${{ inputs.image }}
+          SUFFIX: ${{ inputs.tag-suffix }}
+        run: |
+          if [[ -n "${SUFFIX}" ]]; then
+              base="${IMAGE}${SUFFIX}-digests"
+          else
+              base="${IMAGE}-digests"
+          fi
+          echo "${base}"
+          echo "base=${base}" >> $GITHUB_OUTPUT
+
+  build:
+    needs: matrix
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/image-build
+        with:
+          context: ${{ inputs.context }}
+          dockerfile: ${{ inputs.dockerfile }}
+          image: ${{ env.GHCR_IMAGE }}
+          ghcr-token: ${{ secrets.GITHUB_TOKEN }}
+          platform: ${{ matrix.platform }}
+          artifact-key-base: ${{ needs.matrix.outputs.key }}
+          build-args: ${{ inputs.build-args }}
+
+  merge:
+    needs: [matrix, build]
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: ${{ needs.matrix.outputs.key }}-*
+          merge-multiple: true
+
+      - name: Login to Docker Hub
+        if: ${{ inputs.dockerhub-push }}
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
+
+      - name: Generate docker image tags
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: 'true'
+        with:
+          flavor: |
+            # Disable latest tag
+            latest=false
+            suffix=${{ inputs.tag-suffix }}
+          images: |
+            name=${{ env.GHCR_IMAGE }}
+            name=${{ env.DOCKERHUB_IMAGE }},enable=${{ inputs.dockerhub-push }}
+          tags: |
+            # Tag with branch name
+            type=ref,event=branch
+            # Tag with pr-number
+            type=ref,event=pr
+            # Tag with long commit sha hash
+            type=sha,format=long,prefix=commit-
+            # Tag with git tag on release
+            type=ref,event=tag
+            type=raw,value=release,enable=${{ github.event_name == 'release' }}
+
+      - name: Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          # Process annotations
+          declare -a ANNOTATIONS=()
+          if [[ -n "$DOCKER_METADATA_OUTPUT_JSON" ]]; then
+            while IFS= read -r annotation; do
+              # Extract key and value by removing the manifest: prefix
+              if [[ "$annotation" =~ ^manifest:(.+)=(.+)$ ]]; then
+                key="${BASH_REMATCH[1]}"
+                value="${BASH_REMATCH[2]}"
+                # Use array to properly handle arguments with spaces
+                ANNOTATIONS+=(--annotation "index:$key=$value")
+              fi
+            done < <(jq -r '.annotations[]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          fi
+
+          TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+          SOURCE_ARGS=$(printf "${GHCR_IMAGE}@sha256:%s " *)
+
+          docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS

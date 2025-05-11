@@ -66,12 +66,6 @@ export const errorDto = {
     message: 'The server already has an admin',
     correlationId: expect.any(String),
   },
-  invalidEmail: {
-    error: 'Bad Request',
-    statusCode: 400,
-    message: ['email must be an email'],
-    correlationId: expect.any(String),
-  },
 };
 
 export const signupResponseDto = {

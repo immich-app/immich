@@ -12,11 +12,13 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
+  IsEnum,
   IsHexColor,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   Validate,
   ValidateBy,
   ValidateIf,
@@ -29,6 +31,7 @@ import {
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
+import { AssetVisibility } from 'src/enum';
 import { isIP, isIPRange } from 'validator';
 
 @Injectable()
@@ -67,6 +70,22 @@ export class UUIDParamDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
 }
+
+type PinCodeOptions = { optional?: boolean } & OptionalOptions;
+export const PinCode = ({ optional, ...options }: PinCodeOptions = {}) => {
+  const decorators = [
+    IsString(),
+    IsNotEmpty(),
+    Matches(/^\d{6}$/, { message: ({ property }) => `${property} must be a 6-digit numeric string` }),
+    ApiProperty({ example: '123456' }),
+  ];
+
+  if (optional) {
+    decorators.push(Optional(options));
+  }
+
+  return applyDecorators(...decorators);
+};
 
 export interface OptionalOptions extends ValidationOptions {
   nullable?: boolean;
@@ -143,6 +162,17 @@ export const ValidateDate = (options?: DateOptions) => {
     decorators.push(Optional({ nullable }));
   }
 
+  return applyDecorators(...decorators);
+};
+
+type AssetVisibilityOptions = { optional?: boolean };
+export const ValidateAssetVisibility = (options?: AssetVisibilityOptions) => {
+  const { optional } = { optional: false, ...options };
+  const decorators = [IsEnum(AssetVisibility), ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility })];
+
+  if (optional) {
+    decorators.push(Optional());
+  }
   return applyDecorators(...decorators);
 };
 

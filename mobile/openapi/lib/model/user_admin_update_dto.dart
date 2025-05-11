@@ -17,6 +17,7 @@ class UserAdminUpdateDto {
     this.email,
     this.name,
     this.password,
+    this.pinCode,
     this.quotaSizeInBytes,
     this.shouldChangePassword,
     this.storageLabel,
@@ -48,6 +49,8 @@ class UserAdminUpdateDto {
   ///
   String? password;
 
+  String? pinCode;
+
   /// Minimum value: 0
   int? quotaSizeInBytes;
 
@@ -67,6 +70,7 @@ class UserAdminUpdateDto {
     other.email == email &&
     other.name == name &&
     other.password == password &&
+    other.pinCode == pinCode &&
     other.quotaSizeInBytes == quotaSizeInBytes &&
     other.shouldChangePassword == shouldChangePassword &&
     other.storageLabel == storageLabel;
@@ -78,12 +82,13 @@ class UserAdminUpdateDto {
     (email == null ? 0 : email!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
+    (pinCode == null ? 0 : pinCode!.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UserAdminUpdateDto[avatarColor=$avatarColor, email=$email, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UserAdminUpdateDto[avatarColor=$avatarColor, email=$email, name=$name, password=$password, pinCode=$pinCode, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -106,6 +111,11 @@ class UserAdminUpdateDto {
       json[r'password'] = this.password;
     } else {
     //  json[r'password'] = null;
+    }
+    if (this.pinCode != null) {
+      json[r'pinCode'] = this.pinCode;
+    } else {
+    //  json[r'pinCode'] = null;
     }
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
@@ -138,6 +148,7 @@ class UserAdminUpdateDto {
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
+        pinCode: mapValueOfType<String>(json, r'pinCode'),
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),

@@ -6,14 +6,17 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
-  import { mdiAccountEditOutline } from '@mdi/js';
+  import { mdiAccountEditOutline, mdiLockSmart, mdiOnepassword } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
     user: UserAdminResponseDto;
     canResetPassword?: boolean;
     onClose: (
-      data?: { action: 'update'; data: UserAdminResponseDto } | { action: 'resetPassword'; data: string },
+      data?:
+        | { action: 'update'; data: UserAdminResponseDto }
+        | { action: 'resetPassword'; data: string }
+        | { action: 'resetPinCode' },
     ) => void;
   }
 
@@ -76,6 +79,24 @@
     }
   };
 
+  const resetUserPincode = async () => {
+    const isConfirmed = await modalManager.openDialog({
+      prompt: $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } }),
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      await updateUserAdmin({ id: user.id, userAdminUpdateDto: { pinCode: null } });
+
+      onClose({ action: 'resetPinCode' });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_reset_pin_code'));
+    }
+  };
+
   // TODO move password reset server-side
   function generatePassword(length: number = 16) {
     let generatedPassword = '';
@@ -99,10 +120,10 @@
   };
 </script>
 
-<Modal title={$t('edit_user')} size="small" icon={mdiAccountEditOutline} {onClose}>
+<Modal title={$t('edit_user')} size="small" icon={mdiAccountEditOutline} {onClose} class="text-dark bg-light">
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
-      <div class="my-4 flex flex-col gap-2">
+      <div class="mb-4 flex flex-col gap-2">
         <label class="immich-form-label" for="email">{$t('email')}</label>
         <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
       </div>
@@ -151,13 +172,34 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
-      {#if canResetPassword}
-        <Button shape="round" color="warning" variant="filled" fullWidth onclick={resetPassword}
-          >{$t('reset_password')}</Button
+    <div class="w-full">
+      <div class="flex gap-3 w-full">
+        {#if canResetPassword}
+          <Button
+            shape="round"
+            color="warning"
+            variant="filled"
+            fullWidth
+            onclick={resetPassword}
+            leadingIcon={mdiOnepassword}
+          >
+            {$t('reset_password')}</Button
+          >
+        {/if}
+
+        <Button
+          shape="round"
+          color="warning"
+          variant="filled"
+          fullWidth
+          onclick={resetUserPincode}
+          leadingIcon={mdiLockSmart}>{$t('reset_pin_code')}</Button
         >
-      {/if}
-      <Button type="submit" shape="round" fullWidth form="edit-user-form">{$t('confirm')}</Button>
+      </div>
+
+      <div class="w-full mt-4">
+        <Button type="submit" shape="round" fullWidth form="edit-user-form">{$t('confirm')}</Button>
+      </div>
     </div>
   </ModalFooter>
 </Modal>
