@@ -8,12 +8,12 @@ import { LargeAssetsService } from 'src/services/large-assets.service';
 @ApiTags('LargeAssets')
 @Controller('large-assets')
 export class LargeAssetsController {
-  constructor(private service: LargeAssetsService) { }
+  constructor(private service: LargeAssetsService) {}
 
   @Get()
   @Authenticated()
   getLargeAssets(@Auth() auth: AuthDto, @Query() dto: GetLargeAssetsRequestDto): Promise<LargeAssetsResponseDto> {
-    console.log("take", dto)
+    console.log('take', dto);
     return this.service.getLargeAssets(auth, dto.take);
   }
 }

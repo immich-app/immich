@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, Max, Min } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 
 export class LargeAssetsResponseDto {
@@ -7,6 +7,9 @@ export class LargeAssetsResponseDto {
 }
 
 export class GetLargeAssetsRequestDto {
-  @IsNotEmpty()
-  take!: number
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  @Type(() => Number)
+  take!: number;
 }

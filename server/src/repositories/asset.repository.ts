@@ -141,7 +141,7 @@ export interface DayOfYearAssets {
 
 @Injectable()
 export class AssetRepository {
-  constructor(@InjectKysely() private db: Kysely<DB>) { }
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   async upsertExif(exif: Insertable<Exif>): Promise<void> {
     const value = { ...exif, assetId: asUuid(exif.assetId) };

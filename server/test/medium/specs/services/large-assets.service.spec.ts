@@ -11,7 +11,6 @@ import { beforeEach, vitest } from 'vitest';
 vitest.useFakeTimers();
 
 describe(LargeAssetsService.name, () => {
-  let sut: LargeAssetsService;
   let defaultDatabase: Kysely<DB>;
   let assetRepo: AssetRepository;
   let userRepo: UserRepository;
@@ -32,15 +31,15 @@ describe(LargeAssetsService.name, () => {
     userRepo = new UserRepository(defaultDatabase);
   });
 
-  beforeEach(() => {
-    ({ sut } = createSut());
-  });
+  beforeEach(() => {});
 
   it('should work', () => {
+    const { sut } = createSut();
     expect(sut).toBeDefined();
   });
 
   it('should return assets', async () => {
+    const { sut } = createSut();
     const user = mediumFactory.userInsert();
     await userRepo.create(user);
 
@@ -57,7 +56,7 @@ describe(LargeAssetsService.name, () => {
 
     const auth = factory.auth({ user: { id: user.id } });
 
-    await expect(sut.getLargeAssets(auth)).resolves.toEqual({
+    await expect(sut.getLargeAssets(auth, 50)).resolves.toEqual({
       assets: [
         expect.objectContaining({ id: assets[2].id }),
         expect.objectContaining({ id: assets[0].id }),
