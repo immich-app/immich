@@ -42,7 +42,7 @@ class BackupUploadProgressBar extends ConsumerWidget {
             SizedBox(
               width: 110,
               child: Text(
-                'Immich Upload',
+                "Immich Upload",
                 style: context.textTheme.labelSmall,
               ),
             ),
@@ -54,8 +54,8 @@ class BackupUploadProgressBar extends ConsumerWidget {
             ),
           ),
           Text(
-            ' ${uploadProgress.toStringAsFixed(0)}%',
-            style: const TextStyle(fontSize: 12, fontFamily: 'OverpassMono'),
+            " ${uploadProgress.toStringAsFixed(0)}%",
+            style: const TextStyle(fontSize: 12, fontFamily: "OverpassMono"),
           ),
         ],
       ),

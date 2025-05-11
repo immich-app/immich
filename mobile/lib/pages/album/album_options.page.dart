@@ -40,7 +40,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       context.pop();
       ImmichToast.show(
         context: context,
-        msg: 'shared_album_section_people_action_error'.tr(),
+        msg: "shared_album_section_people_action_error".tr(),
         toastType: ToastType.error,
         gravity: ToastGravity.BOTTOM,
       );
@@ -89,7 +89,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         actions = [
           ListTile(
             leading: const Icon(Icons.exit_to_app_rounded),
-            title: const Text('shared_album_section_people_action_leave').tr(),
+            title: const Text("shared_album_section_people_action_leave").tr(),
             onTap: leaveAlbum,
           ),
         ];
@@ -99,7 +99,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         actions = [
           ListTile(
             leading: const Icon(Icons.person_remove_rounded),
-            title: const Text('shared_album_section_people_action_remove_user')
+            title: const Text("shared_album_section_people_action_remove_user")
                 .tr(),
             onTap: () => removeUserFromAlbum(user),
           ),
@@ -130,17 +130,17 @@ class AlbumOptionsPage extends HookConsumerWidget {
             ? UserCircleAvatar(user: owner.toDto())
             : const SizedBox(),
         title: Text(
-          album.owner.value?.name ?? '',
+          album.owner.value?.name ?? "",
           style: const TextStyle(
             fontWeight: FontWeight.w500,
           ),
         ),
         subtitle: Text(
-          album.owner.value?.email ?? '',
+          album.owner.value?.email ?? "",
           style: TextStyle(color: context.colorScheme.onSurfaceSecondary),
         ),
         trailing: Text(
-          'owner',
+          "owner",
           style: context.textTheme.labelLarge,
         ).tr(),
       );
@@ -195,7 +195,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
           onPressed: () => context.maybePop(null),
         ),
         centerTitle: true,
-        title: Text('options'.tr()),
+        title: Text("options".tr()),
       ),
       body: ListView(
         children: [
@@ -215,18 +215,18 @@ class AlbumOptionsPage extends HookConsumerWidget {
                   : context.themeData.disabledColor,
               dense: true,
               title: Text(
-                'comments_and_likes',
+                "comments_and_likes",
                 style: context.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w500),
               ).tr(),
               subtitle: Text(
-                'let_others_respond',
+                "let_others_respond",
                 style: context.textTheme.labelLarge?.copyWith(
                   color: context.colorScheme.onSurfaceSecondary,
                 ),
               ).tr(),
             ),
-          buildSectionTitle('shared_album_section_people_title'.tr()),
+          buildSectionTitle("shared_album_section_people_title".tr()),
           buildOwnerInfo(),
           buildSharedUsersList(),
         ],

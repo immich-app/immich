@@ -19,7 +19,7 @@ class LoginButton extends ConsumerWidget {
       onPressed: onPressed,
       icon: const Icon(Icons.login_rounded),
       label: const Text(
-        'login',
+        "login",
         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
       ).tr(),
     );

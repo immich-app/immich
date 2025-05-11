@@ -18,7 +18,7 @@ class SplashScreenPage extends StatefulHookConsumerWidget {
 }
 
 class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
-  final log = Logger('SplashScreenPage');
+  final log = Logger("SplashScreenPage");
   @override
   void initState() {
     super.initState();
@@ -34,7 +34,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       return;
     }
 
-    log.info('Resuming session at $endpoint');
+    log.info("Resuming session at $endpoint");
   }
 
   void resumeSession() async {

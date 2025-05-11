@@ -63,7 +63,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
       if (!success) {
         ImmichToast.show(
           context: context,
-          msg: 'album_viewer_appbar_share_err_delete'.tr(),
+          msg: "album_viewer_appbar_share_err_delete".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -118,7 +118,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         context.pop();
         ImmichToast.show(
           context: context,
-          msg: 'album_viewer_appbar_share_err_leave'.tr(),
+          msg: "album_viewer_appbar_share_err_leave".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -155,7 +155,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
       if (updatedAlbum == null) {
         ImmichToast.show(
           context: context,
-          msg: 'error_change_sort_album'.tr(),
+          msg: "error_change_sort_album".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -176,7 +176,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             }
           },
           title: const Text(
-            'album_viewer_page_share_add_users',
+            "album_viewer_page_share_add_users",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
@@ -184,7 +184,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
           leading: const Icon(Icons.swap_vert_rounded),
           onTap: onSortOrderToggled,
           title: const Text(
-            'change_display_order',
+            "change_display_order",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
@@ -195,7 +195,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             context.pop();
           },
           title: const Text(
-            'control_bottom_app_bar_share_link',
+            "control_bottom_app_bar_share_link",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
@@ -203,7 +203,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
           leading: const Icon(Icons.settings_rounded),
           onTap: () => context.navigateTo(const AlbumOptionsRoute()),
           title: const Text(
-            'options',
+            "options",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
@@ -220,7 +220,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             }
           },
           title: const Text(
-            'add_photos',
+            "add_photos",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
@@ -284,7 +284,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             if (!isSuccess) {
               ImmichToast.show(
                 context: context,
-                msg: 'album_viewer_appbar_share_err_title'.tr(),
+                msg: "album_viewer_appbar_share_err_title".tr(),
                 gravity: ToastGravity.BOTTOM,
                 toastType: ToastType.error,
               );

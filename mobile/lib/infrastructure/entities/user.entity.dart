@@ -50,7 +50,7 @@ class User {
         isAdmin: dto.isAdmin,
         isPartnerSharedBy: dto.isPartnerSharedBy,
         isPartnerSharedWith: dto.isPartnerSharedWith,
-        profileImagePath: dto.profileImagePath ?? '',
+        profileImagePath: dto.profileImagePath ?? "",
         avatarColor: dto.avatarColor,
         memoryEnabled: dto.memoryEnabled,
         inTimeline: dto.inTimeline,

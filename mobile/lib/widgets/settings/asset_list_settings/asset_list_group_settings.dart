@@ -32,7 +32,7 @@ class GroupSettings extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: 'asset_list_group_by_sub_title'.tr()),
+        SettingsSubTitle(title: "asset_list_group_by_sub_title".tr()),
         SettingsRadioListTile(
           groups: [
             SettingsRadioGroup(

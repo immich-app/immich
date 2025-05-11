@@ -26,7 +26,7 @@ class HapticSetting extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: 'haptic_feedback_title'.tr()),
+        SettingsSubTitle(title: "haptic_feedback_title".tr()),
         SettingsSwitchListTile(
           valueNotifier: isHapticFeedbackEnabled,
           title: 'haptic_feedback_switch'.tr(),

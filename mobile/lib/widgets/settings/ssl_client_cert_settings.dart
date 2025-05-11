@@ -31,7 +31,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       horizontalTitleGap: 20,
       isThreeLine: true,
       title: Text(
-        'client_cert_title'.tr(),
+        "client_cert_title".tr(),
         style: context.textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w500,
         ),
@@ -40,7 +40,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'client_cert_subtitle'.tr(),
+            "client_cert_subtitle".tr(),
             style: context.textTheme.bodyMedium?.copyWith(
               color: context.colorScheme.onSurfaceSecondary,
             ),
@@ -55,7 +55,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
             children: [
               ElevatedButton(
                 onPressed: widget.isLoggedIn ? null : () => importCert(context),
-                child: Text('client_cert_import'.tr()),
+                child: Text("client_cert_import".tr()),
               ),
               const SizedBox(
                 width: 15,
@@ -64,7 +64,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
                 onPressed: widget.isLoggedIn || !isCertExist
                     ? null
                     : () => removeCert(context),
-                child: Text('remove'.tr()),
+                child: Text("remove".tr()),
               ),
             ],
           ),
@@ -81,7 +81,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         actions: [
           TextButton(
             onPressed: () => ctx.pop(),
-            child: Text('client_cert_dialog_msg_confirm'.tr()),
+            child: Text("client_cert_dialog_msg_confirm".tr()),
           ),
         ],
       ),
@@ -99,7 +99,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       cert,
     );
     if (!isCertValid) {
-      showMessage(context, 'client_cert_invalid_msg'.tr());
+      showMessage(context, "client_cert_invalid_msg".tr());
       return;
     }
     cert.save();
@@ -107,7 +107,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     setState(
       () => isCertExist = true,
     );
-    showMessage(context, 'client_cert_import_success_msg'.tr());
+    showMessage(context, "client_cert_import_success_msg".tr());
   }
 
   void setPassword(BuildContext context, Uint8List data) {
@@ -119,16 +119,16 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         content: TextField(
           controller: password,
           obscureText: true,
-          obscuringCharacter: '*',
+          obscuringCharacter: "*",
           decoration: InputDecoration(
-            hintText: 'client_cert_enter_password'.tr(),
+            hintText: "client_cert_enter_password".tr(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () =>
                 {ctx.pop(), storeCert(context, data, password.text)},
-            child: Text('client_cert_dialog_msg_confirm'.tr()),
+            child: Text("client_cert_dialog_msg_confirm".tr()),
           ),
         ],
       ),
@@ -156,6 +156,6 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     setState(
       () => isCertExist = false,
     );
-    showMessage(context, 'client_cert_remove_msg'.tr());
+    showMessage(context, "client_cert_remove_msg".tr());
   }
 }

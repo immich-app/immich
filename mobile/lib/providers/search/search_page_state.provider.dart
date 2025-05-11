@@ -14,7 +14,7 @@ final getPreviewPlacesProvider =
   }
 
   final locations =
-      exploreData.firstWhere((data) => data.fieldName == 'exifInfo.city').items;
+      exploreData.firstWhere((data) => data.fieldName == "exifInfo.city").items;
 
   final curatedContent = locations
       .map(

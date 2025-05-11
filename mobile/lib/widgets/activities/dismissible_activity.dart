@@ -28,9 +28,9 @@ class DismissibleActivity extends StatelessWidget {
               context: context,
               builder: (context) => ConfirmDialog(
                 onOk: () {},
-                title: 'shared_album_activity_remove_title',
-                content: 'shared_album_activity_remove_content',
-                ok: 'delete',
+                title: "shared_album_activity_remove_title",
+                content: "shared_album_activity_remove_content",
+                ok: "delete",
               ),
             )
           : Future.value(false),

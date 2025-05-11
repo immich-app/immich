@@ -132,7 +132,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
                 },
               );
             },
-            error: (error, stack) => const Text('error'),
+            error: (error, stack) => const Text("error"),
             loading: () => const CircularProgressIndicator(),
           ),
         );

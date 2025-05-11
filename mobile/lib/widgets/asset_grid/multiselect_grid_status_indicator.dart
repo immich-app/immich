@@ -26,9 +26,9 @@ class MultiselectGridStatusIndicator extends HookConsumerWidget {
             )
           : buildLoadingIndicator!(),
       RenderListStatusEnum.empty =>
-        emptyIndicator ?? Center(child: const Text('no_assets_to_show').tr()),
+        emptyIndicator ?? Center(child: const Text("no_assets_to_show").tr()),
       RenderListStatusEnum.error =>
-        Center(child: const Text('error_loading_assets').tr()),
+        Center(child: const Text("error_loading_assets").tr()),
       RenderListStatusEnum.complete => const SizedBox()
     };
   }

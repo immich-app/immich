@@ -14,7 +14,7 @@ class ArchivePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     AppBar buildAppBar() {
       final archiveRenderList = ref.watch(archiveTimelineProvider);
-      final count = archiveRenderList.value?.totalAssets.toString() ?? '?';
+      final count = archiveRenderList.value?.totalAssets.toString() ?? "?";
       return AppBar(
         leading: IconButton(
           onPressed: () => context.maybePop(),

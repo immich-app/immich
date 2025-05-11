@@ -93,7 +93,7 @@ class LoginForm extends HookConsumerWidget {
       if (serverUrl.isEmpty) {
         ImmichToast.show(
           context: context,
-          msg: 'login_form_server_empty'.tr(),
+          msg: "login_form_server_empty".tr(),
           toastType: ToastType.error,
         );
       }
@@ -197,7 +197,7 @@ class LoginForm extends HookConsumerWidget {
       } catch (error) {
         ImmichToast.show(
           context: context,
-          msg: 'login_form_failed_login'.tr(),
+          msg: "login_form_failed_login".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.TOP,
         );
@@ -261,7 +261,7 @@ class LoginForm extends HookConsumerWidget {
 
         ImmichToast.show(
           context: context,
-          msg: 'login_form_failed_get_oauth_server_config'.tr(),
+          msg: "login_form_failed_get_oauth_server_config".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.TOP,
         );
@@ -282,7 +282,7 @@ class LoginForm extends HookConsumerWidget {
           }
 
           log.info(
-            'Finished OAuth login with response: ${loginResponseDto.userEmail}',
+            "Finished OAuth login with response: ${loginResponseDto.userEmail}",
           );
 
           final isSuccess = await ref.watch(authProvider.notifier).saveAuthInfo(
@@ -312,7 +312,7 @@ class LoginForm extends HookConsumerWidget {
       } else {
         ImmichToast.show(
           context: context,
-          msg: 'login_form_failed_get_oauth_server_disable'.tr(),
+          msg: "login_form_failed_get_oauth_server_disable".tr(),
           toastType: ToastType.info,
           gravity: ToastGravity.TOP,
         );
@@ -347,7 +347,7 @@ class LoginForm extends HookConsumerWidget {
                   ),
                   onPressed: () => context.pushRoute(const SettingsRoute()),
                   icon: const Icon(Icons.settings_rounded),
-                  label: const Text(''),
+                  label: const Text(""),
                 ),
               ),
               const SizedBox(width: 1),

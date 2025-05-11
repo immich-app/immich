@@ -77,7 +77,7 @@ class FilterImagePage extends HookWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: context.scaffoldBackgroundColor,
-        title: Text('filter'.tr()),
+        title: Text("filter".tr()),
         leading: CloseButton(color: context.primaryColor),
         actions: [
           IconButton(

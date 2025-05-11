@@ -44,7 +44,7 @@ class LanguageSettings extends HookConsumerWidget {
                 ),
               ),
               menuHeight: context.height * 0.5,
-              hintText: 'Languages',
+              hintText: "Languages",
               label: const Text('Languages'),
               dropdownMenuEntries: locales.keys
                   .map(

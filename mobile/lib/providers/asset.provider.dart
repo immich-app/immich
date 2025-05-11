@@ -58,7 +58,7 @@ class AssetNotifier extends StateNotifier<bool> {
       state = true;
       if (clear) {
         await clearAllAssets();
-        log.info('Manual refresh requested, cleared assets and albums from db');
+        log.info("Manual refresh requested, cleared assets and albums from db");
       }
       final users = await _syncService.getUsersFromServer();
       bool changedUsers = false;
@@ -68,13 +68,13 @@ class AssetNotifier extends StateNotifier<bool> {
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint(
-        'changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal',
+        "changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal",
       );
       if (newRemote) {
         _ref.invalidate(memoryFutureProvider);
       }
 
-      log.info('Load assets: ${stopwatch.elapsedMilliseconds}ms');
+      log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } catch (error) {
       // If there is error in getting the remote assets, still showing the new local assets
       await _albumService.refreshDeviceAlbums();
@@ -108,7 +108,7 @@ class AssetNotifier extends StateNotifier<bool> {
       await _assetService.deleteLocalAssets(assets);
       return true;
     } catch (error) {
-      log.severe('Failed to delete local assets', error);
+      log.severe("Failed to delete local assets", error);
       return false;
     } finally {
       _deleteInProgress = false;
@@ -132,7 +132,7 @@ class AssetNotifier extends StateNotifier<bool> {
       );
       return true;
     } catch (error) {
-      log.severe('Failed to delete remote assets', error);
+      log.severe("Failed to delete remote assets", error);
       return false;
     } finally {
       _deleteInProgress = false;
@@ -153,7 +153,7 @@ class AssetNotifier extends StateNotifier<bool> {
       );
       return true;
     } catch (error) {
-      log.severe('Failed to delete assets', error);
+      log.severe("Failed to delete assets", error);
       return false;
     } finally {
       _deleteInProgress = false;

@@ -40,7 +40,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                       context.scaffoldMessenger.showSnackBar(
                         SnackBar(
                           content: Text(
-                            'Copied to clipboard',
+                            "Copied to clipboard",
                             style: context.textTheme.bodyLarge?.copyWith(
                               color: context.primaryColor,
                             ),
@@ -69,7 +69,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                   style: const TextStyle(
                     fontSize: 12.0,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'Inconsolata',
+                    fontFamily: "Inconsolata",
                   ),
                 ),
               ),
@@ -88,7 +88,7 @@ class AppLogDetailPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(
-                'FROM',
+                "FROM",
                 style: TextStyle(
                   fontSize: 12.0,
                   color: context.primaryColor,
@@ -108,7 +108,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                   style: const TextStyle(
                     fontSize: 12.0,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'Inconsolata',
+                    fontFamily: "Inconsolata",
                   ),
                 ),
               ),
@@ -120,19 +120,19 @@ class AppLogDetailPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Log Detail'),
+        title: const Text("Log Detail"),
       ),
       body: SafeArea(
         child: ListView(
           children: [
-            buildTextWithCopyButton('MESSAGE', logMessage.message),
+            buildTextWithCopyButton("MESSAGE", logMessage.message),
             if (logMessage.error != null)
-              buildTextWithCopyButton('DETAILS', logMessage.error.toString()),
+              buildTextWithCopyButton("DETAILS", logMessage.error.toString()),
             if (logMessage.logger != null)
               buildLogContext1(logMessage.logger.toString()),
             if (logMessage.stack != null)
               buildTextWithCopyButton(
-                'STACK TRACE',
+                "STACK TRACE",
                 logMessage.stack.toString(),
               ),
           ],

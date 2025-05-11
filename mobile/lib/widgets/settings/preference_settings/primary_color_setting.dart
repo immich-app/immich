@@ -122,7 +122,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
           Align(
             alignment: Alignment.center,
             child: Text(
-              'theme_setting_primary_color_title'.tr(),
+              "theme_setting_primary_color_title".tr(),
               style: context.textTheme.titleLarge,
             ),
           ),
@@ -194,13 +194,13 @@ class PrimaryColorSetting extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'theme_setting_primary_color_title'.tr(),
+                  "theme_setting_primary_color_title".tr(),
                   style: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
-                  'theme_setting_primary_color_subtitle'.tr(),
+                  "theme_setting_primary_color_subtitle".tr(),
                   style: context.textTheme.bodyMedium
                       ?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),

@@ -25,7 +25,7 @@ Future<String?> showDateTimePicker({
 }
 
 String _getFormattedOffset(int offsetInMilli, tz.Location location) {
-  return '${location.name} (${Duration(milliseconds: offsetInMilli).formatAsOffset()})';
+  return "${location.name} (${Duration(milliseconds: offsetInMilli).formatAsOffset()})";
 }
 
 class _DateTimePicker extends HookWidget {
@@ -60,7 +60,7 @@ class _DateTimePicker extends HookWidget {
       );
       // Prefer locations with abbreviation first
       final location = locations.firstWhereOrNull(
-            (e) => !e.currentTimeZone.abbreviation.contains('0'),
+            (e) => !e.currentTimeZone.abbreviation.contains("0"),
           ) ??
           locations.firstOrNull;
       if (location != null) {
@@ -68,7 +68,7 @@ class _DateTimePicker extends HookWidget {
       }
     }
 
-    return _TimeZoneOffset.fromLocation(tz.getLocation('UTC'));
+    return _TimeZoneOffset.fromLocation(tz.getLocation("UTC"));
   }
 
   // returns a list of location<name> along with it's offset in duration
@@ -139,7 +139,7 @@ class _DateTimePicker extends HookWidget {
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
-            'cancel',
+            "cancel",
             style: context.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: context.colorScheme.error,
@@ -149,7 +149,7 @@ class _DateTimePicker extends HookWidget {
         TextButton(
           onPressed: popWithDateTime,
           child: Text(
-            'action_common_update',
+            "action_common_update",
             style: context.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: context.primaryColor,
@@ -162,7 +162,7 @@ class _DateTimePicker extends HookWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'date_and_time',
+            "date_and_time",
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -186,7 +186,7 @@ class _DateTimePicker extends HookWidget {
               color: context.primaryColor,
             ),
             title: Text(
-              DateFormat('dd-MM-yyyy hh:mm a').format(date.value),
+              DateFormat("dd-MM-yyyy hh:mm a").format(date.value),
               style: context.textTheme.bodyMedium,
             ).tr(),
             onTap: pickDate,
@@ -197,7 +197,7 @@ class _DateTimePicker extends HookWidget {
               Icons.arrow_drop_down,
               color: context.primaryColor,
             ),
-            hintText: 'timezone'.tr(),
+            hintText: "timezone".tr(),
             label: const Text('timezone').tr(),
             textStyle: context.textTheme.bodyMedium,
             onSelected: (value) => tzOffset.value = value,

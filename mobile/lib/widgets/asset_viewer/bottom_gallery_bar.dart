@@ -169,7 +169,7 @@ class BottomGalleryBar extends ConsumerWidget {
                       context.maybePop();
                     },
                     title: const Text(
-                      'viewer_unstack',
+                      "viewer_unstack",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ).tr(),
                   ),
@@ -259,7 +259,7 @@ class BottomGalleryBar extends ConsumerWidget {
       } else {
         ImmichToast.show(
           context: context,
-          msg: 'album_viewer_appbar_share_err_remove'.tr(),
+          msg: "album_viewer_appbar_share_err_remove".tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );

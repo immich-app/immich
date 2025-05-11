@@ -5,5 +5,5 @@ sealed class ImmichErrors {
 
 class NoResponseDtoError extends ImmichErrors implements Exception {
   @override
-  String toString() => 'Response Dto is null';
+  String toString() => "Response Dto is null";
 }

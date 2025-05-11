@@ -15,7 +15,7 @@ class BackupErrorChipText extends ConsumerWidget {
     }
 
     return const Text(
-      'backup_controller_page_failed',
+      "backup_controller_page_failed",
       style: TextStyle(
         color: red400,
         fontWeight: FontWeight.bold,

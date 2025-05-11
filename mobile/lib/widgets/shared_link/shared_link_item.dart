@@ -29,31 +29,31 @@ class SharedLinkItem extends ConsumerWidget {
   }
 
   Widget getExpiryDuration(bool isDarkMode) {
-    var expiresText = 'shared_link_expires_never'.tr();
+    var expiresText = "shared_link_expires_never".tr();
     if (sharedLink.expiresAt != null) {
       if (isExpired()) {
         return Text(
-          'expired',
+          "expired",
           style: TextStyle(color: Colors.red[300]),
         ).tr();
       }
       final difference = sharedLink.expiresAt!.difference(DateTime.now());
-      debugPrint('Difference: $difference');
+      debugPrint("Difference: $difference");
       if (difference.inDays > 0) {
         var dayDifference = difference.inDays;
         if (difference.inHours % 24 > 12) {
           dayDifference += 1;
         }
         expiresText =
-            'shared_link_expires_days'.tr(args: [dayDifference.toString()]);
+            "shared_link_expires_days".tr(args: [dayDifference.toString()]);
       } else if (difference.inHours > 0) {
-        expiresText = 'shared_link_expires_hours'
+        expiresText = "shared_link_expires_hours"
             .tr(args: [difference.inHours.toString()]);
       } else if (difference.inMinutes > 0) {
-        expiresText = 'shared_link_expires_minutes'
+        expiresText = "shared_link_expires_minutes"
             .tr(args: [difference.inMinutes.toString()]);
       } else if (difference.inSeconds > 0) {
-        expiresText = 'shared_link_expires_seconds'
+        expiresText = "shared_link_expires_seconds"
             .tr(args: [difference.inSeconds.toString()]);
       }
     }
@@ -86,18 +86,18 @@ class SharedLinkItem extends ConsumerWidget {
           context: context,
           gravity: ToastGravity.BOTTOM,
           toastType: ToastType.error,
-          msg: 'shared_link_error_server_url_fetch'.tr(),
+          msg: "shared_link_error_server_url_fetch".tr(),
         );
         return;
       }
 
       Clipboard.setData(
-        ClipboardData(text: '${serverUrl}share/${sharedLink.key}'),
+        ClipboardData(text: "${serverUrl}share/${sharedLink.key}"),
       ).then((_) {
         context.scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
-              'shared_link_clipboard_copied_massage',
+              "shared_link_clipboard_copied_massage",
               style: context.textTheme.bodyLarge?.copyWith(
                 color: context.primaryColor,
               ),
@@ -113,8 +113,8 @@ class SharedLinkItem extends ConsumerWidget {
         context: context,
         builder: (BuildContext context) {
           return ConfirmDialog(
-            title: 'delete_shared_link_dialog_title',
-            content: 'confirm_delete_shared_link',
+            title: "delete_shared_link_dialog_title",
+            content: "confirm_delete_shared_link",
             onOk: () => ref
                 .read(sharedLinksStateProvider.notifier)
                 .deleteLink(sharedLink.id),
@@ -178,10 +178,10 @@ class SharedLinkItem extends ConsumerWidget {
     Widget buildBottomInfo() {
       return Row(
         children: [
-          if (sharedLink.allowUpload) buildInfoChip('upload'.tr()),
-          if (sharedLink.allowDownload) buildInfoChip('download'.tr()),
+          if (sharedLink.allowUpload) buildInfoChip("upload".tr()),
+          if (sharedLink.allowDownload) buildInfoChip("download".tr()),
           if (sharedLink.showMetadata)
-            buildInfoChip('shared_link_info_chip_metadata'.tr()),
+            buildInfoChip("shared_link_info_chip_metadata".tr()),
         ],
       );
     }
@@ -273,11 +273,11 @@ class SharedLinkItem extends ConsumerWidget {
                     color: isDarkMode ? Colors.black : Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
-                  message: sharedLink.description ?? '',
+                  message: sharedLink.description ?? "",
                   preferBelow: false,
                   triggerMode: TooltipTriggerMode.tap,
                   child: Text(
-                    sharedLink.description ?? '',
+                    sharedLink.description ?? "",
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

@@ -25,7 +25,7 @@ final downloadServiceProvider = Provider(
 class DownloadService {
   final IDownloadRepository _downloadRepository;
   final IFileMediaRepository _fileMediaRepository;
-  final Logger _log = Logger('DownloadService');
+  final Logger _log = Logger("DownloadService");
   void Function(TaskStatusUpdate)? onImageDownloadStatus;
   void Function(TaskStatusUpdate)? onVideoDownloadStatus;
   void Function(TaskStatusUpdate)? onLivePhotoDownloadStatus;
@@ -70,7 +70,7 @@ class DownloadService {
       );
       return resultAsset != null;
     } catch (error, stack) {
-      _log.severe('Error saving image', error, stack);
+      _log.severe("Error saving image", error, stack);
       return false;
     } finally {
       if (await File(filePath).exists()) {
@@ -92,7 +92,7 @@ class DownloadService {
       );
       return resultAsset != null;
     } catch (error, stack) {
-      _log.severe('Error saving video', error, stack);
+      _log.severe("Error saving video", error, stack);
       return false;
     } finally {
       if (await file.exists()) {
@@ -132,10 +132,10 @@ class DownloadService {
             .saveImageWithFile(imageFilePath, title: task.filename);
         return result != null;
       }
-      _log.severe('Error saving live photo', error, stack);
+      _log.severe("Error saving live photo", error, stack);
       return false;
     } catch (error, stack) {
-      _log.severe('Error saving live photo', error, stack);
+      _log.severe("Error saving live photo", error, stack);
       return false;
     } finally {
       final imageFile = File(imageFilePath);
@@ -178,7 +178,7 @@ class DownloadService {
           asset.livePhotoVideoId!,
           asset.fileName
               .toUpperCase()
-              .replaceAll(RegExp(r'\.(JPG|HEIC)$'), '.MOV'),
+              .replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
           group: downloadGroupLivePhoto,
           metadata: LivePhotosMetadata(
             part: LivePhotosPart.video,

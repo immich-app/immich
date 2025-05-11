@@ -94,7 +94,7 @@ class DropdownSearchMenu<T> extends HookWidget {
             focusNode: focusNode,
             controller: textEditingController,
             decoration: inputDecoration.copyWith(
-              hintText: 'search_timezone'.tr(),
+              hintText: "search_timezone".tr(),
             ),
             maxLines: 1,
             style: context.textTheme.bodyMedium,

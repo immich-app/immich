@@ -28,7 +28,7 @@ class BackupVerification extends _$BackupVerification {
         if (context.mounted) {
           ImmichToast.show(
             context: context,
-            msg: 'Backup all assets before starting this check!',
+            msg: "Backup all assets before starting this check!",
             toastType: ToastType.error,
           );
         }
@@ -39,7 +39,7 @@ class BackupVerification extends _$BackupVerification {
         if (context.mounted) {
           ImmichToast.show(
             context: context,
-            msg: 'Make sure to be connected to unmetered Wi-Fi',
+            msg: "Make sure to be connected to unmetered Wi-Fi",
             toastType: ToastType.error,
           );
         }
@@ -55,7 +55,7 @@ class BackupVerification extends _$BackupVerification {
         if (context.mounted) {
           ImmichToast.show(
             context: context,
-            msg: 'Did not find any corrupt asset backups!',
+            msg: "Did not find any corrupt asset backups!",
             toastType: ToastType.success,
           );
         }
@@ -65,12 +65,12 @@ class BackupVerification extends _$BackupVerification {
             context: context,
             builder: (ctx) => ConfirmDialog(
               onOk: () => _performDeletion(context, toDelete),
-              title: 'Corrupt backups!',
-              ok: 'Delete',
+              title: "Corrupt backups!",
+              ok: "Delete",
               content:
-                  'Found ${toDelete.length} (max $limit at once) corrupt asset backups. '
-                  'Run the check again to find more.\n'
-                  'Do you want to delete the corrupt asset backups now?',
+                  "Found ${toDelete.length} (max $limit at once) corrupt asset backups. "
+                  "Run the check again to find more.\n"
+                  "Do you want to delete the corrupt asset backups now?",
             ),
           );
         }
@@ -90,15 +90,15 @@ class BackupVerification extends _$BackupVerification {
       if (context.mounted) {
         ImmichToast.show(
           context: context,
-          msg: 'Deleting ${assets.length} assets on the server...',
+          msg: "Deleting ${assets.length} assets on the server...",
         );
       }
       await ref.read(assetProvider.notifier).deleteAssets(assets, force: true);
       if (context.mounted) {
         ImmichToast.show(
           context: context,
-          msg: 'Deleted ${assets.length} assets on the server. '
-              'You can now start a manual backup',
+          msg: "Deleted ${assets.length} assets on the server. "
+              "You can now start a manual backup",
           toastType: ToastType.success,
         );
       }

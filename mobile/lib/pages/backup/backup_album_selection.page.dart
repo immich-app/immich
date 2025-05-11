@@ -164,7 +164,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         title: const Text(
-          'backup_album_selection_page_select_albums',
+          "backup_album_selection_page_select_albums",
         ).tr(),
         elevation: 0,
       ),
@@ -181,7 +181,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     horizontal: 16.0,
                   ),
                   child: Text(
-                    'backup_album_selection_page_selection_info',
+                    "backup_album_selection_page_selection_info",
                     style: context.textTheme.titleSmall,
                   ).tr(),
                 ),
@@ -199,8 +199,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
                 SettingsSwitchListTile(
                   valueNotifier: enableSyncUploadAlbum,
-                  title: 'sync_albums'.tr(),
-                  subtitle: 'sync_upload_album_setting_subtitle'.tr(),
+                  title: "sync_albums".tr(),
+                  subtitle: "sync_upload_album_setting_subtitle".tr(),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   titleStyle: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -213,7 +213,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
                 ListTile(
                   title: Text(
-                    'backup_album_selection_page_albums_device'.tr(
+                    "backup_album_selection_page_albums_device".tr(
                       args: [
                         ref
                             .watch(backupProvider)
@@ -227,7 +227,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   subtitle: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Text(
-                      'backup_album_selection_page_albums_tap',
+                      "backup_album_selection_page_albums_tap",
                       style: context.textTheme.labelLarge?.copyWith(
                         color: context.primaryColor,
                       ),
