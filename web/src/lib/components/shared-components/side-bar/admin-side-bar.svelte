@@ -7,14 +7,12 @@
   import { t } from 'svelte-i18n';
 </script>
 
-<SideBarSection>
-  <nav aria-label={$t('primary')}>
-    <SideBarLink title={$t('users')} routeId={AppRoute.ADMIN_USER_MANAGEMENT} icon={mdiAccountMultipleOutline} />
-    <SideBarLink title={$t('jobs')} routeId={AppRoute.ADMIN_JOBS} icon={mdiSync} />
-    <SideBarLink title={$t('settings')} routeId={AppRoute.ADMIN_SETTINGS} icon={mdiCog} />
-    <SideBarLink title={$t('external_libraries')} routeId={AppRoute.ADMIN_LIBRARY_MANAGEMENT} icon={mdiBookshelf} />
-    <SideBarLink title={$t('server_stats')} routeId={AppRoute.ADMIN_STATS} icon={mdiServer} />
-  </nav>
+<SideBarSection ariaLabel={$t('primary')}>
+  <SideBarLink title={$t('users')} routeId={AppRoute.ADMIN_USER_MANAGEMENT} icon={mdiAccountMultipleOutline} />
+  <SideBarLink title={$t('jobs')} routeId={AppRoute.ADMIN_JOBS} icon={mdiSync} />
+  <SideBarLink title={$t('settings')} routeId={AppRoute.ADMIN_SETTINGS} icon={mdiCog} />
+  <SideBarLink title={$t('external_libraries')} routeId={AppRoute.ADMIN_LIBRARY_MANAGEMENT} icon={mdiBookshelf} />
+  <SideBarLink title={$t('server_stats')} routeId={AppRoute.ADMIN_STATS} icon={mdiServer} />
 
   <BottomInfo />
 </SideBarSection>

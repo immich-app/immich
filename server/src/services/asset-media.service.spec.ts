@@ -9,7 +9,7 @@ import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetFileType, AssetStatus, AssetType, CacheControl, JobName } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
@@ -142,7 +142,6 @@ const createDto = Object.freeze({
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  isArchived: false,
   duration: '0:00:00.000000',
 }) as AssetMediaCreateDto;
 
@@ -164,7 +163,6 @@ const assetEntity = Object.freeze({
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   updatedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  isArchived: false,
   encodedVideoPath: '',
   duration: '0:00:00.000000',
   files: [] as AssetFile[],
@@ -437,7 +435,10 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should hide the linked motion asset', async () => {
-      mocks.asset.getById.mockResolvedValueOnce({ ...assetStub.livePhotoMotionAsset, isVisible: true });
+      mocks.asset.getById.mockResolvedValueOnce({
+        ...assetStub.livePhotoMotionAsset,
+        visibility: AssetVisibility.TIMELINE,
+      });
       mocks.asset.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
 
       await expect(
@@ -452,7 +453,10 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.asset.getById).toHaveBeenCalledWith('live-photo-motion-asset');
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'live-photo-motion-asset', isVisible: false });
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: 'live-photo-motion-asset',
+        visibility: AssetVisibility.HIDDEN,
+      });
     });
 
     it('should handle a sidecar file', async () => {

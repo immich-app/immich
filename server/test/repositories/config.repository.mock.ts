@@ -10,6 +10,7 @@ const envData: EnvData = {
   buildMetadata: {},
   bull: {
     config: {
+      connection: {},
       prefix: 'immich_bull',
     },
     queues: [{ name: 'queue-1' }],

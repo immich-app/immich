@@ -240,10 +240,6 @@ describe(JobService.name, () => {
         jobs: [JobName.METADATA_EXTRACTION],
       },
       {
-        item: { name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } },
-        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE],
-      },
-      {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
         jobs: [JobName.GENERATE_THUMBNAILS],
       },

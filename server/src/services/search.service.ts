@@ -15,7 +15,6 @@ import {
   SmartSearchDto,
 } from 'src/dtos/search.dto';
 import { AssetOrder } from 'src/enum';
-import { SearchExploreItem } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
@@ -32,7 +31,7 @@ export class SearchService extends BaseService {
     return places.map((place) => mapPlaces(place));
   }
 
-  async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
+  async getExploreData(auth: AuthDto) {
     const options = { maxFields: 12, minAssetsPerField: 5 };
     const cities = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
     const assets = await this.assetRepository.getByIdsWithAllRelationsButStacks(cities.items.map(({ data }) => data));

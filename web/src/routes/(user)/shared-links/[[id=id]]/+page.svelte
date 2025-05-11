@@ -3,7 +3,6 @@
   import { page } from '$app/state';
   import GroupTab from '$lib/components/elements/group-tab.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import {
     notificationController,
@@ -11,6 +10,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import { AppRoute } from '$lib/constants';
+  import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllSharedLinks, removeSharedLink, SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
@@ -113,7 +113,7 @@
     {/if}
 
     {#if sharedLink}
-      <CreateSharedLinkModal editingLink={sharedLink} onClose={handleEditDone} />
+      <SharedLinkCreateModal editingLink={sharedLink} onClose={handleEditDone} />
     {/if}
   </div>
 </UserPageLayout>

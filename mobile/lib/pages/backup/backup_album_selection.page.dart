@@ -214,13 +214,13 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                 ListTile(
                   title: Text(
                     "backup_album_selection_page_albums_device".tr(
-                      args: [
-                        ref
+                      namedArgs: {
+                        'count': ref
                             .watch(backupProvider)
                             .availableAlbums
                             .length
                             .toString(),
-                      ],
+                      },
                     ),
                     style: context.textTheme.titleSmall,
                   ),

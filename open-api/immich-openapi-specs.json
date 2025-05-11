@@ -1726,62 +1726,6 @@
         ]
       }
     },
-    "/assets/memory-lane": {
-      "get": {
-        "operationId": "getMemoryLane",
-        "parameters": [
-          {
-            "name": "day",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 31,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "month",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 12,
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MemoryLaneResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
     "/assets/random": {
       "get": {
         "deprecated": true,
@@ -1838,14 +1782,6 @@
         "operationId": "getAssetStatistics",
         "parameters": [
           {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -1859,6 +1795,14 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
             }
           }
         ],
@@ -2328,6 +2272,139 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LogoutResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/pin-code": {
+      "delete": {
+        "operationId": "resetPinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeChangeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      },
+      "post": {
+        "operationId": "setupPinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeSetupDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      },
+      "put": {
+        "operationId": "changePinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeChangeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/status": {
+      "get": {
+        "operationId": "getAuthStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthStatusResponseDto"
                 }
               }
             },
@@ -4651,118 +4728,6 @@
         ]
       }
     },
-    "/reports": {
-      "get": {
-        "operationId": "getAuditFiles",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileReportDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "File Reports"
-        ]
-      }
-    },
-    "/reports/checksum": {
-      "post": {
-        "operationId": "getFileChecksums",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileChecksumDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/FileChecksumResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "File Reports"
-        ]
-      }
-    },
-    "/reports/fix": {
-      "post": {
-        "operationId": "fixAuditFiles",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileReportFixDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "File Reports"
-        ]
-      }
-    },
     "/search/cities": {
       "get": {
         "operationId": "getAssetsByCity",
@@ -7078,14 +7043,6 @@
             }
           },
           {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -7161,6 +7118,14 @@
             }
           },
           {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            }
+          },
+          {
             "name": "withPartners",
             "required": false,
             "in": "query",
@@ -7219,14 +7184,6 @@
             "schema": {
               "format": "uuid",
               "type": "string"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
             }
           },
           {
@@ -7294,6 +7251,14 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
             }
           },
           {
@@ -8441,9 +8406,6 @@
             },
             "type": "array"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -8457,6 +8419,13 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -8881,13 +8850,7 @@
             "format": "date-time",
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isFavorite": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "livePhotoVideoId": {
@@ -8897,6 +8860,13 @@
           "sidecarData": {
             "format": "binary",
             "type": "string"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -9177,6 +9147,14 @@
         ],
         "type": "string"
       },
+      "AssetVisibility": {
+        "enum": [
+          "archive",
+          "timeline",
+          "hidden"
+        ],
+        "type": "string"
+      },
       "AudioCodec": {
         "enum": [
           "mp3",
@@ -9185,6 +9163,21 @@
           "pcm_s16le"
         ],
         "type": "string"
+      },
+      "AuthStatusResponseDto": {
+        "properties": {
+          "password": {
+            "type": "boolean"
+          },
+          "pinCode": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "password",
+          "pinCode"
+        ],
+        "type": "object"
       },
       "AvatarUpdate": {
         "properties": {
@@ -9749,105 +9742,6 @@
         ],
         "type": "object"
       },
-      "FileChecksumDto": {
-        "properties": {
-          "filenames": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "filenames"
-        ],
-        "type": "object"
-      },
-      "FileChecksumResponseDto": {
-        "properties": {
-          "checksum": {
-            "type": "string"
-          },
-          "filename": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "checksum",
-          "filename"
-        ],
-        "type": "object"
-      },
-      "FileReportDto": {
-        "properties": {
-          "extras": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "orphans": {
-            "items": {
-              "$ref": "#/components/schemas/FileReportItemDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "extras",
-          "orphans"
-        ],
-        "type": "object"
-      },
-      "FileReportFixDto": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/FileReportItemDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "items"
-        ],
-        "type": "object"
-      },
-      "FileReportItemDto": {
-        "properties": {
-          "checksum": {
-            "type": "string"
-          },
-          "entityId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "entityType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PathEntityType"
-              }
-            ]
-          },
-          "pathType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PathType"
-              }
-            ]
-          },
-          "pathValue": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "entityId",
-          "entityType",
-          "pathType",
-          "pathValue"
-        ],
-        "type": "object"
-      },
       "FoldersResponse": {
         "properties": {
           "enabled": {
@@ -10328,24 +10222,6 @@
         ],
         "type": "object"
       },
-      "MemoryLaneResponseDto": {
-        "properties": {
-          "assets": {
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            },
-            "type": "array"
-          },
-          "yearsAgo": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "assets",
-          "yearsAgo"
-        ],
-        "type": "object"
-      },
       "MemoryResponseDto": {
         "properties": {
           "assets": {
@@ -10489,9 +10365,6 @@
             "format": "uuid",
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -10505,9 +10378,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "lensModel": {
@@ -10609,9 +10479,12 @@
             "format": "date-time",
             "type": "string"
           },
-          "withArchived": {
-            "default": false,
-            "type": "boolean"
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           },
           "withDeleted": {
             "type": "boolean"
@@ -10824,6 +10697,13 @@
         ],
         "type": "object"
       },
+      "OAuthTokenEndpointAuthMethod": {
+        "enum": [
+          "client_secret_post",
+          "client_secret_basic"
+        ],
+        "type": "string"
+      },
       "OnThisDayDto": {
         "properties": {
           "year": {
@@ -10881,27 +10761,6 @@
           "profileImagePath"
         ],
         "type": "object"
-      },
-      "PathEntityType": {
-        "enum": [
-          "asset",
-          "person",
-          "user"
-        ],
-        "type": "string"
-      },
-      "PathType": {
-        "enum": [
-          "original",
-          "fullsize",
-          "preview",
-          "thumbnail",
-          "encoded_video",
-          "sidecar",
-          "face",
-          "profile"
-        ],
-        "type": "string"
       },
       "PeopleResponse": {
         "properties": {
@@ -11253,6 +11112,37 @@
         ],
         "type": "object"
       },
+      "PinCodeChangeDto": {
+        "properties": {
+          "newPinCode": {
+            "example": "123456",
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "newPinCode"
+        ],
+        "type": "object"
+      },
+      "PinCodeSetupDto": {
+        "properties": {
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pinCode"
+        ],
+        "type": "object"
+      },
       "PlacesResponseDto": {
         "properties": {
           "admin1name": {
@@ -11340,9 +11230,6 @@
           "deviceId": {
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -11356,9 +11243,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "lensModel": {
@@ -11436,9 +11320,12 @@
             "format": "date-time",
             "type": "string"
           },
-          "withArchived": {
-            "default": false,
-            "type": "boolean"
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           },
           "withDeleted": {
             "type": "boolean"
@@ -12288,9 +12175,6 @@
           "deviceId": {
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -12304,9 +12188,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "language": {
@@ -12394,9 +12275,12 @@
             "format": "date-time",
             "type": "string"
           },
-          "withArchived": {
-            "default": false,
-            "type": "boolean"
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           },
           "withDeleted": {
             "type": "boolean"
@@ -12680,9 +12564,6 @@
           "isFavorite": {
             "type": "boolean"
           },
-          "isVisible": {
-            "type": "boolean"
-          },
           "localDateTime": {
             "format": "date-time",
             "nullable": true,
@@ -12703,6 +12584,14 @@
               "OTHER"
             ],
             "type": "string"
+          },
+          "visibility": {
+            "enum": [
+              "archive",
+              "timeline",
+              "hidden"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -12712,11 +12601,11 @@
           "fileModifiedAt",
           "id",
           "isFavorite",
-          "isVisible",
           "localDateTime",
           "ownerId",
           "thumbhash",
-          "type"
+          "type",
+          "visibility"
         ],
         "type": "object"
       },
@@ -13404,6 +13293,17 @@
           },
           "storageQuotaClaim": {
             "type": "string"
+          },
+          "timeout": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tokenEndpointAuthMethod": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OAuthTokenEndpointAuthMethod"
+              }
+            ]
           }
         },
         "required": [
@@ -13421,7 +13321,9 @@
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",
-          "storageQuotaClaim"
+          "storageQuotaClaim",
+          "timeout",
+          "tokenEndpointAuthMethod"
         ],
         "type": "object"
       },
@@ -13957,9 +13859,6 @@
           "description": {
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -13978,6 +13877,13 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "type": "object"
@@ -14229,6 +14135,11 @@
             "type": "string"
           },
           "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "nullable": true,
             "type": "string"
           },
           "quotaSizeInBytes": {

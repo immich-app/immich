@@ -34,12 +34,14 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import {
+    AssetVisibility,
     getPersonStatistics,
     mergePerson,
     searchPerson,
@@ -59,11 +61,10 @@
     mdiHeartOutline,
     mdiPlus,
   } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { locale } from '$lib/stores/preferences.store';
-  import { DateTime } from 'luxon';
 
   interface Props {
     data: PageData;
@@ -75,7 +76,7 @@
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   const assetStore = new AssetStore();
-  $effect(() => void assetStore.updateOptions({ isArchived: false, personId: data.person.id }));
+  $effect(() => void assetStore.updateOptions({ visibility: AssetVisibility.Timeline, personId: data.person.id }));
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();

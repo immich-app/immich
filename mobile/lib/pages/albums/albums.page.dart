@@ -229,11 +229,13 @@ class AlbumsPage extends HookConsumerWidget {
                             ),
                             subtitle: sorted[index].ownerId != null
                                 ? Text(
-                                    '${(sorted[index].assetCount == 1 ? 'album_thumbnail_card_item'.tr(
-                                        args: ['${sorted[index].assetCount}'],
-                                      ) : 'album_thumbnail_card_items'.tr(
-                                        args: ['${sorted[index].assetCount}'],
-                                      ))} • ${sorted[index].ownerId != userId ? 'album_thumbnail_shared_by'.tr(args: [sorted[index].ownerName!]) : 'owned'.tr()}',
+                                    '${(sorted[index].assetCount == 1 ? 'album_thumbnail_card_item'.tr() : 'album_thumbnail_card_items'.tr(
+                                        namedArgs: {
+                                          'count': sorted[index]
+                                              .assetCount
+                                              .toString(),
+                                        },
+                                      ))} • ${sorted[index].ownerId != userId ? 'album_thumbnail_shared_by'.tr(namedArgs: {'user': sorted[index].ownerName!}) : 'owned'.tr()}',
                                     overflow: TextOverflow.ellipsis,
                                     style:
                                         context.textTheme.bodyMedium?.copyWith(

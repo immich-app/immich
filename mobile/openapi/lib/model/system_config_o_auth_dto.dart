@@ -28,6 +28,8 @@ class SystemConfigOAuthDto {
     required this.signingAlgorithm,
     required this.storageLabelClaim,
     required this.storageQuotaClaim,
+    required this.timeout,
+    required this.tokenEndpointAuthMethod,
   });
 
   bool autoLaunch;
@@ -61,6 +63,11 @@ class SystemConfigOAuthDto {
 
   String storageQuotaClaim;
 
+  /// Minimum value: 1
+  int timeout;
+
+  OAuthTokenEndpointAuthMethod tokenEndpointAuthMethod;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigOAuthDto &&
     other.autoLaunch == autoLaunch &&
@@ -77,7 +84,9 @@ class SystemConfigOAuthDto {
     other.scope == scope &&
     other.signingAlgorithm == signingAlgorithm &&
     other.storageLabelClaim == storageLabelClaim &&
-    other.storageQuotaClaim == storageQuotaClaim;
+    other.storageQuotaClaim == storageQuotaClaim &&
+    other.timeout == timeout &&
+    other.tokenEndpointAuthMethod == tokenEndpointAuthMethod;
 
   @override
   int get hashCode =>
@@ -96,10 +105,12 @@ class SystemConfigOAuthDto {
     (scope.hashCode) +
     (signingAlgorithm.hashCode) +
     (storageLabelClaim.hashCode) +
-    (storageQuotaClaim.hashCode);
+    (storageQuotaClaim.hashCode) +
+    (timeout.hashCode) +
+    (tokenEndpointAuthMethod.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim]';
+  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, timeout=$timeout, tokenEndpointAuthMethod=$tokenEndpointAuthMethod]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -118,6 +129,8 @@ class SystemConfigOAuthDto {
       json[r'signingAlgorithm'] = this.signingAlgorithm;
       json[r'storageLabelClaim'] = this.storageLabelClaim;
       json[r'storageQuotaClaim'] = this.storageQuotaClaim;
+      json[r'timeout'] = this.timeout;
+      json[r'tokenEndpointAuthMethod'] = this.tokenEndpointAuthMethod;
     return json;
   }
 
@@ -145,6 +158,8 @@ class SystemConfigOAuthDto {
         signingAlgorithm: mapValueOfType<String>(json, r'signingAlgorithm')!,
         storageLabelClaim: mapValueOfType<String>(json, r'storageLabelClaim')!,
         storageQuotaClaim: mapValueOfType<String>(json, r'storageQuotaClaim')!,
+        timeout: mapValueOfType<int>(json, r'timeout')!,
+        tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.fromJson(json[r'tokenEndpointAuthMethod'])!,
       );
     }
     return null;
@@ -207,6 +222,8 @@ class SystemConfigOAuthDto {
     'signingAlgorithm',
     'storageLabelClaim',
     'storageQuotaClaim',
+    'timeout',
+    'tokenEndpointAuthMethod',
   };
 }
 

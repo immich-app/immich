@@ -4,7 +4,7 @@ import { AssetResponseDto, MapAsset } from 'src/dtos/asset-response.dto';
 import { ExifResponseDto } from 'src/dtos/exif.dto';
 import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
 import { mapUser } from 'src/dtos/user.dto';
-import { AssetOrder, AssetStatus, AssetType, SharedLinkType } from 'src/enum';
+import { AssetOrder, AssetStatus, AssetType, AssetVisibility, SharedLinkType } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -206,7 +206,6 @@ export const sharedLinkStub = {
           thumbhash: null,
           encodedVideoPath: '',
           duration: null,
-          isVisible: true,
           livePhotoVideo: null,
           livePhotoVideoId: null,
           originalFileName: 'asset_1.jpeg',
@@ -251,6 +250,7 @@ export const sharedLinkStub = {
           updateId: '42',
           libraryId: null,
           stackId: null,
+          visibility: AssetVisibility.TIMELINE,
         },
       ],
     },

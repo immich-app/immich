@@ -47,7 +47,6 @@ export const errorDto = {
     error: 'Bad Request',
     statusCode: 400,
     message: message ?? expect.anything(),
-    correlationId: expect.any(String),
   }),
   noPermission: {
     error: 'Bad Request',
@@ -65,12 +64,6 @@ export const errorDto = {
     error: 'Bad Request',
     statusCode: 400,
     message: 'The server already has an admin',
-    correlationId: expect.any(String),
-  },
-  invalidEmail: {
-    error: 'Bad Request',
-    statusCode: 400,
-    message: ['email must be an email'],
     correlationId: expect.any(String),
   },
 };

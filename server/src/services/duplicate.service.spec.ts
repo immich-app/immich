@@ -1,10 +1,9 @@
-import { AssetFileType, AssetType, JobName, JobStatus } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
+import { AssetFileType, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, vitest } from 'vitest';
 
 vitest.useFakeTimers();
@@ -23,11 +22,11 @@ const hasEmbedding = {
       updateId: 'update-1',
     },
   ],
-  isVisible: true,
   stackId: null,
   type: AssetType.IMAGE,
   duplicateId: null,
   embedding: '[1, 2, 3, 4]',
+  visibility: AssetVisibility.TIMELINE,
 };
 
 const hasDupe = {
@@ -113,14 +112,11 @@ describe(SearchService.name, () => {
     });
 
     it('should queue missing assets', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForSearchDuplicates.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueSearchDuplicates({});
 
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.DUPLICATE);
+      expect(mocks.assetJob.streamForSearchDuplicates).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.DUPLICATE_DETECTION,
@@ -130,14 +126,11 @@ describe(SearchService.name, () => {
     });
 
     it('should queue all assets', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForSearchDuplicates.mockReturnValue(makeStream([assetStub.image]));
 
       await sut.handleQueueSearchDuplicates({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalled();
+      expect(mocks.assetJob.streamForSearchDuplicates).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.DUPLICATE_DETECTION,
@@ -214,7 +207,10 @@ describe(SearchService.name, () => {
 
     it('should skip if asset is not visible', async () => {
       const id = assetStub.livePhotoMotionAsset.id;
-      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, isVisible: false });
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({
+        ...hasEmbedding,
+        visibility: AssetVisibility.HIDDEN,
+      });
 
       const result = await sut.handleSearchDuplicates({ id });
 

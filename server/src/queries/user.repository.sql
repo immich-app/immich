@@ -87,6 +87,16 @@ where
   "users"."isAdmin" = $1
   and "users"."deletedAt" is null
 
+-- UserRepository.getForPinCode
+select
+  "users"."pinCode",
+  "users"."password"
+from
+  "users"
+where
+  "users"."id" = $1
+  and "users"."deletedAt" is null
+
 -- UserRepository.getByEmail
 select
   "id",
@@ -285,14 +295,14 @@ select
     where
       (
         "assets"."type" = 'IMAGE'
-        and "assets"."isVisible" = true
+        and "assets"."visibility" != 'hidden'
       )
   ) as "photos",
   count(*) filter (
     where
       (
         "assets"."type" = 'VIDEO'
-        and "assets"."isVisible" = true
+        and "assets"."visibility" != 'hidden'
       )
   ) as "videos",
   coalesce(

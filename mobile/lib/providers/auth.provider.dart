@@ -185,11 +185,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return Store.tryGet(StoreKey.serverEndpoint);
   }
 
-  /// Returns the current server URL (input by the user) from the store
-  String? getServerUrl() {
-    return Store.tryGet(StoreKey.serverUrl);
-  }
-
   Future<String?> setOpenApiServiceEndpoint() {
     return _authService.setOpenApiServiceEndpoint();
   }

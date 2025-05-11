@@ -268,8 +268,12 @@ class ApiClient {
           return AssetStatsResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
+        case 'AssetVisibility':
+          return AssetVisibilityTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
+        case 'AuthStatusResponseDto':
+          return AuthStatusResponseDto.fromJson(value);
         case 'AvatarUpdate':
           return AvatarUpdate.fromJson(value);
         case 'BulkIdResponseDto':
@@ -320,16 +324,6 @@ class ApiClient {
           return FaceDto.fromJson(value);
         case 'FacialRecognitionConfig':
           return FacialRecognitionConfig.fromJson(value);
-        case 'FileChecksumDto':
-          return FileChecksumDto.fromJson(value);
-        case 'FileChecksumResponseDto':
-          return FileChecksumResponseDto.fromJson(value);
-        case 'FileReportDto':
-          return FileReportDto.fromJson(value);
-        case 'FileReportFixDto':
-          return FileReportFixDto.fromJson(value);
-        case 'FileReportItemDto':
-          return FileReportItemDto.fromJson(value);
         case 'FoldersResponse':
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':
@@ -378,8 +372,6 @@ class ApiClient {
           return MemoriesUpdate.fromJson(value);
         case 'MemoryCreateDto':
           return MemoryCreateDto.fromJson(value);
-        case 'MemoryLaneResponseDto':
-          return MemoryLaneResponseDto.fromJson(value);
         case 'MemoryResponseDto':
           return MemoryResponseDto.fromJson(value);
         case 'MemoryType':
@@ -410,16 +402,14 @@ class ApiClient {
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':
           return OAuthConfigDto.fromJson(value);
+        case 'OAuthTokenEndpointAuthMethod':
+          return OAuthTokenEndpointAuthMethodTypeTransformer().decode(value);
         case 'OnThisDayDto':
           return OnThisDayDto.fromJson(value);
         case 'PartnerDirection':
           return PartnerDirectionTypeTransformer().decode(value);
         case 'PartnerResponseDto':
           return PartnerResponseDto.fromJson(value);
-        case 'PathEntityType':
-          return PathEntityTypeTypeTransformer().decode(value);
-        case 'PathType':
-          return PathTypeTypeTransformer().decode(value);
         case 'PeopleResponse':
           return PeopleResponse.fromJson(value);
         case 'PeopleResponseDto':
@@ -442,6 +432,10 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'PersonWithFacesResponseDto':
           return PersonWithFacesResponseDto.fromJson(value);
+        case 'PinCodeChangeDto':
+          return PinCodeChangeDto.fromJson(value);
+        case 'PinCodeSetupDto':
+          return PinCodeSetupDto.fromJson(value);
         case 'PlacesResponseDto':
           return PlacesResponseDto.fromJson(value);
         case 'PurchaseResponse':

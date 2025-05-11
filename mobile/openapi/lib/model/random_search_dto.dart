@@ -18,13 +18,11 @@ class RandomSearchDto {
     this.createdAfter,
     this.createdBefore,
     this.deviceId,
-    this.isArchived,
     this.isEncoded,
     this.isFavorite,
     this.isMotion,
     this.isNotInAlbum,
     this.isOffline,
-    this.isVisible,
     this.lensModel,
     this.libraryId,
     this.make,
@@ -41,7 +39,7 @@ class RandomSearchDto {
     this.type,
     this.updatedAfter,
     this.updatedBefore,
-    this.withArchived = false,
+    this.visibility,
     this.withDeleted,
     this.withExif,
     this.withPeople,
@@ -82,14 +80,6 @@ class RandomSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isArchived;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   bool? isEncoded;
 
   ///
@@ -123,14 +113,6 @@ class RandomSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? isOffline;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isVisible;
 
   String? lensModel;
 
@@ -228,7 +210,13 @@ class RandomSearchDto {
   ///
   DateTime? updatedBefore;
 
-  bool withArchived;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AssetVisibility? visibility;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -269,13 +257,11 @@ class RandomSearchDto {
     other.createdAfter == createdAfter &&
     other.createdBefore == createdBefore &&
     other.deviceId == deviceId &&
-    other.isArchived == isArchived &&
     other.isEncoded == isEncoded &&
     other.isFavorite == isFavorite &&
     other.isMotion == isMotion &&
     other.isNotInAlbum == isNotInAlbum &&
     other.isOffline == isOffline &&
-    other.isVisible == isVisible &&
     other.lensModel == lensModel &&
     other.libraryId == libraryId &&
     other.make == make &&
@@ -292,7 +278,7 @@ class RandomSearchDto {
     other.type == type &&
     other.updatedAfter == updatedAfter &&
     other.updatedBefore == updatedBefore &&
-    other.withArchived == withArchived &&
+    other.visibility == visibility &&
     other.withDeleted == withDeleted &&
     other.withExif == withExif &&
     other.withPeople == withPeople &&
@@ -306,13 +292,11 @@ class RandomSearchDto {
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
     (deviceId == null ? 0 : deviceId!.hashCode) +
-    (isArchived == null ? 0 : isArchived!.hashCode) +
     (isEncoded == null ? 0 : isEncoded!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isMotion == null ? 0 : isMotion!.hashCode) +
     (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
-    (isVisible == null ? 0 : isVisible!.hashCode) +
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
@@ -329,14 +313,14 @@ class RandomSearchDto {
     (type == null ? 0 : type!.hashCode) +
     (updatedAfter == null ? 0 : updatedAfter!.hashCode) +
     (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
-    (withArchived.hashCode) +
+    (visibility == null ? 0 : visibility!.hashCode) +
     (withDeleted == null ? 0 : withDeleted!.hashCode) +
     (withExif == null ? 0 : withExif!.hashCode) +
     (withPeople == null ? 0 : withPeople!.hashCode) +
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'RandomSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'RandomSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -365,11 +349,6 @@ class RandomSearchDto {
     } else {
     //  json[r'deviceId'] = null;
     }
-    if (this.isArchived != null) {
-      json[r'isArchived'] = this.isArchived;
-    } else {
-    //  json[r'isArchived'] = null;
-    }
     if (this.isEncoded != null) {
       json[r'isEncoded'] = this.isEncoded;
     } else {
@@ -394,11 +373,6 @@ class RandomSearchDto {
       json[r'isOffline'] = this.isOffline;
     } else {
     //  json[r'isOffline'] = null;
-    }
-    if (this.isVisible != null) {
-      json[r'isVisible'] = this.isVisible;
-    } else {
-    //  json[r'isVisible'] = null;
     }
     if (this.lensModel != null) {
       json[r'lensModel'] = this.lensModel;
@@ -472,7 +446,11 @@ class RandomSearchDto {
     } else {
     //  json[r'updatedBefore'] = null;
     }
-      json[r'withArchived'] = this.withArchived;
+    if (this.visibility != null) {
+      json[r'visibility'] = this.visibility;
+    } else {
+    //  json[r'visibility'] = null;
+    }
     if (this.withDeleted != null) {
       json[r'withDeleted'] = this.withDeleted;
     } else {
@@ -510,13 +488,11 @@ class RandomSearchDto {
         createdAfter: mapDateTime(json, r'createdAfter', r''),
         createdBefore: mapDateTime(json, r'createdBefore', r''),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
-        isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isEncoded: mapValueOfType<bool>(json, r'isEncoded'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
-        isVisible: mapValueOfType<bool>(json, r'isVisible'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
@@ -537,7 +513,7 @@ class RandomSearchDto {
         type: AssetTypeEnum.fromJson(json[r'type']),
         updatedAfter: mapDateTime(json, r'updatedAfter', r''),
         updatedBefore: mapDateTime(json, r'updatedBefore', r''),
-        withArchived: mapValueOfType<bool>(json, r'withArchived') ?? false,
+        visibility: AssetVisibility.fromJson(json[r'visibility']),
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),
         withPeople: mapValueOfType<bool>(json, r'withPeople'),

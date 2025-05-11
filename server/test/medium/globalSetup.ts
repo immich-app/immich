@@ -42,7 +42,7 @@ const globalSetup = async () => {
   const db = new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: postgresUrl }));
 
   const configRepository = new ConfigRepository();
-  const logger = new LoggingRepository(undefined, configRepository);
+  const logger = LoggingRepository.create();
   await new DatabaseRepository(db, logger, configRepository).runMigrations();
 
   await db.destroy();

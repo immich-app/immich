@@ -2,13 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_people.provider.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_people.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/search/curated_people_row.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 
 class PeopleInfo extends ConsumerWidget {
   final Asset asset;
@@ -109,13 +109,13 @@ class PeopleInfo extends ConsumerWidget {
 
     if (ageInMonths <= 11) {
       return "exif_bottom_sheet_person_age_months"
-          .tr(args: [ageInMonths.toString()]);
+          .tr(namedArgs: {'months': ageInMonths.toString()});
     } else if (ageInMonths > 12 && ageInMonths <= 23) {
       return "exif_bottom_sheet_person_age_year_months"
-          .tr(args: [(ageInMonths - 12).toString()]);
+          .tr(namedArgs: {'months': (ageInMonths - 12).toString()});
     } else {
       return "exif_bottom_sheet_person_age_years"
-          .tr(args: [ageInYears.toString()]);
+          .tr(namedArgs: {'years': ageInYears.toString()});
     }
   }
 

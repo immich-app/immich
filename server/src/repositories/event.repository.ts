@@ -19,7 +19,7 @@ import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.d
 import { ImmichWorker, MetadataKey, QueueName } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { JobItem } from 'src/types';
+import { JobItem, JobSource } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
@@ -48,7 +48,7 @@ type EventMap = {
   'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  'album.update': [{ id: string; recipientIds: string[] }];
+  'album.update': [{ id: string; recipientId: string }];
   'album.invite': [{ id: string; userId: string }];
 
   // asset events
@@ -58,6 +58,7 @@ type EventMap = {
   'asset.show': [{ assetId: string; userId: string }];
   'asset.trash': [{ assetId: string; userId: string }];
   'asset.delete': [{ assetId: string; userId: string }];
+  'asset.metadataExtracted': [{ assetId: string; userId: string; source?: JobSource }];
 
   // asset bulk events
   'assets.trash': [{ assetIds: string[]; userId: string }];

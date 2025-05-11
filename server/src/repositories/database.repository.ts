@@ -12,6 +12,7 @@ import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
+import { vectorIndexQuery } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
 import { DataSource } from 'typeorm';
 
@@ -119,12 +120,7 @@ export class DatabaseRepository {
         await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE vector(${sql.raw(String(dimSize))})`.execute(
           tx,
         );
-        await sql`SET vectors.pgvector_compatibility=on`.execute(tx);
-        await sql`
-          CREATE INDEX IF NOT EXISTS ${sql.raw(index)} ON ${sql.raw(table)}
-          USING hnsw (embedding vector_cosine_ops)
-          WITH (ef_construction = 300, m = 16)
-        `.execute(tx);
+        await sql.raw(vectorIndexQuery({ vectorExtension: this.vectorExtension, table, indexName: index })).execute(tx);
       });
     }
   }

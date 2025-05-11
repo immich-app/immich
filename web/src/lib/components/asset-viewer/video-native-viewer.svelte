@@ -1,16 +1,16 @@
 <script lang="ts">
+  import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
-  import { swipe } from 'svelte-gestures';
   import type { SwipeCustomEvent } from 'svelte-gestures';
-  import { fade } from 'svelte/transition';
+  import { swipe } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
-  import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import { fade } from 'svelte/transition';
 
   interface Props {
     assetId: string;

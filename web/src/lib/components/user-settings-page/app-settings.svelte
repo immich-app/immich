@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { invalidateAll } from '$app/navigation';
   import type { ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { defaultLang, fallbackLocale, langs, locales } from '$lib/constants';
+  import { themeManager } from '$lib/managers/theme-manager.svelte';
   import {
     alwaysLoadOriginalFile,
-    colorTheme,
     lang,
     locale,
     loopVideo,
@@ -17,7 +18,6 @@
   import { onMount } from 'svelte';
   import { locale as i18nLocale, t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { invalidateAll } from '$app/navigation';
 
   let time = $state(new Date());
 
@@ -38,10 +38,6 @@
         label: locale.name,
         value: locale.code,
       }));
-  };
-
-  const handleToggleColorTheme = () => {
-    $colorTheme.system = !$colorTheme.system;
   };
 
   const handleToggleLocaleBrowser = () => {
@@ -101,8 +97,8 @@
         <SettingSwitch
           title={$t('theme_selection')}
           subtitle={$t('theme_selection_description')}
-          bind:checked={$colorTheme.system}
-          onToggle={handleToggleColorTheme}
+          checked={themeManager.theme.system}
+          onToggle={(isChecked) => themeManager.setSystem(isChecked)}
         />
       </div>
 

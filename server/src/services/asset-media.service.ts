@@ -21,7 +21,7 @@ import {
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetType, CacheControl, JobName, Permission, StorageFolder } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility, CacheControl, JobName, Permission, StorageFolder } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
 import { UploadFile } from 'src/types';
@@ -146,7 +146,6 @@ export class AssetMediaService extends BaseService {
           { userId: auth.user.id, livePhotoVideoId: dto.livePhotoVideoId },
         );
       }
-
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
@@ -416,9 +415,8 @@ export class AssetMediaService extends BaseService {
 
       type: mimeTypes.assetType(file.originalPath),
       isFavorite: dto.isFavorite,
-      isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
-      isVisible: dto.isVisible ?? true,
+      visibility: dto.visibility ?? AssetVisibility.TIMELINE,
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: file.originalName,
       sidecarPath: sidecarFile?.originalPath,

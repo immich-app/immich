@@ -606,7 +606,7 @@ describe(AlbumService.name, () => {
       expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
       expect(mocks.event.emit).toHaveBeenCalledWith('album.update', {
         id: 'album-123',
-        recipientIds: ['admin_id'],
+        recipientId: 'admin_id',
       });
     });
 

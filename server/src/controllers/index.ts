@@ -8,7 +8,6 @@ import { AuthController } from 'src/controllers/auth.controller';
 import { DownloadController } from 'src/controllers/download.controller';
 import { DuplicateController } from 'src/controllers/duplicate.controller';
 import { FaceController } from 'src/controllers/face.controller';
-import { ReportController } from 'src/controllers/file-report.controller';
 import { JobController } from 'src/controllers/job.controller';
 import { LibraryController } from 'src/controllers/library.controller';
 import { MapController } from 'src/controllers/map.controller';
@@ -53,7 +52,6 @@ export const controllers = [
   OAuthController,
   PartnerController,
   PersonController,
-  ReportController,
   SearchController,
   ServerController,
   SessionController,

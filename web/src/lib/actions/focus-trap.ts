@@ -1,5 +1,5 @@
 import { shortcuts } from '$lib/actions/shortcut';
-import { getFocusable } from '$lib/utils/focus-util';
+import { getTabbable } from '$lib/utils/focus-util';
 import { tick } from 'svelte';
 
 interface Options {
@@ -18,18 +18,21 @@ export function focusTrap(container: HTMLElement, options?: Options) {
     };
   };
 
-  const setInitialFocus = () => {
-    const focusableElement = getFocusable(container)[0];
-    // Use tick() to ensure focus trap works correctly inside <Portal />
-    void tick().then(() => focusableElement?.focus());
+  const setInitialFocus = async () => {
+    const focusableElement = getTabbable(container, false)[0];
+    if (focusableElement) {
+      // Use tick() to ensure focus trap works correctly inside <Portal />
+      await tick();
+      focusableElement?.focus();
+    }
   };
 
   if (withDefaults(options).active) {
-    setInitialFocus();
+    void setInitialFocus();
   }
 
   const getFocusableElements = () => {
-    const focusableElements = getFocusable(container);
+    const focusableElements = getTabbable(container);
     return [
       focusableElements.at(0), //
       focusableElements.at(-1),
@@ -67,7 +70,7 @@ export function focusTrap(container: HTMLElement, options?: Options) {
     update(newOptions?: Options) {
       options = newOptions;
       if (withDefaults(options).active) {
-        setInitialFocus();
+        void setInitialFocus();
       }
     },
     destroy() {

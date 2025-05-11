@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { AssetOrder } from 'src/enum';
+import { AssetOrder, AssetVisibility } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
   @IsNotEmpty()
@@ -23,9 +23,6 @@ export class TimeBucketDto {
   tagId?: string;
 
   @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
   @ValidateBoolean({ optional: true })
@@ -41,6 +38,9 @@ export class TimeBucketDto {
   @Optional()
   @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
   order?: AssetOrder;
+
+  @ValidateAssetVisibility({ optional: true })
+  visibility?: AssetVisibility;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
