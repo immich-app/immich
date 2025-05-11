@@ -128,9 +128,9 @@ void main() {
     test('shared with assets', () async {
       when(
         () => albumApiRepository.create(
-          "name",
-          assetIds: any(named: "assetIds"),
-          sharedUserIds: any(named: "sharedUserIds"),
+          'name',
+          assetIds: any(named: 'assetIds'),
+          sharedUserIds: any(named: 'sharedUserIds'),
         ),
       ).thenAnswer((_) async => AlbumStub.oneAsset);
 
@@ -143,11 +143,11 @@ void main() {
       ).thenAnswer((_) async => AlbumStub.twoAsset);
 
       final result =
-          await sut.createAlbum("name", [AssetStub.image1], [UserStub.user1]);
+          await sut.createAlbum('name', [AssetStub.image1], [UserStub.user1]);
       expect(result, AlbumStub.twoAsset);
       verify(
         () => albumApiRepository.create(
-          "name",
+          'name',
           assetIds: [AssetStub.image1.remoteId!],
           sharedUserIds: [UserStub.user1.id],
         ),

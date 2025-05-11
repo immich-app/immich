@@ -64,7 +64,7 @@ void main() {
     registerFallbackValue(FakeAssetBulkUpdateDto());
   });
 
-  group("Edit ExifInfo", () {
+  group('Edit ExifInfo', () {
     late AssetsApi assetsApi;
     setUp(() {
       assetsApi = MockAssetsApi();
@@ -73,7 +73,7 @@ void main() {
           .thenAnswer((_) async => Future.value());
     });
 
-    test("asset is updated with DateTime", () async {
+    test('asset is updated with DateTime', () async {
       final assets = [AssetStub.image1, AssetStub.image2];
       final dateTime = DateTime.utc(2025, 6, 4, 2, 57);
       await sut.changeDateTime(assets, dateTime.toIso8601String());
@@ -90,7 +90,7 @@ void main() {
       expect(receivedDatetime.every((d) => d == dateTime), isTrue);
     });
 
-    test("asset is updated with LatLng", () async {
+    test('asset is updated with LatLng', () async {
       final assets = [AssetStub.image1, AssetStub.image2];
       final latLng = const LatLng(37.7749, -122.4194);
       await sut.changeLocation(assets, latLng);

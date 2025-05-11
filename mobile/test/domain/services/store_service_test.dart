@@ -51,7 +51,7 @@ void main() {
     await controller.close();
   });
 
-  group("Store Service Init:", () {
+  group('Store Service Init:', () {
     test('Populates the internal cache on init', () {
       verify(() => mockStoreRepo.tryGet(any<StoreKey<dynamic>>()))
           .called(equals(StoreKey.values.length));

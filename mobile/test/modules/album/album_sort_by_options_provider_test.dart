@@ -15,7 +15,7 @@ import '../settings/settings_mocks.dart';
 
 void main() {
   /// Verify the sort modes
-  group("AlbumSortMode", () {
+  group('AlbumSortMode', () {
     late final Isar db;
 
     setUpAll(() async {
@@ -44,9 +44,9 @@ void main() {
       expect(db.assets.countSync(), 2);
     });
 
-    group("Album sort - Created Time", () {
+    group('Album sort - Created Time', () {
       const created = AlbumSortMode.created;
-      test("Created time - ASC", () {
+      test('Created time - ASC', () {
         final sorted = created.sortFn(albums, false);
         final sortedList = [
           AlbumStub.emptyAlbum,
@@ -57,7 +57,7 @@ void main() {
         expect(sorted, orderedEquals(sortedList));
       });
 
-      test("Created time - DESC", () {
+      test('Created time - DESC', () {
         final sorted = created.sortFn(albums, true);
         final sortedList = [
           AlbumStub.sharedWithUser,
@@ -69,9 +69,9 @@ void main() {
       });
     });
 
-    group("Album sort - Asset count", () {
+    group('Album sort - Asset count', () {
       const assetCount = AlbumSortMode.assetCount;
-      test("Asset Count - ASC", () {
+      test('Asset Count - ASC', () {
         final sorted = assetCount.sortFn(albums, false);
         final sortedList = [
           AlbumStub.emptyAlbum,
@@ -82,7 +82,7 @@ void main() {
         expect(sorted, orderedEquals(sortedList));
       });
 
-      test("Asset Count - DESC", () {
+      test('Asset Count - DESC', () {
         final sorted = assetCount.sortFn(albums, true);
         final sortedList = [
           AlbumStub.twoAsset,
@@ -94,9 +94,9 @@ void main() {
       });
     });
 
-    group("Album sort - Last modified", () {
+    group('Album sort - Last modified', () {
       const lastModified = AlbumSortMode.lastModified;
-      test("Last modified - ASC", () {
+      test('Last modified - ASC', () {
         final sorted = lastModified.sortFn(albums, false);
         final sortedList = [
           AlbumStub.twoAsset,
@@ -107,7 +107,7 @@ void main() {
         expect(sorted, orderedEquals(sortedList));
       });
 
-      test("Last modified - DESC", () {
+      test('Last modified - DESC', () {
         final sorted = lastModified.sortFn(albums, true);
         final sortedList = [
           AlbumStub.oneAsset,
@@ -119,9 +119,9 @@ void main() {
       });
     });
 
-    group("Album sort - Created", () {
+    group('Album sort - Created', () {
       const created = AlbumSortMode.created;
-      test("Created - ASC", () {
+      test('Created - ASC', () {
         final sorted = created.sortFn(albums, false);
         final sortedList = [
           AlbumStub.emptyAlbum,
@@ -132,7 +132,7 @@ void main() {
         expect(sorted, orderedEquals(sortedList));
       });
 
-      test("Created - DESC", () {
+      test('Created - DESC', () {
         final sorted = created.sortFn(albums, true);
         final sortedList = [
           AlbumStub.sharedWithUser,
@@ -144,10 +144,10 @@ void main() {
       });
     });
 
-    group("Album sort - Most Recent", () {
+    group('Album sort - Most Recent', () {
       const mostRecent = AlbumSortMode.mostRecent;
 
-      test("Most Recent - DESC", () {
+      test('Most Recent - DESC', () {
         final sorted = mostRecent.sortFn(
           [
             AlbumStub.create2020end2020Album,
@@ -166,7 +166,7 @@ void main() {
         expect(sorted, orderedEquals(sortedList));
       });
 
-      test("Most Recent - ASC", () {
+      test('Most Recent - ASC', () {
         final sorted = mostRecent.sortFn(
           [
             AlbumStub.create2020end2020Album,
@@ -186,10 +186,10 @@ void main() {
       });
     });
 
-    group("Album sort - Most Oldest", () {
+    group('Album sort - Most Oldest', () {
       const mostOldest = AlbumSortMode.mostOldest;
 
-      test("Most Oldest - ASC", () {
+      test('Most Oldest - ASC', () {
         final sorted = mostOldest.sortFn(albums, false);
         final sortedList = [
           AlbumStub.twoAsset,
@@ -200,7 +200,7 @@ void main() {
         expect(sorted, orderedEquals(sortedList));
       });
 
-      test("Most Oldest - DESC", () {
+      test('Most Oldest - DESC', () {
         final sorted = mostOldest.sortFn(albums, true);
         final sortedList = [
           AlbumStub.sharedWithUser,

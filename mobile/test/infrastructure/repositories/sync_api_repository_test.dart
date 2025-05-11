@@ -89,7 +89,7 @@ void main() {
         abort();
         abortWasCalledInCallback = true;
       } else {
-        fail("onData called more than once after abort was invoked");
+        fail('onData called more than once after abort was invoked');
       }
     }
 
@@ -102,7 +102,7 @@ void main() {
         utf8.encode(
           _createJsonLine(
             SyncEntityType.userDeleteV1.toString(),
-            SyncUserDeleteV1(userId: "user$i").toJson(),
+            SyncUserDeleteV1(userId: 'user$i').toJson(),
             'ack$i',
           ),
         ),
@@ -114,7 +114,7 @@ void main() {
         utf8.encode(
           _createJsonLine(
             SyncEntityType.userDeleteV1.toString(),
-            SyncUserDeleteV1(userId: "user$i").toJson(),
+            SyncUserDeleteV1(userId: 'user$i').toJson(),
             'ack$i',
           ),
         ),
@@ -142,7 +142,7 @@ void main() {
           abort();
           abortWasCalledInCallback = true;
         } else {
-          fail("onData called more than once after abort was invoked");
+          fail('onData called more than once after abort was invoked');
         }
       }
 
@@ -155,7 +155,7 @@ void main() {
           utf8.encode(
             _createJsonLine(
               SyncEntityType.userDeleteV1.toString(),
-              SyncUserDeleteV1(userId: "user$i").toJson(),
+              SyncUserDeleteV1(userId: 'user$i').toJson(),
               'ack$i',
             ),
           ),
@@ -167,7 +167,7 @@ void main() {
         utf8.encode(
           _createJsonLine(
             SyncEntityType.userDeleteV1.toString(),
-            SyncUserDeleteV1(userId: "user100").toJson(),
+            SyncUserDeleteV1(userId: 'user100').toJson(),
             'ack100',
           ),
         ),
@@ -196,7 +196,7 @@ void main() {
         } else if (onDataCallCount == 2) {
           receivedEventsBatch2 = events;
         } else {
-          fail("onData called more than expected");
+          fail('onData called more than expected');
         }
       }
 
@@ -210,7 +210,7 @@ void main() {
           utf8.encode(
             _createJsonLine(
               SyncEntityType.userDeleteV1.toString(),
-              SyncUserDeleteV1(userId: "user$i").toJson(),
+              SyncUserDeleteV1(userId: 'user$i').toJson(),
               'ack$i',
             ),
           ),
@@ -222,7 +222,7 @@ void main() {
         utf8.encode(
           _createJsonLine(
             SyncEntityType.userDeleteV1.toString(),
-            SyncUserDeleteV1(userId: "user100").toJson(),
+            SyncUserDeleteV1(userId: 'user100').toJson(),
             'ack100',
           ),
         ),
@@ -239,7 +239,7 @@ void main() {
   );
 
   test('streamChanges handles stream error gracefully', () async {
-    final streamError = Exception("Network Error");
+    final streamError = Exception('Network Error');
     int onDataCallCount = 0;
 
     onDataCallback(List<SyncEvent> events, Function() _) {
@@ -254,7 +254,7 @@ void main() {
       utf8.encode(
         _createJsonLine(
           SyncEntityType.userDeleteV1.toString(),
-          SyncUserDeleteV1(userId: "user1").toJson(),
+          SyncUserDeleteV1(userId: 'user1').toJson(),
           'ack1',
         ),
       ),
