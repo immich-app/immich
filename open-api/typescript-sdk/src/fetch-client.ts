@@ -2148,11 +2148,15 @@ export function sendJobCommand({ id, jobCommandDto }: {
         body: jobCommandDto
     })));
 }
-export function getLargeAssets(opts?: Oazapfts.RequestOpts) {
+export function getLargeAssets({ take }: {
+    take: number;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: LargeAssetsResponseDto;
-    }>("/large-assets", {
+    }>(`/large-assets${QS.query(QS.explode({
+        take
+    }))}`, {
         ...opts
     }));
 }

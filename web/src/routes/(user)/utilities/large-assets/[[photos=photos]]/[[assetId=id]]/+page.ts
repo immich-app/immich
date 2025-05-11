@@ -6,7 +6,7 @@ import type { PageLoad } from './$types';
 export const load = (async () => {
   await authenticate();
   // const asset = await getAssetInfoFromParam(params);
-  const assets = await getLargeAssets();
+  const assets = await getLargeAssets({ take: 200 });
   const $t = await getFormatter();
 
   return {

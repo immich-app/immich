@@ -2756,7 +2756,16 @@
     "/large-assets": {
       "get": {
         "operationId": "getLargeAssets",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "take",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {

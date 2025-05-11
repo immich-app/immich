@@ -17,7 +17,10 @@ class LargeAssetsApi {
   final ApiClient apiClient;
 
   /// Performs an HTTP 'GET /large-assets' operation and returns the [Response].
-  Future<Response> getLargeAssetsWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [num] take (required):
+  Future<Response> getLargeAssetsWithHttpInfo(num take,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/large-assets';
 
@@ -27,6 +30,8 @@ class LargeAssetsApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'take', take));
 
     const contentTypes = <String>[];
 
@@ -42,8 +47,11 @@ class LargeAssetsApi {
     );
   }
 
-  Future<LargeAssetsResponseDto?> getLargeAssets() async {
-    final response = await getLargeAssetsWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [num] take (required):
+  Future<LargeAssetsResponseDto?> getLargeAssets(num take,) async {
+    final response = await getLargeAssetsWithHttpInfo(take,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

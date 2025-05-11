@@ -6,8 +6,8 @@ import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class LargeAssetsService extends BaseService {
-  async getLargeAssets(auth: AuthDto): Promise<LargeAssetsResponseDto> {
-    const largeAssets = await this.assetRepository.getLargeAssets(auth.user.id, 200);
+  async getLargeAssets(auth: AuthDto, take: number): Promise<LargeAssetsResponseDto> {
+    const largeAssets = await this.assetRepository.getLargeAssets(auth.user.id, take);
 
     return { assets: largeAssets.map((asset) => mapAsset(asset, { auth })) };
   }
