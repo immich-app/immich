@@ -87,7 +87,7 @@ class Album {
   }
 
   @ignore
-  String get eTagKeyAssetCount => "device-album-$localId-asset-count";
+  String get eTagKeyAssetCount => 'device-album-$localId-asset-count';
 
   // the following getter are needed because Isar links do not make data
   // accessible in an object freshly created (not loaded from DB)

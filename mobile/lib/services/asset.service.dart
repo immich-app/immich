@@ -91,7 +91,7 @@ class AssetService {
       getChangedAssets: _getRemoteAssetChanges,
       loadAssets: _getRemoteAssets,
     );
-    debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
+    debugPrint('refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms');
     return changes;
   }
 
@@ -143,12 +143,12 @@ class AssetService {
           lastId: lastId,
           userId: user.id,
         );
-        log.fine("Requesting $chunkSize assets from $lastId");
+        log.fine('Requesting $chunkSize assets from $lastId');
         final List<AssetResponseDto>? assets =
             await _apiService.syncApi.getFullSyncForUser(dto);
         if (assets == null) return null;
         log.fine(
-          "Received ${assets.length} assets from ${assets.firstOrNull?.id} to ${assets.lastOrNull?.id}",
+          'Received ${assets.length} assets from ${assets.firstOrNull?.id} to ${assets.lastOrNull?.id}',
         );
         allAssets.addAll(assets.map(Asset.remote));
         if (assets.length != chunkSize) break;
@@ -177,7 +177,7 @@ class AssetService {
               await _assetRepository
                   .transaction(() => _assetRepository.update(a));
             } else {
-              debugPrint("[loadExif] parameter Asset is not from DB!");
+              debugPrint('[loadExif] parameter Asset is not from DB!');
             }
           }
         }
@@ -219,7 +219,7 @@ class AssetService {
 
       return assets;
     } catch (error, stack) {
-      log.severe("Error while changing favorite status", error, stack);
+      log.severe('Error while changing favorite status', error, stack);
       return [];
     }
   }
@@ -245,7 +245,7 @@ class AssetService {
 
       return assets;
     } catch (error, stack) {
-      log.severe("Error while changing archive status", error, stack);
+      log.severe('Error while changing archive status', error, stack);
       return [];
     }
   }
@@ -270,7 +270,7 @@ class AssetService {
 
       return assets;
     } catch (error, stack) {
-      log.severe("Error while changing date/time status", error, stack);
+      log.severe('Error while changing date/time status', error, stack);
       return Future.value(null);
     }
   }
@@ -299,7 +299,7 @@ class AssetService {
 
       return assets;
     } catch (error, stack) {
-      log.severe("Error while changing location status", error, stack);
+      log.severe('Error while changing location status', error, stack);
       return Future.value(null);
     }
   }
@@ -347,7 +347,7 @@ class AssetService {
         await _albumService.syncUploadAlbums([albumName], assetIds);
       }
     } catch (error, stack) {
-      log.severe("Error while syncing uploaded asset to albums", error, stack);
+      log.severe('Error while syncing uploaded asset to albums', error, stack);
     }
   }
 
@@ -385,12 +385,12 @@ class AssetService {
 
     // Guard [remoteAssetId] and [localExifId] null
     if (localExifId == null) {
-      return "";
+      return '';
     }
 
     final exifInfo = await _exifInfoRepository.get(localExifId);
 
-    return exifInfo?.description ?? "";
+    return exifInfo?.description ?? '';
   }
 
   Future<double> getAspectRatio(Asset asset) async {

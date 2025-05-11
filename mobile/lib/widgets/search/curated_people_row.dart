@@ -81,7 +81,7 @@ class CuratedPeopleRow extends StatelessWidget {
       return GestureDetector(
         onTap: () => onNameTap?.call(person, index),
         child: Text(
-          "exif_bottom_sheet_person_add_person",
+          'exif_bottom_sheet_person_add_person',
           style: context.textTheme.labelLarge?.copyWith(
             color: context.primaryColor,
           ),

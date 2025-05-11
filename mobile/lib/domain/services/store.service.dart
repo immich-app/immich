@@ -17,7 +17,7 @@ class StoreService {
   static StoreService? _instance;
   static StoreService get I {
     if (_instance == null) {
-      throw UnsupportedError("StoreService not initialized. Call init() first");
+      throw UnsupportedError('StoreService not initialized. Call init() first');
     }
     return _instance!;
   }
@@ -102,5 +102,5 @@ class StoreKeyNotFoundException implements Exception {
   const StoreKeyNotFoundException(this.key);
 
   @override
-  String toString() => "Key - <${key.name}> not available in Store";
+  String toString() => 'Key - <${key.name}> not available in Store';
 }

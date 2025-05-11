@@ -54,7 +54,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       final endpoint =
           await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
       if (kDebugMode) {
-        debugPrint("Using server URL: $endpoint");
+        debugPrint('Using server URL: $endpoint');
       }
 
       final permission = _ref.watch(galleryPermissionNotifier);

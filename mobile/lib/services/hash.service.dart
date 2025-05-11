@@ -129,11 +129,11 @@ class HashService {
     List<_AssetPath> toBeHashed,
     List<String> toBeDeleted,
   ) async {
-    _log.info("Hashing ${toBeHashed.length} files");
+    _log.info('Hashing ${toBeHashed.length} files');
     final hashes = await _hashFiles(toBeHashed.map((e) => e.path).toList());
     assert(
       hashes.length == toBeHashed.length,
-      "Number of Hashes returned from platform should be the same as the input",
+      'Number of Hashes returned from platform should be the same as the input',
     );
 
     final hashedAssets = <Asset>[];
@@ -164,7 +164,7 @@ class HashService {
       await _deviceAssetRepository.deleteIds(toBeDeleted);
     });
 
-    _log.fine("Hashed ${hashedAssets.length}/${toBeHashed.length} assets");
+    _log.fine('Hashed ${hashedAssets.length}/${toBeHashed.length} assets');
     return hashedAssets;
   }
 
@@ -176,9 +176,9 @@ class HashService {
       if (hashes != null) {
         return hashes;
       }
-      _log.severe("Hashing ${paths.length} files failed");
+      _log.severe('Hashing ${paths.length} files failed');
     } catch (e, s) {
-      _log.severe("Error occurred while hashing assets", e, s);
+      _log.severe('Error occurred while hashing assets', e, s);
     }
     return List.filled(paths.length, null);
   }

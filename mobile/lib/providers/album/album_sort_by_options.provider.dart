@@ -74,22 +74,22 @@ class _AlbumSortHandlers {
 
 // Store index allows us to re-arrange the values without affecting the saved prefs
 enum AlbumSortMode {
-  title(1, "library_page_sort_title", _AlbumSortHandlers.title),
-  assetCount(4, "library_page_sort_asset_count", _AlbumSortHandlers.assetCount),
+  title(1, 'library_page_sort_title', _AlbumSortHandlers.title),
+  assetCount(4, 'library_page_sort_asset_count', _AlbumSortHandlers.assetCount),
   lastModified(
     3,
-    "library_page_sort_last_modified",
+    'library_page_sort_last_modified',
     _AlbumSortHandlers.lastModified,
   ),
-  created(0, "library_page_sort_created", _AlbumSortHandlers.created),
+  created(0, 'library_page_sort_created', _AlbumSortHandlers.created),
   mostRecent(
     2,
-    "sort_recent",
+    'sort_recent',
     _AlbumSortHandlers.mostRecent,
   ),
   mostOldest(
     5,
-    "sort_oldest",
+    'sort_oldest',
     _AlbumSortHandlers.mostOldest,
   );
 

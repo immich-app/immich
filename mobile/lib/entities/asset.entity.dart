@@ -133,7 +133,7 @@ class Asset {
   @Index(
     unique: true,
     replace: false,
-    composite: [CompositeIndex("checksum", type: IndexType.hash)],
+    composite: [CompositeIndex('checksum', type: IndexType.hash)],
   )
   int ownerId;
 
@@ -221,7 +221,7 @@ class Asset {
     } else if (isLocal) {
       return AssetState.local;
     } else {
-      throw Exception("Asset has illegal state: $this");
+      throw Exception('Asset has illegal state: $this');
     }
   }
 

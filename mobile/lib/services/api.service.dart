@@ -44,7 +44,7 @@ class ApiService implements Authentication {
     }
   }
   String? _accessToken;
-  final _log = Logger("ApiService");
+  final _log = Logger('ApiService');
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint, authentication: this);
@@ -98,7 +98,7 @@ class ApiService implements Authentication {
     }
 
     if (!await _isEndpointAvailable(url)) {
-      throw ApiException(503, "Server is not reachable");
+      throw ApiException(503, 'Server is not reachable');
     }
 
     // Otherwise, assume the URL provided is the api endpoint
@@ -119,7 +119,7 @@ class ApiService implements Authentication {
       return false;
     } catch (error, stackTrace) {
       _log.severe(
-        "Error while checking server availability",
+        'Error while checking server availability',
         error,
         stackTrace,
       );
@@ -132,12 +132,12 @@ class ApiService implements Authentication {
     final Client client = Client();
 
     try {
-      var headers = {"Accept": "application/json"};
+      var headers = {'Accept': 'application/json'};
       headers.addAll(getRequestHeaders());
 
       final res = await client
           .get(
-            Uri.parse("$baseUrl/.well-known/immich"),
+            Uri.parse('$baseUrl/.well-known/immich'),
             headers: headers,
           )
           .timeout(const Duration(seconds: 5));
@@ -153,10 +153,10 @@ class ApiService implements Authentication {
         return endpoint;
       }
     } catch (e) {
-      debugPrint("Could not locate /.well-known/immich at $baseUrl");
+      debugPrint('Could not locate /.well-known/immich at $baseUrl');
     }
 
-    return "";
+    return '';
   }
 
   Future<void> setAccessToken(String accessToken) async {
@@ -184,8 +184,8 @@ class ApiService implements Authentication {
   }
 
   static Map<String, String> getRequestHeaders() {
-    var accessToken = Store.get(StoreKey.accessToken, "");
-    var customHeadersStr = Store.get(StoreKey.customHeaders, "");
+    var accessToken = Store.get(StoreKey.accessToken, '');
+    var customHeadersStr = Store.get(StoreKey.customHeaders, '');
     var header = <String, String>{};
     if (accessToken.isNotEmpty) {
       header['x-immich-user-token'] = accessToken;

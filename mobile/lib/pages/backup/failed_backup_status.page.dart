@@ -17,7 +17,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
       appBar: AppBar(
         elevation: 0,
         title: Text(
-          "Failed Backup (${errorBackupList.length})",
+          'Failed Backup (${errorBackupList.length})',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(

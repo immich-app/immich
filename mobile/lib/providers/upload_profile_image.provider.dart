@@ -91,7 +91,7 @@ class UploadProfileImageNotifier
     );
 
     if (profileImagePath != null) {
-      debugPrint("Successfully upload profile image");
+      debugPrint('Successfully upload profile image');
       state = state.copyWith(
         status: UploadProfileStatus.success,
         profileImagePath: profileImagePath,

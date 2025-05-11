@@ -39,19 +39,19 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
               mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
             ),
             serverDiskInfo: const ServerDiskInfo(
-              diskAvailable: "0",
-              diskSize: "0",
-              diskUse: "0",
+              diskAvailable: '0',
+              diskSize: '0',
+              diskUse: '0',
               diskUsagePercentage: 0,
             ),
             isVersionMismatch: false,
             isNewReleaseAvailable: false,
-            versionMismatchErrorMessage: "",
+            versionMismatchErrorMessage: '',
           ),
         );
 
   final ServerInfoService _serverInfoService;
-  final _log = Logger("ServerInfoNotifier");
+  final _log = Logger('ServerInfoNotifier');
 
   Future<void> getServerInfo() async {
     await getServerVersion();
@@ -66,14 +66,14 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
       if (serverVersion == null) {
         state = state.copyWith(
           isVersionMismatch: true,
-          versionMismatchErrorMessage: "common_server_error".tr(),
+          versionMismatchErrorMessage: 'common_server_error'.tr(),
         );
         return;
       }
 
       await _checkServerVersionMismatch(serverVersion);
     } catch (e, stackTrace) {
-      _log.severe("Failed to get server version", e, stackTrace);
+      _log.severe('Failed to get server version', e, stackTrace);
       state = state.copyWith(
         isVersionMismatch: true,
       );
@@ -88,45 +88,45 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
 
     Map<String, int> appVersion = _getDetailVersion(packageInfo.version);
 
-    if (appVersion["major"]! > serverVersion.major) {
+    if (appVersion['major']! > serverVersion.major) {
       state = state.copyWith(
         isVersionMismatch: true,
         versionMismatchErrorMessage:
-            "profile_drawer_server_out_of_date_major".tr(),
+            'profile_drawer_server_out_of_date_major'.tr(),
       );
       return;
     }
 
-    if (appVersion["major"]! < serverVersion.major) {
+    if (appVersion['major']! < serverVersion.major) {
       state = state.copyWith(
         isVersionMismatch: true,
         versionMismatchErrorMessage:
-            "profile_drawer_client_out_of_date_major".tr(),
+            'profile_drawer_client_out_of_date_major'.tr(),
       );
       return;
     }
 
-    if (appVersion["minor"]! > serverVersion.minor) {
+    if (appVersion['minor']! > serverVersion.minor) {
       state = state.copyWith(
         isVersionMismatch: true,
         versionMismatchErrorMessage:
-            "profile_drawer_server_out_of_date_minor".tr(),
+            'profile_drawer_server_out_of_date_minor'.tr(),
       );
       return;
     }
 
-    if (appVersion["minor"]! < serverVersion.minor) {
+    if (appVersion['minor']! < serverVersion.minor) {
       state = state.copyWith(
         isVersionMismatch: true,
         versionMismatchErrorMessage:
-            "profile_drawer_client_out_of_date_minor".tr(),
+            'profile_drawer_client_out_of_date_minor'.tr(),
       );
       return;
     }
 
     state = state.copyWith(
       isVersionMismatch: false,
-      versionMismatchErrorMessage: "",
+      versionMismatchErrorMessage: '',
     );
   }
 
@@ -166,16 +166,16 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
   }
 
   Map<String, int> _getDetailVersion(String version) {
-    List<String> detail = version.split(".");
+    List<String> detail = version.split('.');
 
     var major = detail[0];
     var minor = detail[1];
     var patch = detail[2];
 
     return {
-      "major": int.parse(major),
-      "minor": int.parse(minor),
-      "patch": int.parse(patch.replaceAll("-DEBUG", "")),
+      'major': int.parse(major),
+      'minor': int.parse(minor),
+      'patch': int.parse(patch.replaceAll('-DEBUG', '')),
     };
   }
 }

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 @pragma('vm:prefer-inline')
 String _formatDuration(Duration position) {
-  final seconds = position.inSeconds.remainder(60).toString().padLeft(2, "0");
-  final minutes = position.inMinutes.remainder(60).toString().padLeft(2, "0");
+  final seconds = position.inSeconds.remainder(60).toString().padLeft(2, '0');
+  final minutes = position.inMinutes.remainder(60).toString().padLeft(2, '0');
   if (position.inHours == 0) {
-    return "$minutes:$seconds";
+    return '$minutes:$seconds';
   }
   final hours = position.inHours.toString().padLeft(2, '0');
-  return "$hours:$minutes:$seconds";
+  return '$hours:$minutes:$seconds';
 }
 
 class FormattedDuration extends StatelessWidget {

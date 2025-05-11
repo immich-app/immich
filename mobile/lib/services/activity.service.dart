@@ -7,7 +7,7 @@ class ActivityService with ErrorLoggerMixin {
   final IActivityApiRepository _activityApiRepository;
 
   @override
-  final Logger logger = Logger("ActivityService");
+  final Logger logger = Logger('ActivityService');
 
   ActivityService(this._activityApiRepository);
 
@@ -18,7 +18,7 @@ class ActivityService with ErrorLoggerMixin {
     return logError(
       () => _activityApiRepository.getAll(albumId, assetId: assetId),
       defaultValue: [],
-      errorMessage: "Failed to get all activities for album $albumId",
+      errorMessage: 'Failed to get all activities for album $albumId',
     );
   }
 
@@ -26,7 +26,7 @@ class ActivityService with ErrorLoggerMixin {
     return logError(
       () => _activityApiRepository.getStats(albumId, assetId: assetId),
       defaultValue: const ActivityStats(comments: 0),
-      errorMessage: "Failed to statistics for album $albumId",
+      errorMessage: 'Failed to statistics for album $albumId',
     );
   }
 
@@ -37,7 +37,7 @@ class ActivityService with ErrorLoggerMixin {
         return true;
       },
       defaultValue: false,
-      errorMessage: "Failed to delete activity",
+      errorMessage: 'Failed to delete activity',
     );
   }
 
@@ -54,7 +54,7 @@ class ActivityService with ErrorLoggerMixin {
         assetId: assetId,
         comment: comment,
       ),
-      errorMessage: "Failed to create $type for album $albumId",
+      errorMessage: 'Failed to create $type for album $albumId',
     );
   }
 }

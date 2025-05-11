@@ -28,10 +28,10 @@ abstract final class ImmichLogger {
       for (final m in await LogService.I.getMessages()) {
         final created = m.createdAt;
         final level = m.level.name.padRight(8);
-        final logger = (m.logger ?? "<UNKNOWN_LOGGER>").padRight(20);
+        final logger = (m.logger ?? '<UNKNOWN_LOGGER>').padRight(20);
         final message = m.message;
-        final error = m.error == null ? "" : " ${m.error} |";
-        final stack = m.stack == null ? "" : "\n${m.stack!}";
+        final error = m.error == null ? '' : ' ${m.error} |';
+        final stack = m.stack == null ? '' : '\n${m.stack!}';
         io.write('$created | $level | $logger | $message |$error$stack\n');
       }
     } finally {
@@ -44,7 +44,7 @@ abstract final class ImmichLogger {
     // Share file
     await Share.shareXFiles(
       [XFile(filePath)],
-      subject: "Immich logs $dateTime",
+      subject: 'Immich logs $dateTime',
       sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
     ).then((value) => logFile.delete());
   }

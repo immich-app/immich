@@ -16,7 +16,7 @@ class TrashNotifier extends StateNotifier<bool> {
       await _trashService.emptyTrash();
       state = true;
     } catch (error, stack) {
-      _log.severe("Cannot empty trash", error, stack);
+      _log.severe('Cannot empty trash', error, stack);
       state = false;
     }
   }
@@ -26,7 +26,7 @@ class TrashNotifier extends StateNotifier<bool> {
       await _trashService.restoreAssets(assetList);
       return true;
     } catch (error, stack) {
-      _log.severe("Cannot restore assets", error, stack);
+      _log.severe('Cannot restore assets', error, stack);
       return false;
     }
   }
@@ -36,7 +36,7 @@ class TrashNotifier extends StateNotifier<bool> {
       await _trashService.restoreTrash();
       state = true;
     } catch (error, stack) {
-      _log.severe("Cannot restore trash", error, stack);
+      _log.severe('Cannot restore trash', error, stack);
       state = false;
     }
   }

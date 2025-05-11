@@ -32,21 +32,21 @@ class MapSettingsSheet extends HookConsumerWidget {
               ),
               const Divider(height: 30, thickness: 2),
               MapSettingsListTile(
-                title: "map_settings_only_show_favorites",
+                title: 'map_settings_only_show_favorites',
                 selected: mapState.showFavoriteOnly,
                 onChanged: (favoriteOnly) => ref
                     .read(mapStateNotifierProvider.notifier)
                     .switchFavoriteOnly(favoriteOnly),
               ),
               MapSettingsListTile(
-                title: "map_settings_include_show_archived",
+                title: 'map_settings_include_show_archived',
                 selected: mapState.includeArchived,
                 onChanged: (includeArchive) => ref
                     .read(mapStateNotifierProvider.notifier)
                     .switchIncludeArchived(includeArchive),
               ),
               MapSettingsListTile(
-                title: "map_settings_include_show_partners",
+                title: 'map_settings_include_show_partners',
                 selected: mapState.withPartners,
                 onChanged: (withPartners) => ref
                     .read(mapStateNotifierProvider.notifier)

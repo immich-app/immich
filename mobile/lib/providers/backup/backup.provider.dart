@@ -67,7 +67,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             backupProgress: BackUpProgressEnum.idle,
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
-            progressInFileSize: "0 B / 0 B",
+            progressInFileSize: '0 B / 0 B',
             progressInFileSpeed: 0,
             progressInFileSpeeds: const [],
             progressInFileSpeedUpdateTime: DateTime.now(),
@@ -80,9 +80,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
                 Store.get(StoreKey.backupRequireCharging, false),
             backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay, 5000),
             serverInfo: const ServerDiskInfo(
-              diskAvailable: "0",
-              diskSize: "0",
-              diskUse: "0",
+              diskAvailable: '0',
+              diskSize: '0',
+              diskUse: '0',
               diskUsagePercentage: 0,
             ),
             availableAlbums: const [],
@@ -228,13 +228,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           backupRequireCharging: wasCharging,
           backupTriggerDelay: oldTriggerDelay,
         );
-        onError("backup_controller_page_background_configure_error");
+        onError('backup_controller_page_background_configure_error');
       }
     } else {
       final bool success = await _backgroundService.disableService();
       if (!success) {
         state = state.copyWith(backgroundBackup: wasEnabled);
-        onError("backup_controller_page_background_configure_error");
+        onError('backup_controller_page_background_configure_error');
       }
     }
   }
@@ -318,9 +318,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
 
     log.info(
-      "_getBackupAlbumsInfo: Found ${availableAlbums.length} available albums",
+      '_getBackupAlbumsInfo: Found ${availableAlbums.length} available albums',
     );
-    debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
+    debugPrint('_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms');
   }
 
   ///
@@ -413,7 +413,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
 
     if (allUniqueAssets.isEmpty) {
-      log.info("No assets are selected for back up");
+      log.info('No assets are selected for back up');
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,
@@ -445,7 +445,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await updateDiskInfo();
       await _updateBackupAssetCount();
     } else {
-      log.warning("cannot get backup info - background backup is in progress!");
+      log.warning('cannot get backup info - background backup is in progress!');
     }
   }
 
@@ -486,7 +486,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   /// Invoke backup process
   Future<void> startBackupProcess() async {
-    debugPrint("Start backup process");
+    debugPrint('Start backup process');
     assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
@@ -497,7 +497,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await _fileMediaRepository.clearFileCache();
 
       if (state.allUniqueAssets.isEmpty) {
-        log.info("No Asset On Device - Abort Backup Process");
+        log.info('No Asset On Device - Abort Backup Process');
         state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
         return;
       }
@@ -559,7 +559,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state = state.copyWith(
       backupProgress: BackUpProgressEnum.idle,
       progressInPercentage: 0.0,
-      progressInFileSize: "0 B / 0 B",
+      progressInFileSize: '0 B / 0 B',
       progressInFileSpeed: 0,
       progressInFileSpeedUpdateTime: DateTime.now(),
       progressInFileSpeedUpdateSentBytes: 0,
@@ -606,7 +606,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             .toSet(),
         backupProgress: BackUpProgressEnum.done,
         progressInPercentage: 0.0,
-        progressInFileSize: "0 B / 0 B",
+        progressInFileSize: '0 B / 0 B',
         progressInFileSpeed: 0,
         progressInFileSpeedUpdateTime: DateTime.now(),
         progressInFileSpeedUpdateSentBytes: 0,
@@ -668,7 +668,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // User has been logged out return
     if (accessKey == null || !_authState.isAuthenticated) {
-      log.info("[_resumeBackup] not authenticated - abort");
+      log.info('[_resumeBackup] not authenticated - abort');
       return;
     }
 
@@ -676,22 +676,22 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (state.autoBackup) {
       // check if backup is already in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
-        log.info("[_resumeBackup] Auto Backup is already in progress - abort");
+        log.info('[_resumeBackup] Auto Backup is already in progress - abort');
         return;
       }
 
       if (state.backupProgress == BackUpProgressEnum.inBackground) {
-        log.info("[_resumeBackup] Background backup is running - abort");
+        log.info('[_resumeBackup] Background backup is running - abort');
         return;
       }
 
       if (state.backupProgress == BackUpProgressEnum.manualInProgress) {
-        log.info("[_resumeBackup] Manual upload is running - abort");
+        log.info('[_resumeBackup] Manual upload is running - abort');
         return;
       }
 
       // Run backup
-      log.info("[_resumeBackup] Start back up");
+      log.info('[_resumeBackup] Start back up');
       await startBackupProcess();
     }
     return;
@@ -743,8 +743,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         result.add(a.copyWith(lastBackup: ba.lastBackup));
       } on StateError {
         log.severe(
-          "[_updateAlbumBackupTime] failed to find album in state",
-          "State Error",
+          '[_updateAlbumBackupTime] failed to find album in state',
+          'State Error',
           StackTrace.current,
         );
       }

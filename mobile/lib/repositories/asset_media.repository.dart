@@ -23,7 +23,7 @@ class AssetMediaRepository implements IAssetMediaRepository {
   static Asset? toAsset(AssetEntity? local) {
     if (local == null) return null;
     final Asset asset = Asset(
-      checksum: "",
+      checksum: '',
       localId: local.id,
       ownerId: fastHash(Store.get(StoreKey.currentUser).id),
       fileCreatedAt: local.createDateTime,

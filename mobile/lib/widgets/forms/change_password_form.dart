@@ -92,14 +92,14 @@ class ChangePasswordForm extends HookConsumerWidget {
 
                             ImmichToast.show(
                               context: context,
-                              msg: "login_password_changed_success".tr(),
+                              msg: 'login_password_changed_success'.tr(),
                               toastType: ToastType.success,
                               gravity: ToastGravity.TOP,
                             );
                           } else {
                             ImmichToast.show(
                               context: context,
-                              msg: "login_password_changed_error".tr(),
+                              msg: 'login_password_changed_error'.tr(),
                               toastType: ToastType.error,
                               gravity: ToastGravity.TOP,
                             );

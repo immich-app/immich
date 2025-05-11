@@ -74,7 +74,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
   if (!ps.hasAccess) {
     if (kDebugMode) {
       debugPrint(
-        "[MIGRATION] Photo library permission not granted. Skipping device asset migration.",
+        '[MIGRATION] Photo library permission not granted. Skipping device asset migration.',
       );
     }
 
@@ -106,8 +106,8 @@ Future<void> _migrateDeviceAsset(Isar db) async {
         .toList();
   }
 
-  debugPrint("[MIGRATION] Device Asset Ids length - ${ids.length}");
-  debugPrint("[MIGRATION] Local Asset Ids length - ${localAssets.length}");
+  debugPrint('[MIGRATION] Device Asset Ids length - ${ids.length}');
+  debugPrint('[MIGRATION] Local Asset Ids length - ${localAssets.length}');
   ids.sort((a, b) => a.assetId.compareTo(b.assetId));
   localAssets.sort((a, b) => a.assetId.compareTo(b.assetId));
   final List<DeviceAssetEntity> toAdd = [];
@@ -143,7 +143,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
 
   if (kDebugMode) {
     debugPrint(
-      "[MIGRATION] Total number of device assets migrated - ${toAdd.length}",
+      '[MIGRATION] Total number of device assets migrated - ${toAdd.length}',
     );
   }
 

@@ -13,8 +13,8 @@ Future<bool> diffSortedLists<T>(
   required FutureOr<void> Function(T a) onlyFirst,
   required FutureOr<void> Function(T b) onlySecond,
 }) async {
-  assert(la.isSorted(compare), "first argument must be sorted");
-  assert(lb.isSorted(compare), "second argument must be sorted");
+  assert(la.isSorted(compare), 'first argument must be sorted');
+  assert(lb.isSorted(compare), 'second argument must be sorted');
   bool diff = false;
   int i = 0, j = 0;
   for (; i < la.length && j < lb.length;) {
@@ -50,8 +50,8 @@ bool diffSortedListsSync<T>(
   required void Function(T a) onlyFirst,
   required void Function(T b) onlySecond,
 }) {
-  assert(la.isSorted(compare), "first argument must be sorted");
-  assert(lb.isSorted(compare), "second argument must be sorted");
+  assert(la.isSorted(compare), 'first argument must be sorted');
+  assert(lb.isSorted(compare), 'second argument must be sorted');
   bool diff = false;
   int i = 0, j = 0;
   for (; i < la.length && j < lb.length;) {

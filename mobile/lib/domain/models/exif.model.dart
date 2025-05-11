@@ -28,17 +28,17 @@ class ExifInfo {
 
   String get exposureTime {
     if (exposureSeconds == null) {
-      return "";
+      return '';
     }
     if (exposureSeconds! < 1) {
-      return "1/${(1.0 / exposureSeconds!).round()} s";
+      return '1/${(1.0 / exposureSeconds!).round()} s';
     }
-    return "${exposureSeconds!.toStringAsFixed(1)} s";
+    return '${exposureSeconds!.toStringAsFixed(1)} s';
   }
 
-  String get fNumber => f == null ? "" : f!.toStringAsFixed(1);
+  String get fNumber => f == null ? '' : f!.toStringAsFixed(1);
 
-  String get focalLength => mm == null ? "" : mm!.toStringAsFixed(1);
+  String get focalLength => mm == null ? '' : mm!.toStringAsFixed(1);
 
   const ExifInfo({
     this.assetId,

@@ -27,16 +27,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final ApiService _apiService;
   final UserService _userService;
-  final _log = Logger("AuthenticationNotifier");
+  final _log = Logger('AuthenticationNotifier');
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
 
   AuthNotifier(this._authService, this._apiService, this._userService)
       : super(
           AuthState(
-            deviceId: "",
-            userId: "",
-            userEmail: "",
+            deviceId: '',
+            userId: '',
+            userEmail: '',
             name: '',
             profileImagePath: '',
             isAdmin: false,
@@ -75,9 +75,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _cleanUp() async {
     state = AuthState(
-      deviceId: "",
-      userId: "",
-      userEmail: "",
+      deviceId: '',
+      userId: '',
+      userEmail: '',
       name: '',
       profileImagePath: '',
       isAdmin: false,
@@ -113,7 +113,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final serverUser =
           await _userService.refreshMyUser().timeout(_timeoutDuration);
       if (serverUser == null) {
-        _log.severe("Unable to get user information from the server.");
+        _log.severe('Unable to get user information from the server.');
       } else {
         // If the user information is successfully retrieved, update the store
         // Due to the flow of the code, this will always happen on first login
@@ -124,23 +124,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
     } on ApiException catch (error, stackTrace) {
       if (error.code == 401) {
-        _log.severe("Unauthorized access, token likely expired. Logging out.");
+        _log.severe('Unauthorized access, token likely expired. Logging out.');
         return false;
       }
       _log.severe(
-        "Error getting user information from the server [API EXCEPTION]",
+        'Error getting user information from the server [API EXCEPTION]',
         stackTrace,
       );
     } catch (error, stackTrace) {
       _log.severe(
-        "Error getting user information from the server [CATCH ALL]",
+        'Error getting user information from the server [CATCH ALL]',
         error,
         stackTrace,
       );
 
       if (kDebugMode) {
         debugPrint(
-          "Error getting user information from the server [CATCH ALL] $error $stackTrace",
+          'Error getting user information from the server [CATCH ALL] $error $stackTrace',
         );
       }
     }
