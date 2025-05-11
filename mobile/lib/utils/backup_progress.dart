@@ -46,7 +46,7 @@ String humanReadableBytesProgress(int bytes, int bytesTotal) {
   final int percent = (bytes * 100) ~/ bytesTotal;
   final String done = numberFormat.format(bytes / 1024.0);
   final String total = numberFormat.format(bytesTotal / 1024.0);
-  return "$percent% ($done/$total$unit)";
+  return '$percent% ($done/$total$unit)';
 }
 
 class ThrottleProgressUpdate {
