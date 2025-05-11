@@ -105,7 +105,7 @@ jobs:
         working-directory: ./mobile
 
       - name: Run DCM
-        run: dcm analyze --ci-key=oss --email=oss lib
+        run: dcm analyze lib
         working-directory: ./mobile
 
   zizmor:
