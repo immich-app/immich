@@ -1,12 +1,12 @@
 <script lang="ts">
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { OAuthTokenEndpointAuthMethod, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -47,7 +47,7 @@
 </script>
 
 {#if isConfirmOpen}
-  <ConfirmDialog
+  <ConfirmModal
     title={$t('admin.disable_login')}
     onClose={(confirmed) => (confirmed ? handleSave(true) : (isConfirmOpen = false))}
   >
@@ -70,7 +70,7 @@
         </p>
       </div>
     {/snippet}
-  </ConfirmDialog>
+  </ConfirmModal>
 {/if}
 
 <div>

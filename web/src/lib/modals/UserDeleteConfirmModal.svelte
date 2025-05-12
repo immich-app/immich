@@ -1,7 +1,7 @@
 <script lang="ts">
   import Checkbox from '$lib/components/elements/checkbox.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteUserAdmin, type UserResponseDto } from '@immich/sdk';
@@ -39,7 +39,7 @@
   };
 </script>
 
-<ConfirmDialog
+<ConfirmModal
   title={$t('delete_user')}
   confirmText={forceDelete ? $t('permanently_delete') : $t('delete')}
   onClose={(confirmed) => (confirmed ? handleDeleteUser() : onClose())}
@@ -98,4 +98,4 @@
       {/if}
     </div>
   {/snippet}
-</ConfirmDialog>
+</ConfirmModal>
