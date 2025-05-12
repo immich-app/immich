@@ -440,34 +440,38 @@ export class AssetBucket {
     const month = date.get('month');
     const year = date.get('year');
 
-    if (this.month === month && this.year === year) {
-      const day = date.get('day');
-      let dateGroup: AssetDateGroup | undefined = addContext.lookupCache[day];
-      if (!dateGroup) {
-        dateGroup = this.findDateGroupByDay(day);
-        if (dateGroup) {
-          addContext.lookupCache[day] = dateGroup;
-        }
-      }
-      if (dateGroup) {
-        const intersectingAsset = new IntersectingAsset(dateGroup, timelineAsset);
-        if (dateGroup.intersetingAssets.some((a) => a.id === id)) {
-          console.error(`Ignoring attempt to add duplicate asset ${id} to ${dateGroup.groupTitle}`);
-        } else {
-          dateGroup.intersetingAssets.push(intersectingAsset);
-          addContext.changedDateGroups.add(dateGroup);
-        }
-      } else {
-        dateGroup = new AssetDateGroup(this, this.dateGroups.length, date, day);
-        dateGroup.intersetingAssets.push(new IntersectingAsset(dateGroup, timelineAsset));
-        this.dateGroups.push(dateGroup);
-        addContext.lookupCache[day] = dateGroup;
-        addContext.newDateGroups.add(dateGroup);
-      }
-    } else {
+    // If the timeline asset does not belong to the current bucket, mark it as unprocessed
+    if (this.month !== month || this.year !== year) {
       addContext.unprocessedAssets.push(timelineAsset);
+      return;
     }
+
+    const day = date.get('day');
+    let dateGroup: AssetDateGroup | undefined = addContext.lookupCache[day] || this.findDateGroupByDay(day);
+
+    if (dateGroup) {
+      // Cache the found date group for future lookups
+      addContext.lookupCache[day] = dateGroup;
+    } else {
+      // Create a new date group if none exists for the given day
+      dateGroup = new AssetDateGroup(this, this.dateGroups.length, date, day);
+      this.dateGroups.push(dateGroup);
+      addContext.lookupCache[day] = dateGroup;
+      addContext.newDateGroups.add(dateGroup);
+    }
+
+    // Check for duplicate assets in the date group
+    if (dateGroup.intersetingAssets.some((a) => a.id === id)) {
+      console.error(`Ignoring attempt to add duplicate asset ${id} to ${dateGroup.groupTitle}`);
+      return;
+    }
+
+    // Add the timeline asset to the date group
+    const intersectingAsset = new IntersectingAsset(dateGroup, timelineAsset);
+    dateGroup.intersetingAssets.push(intersectingAsset);
+    addContext.changedDateGroups.add(dateGroup);
   }
+
   getRandomDateGroup() {
     const random = Math.floor(Math.random() * this.dateGroups.length);
     return this.dateGroups[random];

@@ -35,7 +35,6 @@
   const assetInteraction = new AssetInteraction();
 
   let assets = $derived(sharedLink.assets.map((a) => toTimelineAsset(a)));
-  let fullAsset = $derived(assets[0] ? getAssetInfo({ id: assets[0]?.id, key: authManager.key }) : null);
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -128,10 +127,10 @@
     <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
       <GalleryViewer {assets} {assetInteraction} {viewport} />
     </section>
-  {:else}
-    {#await fullAsset then asset}
+  {:else if assets.length === 1}
+    {#await getAssetInfo({ id: assets[0].id, key: authManager.key }) then asset}
       <AssetViewer
-        asset={asset!}
+        {asset}
         showCloseButton={false}
         onAction={handleAction}
         onPrevious={() => Promise.resolve(false)}

@@ -94,5 +94,5 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     text,
   };
 };
-export const isTimelineAsset = (arg: AssetResponseDto | TimelineAsset): arg is TimelineAsset =>
-  (arg as TimelineAsset).ratio !== undefined;
+export const isTimelineAsset = (asset: AssetResponseDto | TimelineAsset): asset is TimelineAsset =>
+  (asset as TimelineAsset).ratio !== undefined;

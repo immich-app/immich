@@ -69,9 +69,9 @@
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   let currentMemoryAssetFull = $derived.by(async () =>
-    current?.asset ? await getAssetInfo({ id: current?.asset.id, key: authManager.key }) : undefined,
+    current?.asset ? await getAssetInfo({ id: current.asset.id, key: authManager.key }) : undefined,
   );
-  let currentTimelineAssets = $derived(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
+  let currentTimelineAssets = $derived(current?.memory.assets.map((asset) => toTimelineAsset(asset)) || []);
 
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
