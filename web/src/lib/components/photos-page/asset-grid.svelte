@@ -9,7 +9,7 @@
     setFocusTo as setFocusToInit,
   } from '$lib/components/photos-page/actions/focus-actions';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
-  import SelectDate from '$lib/components/shared-components/select-date.svelte';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
@@ -722,10 +722,13 @@
 {/if}
 
 {#if isShowSelectDate}
-  <SelectDate
+  <ChangeDate
+    title="Navigate to Time"
     initialDate={DateTime.now()}
-    onConfirm={async (date: DateTime) => {
+    timezoneInput={false}
+    onConfirm={async (dateString: string) => {
       isShowSelectDate = false;
+      const date = DateTime.fromISO(dateString);
       const asset = await assetStore.getClosestAssetToDate(date);
       if (asset) {
         await setFocusAsset(asset);
