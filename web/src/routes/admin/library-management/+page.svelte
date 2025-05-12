@@ -7,13 +7,13 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { ByteUnit, getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -210,7 +210,7 @@
       return;
     }
 
-    const isConfirmed = await dialogController.show({
+    const isConfirmed = await modalManager.showDialog({
       prompt: $t('admin.confirm_delete_library', { values: { library: library.name } }),
     });
 
@@ -221,10 +221,9 @@
     await refreshStats(index);
     const assetCount = totalCount[index];
     if (assetCount > 0) {
-      const isConfirmed = await dialogController.show({
+      const isConfirmed = await modalManager.showDialog({
         prompt: $t('admin.confirm_delete_library_assets', { values: { count: assetCount } }),
       });
-
       if (!isConfirmed) {
         return;
       }

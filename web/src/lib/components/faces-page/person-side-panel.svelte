@@ -1,9 +1,9 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
@@ -173,10 +173,9 @@
         return;
       }
 
-      const isConfirmed = await dialogController.show({
+      const isConfirmed = await modalManager.showDialog({
         prompt: $t('confirm_delete_face', { values: { name: face.person.name } }),
       });
-
       if (!isConfirmed) {
         return;
       }

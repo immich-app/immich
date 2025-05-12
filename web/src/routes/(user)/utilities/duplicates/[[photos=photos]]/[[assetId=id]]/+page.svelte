@@ -1,7 +1,6 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import DuplicatesModal from '$lib/components/shared-components/duplicates-modal.svelte';
   import {
     NotificationType,
@@ -55,7 +54,7 @@
   let hasDuplicates = $derived(duplicates.length > 0);
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
-      const isConfirmed = await dialogController.show({ prompt, confirmText });
+      const isConfirmed = await modalManager.showDialog({ prompt, confirmText });
       if (!isConfirmed) {
         return;
       }
