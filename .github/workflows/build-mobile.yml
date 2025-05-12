@@ -93,6 +93,10 @@ jobs:
         run: make translation
         working-directory: ./mobile
 
+      - name: Generate platform APIs
+        run: make platform
+        working-directory: ./mobile
+
       - name: Build Android App Bundle
         working-directory: ./mobile
         env:
