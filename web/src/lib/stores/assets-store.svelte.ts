@@ -11,6 +11,7 @@ import { formatDateGroupTitle, toTimelineAsset } from '$lib/utils/timeline-util'
 import { TUNABLES } from '$lib/utils/tunables';
 import {
   AssetOrder,
+  AssetVisibility,
   getAssetInfo,
   getTimeBucket,
   getTimeBuckets,
@@ -1416,7 +1417,7 @@ export class AssetStore {
 
   isExcluded(asset: TimelineAsset) {
     return (
-      isMismatched(this.#options.isArchived, asset.isArchived) ||
+      isMismatched(this.#options.visibility === AssetVisibility.Archive, asset.isArchived) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );

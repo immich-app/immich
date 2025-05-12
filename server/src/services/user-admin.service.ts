@@ -70,6 +70,10 @@ export class UserAdminService extends BaseService {
       dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
     }
 
+    if (dto.pinCode) {
+      dto.pinCode = await this.cryptoRepository.hashBcrypt(dto.pinCode, SALT_ROUNDS);
+    }
+
     if (dto.storageLabel === '') {
       dto.storageLabel = null;
     }

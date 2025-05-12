@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -91,7 +92,9 @@
             icon={mdiFolderDownloadOutline}
           />
         {/if}
-
+        {#if sharedLink.showMetadata}
+          <AlbumMap {album} />
+        {/if}
         <ThemeButton />
       {/snippet}
     </ControlAppBar>

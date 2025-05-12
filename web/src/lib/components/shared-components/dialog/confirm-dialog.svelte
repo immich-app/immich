@@ -44,7 +44,7 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <div class="flex gap-3 w-full my-3">
       {#if !hideCancelButton}
         <Button shape="round" color={cancelColor} fullWidth onclick={() => onClose(false)}>
           {cancelText}

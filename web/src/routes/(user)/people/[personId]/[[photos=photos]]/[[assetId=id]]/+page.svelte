@@ -40,7 +40,14 @@
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
-  import { getPersonStatistics, mergePerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import {
+    AssetVisibility,
+    getPersonStatistics,
+    mergePerson,
+    searchPerson,
+    updatePerson,
+    type PersonResponseDto,
+  } from '@immich/sdk';
   import {
     mdiAccountBoxOutline,
     mdiAccountMultipleCheckOutline,
@@ -68,7 +75,7 @@
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   const assetStore = new AssetStore();
-  $effect(() => void assetStore.updateOptions({ isArchived: false, personId: data.person.id }));
+  $effect(() => void assetStore.updateOptions({ visibility: AssetVisibility.Timeline, personId: data.person.id }));
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();

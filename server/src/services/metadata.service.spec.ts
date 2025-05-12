@@ -4,7 +4,7 @@ import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { defaults } from 'src/config';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
+import { AssetType, AssetVisibility, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -15,21 +15,18 @@ import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
-const makeFaceTags = (face: Partial<{ Name: string }> = {}) => ({
+const makeFaceTags = (face: Partial<{ Name: string }> = {}, orientation?: ImmichTags['Orientation']) => ({
+  Orientation: orientation,
   RegionInfo: {
-    AppliedToDimensions: {
-      W: 100,
-      H: 100,
-      Unit: 'normalized',
-    },
+    AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
     RegionList: [
       {
         Type: 'face',
         Area: {
-          X: 0.05,
-          Y: 0.05,
-          W: 0.1,
-          H: 0.1,
+          X: 0.1,
+          Y: 0.4,
+          W: 0.2,
+          H: 0.4,
           Unit: 'normalized',
         },
         ...face,
@@ -507,7 +504,10 @@ describe(MetadataService.name, () => {
     });
 
     it('should not apply motion photos if asset is video', async () => {
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({ ...assetStub.livePhotoMotionAsset, isVisible: true });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
+        ...assetStub.livePhotoMotionAsset,
+        visibility: AssetVisibility.TIMELINE,
+      });
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id });
@@ -516,7 +516,7 @@ describe(MetadataService.name, () => {
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalledWith(
-        expect.objectContaining({ assetType: AssetType.VIDEO, isVisible: false }),
+        expect.objectContaining({ assetType: AssetType.VIDEO, visibility: AssetVisibility.HIDDEN }),
       );
     });
 
@@ -583,7 +583,7 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         fileModifiedAt: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
         id: fileStub.livePhotoMotion.uuid,
-        isVisible: false,
+        visibility: AssetVisibility.HIDDEN,
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
@@ -641,7 +641,7 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         fileModifiedAt: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
         id: fileStub.livePhotoMotion.uuid,
-        isVisible: false,
+        visibility: AssetVisibility.HIDDEN,
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
@@ -699,7 +699,7 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         fileModifiedAt: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
         id: fileStub.livePhotoMotion.uuid,
-        isVisible: false,
+        visibility: AssetVisibility.HIDDEN,
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
@@ -776,14 +776,17 @@ describe(MetadataService.name, () => {
         MicroVideoOffset: 1,
       });
       mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
-      mocks.asset.getByChecksum.mockResolvedValue({ ...assetStub.livePhotoMotionAsset, isVisible: true });
+      mocks.asset.getByChecksum.mockResolvedValue({
+        ...assetStub.livePhotoMotionAsset,
+        visibility: AssetVisibility.TIMELINE,
+      });
       const video = randomBytes(512);
       mocks.storage.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
-        isVisible: false,
+        visibility: AssetVisibility.HIDDEN,
       });
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoStillAsset.id,
@@ -1098,11 +1101,11 @@ describe(MetadataService.name, () => {
             assetId: assetStub.primaryImage.id,
             personId: 'random-uuid',
             imageHeight: 100,
-            imageWidth: 100,
+            imageWidth: 1000,
             boundingBoxX1: 0,
-            boundingBoxX2: 10,
-            boundingBoxY1: 0,
-            boundingBoxY2: 10,
+            boundingBoxX2: 200,
+            boundingBoxY1: 20,
+            boundingBoxY2: 60,
             sourceType: SourceType.EXIF,
           },
         ],
@@ -1137,11 +1140,11 @@ describe(MetadataService.name, () => {
             assetId: assetStub.primaryImage.id,
             personId: personStub.withName.id,
             imageHeight: 100,
-            imageWidth: 100,
+            imageWidth: 1000,
             boundingBoxX1: 0,
-            boundingBoxX2: 10,
-            boundingBoxY1: 0,
-            boundingBoxY2: 10,
+            boundingBoxX2: 200,
+            boundingBoxY1: 20,
+            boundingBoxY2: 60,
             sourceType: SourceType.EXIF,
           },
         ],
@@ -1149,6 +1152,104 @@ describe(MetadataService.name, () => {
       );
       expect(mocks.person.updateAll).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalledWith();
+    });
+
+    describe('handleFaceTagOrientation', () => {
+      const orientationTests = [
+        {
+          description: 'undefined',
+          orientation: undefined,
+          expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 20, y2: 60 },
+        },
+        {
+          description: 'Horizontal = 1',
+          orientation: ExifOrientation.Horizontal,
+          expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 20, y2: 60 },
+        },
+        {
+          description: 'MirrorHorizontal = 2',
+          orientation: ExifOrientation.MirrorHorizontal,
+          expected: { imgW: 1000, imgH: 100, x1: 800, x2: 1000, y1: 20, y2: 60 },
+        },
+        {
+          description: 'Rotate180 = 3',
+          orientation: ExifOrientation.Rotate180,
+          expected: { imgW: 1000, imgH: 100, x1: 800, x2: 1000, y1: 40, y2: 80 },
+        },
+        {
+          description: 'MirrorVertical = 4',
+          orientation: ExifOrientation.MirrorVertical,
+          expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 40, y2: 80 },
+        },
+        {
+          description: 'MirrorHorizontalRotate270CW = 5',
+          orientation: ExifOrientation.MirrorHorizontalRotate270CW,
+          expected: { imgW: 100, imgH: 1000, x1: 20, x2: 60, y1: 0, y2: 200 },
+        },
+        {
+          description: 'Rotate90CW = 6',
+          orientation: ExifOrientation.Rotate90CW,
+          expected: { imgW: 100, imgH: 1000, x1: 40, x2: 80, y1: 0, y2: 200 },
+        },
+        {
+          description: 'MirrorHorizontalRotate90CW = 7',
+          orientation: ExifOrientation.MirrorHorizontalRotate90CW,
+          expected: { imgW: 100, imgH: 1000, x1: 40, x2: 80, y1: 800, y2: 1000 },
+        },
+        {
+          description: 'Rotate270CW = 8',
+          orientation: ExifOrientation.Rotate270CW,
+          expected: { imgW: 100, imgH: 1000, x1: 20, x2: 60, y1: 800, y2: 1000 },
+        },
+      ];
+
+      it.each(orientationTests)(
+        'should transform RegionInfo geometry according to exif orientation $description',
+        async ({ orientation, expected }) => {
+          const { imgW, imgH, x1, x2, y1, y2 } = expected;
+
+          mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.primaryImage);
+          mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+          mockReadTags(makeFaceTags({ Name: personStub.withName.name }, orientation));
+          mocks.person.getDistinctNames.mockResolvedValue([]);
+          mocks.person.createAll.mockResolvedValue([personStub.withName.id]);
+          mocks.person.update.mockResolvedValue(personStub.withName);
+          await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
+          expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.primaryImage.id);
+          expect(mocks.person.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, {
+            withHidden: true,
+          });
+          expect(mocks.person.createAll).toHaveBeenCalledWith([
+            expect.objectContaining({ name: personStub.withName.name }),
+          ]);
+          expect(mocks.person.refreshFaces).toHaveBeenCalledWith(
+            [
+              {
+                id: 'random-uuid',
+                assetId: assetStub.primaryImage.id,
+                personId: 'random-uuid',
+                imageWidth: imgW,
+                imageHeight: imgH,
+                boundingBoxX1: x1,
+                boundingBoxX2: x2,
+                boundingBoxY1: y1,
+                boundingBoxY2: y2,
+                sourceType: SourceType.EXIF,
+              },
+            ],
+            [],
+          );
+          expect(mocks.person.updateAll).toHaveBeenCalledWith([
+            { id: 'random-uuid', ownerId: 'admin-id', faceAssetId: 'random-uuid' },
+          ]);
+          expect(mocks.job.queueAll).toHaveBeenCalledWith([
+            {
+              name: JobName.GENERATE_PERSON_THUMBNAIL,
+              data: { id: personStub.withName.id },
+            },
+          ]);
+        },
+      );
     });
 
     it('should handle invalid modify date', async () => {
@@ -1206,7 +1307,9 @@ describe(MetadataService.name, () => {
 
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
       expect(mocks.asset.findLivePhotoMatch).not.toHaveBeenCalled();
-      expect(mocks.asset.update).not.toHaveBeenCalledWith(expect.objectContaining({ isVisible: false }));
+      expect(mocks.asset.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({ visibility: AssetVisibility.HIDDEN }),
+      );
       expect(mocks.album.removeAsset).not.toHaveBeenCalled();
     });
 
@@ -1225,7 +1328,9 @@ describe(MetadataService.name, () => {
         libraryId: null,
         type: AssetType.IMAGE,
       });
-      expect(mocks.asset.update).not.toHaveBeenCalledWith(expect.objectContaining({ isVisible: false }));
+      expect(mocks.asset.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({ visibility: AssetVisibility.HIDDEN }),
+      );
       expect(mocks.album.removeAsset).not.toHaveBeenCalled();
     });
 
@@ -1247,7 +1352,10 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: false });
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: assetStub.livePhotoMotionAsset.id,
+        visibility: AssetVisibility.HIDDEN,
+      });
       expect(mocks.album.removeAsset).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.id);
     });
 
