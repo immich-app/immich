@@ -70,8 +70,6 @@
   <ConfirmModal
     title={$t('editor_close_without_save_title')}
     prompt={$t('editor_close_without_save_prompt')}
-    cancelText={$t('no')}
-    cancelColor="secondary"
     confirmColor="danger"
     confirmText={$t('close')}
     onClose={(confirmed) => (confirmed ? onConfirm() : ($showCancelConfirmDialog = false))}

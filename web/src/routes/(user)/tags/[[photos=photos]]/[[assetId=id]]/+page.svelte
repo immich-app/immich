@@ -120,7 +120,6 @@
       title: $t('delete_tag'),
       prompt: $t('delete_tag_confirmation_prompt', { values: { tagName: tag.value } }),
       confirmText: $t('delete'),
-      cancelText: $t('cancel'),
     });
 
     if (!isConfirm) {
