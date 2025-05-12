@@ -5,8 +5,8 @@ import { randomUUID } from 'node:crypto';
 import { DB, Exif } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetStatus, AssetType, AssetVisibility, DatabaseExtension, VectorIndex } from 'src/enum';
-import { cachedVectorExtension, probes } from 'src/repositories/database.repository';
+import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
+import { probes } from 'src/repositories/database.repository';
 import { anyUuid, asUuid, searchAssetBuilder } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -239,9 +239,7 @@ export class SearchRepository {
     }
 
     return this.db.transaction().execute(async (trx) => {
-      if (cachedVectorExtension === DatabaseExtension.VECTORCHORD) {
-        await sql`set local vchord.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
-      }
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
       const items = await searchAssetBuilder(trx, options)
         .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
@@ -265,10 +263,7 @@ export class SearchRepository {
   })
   searchDuplicates({ assetId, embedding, maxDistance, type, userIds }: AssetDuplicateSearch) {
     return this.db.transaction().execute(async (trx) => {
-      if (cachedVectorExtension === DatabaseExtension.VECTORCHORD) {
-        await sql`set local vchord.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
-      }
-
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
       return await trx
         .with('cte', (qb) =>
           qb
@@ -311,10 +306,7 @@ export class SearchRepository {
     }
 
     return this.db.transaction().execute(async (trx) => {
-      if (cachedVectorExtension === DatabaseExtension.VECTORCHORD) {
-        await sql`set local vchord.probes = ${sql.lit(probes[VectorIndex.FACE])}`.execute(trx);
-      }
-
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.FACE])}`.execute(trx);
       return await trx
         .with('cte', (qb) =>
           qb
