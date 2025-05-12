@@ -2,10 +2,10 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
     AlbumUserRole,
@@ -191,7 +191,7 @@
 {/if}
 
 {#if selectedRemoveUser}
-  <ConfirmDialog
+  <ConfirmModal
     title={$t('album_remove_user')}
     prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
     confirmText={$t('remove_user')}

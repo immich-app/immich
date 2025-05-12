@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { copyToClipboard } from '$lib/utils';
   import { Code, IconButton, Text } from '@immich/ui';
   import { mdiContentCopy } from '@mdi/js';
@@ -13,7 +13,7 @@
   const { onClose, newPassword }: Props = $props();
 </script>
 
-<ConfirmDialog
+<ConfirmModal
   title={$t('password_reset_success')}
   confirmText={$t('done')}
   {onClose}
@@ -40,4 +40,4 @@
       <Text>{$t('admin.user_password_reset_description')}</Text>
     </div>
   {/snippet}
-</ConfirmDialog>
+</ConfirmModal>

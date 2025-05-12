@@ -1,4 +1,4 @@
-import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
 import { mount, unmount, type Component, type ComponentProps } from 'svelte';
 
 type OnCloseData<T> = T extends { onClose: (data?: infer R) => void } ? R : never;
@@ -34,8 +34,8 @@ class ModalManager {
     };
   }
 
-  showDialog(options: Omit<ComponentProps<typeof ConfirmDialog>, 'onClose'>) {
-    return this.show(ConfirmDialog, options);
+  showDialog(options: Omit<ComponentProps<typeof ConfirmModal>, 'onClose'>) {
+    return this.show(ConfirmModal, options);
   }
 }
 

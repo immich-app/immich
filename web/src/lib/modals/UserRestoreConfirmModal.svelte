@@ -1,6 +1,6 @@
 <script lang="ts">
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { restoreUserAdmin, type UserResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
@@ -22,7 +22,7 @@
   };
 </script>
 
-<ConfirmDialog
+<ConfirmModal
   title={$t('restore_user')}
   confirmText={$t('continue')}
   confirmColor="success"
@@ -37,4 +37,4 @@
       </FormatMessage>
     </p>
   {/snippet}
-</ConfirmDialog>
+</ConfirmModal>
