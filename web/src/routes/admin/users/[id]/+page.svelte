@@ -8,8 +8,8 @@
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
-  import PasswordResetSuccess from '$lib/forms/password-reset-success.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
   import UserEditModal from '$lib/modals/UserEditModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
@@ -116,7 +116,7 @@
         },
       });
 
-      await modalManager.show(PasswordResetSuccess, { newPassword });
+      await modalManager.show(PasswordResetSuccessModal, { newPassword });
     } catch (error) {
       handleError(error, $t('errors.unable_to_reset_password'));
     }

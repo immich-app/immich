@@ -10,7 +10,6 @@
     confirmColor?: Color;
     cancelText?: string;
     cancelColor?: Color;
-    hideCancelButton?: boolean;
     disabled?: boolean;
     size?: 'small' | 'medium';
     onClose: (confirmed: boolean) => void;
@@ -24,7 +23,6 @@
     confirmColor = 'danger',
     cancelText = $t('cancel'),
     cancelColor = 'secondary',
-    hideCancelButton = false,
     disabled = false,
     size = 'small',
     onClose,
@@ -45,11 +43,9 @@
 
   <ModalFooter>
     <div class="flex gap-3 w-full">
-      {#if !hideCancelButton}
-        <Button shape="round" color={cancelColor} fullWidth onclick={() => onClose(false)}>
-          {cancelText}
-        </Button>
-      {/if}
+      <Button shape="round" color={cancelColor} fullWidth onclick={() => onClose(false)}>
+        {cancelText}
+      </Button>
       <Button shape="round" color={confirmColor} fullWidth onclick={handleConfirm} {disabled}>
         {confirmText}
       </Button>
