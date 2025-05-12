@@ -222,6 +222,21 @@ where
   "person"."ownerId" = $3
   and "asset_faces"."deletedAt" is null
 
+-- PersonRepository.refreshFaces
+with
+  "added_embeddings" as (
+    insert into
+      "face_search" ("faceId", "embedding")
+    values
+      ($1, $2)
+  )
+select
+from
+  (
+    select
+      1
+  ) as "dummy"
+
 -- PersonRepository.getFacesByIds
 select
   "asset_faces".*,

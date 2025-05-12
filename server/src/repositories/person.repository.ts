@@ -400,6 +400,7 @@ export class PersonRepository {
     return results.map(({ id }) => id);
   }
 
+  @GenerateSql({ params: [[], [], [{ faceId: DummyValue.UUID, embedding: DummyValue.VECTOR }]] })
   async refreshFaces(
     facesToAdd: (Insertable<AssetFaces> & { assetId: string })[],
     faceIdsToRemove: string[],
