@@ -19,12 +19,13 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
-  import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
+  import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto, type TagUpdateDto } from '@immich/sdk';
   import { Button, HStack, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
+  import type { HttpError } from '@sveltejs/kit';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { onDestroy } from 'svelte';
 
   interface Props {
     data: PageData;
@@ -75,8 +76,10 @@
 
   let isEditOpen = $state(false);
   let newTagColor = $state('');
+  let newTagName = $state('');
   const handleEdit = () => {
     newTagColor = tag?.color ?? '';
+    newTagName = tag?.name ?? '';
     isEditOpen = true;
   };
 
@@ -86,15 +89,27 @@
   };
 
   const handleSubmit = async () => {
-    if (tag && isEditOpen && newTagColor) {
-      await updateTag({ id: tag.id, tagUpdateDto: { color: newTagColor } });
+    if (tag && isEditOpen && hasChange(tag)) {
+      const tagUpdateDto: TagUpdateDto = { color: newTagColor };
+      if (newTagName !== tag.name) {
+        tagUpdateDto.name = newTagName;
+      }
 
-      notificationController.show({
-        message: $t('tag_updated', { values: { tag: tag.value } }),
-        type: NotificationType.Info,
-      });
+      let response: TagResponseDto;
+      try {
+        response = await updateTag({ id: tag.id, tagUpdateDto });
+        notificationController.show({
+          message: $t('tag_updated', { values: { tag: response.value } }),
+          type: NotificationType.Info,
+        });
+      } catch (error) {
+        notificationController.show({
+          message: (error as HttpError)?.body?.message ?? $t('error'),
+          type: NotificationType.Error,
+        });
+      }
 
-      tags = await getAllTags();
+      await navigateToView(normalizeTreePath(response!.value));
       isEditOpen = false;
     }
 
@@ -138,6 +153,10 @@
   const onsubmit = async (event: Event) => {
     event.preventDefault();
     await handleSubmit();
+  };
+
+  const hasChange = (tag: TagResponseDto | null) => {
+    return newTagName !== tag?.name || newTagColor != (tag?.color || '');
   };
 </script>
 
@@ -224,6 +243,11 @@
     <form {onsubmit} autocomplete="off" id="edit-tag-form">
       <div class="my-4 flex flex-col gap-2">
         <SettingInputField
+          inputType={SettingInputFieldType.NAME}
+          label={$t('name').toUpperCase()}
+          bind:value={newTagName}
+        />
+        <SettingInputField
           inputType={SettingInputFieldType.COLOR}
           label={$t('color').toUpperCase()}
           bind:value={newTagColor}
@@ -233,7 +257,9 @@
 
     {#snippet stickyBottom()}
       <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
-      <Button type="submit" fullWidth shape="round" form="edit-tag-form">{$t('save')}</Button>
+      <Button type="submit" fullWidth shape="round" form="edit-tag-form" disabled={isEditOpen && !hasChange(tag)}
+        >{$t('save')}</Button
+      >
     {/snippet}
   </FullScreenModal>
 {/if}

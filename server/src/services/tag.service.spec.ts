@@ -31,13 +31,13 @@ describe(TagService.name, () => {
   describe('get', () => {
     it('should throw an error for an invalid id', async () => {
       await expect(sut.get(authStub.admin, 'tag-1')).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.tag.get).toHaveBeenCalledWith('tag-1');
+      expect(mocks.tag.getOne).toHaveBeenCalledWith('tag-1');
     });
 
     it('should return a tag for a user', async () => {
-      mocks.tag.get.mockResolvedValue(tagStub.tag);
+      mocks.tag.getOne.mockResolvedValue(tagStub.tag);
       await expect(sut.get(authStub.admin, 'tag-1')).resolves.toEqual(tagResponseStub.tag1);
-      expect(mocks.tag.get).toHaveBeenCalledWith('tag-1');
+      expect(mocks.tag.getOne).toHaveBeenCalledWith('tag-1');
     });
   });
 
@@ -53,8 +53,8 @@ describe(TagService.name, () => {
     it('should create a tag with a parent', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-parent']));
       mocks.tag.create.mockResolvedValue(tagStub.tagCreate);
-      mocks.tag.get.mockResolvedValueOnce(tagStub.parentUpsert);
-      mocks.tag.get.mockResolvedValueOnce(tagStub.childUpsert);
+      mocks.tag.getOne.mockResolvedValueOnce(tagStub.parentUpsert);
+      mocks.tag.getOne.mockResolvedValueOnce(tagStub.childUpsert);
       await expect(sut.create(authStub.admin, { name: 'tagA', parentId: 'tag-parent' })).resolves.toBeDefined();
       expect(mocks.tag.create).toHaveBeenCalledWith(expect.objectContaining({ value: 'Parent/tagA' }));
     });
@@ -113,6 +113,7 @@ describe(TagService.name, () => {
     it('should update a tag', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
       mocks.tag.update.mockResolvedValue(tagStub.colorCreate);
+      mocks.tag.getOne.mockResolvedValue(tagStub.tag);
       await expect(sut.update(authStub.admin, 'tag-1', { color: '#000000' })).resolves.toEqual(tagResponseStub.color1);
       expect(mocks.tag.update).toHaveBeenCalledWith('tag-1', { color: '#000000' });
     });
@@ -170,7 +171,7 @@ describe(TagService.name, () => {
     });
 
     it('should remove a tag', async () => {
-      mocks.tag.get.mockResolvedValue(tagStub.tag);
+      mocks.tag.getOne.mockResolvedValue(tagStub.tag);
       mocks.tag.delete.mockResolvedValue();
 
       await sut.remove(authStub.admin, 'tag-1');
@@ -226,7 +227,7 @@ describe(TagService.name, () => {
     });
 
     it('should accept accept ids that are new and reject the rest', async () => {
-      mocks.tag.get.mockResolvedValue(tagStub.tag);
+      mocks.tag.getOne.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
       mocks.tag.addAssetIds.mockResolvedValue();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-2']));
@@ -256,7 +257,7 @@ describe(TagService.name, () => {
     });
 
     it('should accept accept ids that are tagged and reject the rest', async () => {
-      mocks.tag.get.mockResolvedValue(tagStub.tag);
+      mocks.tag.getOne.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
       mocks.tag.removeAssetIds.mockResolvedValue();
 
