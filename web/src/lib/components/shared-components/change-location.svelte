@@ -115,7 +115,7 @@
 <ConfirmDialog
   confirmColor="primary"
   title={$t('change_location')}
-  width="wide"
+  size="medium"
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
 >
   {#snippet promptSnippet()}
@@ -190,6 +190,8 @@
             simplified={true}
             clickable={true}
             onClickPoint={(selected) => (point = selected)}
+            showSettings={false}
+            rounded
           />
         {/await}
       </div>

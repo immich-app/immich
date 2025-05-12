@@ -1,4 +1,4 @@
-import { AssetMediaResponseDto, LoginResponseDto, SharedLinkType, TimeBucketSize } from '@immich/sdk';
+import { AssetMediaResponseDto, AssetVisibility, LoginResponseDto, SharedLinkType, TimeBucketSize } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -104,7 +104,7 @@ describe('/timeline', () => {
       const req1 = await request(app)
         .get('/timeline/buckets')
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isArchived: true });
+        .query({ size: TimeBucketSize.Month, withPartners: true, visibility: AssetVisibility.Archive });
 
       expect(req1.status).toBe(400);
       expect(req1.body).toEqual(errorDto.badRequest());
@@ -112,7 +112,7 @@ describe('/timeline', () => {
       const req2 = await request(app)
         .get('/timeline/buckets')
         .set('Authorization', `Bearer ${user.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isArchived: undefined });
+        .query({ size: TimeBucketSize.Month, withPartners: true, visibility: undefined });
 
       expect(req2.status).toBe(400);
       expect(req2.body).toEqual(errorDto.badRequest());

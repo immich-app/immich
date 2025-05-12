@@ -109,8 +109,12 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | 
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
+*AuthenticationApi* | [**changePinCode**](doc//AuthenticationApi.md#changepincode) | **PUT** /auth/pin-code | 
+*AuthenticationApi* | [**getAuthStatus**](doc//AuthenticationApi.md#getauthstatus) | **GET** /auth/status | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
+*AuthenticationApi* | [**resetPinCode**](doc//AuthenticationApi.md#resetpincode) | **DELETE** /auth/pin-code | 
+*AuthenticationApi* | [**setupPinCode**](doc//AuthenticationApi.md#setuppincode) | **POST** /auth/pin-code | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeprecatedApi* | [**getRandom**](doc//DeprecatedApi.md#getrandom) | **GET** /assets/random | 
@@ -302,7 +306,9 @@ Class | Method | HTTP request | Description
  - [AssetStackResponseDto](doc//AssetStackResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
+ - [AssetVisibility](doc//AssetVisibility.md)
  - [AudioCodec](doc//AudioCodec.md)
+ - [AuthStatusResponseDto](doc//AuthStatusResponseDto.md)
  - [AvatarUpdate](doc//AvatarUpdate.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
@@ -382,6 +388,8 @@ Class | Method | HTTP request | Description
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [PersonWithFacesResponseDto](doc//PersonWithFacesResponseDto.md)
+ - [PinCodeChangeDto](doc//PinCodeChangeDto.md)
+ - [PinCodeSetupDto](doc//PinCodeSetupDto.md)
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)

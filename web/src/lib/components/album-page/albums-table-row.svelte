@@ -1,12 +1,12 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AppRoute, dateFormats } from '$lib/constants';
-  import type { AlbumResponseDto } from '@immich/sdk';
-  import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import { user } from '$lib/stores/user.store';
-  import { locale } from '$lib/stores/preferences.store';
-  import { mdiShareVariantOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { AppRoute, dateFormats } from '$lib/constants';
+  import { locale } from '$lib/stores/preferences.store';
+  import { user } from '$lib/stores/user.store';
+  import type { ContextMenuPosition } from '$lib/utils/context-menu';
+  import type { AlbumResponseDto } from '@immich/sdk';
+  import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -31,7 +31,7 @@
 </script>
 
 <tr
-  class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
+  class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-subtle even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
   onclick={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
   {oncontextmenu}
 >

@@ -3,12 +3,12 @@
 </script>
 
 <script lang="ts">
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
-  import SideBar from '../shared-components/side-bar/side-bar.svelte';
-  import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { Snippet } from 'svelte';
+  import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
+  import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
+  import SideBar from '../shared-components/side-bar/side-bar.svelte';
 
   interface Props {
     hideNavbar?: boolean;
@@ -51,7 +51,10 @@
 </header>
 <div
   tabindex="-1"
-  class="relative grid h-dvh grid-cols-[theme(spacing.0)_auto] overflow-hidden bg-immich-bg max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
+  class="relative grid grid-cols-[theme(spacing.0)_auto] overflow-hidden bg-immich-bg dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]
+    {hideNavbar ? 'h-dvh' : 'h-[calc(100dvh-var(--navbar-height))]'}
+    {hideNavbar ? 'pt-[var(--navbar-height)]' : ''}
+    {hideNavbar ? 'max-md:pt-[var(--navbar-height-md)]' : ''}"
 >
   {#if sidebar}{@render sidebar()}{:else if admin}
     <AdminSideBar />
