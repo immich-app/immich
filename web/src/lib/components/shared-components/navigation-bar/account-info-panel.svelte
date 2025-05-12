@@ -5,15 +5,13 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import { user } from '$lib/stores/user.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { deleteProfileImage, updateMyUser, type UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { NotificationType, notificationController } from '../notification/notification';
   import UserAvatar from '../user-avatar.svelte';
-  import AvatarSelector from './avatar-selector.svelte';
 
   interface Props {
     onLogout: () => void;
@@ -21,26 +19,6 @@
   }
 
   let { onLogout, onClose = () => {} }: Props = $props();
-
-  let isShowSelectAvatar = $state(false);
-
-  const handleSaveProfile = async (color: UserAvatarColor) => {
-    try {
-      if ($user.profileImagePath !== '') {
-        await deleteProfileImage();
-      }
-
-      $user = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
-      isShowSelectAvatar = false;
-
-      notificationController.show({
-        message: $t('saved_profile'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_profile'));
-    }
-  };
 </script>
 
 <div
@@ -63,7 +41,7 @@
           class="border"
           size="12"
           padding="2"
-          onclick={() => (isShowSelectAvatar = true)}
+          onclick={() => modalManager.show(AvatarEditModal, {})}
         />
       </div>
     </div>
@@ -111,7 +89,3 @@
     >
   </div>
 </div>
-
-{#if isShowSelectAvatar}
-  <AvatarSelector user={$user} onClose={() => (isShowSelectAvatar = false)} onChoose={handleSaveProfile} />
-{/if}
