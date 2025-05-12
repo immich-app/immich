@@ -6,7 +6,6 @@
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
-  import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -37,6 +36,7 @@
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
+  import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -723,7 +723,7 @@
 </div>
 
 {#if viewMode === AlbumPageViewMode.VIEW_USERS}
-  <ShareInfoModal
+  <AlbumUsersModal
     onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
     {album}
     onRemove={(userId) => handleRemoveUser(userId, AlbumPageViewMode.VIEW_USERS)}
