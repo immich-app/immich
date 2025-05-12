@@ -115,9 +115,10 @@ export class DatabaseRepository {
   async createExtension(extension: DatabaseExtension): Promise<void> {
     await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
     if (extension === DatabaseExtension.VECTORCHORD) {
-      await sql`ALTER DATABASE immich SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536'`.execute(this.db);
+      const db = await this.getDatabaseName();
+      await sql`ALTER DATABASE ${sql.table(db)} SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536'`.execute(this.db);
       await sql`SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536'`.execute(this.db);
-      await sql`ALTER DATABASE immich SET vchordrq.probes = 1`.execute(this.db);
+      await sql`ALTER DATABASE ${sql.table(db)} SET vchordrq.probes = 1`.execute(this.db);
       await sql`SET vchordrq.probes = 1`.execute(this.db);
     }
   }
@@ -268,6 +269,11 @@ export class DatabaseRepository {
 
   private async setSearchPath(tx: Transaction<DB>): Promise<void> {
     await sql`SET search_path TO "$user", public, vectors`.execute(tx);
+  }
+
+  private async getDatabaseName(): Promise<string> {
+    const { rows } = await sql<{ db: string }>`SELECT current_database() as db`.execute(this.db);
+    return rows[0].db;
   }
 
   async getDimensionSize(table: string, column = 'embedding'): Promise<number> {

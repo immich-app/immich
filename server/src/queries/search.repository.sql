@@ -84,7 +84,7 @@ limit
   $7
 offset
   $8
-commit
+rollback
 
 -- SearchRepository.searchDuplicates
 begin
@@ -115,7 +115,7 @@ from
   "cte"
 where
   "cte"."distance" <= $7
-commit
+rollback
 
 -- SearchRepository.searchFaces
 begin
@@ -144,7 +144,7 @@ from
   "cte"
 where
   "cte"."distance" <= $4
-commit
+rollback
 
 -- SearchRepository.searchPlaces
 select
