@@ -61,7 +61,7 @@
       </Button>
       {#if $user.isAdmin}
         <Button
-          href={AppRoute.ADMIN_USER_MANAGEMENT}
+          href={AppRoute.ADMIN_USERS}
           onclick={onClose}
           color="dark-gray"
           size="sm"
