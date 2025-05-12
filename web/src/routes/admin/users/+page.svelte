@@ -6,7 +6,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import PasswordResetSuccess from '$lib/forms/password-reset-success.svelte';
+  import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import UserCreateModal from '$lib/modals/UserCreateModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
@@ -18,7 +18,7 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, IconButton } from '@immich/ui';
+  import { Button, IconButton, Link } from '@immich/ui';
   import { mdiDeleteRestore, mdiInfinity, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
@@ -64,20 +64,9 @@
   };
 
   const handleEdit = async (dto: UserAdminResponseDto) => {
-    const result = await modalManager.show(UserEditModal, { user: dto, canResetPassword: dto.id !== $user.id });
-    switch (result?.action) {
-      case 'resetPassword': {
-        await modalManager.show(PasswordResetSuccess, { newPassword: result.data });
-        break;
-      }
-      case 'update': {
-        await refresh();
-        break;
-      }
-      case 'resetPinCode': {
-        notificationController.show({ type: NotificationType.Info, message: $t('pin_code_reset_successfully') });
-        break;
-      }
+    const result = await modalManager.show(UserEditModal, { user: dto });
+    if (result) {
+      await refresh();
     }
   };
 
@@ -123,7 +112,7 @@
                     : 'bg-immich-bg dark:bg-immich-dark-gray/50'}"
               >
                 <td class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-ellipsis break-all px-2 text-sm"
-                  >{immichUser.email}</td
+                  ><Link href="{AppRoute.ADMIN_USERS}/{immichUser.id}">{immichUser.email}</Link></td
                 >
                 <td class="hidden sm:block w-3/12 text-ellipsis break-all px-2 text-sm">{immichUser.name}</td>
                 <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">

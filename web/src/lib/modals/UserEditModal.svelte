@@ -1,40 +1,32 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
-  import { mdiAccountEditOutline, mdiLockSmart, mdiOnepassword } from '@mdi/js';
+  import { mdiAccountEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
     user: UserAdminResponseDto;
-    canResetPassword?: boolean;
-    onClose: (
-      data?:
-        | { action: 'update'; data: UserAdminResponseDto }
-        | { action: 'resetPassword'; data: string }
-        | { action: 'resetPinCode' },
-    ) => void;
+    onClose: (data?: UserAdminResponseDto) => void;
   }
 
-  let { user, canResetPassword = true, onClose }: Props = $props();
+  let { user, onClose }: Props = $props();
 
   let quotaSize = $state(user.quotaSizeInBytes === null ? null : convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB));
-  let newPassword = $state<string>('');
 
-  const previousQutoa = user.quotaSizeInBytes;
+  const previousQuota = user.quotaSizeInBytes;
 
   let quotaSizeWarning = $derived(
-    previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
+    previousQuota !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
       !!quotaSize &&
       userInteraction.serverInfo &&
       convertToBytes(Number(quotaSize), ByteUnit.GiB) > userInteraction.serverInfo.diskSizeRaw,
   );
 
-  const editUser = async () => {
+  const handleEditUser = async () => {
     try {
       const { id, email, name, storageLabel } = user;
       const newUser = await updateUserAdmin({
@@ -47,76 +39,15 @@
         },
       });
 
-      onClose({ action: 'update', data: newUser });
+      onClose(newUser);
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_user'));
     }
   };
 
-  const resetPassword = async () => {
-    const isConfirmed = await modalManager.openDialog({
-      prompt: $t('admin.confirm_user_password_reset', { values: { user: user.name } }),
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      newPassword = generatePassword();
-
-      await updateUserAdmin({
-        id: user.id,
-        userAdminUpdateDto: {
-          password: newPassword,
-          shouldChangePassword: true,
-        },
-      });
-
-      onClose({ action: 'resetPassword', data: newPassword });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_reset_password'));
-    }
-  };
-
-  const resetUserPincode = async () => {
-    const isConfirmed = await modalManager.openDialog({
-      prompt: $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } }),
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await updateUserAdmin({ id: user.id, userAdminUpdateDto: { pinCode: null } });
-
-      onClose({ action: 'resetPinCode' });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_reset_pin_code'));
-    }
-  };
-
-  // TODO move password reset server-side
-  function generatePassword(length: number = 16) {
-    let generatedPassword = '';
-
-    const characterSet = '0123456789' + 'abcdefghijklmnopqrstuvwxyz' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ',.-{}+!#$%/()=?';
-
-    for (let i = 0; i < length; i++) {
-      let randomNumber = crypto.getRandomValues(new Uint32Array(1))[0];
-      randomNumber = randomNumber / 2 ** 32;
-      randomNumber = Math.floor(randomNumber * characterSet.length);
-
-      generatedPassword += characterSet[randomNumber];
-    }
-
-    return generatedPassword;
-  }
-
   const onSubmit = async (event: Event) => {
     event.preventDefault();
-    await editUser();
+    await handleEditUser();
   };
 </script>
 
@@ -172,34 +103,11 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="w-full">
-      <div class="flex gap-3 w-full">
-        {#if canResetPassword}
-          <Button
-            shape="round"
-            color="warning"
-            variant="filled"
-            fullWidth
-            onclick={resetPassword}
-            leadingIcon={mdiOnepassword}
-          >
-            {$t('reset_password')}</Button
-          >
-        {/if}
-
-        <Button
-          shape="round"
-          color="warning"
-          variant="filled"
-          fullWidth
-          onclick={resetUserPincode}
-          leadingIcon={mdiLockSmart}>{$t('reset_pin_code')}</Button
-        >
-      </div>
-
-      <div class="w-full mt-4">
-        <Button type="submit" shape="round" fullWidth form="edit-user-form">{$t('confirm')}</Button>
-      </div>
+    <div class="flex gap-3 w-full">
+      <Button shape="round" color="secondary" fullWidth form="edit-user-form" onclick={() => onClose()}
+        >{$t('cancel')}</Button
+      >
+      <Button type="submit" shape="round" fullWidth form="edit-user-form">{$t('confirm')}</Button>
     </div>
   </ModalFooter>
 </Modal>
