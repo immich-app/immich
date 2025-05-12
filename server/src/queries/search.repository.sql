@@ -65,6 +65,8 @@ limit
 
 -- SearchRepository.searchSmart
 begin
+set
+  local vchordrq.probes = 1
 select
   "assets".*
 from
@@ -84,10 +86,12 @@ limit
   $7
 offset
   $8
-rollback
+commit
 
 -- SearchRepository.searchDuplicates
 begin
+set
+  local vchordrq.probes = 1
 with
   "cte" as (
     select
@@ -115,10 +119,12 @@ from
   "cte"
 where
   "cte"."distance" <= $7
-rollback
+commit
 
 -- SearchRepository.searchFaces
 begin
+set
+  local vchordrq.probes = 1
 with
   "cte" as (
     select
@@ -144,7 +150,7 @@ from
   "cte"
 where
   "cte"."distance" <= $4
-rollback
+commit
 
 -- SearchRepository.searchPlaces
 select
