@@ -103,9 +103,7 @@
         class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         {#each stats.usageByUser as user (user.userId)}
-          <tr
-            class="flex h-[50px] w-full place-items-center text-center odd:bg-subtle even:bg-immich-bg odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50"
-          >
+          <tr class="flex h-[50px] w-full place-items-center text-center even:bg-subtle/20 odd:bg-subtle/80">
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userName}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm"
               >{user.photos.toLocaleString($locale)} ({getByteUnitString(user.usagePhotos, $locale, 0)})</td

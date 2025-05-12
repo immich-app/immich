@@ -4,17 +4,17 @@
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
-  import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import PasswordField from '$lib/components/shared-components/password-field.svelte';
-  import { user } from '$lib/stores/user.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getMySharedLink, SharedLinkType } from '@immich/sdk';
-  import type { PageData } from './$types';
-  import { setSharedLink } from '$lib/utils';
-  import { t } from 'svelte-i18n';
-  import { navigate } from '$lib/utils/navigation';
+  import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { user } from '$lib/stores/user.store';
+  import { setSharedLink } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { navigate } from '$lib/utils/navigation';
+  import { getMySharedLink, SharedLinkType } from '@immich/sdk';
   import { tick } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -70,7 +70,7 @@
     </ControlAppBar>
   </header>
   <main
-    class="relative h-dvh overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+    class="relative h-dvh overflow-hidden px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] sm:px-12 md:px-24 lg:px-40"
   >
     <div class="flex flex-col items-center justify-center mt-20">
       <div class="text-2xl font-bold text-immich-primary dark:text-immich-dark-primary">{$t('password_required')}</div>

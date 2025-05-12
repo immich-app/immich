@@ -487,7 +487,7 @@
 </header>
 
 <main
-  class="relative h-dvh overflow-hidden bg-immich-bg tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  class="relative h-dvh overflow-hidden tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]"
   use:scrollMemoryClearer={{
     routeStartsWith: AppRoute.PEOPLE,
     beforeClear: () => {

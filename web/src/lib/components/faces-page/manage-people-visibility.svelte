@@ -8,6 +8,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { ToggleVisibility } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -15,7 +16,6 @@
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { ToggleVisibility } from '$lib/constants';
 
   interface Props {
     people: PersonResponseDto[];
@@ -134,7 +134,7 @@
   </div>
 </div>
 
-<div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
+<div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8 mt-16">
   <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
     {#snippet children({ person })}
       {@const hidden = personIsHidden[person.id]}

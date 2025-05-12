@@ -32,7 +32,7 @@
     trailing,
   }: Props = $props();
 
-  let appBarBorder = $state('bg-immich-bg border border-transparent');
+  let appBarBorder = $state('bg-light border border-transparent');
 
   const onScroll = () => {
     if (window.scrollY > 80) {
@@ -42,7 +42,7 @@
         appBarBorder = 'border border-gray-600';
       }
     } else {
-      appBarBorder = 'bg-immich-bg border border-transparent';
+      appBarBorder = 'bg-light border border-transparent';
     }
   };
 

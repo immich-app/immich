@@ -87,7 +87,7 @@
   };
 </script>
 
-<section class="bg-immich-bg dark:bg-immich-dark-bg">
+<section>
   {#if sharedLink?.allowUpload || assets.length > 1}
     {#if assetInteraction.selectionActive}
       <AssetSelectControlBar

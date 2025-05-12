@@ -103,13 +103,11 @@
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#if allUsers}
-            {#each allUsers as immichUser, index (immichUser.id)}
+            {#each allUsers as immichUser (immichUser.id)}
               <tr
                 class="flex h-[80px] overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {immichUser.deletedAt
                   ? 'bg-red-300 dark:bg-red-900'
-                  : index % 2 == 0
-                    ? 'bg-subtle'
-                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'}"
+                  : 'even:bg-subtle/20 odd:bg-subtle/80'}"
               >
                 <td class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-ellipsis break-all px-2 text-sm"
                   ><Link href="{AppRoute.ADMIN_USERS}/{immichUser.id}">{immichUser.email}</Link></td
