@@ -16,7 +16,7 @@ class DeviceSyncService {
   final ILocalAlbumRepository _localAlbumRepository;
   final Platform _platform;
   final platform.ImHostService _hostService;
-  final Logger _log = Logger("SyncService");
+  final Logger _log = Logger("DeviceSyncService");
 
   DeviceSyncService({
     required IAlbumMediaRepository albumMediaRepository,
@@ -29,6 +29,7 @@ class DeviceSyncService {
         _hostService = hostService;
 
   Future<void> sync() async {
+    final Stopwatch stopwatch = Stopwatch()..start();
     try {
       if (await _hostService.shouldFullSync()) {
         _log.fine("Cannot use partial sync. Performing full sync");
@@ -57,6 +58,8 @@ class DeviceSyncService {
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
     }
+    stopwatch.stop();
+    _log.info("Device sync took - ${stopwatch.elapsedMilliseconds}ms");
   }
 
   Future<void> fullSync() async {
@@ -91,7 +94,7 @@ class DeviceSyncService {
 
   Future<void> addAlbum(LocalAlbum newAlbum) async {
     try {
-      _log.info("Adding device album ${newAlbum.name}");
+      _log.fine("Adding device album ${newAlbum.name}");
       final album = await _albumMediaRepository.refresh(newAlbum.id);
 
       final assets = album.assetCount > 0
@@ -106,7 +109,7 @@ class DeviceSyncService {
   }
 
   Future<void> removeAlbum(LocalAlbum a) async {
-    _log.info("Removing device album ${a.name}");
+    _log.fine("Removing device album ${a.name}");
     try {
       // Asset deletion is handled in the repository
       await _localAlbumRepository.delete(a.id);
@@ -118,7 +121,7 @@ class DeviceSyncService {
   // The deviceAlbum is ignored since we are going to refresh it anyways
   FutureOr<bool> updateAlbum(LocalAlbum dbAlbum, LocalAlbum _) async {
     try {
-      _log.info("Syncing device album ${dbAlbum.name}");
+      _log.fine("Syncing device album ${dbAlbum.name}");
 
       final deviceAlbum = await _albumMediaRepository.refresh(dbAlbum.id);
 
@@ -131,7 +134,7 @@ class DeviceSyncService {
         return false;
       }
 
-      _log.info("Device album ${dbAlbum.name} has changed. Syncing...");
+      _log.fine("Device album ${dbAlbum.name} has changed. Syncing...");
 
       // Faster path - only new assets added
       if (await checkAddition(dbAlbum, deviceAlbum)) {
