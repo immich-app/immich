@@ -231,6 +231,7 @@ export class DatabaseRepository {
 
     if (promises.length > 0) {
       await Promise.all(promises);
+      this.logger.log('Vector reindexing complete');
     }
   }
 
