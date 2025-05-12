@@ -97,7 +97,7 @@
   };
 
   const handleResetPassword = async () => {
-    const isConfirmed = await modalManager.openDialog({
+    const isConfirmed = await modalManager.showDialog({
       prompt: $t('admin.confirm_user_password_reset', { values: { user: user.name } }),
     });
 
@@ -123,7 +123,7 @@
   };
 
   const handleResetUserPinCode = async () => {
-    const isConfirmed = await modalManager.openDialog({
+    const isConfirmed = await modalManager.showDialog({
       prompt: $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } }),
     });
 

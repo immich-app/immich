@@ -34,7 +34,7 @@ class ModalManager {
     };
   }
 
-  openDialog(options: Omit<ComponentProps<typeof ConfirmDialog>, 'onClose'>) {
+  showDialog(options: Omit<ComponentProps<typeof ConfirmDialog>, 'onClose'>) {
     return this.show(ConfirmDialog, options);
   }
 }

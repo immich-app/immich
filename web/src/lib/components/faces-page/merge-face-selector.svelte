@@ -2,8 +2,8 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
@@ -69,10 +69,7 @@
   };
 
   const handleMerge = async () => {
-    const isConfirm = await dialogController.show({
-      prompt: $t('merge_people_prompt'),
-    });
-
+    const isConfirm = await modalManager.showDialog({ prompt: $t('merge_people_prompt') });
     if (!isConfirm) {
       return;
     }

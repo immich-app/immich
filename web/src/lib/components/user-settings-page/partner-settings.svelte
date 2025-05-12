@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
@@ -81,7 +80,7 @@
   };
 
   const handleRemovePartner = async (partner: PartnerResponseDto) => {
-    const isConfirmed = await dialogController.show({
+    const isConfirmed = await modalManager.showDialog({
       title: $t('stop_photo_sharing'),
       prompt: $t('stop_photo_sharing_description', { values: { partner: partner.name } }),
     });
