@@ -66,7 +66,6 @@
         title: $t('purchase_remove_product_key'),
         prompt: $t('purchase_remove_product_key_prompt'),
         confirmText: $t('remove'),
-        cancelText: $t('cancel'),
       });
 
       if (!isConfirmed) {
@@ -86,7 +85,6 @@
         title: $t('purchase_remove_server_product_key'),
         prompt: $t('purchase_remove_server_product_key_prompt'),
         confirmText: $t('remove'),
-        cancelText: $t('cancel'),
       });
 
       if (!isConfirmed) {
