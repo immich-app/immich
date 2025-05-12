@@ -33,6 +33,8 @@ import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart' as pm;
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
+import 'package:image/image.dart' as img;
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit_flutter.dart';
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -324,6 +326,8 @@ class BackupService {
         }
 
         if (file != null) {
+          file = await _processWhatsAppMedia(file, asset.fileName, asset.fileCreatedAt, asset.local!);
+
           String? originalFileName =
               await _assetMediaRepository.getOriginalFilename(asset.localId!);
           originalFileName ??= asset.fileName;
@@ -525,6 +529,81 @@ class BackupService {
         AssetType.video => "VIDEO",
         AssetType.other => "OTHER",
       };
+
+  Future<File?> _processWhatsAppMedia(File file, String fileName, DateTime creationDate, AssetEntity asset) async {
+    // Heuristics to determine if the file is likely a WhatsApp file:
+    // - File name matches a UUID pattern.
+    // - File has no GPS location data.
+    // - File has no device information (e.g., no camera or device ID).
+    // - File is imported (not captured directly by the device's camera).
+    final isUuidName = _isUuidFileName(fileName);
+    final noLocation = (asset.latitude == 0.0 && asset.longitude == 0.0);
+    final noDeviceInfo = asset.deviceId == null || asset.deviceId!.isEmpty;
+    final isImported = asset.type != AssetType.image && asset.type != AssetType.video;
+
+    final isLikelyWhatsAppFile = isUuidName && noLocation && noDeviceInfo && isImported;
+
+    if (!isLikelyWhatsAppFile) {
+      debugPrint("File does not meet WhatsApp criteria: $fileName");
+      return file;
+    }
+
+    try {
+      final fileExtension = fileName.split('.').last.toLowerCase();
+
+      if (['jpg', 'jpeg', 'png'].contains(fileExtension)) {
+        final imageBytes = await file.readAsBytes();
+        final image = img.decodeImage(imageBytes);
+
+        if (image == null) {
+          return file;
+        }
+
+        final exifData = img.ExifData();
+        exifData.dateTimeOriginal = creationDate;
+
+        final updatedImageBytes = img.encodeJpg(image, exif: exifData);
+
+        // Overwrite the original file with the updated image
+        await file.writeAsBytes(updatedImageBytes);
+
+        return file;
+      } else if (['mp4', 'mov', 'avi'].contains(fileExtension)) {
+        // Use FFmpeg to add the creation date to the video metadata
+        final creationDateString = creationDate.toUtc().toIso8601String();
+        final ffmpegCommand = [
+          '-i',
+          file.path,
+          '-metadata',
+          'creation_time=$creationDateString',
+          '-codec',
+          'copy',
+          file.path,
+        ];
+
+        final result = await FFmpegKit.execute(ffmpegCommand.join(' '));
+        if (await result.getReturnCode() == 0) {
+          return file;
+        } else {
+          debugPrint("Error processing WhatsApp video: ${await result.getOutput()}");
+          return file; 
+        }
+      } else {
+        return file;
+      }
+    } catch (e) {
+      debugPrint("Error processing WhatsApp file: $e");
+      return file;
+    }
+  }
+
+  bool _isUuidFileName(String fileName) {
+    final uuidRegex = RegExp(
+      r'^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|jpeg|png|mp4|mov|avi)$',
+      caseSensitive: false,
+    );
+    return uuidRegex.hasMatch(fileName);
+  }
 }
 
 class MultipartRequest extends http.MultipartRequest {
