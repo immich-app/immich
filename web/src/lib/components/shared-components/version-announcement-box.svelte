@@ -1,10 +1,10 @@
 <script lang="ts">
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { websocketStore } from '$lib/stores/websocket';
   import type { ServerVersionResponseDto } from '@immich/sdk';
-  import Button from '../elements/buttons/button.svelte';
-  import FullScreenModal from './full-screen-modal.svelte';
+  import { Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import Button from '../elements/buttons/button.svelte';
 
   let showModal = $state(false);
 
@@ -39,33 +39,39 @@
 </script>
 
 {#if showModal}
-  <FullScreenModal title="🎉 {$t('new_version_available')}" onClose={() => (showModal = false)}>
-    <div>
-      <FormatMessage key="version_announcement_message">
-        {#snippet children({ tag, message })}
-          {#if tag === 'link'}
-            <span class="font-medium underline">
-              <a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer">
-                {message}
-              </a>
-            </span>
-          {:else if tag === 'code'}
-            <code>{message}</code>
-          {/if}
-        {/snippet}
-      </FormatMessage>
-    </div>
+  <Modal title="🎉 {$t('new_version_available')}" onClose={() => (showModal = false)}>
+    <ModalBody>
+      <div>
+        <FormatMessage key="version_announcement_message">
+          {#snippet children({ tag, message })}
+            {#if tag === 'link'}
+              <span class="font-medium underline">
+                <a
+                  href="https://github.com/immich-app/immich/releases/latest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {message}
+                </a>
+              </span>
+            {:else if tag === 'code'}
+              <code>{message}</code>
+            {/if}
+          {/snippet}
+        </FormatMessage>
+      </div>
 
-    <div class="mt-4 font-medium">{$t('version_announcement_closing')}</div>
+      <div class="mt-4 font-medium">{$t('version_announcement_closing')}</div>
 
-    <div class="font-sm mt-8">
-      <code>{$t('server_version')}: {serverVersion}</code>
-      <br />
-      <code>{$t('latest_version')}: {releaseVersion}</code>
-    </div>
+      <div class="font-sm mt-8">
+        <code>{$t('server_version')}: {serverVersion}</code>
+        <br />
+        <code>{$t('latest_version')}: {releaseVersion}</code>
+      </div>
+    </ModalBody>
 
-    {#snippet stickyBottom()}
+    <ModalFooter>
       <Button fullwidth onclick={onAcknowledge}>{$t('acknowledge')}</Button>
-    {/snippet}
-  </FullScreenModal>
+    </ModalFooter>
+  </Modal>
 {/if}

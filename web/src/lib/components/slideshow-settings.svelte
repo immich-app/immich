@@ -1,7 +1,8 @@
 <script lang="ts">
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
+  import { Modal, ModalBody, ModalFooter } from '@immich/ui';
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
@@ -10,12 +11,11 @@
     mdiPanorama,
     mdiShuffle,
   } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
   import Button from './elements/buttons/button.svelte';
   import type { RenderedOption } from './elements/dropdown.svelte';
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
-  import { t } from 'svelte-i18n';
-  import { SettingInputFieldType } from '$lib/constants';
 
   const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook, slideshowTransition } = slideshowStore;
 
@@ -49,36 +49,38 @@
   };
 </script>
 
-<FullScreenModal title={$t('slideshow_settings')} onClose={() => onClose()}>
-  <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
-    <SettingDropdown
-      title={$t('direction')}
-      options={Object.values(navigationOptions)}
-      selectedOption={navigationOptions[$slideshowNavigation]}
-      onToggle={(option) => {
-        $slideshowNavigation = handleToggle(option, navigationOptions) || $slideshowNavigation;
-      }}
-    />
-    <SettingDropdown
-      title={$t('look')}
-      options={Object.values(lookOptions)}
-      selectedOption={lookOptions[$slideshowLook]}
-      onToggle={(option) => {
-        $slideshowLook = handleToggle(option, lookOptions) || $slideshowLook;
-      }}
-    />
-    <SettingSwitch title={$t('show_progress_bar')} bind:checked={$showProgressBar} />
-    <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={$slideshowTransition} />
-    <SettingInputField
-      inputType={SettingInputFieldType.NUMBER}
-      label={$t('duration')}
-      description={$t('admin.slideshow_duration_description')}
-      min={1}
-      bind:value={$slideshowDelay}
-    />
-  </div>
+<Modal title={$t('slideshow_settings')} onClose={() => onClose()}>
+  <ModalBody>
+    <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
+      <SettingDropdown
+        title={$t('direction')}
+        options={Object.values(navigationOptions)}
+        selectedOption={navigationOptions[$slideshowNavigation]}
+        onToggle={(option) => {
+          $slideshowNavigation = handleToggle(option, navigationOptions) || $slideshowNavigation;
+        }}
+      />
+      <SettingDropdown
+        title={$t('look')}
+        options={Object.values(lookOptions)}
+        selectedOption={lookOptions[$slideshowLook]}
+        onToggle={(option) => {
+          $slideshowLook = handleToggle(option, lookOptions) || $slideshowLook;
+        }}
+      />
+      <SettingSwitch title={$t('show_progress_bar')} bind:checked={$showProgressBar} />
+      <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={$slideshowTransition} />
+      <SettingInputField
+        inputType={SettingInputFieldType.NUMBER}
+        label={$t('duration')}
+        description={$t('admin.slideshow_duration_description')}
+        min={1}
+        bind:value={$slideshowDelay}
+      />
+    </div>
+  </ModalBody>
 
-  {#snippet stickyBottom()}
+  <ModalFooter>
     <Button fullwidth color="primary" onclick={(_) => onClose()}>{$t('done')}</Button>
-  {/snippet}
-</FullScreenModal>
+  </ModalFooter>
+</Modal>

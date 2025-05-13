@@ -4,7 +4,6 @@
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     notificationController,
     NotificationType,
@@ -20,7 +19,7 @@
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
-  import { Button, HStack, Text } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -192,47 +191,51 @@
 </UserPageLayout>
 
 {#if isNewOpen}
-  <FullScreenModal title={$t('create_tag')} icon={mdiTag} onClose={handleCancel}>
-    <div class="text-immich-primary dark:text-immich-dark-primary">
-      <p class="text-sm dark:text-immich-dark-fg">
-        {$t('create_tag_description')}
-      </p>
-    </div>
-
-    <form {onsubmit} autocomplete="off" id="create-tag-form">
-      <div class="my-4 flex flex-col gap-2">
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          label={$t('tag').toUpperCase()}
-          bind:value={newTagValue}
-          required={true}
-          autofocus={true}
-        />
+  <Modal title={$t('create_tag')} icon={mdiTag} onClose={handleCancel}>
+    <ModalBody>
+      <div class="text-immich-primary dark:text-immich-dark-primary">
+        <p class="text-sm dark:text-immich-dark-fg">
+          {$t('create_tag_description')}
+        </p>
       </div>
-    </form>
 
-    {#snippet stickyBottom()}
+      <form {onsubmit} autocomplete="off" id="create-tag-form">
+        <div class="my-4 flex flex-col gap-2">
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('tag').toUpperCase()}
+            bind:value={newTagValue}
+            required={true}
+            autofocus={true}
+          />
+        </div>
+      </form>
+    </ModalBody>
+
+    <ModalFooter>
       <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
       <Button type="submit" fullWidth shape="round" form="create-tag-form">{$t('create')}</Button>
-    {/snippet}
-  </FullScreenModal>
+    </ModalFooter>
+  </Modal>
 {/if}
 
 {#if isEditOpen}
-  <FullScreenModal title={$t('edit_tag')} icon={mdiTag} onClose={handleCancel}>
-    <form {onsubmit} autocomplete="off" id="edit-tag-form">
-      <div class="my-4 flex flex-col gap-2">
-        <SettingInputField
-          inputType={SettingInputFieldType.COLOR}
-          label={$t('color').toUpperCase()}
-          bind:value={newTagColor}
-        />
-      </div>
-    </form>
+  <Modal title={$t('edit_tag')} icon={mdiTag} onClose={handleCancel}>
+    <ModalBody>
+      <form {onsubmit} autocomplete="off" id="edit-tag-form">
+        <div class="my-4 flex flex-col gap-2">
+          <SettingInputField
+            inputType={SettingInputFieldType.COLOR}
+            label={$t('color').toUpperCase()}
+            bind:value={newTagColor}
+          />
+        </div>
+      </form>
+    </ModalBody>
 
-    {#snippet stickyBottom()}
+    <ModalFooter>
       <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
       <Button type="submit" fullWidth shape="round" form="edit-tag-form">{$t('save')}</Button>
-    {/snippet}
-  </FullScreenModal>
+    </ModalFooter>
+  </Modal>
 {/if}

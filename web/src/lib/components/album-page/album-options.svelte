@@ -2,7 +2,6 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
@@ -16,6 +15,7 @@
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
+  import { Modal, ModalBody } from '@immich/ui';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { findKey } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -115,79 +115,81 @@
 </script>
 
 {#if !selectedRemoveUser}
-  <FullScreenModal title={$t('options')} {onClose}>
-    <div class="items-center justify-center">
-      <div class="py-2">
-        <h2 class="text-gray text-sm mb-2">{$t('settings').toUpperCase()}</h2>
-        <div class="grid p-2 gap-y-2">
-          {#if order}
-            <SettingDropdown
-              title={$t('display_order')}
-              options={Object.values(options)}
-              selectedOption={options[order]}
-              onToggle={handleToggle}
+  <Modal title={$t('options')} size="medium" {onClose}>
+    <ModalBody>
+      <div class="items-center justify-center">
+        <div class="py-2">
+          <h2 class="text-gray text-sm mb-2">{$t('settings').toUpperCase()}</h2>
+          <div class="grid p-2 gap-y-2">
+            {#if order}
+              <SettingDropdown
+                title={$t('display_order')}
+                options={Object.values(options)}
+                selectedOption={options[order]}
+                onToggle={handleToggle}
+              />
+            {/if}
+            <SettingSwitch
+              title={$t('comments_and_likes')}
+              subtitle={$t('let_others_respond')}
+              checked={album.isActivityEnabled}
+              onToggle={onToggleEnabledActivity}
             />
-          {/if}
-          <SettingSwitch
-            title={$t('comments_and_likes')}
-            subtitle={$t('let_others_respond')}
-            checked={album.isActivityEnabled}
-            onToggle={onToggleEnabledActivity}
-          />
-        </div>
-      </div>
-      <div class="py-2">
-        <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
-        <div class="p-2">
-          <button type="button" class="flex items-center gap-2" onclick={onShowSelectSharedUser}>
-            <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
-              <div><Icon path={mdiPlus} size="25" /></div>
-            </div>
-            <div>{$t('invite_people')}</div>
-          </button>
-
-          <div class="flex items-center gap-2 py-2 mt-2">
-            <div>
-              <UserAvatar {user} size="md" />
-            </div>
-            <div class="w-full">{user.name}</div>
-            <div>{$t('owner')}</div>
           </div>
+        </div>
+        <div class="py-2">
+          <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
+          <div class="p-2">
+            <button type="button" class="flex items-center gap-2" onclick={onShowSelectSharedUser}>
+              <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
+                <div><Icon path={mdiPlus} size="25" /></div>
+              </div>
+              <div>{$t('invite_people')}</div>
+            </button>
 
-          {#each album.albumUsers as { user, role } (user.id)}
-            <div class="flex items-center gap-2 py-2">
+            <div class="flex items-center gap-2 py-2 mt-2">
               <div>
                 <UserAvatar {user} size="md" />
               </div>
               <div class="w-full">{user.name}</div>
-              {#if role === AlbumUserRole.Viewer}
-                {$t('role_viewer')}
-              {:else}
-                {$t('role_editor')}
-              {/if}
-              {#if user.id !== album.ownerId}
-                <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
-                  {#if role === AlbumUserRole.Viewer}
-                    <MenuOption
-                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Editor)}
-                      text={$t('allow_edits')}
-                    />
-                  {:else}
-                    <MenuOption
-                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Viewer)}
-                      text={$t('disallow_edits')}
-                    />
-                  {/if}
-                  <!-- Allow deletion for non-owners -->
-                  <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
-                </ButtonContextMenu>
-              {/if}
+              <div>{$t('owner')}</div>
             </div>
-          {/each}
+
+            {#each album.albumUsers as { user, role } (user.id)}
+              <div class="flex items-center gap-2 py-2">
+                <div>
+                  <UserAvatar {user} size="md" />
+                </div>
+                <div class="w-full">{user.name}</div>
+                {#if role === AlbumUserRole.Viewer}
+                  {$t('role_viewer')}
+                {:else}
+                  {$t('role_editor')}
+                {/if}
+                {#if user.id !== album.ownerId}
+                  <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
+                    {#if role === AlbumUserRole.Viewer}
+                      <MenuOption
+                        onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Editor)}
+                        text={$t('allow_edits')}
+                      />
+                    {:else}
+                      <MenuOption
+                        onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Viewer)}
+                        text={$t('disallow_edits')}
+                      />
+                    {/if}
+                    <!-- Allow deletion for non-owners -->
+                    <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
+                  </ButtonContextMenu>
+                {/if}
+              </div>
+            {/each}
+          </div>
         </div>
       </div>
-    </div>
-  </FullScreenModal>
+    </ModalBody>
+  </Modal>
 {/if}
 
 {#if selectedRemoveUser}

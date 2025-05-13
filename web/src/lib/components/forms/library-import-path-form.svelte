@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Button } from '@immich/ui';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -46,23 +45,25 @@
   };
 </script>
 
-<FullScreenModal {title} icon={mdiFolderSync} onClose={onCancel}>
-  <form {onsubmit} autocomplete="off" id="library-import-path-form">
-    <p class="py-5 text-sm">{$t('admin.library_import_path_description')}</p>
+<Modal {title} icon={mdiFolderSync} onClose={onCancel}>
+  <ModalBody>
+    <form {onsubmit} autocomplete="off" id="library-import-path-form">
+      <p class="py-5 text-sm">{$t('admin.library_import_path_description')}</p>
 
-    <div class="my-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="path">{$t('path')}</label>
-      <input class="immich-form-input" id="path" name="path" type="text" bind:value={importPath} />
-    </div>
+      <div class="my-4 flex flex-col gap-2">
+        <label class="immich-form-label" for="path">{$t('path')}</label>
+        <input class="immich-form-input" id="path" name="path" type="text" bind:value={importPath} />
+      </div>
 
-    <div class="mt-8 flex w-full gap-4">
-      {#if isDuplicate}
-        <p class="text-red-500 text-sm">{$t('errors.import_path_already_exists')}</p>
-      {/if}
-    </div>
-  </form>
+      <div class="mt-8 flex w-full gap-4">
+        {#if isDuplicate}
+          <p class="text-red-500 text-sm">{$t('errors.import_path_already_exists')}</p>
+        {/if}
+      </div>
+    </form>
+  </ModalBody>
 
-  {#snippet stickyBottom()}
+  <ModalFooter>
     <Button shape="round" color="secondary" fullWidth onclick={onCancel}>{cancelText}</Button>
     {#if isEditing}
       <Button shape="round" color="danger" fullWidth onclick={onDelete}>{$t('delete')}</Button>
@@ -70,5 +71,5 @@
     <Button shape="round" type="submit" disabled={!canSubmit} fullWidth form="library-import-path-form"
       >{submitText}</Button
     >
-  {/snippet}
-</FullScreenModal>
+  </ModalFooter>
+</Modal>

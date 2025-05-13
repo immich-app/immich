@@ -1,13 +1,12 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, Modal, ModalBody } from '@immich/ui';
   import { mdiEyeOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -112,15 +111,17 @@
       </div>
 
       {#if htmlPreview}
-        <FullScreenModal title={$t('admin.template_email_preview')} onClose={closePreviewModal} width="wide">
-          <div style="position:relative; width:100%; height:90vh; overflow: hidden">
-            <iframe
-              title={$t('admin.template_email_preview')}
-              srcdoc={htmlPreview}
-              style="width: 100%; height: 100%; border: none; overflow:hidden; position: absolute; top: 0; left: 0;"
-            ></iframe>
-          </div>
-        </FullScreenModal>
+        <Modal title={$t('admin.template_email_preview')} onClose={closePreviewModal} size="large">
+          <ModalBody>
+            <div style="position:relative; width:100%; height:90vh; overflow: hidden">
+              <iframe
+                title={$t('admin.template_email_preview')}
+                srcdoc={htmlPreview}
+                style="width: 100%; height: 100%; border: none; overflow:hidden; position: absolute; top: 0; left: 0;"
+              ></iframe>
+            </div>
+          </ModalBody>
+        </Modal>
       {/if}
     </form>
   </div>

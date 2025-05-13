@@ -1,7 +1,6 @@
 <script lang="ts">
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import type { LibraryResponseDto } from '@immich/sdk';
-  import { Button, Field, Input } from '@immich/ui';
+  import { Button, Field, Input, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -21,15 +20,17 @@
   };
 </script>
 
-<form {onsubmit} autocomplete="off">
-  <FullScreenModal icon={mdiRenameOutline} title={$t('rename')} onClose={onCancel}>
-    <Field label={$t('name')}>
-      <Input bind:value={newName} />
-    </Field>
+<Modal icon={mdiRenameOutline} title={$t('rename')} onClose={onCancel}>
+  <ModalBody>
+    <form {onsubmit} autocomplete="off" id="library-rename-form">
+      <Field label={$t('name')}>
+        <Input bind:value={newName} />
+      </Field>
+    </form>
+  </ModalBody>
 
-    {#snippet stickyBottom()}
-      <Button shape="round" fullWidth color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
-      <Button shape="round" fullWidth type="submit">{$t('save')}</Button>
-    {/snippet}
-  </FullScreenModal>
-</form>
+  <ModalFooter>
+    <Button shape="round" fullWidth color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
+    <Button shape="round" fullWidth type="submit" form="library-rename-form">{$t('save')}</Button>
+  </ModalFooter>
+</Modal>
