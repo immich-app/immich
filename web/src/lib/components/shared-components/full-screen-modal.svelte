@@ -1,10 +1,10 @@
 <script lang="ts">
   import { clickOutside } from '$lib/actions/click-outside';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import { fade } from 'svelte/transition';
   import ModalHeader from '$lib/components/shared-components/modal-header.svelte';
   import { generateId } from '$lib/utils/generate-id';
   import type { Snippet } from 'svelte';
+  import { fade } from 'svelte/transition';
 
   interface Props {
     onClose: () => void;
@@ -77,14 +77,14 @@
   role="presentation"
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
-  class="fixed start-0 top-0 z-[9999] flex h-dvh w-dvw place-content-center place-items-center bg-black/40"
+  class="fixed start-0 top-0 flex h-dvh w-dvw place-content-center place-items-center bg-black/40"
   onkeydown={(event) => {
     event.stopPropagation();
   }}
   use:focusTrap
 >
   <div
-    class="flex flex-col max-h-[min(95dvh,60rem)] z-[9999] max-w-[95vw] {modalWidth} overflow-hidden rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg pt-3 pb-4"
+    class="flex flex-col max-h-[min(95dvh,60rem)] max-w-[95vw] {modalWidth} overflow-hidden rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg pt-3 pb-4"
     use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}
     tabindex="-1"
     aria-modal="true"

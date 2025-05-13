@@ -80,6 +80,24 @@
   });
 </script>
 
+<UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
+  <AssetGrid
+    enableRouting={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.ARCHIVE}
+    onEscape={handleEscape}
+    withStacked
+  >
+    {#if $preferences.memories.enabled}
+      <MemoryLane />
+    {/if}
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} />
+    {/snippet}
+  </AssetGrid>
+</UserPageLayout>
+
 {#if assetInteraction.selectionActive}
   <AssetSelectControlBar
     ownerId={$user.id}
@@ -129,21 +147,3 @@
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
-
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
-  <AssetGrid
-    enableRouting={true}
-    {assetStore}
-    {assetInteraction}
-    removeAction={AssetAction.ARCHIVE}
-    onEscape={handleEscape}
-    withStacked
-  >
-    {#if $preferences.memories.enabled}
-      <MemoryLane />
-    {/if}
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} />
-    {/snippet}
-  </AssetGrid>
-</UserPageLayout>

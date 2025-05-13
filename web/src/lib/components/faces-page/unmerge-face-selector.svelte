@@ -120,7 +120,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute start-0 top-0 z-[9999] h-full w-full bg-light"
+  class="absolute start-0 top-0 h-full w-full bg-light"
 >
   <ControlAppBar {onClose}>
     {#snippet leading()}

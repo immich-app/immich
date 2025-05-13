@@ -58,17 +58,6 @@
   <meta name="description" content={description} />
 </svelte:head>
 {#if passwordRequired}
-  <header>
-    <ControlAppBar showBackButton={false}>
-      {#snippet leading()}
-        <ImmichLogoSmallLink />
-      {/snippet}
-
-      {#snippet trailing()}
-        <ThemeButton />
-      {/snippet}
-    </ControlAppBar>
-  </header>
   <main
     class="relative h-dvh overflow-hidden px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] sm:px-12 md:px-24 lg:px-40"
   >
@@ -85,6 +74,17 @@
       </div>
     </div>
   </main>
+  <header>
+    <ControlAppBar showBackButton={false}>
+      {#snippet leading()}
+        <ImmichLogoSmallLink />
+      {/snippet}
+
+      {#snippet trailing()}
+        <ThemeButton />
+      {/snippet}
+    </ControlAppBar>
+  </header>
 {/if}
 
 {#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}

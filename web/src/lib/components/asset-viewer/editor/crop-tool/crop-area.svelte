@@ -1,15 +1,10 @@
 <script lang="ts">
-  import { onMount, onDestroy, tick } from 'svelte';
-  import { t } from 'svelte-i18n';
   import { getAssetOriginalUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { onDestroy, onMount, tick } from 'svelte';
+  import { t } from 'svelte-i18n';
 
-  import { imgElement, cropAreaEl, resetCropStore, overlayEl, isResizingOrDragging, cropFrame } from './crop-store';
-  import { draw } from './drawing';
-  import { onImageLoad, resizeCanvas } from './image-loading';
-  import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
-  import { recalculateCrop, animateCropChange } from './crop-settings';
   import {
     changedOriention,
     cropAspectRatio,
@@ -18,6 +13,11 @@
     rotateDegrees,
   } from '$lib/stores/asset-editor.store';
   import type { AssetResponseDto } from '@immich/sdk';
+  import { animateCropChange, recalculateCrop } from './crop-settings';
+  import { cropAreaEl, cropFrame, imgElement, isResizingOrDragging, overlayEl, resetCropStore } from './crop-store';
+  import { draw } from './drawing';
+  import { onImageLoad, resizeCanvas } from './image-loading';
+  import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
 
   interface Props {
     asset: AssetResponseDto;
@@ -169,7 +169,6 @@
     border: 2px solid white;
     box-sizing: border-box;
     pointer-events: none;
-    z-index: 1;
   }
 
   .corner {

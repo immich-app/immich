@@ -74,7 +74,7 @@
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 z-[2001] h-full w-[360px] overflow-x-hidden p-2 dark:text-immich-dark-fg"
+  class="absolute top-0 h-full w-[360px] overflow-x-hidden p-2 dark:text-immich-dark-fg"
 >
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}
