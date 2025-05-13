@@ -33,10 +33,7 @@ const messages = {
     In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${extension} CASCADE' manually as a superuser.
     See https://immich.app/docs/guides/database-queries for how to query the database.
 
-    Alternatively, if your Postgres instance has any of ${otherExtensions.join(', ')}, you may use one of them instead by setting the environment variable 'DB_VECTOR_EXTENSION=<extension name>'.
-    Note that switching between the two extensions after a successful startup is not supported.
-    The exception is if your version of Immich prior to upgrading was 1.90.2 or earlier.
-    In this case, you may set either extension now, but you will not be able to switch to the other extension following a successful startup.`,
+    Alternatively, if your Postgres instance has any of ${otherExtensions.join(', ')}, you may use one of them instead by setting the environment variable 'DB_VECTOR_EXTENSION=<extension name>'.`,
   updateFailed: ({ name, extension, availableVersion }: UpdateFailedArgs) =>
     `The ${name} extension can be updated to ${availableVersion}.
     Immich attempted to update the extension, but failed to do so.
