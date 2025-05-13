@@ -8,6 +8,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { ToggleVisibility } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -15,7 +16,6 @@
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { ToggleVisibility } from '$lib/constants';
 
   interface Props {
     people: PersonResponseDto[];
@@ -112,7 +112,7 @@
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
 <div
-  class="fixed top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
+  class="fixed top-0 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
 >
   <div class="flex items-center">
     <CircleIconButton title={$t('close')} icon={mdiClose} onclick={onClose} />
@@ -134,7 +134,7 @@
   </div>
 </div>
 
-<div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
+<div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8 mt-16">
   <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
     {#snippet children({ person })}
       {@const hidden = personIsHidden[person.id]}

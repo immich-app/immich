@@ -1,12 +1,12 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AssetAction } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { keepThisDeleteOthers } from '$lib/utils/asset-utils';
   import type { AssetResponseDto, StackResponseDto } from '@immich/sdk';
   import { mdiPinOutline } from '@mdi/js';
-  import type { OnAction } from './action';
   import { t } from 'svelte-i18n';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import type { OnAction } from './action';
 
   interface Props {
     stack: StackResponseDto;
@@ -17,7 +17,7 @@
   let { stack, asset, onAction }: Props = $props();
 
   const handleKeepThisDeleteOthers = async () => {
-    const isConfirmed = await dialogController.show({
+    const isConfirmed = await modalManager.showDialog({
       title: $t('keep_this_delete_others'),
       prompt: $t('confirm_keep_this_delete_others'),
       confirmText: $t('delete_others'),

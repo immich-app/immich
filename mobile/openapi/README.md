@@ -254,6 +254,7 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**deleteUserAdmin**](doc//UsersAdminApi.md#deleteuseradmin) | **DELETE** /admin/users/{id} | 
 *UsersAdminApi* | [**getUserAdmin**](doc//UsersAdminApi.md#getuseradmin) | **GET** /admin/users/{id} | 
 *UsersAdminApi* | [**getUserPreferencesAdmin**](doc//UsersAdminApi.md#getuserpreferencesadmin) | **GET** /admin/users/{id}/preferences | 
+*UsersAdminApi* | [**getUserStatisticsAdmin**](doc//UsersAdminApi.md#getuserstatisticsadmin) | **GET** /admin/users/{id}/statistics | 
 *UsersAdminApi* | [**restoreUserAdmin**](doc//UsersAdminApi.md#restoreuseradmin) | **POST** /admin/users/{id}/restore | 
 *UsersAdminApi* | [**searchUsersAdmin**](doc//UsersAdminApi.md#searchusersadmin) | **GET** /admin/users | 
 *UsersAdminApi* | [**updateUserAdmin**](doc//UsersAdminApi.md#updateuseradmin) | **PUT** /admin/users/{id} | 

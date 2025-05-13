@@ -401,6 +401,132 @@
   <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
 {/if}
 
+<main
+  class="relative h-dvh overflow-hidden tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]"
+  use:scrollMemoryClearer={{
+    routeStartsWith: AppRoute.PEOPLE,
+    beforeClear: () => {
+      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+    },
+  }}
+>
+  {#key person.id}
+    <AssetGrid
+      enableRouting={true}
+      {person}
+      {assetStore}
+      {assetInteraction}
+      isSelectionMode={viewMode === PersonPageViewMode.SELECT_PERSON}
+      singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
+      onSelect={handleSelectFeaturePhoto}
+      onEscape={handleEscape}
+    >
+      {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE || viewMode === PersonPageViewMode.BIRTH_DATE}
+        <!-- Person information block -->
+        <div
+          class="relative w-fit p-4 sm:px-6"
+          use:clickOutside={{
+            onOutclick: handleCancelEditName,
+            onEscape: handleCancelEditName,
+          }}
+          use:listNavigation={suggestionContainer}
+        >
+          <section class="flex w-64 sm:w-96 place-items-center border-black">
+            {#if isEditingName}
+              <EditNameInput
+                {person}
+                bind:suggestedPeople
+                name={person.name}
+                bind:isSearchingPeople
+                onChange={handleNameChange}
+                {thumbnailData}
+              />
+            {:else}
+              <div class="relative">
+                <button
+                  type="button"
+                  class="flex items-center justify-center"
+                  title={$t('edit_name')}
+                  onclick={() => (isEditingName = true)}
+                >
+                  <ImageThumbnail
+                    circle
+                    shadow
+                    url={thumbnailData}
+                    altText={person.name}
+                    widthStyle="3.375rem"
+                    heightStyle="3.375rem"
+                  />
+                  <div
+                    class="flex flex-col justify-center text-start px-4 text-immich-primary dark:text-immich-dark-primary"
+                  >
+                    <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
+                    <p class="text-sm text-gray-500 dark:text-immich-gray">
+                      {$t('assets_count', { values: { count: numberOfAssets } })}
+                    </p>
+                    {#if person.birthDate}
+                      <p class="text-sm text-gray-500 dark:text-immich-gray">
+                        {$t('person_birthdate', {
+                          values: {
+                            date: DateTime.fromISO(person.birthDate).toLocaleString(
+                              {
+                                month: 'numeric',
+                                day: 'numeric',
+                                year: 'numeric',
+                              },
+                              { locale: $locale },
+                            ),
+                          },
+                        })}
+                      </p>
+                    {/if}
+                  </div>
+                </button>
+              </div>
+            {/if}
+          </section>
+          {#if isEditingName}
+            <div class="absolute w-64 sm:w-96">
+              {#if isSearchingPeople}
+                <div
+                  class="flex border h-14 rounded-b-lg border-gray-400 dark:border-immich-dark-gray place-items-center bg-gray-200 p-2 dark:bg-gray-700"
+                >
+                  <div class="flex w-full place-items-center">
+                    <LoadingSpinner />
+                  </div>
+                </div>
+              {:else}
+                <div bind:this={suggestionContainer}>
+                  {#each suggestedPeople as person, index (person.id)}
+                    <button
+                      type="button"
+                      class="flex w-full border border-gray-200 dark:border-immich-dark-gray h-14 place-items-center bg-gray-100 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
+                      suggestedPeople.length - 1
+                        ? 'rounded-b-lg border-b'
+                        : ''}"
+                      onclick={() => handleSuggestPeople(person)}
+                    >
+                      <ImageThumbnail
+                        circle
+                        shadow
+                        url={getPeopleThumbnailUrl(person)}
+                        altText={person.name}
+                        widthStyle="2rem"
+                        heightStyle="2rem"
+                      />
+                      <p class="ms-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                    </button>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          {/if}
+        </div>
+      {/if}
+    </AssetGrid>
+  {/key}
+</main>
+
 <header>
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
@@ -485,129 +611,3 @@
     {/if}
   {/if}
 </header>
-
-<main
-  class="relative h-dvh overflow-hidden bg-immich-bg tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
-  use:scrollMemoryClearer={{
-    routeStartsWith: AppRoute.PEOPLE,
-    beforeClear: () => {
-      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
-    },
-  }}
->
-  {#key person.id}
-    <AssetGrid
-      enableRouting={true}
-      {person}
-      {assetStore}
-      {assetInteraction}
-      isSelectionMode={viewMode === PersonPageViewMode.SELECT_PERSON}
-      singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
-      onSelect={handleSelectFeaturePhoto}
-      onEscape={handleEscape}
-    >
-      {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE || viewMode === PersonPageViewMode.BIRTH_DATE}
-        <!-- Person information block -->
-        <div
-          class="relative w-fit p-4 sm:px-6"
-          use:clickOutside={{
-            onOutclick: handleCancelEditName,
-            onEscape: handleCancelEditName,
-          }}
-          use:listNavigation={suggestionContainer}
-        >
-          <section class="flex w-64 sm:w-96 place-items-center border-black">
-            {#if isEditingName}
-              <EditNameInput
-                {person}
-                bind:suggestedPeople
-                name={person.name}
-                bind:isSearchingPeople
-                onChange={handleNameChange}
-                {thumbnailData}
-              />
-            {:else}
-              <div class="relative">
-                <button
-                  type="button"
-                  class="flex items-center justify-center"
-                  title={$t('edit_name')}
-                  onclick={() => (isEditingName = true)}
-                >
-                  <ImageThumbnail
-                    circle
-                    shadow
-                    url={thumbnailData}
-                    altText={person.name}
-                    widthStyle="3.375rem"
-                    heightStyle="3.375rem"
-                  />
-                  <div
-                    class="flex flex-col justify-center text-start px-4 text-immich-primary dark:text-immich-dark-primary"
-                  >
-                    <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
-                    <p class="text-sm text-gray-500 dark:text-immich-gray">
-                      {$t('assets_count', { values: { count: numberOfAssets } })}
-                    </p>
-                    {#if person.birthDate}
-                      <p class="text-sm text-gray-500 dark:text-immich-gray">
-                        {$t('person_birthdate', {
-                          values: {
-                            date: DateTime.fromISO(person.birthDate).toLocaleString(
-                              {
-                                month: 'numeric',
-                                day: 'numeric',
-                                year: 'numeric',
-                              },
-                              { locale: $locale },
-                            ),
-                          },
-                        })}
-                      </p>
-                    {/if}
-                  </div>
-                </button>
-              </div>
-            {/if}
-          </section>
-          {#if isEditingName}
-            <div class="absolute z-[999] w-64 sm:w-96">
-              {#if isSearchingPeople}
-                <div
-                  class="flex border h-14 rounded-b-lg border-gray-400 dark:border-immich-dark-gray place-items-center bg-gray-200 p-2 dark:bg-gray-700"
-                >
-                  <div class="flex w-full place-items-center">
-                    <LoadingSpinner />
-                  </div>
-                </div>
-              {:else}
-                <div bind:this={suggestionContainer}>
-                  {#each suggestedPeople as person, index (person.id)}
-                    <button
-                      type="button"
-                      class="flex w-full border border-gray-200 dark:border-immich-dark-gray h-14 place-items-center bg-gray-100 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
-                      suggestedPeople.length - 1
-                        ? 'rounded-b-lg border-b'
-                        : ''}"
-                      onclick={() => handleSuggestPeople(person)}
-                    >
-                      <ImageThumbnail
-                        circle
-                        shadow
-                        url={getPeopleThumbnailUrl(person)}
-                        altText={person.name}
-                        widthStyle="2rem"
-                        heightStyle="2rem"
-                      />
-                      <p class="ms-4 text-gray-700 dark:text-gray-100">{person.name}</p>
-                    </button>
-                  {/each}
-                </div>
-              {/if}
-            </div>
-          {/if}
-        </div>
-      {/if}
-    </AssetGrid>
-  {/key}
-</main>

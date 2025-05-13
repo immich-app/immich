@@ -1,8 +1,7 @@
 <script lang="ts">
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { copyToClipboard } from '$lib/utils';
-  import { Code, IconButton, Text } from '@immich/ui';
-  import { mdiContentCopy } from '@mdi/js';
+  import { Button, Code, IconButton, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
+  import { mdiCheck, mdiContentCopy } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -13,14 +12,14 @@
   const { onClose, newPassword }: Props = $props();
 </script>
 
-<ConfirmDialog
+<Modal
   title={$t('password_reset_success')}
-  confirmText={$t('done')}
-  {onClose}
-  hideCancelButton={true}
-  confirmColor="success"
+  icon={mdiCheck}
+  onClose={() => onClose()}
+  size="small"
+  class="bg-light text-dark"
 >
-  {#snippet promptSnippet()}
+  <ModalBody>
     <div class="flex flex-col gap-4">
       <Text>{$t('admin.user_password_has_been_reset')}</Text>
 
@@ -39,5 +38,13 @@
 
       <Text>{$t('admin.user_password_reset_description')}</Text>
     </div>
-  {/snippet}
-</ConfirmDialog>
+  </ModalBody>
+
+  <ModalFooter>
+    <div class="flex gap-3 w-full">
+      <Button shape="round" color="primary" fullWidth onclick={() => onClose()}>
+        {$t('done')}
+      </Button>
+    </div>
+  </ModalFooter>
+</Modal>

@@ -1,20 +1,20 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { getPersonNameWithHiddenValue } from '$lib/utils/person';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto, getAllPeople } from '@immich/sdk';
+  import { handleError } from '$lib/utils/handle-error';
+  import { zoomImageToBase64 } from '$lib/utils/people-utils';
+  import { getPersonNameWithHiddenValue } from '$lib/utils/person';
+  import { AssetTypeEnum, getAllPeople, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { zoomImageToBase64 } from '$lib/utils/people-utils';
-  import { t } from 'svelte-i18n';
-  import { handleError } from '$lib/utils/handle-error';
-  import { onMount } from 'svelte';
 
   interface Props {
     editedFace: AssetFaceResponseDto;
@@ -74,7 +74,7 @@
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 z-[2001] h-full w-[360px] overflow-x-hidden p-2 bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
+  class="absolute top-0 h-full w-[360px] overflow-x-hidden p-2 dark:text-immich-dark-fg"
 >
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}

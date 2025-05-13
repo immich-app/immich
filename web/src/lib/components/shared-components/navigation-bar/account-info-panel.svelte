@@ -5,15 +5,13 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import { user } from '$lib/stores/user.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { deleteProfileImage, updateMyUser, type UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { NotificationType, notificationController } from '../notification/notification';
   import UserAvatar from '../user-avatar.svelte';
-  import AvatarSelector from './avatar-selector.svelte';
 
   interface Props {
     onLogout: () => void;
@@ -21,33 +19,13 @@
   }
 
   let { onLogout, onClose = () => {} }: Props = $props();
-
-  let isShowSelectAvatar = $state(false);
-
-  const handleSaveProfile = async (color: UserAvatarColor) => {
-    try {
-      if ($user.profileImagePath !== '') {
-        await deleteProfileImage();
-      }
-
-      $user = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
-      isShowSelectAvatar = false;
-
-      notificationController.show({
-        message: $t('saved_profile'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_profile'));
-    }
-  };
 </script>
 
 <div
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute end-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute z-[1] end-[25px] top-[75px] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   use:focusTrap
 >
   <div
@@ -55,7 +33,7 @@
   >
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
-      <div class="absolute z-10 bottom-0 end-0 rounded-full w-6 h-6">
+      <div class="absolute bottom-0 end-0 rounded-full w-6 h-6">
         <CircleIconButton
           color="primary"
           icon={mdiPencil}
@@ -63,7 +41,7 @@
           class="border"
           size="12"
           padding="2"
-          onclick={() => (isShowSelectAvatar = true)}
+          onclick={() => modalManager.show(AvatarEditModal, {})}
         />
       </div>
     </div>
@@ -83,7 +61,7 @@
       </Button>
       {#if $user.isAdmin}
         <Button
-          href={AppRoute.ADMIN_USER_MANAGEMENT}
+          href={AppRoute.ADMIN_USERS}
           onclick={onClose}
           color="dark-gray"
           size="sm"
@@ -111,7 +89,3 @@
     >
   </div>
 </div>
-
-{#if isShowSelectAvatar}
-  <AvatarSelector user={$user} onClose={() => (isShowSelectAvatar = false)} onChoose={handleSaveProfile} />
-{/if}
