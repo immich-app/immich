@@ -18,8 +18,8 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, IconButton, Link } from '@immich/ui';
-  import { mdiDeleteRestore, mdiInfinity, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { Button, HStack, IconButton, Link, Text } from '@immich/ui';
+  import { mdiDeleteRestore, mdiInfinity, mdiPencilOutline, mdiPlusBoxOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -86,6 +86,13 @@
 </script>
 
 <UserPageLayout title={data.meta.title} admin>
+  {#snippet buttons()}
+    <HStack gap={1}>
+      <Button leadingIcon={mdiPlusBoxOutline} onclick={handleCreate} size="small" variant="ghost" color="secondary">
+        <Text class="hidden md:block">{$t('create_user')}</Text>
+      </Button>
+    </HStack>
+  {/snippet}
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       <table class="my-5 w-full text-start">
@@ -163,7 +170,6 @@
           {/if}
         </tbody>
       </table>
-      <Button shape="round" size="small" onclick={handleCreate}>{$t('create_user')}</Button>
     </section>
   </section>
 </UserPageLayout>
