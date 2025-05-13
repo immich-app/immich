@@ -32,18 +32,20 @@ export async function getVectorExtension(runner: Kysely<DB> | QueryRunner): Prom
   }
 
   cachedVectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
-  if (!cachedVectorExtension) {
-    let availableExtensions: { name: VectorExtension }[];
-    const query = `SELECT name FROM pg_available_extensions WHERE name IN (${VECTOR_EXTENSIONS.map((ext) => `'${ext}'`).join(', ')})`;
-    if (runner instanceof Kysely) {
-      const { rows } = await sql.raw<{ name: VectorExtension }>(query).execute(runner);
-      availableExtensions = rows;
-    } else {
-      availableExtensions = (await runner.query(query)) as { name: VectorExtension }[];
-    }
-    const extensionNames = new Set(availableExtensions.map((row) => row.name));
-    cachedVectorExtension = VECTOR_EXTENSIONS.find((ext) => extensionNames.has(ext));
+  if (cachedVectorExtension) {
+    return cachedVectorExtension;
   }
+
+  let availableExtensions: { name: VectorExtension }[];
+  const query = `SELECT name FROM pg_available_extensions WHERE name IN (${VECTOR_EXTENSIONS.map((ext) => `'${ext}'`).join(', ')})`;
+  if (runner instanceof Kysely) {
+    const { rows } = await sql.raw<{ name: VectorExtension }>(query).execute(runner);
+    availableExtensions = rows;
+  } else {
+    availableExtensions = (await runner.query(query)) as { name: VectorExtension }[];
+  }
+  const extensionNames = new Set(availableExtensions.map((row) => row.name));
+  cachedVectorExtension = VECTOR_EXTENSIONS.find((ext) => extensionNames.has(ext));
   if (!cachedVectorExtension) {
     throw new Error(`No vector extension found. Available extensions: ${VECTOR_EXTENSIONS.join(', ')}`);
   }
