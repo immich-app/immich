@@ -73,7 +73,7 @@
     bind:this={menuElement}
     class="{isVisible
       ? 'max-h-dvh'
-      : 'max-h-0'} flex flex-col transition-all duration-[250ms] ease-in-out outline-none overflow-auto"
+      : 'max-h-0'} flex flex-col transition-all duration-250 ease-in-out outline-none overflow-auto"
     role="menu"
     tabindex="-1"
   >

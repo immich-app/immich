@@ -1,7 +1,4 @@
-import { tailwindConfig } from '@immich/ui/theme/default.js';
 import plugin from 'tailwindcss/plugin';
-
-const { colors, borderColor } = tailwindConfig();
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -10,7 +7,6 @@ export default {
     './node_modules/@immich/ui/dist/**/*.{svelte,js}',
     '../../ui/src/**/*.{html,js,svelte,ts}',
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -31,10 +27,7 @@ export default {
         'immich-dark-error': 'rgb(var(--immich-dark-error) / <alpha-value>)',
         'immich-dark-success': 'rgb(var(--immich-dark-success) / <alpha-value>)',
         'immich-dark-warning': 'rgb(var(--immich-dark-warning) / <alpha-value>)',
-
-        ...colors,
       },
-      borderColor,
       fontFamily: {
         'immich-mono': ['Overpass Mono', 'monospace'],
       },

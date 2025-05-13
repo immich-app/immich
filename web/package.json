@@ -28,7 +28,7 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.21.1",
+    "@immich/ui": "^0.22.0",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.11.5",
@@ -52,6 +52,7 @@
     "svelte-i18n": "^4.0.1",
     "svelte-maplibre": "^1.0.0",
     "svelte-persisted-store": "^0.12.0",
+    "tabbable": "^6.2.0",
     "thumbhash": "^0.1.1"
   },
   "devDependencies": {
@@ -63,6 +64,8 @@
     "@sveltejs/enhanced-img": "^0.5.0",
     "@sveltejs/kit": "^2.15.2",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tailwindcss/postcss": "^4.1.7",
+    "@tailwindcss/vite": "^4.1.7",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/svelte": "^5.2.6",
     "@testing-library/user-event": "^14.5.2",
@@ -89,7 +92,7 @@
     "rollup-plugin-visualizer": "^5.14.0",
     "svelte": "^5.25.3",
     "svelte-check": "^4.1.5",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.7",
     "tslib": "^2.6.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.28.0",

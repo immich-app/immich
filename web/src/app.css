@@ -1,6 +1,32 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@import '@immich/ui/theme/default.css';
+
+@config '../tailwind.config.js';
+
+@utility immich-form-input {
+  @apply rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-100 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800 dark:disabled:text-gray-200;
+}
+
+@utility immich-form-label {
+  @apply font-medium text-gray-500 dark:text-gray-300;
+}
+
+@utility immich-scrollbar {
+  /* width */
+  scrollbar-width: thin;
+}
+
+@utility scrollbar-hidden {
+  /* Hidden scrollbar */
+  /* width */
+  scrollbar-width: none;
+}
+
+@utility scrollbar-stable {
+  scrollbar-gutter: stable both-edges;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
@@ -21,107 +47,97 @@
     --immich-dark-success: 56 142 60;
     --immich-dark-warning: 245 124 0;
   }
-}
 
-@font-face {
-  font-family: 'Overpass';
-  src: url('$lib/assets/fonts/overpass/Overpass.ttf') format('truetype-variations');
-  font-weight: 1 999;
-  font-style: normal;
-  ascent-override: 106.25%;
-  size-adjust: 106.25%;
-}
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: rgb(var(--immich-ui-default-border));
+  }
 
-@font-face {
-  font-family: 'Overpass Mono';
-  src: url('$lib/assets/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
-  font-weight: 1 999;
-  font-style: monospace;
-  ascent-override: 106.25%;
-  size-adjust: 106.25%;
-}
-
-:root {
-  font-family: 'Overpass', sans-serif;
-  /* Used by layouts to ensure proper spacing between navbar and content */
-  --navbar-height: calc(theme(spacing.18) + 4px);
-  --navbar-height-md: calc(theme(spacing.18) + 4px - 14px);
-}
-
-:root.dark {
-  color-scheme: dark;
-}
-
-:root:not(.dark) {
-  color-scheme: light;
-}
-
-html {
-  height: 100%;
-  width: 100%;
-}
-
-html::-webkit-scrollbar {
-  width: 8px;
-}
-
-/* Track */
-html::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 16px;
-}
-
-/* Handle */
-html::-webkit-scrollbar-thumb {
-  background: rgba(85, 86, 87, 0.408);
-  border-radius: 16px;
-}
-
-/* Handle on hover */
-html::-webkit-scrollbar-thumb:hover {
-  background: #4250afad;
-  border-radius: 16px;
-}
-
-body {
-  margin: 0;
-  color: #3a3a3a;
-}
-
-input:focus-visible {
-  outline-offset: 0px !important;
-  outline: none !important;
-}
-
-.text-white-shadow {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.icon-white-drop-shadow {
-  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.8));
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 @layer utilities {
-  .immich-form-input {
-    @apply rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-100 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800 dark:disabled:text-gray-200;
+  @font-face {
+    font-family: 'Overpass';
+    src: url('$lib/assets/fonts/overpass/Overpass.ttf') format('truetype-variations');
+    font-weight: 1 999;
+    font-style: normal;
+    ascent-override: 106.25%;
+    size-adjust: 106.25%;
   }
 
-  .immich-form-label {
-    @apply font-medium text-gray-500 dark:text-gray-300;
+  @font-face {
+    font-family: 'Overpass Mono';
+    src: url('$lib/assets/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
+    font-weight: 1 999;
+    font-style: monospace;
+    ascent-override: 106.25%;
+    size-adjust: 106.25%;
   }
 
-  /* width */
-  .immich-scrollbar {
-    scrollbar-width: thin;
+  :root {
+    font-family: 'Overpass', sans-serif;
+    /* Used by layouts to ensure proper spacing between navbar and content */
+    --navbar-height: calc(4.5rem + 4px);
+    --navbar-height-md: calc(4.5rem + 4px - 14px);
   }
 
-  /* Hidden scrollbar */
-  /* width */
-  .scrollbar-hidden {
-    scrollbar-width: none;
+  :root.dark {
+    color-scheme: dark;
   }
 
-  .scrollbar-stable {
-    scrollbar-gutter: stable both-edges;
+  :root:not(.dark) {
+    color-scheme: light;
+  }
+
+  html {
+    height: 100%;
+    width: 100%;
+  }
+
+  html::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  /* Track */
+  html::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 16px;
+  }
+
+  /* Handle */
+  html::-webkit-scrollbar-thumb {
+    background: rgba(85, 86, 87, 0.408);
+    border-radius: 16px;
+  }
+
+  /* Handle on hover */
+  html::-webkit-scrollbar-thumb:hover {
+    background: #4250afad;
+    border-radius: 16px;
+  }
+
+  body {
+    margin: 0;
+    color: #3a3a3a;
+  }
+
+  input:focus-visible {
+    outline-offset: 0px !important;
+    outline: none !important;
+  }
+
+  .text-white-shadow {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  }
+
+  .icon-white-drop-shadow {
+    filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.8));
   }
 }
