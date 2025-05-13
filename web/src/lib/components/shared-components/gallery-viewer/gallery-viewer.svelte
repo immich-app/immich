@@ -23,7 +23,6 @@
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
-  import Portal from '../portal/portal.svelte';
 
   interface Props {
     assets: AssetResponseDto[];
@@ -456,6 +455,7 @@
     style:position="relative"
     style:height={assetLayouts.containerHeight + 'px'}
     style:width={assetLayouts.containerWidth - 1 + 'px'}
+    inert={$isViewerOpen}
   >
     {#each assetLayouts.assetLayout as layout, index (layout.asset.id + '-' + index)}
       {@const asset = layout.asset}
@@ -500,17 +500,15 @@
 
 <!-- Overlay Asset Viewer -->
 {#if $isViewerOpen}
-  <Portal target="body">
-    <AssetViewer
-      asset={$viewingAsset}
-      onAction={handleAction}
-      onPrevious={handlePrevious}
-      onNext={handleNext}
-      onRandom={handleRandom}
-      onClose={() => {
-        assetViewingStore.showAssetViewer(false);
-        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-      }}
-    />
-  </Portal>
+  <AssetViewer
+    asset={$viewingAsset}
+    onAction={handleAction}
+    onPrevious={handlePrevious}
+    onNext={handleNext}
+    onRandom={handleRandom}
+    onClose={() => {
+      assetViewingStore.showAssetViewer(false);
+      handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+    }}
+  />
 {/if}

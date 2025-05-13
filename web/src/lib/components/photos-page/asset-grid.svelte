@@ -4,6 +4,7 @@
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
@@ -25,7 +26,6 @@
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
-  import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
@@ -701,7 +701,7 @@
   />
 {/if}
 
-{#if assetStore.buckets.length > 0}
+{#if assetStore.buckets.length > 0 && !$showAssetViewer}
   <Scrubber
     {assetStore}
     height={assetStore.viewportHeight}
@@ -741,6 +741,7 @@
   bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
   bind:this={element}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
+  inert={$showAssetViewer}
 >
   <section
     bind:this={timelineElement}
@@ -810,26 +811,22 @@
 </section>
 
 {#if !albumMapViewManager.isInMapView}
-  <Portal target="body">
-    {#if $showAssetViewer}
-      {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-        <AssetViewer
-          {withStacked}
-          asset={$viewingAsset}
-          preloadAssets={$preloadAssets}
-          {isShared}
-          {album}
-          {person}
-          preAction={handlePreAction}
-          onAction={handleAction}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onRandom={handleRandom}
-          onClose={handleClose}
-        />
-      {/await}
-    {/if}
-  </Portal>
+  {#if $showAssetViewer}
+    <AssetViewer
+      {withStacked}
+      asset={$viewingAsset}
+      preloadAssets={$preloadAssets}
+      {isShared}
+      {album}
+      {person}
+      preAction={handlePreAction}
+      onAction={handleAction}
+      onPrevious={handlePrevious}
+      onNext={handleNext}
+      onRandom={handleRandom}
+      onClose={handleClose}
+    />
+  {/if}
 {/if}
 
 <style>

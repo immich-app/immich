@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { ProjectionType } from '$lib/constants';
-  import VideoNativeViewer from '$lib/components/asset-viewer/video-native-viewer.svelte';
   import VideoPanoramaViewer from '$lib/components/asset-viewer/video-panorama-viewer.svelte';
+  import VideoNativeViewer from '$lib/components/asset-viewer/video-viewer/video-native-viewer.svelte';
+  import { ProjectionType } from '$lib/constants';
 
   interface Props {
     assetId: string;
     projectionType: string | null | undefined;
     cacheKey: string | null;
     loopVideo: boolean;
-    onClose?: () => void;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
     onVideoStarted?: () => void;
+    onControlsChange?: ({ controlsVisible }: { controlsVisible: boolean }) => void;
   }
 
   let {
@@ -21,10 +21,10 @@
     cacheKey,
     loopVideo,
     onPreviousAsset,
-    onClose,
     onNextAsset,
     onVideoEnded,
     onVideoStarted,
+    onControlsChange,
   }: Props = $props();
 </script>
 
@@ -39,6 +39,6 @@
     {onNextAsset}
     {onVideoEnded}
     {onVideoStarted}
-    {onClose}
+    {onControlsChange}
   />
 {/if}
