@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiArrowLeft, mdiMerge } from '@mdi/js';
+  import { onMount, tick } from 'svelte';
+  import { t } from 'svelte-i18n';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     personMerge1: PersonResponseDto;

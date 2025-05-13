@@ -369,38 +369,6 @@
   });
 </script>
 
-{#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
-  <UnMergeFaceSelector
-    assetIds={assetInteraction.selectedAssets.map((a) => a.id)}
-    personAssets={person}
-    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
-    onConfirm={handleUnmerge}
-  />
-{/if}
-
-{#if viewMode === PersonPageViewMode.SUGGEST_MERGE && personMerge1 && personMerge2}
-  <MergeSuggestionModal
-    {personMerge1}
-    {personMerge2}
-    {potentialMergePeople}
-    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
-    onReject={changeName}
-    onConfirm={handleMergeSamePerson}
-  />
-{/if}
-
-{#if viewMode === PersonPageViewMode.BIRTH_DATE}
-  <SetBirthDateModal
-    birthDate={person.birthDate ?? ''}
-    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
-    onUpdate={handleSetBirthDate}
-  />
-{/if}
-
-{#if viewMode === PersonPageViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
-{/if}
-
 <main
   class="relative h-dvh overflow-hidden tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]"
   use:scrollMemoryClearer={{
@@ -526,6 +494,38 @@
     </AssetGrid>
   {/key}
 </main>
+
+{#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
+  <UnMergeFaceSelector
+    assetIds={assetInteraction.selectedAssets.map((a) => a.id)}
+    personAssets={person}
+    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
+    onConfirm={handleUnmerge}
+  />
+{/if}
+
+{#if viewMode === PersonPageViewMode.SUGGEST_MERGE && personMerge1 && personMerge2}
+  <MergeSuggestionModal
+    {personMerge1}
+    {personMerge2}
+    {potentialMergePeople}
+    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
+    onReject={changeName}
+    onConfirm={handleMergeSamePerson}
+  />
+{/if}
+
+{#if viewMode === PersonPageViewMode.BIRTH_DATE}
+  <SetBirthDateModal
+    birthDate={person.birthDate ?? ''}
+    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
+    onUpdate={handleSetBirthDate}
+  />
+{/if}
+
+{#if viewMode === PersonPageViewMode.MERGE_PEOPLE}
+  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
+{/if}
 
 <header>
   {#if assetInteraction.selectionActive}
