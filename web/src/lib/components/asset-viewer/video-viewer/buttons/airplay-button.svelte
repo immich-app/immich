@@ -3,6 +3,7 @@
   import { mdiCastVariant } from '@mdi/js';
   import type { TooltipPlacement } from 'vidstack';
   import Tooltip from '../tooltip.svelte';
+
   type Props = {
     tooltipPlacement: TooltipPlacement;
   };
