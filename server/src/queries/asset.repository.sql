@@ -242,7 +242,7 @@ with
       "assets"."deletedAt" is null
       and (
         "assets"."visibility" = $1
-        or "assets"."visibility" = $3
+        or "assets"."visibility" = $2
       )
   )
 select
@@ -261,7 +261,7 @@ with
     select
       "assets"."duration",
       "assets"."id",
-      assets."isArchived"::int as "isArchived",
+      "assets"."visibility",
       assets."isFavorite"::int as "isFavorite",
       (assets.type = 'IMAGE')::int as "isImage",
       (assets."deletedAt" is null)::int as "isTrashed",
@@ -301,14 +301,21 @@ with
         where
           "stacked"."stackId" = "assets"."stackId"
           and "stacked"."deletedAt" is null
-          and "stacked"."isArchived" = $1
+          and "stacked"."visibility" != $1
         group by
           "stacked"."stackId"
       ) as "stacked_assets" on true
     where
       "assets"."deletedAt" is null
-      and "assets"."isVisible" = $2
-      and date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' = $3
+      and (
+        "assets"."visibility" = $2
+        or "assets"."visibility" = $3
+      )
+      and date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
+      and (
+        "assets"."visibility" = $5
+        or "assets"."visibility" = $6
+      )
       and not exists (
         select
         from
@@ -326,7 +333,7 @@ with
       coalesce(array_agg("country"), '{}') as "country",
       coalesce(array_agg("duration"), '{}') as "duration",
       coalesce(array_agg("id"), '{}') as "id",
-      coalesce(array_agg("isArchived"), '{}') as "isArchived",
+      coalesce(array_agg("visibility"), '{}') as "visibility",
       coalesce(array_agg("isFavorite"), '{}') as "isFavorite",
       coalesce(array_agg("isImage"), '{}') as "isImage",
       coalesce(array_agg("isTrashed"), '{}') as "isTrashed",
