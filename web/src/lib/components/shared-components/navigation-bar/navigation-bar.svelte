@@ -128,7 +128,7 @@
           />
         {/if}
 
-        <CastButton />
+        <CastButton isNavBar={true} />
 
         <ThemeButton padding="2" />
 

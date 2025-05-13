@@ -20,6 +20,7 @@ class GCastPlayer {
   session: chrome.cast.Session | null = null;
 
   isConnected = writable(false);
+  isAvailable = writable(false);
 
   castState = writable(cast.framework.CastState.NO_DEVICES_AVAILABLE);
   playerState = writable(chrome.cast.media.PlayerState.IDLE);
@@ -28,11 +29,8 @@ class GCastPlayer {
   duration = writable<number | null>(null);
 
   castPlayerState = writable(chrome.cast.media.PlayerState.IDLE);
-
   currentMedia: chrome.cast.media.Media | null = null;
-
   receiverFriendlyName = writable<string | null>(null);
-
   remotePlayer = writable(new cast.framework.RemotePlayer());
 
   currentUrl: string | null = null;
@@ -48,6 +46,10 @@ class GCastPlayer {
     this.instance.initialize();
 
     return this.instance;
+  }
+
+  static instanceCreated(): boolean {
+    return !!this.instance;
   }
 
   private initialize() {
@@ -131,7 +133,19 @@ class GCastPlayer {
   }
 
   async loadMedia(mediaUrl: string) {
-    console.debug('Casting new media:', mediaUrl);
+    if (!this.apiKey) {
+      const apiKey = await this.getCastApiKey();
+
+      if (!apiKey) {
+        console.error('No cast api available');
+        return;
+      }
+
+      this.apiKey = apiKey;
+    }
+    const authenticatedUrl2 = `${mediaUrl}&apiKey=${this.apiKey!.secret}`;
+
+    console.debug('Casting new media:', authenticatedUrl2);
 
     if (!get(this.isInitialized)) {
       return;
@@ -167,7 +181,7 @@ class GCastPlayer {
       return;
     }
 
-    const authenticatedUrl = `${mediaUrl}&apiKey=${this.apiKey.secret}`;
+    const authenticatedUrl = `${mediaUrl}&apiKey=${this.apiKey!.secret}`;
     const mediaInfo = new chrome.cast.media.MediaInfo(authenticatedUrl, contentType);
 
     const request = new chrome.cast.media.LoadRequest(mediaInfo);
@@ -260,11 +274,32 @@ class GCastPlayer {
     this.currentMedia.pause(pauseRequest, () => {}, this.onError.bind(this));
   }
 
-  seek(currentTime: number) {
+  seekTo(time: number) {
     const remotePlayer = new cast.framework.RemotePlayer();
     const remotePlayerController = new cast.framework.RemotePlayerController(remotePlayer);
-    remotePlayer.currentTime = currentTime;
+    remotePlayer.currentTime = time;
     remotePlayerController.seek();
+  }
+
+  disconnect() {
+    this.session?.leave(() => {
+      this.session = null;
+      this.castPlayerState.set(chrome.cast.media.PlayerState.IDLE);
+      this.receiverFriendlyName.set(null);
+    }, this.onError.bind(this));
+  }
+
+  async showCastDialog() {
+    try {
+      await cast.framework.CastContext.getInstance().requestSession();
+    } catch (error) {
+      if (error == chrome.cast.ErrorCode.SESSION_ERROR) {
+        console.log('Session error', error);
+        return;
+      }
+
+      console.error(error);
+    }
   }
 }
 

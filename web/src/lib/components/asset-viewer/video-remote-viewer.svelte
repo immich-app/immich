@@ -6,8 +6,8 @@
   import { get } from 'svelte/store';
 
   let castPlayer = GCastPlayer.getInstance();
-  let remotePlayer = get(castPlayer.remotePlayer);
-  let castState = get(castPlayer.castState);
+  let remotePlayer = $state(get(castPlayer.remotePlayer));
+  let castState = $state(get(castPlayer.castState));
 
   let receiverFriendlyName = get(castPlayer.receiverFriendlyName);
 
@@ -27,7 +27,7 @@
 
   function handleSeek(event: Event) {
     const newTime: number = Number.parseFloat((event.target as HTMLInputElement).value);
-    castPlayer.seek(newTime);
+    castPlayer.seekTo(newTime);
   }
 
   onMount(() => {
