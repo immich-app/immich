@@ -1,9 +1,9 @@
 <script lang="ts">
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import DateInput from '../elements/date-input.svelte';
   import Combobox, { type ComboBoxOption } from './combobox.svelte';
-  import ConfirmDialog from './dialog/confirm-dialog.svelte';
 
   interface Props {
     title?: string;
@@ -142,7 +142,7 @@
   let date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
 
-<ConfirmDialog
+<ConfirmModal
   confirmColor="primary"
   {title}
   prompt="Please select a new date:"
@@ -170,4 +170,4 @@
       {/if}
     </div>
   {/snippet}
-</ConfirmDialog>
+</ConfirmModal>

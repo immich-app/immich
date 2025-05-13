@@ -5,7 +5,6 @@
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
-  import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
@@ -122,7 +121,6 @@
 <DownloadPanel />
 <UploadPanel />
 <NotificationList />
-<DialogWrapper />
 
 {#if $user?.isAdmin}
   <VersionAnnouncementBox />

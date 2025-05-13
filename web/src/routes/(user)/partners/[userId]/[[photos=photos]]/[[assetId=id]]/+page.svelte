@@ -42,7 +42,7 @@
   };
 </script>
 
-<main class="grid h-dvh bg-immich-bg pt-18 dark:bg-immich-dark-bg">
+<main class="grid h-dvh pt-18">
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}

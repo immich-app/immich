@@ -8,9 +8,6 @@
     prompt?: string;
     confirmText?: string;
     confirmColor?: Color;
-    cancelText?: string;
-    cancelColor?: Color;
-    hideCancelButton?: boolean;
     disabled?: boolean;
     size?: 'small' | 'medium';
     onClose: (confirmed: boolean) => void;
@@ -22,9 +19,6 @@
     prompt = $t('are_you_sure_to_do_this'),
     confirmText = $t('confirm'),
     confirmColor = 'danger',
-    cancelText = $t('cancel'),
-    cancelColor = 'secondary',
-    hideCancelButton = false,
     disabled = false,
     size = 'small',
     onClose,
@@ -44,12 +38,10 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full my-3">
-      {#if !hideCancelButton}
-        <Button shape="round" color={cancelColor} fullWidth onclick={() => onClose(false)}>
-          {cancelText}
-        </Button>
-      {/if}
+    <div class="flex gap-3 w-full">
+      <Button shape="round" color="secondary" fullWidth onclick={() => onClose(false)}>
+        {$t('cancel')}
+      </Button>
       <Button shape="round" color={confirmColor} fullWidth onclick={handleConfirm} {disabled}>
         {confirmText}
       </Button>

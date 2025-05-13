@@ -224,6 +224,11 @@ export type UserPreferencesUpdateDto = {
     sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
 };
+export type AssetStatsResponseDto = {
+    images: number;
+    total: number;
+    videos: number;
+};
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
     user: UserResponseDto;
@@ -461,11 +466,6 @@ export type CheckExistingAssetsResponseDto = {
 export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
-};
-export type AssetStatsResponseDto = {
-    images: number;
-    total: number;
-    videos: number;
 };
 export type UpdateAssetDto = {
     dateTimeOriginal?: string;
@@ -1502,13 +1502,15 @@ export function sendTestEmailAdmin({ systemConfigSmtpDto }: {
         body: systemConfigSmtpDto
     })));
 }
-export function searchUsersAdmin({ withDeleted }: {
+export function searchUsersAdmin({ id, withDeleted }: {
+    id?: string;
     withDeleted?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserAdminResponseDto[];
     }>(`/admin/users${QS.query(QS.explode({
+        id,
         withDeleted
     }))}`, {
         ...opts
@@ -1594,6 +1596,23 @@ export function restoreUserAdmin({ id }: {
     }>(`/admin/users/${encodeURIComponent(id)}/restore`, {
         ...opts,
         method: "POST"
+    }));
+}
+export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }: {
+    id: string;
+    isFavorite?: boolean;
+    isTrashed?: boolean;
+    visibility?: AssetVisibility;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetStatsResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/statistics${QS.query(QS.explode({
+        isFavorite,
+        isTrashed,
+        visibility
+    }))}`, {
+        ...opts
     }));
 }
 export function getAllAlbums({ assetId, shared }: {
@@ -3552,6 +3571,11 @@ export enum UserStatus {
     Removing = "removing",
     Deleted = "deleted"
 }
+export enum AssetVisibility {
+    Archive = "archive",
+    Timeline = "timeline",
+    Hidden = "hidden"
+}
 export enum AlbumUserRole {
     Editor = "editor",
     Viewer = "viewer"
@@ -3660,11 +3684,6 @@ export enum Permission {
     AdminUserRead = "admin.user.read",
     AdminUserUpdate = "admin.user.update",
     AdminUserDelete = "admin.user.delete"
-}
-export enum AssetVisibility {
-    Archive = "archive",
-    Timeline = "timeline",
-    Hidden = "hidden"
 }
 export enum AssetMediaStatus {
     Created = "created",

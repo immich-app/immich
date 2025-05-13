@@ -1,20 +1,25 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import {
-    type AssetStore,
     type AssetBucket,
     assetSnapshot,
     assetsSnapshot,
+    type AssetStore,
     isSelectingAllAssets,
   } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { getDateLocaleString } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { fly } from 'svelte/transition';
+  import { fly, scale } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+<<<<<<< HEAD
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { scale } from 'svelte/transition';
+=======
+
+>>>>>>> origin/main
   import { flip } from 'svelte/animate';
   import { uploadAssetsStore } from '$lib/stores/upload';
 
@@ -126,7 +131,7 @@
   >
     <!-- Date group title -->
     <div
-      class="flex z-[100] pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
+      class="flex z-[100] pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
       style:width={dateGroup.width + 'px'}
     >
       {#if !singleSelect && ((hoveredDateGroup === dateGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dateGroup.groupTitle))}
