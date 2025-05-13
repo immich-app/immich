@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import StatsCard from '$lib/components/admin-page/server-stats/stats-card.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import {
@@ -7,17 +6,18 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
   import UserEditModal from '$lib/modals/UserEditModal.svelte';
+  import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user as authUser } from '$lib/stores/user.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin } from '@immich/sdk';
   import {
+    Alert,
     Button,
     Card,
     CardBody,
@@ -40,6 +40,7 @@
     mdiChartPie,
     mdiChartPieOutline,
     mdiCheckCircle,
+    mdiDeleteRestore,
     mdiFeatureSearchOutline,
     mdiLockSmart,
     mdiOnepassword,
@@ -80,7 +81,14 @@
   const handleDelete = async () => {
     const result = await modalManager.show(UserDeleteConfirmModal, { user });
     if (result) {
-      await goto(AppRoute.ADMIN_USERS);
+      user = result;
+    }
+  };
+
+  const handleRestore = async () => {
+    const result = await modalManager.show(UserRestoreConfirmModal, { user });
+    if (result) {
+      user = result;
     }
   };
 
@@ -191,19 +199,36 @@
       >
         <Text class="hidden md:block">{$t('edit_user')}</Text>
       </Button>
-      <Button
-        color="danger"
-        size="small"
-        variant="ghost"
-        leadingIcon={mdiTrashCanOutline}
-        onclick={() => handleDelete()}
-      >
-        <Text class="hidden md:block">{$t('delete_user')}</Text>
-      </Button>
+      {#if user.deletedAt}
+        <Button
+          color="primary"
+          size="small"
+          variant="ghost"
+          leadingIcon={mdiDeleteRestore}
+          class="ms-1"
+          onclick={() => handleRestore()}
+        >
+          <Text class="hidden md:block">{$t('restore_user')}</Text>
+        </Button>
+      {:else}
+        <Button
+          color="danger"
+          size="small"
+          variant="ghost"
+          leadingIcon={mdiTrashCanOutline}
+          onclick={() => handleDelete()}
+        >
+          <Text class="hidden md:block">{$t('delete_user')}</Text>
+        </Button>
+      {/if}
     </HStack>
   {/snippet}
   <div>
     <Container size="large" center>
+      {#if user.deletedAt}
+        <Alert color="danger" class="my-4" title={$t('user_has_been_deleted')} icon={mdiTrashCanOutline} />
+      {/if}
+
       <div class="grid gap-4 grod-cols-1 lg:grid-cols-2 w-full">
         <div class="col-span-full flex gap-4 items-center my-4">
           <UserAvatar {user} size="md" />
