@@ -6,13 +6,13 @@
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
   import { albumViewSettings } from '$lib/stores/preferences.store';
-  import { type AlbumResponseDto, getAllAlbums } from '@immich/sdk';
+  import { type AlbumResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import AlbumListItem from '../../asset-viewer/album-list-item.svelte';
   import NewAlbumListItem from './new-album-list-item.svelte';
-  import { albumListingStore } from '$lib/stores/album-listing.store';
 
   let search = $state('');
   let selectedRowIndex: number = $state(-1);
