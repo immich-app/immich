@@ -131,7 +131,7 @@ jobs:
             tag-suffix: '-rocm'
             platforms: linux/amd64
             runner-mapping: '{"linux/amd64": "mich"}'
-    uses: ./.github/workflows/multi-runner-build.yml
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@a6c9d08f2c3a5d7773ecc209cdde4b910d70cdb3
     permissions:
       contents: read
       actions: read
@@ -154,7 +154,7 @@ jobs:
     name: Build and Push Server
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
-    uses: ./.github/workflows/multi-runner-build.yml
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@a6c9d08f2c3a5d7773ecc209cdde4b910d70cdb3
     permissions:
       contents: read
       actions: read
