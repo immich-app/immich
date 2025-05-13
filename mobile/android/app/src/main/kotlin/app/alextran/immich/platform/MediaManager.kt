@@ -14,9 +14,9 @@ class MediaManager(context: Context) {
   private val ctx: Context = context.applicationContext
 
   companion object {
-    private const val SHARED_PREF_NAME = "Immich::MediaManager"
-    private const val SHARED_PREF_MEDIA_STORE_VERSION_KEY = "MediaStore::getVersion"
-    private const val SHARED_PREF_MEDIA_STORE_GEN_KEY = "MediaStore::getGeneration"
+    const val SHARED_PREF_NAME = "Immich::MediaManager"
+    const val SHARED_PREF_MEDIA_STORE_VERSION_KEY = "MediaStore::getVersion"
+    const val SHARED_PREF_MEDIA_STORE_GEN_KEY = "MediaStore::getGeneration"
 
     private fun getSavedGenerationMap(context: Context): Map<String, Long> {
       return context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
