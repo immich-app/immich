@@ -85,12 +85,12 @@
             alt={$t('memory_lane_title', { values: { title: $getAltText(memory.assets[0]) } })}
             draggable="false"
           />
-          <p class="absolute bottom-2 start-4 text-lg text-white max-md:text-sm">
-            {$memoryLaneTitle(memory)}
-          </p>
           <div
             class="absolute start-0 top-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
           ></div>
+          <p class="absolute bottom-2 start-4 text-lg text-white max-md:text-sm">
+            {$memoryLaneTitle(memory)}
+          </p>
         </a>
       {/each}
     </div>
