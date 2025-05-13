@@ -1,9 +1,10 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+
   import { AssetAction } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetVisibility, updateAssets, type AssetResponseDto } from '@immich/sdk';
+  import { AssetVisibility, updateAssets, Visibility, type AssetResponseDto } from '@immich/sdk';
   import { mdiEyeOffOutline, mdiFolderMoveOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction, PreAction } from './action';
@@ -15,13 +16,14 @@
   }
 
   let { asset, onAction, preAction }: Props = $props();
+  const isLocked = asset.visibility === Visibility.Locked;
 
   const toggleLockedVisibility = async () => {
-    const isConfirmed = await dialogController.show({
-      title: asset.isLocked ? $t('remove_from_locked_folder') : $t('move_to_locked_folder'),
-      prompt: asset.isLocked ? $t('remove_from_locked_folder_confirmation') : $t('move_to_locked_folder_confirmation'),
+    const isConfirmed = await modalManager.showDialog({
+      title: isLocked ? $t('remove_from_locked_folder') : $t('move_to_locked_folder'),
+      prompt: isLocked ? $t('remove_from_locked_folder_confirmation') : $t('move_to_locked_folder_confirmation'),
       confirmText: $t('move'),
-      confirmColor: asset.isLocked ? 'danger' : 'primary',
+      confirmColor: isLocked ? 'danger' : 'primary',
     });
 
     if (!isConfirmed) {
@@ -30,19 +32,19 @@
 
     try {
       preAction({
-        type: asset.isLocked ? AssetAction.SET_VISIBILITY_TIMELINE : AssetAction.SET_VISIBILITY_LOCKED,
+        type: isLocked ? AssetAction.SET_VISIBILITY_TIMELINE : AssetAction.SET_VISIBILITY_LOCKED,
         asset,
       });
 
       await updateAssets({
         assetBulkUpdateDto: {
           ids: [asset.id],
-          visibility: asset.isLocked ? AssetVisibility.Timeline : AssetVisibility.Locked,
+          visibility: isLocked ? AssetVisibility.Timeline : AssetVisibility.Locked,
         },
       });
 
       onAction({
-        type: asset.isLocked ? AssetAction.SET_VISIBILITY_TIMELINE : AssetAction.SET_VISIBILITY_LOCKED,
+        type: isLocked ? AssetAction.SET_VISIBILITY_TIMELINE : AssetAction.SET_VISIBILITY_LOCKED,
         asset,
       });
     } catch (error) {
@@ -53,6 +55,6 @@
 
 <MenuOption
   onClick={() => toggleLockedVisibility()}
-  text={asset.isLocked ? $t('move_off_locked_folder') : $t('add_to_locked_folder')}
-  icon={asset.isLocked ? mdiFolderMoveOutline : mdiEyeOffOutline}
+  text={isLocked ? $t('move_off_locked_folder') : $t('add_to_locked_folder')}
+  icon={isLocked ? mdiFolderMoveOutline : mdiEyeOffOutline}
 />

@@ -33,8 +33,13 @@
 
       isVerified = true;
 
+      let redirectPath = `${AppRoute.LOCKED}`;
+      if (data.continuePath) {
+        redirectPath += `/${data.continuePath}`;
+      }
+
       setTimeout(() => {
-        goto(AppRoute.LOCKED)
+        goto(redirectPath)
           .then(() => {})
           .catch(() => {});
       }, 1000);

@@ -445,24 +445,16 @@ export class AuthService extends BaseService {
       }
 
       // Pin check
-      let isPinExpired = true;
-      const pinExpiresAt = session.pinExpiresAt;
+      let hasElevatedPermission = false;
 
-      if (pinExpiresAt) {
-        const pinExpiresAtDate = DateTime.fromJSDate(pinExpiresAt);
-        const pinDiff = now.diff(pinExpiresAtDate, ['minutes']);
+      if (session.pinExpiresAt) {
+        const pinExpiresAt = DateTime.fromJSDate(session.pinExpiresAt);
+        hasElevatedPermission = pinExpiresAt > now;
 
-        // Push another 5 minutes
-        if (pinDiff.minutes < 5) {
-          isPinExpired = false;
+        if (hasElevatedPermission && now.plus({ minutes: 5 }) > pinExpiresAt) {
           await this.sessionRepository.update(session.id, {
-            pinExpiresAt: new Date(DateTime.now().plus({ minutes: 5 }).toJSDate()),
+            pinExpiresAt: DateTime.now().plus({ minutes: 5 }).toJSDate(),
           });
-        }
-
-        if (pinDiff.minutes > 15) {
-          isPinExpired = true;
-          await this.sessionRepository.update(session.id, { pinExpiresAt: null });
         }
       }
 
@@ -470,7 +462,7 @@ export class AuthService extends BaseService {
         user: session.user,
         session: {
           id: session.id,
-          hasElevatedPermission: !isPinExpired,
+          hasElevatedPermission,
         },
       };
     }
@@ -484,13 +476,7 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException();
     }
 
-    if (!user.pinCode) {
-      throw new BadRequestException('User does not have a PIN code');
-    }
-
-    if (!this.validateSecret(dto.pinCode, user.pinCode)) {
-      throw new BadRequestException('Wrong PIN code');
-    }
+    this.resetPinChecks(user, { pinCode: dto.pinCode });
 
     if (!auth.session) {
       throw new BadRequestException('Session is missing');
@@ -539,7 +525,7 @@ export class AuthService extends BaseService {
     return {
       pinCode: !!user.pinCode,
       password: !!user.password,
-      hasElevatedPermission: !!auth.session?.hasElevatedPermission,
+      isElevated: !!auth.session?.hasElevatedPermission,
     };
   }
 }

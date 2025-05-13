@@ -5,12 +5,13 @@ import { getAuthStatus } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
-export const load = (async () => {
+export const load = (async ({ url }) => {
   await authenticate();
 
-  const { hasElevatedPermission, pinCode } = await getAuthStatus();
+  const { isElevated, pinCode } = await getAuthStatus();
 
-  if (hasElevatedPermission) {
+  const continuePath = url.searchParams.get('continue');
+  if (isElevated) {
     redirect(302, AppRoute.LOCKED);
   }
 
@@ -21,5 +22,6 @@ export const load = (async () => {
       title: $t('pin_verification'),
     },
     hasPinCode: !!pinCode,
+    continuePath,
   };
 }) satisfies PageLoad;

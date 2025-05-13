@@ -8,9 +8,18 @@
     tabindexStart?: number;
     autofocus?: boolean;
     onFilled?: (value: string) => void;
+    type?: 'text' | 'password';
   }
 
-  let { label, value = $bindable(''), pinLength = 6, tabindexStart = 0, autofocus = false, onFilled }: Props = $props();
+  let {
+    label,
+    value = $bindable(''),
+    pinLength = 6,
+    tabindexStart = 0,
+    autofocus = false,
+    onFilled,
+    type = 'text',
+  }: Props = $props();
 
   let pinValues = $state(Array.from({ length: pinLength }).fill(''));
   let pinCodeInputElements: HTMLInputElement[] = $state([]);
@@ -111,7 +120,7 @@
     {#each { length: pinLength } as _, index (index)}
       <input
         tabindex={tabindexStart + index}
-        type="text"
+        {type}
         inputmode="numeric"
         pattern="[0-9]*"
         maxlength="1"

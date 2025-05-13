@@ -168,7 +168,7 @@ class AssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, assetIds: Set<string>) {
+  async checkOwnerAccess(userId: string, assetIds: Set<string>, hasElevatedPermission: boolean | undefined) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
@@ -178,6 +178,7 @@ class AssetAccess {
       .select('assets.id')
       .where('assets.id', 'in', [...assetIds])
       .where('assets.ownerId', '=', userId)
+      .$if(!hasElevatedPermission, (eb) => eb.where('assets.visibility', '!=', AssetVisibility.LOCKED))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }

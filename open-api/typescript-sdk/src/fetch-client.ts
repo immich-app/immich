@@ -309,7 +309,6 @@ export type AssetResponseDto = {
     id: string;
     isArchived: boolean;
     isFavorite: boolean;
-    isLocked: boolean;
     isOffline: boolean;
     isTrashed: boolean;
     /** This property was deprecated in v1.106.0 */
@@ -330,6 +329,7 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     updatedAt: string;
+    visibility: Visibility;
 };
 export type AlbumResponseDto = {
     albumName: string;
@@ -521,7 +521,7 @@ export type PinCodeSetupDto = {
     pinCode: string;
 };
 export type AuthStatusResponseDto = {
-    hasElevatedPermission: boolean;
+    isElevated: boolean;
     password: boolean;
     pinCode: boolean;
 };
@@ -3602,6 +3602,12 @@ export enum AssetTypeEnum {
     Video = "VIDEO",
     Audio = "AUDIO",
     Other = "OTHER"
+}
+export enum Visibility {
+    Archive = "archive",
+    Timeline = "timeline",
+    Hidden = "hidden",
+    Locked = "locked"
 }
 export enum AssetOrder {
     Asc = "asc",

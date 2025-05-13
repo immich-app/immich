@@ -5,7 +5,7 @@
   "nothing_here_yet": "Nothing here yet",
   "move_to_locked_folder": "Move to Locked Folder",
   "remove_from_locked_folder": "Remove from Locked Folder",
-  "move_to_locked_folder_confirmation": "These photos and video will be hidden and won't show up as you browser your library",
+  "move_to_locked_folder_confirmation": "These photos and video will be removed from all albums, and only viewable from the Locked Folder",
   "remove_from_locked_folder_confirmation": "Are you sure you want to move these photos and videos out of Locked Folder? They will be visible in your library",
   "move": "Move",
   "no_locked_photos_message": "Photos and videos in Locked Folder are hidden and won't show up as you browser your library.",

@@ -51,7 +51,7 @@
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
     <SelectAllAssets withText {assetStore} {assetInteraction} />
-    <SetVisibilityAction onVisibilitySet={handleMoveOffLockedFolder} />
+    <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       <ChangeDate menuItem />

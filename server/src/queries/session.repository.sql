@@ -12,6 +12,7 @@ where
 select
   "sessions"."id",
   "sessions"."updatedAt",
+  "sessions"."pinExpiresAt",
   (
     select
       to_json(obj)

@@ -98,6 +98,7 @@ from
 where
   "assets"."id" in ($1)
   and "assets"."ownerId" = $2
+  and "assets"."visibility" != $3
 
 -- AccessRepository.asset.checkPartnerAccess
 select

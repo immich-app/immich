@@ -9105,9 +9105,6 @@
           "isFavorite": {
             "type": "boolean"
           },
-          "isLocked": {
-            "type": "boolean"
-          },
           "isOffline": {
             "type": "boolean"
           },
@@ -9188,6 +9185,15 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "visibility": {
+            "enum": [
+              "archive",
+              "timeline",
+              "hidden",
+              "locked"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -9201,7 +9207,6 @@
           "id",
           "isArchived",
           "isFavorite",
-          "isLocked",
           "isOffline",
           "isTrashed",
           "localDateTime",
@@ -9210,7 +9215,8 @@
           "ownerId",
           "thumbhash",
           "type",
-          "updatedAt"
+          "updatedAt",
+          "visibility"
         ],
         "type": "object"
       },
@@ -9281,7 +9287,7 @@
       },
       "AuthStatusResponseDto": {
         "properties": {
-          "hasElevatedPermission": {
+          "isElevated": {
             "type": "boolean"
           },
           "password": {
@@ -9292,7 +9298,7 @@
           }
         },
         "required": [
-          "hasElevatedPermission",
+          "isElevated",
           "password",
           "pinCode"
         ],

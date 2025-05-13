@@ -28,6 +28,7 @@
   import {
     AssetJobName,
     AssetTypeEnum,
+    Visibility,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -92,6 +93,7 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
+  let isLocked = $derived(asset.visibility === Visibility.Locked);
 
   // $: showEditorButton =
   //   isOwner &&
@@ -113,7 +115,7 @@
     {/if}
   </div>
   <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
-    {#if !asset.isTrashed && $user && !asset.isLocked}
+    {#if !asset.isTrashed && $user && !isLocked}
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
@@ -160,14 +162,14 @@
       <DeleteAction {asset} {onAction} {preAction} />
 
       <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
-        {#if showSlideshow && !asset.isLocked}
+        {#if showSlideshow && !isLocked}
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
         {#if showDownloadButton}
           <DownloadAction {asset} menuItem />
         {/if}
 
-        {#if !asset.isLocked}
+        {#if !isLocked}
           {#if asset.isTrashed}
             <RestoreAction {asset} {onAction} />
           {:else}
@@ -187,11 +189,11 @@
           {#if person}
             <SetFeaturedPhotoAction {asset} {person} />
           {/if}
-          {#if asset.type === AssetTypeEnum.Image && !asset.isLocked}
+          {#if asset.type === AssetTypeEnum.Image && !isLocked}
             <SetProfilePictureAction {asset} />
           {/if}
 
-          {#if !asset.isLocked}
+          {#if !isLocked}
             <ArchiveAction {asset} {onAction} {preAction} />
             <MenuOption
               icon={mdiUpload}

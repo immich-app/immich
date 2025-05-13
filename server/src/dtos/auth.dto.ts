@@ -138,5 +138,5 @@ export class OAuthAuthorizeResponseDto {
 export class AuthStatusResponseDto {
   pinCode!: boolean;
   password!: boolean;
-  hasElevatedPermission!: boolean;
+  isElevated!: boolean;
 }
