@@ -156,7 +156,7 @@
   }
 </script>
 
-<section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+<section class="relative p-2">
   <div class="flex place-items-center gap-2">
     <CircleIconButton icon={mdiClose} title={$t('close')} onclick={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>

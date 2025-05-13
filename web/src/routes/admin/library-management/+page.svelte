@@ -240,25 +240,6 @@
   };
 </script>
 
-{#if toCreateLibrary}
-  <LibraryUserPickerForm onSubmit={handleCreate} onCancel={() => (toCreateLibrary = false)} />
-{/if}
-
-{#if toAddImportPath}
-  <LibraryImportPathForm
-    title={$t('add_import_path')}
-    submitText={$t('add')}
-    bind:importPath={importPathToAdd}
-    onSubmit={handleAddImportPath}
-    onCancel={() => {
-      toAddImportPath = false;
-      if (updateLibraryIndex) {
-        onEditImportPathClicked(updateLibraryIndex);
-      }
-    }}
-  />
-{/if}
-
 <UserPageLayout title={data.meta.title} admin>
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
@@ -389,5 +370,24 @@
     library={libraries[renameLibrary]}
     onSubmit={handleUpdate}
     onCancel={() => (renameLibrary = undefined)}
+  />
+{/if}
+
+{#if toCreateLibrary}
+  <LibraryUserPickerForm onSubmit={handleCreate} onCancel={() => (toCreateLibrary = false)} />
+{/if}
+
+{#if toAddImportPath}
+  <LibraryImportPathForm
+    title={$t('add_import_path')}
+    submitText={$t('add')}
+    bind:importPath={importPathToAdd}
+    onSubmit={handleAddImportPath}
+    onCancel={() => {
+      toAddImportPath = false;
+      if (updateLibraryIndex) {
+        onEditImportPathClicked(updateLibraryIndex);
+      }
+    }}
   />
 {/if}

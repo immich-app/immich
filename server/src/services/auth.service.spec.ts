@@ -253,6 +253,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -265,7 +266,7 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id },
+        session: { id: session.id, hasElevatedPermission: false },
       });
     });
   });
@@ -376,6 +377,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -388,7 +390,7 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id },
+        session: { id: session.id, hasElevatedPermission: false },
       });
     });
 
@@ -398,6 +400,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -417,6 +420,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);

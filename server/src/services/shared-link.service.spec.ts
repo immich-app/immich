@@ -156,6 +156,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set([assetStub.image.id]),
+        false,
       );
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
         type: SharedLinkType.INDIVIDUAL,
@@ -186,6 +187,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set([assetStub.image.id]),
+        false,
       );
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
         type: SharedLinkType.INDIVIDUAL,

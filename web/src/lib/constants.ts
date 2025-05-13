@@ -373,7 +373,6 @@ export enum SettingInputFieldType {
 export const AlbumPageViewMode = {
   SELECT_THUMBNAIL: 'select-thumbnail',
   SELECT_ASSETS: 'select-assets',
-  VIEW_USERS: 'view-users',
   VIEW: 'view',
   OPTIONS: 'options',
 };
@@ -381,7 +380,6 @@ export const AlbumPageViewMode = {
 export type AlbumPageViewMode =
   | typeof AlbumPageViewMode.SELECT_THUMBNAIL
   | typeof AlbumPageViewMode.SELECT_ASSETS
-  | typeof AlbumPageViewMode.VIEW_USERS
   | typeof AlbumPageViewMode.VIEW
   | typeof AlbumPageViewMode.OPTIONS;
 

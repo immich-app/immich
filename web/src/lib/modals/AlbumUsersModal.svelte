@@ -23,12 +23,10 @@
 
   interface Props {
     album: AlbumResponseDto;
-    onClose: () => void;
-    onRemove: (userId: string) => void;
-    onRefreshAlbum: () => void;
+    onClose: (changed?: boolean) => void;
   }
 
-  let { album, onClose, onRemove, onRefreshAlbum }: Props = $props();
+  let { album, onClose }: Props = $props();
 
   let currentUser: UserResponseDto | undefined = $state();
 
@@ -71,12 +69,12 @@
 
     try {
       await removeUserFromAlbum({ id: album.id, userId });
-      onRemove(userId);
       const message =
         userId === 'me'
           ? $t('album_user_left', { values: { album: album.albumName } })
           : $t('album_user_removed', { values: { user: user.name } });
       notificationController.show({ type: NotificationType.Info, message });
+      onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_album_users'));
     }
@@ -88,8 +86,9 @@
       const message = $t('user_role_set', {
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
-      onRefreshAlbum();
+
       notificationController.show({ type: NotificationType.Info, message });
+      onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));
     }
