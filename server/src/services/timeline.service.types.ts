@@ -14,7 +14,7 @@ export type TimeBucketAssets = {
   ownerId: string[];
   ratio: number[];
   isFavorite: number[];
-  isArchived: number[];
+  visibility: string[];
   isTrashed: number[];
   isImage: number[];
   thumbhash: (string | null)[];
