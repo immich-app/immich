@@ -55,7 +55,7 @@
 >
   <SkipLink text={$t('skip_to_content')} />
   <div
-    class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
+    class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center border-b py-2 dark:border-b-immich-dark-gray sidebar:grid-cols-[theme(spacing.64)_auto]"
   >
     <div class="flex flex-row gap-1 mx-4 items-center">
       <IconButton

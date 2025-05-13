@@ -291,10 +291,7 @@
   {:else}
     <div class="fixed z-[100] top-0 start-0 w-full">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
-        <div
-          class="-z-[1] bg-immich-bg dark:bg-immich-dark-bg"
-          style="position:absolute;top:0;left:0;right:0;bottom:0;"
-        ></div>
+        <div class="-z-[1] bg-light" style="position:absolute;top:0;left:0;right:0;bottom:0;"></div>
         <div class="w-full flex-1 ps-4">
           <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
         </div>

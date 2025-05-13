@@ -1,6 +1,6 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
@@ -67,11 +67,9 @@
 </section>
 
 {#if $showCancelConfirmDialog}
-  <ConfirmDialog
+  <ConfirmModal
     title={$t('editor_close_without_save_title')}
     prompt={$t('editor_close_without_save_prompt')}
-    cancelText={$t('no')}
-    cancelColor="secondary"
     confirmColor="danger"
     confirmText={$t('close')}
     onClose={(confirmed) => (confirmed ? onConfirm() : ($showCancelConfirmDialog = false))}
