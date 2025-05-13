@@ -119,7 +119,7 @@
     "@types/multer": "^1.4.7",
     "@types/node": "^22.15.16",
     "@types/nodemailer": "^6.4.14",
-    "@types/picomatch": "^3.0.0",
+    "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
     "@types/react": "^19.0.0",
     "@types/sanitize-html": "^2.13.0",
