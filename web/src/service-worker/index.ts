@@ -34,16 +34,20 @@ sw.addEventListener('fetch', (event) => {
   }
   const url = new URL(event.request.url);
   if (APP_RESOURCES.includes(url.pathname)) {
-    event.respondWith(appResources(url, event));
+    event.respondWith(cacheOrFetch(event.request));
+    return;
   } else if (/^\/api\/assets\/[a-f0-9-]+\/(original|thumbnail)/.test(url.pathname)) {
-    event.respondWith(immichAsset(url));
-  } else if (
-    /^(\/(link|auth|admin|albums|archive|buy|explore|favorites|folders|maps|memory|partners|people|photos|places|search|share|shared-links|sharing|tags|trash|user-settings|utilities))(\/.*)?$/.test(
-      url.pathname,
-    )
-  ) {
-    event.respondWith(ssr(new URL(event.request.url).origin));
+    event.respondWith(cacheOrFetch(event.request, true));
+    return;
+  } else if (/\.(png|ico|txt|json|ts|ttf|css|js|svelte)$/.test(url.pathname)) {
+    return;
+  } else if (/^\/(src|api)(\/.*)?$/.test(url.pathname)) {
+    return;
+  } else if (/^\/(node_modules|@vite|@id)(\/.*)?$/.test(url.pathname)) {
+    return;
   }
+  const slash = new URL('/', new URL(event.request.url).origin);
+  event.respondWith(cacheOrFetch(slash));
 });
 
 async function deleteOldCaches() {
@@ -59,81 +63,69 @@ async function addFilesToCache() {
   await cache.addAll(APP_RESOURCES);
 }
 
-async function ssr(origin: string) {
+export const isURL = (request: URL | RequestInfo): request is URL => (request as URL).href !== undefined;
+export const isRequest = (request: RequestInfo): request is Request => (request as Request).url !== undefined;
+
+async function cacheOrFetch(request: URL | Request | string, cancelable: boolean = false) {
+  const cached = await checkCache(request);
+  if (cached.response) {
+    return cached.response;
+  }
+  try {
+    if (cancelable) {
+      const cacheKey = getCacheKey(request);
+      try {
+        const cancelToken = new AbortController();
+        pendingLoads.set(cacheKey, cancelToken);
+        const response = await fetch(request, {
+          signal: cancelToken.signal,
+        });
+        checkResponse(response);
+        setCached(response, cached.cache, cacheKey);
+        return response;
+      } finally {
+        if (cacheKey !== undefined) {
+          pendingLoads.delete(cacheKey);
+        }
+      }
+    } else {
+      const response = await fetch(request);
+      checkResponse(response);
+      return response;
+    }
+  } catch {
+    return new Response(undefined, { status: 499, statusText: 'Request canceled. Still buffering... forever.' });
+  }
+}
+
+async function checkCache(url: URL | Request | string) {
   const cache = await caches.open(CACHE);
-  const url = new URL('/', origin);
-  let response = useCache ? await cache.match(url) : undefined;
+  const response = useCache ? await cache.match(url) : undefined;
   if (response) {
-    return response;
+    return { cache, response };
   }
-  response = await fetch(url);
-  if (!(response instanceof Response)) {
-    return Response.error();
-  }
+  return { cache, response };
+}
+
+async function setCached(response: Response, cache: Cache, cacheKey: URL | Request | string) {
   if (response.status === 200) {
-    cache.put(url, response.clone());
-  }
-  return response;
-}
-
-async function immichAsset(url: URL) {
-  const cache = await caches.open(CACHE);
-  let response = useCache ? await cache.match(url) : undefined;
-  if (response) {
-    return response;
-  }
-  try {
-    const cancelToken = new AbortController();
-    const request = fetch(url, {
-      signal: cancelToken.signal,
-    });
-    pendingLoads.set(url.toString(), cancelToken);
-    response = await request;
-    if (!(response instanceof Response)) {
-      throw new TypeError('invalid response from fetch');
-    }
-    if (response.status === 200) {
-      cache.put(url, response.clone());
-    }
-    return response;
-  } catch {
-    return Response.error();
-  } finally {
-    pendingLoads.delete(url.toString());
+    cache.put(cacheKey, response.clone());
   }
 }
 
-async function appResources(url: URL, event: FetchEvent) {
-  const cache = await caches.open(CACHE);
-  // `build`/`files` can always be served from the cache
-  if (APP_RESOURCES.includes(url.pathname)) {
-    const response = await cache.match(url.pathname);
-    if (response) {
-      return response;
-    }
+function checkResponse(response: Response) {
+  if (!(response instanceof Response)) {
+    throw new TypeError('invalid response from fetch');
   }
-  // for everything else, try the network first, but
-  // fall back to the cache if we're offline
-  try {
-    const response = await fetch(event.request);
-    // if we're offline, fetch can return a value that is not a Response
-    // instead of throwing - and we can't pass this non-Response to respondWith
-    if (!(response instanceof Response)) {
-      throw new TypeError('invalid response from fetch');
-    }
+}
 
-    if (response.status === 200) {
-      cache.put(event.request, response.clone());
-    }
-
-    return response;
-  } catch {
-    const response = await cache.match(event.request);
-    if (response) {
-      return response;
-    }
-    // if there's no cache, then just error out
-    return Response.error();
+function getCacheKey(request: URL | Request | string) {
+  if (isURL(request)) {
+    return request.toString();
+  } else if (isRequest(request)) {
+    return request.url;
+  } else {
+    return request;
   }
 }
 
@@ -152,6 +144,6 @@ broadcast.onmessage = (event) => {
       pendingLoads.delete(url.toString());
     }
   } else if (event.data.type === 'preload') {
-    immichAsset(url);
+    cacheOrFetch(event.data);
   }
 };
