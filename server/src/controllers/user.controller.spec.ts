@@ -8,16 +8,18 @@ import { automock, ControllerContext, controllerSetup, mockBaseService } from 't
 
 describe(UserController.name, () => {
   let ctx: ControllerContext;
+  const service = mockBaseService(UserService);
 
   beforeAll(async () => {
     ctx = await controllerSetup(UserController, [
       { provide: LoggingRepository, useValue: automock(LoggingRepository, { strict: false }) },
-      { provide: UserService, useValue: mockBaseService(UserService) },
+      { provide: UserService, useValue: service },
     ]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
+    service.resetAllMocks();
     ctx.reset();
   });
 

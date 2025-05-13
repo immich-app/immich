@@ -27,7 +27,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/download.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -42,7 +42,7 @@ void main() async {
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
   await migrateDatabaseIfNeeded(db);
-  HttpOverrides.global = HttpSSLCertOverride();
+  HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(

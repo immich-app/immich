@@ -37,6 +37,7 @@ export default defineConfig({
   },
   plugins: [
     vidstack(),
+    enhancedImages(),
     sveltekit(),
     process.env.BUILD_STATS === 'true'
       ? visualizer({
@@ -44,7 +45,6 @@ export default defineConfig({
           filename: 'stats.html',
         })
       : undefined,
-    enhancedImages(),
     svelteTesting(),
   ],
   optimizeDeps: {

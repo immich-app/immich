@@ -56,9 +56,7 @@ class ShareIntentPage extends HookConsumerWidget {
         title: Column(
           children: [
             const Text('upload_to_immich').tr(
-              args: [
-                candidates.length.toString(),
-              ],
+              namedArgs: {'count': candidates.length.toString()},
             ),
             Text(
               currentEndpoint,
@@ -176,8 +174,12 @@ class UploadingText extends StatelessWidget {
       return element.status == UploadStatus.complete;
     }).length;
 
-    return const Text("shared_intent_upload_button_progress_text")
-        .tr(args: [uploadedCount.toString(), candidates.length.toString()]);
+    return const Text("shared_intent_upload_button_progress_text").tr(
+      namedArgs: {
+        'current': uploadedCount.toString(),
+        'total': candidates.length.toString(),
+      },
+    );
   }
 }
 

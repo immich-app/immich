@@ -4,7 +4,7 @@ import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsString, Min } from 
 import { User, UserAdmin } from 'src/database';
 import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
-import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
+import { Optional, PinCode, ValidateBoolean, ValidateUUID, toEmail, toSanitized } from 'src/validation';
 
 export class UserUpdateMeDto {
   @Optional()
@@ -67,6 +67,9 @@ export const mapUser = (entity: User | UserAdmin): UserResponseDto => {
 export class UserAdminSearchDto {
   @ValidateBoolean({ optional: true })
   withDeleted?: boolean;
+
+  @ValidateUUID({ optional: true })
+  id?: string;
 }
 
 export class UserAdminCreateDto {
@@ -115,6 +118,9 @@ export class UserAdminUpdateDto {
   @IsNotEmpty()
   @IsString()
   password?: string;
+
+  @PinCode({ optional: true, nullable: true, emptyToNull: true })
+  pinCode?: string | null;
 
   @Optional()
   @IsString()

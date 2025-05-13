@@ -13,7 +13,7 @@ export enum AssetAction {
 }
 
 export enum AppRoute {
-  ADMIN_USER_MANAGEMENT = '/admin/user-management',
+  ADMIN_USERS = '/admin/users',
   ADMIN_LIBRARY_MANAGEMENT = '/admin/library-management',
   ADMIN_SETTINGS = '/admin/system-settings',
   ADMIN_STATS = '/admin/server-status',
@@ -367,8 +367,6 @@ export enum SettingInputFieldType {
 }
 
 export const AlbumPageViewMode = {
-  LINK_SHARING: 'link-sharing',
-  SELECT_USERS: 'select-users',
   SELECT_THUMBNAIL: 'select-thumbnail',
   SELECT_ASSETS: 'select-assets',
   VIEW_USERS: 'view-users',
@@ -377,8 +375,6 @@ export const AlbumPageViewMode = {
 };
 
 export type AlbumPageViewMode =
-  | typeof AlbumPageViewMode.LINK_SHARING
-  | typeof AlbumPageViewMode.SELECT_USERS
   | typeof AlbumPageViewMode.SELECT_THUMBNAIL
   | typeof AlbumPageViewMode.SELECT_ASSETS
   | typeof AlbumPageViewMode.VIEW_USERS

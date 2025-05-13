@@ -4,6 +4,7 @@
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
+  import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -34,7 +35,6 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
-  import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
   import CropArea from './editor/crop-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
@@ -383,15 +383,16 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed start-0 top-0 z-[1001] grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class="fixed start-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   use:focusTrap
+  bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->
   {#if $slideshowState === SlideshowState.None && !isShowEditor}
     <div
       class={[
         { 'opacity-100': controlsVisible },
-        'z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform to-transparent opacity-0 transition-opacity ',
+        'col-span-4 col-start-1 row-span-1 row-start-1 transition-transform to-transparent opacity-0 transition-opacity ',
       ]}
     >
       <AssetViewerNavBar
@@ -446,182 +447,191 @@
       </div>
     {/if}
 
-    {#if previewStackedAsset}
-      {#key previewStackedAsset.id}
-        {#if previewStackedAsset.type === AssetTypeEnum.Image}
-          <PhotoViewer
-            bind:zoomToggle
-            bind:copyImage
-            asset={previewStackedAsset}
-            {preloadAssets}
-            onPreviousAsset={() => navigateAsset('previous')}
-            onNextAsset={() => navigateAsset('next')}
-            haveFadeTransition={false}
-            {sharedLink}
-          />
-        {:else}
-          <VideoViewer
-            assetId={previewStackedAsset.id}
-            cacheKey={previewStackedAsset.thumbhash}
-            projectionType={previewStackedAsset.exifInfo?.projectionType}
-            loopVideo={true}
-            onPreviousAsset={() => navigateAsset('previous')}
-            onNextAsset={() => navigateAsset('next')}
-            onVideoEnded={() => navigateAsset()}
-            onVideoStarted={handleVideoStarted}
-            {onControlsChange}
-          />
-        {/if}
-      {/key}
-    {:else}
-      {#key asset.id}
-        {#if asset.type === AssetTypeEnum.Image}
-          {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+    {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
+      <div class="my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
+        <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
+      </div>
+    {/if}
+
+    <!-- Asset Viewer -->
+    <div class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
+      {#if previewStackedAsset}
+        {#key previewStackedAsset.id}
+          {#if previewStackedAsset.type === AssetTypeEnum.Image}
+            <PhotoViewer
+              bind:zoomToggle
+              bind:copyImage
+              asset={previewStackedAsset}
+              {preloadAssets}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
+              haveFadeTransition={false}
+              {sharedLink}
+            />
+          {:else}
             <VideoViewer
-              assetId={asset.livePhotoVideoId}
+              assetId={previewStackedAsset.id}
+              cacheKey={previewStackedAsset.thumbhash}
+              projectionType={previewStackedAsset.exifInfo?.projectionType}
+              loopVideo={true}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
+              onVideoEnded={() => navigateAsset()}
+              onVideoStarted={handleVideoStarted}
+              {onControlsChange}
+            />
+          {/if}
+        {/key}
+      {:else}
+        {#key asset.id}
+          {#if asset.type === AssetTypeEnum.Image}
+            {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+              <VideoViewer
+                assetId={asset.livePhotoVideoId}
+                cacheKey={asset.thumbhash}
+                projectionType={asset.exifInfo?.projectionType}
+                loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+                onPreviousAsset={() => navigateAsset('previous')}
+                onNextAsset={() => navigateAsset('next')}
+                onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+                {onControlsChange}
+              />
+            {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
+                  .toLowerCase()
+                  .endsWith('.insp'))}
+              <ImagePanoramaViewer {asset} />
+            {:else if isShowEditor && selectedEditType === 'crop'}
+              <CropArea {asset} />
+            {:else}
+              <PhotoViewer
+                bind:zoomToggle
+                bind:copyImage
+                {asset}
+                {preloadAssets}
+                onPreviousAsset={() => navigateAsset('previous')}
+                onNextAsset={() => navigateAsset('next')}
+                {sharedLink}
+                haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
+              />
+            {/if}
+          {:else}
+            <VideoViewer
+              assetId={asset.id}
               cacheKey={asset.thumbhash}
               projectionType={asset.exifInfo?.projectionType}
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
-              onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+              onVideoEnded={() => navigateAsset()}
+              onVideoStarted={handleVideoStarted}
               {onControlsChange}
             />
-          {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
-                .toLowerCase()
-                .endsWith('.insp'))}
-            <ImagePanoramaViewer {asset} />
-          {:else if isShowEditor && selectedEditType === 'crop'}
-            <CropArea {asset} />
-          {:else}
-            <PhotoViewer
-              bind:zoomToggle
-              bind:copyImage
-              {asset}
-              {preloadAssets}
-              onPreviousAsset={() => navigateAsset('previous')}
-              onNextAsset={() => navigateAsset('next')}
-              {sharedLink}
-              haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
-            />
           {/if}
-        {:else}
-          <VideoViewer
-            assetId={asset.id}
-            cacheKey={asset.thumbhash}
-            projectionType={asset.exifInfo?.projectionType}
-            loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-            onPreviousAsset={() => navigateAsset('previous')}
-            onNextAsset={() => navigateAsset('next')}
-            onVideoEnded={() => navigateAsset()}
-            onVideoStarted={handleVideoStarted}
-            {onControlsChange}
-          />
-        {/if}
-        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0)}
-          <div class="z-[9999] absolute bottom-0 end-0 mb-20 me-8">
-            <ActivityStatus
-              disabled={!album?.isActivityEnabled}
-              isLiked={activityManager.isLiked}
-              numberOfComments={activityManager.commentCount}
-              onFavorite={handleFavorite}
-              onOpenActivityTab={handleOpenActivity}
-            />
-          </div>
-        {/if}
-      {/key}
+          {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0)}
+            <div class="absolute bottom-0 end-0 mb-20 me-8">
+              <ActivityStatus
+                disabled={!album?.isActivityEnabled}
+                isLiked={activityManager.isLiked}
+                numberOfComments={activityManager.commentCount}
+                onFavorite={handleFavorite}
+                onOpenActivityTab={handleOpenActivity}
+              />
+            </div>
+          {/if}
+        {/key}
+      {/if}
+    </div>
+
+    {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
+      <div
+        class={[
+          { 'opacity-100': controlsVisible },
+          'to-transparent opacity-0 transition-opacity my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end',
+        ]}
+      >
+        <NextAssetAction onNextAsset={() => navigateAsset('next')} />
+      </div>
+    {/if}
+
+    {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
+      <div
+        transition:fly={{ duration: 150 }}
+        id="detail-panel"
+        class="row-start-1 row-span-4 w-[360px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+        translate="yes"
+      >
+        <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
+      </div>
+    {/if}
+
+    {#if isShowEditor}
+      <div
+        transition:fly={{ duration: 150 }}
+        id="editor-panel"
+        class="row-start-1 row-span-4 w-[400px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+        translate="yes"
+      >
+        <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
+      </div>
+    {/if}
+
+    {#if stack && withStacked}
+      {@const stackedAssets = stack.assets}
+      <div
+        id="stack-slideshow"
+        class="flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
+      >
+        <div class="relative w-full">
+          {#each stackedAssets as stackedAsset (stackedAsset.id)}
+            <div
+              class={['inline-block px-1 relative transition-all pb-2']}
+              style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
+            >
+              <Thumbnail
+                imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
+                brokenAssetClass="text-xs"
+                dimmed={stackedAsset.id !== asset.id}
+                asset={stackedAsset}
+                onClick={(stackedAsset) => {
+                  asset = stackedAsset;
+                }}
+                onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
+                readonly
+                thumbnailSize={stackedAsset.id === asset.id ? 65 : 60}
+                showStackedIcon={false}
+                disableLinkMouseOver
+              />
+
+              {#if stackedAsset.id === asset.id}
+                <div class="w-full flex place-items-center place-content-center">
+                  <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]"></div>
+                </div>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    {#if isShared && album && isShowActivity && $user}
+      <div
+        transition:fly={{ duration: 150 }}
+        id="activity-panel"
+        class="row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+        translate="yes"
+      >
+        <ActivityViewer
+          user={$user}
+          disabled={!album.isActivityEnabled}
+          assetType={asset.type}
+          albumOwnerId={album.ownerId}
+          albumId={album.id}
+          assetId={asset.id}
+          onClose={() => (isShowActivity = false)}
+        />
+      </div>
     {/if}
   </div>
-
-  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
-    <div
-      class={[
-        { 'opacity-100': controlsVisible },
-        'to-transparent opacity-0 transition-opacity z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end',
-      ]}
-    >
-      <NextAssetAction onNextAsset={() => navigateAsset('next')} />
-    </div>
-  {/if}
-
-  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
-    <div
-      transition:fly={{ duration: 150 }}
-      id="detail-panel"
-      class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
-      translate="yes"
-    >
-      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
-    </div>
-  {/if}
-
-  {#if isShowEditor}
-    <div
-      transition:fly={{ duration: 150 }}
-      id="editor-panel"
-      class="z-[1002] row-start-1 row-span-4 w-[400px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
-      translate="yes"
-    >
-      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
-    </div>
-  {/if}
-
-  {#if stack && withStacked}
-    {@const stackedAssets = stack.assets}
-    <div
-      id="stack-slideshow"
-      class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
-    >
-      <div class="relative w-full">
-        {#each stackedAssets as stackedAsset (stackedAsset.id)}
-          <div
-            class={['inline-block px-1 relative transition-all pb-2']}
-            style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
-          >
-            <Thumbnail
-              imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
-              brokenAssetClass="text-xs"
-              dimmed={stackedAsset.id !== asset.id}
-              asset={stackedAsset}
-              onClick={(stackedAsset) => {
-                asset = stackedAsset;
-              }}
-              onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
-              readonly
-              thumbnailSize={stackedAsset.id === asset.id ? 65 : 60}
-              showStackedIcon={false}
-              disableLinkMouseOver
-            />
-
-            {#if stackedAsset.id === asset.id}
-              <div class="w-full flex place-items-center place-content-center">
-                <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]"></div>
-              </div>
-            {/if}
-          </div>
-        {/each}
-      </div>
-    </div>
-  {/if}
-
-  {#if isShared && album && isShowActivity && $user}
-    <div
-      transition:fly={{ duration: 150 }}
-      id="activity-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
-      translate="yes"
-    >
-      <ActivityViewer
-        user={$user}
-        disabled={!album.isActivityEnabled}
-        assetType={asset.type}
-        albumOwnerId={album.ownerId}
-        albumId={album.id}
-        assetId={asset.id}
-        onClose={() => (isShowActivity = false)}
-      />
-    </div>
-  {/if}
 </section>
 
 <style>

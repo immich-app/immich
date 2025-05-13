@@ -1,7 +1,7 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { notificationController } from '$lib/components/shared-components/notification/notification';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
@@ -284,10 +284,7 @@
         return;
       }
 
-      const isConfirmed = await dialogController.show({
-        prompt: `Do you want to tag this face as ${person.name}?`,
-      });
-
+      const isConfirmed = await modalManager.showDialog({ prompt: `Do you want to tag this face as ${person.name}?` });
       if (!isConfirmed) {
         return;
       }

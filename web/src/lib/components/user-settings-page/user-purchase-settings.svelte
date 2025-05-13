@@ -1,27 +1,27 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
 
-  import { onMount } from 'svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences, user } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
   import {
-    deleteServerLicense as deleteServerProductKey,
     deleteUserLicense as deleteIndividualProductKey,
+    deleteServerLicense as deleteServerProductKey,
     getAboutInfo,
     getMyUser,
     getServerLicense,
     isHttpError,
     type LicenseResponseDto,
   } from '@immich/sdk';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiKey } from '@mdi/js';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { handleError } from '$lib/utils/handle-error';
-  import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
-  import { t } from 'svelte-i18n';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
   import { Button } from '@immich/ui';
+  import { mdiKey } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   const { isPurchased } = purchaseStore;
 
   let isServerProduct = $state(false);
@@ -62,11 +62,10 @@
 
   const removeIndividualProductKey = async () => {
     try {
-      const isConfirmed = await dialogController.show({
+      const isConfirmed = await modalManager.showDialog({
         title: $t('purchase_remove_product_key'),
         prompt: $t('purchase_remove_product_key_prompt'),
         confirmText: $t('remove'),
-        cancelText: $t('cancel'),
       });
 
       if (!isConfirmed) {
@@ -82,11 +81,10 @@
 
   const removeServerProductKey = async () => {
     try {
-      const isConfirmed = await dialogController.show({
+      const isConfirmed = await modalManager.showDialog({
         title: $t('purchase_remove_server_product_key'),
         prompt: $t('purchase_remove_server_product_key_prompt'),
         confirmText: $t('remove'),
-        cancelText: $t('cancel'),
       });
 
       if (!isConfirmed) {

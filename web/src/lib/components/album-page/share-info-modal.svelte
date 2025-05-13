@@ -1,6 +1,13 @@
 <script lang="ts">
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import {
+    NotificationType,
+    notificationController,
+  } from '$lib/components/shared-components/notification/notification';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import {
     AlbumUserRole,
     getMyUser,
@@ -13,10 +20,6 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
-  import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-  import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   interface Props {
     album: AlbumResponseDto;
@@ -140,7 +143,7 @@
 {/if}
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
-  <ConfirmDialog
+  <ConfirmModal
     title={$t('album_leave')}
     prompt={$t('album_leave_confirmation', { values: { album: album.albumName } })}
     confirmText={$t('leave')}
@@ -149,7 +152,7 @@
 {/if}
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
-  <ConfirmDialog
+  <ConfirmModal
     title={$t('album_remove_user')}
     prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
     confirmText={$t('remove_user')}

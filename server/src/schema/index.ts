@@ -1,4 +1,4 @@
-import { asset_face_source_type, assets_status_enum } from 'src/schema/enums';
+import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
   assets_delete_audit,
   f_concat_ws,
@@ -101,5 +101,5 @@ export class ImmichDatabase {
     assets_delete_audit,
   ];
 
-  enum = [assets_status_enum, asset_face_source_type];
+  enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
 }

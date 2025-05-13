@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { SALT_ROUNDS } from 'src/constants';
 import { UserAdmin } from 'src/database';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { AuthType, Permission } from 'src/enum';
@@ -118,7 +119,7 @@ describe(AuthService.name, () => {
 
       await sut.changePassword(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, true);
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, { withPassword: true });
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
@@ -857,6 +858,79 @@ describe(AuthService.name, () => {
       await sut.unlink(auth);
 
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+    });
+  });
+
+  describe('setupPinCode', () => {
+    it('should setup a PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { pinCode: '123456' };
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: null, password: '' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.setupPinCode(auth, dto);
+
+      expect(mocks.user.getForPinCode).toHaveBeenCalledWith(user.id);
+      expect(mocks.crypto.hashBcrypt).toHaveBeenCalledWith('123456', SALT_ROUNDS);
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: expect.any(String) });
+    });
+
+    it('should fail if the user already has a PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+
+      await expect(sut.setupPinCode(auth, { pinCode: '123456' })).rejects.toThrow('User already has a PIN code');
+    });
+  });
+
+  describe('changePinCode', () => {
+    it('should change the PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { pinCode: '123456', newPinCode: '012345' };
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.user.update.mockResolvedValue(user);
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await sut.changePinCode(auth, dto);
+
+      expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('123456', '123456 (hashed)');
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: '012345 (hashed)' });
+    });
+
+    it('should fail if the PIN code does not match', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await expect(
+        sut.changePinCode(factory.auth({ user }), { pinCode: '000000', newPinCode: '012345' }),
+      ).rejects.toThrow('Wrong PIN code');
+    });
+  });
+
+  describe('resetPinCode', () => {
+    it('should reset the PIN code', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await sut.resetPinCode(factory.auth({ user }), { pinCode: '123456' });
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: null });
+    });
+
+    it('should throw if the PIN code does not match', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await expect(sut.resetPinCode(factory.auth({ user }), { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
     });
   });
 });
