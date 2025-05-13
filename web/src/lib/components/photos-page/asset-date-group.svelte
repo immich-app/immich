@@ -14,14 +14,9 @@
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { fly, scale } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-<<<<<<< HEAD
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { scale } from 'svelte/transition';
-=======
 
->>>>>>> origin/main
-  import { flip } from 'svelte/animate';
   import { uploadAssetsStore } from '$lib/stores/upload';
+  import { flip } from 'svelte/animate';
 
   let { isUploading } = uploadAssetsStore;
 
