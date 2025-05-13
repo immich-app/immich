@@ -76,7 +76,7 @@ The easiest option is to have both extensions installed during the migration:
 2. [Install VectorChord][vchord-install]
 3. Add `shared_preload_libraries= 'vchord.so, vectors.so'` to your `postgresql.conf`, making sure to include _both_ `vchord.so` and `vectors.so`. You may include other libraries here as well if needed
 4. If Immich does not have superuser permissions, run the SQL command `CREATE EXTENSION vchord CASCADE;` using psql or your choice of database client
-5. Start Immich and wait for the log `Vector reindexing complete` to be outputted
+5. Start Immich and wait for the log `Vector reindexing complete` to be output
 6. Remove the `vectors.so` entry from the `shared_preload_libraries` setting
 7. Uninstall pgvecto.rs (e.g. `apt-get purge vectors-pg14` on Debian-based environments, replacing `pg14` as appropriate)
 
