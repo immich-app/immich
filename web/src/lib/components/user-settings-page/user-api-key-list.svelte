@@ -18,18 +18,13 @@
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import { dateFormats } from '$lib/constants';
 
   interface Props {
     keys: ApiKeyResponseDto[];
   }
 
   let { keys = $bindable() }: Props = $props();
-
-  const format: Intl.DateTimeFormatOptions = {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  };
 
   async function refreshKeys() {
     keys = await getApiKeys();
@@ -130,7 +125,7 @@
             >
               <td class="w-1/3 text-ellipsis px-4 text-sm">{key.name}</td>
               <td class="w-1/3 text-ellipsis px-4 text-sm"
-                >{new Date(key.createdAt).toLocaleDateString($locale, format)}
+                >{new Date(key.createdAt).toLocaleDateString($locale, dateFormats.settings)}
               </td>
               <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3">
                 <CircleIconButton
