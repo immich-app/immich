@@ -116,7 +116,7 @@
     }}
     onended={onVideoEnded}
     onstarted={() => {
-      if (!forceMuted) {
+      if (!forceMuted && player) {
         player!.volume = $videoViewerVolume;
         player!.muted = $videoViewerMuted;
       }
