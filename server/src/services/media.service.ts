@@ -319,7 +319,9 @@ export class MediaService extends BaseService {
     if (asset.exifInfo.projectionType === 'SPATIAL_APPLE_PHOTO') {
       // create left eye and right eye images for webXR
       promises.push(
-        this.mediaRepository.generateWebXrThumbnail(asset.originalPath, webXrPath, { ...image.preview, ...thumbnailOptions}),
+        this.mediaRepository.generateWebXrThumbnail(asset.originalPath, webXrPath, { ...image.preview, ...thumbnailOptions}).catch((error) => {
+          this.logger.error(`Error generating webXR thumbnail for asset ${asset.id}: ${error.message} ${error.toString()}`);
+        }),
       );
     }
 
