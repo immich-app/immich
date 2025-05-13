@@ -2,7 +2,7 @@ import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility, type AssetResponseDto } from '@immich/sdk';
 import { memoize } from 'lodash-es';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { get } from 'svelte/store';
@@ -79,7 +79,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     thumbhash: assetResponse.thumbhash,
     localDateTime: assetResponse.localDateTime,
     isFavorite: assetResponse.isFavorite,
-    isArchived: assetResponse.isArchived,
+    visibility: assetResponse.isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline,
     isTrashed: assetResponse.isTrashed,
     isVideo: assetResponse.type == AssetTypeEnum.Video,
     isImage: assetResponse.type == AssetTypeEnum.Image,

@@ -1,6 +1,6 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { faker } from '@faker-js/faker';
-import { AssetTypeEnum, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const assetFactory = Sync.makeFactory<AssetResponseDto>({
@@ -34,7 +34,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
   localDateTime: Sync.each(() => faker.date.past().toISOString()),
   isFavorite: Sync.each(() => faker.datatype.boolean()),
-  isArchived: false,
+  visibility: AssetVisibility.Timeline,
   isTrashed: false,
   isImage: true,
   isVideo: false,
@@ -53,7 +53,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     country: [],
     duration: [],
     id: [],
-    isArchived: [],
+    visibility: [],
     isFavorite: [],
     isImage: [],
     isTrashed: [],
@@ -70,7 +70,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.country.push(asset.country);
     bucketAssets.duration.push(asset.duration!);
     bucketAssets.id.push(asset.id);
-    bucketAssets.isArchived.push(asset.isArchived ? 1 : 0);
+    bucketAssets.visibility.push(asset.visibility);
     bucketAssets.isFavorite.push(asset.isFavorite ? 1 : 0);
     bucketAssets.isImage.push(asset.isImage ? 1 : 0);
     bucketAssets.isTrashed.push(asset.isTrashed ? 1 : 0);

@@ -12,7 +12,7 @@ import {
 } from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AssetStatus, AssetType } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 
@@ -75,11 +75,10 @@ export type MapAsset = {
   fileCreatedAt: Date;
   fileModifiedAt: Date;
   files?: AssetFile[];
-  isArchived: boolean;
   isExternal: boolean;
   isFavorite: boolean;
   isOffline: boolean;
-  isVisible: boolean;
+  visibility: AssetVisibility;
   libraryId: string | null;
   livePhotoVideoId: string | null;
   localDateTime: Date;
@@ -175,7 +174,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
-    isArchived: entity.isArchived,
+    isArchived: entity.visibility === AssetVisibility.ARCHIVE,
     isTrashed: !!entity.deletedAt,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,

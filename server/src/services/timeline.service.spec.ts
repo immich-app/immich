@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { AssetVisibility } from 'src/enum';
 import { TimelineService } from 'src/services/timeline.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -48,7 +49,7 @@ describe(TimelineService.name, () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           timeBucket: 'bucket',
-          isArchived: true,
+          visibility: AssetVisibility.ARCHIVE,
           userId: authStub.admin.user.id,
         }),
       ).resolves.toEqual(json);
@@ -56,7 +57,7 @@ describe(TimelineService.name, () => {
         'bucket',
         expect.objectContaining({
           timeBucket: 'bucket',
-          isArchived: true,
+          visibility: AssetVisibility.ARCHIVE,
           userIds: [authStub.admin.user.id],
         }),
       );
@@ -70,14 +71,14 @@ describe(TimelineService.name, () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           timeBucket: 'bucket',
-          isArchived: false,
+          visibility: AssetVisibility.TIMELINE,
           userId: authStub.admin.user.id,
           withPartners: true,
         }),
       ).resolves.toEqual(json);
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
         timeBucket: 'bucket',
-        isArchived: false,
+        visibility: AssetVisibility.TIMELINE,
         withPartners: true,
         userIds: [authStub.admin.user.id],
       });
@@ -121,11 +122,11 @@ describe(TimelineService.name, () => {
       );
     });
 
-    it('should throw an error if withParners is true and isArchived true or undefined', async () => {
+    it('should throw an error if withParners is true and visibility true or undefined', async () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           timeBucket: 'bucket',
-          isArchived: true,
+          visibility: AssetVisibility.ARCHIVE,
           withPartners: true,
           userId: authStub.admin.user.id,
         }),
@@ -134,7 +135,7 @@ describe(TimelineService.name, () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           timeBucket: 'bucket',
-          isArchived: undefined,
+          visibility: undefined,
           withPartners: true,
           userId: authStub.admin.user.id,
         }),

@@ -2,6 +2,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import type { OnArchive } from '$lib/utils/actions';
   import { archiveAssets } from '$lib/utils/asset-utils';
+  import { AssetVisibility } from '@immich/sdk';
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
@@ -24,7 +25,7 @@
 
   const handleArchive = async () => {
     const isArchived = !unarchive;
-    const assets = [...getOwnedAssets()].filter((asset) => asset.isArchived !== isArchived);
+    const assets = [...getOwnedAssets()].filter((asset) => asset.visibility !== AssetVisibility.Archive);
     loading = true;
     const ids = await archiveAssets(assets, isArchived);
     if (ids) {

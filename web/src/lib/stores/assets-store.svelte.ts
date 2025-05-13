@@ -11,6 +11,7 @@ import { formatDateGroupTitle, toTimelineAsset } from '$lib/utils/timeline-util'
 import { TUNABLES } from '$lib/utils/tunables';
 import {
   AssetOrder,
+  AssetVisibility,
   getAssetInfo,
   getTimeBucket,
   getTimeBuckets,
@@ -29,6 +30,20 @@ const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
 } = TUNABLES;
 
+const getAssetVisibility = (string: string): AssetVisibility => {
+  switch (string) {
+    case AssetVisibility.Archive: {
+      return AssetVisibility.Archive;
+    }
+    case AssetVisibility.Hidden: {
+      return AssetVisibility.Hidden;
+    }
+
+    default: {
+      return AssetVisibility.Timeline;
+    }
+  }
+};
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
@@ -74,7 +89,7 @@ export type TimelineAsset = {
   ratio: number;
   thumbhash: string | null;
   localDateTime: string;
-  isArchived: boolean;
+  visibility: AssetVisibility;
   isFavorite: boolean;
   isTrashed: boolean;
   isVideo: boolean;
@@ -458,7 +473,7 @@ export class AssetBucket {
         country: bucketAssets.country[i],
         duration: bucketAssets.duration[i],
         id: bucketAssets.id[i],
-        isArchived: Boolean(bucketAssets.isArchived[i]),
+        visibility: getAssetVisibility(bucketAssets.visibility[i]),
         isFavorite: Boolean(bucketAssets.isFavorite[i]),
         isImage: Boolean(bucketAssets.isImage[i]),
         isTrashed: Boolean(bucketAssets.isTrashed[i]),
@@ -1476,7 +1491,7 @@ export class AssetStore {
 
   isExcluded(asset: TimelineAsset) {
     return (
-      isMismatched(this.#options.isArchived, asset.isArchived) ||
+      (this.#options.visibility === undefined ? false : this.#options.visibility !== asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Stack } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/dtos/time-bucket.dto';
-import { Permission } from 'src/enum';
+import { AssetVisibility, Permission } from 'src/enum';
 import { TimeBucketOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -65,7 +65,7 @@ export class TimelineService extends BaseService {
 
     if (dto.userId) {
       await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [dto.userId] });
-      if (dto.isArchived !== false) {
+      if (dto.visibility === AssetVisibility.ARCHIVE) {
         await this.requireAccess({ auth, permission: Permission.ARCHIVE_READ, ids: [dto.userId] });
       }
     }
@@ -75,7 +75,7 @@ export class TimelineService extends BaseService {
     }
 
     if (dto.withPartners) {
-      const requestedArchived = dto.isArchived === true || dto.isArchived === undefined;
+      const requestedArchived = dto.visibility === AssetVisibility.ARCHIVE || dto.visibility === undefined;
       const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
       const requestedTrash = dto.isTrashed === true;
 

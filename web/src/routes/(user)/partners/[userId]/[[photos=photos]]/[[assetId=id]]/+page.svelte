@@ -10,6 +10,7 @@
   import { AppRoute } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetVisibility } from '@immich/sdk';
   import { mdiArrowLeft, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -22,7 +23,14 @@
   let { data }: Props = $props();
 
   const assetStore = new AssetStore();
-  $effect(() => void assetStore.updateOptions({ userId: data.partner.id, isArchived: false, withStacked: true }));
+  $effect(
+    () =>
+      void assetStore.updateOptions({
+        userId: data.partner.id,
+        visibility: AssetVisibility.Timeline,
+        withStacked: true,
+      }),
+  );
   onDestroy(() => assetStore.destroy());
   const assetInteraction = new AssetInteraction();
 
@@ -34,7 +42,7 @@
   };
 </script>
 
-<main class="grid h-dvh bg-immich-bg pt-18 dark:bg-immich-dark-bg">
+<main class="grid h-dvh pt-18">
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}

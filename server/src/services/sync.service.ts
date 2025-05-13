@@ -14,7 +14,7 @@ import {
   SyncAckSetDto,
   SyncStreamDto,
 } from 'src/dtos/sync.dto';
-import { DatabaseAction, EntityType, Permission, SyncEntityType, SyncRequestType } from 'src/enum';
+import { AssetVisibility, DatabaseAction, EntityType, Permission, SyncEntityType, SyncRequestType } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -263,7 +263,10 @@ export class SyncService extends BaseService {
       needsFullSync: false,
       upserted: upserted
         // do not return archived assets for partner users
-        .filter((a) => a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && !a.isArchived))
+        .filter(
+          (a) =>
+            a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && a.visibility === AssetVisibility.TIMELINE),
+        )
         .map((a) =>
           mapAsset(a, {
             auth,

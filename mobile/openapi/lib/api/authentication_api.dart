@@ -63,6 +63,86 @@ class AuthenticationApi {
     return null;
   }
 
+  /// Performs an HTTP 'PUT /auth/pin-code' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  Future<Response> changePinCodeWithHttpInfo(PinCodeChangeDto pinCodeChangeDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/pin-code';
+
+    // ignore: prefer_final_locals
+    Object? postBody = pinCodeChangeDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  Future<void> changePinCode(PinCodeChangeDto pinCodeChangeDto,) async {
+    final response = await changePinCodeWithHttpInfo(pinCodeChangeDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'GET /auth/status' operation and returns the [Response].
+  Future<Response> getAuthStatusWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/status';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<AuthStatusResponseDto?> getAuthStatus() async {
+    final response = await getAuthStatusWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AuthStatusResponseDto',) as AuthStatusResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'POST /auth/login' operation and returns the [Response].
   /// Parameters:
   ///
@@ -149,6 +229,84 @@ class AuthenticationApi {
     
     }
     return null;
+  }
+
+  /// Performs an HTTP 'DELETE /auth/pin-code' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  Future<Response> resetPinCodeWithHttpInfo(PinCodeChangeDto pinCodeChangeDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/pin-code';
+
+    // ignore: prefer_final_locals
+    Object? postBody = pinCodeChangeDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  Future<void> resetPinCode(PinCodeChangeDto pinCodeChangeDto,) async {
+    final response = await resetPinCodeWithHttpInfo(pinCodeChangeDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'POST /auth/pin-code' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [PinCodeSetupDto] pinCodeSetupDto (required):
+  Future<Response> setupPinCodeWithHttpInfo(PinCodeSetupDto pinCodeSetupDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/pin-code';
+
+    // ignore: prefer_final_locals
+    Object? postBody = pinCodeSetupDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [PinCodeSetupDto] pinCodeSetupDto (required):
+  Future<void> setupPinCode(PinCodeSetupDto pinCodeSetupDto,) async {
+    final response = await setupPinCodeWithHttpInfo(pinCodeSetupDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Performs an HTTP 'POST /auth/admin-sign-up' operation and returns the [Response].

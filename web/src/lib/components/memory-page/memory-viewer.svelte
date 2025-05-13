@@ -131,7 +131,7 @@
           await progressBarController.set(1);
         } catch (error) {
           // this may happen if browser blocks auto-play of the video on first page load. This can either be a setting
-          // or just defaut in certain browsers on page load without any DOM interaction by user.
+          // or just default in certain browsers on page load without any DOM interaction by user.
           console.error(`handleAction[${callingContext}] videoPlayer play problem: ${error}`);
           paused = true;
           await progressBarController.set(0);

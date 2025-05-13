@@ -5,7 +5,7 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetMediaSize } from '@immich/sdk';
+  import { AssetMediaSize, AssetVisibility } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -314,7 +314,7 @@
           </div>
         {/if}
 
-        {#if !authManager.key && showArchiveIcon && asset.isArchived}
+        {#if !authManager.key && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
           <div class={['absolute start-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>

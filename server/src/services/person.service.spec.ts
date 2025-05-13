@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { mapFaces, mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
-import { CacheControl, Colorspace, ImageFormat, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
+import { CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
 import { DetectedFaces } from 'src/repositories/machine-learning.repository';
 import { FaceSearchResult } from 'src/repositories/search.repository';
 import { PersonService } from 'src/services/person.service';
@@ -9,7 +9,7 @@ import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
-import { personStub, personThumbnailStub } from 'test/fixtures/person.stub';
+import { personStub } from 'test/fixtures/person.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -1021,114 +1021,6 @@ describe(PersonService.name, () => {
       expect(mocks.search.searchFaces).toHaveBeenCalledTimes(2);
       expect(mocks.person.create).not.toHaveBeenCalled();
       expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('handleGeneratePersonThumbnail', () => {
-    it('should skip if machine learning is disabled', async () => {
-      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
-
-      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.SKIPPED);
-      expect(mocks.asset.getByIds).not.toHaveBeenCalled();
-      expect(mocks.systemMetadata.get).toHaveBeenCalled();
-    });
-
-    it('should skip a person not found', async () => {
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
-    });
-
-    it('should skip a person without a face asset id', async () => {
-      mocks.person.getById.mockResolvedValue(personStub.noThumbnail);
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
-    });
-
-    it('should skip a person with face not found', async () => {
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
-    });
-
-    it('should generate a thumbnail', async () => {
-      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
-      mocks.media.generateThumbnail.mockResolvedValue();
-
-      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
-
-      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.primaryImage.originalPath,
-        {
-          colorspace: Colorspace.P3,
-          format: ImageFormat.JPEG,
-          size: 250,
-          quality: 80,
-          crop: {
-            left: 238,
-            top: 163,
-            width: 274,
-            height: 274,
-          },
-          processInvalidImages: false,
-        },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      );
-      expect(mocks.person.update).toHaveBeenCalledWith({
-        id: 'person-1',
-        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      });
-    });
-
-    it('should generate a thumbnail without going negative', async () => {
-      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailStart);
-      mocks.media.generateThumbnail.mockResolvedValue();
-
-      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
-
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.primaryImage.originalPath,
-        {
-          colorspace: Colorspace.P3,
-          format: ImageFormat.JPEG,
-          size: 250,
-          quality: 80,
-          crop: {
-            left: 0,
-            top: 85,
-            width: 510,
-            height: 510,
-          },
-          processInvalidImages: false,
-        },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      );
-    });
-
-    it('should generate a thumbnail without overflowing', async () => {
-      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailEnd);
-      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
-      mocks.media.generateThumbnail.mockResolvedValue();
-
-      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
-
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.primaryImage.originalPath,
-        {
-          colorspace: Colorspace.P3,
-          format: ImageFormat.JPEG,
-          size: 250,
-          quality: 80,
-          crop: {
-            left: 591,
-            top: 591,
-            width: 408,
-            height: 408,
-          },
-          processInvalidImages: false,
-        },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      );
     });
   });
 

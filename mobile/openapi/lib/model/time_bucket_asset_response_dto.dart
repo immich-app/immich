@@ -17,7 +17,6 @@ class TimeBucketAssetResponseDto {
     this.country = const [],
     this.duration = const [],
     this.id = const [],
-    this.isArchived = const [],
     this.isFavorite = const [],
     this.isImage = const [],
     this.isTrashed = const [],
@@ -28,6 +27,7 @@ class TimeBucketAssetResponseDto {
     this.ratio = const [],
     this.stack = const [],
     this.thumbhash = const [],
+    this.visibility = const [],
   });
 
   List<String?> city;
@@ -37,8 +37,6 @@ class TimeBucketAssetResponseDto {
   List<String?> duration;
 
   List<String> id;
-
-  List<num> isArchived;
 
   List<num> isFavorite;
 
@@ -61,13 +59,14 @@ class TimeBucketAssetResponseDto {
 
   List<String?> thumbhash;
 
+  List<String> visibility;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is TimeBucketAssetResponseDto &&
     _deepEquality.equals(other.city, city) &&
     _deepEquality.equals(other.country, country) &&
     _deepEquality.equals(other.duration, duration) &&
     _deepEquality.equals(other.id, id) &&
-    _deepEquality.equals(other.isArchived, isArchived) &&
     _deepEquality.equals(other.isFavorite, isFavorite) &&
     _deepEquality.equals(other.isImage, isImage) &&
     _deepEquality.equals(other.isTrashed, isTrashed) &&
@@ -77,7 +76,8 @@ class TimeBucketAssetResponseDto {
     _deepEquality.equals(other.projectionType, projectionType) &&
     _deepEquality.equals(other.ratio, ratio) &&
     _deepEquality.equals(other.stack, stack) &&
-    _deepEquality.equals(other.thumbhash, thumbhash);
+    _deepEquality.equals(other.thumbhash, thumbhash) &&
+    _deepEquality.equals(other.visibility, visibility);
 
   @override
   int get hashCode =>
@@ -86,7 +86,6 @@ class TimeBucketAssetResponseDto {
     (country.hashCode) +
     (duration.hashCode) +
     (id.hashCode) +
-    (isArchived.hashCode) +
     (isFavorite.hashCode) +
     (isImage.hashCode) +
     (isTrashed.hashCode) +
@@ -96,10 +95,11 @@ class TimeBucketAssetResponseDto {
     (projectionType.hashCode) +
     (ratio.hashCode) +
     (stack.hashCode) +
-    (thumbhash.hashCode);
+    (thumbhash.hashCode) +
+    (visibility.hashCode);
 
   @override
-  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash]';
+  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, id=$id, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -107,7 +107,6 @@ class TimeBucketAssetResponseDto {
       json[r'country'] = this.country;
       json[r'duration'] = this.duration;
       json[r'id'] = this.id;
-      json[r'isArchived'] = this.isArchived;
       json[r'isFavorite'] = this.isFavorite;
       json[r'isImage'] = this.isImage;
       json[r'isTrashed'] = this.isTrashed;
@@ -118,6 +117,7 @@ class TimeBucketAssetResponseDto {
       json[r'ratio'] = this.ratio;
       json[r'stack'] = this.stack;
       json[r'thumbhash'] = this.thumbhash;
+      json[r'visibility'] = this.visibility;
     return json;
   }
 
@@ -141,9 +141,6 @@ class TimeBucketAssetResponseDto {
             : const [],
         id: json[r'id'] is Iterable
             ? (json[r'id'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        isArchived: json[r'isArchived'] is Iterable
-            ? (json[r'isArchived'] as Iterable).cast<num>().toList(growable: false)
             : const [],
         isFavorite: json[r'isFavorite'] is Iterable
             ? (json[r'isFavorite'] as Iterable).cast<num>().toList(growable: false)
@@ -176,6 +173,9 @@ class TimeBucketAssetResponseDto {
           :  const [],
         thumbhash: json[r'thumbhash'] is Iterable
             ? (json[r'thumbhash'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        visibility: json[r'visibility'] is Iterable
+            ? (json[r'visibility'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }
@@ -228,7 +228,6 @@ class TimeBucketAssetResponseDto {
     'country',
     'duration',
     'id',
-    'isArchived',
     'isFavorite',
     'isImage',
     'isTrashed',
@@ -238,6 +237,7 @@ class TimeBucketAssetResponseDto {
     'projectionType',
     'ratio',
     'thumbhash',
+    'visibility',
   };
 }
 

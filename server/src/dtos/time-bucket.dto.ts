@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { IsEnum, IsInt, IsString, Min } from 'class-validator';
-import { AssetOrder } from 'src/enum';
+import { AssetOrder, AssetVisibility } from 'src/enum';
 import { TimeBucketAssets, TimelineStack } from 'src/services/timeline.service.types';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
   @ValidateUUID({ optional: true })
@@ -17,9 +17,6 @@ export class TimeBucketDto {
 
   @ValidateUUID({ optional: true })
   tagId?: string;
-
-  @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
 
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
@@ -37,6 +34,9 @@ export class TimeBucketDto {
   @Optional()
   @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
   order?: AssetOrder;
+
+  @ValidateAssetVisibility({ optional: true })
+  visibility?: AssetVisibility;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
@@ -69,7 +69,7 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
 
   isFavorite!: number[];
 
-  isArchived!: number[];
+  visibility!: string[];
 
   isTrashed!: number[];
 

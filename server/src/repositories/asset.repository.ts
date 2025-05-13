@@ -6,7 +6,7 @@ import { Stack } from 'src/database';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import {
   anyUuid,
   asUuid,
@@ -14,6 +14,7 @@ import {
   removeUndefinedKeys,
   truncatedDate,
   unnest,
+  withDefaultVisibility,
   withExif,
   withFaces,
   withFacesAndPeople,
@@ -30,8 +31,8 @@ export type AssetStats = Record<AssetType, number>;
 
 export interface AssetStatsOptions {
   isFavorite?: boolean;
-  isArchived?: boolean;
   isTrashed?: boolean;
+  visibility?: AssetVisibility;
 }
 
 export interface LivePhotoSearchOptions {
@@ -52,7 +53,6 @@ export enum TimeBucketSize {
 }
 
 export interface AssetBuilderOptions {
-  isArchived?: boolean;
   isFavorite?: boolean;
   isTrashed?: boolean;
   isDuplicate?: boolean;
@@ -64,6 +64,7 @@ export interface AssetBuilderOptions {
   exifInfo?: boolean;
   status?: AssetStatus;
   assetType?: AssetType;
+  visibility?: AssetVisibility;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -257,8 +258,7 @@ export class AssetRepository {
                 .where('asset_job_status.previewAt', 'is not', null)
                 .where(sql`(assets."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('assets.ownerId', '=', anyUuid(ownerIds))
-                .where('assets.isVisible', '=', true)
-                .where('assets.isArchived', '=', false)
+                .where('assets.visibility', '=', AssetVisibility.TIMELINE)
                 .where((eb) =>
                   eb.exists((qb) =>
                     qb
@@ -347,7 +347,7 @@ export class AssetRepository {
       .select(['deviceAssetId'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
-      .where('isVisible', '=', true)
+      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .execute();
 
@@ -392,7 +392,7 @@ export class AssetRepository {
                     .whereRef('stacked.stackId', '=', 'asset_stack.id')
                     .whereRef('stacked.id', '!=', 'asset_stack.primaryAssetId')
                     .where('stacked.deletedAt', 'is', null)
-                    .where('stacked.isArchived', '=', false)
+                    .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
                     .groupBy('asset_stack.id')
                     .as('stacked_assets'),
                 (join) => join.on('asset_stack.id', 'is not', null),
@@ -502,7 +502,7 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
-  getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
+  getStatistics(ownerId: string, { visibility, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
     return this.db
       .selectFrom('assets')
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
@@ -510,8 +510,8 @@ export class AssetRepository {
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
-      .where('isVisible', '=', true)
-      .$if(isArchived !== undefined, (qb) => qb.where('isArchived', '=', isArchived!))
+      .$if(visibility === undefined, withDefaultVisibility)
+      .$if(!!visibility, (qb) => qb.where('assets.visibility', '=', visibility!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
@@ -524,7 +524,7 @@ export class AssetRepository {
       .selectAll('assets')
       .$call(withExif)
       .where('ownerId', '=', anyUuid(userIds))
-      .where('isVisible', '=', true)
+      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .orderBy((eb) => eb.fn('random'))
       .limit(take)
@@ -541,7 +541,8 @@ export class AssetRepository {
             .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-            .where('assets.isVisible', '=', true)
+            .$if(options.visibility === undefined, withDefaultVisibility)
+            .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
@@ -558,7 +559,6 @@ export class AssetRepository {
                 .where((eb) => eb.or([eb('assets.stackId', 'is', null), eb(eb.table('asset_stack'), 'is not', null)])),
             )
             .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-            .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
             .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
             .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
             .$if(options.isDuplicate !== undefined, (qb) =>
@@ -592,7 +592,7 @@ export class AssetRepository {
           .select((eb) => [
             'assets.duration',
             'assets.id',
-            sql`assets."isArchived"::int`.as('isArchived'),
+            'assets.visibility',
             sql`assets."isFavorite"::int`.as('isFavorite'),
             sql`(assets.type = 'IMAGE')::int`.as('isImage'),
             sql`(assets."deletedAt" is null)::int`.as('isTrashed'),
@@ -620,7 +620,8 @@ export class AssetRepository {
               .as('ratio'),
           ])
           .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-          .where('assets.isVisible', '=', true)
+          .$if(options.visibility == undefined, withDefaultVisibility)
+          .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
           .where(truncatedDate(TimeBucketSize.MONTH), '=', timeBucket.replace(/^[+-]/, ''))
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
@@ -634,7 +635,8 @@ export class AssetRepository {
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-          .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
+          .$if(options.visibility == undefined, withDefaultVisibility)
+          .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
           .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb
@@ -655,7 +657,7 @@ export class AssetRepository {
                     .select(sql`array[stacked."stackId"::text, count('stacked')::text]`.as('stack'))
                     .whereRef('stacked.stackId', '=', 'assets.stackId')
                     .where('stacked.deletedAt', 'is', null)
-                    .where('stacked.isArchived', '=', false)
+                    .where('stacked.visibility', '!=', AssetVisibility.ARCHIVE)
                     .groupBy('stacked.stackId')
                     .as('stacked_assets'),
                 (join) => join.onTrue(),
@@ -678,7 +680,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['country']), sql.lit('{}')).as('country'),
             eb.fn.coalesce(eb.fn('array_agg', ['duration']), sql.lit('{}')).as('duration'),
             eb.fn.coalesce(eb.fn('array_agg', ['id']), sql.lit('{}')).as('id'),
-            eb.fn.coalesce(eb.fn('array_agg', ['isArchived']), sql.lit('{}')).as('isArchived'),
+            eb.fn.coalesce(eb.fn('array_agg', ['visibility']), sql.lit('{}')).as('visibility'),
             eb.fn.coalesce(eb.fn('array_agg', ['isFavorite']), sql.lit('{}')).as('isFavorite'),
             eb.fn.coalesce(eb.fn('array_agg', ['isImage']), sql.lit('{}')).as('isImage'),
             // TODO: isTrashed is redundant as it will always be all 0s or 1s depending on the options
@@ -729,7 +731,7 @@ export class AssetRepository {
             .where('assets.duplicateId', 'is not', null)
             .$narrowType<{ duplicateId: NotNull }>()
             .where('assets.deletedAt', 'is', null)
-            .where('assets.isVisible', '=', true)
+            .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
             .where('assets.stackId', 'is', null)
             .groupBy('assets.duplicateId'),
         )
@@ -774,8 +776,7 @@ export class AssetRepository {
       .select(['assetId as data', 'exif.city as value'])
       .$narrowType<{ value: NotNull }>()
       .where('ownerId', '=', asUuid(ownerId))
-      .where('isVisible', '=', true)
-      .where('isArchived', '=', false)
+      .where('visibility', '=', AssetVisibility.TIMELINE)
       .where('type', '=', AssetType.IMAGE)
       .where('deletedAt', 'is', null)
       .limit(maxFields)
@@ -814,7 +815,7 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).$castTo<Stack | null>().as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
-      .where('assets.isVisible', '=', true)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .where('assets.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
@@ -842,7 +843,7 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets').$castTo<Stack | null>()).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
-      .where('assets.isVisible', '=', true)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .where('assets.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute();

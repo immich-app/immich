@@ -4,8 +4,8 @@
   import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
-  import StatsCard from './stats-card.svelte';
   import { t } from 'svelte-i18n';
+  import StatsCard from './stats-card.svelte';
 
   interface Props {
     stats?: ServerStatsResponseDto;
@@ -38,13 +38,13 @@
   <div>
     <p class="text-sm dark:text-immich-dark-fg">{$t('total_usage').toUpperCase()}</p>
 
-    <div class="mt-5 hidden justify-between lg:flex">
+    <div class="mt-5 hidden justify-between lg:flex gap-4">
       <StatsCard icon={mdiCameraIris} title={$t('photos').toUpperCase()} value={stats.photos} />
       <StatsCard icon={mdiPlayCircle} title={$t('videos').toUpperCase()} value={stats.videos} />
       <StatsCard icon={mdiChartPie} title={$t('storage').toUpperCase()} value={statsUsage} unit={statsUsageUnit} />
     </div>
     <div class="mt-5 flex lg:hidden">
-      <div class="flex flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">
+      <div class="flex flex-col justify-between rounded-3xl bg-subtle p-5 dark:bg-immich-dark-gray">
         <div class="flex flex-wrap gap-x-12">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
             <Icon path={mdiCameraIris} size="25" />
@@ -103,9 +103,7 @@
         class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         {#each stats.usageByUser as user (user.userId)}
-          <tr
-            class="flex h-[50px] w-full place-items-center text-center odd:bg-immich-gray even:bg-immich-bg odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50"
-          >
+          <tr class="flex h-[50px] w-full place-items-center text-center even:bg-subtle/20 odd:bg-subtle/80">
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userName}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm"
               >{user.photos.toLocaleString($locale)} ({getByteUnitString(user.usagePhotos, $locale, 0)})</td

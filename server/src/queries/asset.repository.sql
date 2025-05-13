@@ -43,21 +43,20 @@ with
           "asset_job_status"."previewAt" is not null
           and (assets."localDateTime" at time zone 'UTC')::date = today.date
           and "assets"."ownerId" = any ($3::uuid[])
-          and "assets"."isVisible" = $4
-          and "assets"."isArchived" = $5
+          and "assets"."visibility" = $4
           and exists (
             select
             from
               "asset_files"
             where
               "assetId" = "assets"."id"
-              and "asset_files"."type" = $6
+              and "asset_files"."type" = $5
           )
           and "assets"."deletedAt" is null
         order by
           (assets."localDateTime" at time zone 'UTC')::date desc
         limit
-          $7
+          $6
       ) as "a" on true
       inner join "exif" on "a"."id" = "exif"."assetId"
   )
@@ -159,7 +158,7 @@ from
 where
   "ownerId" = $1::uuid
   and "deviceId" = $2
-  and "isVisible" = $3
+  and "visibility" != $3
   and "deletedAt" is null
 
 -- AssetRepository.getLivePhotoCount
@@ -241,7 +240,10 @@ with
       "assets"
     where
       "assets"."deletedAt" is null
-      and "assets"."isVisible" = $1
+      and (
+        "assets"."visibility" = $1
+        or "assets"."visibility" = $3
+      )
   )
 select
   "timeBucket",
@@ -365,7 +367,7 @@ with
       "assets"."ownerId" = $1::uuid
       and "assets"."duplicateId" is not null
       and "assets"."deletedAt" is null
-      and "assets"."isVisible" = $2
+      and "assets"."visibility" != $2
       and "assets"."stackId" is null
     group by
       "assets"."duplicateId"
@@ -423,12 +425,11 @@ from
   inner join "cities" on "exif"."city" = "cities"."city"
 where
   "ownerId" = $2::uuid
-  and "isVisible" = $3
-  and "isArchived" = $4
-  and "type" = $5
+  and "visibility" = $3
+  and "type" = $4
   and "deletedAt" is null
 limit
-  $6
+  $5
 
 -- AssetRepository.getAllForUserFullSync
 select
@@ -452,7 +453,7 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = $1::uuid
-  and "assets"."isVisible" = $2
+  and "assets"."visibility" != $2
   and "assets"."updatedAt" <= $3
   and "assets"."id" > $4
 order by
@@ -482,7 +483,7 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = any ($1::uuid[])
-  and "assets"."isVisible" = $2
+  and "assets"."visibility" != $2
   and "assets"."updatedAt" > $3
 limit
   $4

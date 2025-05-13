@@ -13,7 +13,7 @@ export enum AssetAction {
 }
 
 export enum AppRoute {
-  ADMIN_USER_MANAGEMENT = '/admin/user-management',
+  ADMIN_USERS = '/admin/users',
   ADMIN_LIBRARY_MANAGEMENT = '/admin/library-management',
   ADMIN_SETTINGS = '/admin/system-settings',
   ADMIN_STATS = '/admin/server-status',
@@ -307,6 +307,7 @@ export const langs = [
   { name: 'Latvian', code: 'lv', loader: () => import('$i18n/lv.json') },
   { name: 'Malay (Pattani)', code: 'mfa', loader: () => import('$i18n/mfa.json') },
   { name: 'Macedonian', code: 'mk', loader: () => import('$i18n/mk.json') },
+  { name: 'Malayalam', code: 'ml', loader: () => import('$i18n/ml.json') },
   { name: 'Mongolian', code: 'mn', loader: () => import('$i18n/mn.json') },
   { name: 'Marathi', code: 'mr', loader: () => import('$i18n/mr.json') },
   { name: 'Malay', code: 'ms', loader: () => import('$i18n/ms.json') },
@@ -366,8 +367,6 @@ export enum SettingInputFieldType {
 }
 
 export const AlbumPageViewMode = {
-  LINK_SHARING: 'link-sharing',
-  SELECT_USERS: 'select-users',
   SELECT_THUMBNAIL: 'select-thumbnail',
   SELECT_ASSETS: 'select-assets',
   VIEW_USERS: 'view-users',
@@ -376,8 +375,6 @@ export const AlbumPageViewMode = {
 };
 
 export type AlbumPageViewMode =
-  | typeof AlbumPageViewMode.LINK_SHARING
-  | typeof AlbumPageViewMode.SELECT_USERS
   | typeof AlbumPageViewMode.SELECT_THUMBNAIL
   | typeof AlbumPageViewMode.SELECT_ASSETS
   | typeof AlbumPageViewMode.VIEW_USERS

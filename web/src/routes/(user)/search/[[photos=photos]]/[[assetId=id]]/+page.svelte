@@ -186,7 +186,7 @@
     const keyMap: Partial<Record<keyof SearchTerms, string>> = {
       takenAfter: $t('start_date'),
       takenBefore: $t('end_date'),
-      isArchived: $t('in_archive'),
+      visibility: $t('in_archive'),
       isFavorite: $t('favorite'),
       isNotInAlbum: $t('not_in_any_album'),
       type: $t('media_type'),
@@ -291,10 +291,7 @@
   {:else}
     <div class="fixed z-[100] top-0 start-0 w-full">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
-        <div
-          class="-z-[1] bg-immich-bg dark:bg-immich-dark-bg"
-          style="position:absolute;top:0;left:0;right:0;bottom:0;"
-        ></div>
+        <div class="-z-[1] bg-light" style="position:absolute;top:0;left:0;right:0;bottom:0;"></div>
         <div class="w-full flex-1 ps-4">
           <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
         </div>
@@ -313,7 +310,7 @@
       <div class="flex place-content-center place-items-center text-xs">
         <div
           class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
-          {value === true ? 'rounded-full' : 'roudned-s-full'}"
+          {value === true ? 'rounded-full' : 'rounded-s-full'}"
         >
           {getHumanReadableSearchKey(key as keyof SearchTerms)}
         </div>
