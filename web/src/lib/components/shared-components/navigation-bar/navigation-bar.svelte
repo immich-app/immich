@@ -27,6 +27,7 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import CastButton from '$lib/cast/cast-button.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -126,6 +127,8 @@
             class="lg:hidden"
           />
         {/if}
+
+        <CastButton />
 
         <ThemeButton padding="2" />
 

@@ -1,15 +1,18 @@
 <script lang="ts">
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import GCastPlayer from '$lib/utils/cast/gcast-player';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { swipe } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
+  import { get } from 'svelte/store';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -98,6 +101,34 @@
       videoPlayer?.pause();
     }
   });
+
+  let castPlayer = GCastPlayer.getInstance();
+  let castState = $state(get(castPlayer.castState));
+
+  $effect(() => {
+    if (assetFileUrl) {
+      console.log('trying to cast');
+
+      void cast(assetFileUrl);
+    }
+  });
+
+  onMount(() => {
+    castPlayer.castState.subscribe((value) => {
+      if (castState !== value && value === 'CONNECTED') {
+        void cast(assetFileUrl);
+      }
+      castState = value;
+    });
+  });
+
+  const cast = async (url: string) => {
+    if (!url) {
+      return;
+    }
+    const fullUrl = new URL(url, window.location.href);
+    await castPlayer.loadMedia(fullUrl.href);
+  };
 </script>
 
 <div
@@ -106,42 +137,48 @@
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  <video
-    bind:this={videoPlayer}
-    loop={$loopVideoPreference && loopVideo}
-    autoplay
-    playsinline
-    controls
-    class="h-full object-contain"
-    use:swipe={() => ({})}
-    onswipe={onSwipe}
-    oncanplay={(e) => handleCanPlay(e.currentTarget)}
-    onended={onVideoEnded}
-    onvolumechange={(e) => {
-      if (!forceMuted) {
-        $videoViewerMuted = e.currentTarget.muted;
-      }
-    }}
-    onseeking={() => (isScrubbing = true)}
-    onseeked={() => (isScrubbing = false)}
-    onplaying={(e) => {
-      e.currentTarget.focus();
-    }}
-    onclose={() => onClose()}
-    muted={forceMuted || $videoViewerMuted}
-    bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
-    src={assetFileUrl}
-  >
-  </video>
-
-  {#if isLoading}
-    <div class="absolute flex place-content-center place-items-center">
-      <LoadingSpinner />
+  {#if castState === 'CONNECTED'}
+    <div class="place-content-center h-full place-items-center">
+      <VideoRemoteViewer poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })} />
     </div>
-  {/if}
+  {:else}
+    <video
+      bind:this={videoPlayer}
+      loop={$loopVideoPreference && loopVideo}
+      autoplay
+      playsinline
+      controls
+      class="h-full object-contain"
+      use:swipe={() => ({})}
+      onswipe={onSwipe}
+      oncanplay={(e) => handleCanPlay(e.currentTarget)}
+      onended={onVideoEnded}
+      onvolumechange={(e) => {
+        if (!forceMuted) {
+          $videoViewerMuted = e.currentTarget.muted;
+        }
+      }}
+      onseeking={() => (isScrubbing = true)}
+      onseeked={() => (isScrubbing = false)}
+      onplaying={(e) => {
+        e.currentTarget.focus();
+      }}
+      onclose={() => onClose()}
+      muted={forceMuted || $videoViewerMuted}
+      bind:volume={$videoViewerVolume}
+      poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+      src={assetFileUrl}
+    >
+    </video>
 
-  {#if isFaceEditMode.value}
-    <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
+    {#if isLoading}
+      <div class="absolute flex place-content-center place-items-center">
+        <LoadingSpinner />
+      </div>
+    {/if}
+
+    {#if isFaceEditMode.value}
+      <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
+    {/if}
   {/if}
 </div>
