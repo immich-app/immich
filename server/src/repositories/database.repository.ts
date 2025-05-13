@@ -168,22 +168,7 @@ export class DatabaseRepository {
       indexname: string;
     }>`SELECT indexdef, indexname FROM pg_indexes WHERE indexname = ANY(ARRAY[${sql.join(names)}])`.execute(this.db);
 
-    let keyword: string;
     const vectorExtension = await getVectorExtension(this.db);
-    switch (vectorExtension) {
-      case DatabaseExtension.VECTOR: {
-        keyword = 'using hnsw';
-        break;
-      }
-      case DatabaseExtension.VECTORCHORD: {
-        keyword = 'using vchordrq';
-        break;
-      }
-      case DatabaseExtension.VECTORS: {
-        keyword = 'using vectors';
-        break;
-      }
-    }
 
     const promises = [];
     for (const indexName of names) {
@@ -195,9 +180,14 @@ export class DatabaseRepository {
       }
 
       switch (vectorExtension) {
-        case DatabaseExtension.VECTOR:
+        case DatabaseExtension.VECTOR: {
+          if (!row.indexdef.toLowerCase().includes('using hnsw')) {
+            promises.push(this.reindexVectors(indexName));
+          }
+          break;
+        }
         case DatabaseExtension.VECTORS: {
-          if (!row.indexdef.toLowerCase().includes(keyword)) {
+          if (!row.indexdef.toLowerCase().includes('using vectors')) {
             promises.push(this.reindexVectors(indexName));
           }
           break;
@@ -214,7 +204,7 @@ export class DatabaseRepository {
                 const targetLists = this.targetListCount(count);
                 this.logger.log(`targetLists=${targetLists}, current=${lists} for ${indexName} of ${count} rows`);
                 if (
-                  !row.indexdef.toLowerCase().includes(keyword) ||
+                  !row.indexdef.toLowerCase().includes('using vchordrq') ||
                   // slack factor is to avoid frequent reindexing if the count is borderline
                   (lists !== targetLists && lists !== this.targetListCount(count * VECTORCHORD_LIST_SLACK_FACTOR))
                 ) {
