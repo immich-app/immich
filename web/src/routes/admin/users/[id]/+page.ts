@@ -8,7 +8,7 @@ import type { PageLoad } from './$types';
 export const load = (async ({ params }) => {
   await authenticate({ admin: true });
   await requestServerInfo();
-  const [user] = await searchUsersAdmin({ id: params.id }).catch(() => []);
+  const [user] = await searchUsersAdmin({ id: params.id, withDeleted: true }).catch(() => []);
   if (!user) {
     redirect(302, AppRoute.ADMIN_USERS);
   }
