@@ -216,7 +216,7 @@
       slow: ??ms
       -->
   <div
-    class={['group absolute top-[0px] bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    class={['group absolute -top-[0px] -bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
     onmouseenter={onMouseEnter}
@@ -266,7 +266,7 @@
         {#if !usingMobileDevice && !disabled}
           <div
             class={[
-              'absolute h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100',
+              'absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100',
               { 'rounded-xl': selected },
             ]}
           ></div>
@@ -279,7 +279,7 @@
         <!-- Outline on focus -->
         <div
           class={[
-            'absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary',
+            'absolute size-full group-focus-visible:outline-immich-primary focus:outline-4 -outline-offset-4 outline-immich-primary',
             { 'rounded-xl': selected },
           ]}
         ></div>

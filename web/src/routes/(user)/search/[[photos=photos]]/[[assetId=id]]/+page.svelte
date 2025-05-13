@@ -366,7 +366,7 @@
         pageHeaderOffset={54}
       />
     {:else if !isLoading}
-      <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
+      <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
         <div class="flex flex-col content-center items-center text-center">
           <Icon path={mdiImageOffOutline} size="3.5em" />
           <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
