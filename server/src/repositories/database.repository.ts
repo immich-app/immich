@@ -222,7 +222,6 @@ export class DatabaseRepository {
 
     if (promises.length > 0) {
       await Promise.all(promises);
-      this.logger.log('Vector reindexing complete');
     }
   }
 
@@ -255,6 +254,7 @@ export class DatabaseRepository {
         SET DATA TYPE ${sql.raw(schema)}vector(${sql.raw(String(dimSize))})`.execute(tx);
       await sql.raw(vectorIndexQuery({ vectorExtension, table, indexName, lists })).execute(tx);
     });
+    this.logger.log(`Reindexed ${indexName}`);
   }
 
   private async setSearchPath(tx: Transaction<DB>): Promise<void> {
