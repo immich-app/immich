@@ -99,7 +99,7 @@ export function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], op
   };
 
   const result = createJustifiedLayout(
-    assets.map((a) => (isTimelineAsset(a) ? a.ratio : getAssetRatio(a))),
+    assets.map((asset) => (isTimelineAsset(asset) ? asset.ratio : getAssetRatio(asset))),
     adapter,
   );
   return new Adapter(result);

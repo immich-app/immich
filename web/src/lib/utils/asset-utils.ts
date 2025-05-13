@@ -410,10 +410,6 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
       });
     }
 
-    // for (const [index, asset] of assets.entries()) {
-    //   asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length, primaryAssetId: asset.id } : null;
-    // }
-
     return {
       stack,
       toDeleteIds: assets.slice(1).map((asset) => asset.id),
@@ -541,10 +537,6 @@ export const archiveAssets = async (assets: { id: string }[], archive: boolean) 
         assetBulkUpdateDto: { ids, visibility: isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline },
       });
     }
-
-    // for (const asset of assets) {
-    //   asset.isArchived = isArchived;
-    // }
 
     notificationController.show({
       message: isArchived

@@ -42,7 +42,7 @@ describe('getAltText', () => {
       const asset = {
         city,
         country,
-        people: (people || [])?.map((p: { name: string }) => p.name),
+        people: people?.map((person: { name: string }) => person.name) ?? [],
         localDateTime: '2024-01-01T12:00:00.000Z',
         isVideo,
         isImage: !isVideo,

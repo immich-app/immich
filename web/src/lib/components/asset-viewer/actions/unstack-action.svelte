@@ -18,7 +18,7 @@
   const handleUnstack = async () => {
     const unstackedAssets = await deleteStack([stack.id]);
     if (unstackedAssets) {
-      onAction({ type: AssetAction.UNSTACK, assets: unstackedAssets.map((a) => toTimelineAsset(a)) });
+      onAction({ type: AssetAction.UNSTACK, assets: unstackedAssets.map((asset) => toTimelineAsset(asset)) });
     }
   };
 </script>

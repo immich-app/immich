@@ -38,7 +38,6 @@ const getAssetVisibility = (string: string): AssetVisibility => {
     case AssetVisibility.Hidden: {
       return AssetVisibility.Hidden;
     }
-
     default: {
       return AssetVisibility.Timeline;
     }
@@ -508,35 +507,31 @@ export class AssetBucket {
   }
 
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: AddContext) {
-    const { id, localDateTime } = timelineAsset;
+    const { localDateTime } = timelineAsset;
     const date = DateTime.fromISO(localDateTime).toUTC();
-
     const month = date.get('month');
     const year = date.get('year');
 
-    if (this.month === month && this.year === year) {
-      const day = date.get('day');
-      let dateGroup = addContext.getDateGroup(year, month, day);
-      if (!dateGroup) {
-        dateGroup = this.findDateGroupByDay(day);
-        if (dateGroup) {
-          addContext.setDateGroup(dateGroup, year, month, day);
-        }
-      }
-      if (dateGroup) {
-        const intersectingAsset = new IntersectingAsset(dateGroup, timelineAsset);
-        dateGroup.intersetingAssets.push(intersectingAsset);
-        addContext.changedDateGroups.add(dateGroup);
-      } else {
-        dateGroup = new AssetDateGroup(this, this.dateGroups.length, date, day);
-        dateGroup.intersetingAssets.push(new IntersectingAsset(dateGroup, timelineAsset));
-        this.dateGroups.push(dateGroup);
-        addContext.setDateGroup(dateGroup, year, month, day);
-        addContext.newDateGroups.add(dateGroup);
-      }
-    } else {
+    if (this.month !== month || this.year !== year) {
       addContext.unprocessedAssets.push(timelineAsset);
+      return;
     }
+
+    const day = date.get('day');
+    let dateGroup = addContext.getDateGroup(year, month, day) || this.findDateGroupByDay(day);
+
+    if (dateGroup) {
+      addContext.setDateGroup(dateGroup, year, month, day);
+    } else {
+      dateGroup = new AssetDateGroup(this, this.dateGroups.length, date, day);
+      this.dateGroups.push(dateGroup);
+      addContext.setDateGroup(dateGroup, year, month, day);
+      addContext.newDateGroups.add(dateGroup);
+    }
+
+    const intersectingAsset = new IntersectingAsset(dateGroup, timelineAsset);
+    dateGroup.intersetingAssets.push(intersectingAsset);
+    addContext.changedDateGroups.add(dateGroup);
   }
 
   getRandomDateGroup() {

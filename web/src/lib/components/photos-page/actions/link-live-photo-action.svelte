@@ -50,22 +50,23 @@
 
   const handleUnlink = async () => {
     const [still] = [...getOwnedAssets()];
-    if (still) {
-      const motionId = still.livePhotoVideoId;
-      if (!motionId) {
-        return;
-      }
-      try {
-        loading = true;
-        const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: null } });
-        const motionResponse = await getAssetInfo({ id: motionId, key: authManager.key });
-        onUnlink({ still: toTimelineAsset(stillResponse), motion: toTimelineAsset(motionResponse) });
-        clearSelect();
-      } catch (error) {
-        handleError(error, $t('errors.unable_to_unlink_motion_video'));
-      } finally {
-        loading = false;
-      }
+    if (!still) {
+      return;
+    }
+    const motionId = still.livePhotoVideoId;
+    if (!motionId) {
+      return;
+    }
+    try {
+      loading = true;
+      const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: null } });
+      const motionResponse = await getAssetInfo({ id: motionId, key: authManager.key });
+      onUnlink({ still: toTimelineAsset(stillResponse), motion: toTimelineAsset(motionResponse) });
+      clearSelect();
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_unlink_motion_video'));
+    } finally {
+      loading = false;
     }
   };
 </script>

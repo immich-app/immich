@@ -18,7 +18,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -492,12 +492,11 @@
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />
-          <!-- note: if using showAssetName then the 'assets' prop must be AssetResponseDto (only used by folders) -->
-          {#if showAssetName}
+          {#if showAssetName && !isTimelineAsset(asset)}
             <div
               class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
             >
-              {(asset as AssetResponseDto).originalFileName}
+              {asset.originalFileName}
             </div>
           {/if}
         </div>
