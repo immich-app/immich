@@ -80,6 +80,7 @@ class MediaManager(context: Context) {
     val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
     val changed = mutableListOf<PlatformAsset>()
     val deleted = mutableListOf<String>()
+    val albumAssets = mutableMapOf<String, List<String>>()
 
     var hasChanges = genMap.keys != currentVolumes
     for (volume in currentVolumes) {
@@ -160,15 +161,15 @@ class MediaManager(context: Context) {
               mediaType.toLong(),
               createdAt,
               modifiedAt,
-              duration,
-              listOf(bucketId)
+              duration
             )
           )
+          albumAssets.put(id, listOf(bucketId))
         }
       }
     }
     // Unmounted volumes are handled in dart when the album is removed
 
-    return SyncDelta(hasChanges, changed, deleted)
+    return SyncDelta(hasChanges, changed, deleted, albumAssets)
   }
 }

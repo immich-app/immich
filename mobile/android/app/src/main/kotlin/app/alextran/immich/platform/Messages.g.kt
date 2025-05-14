@@ -84,8 +84,7 @@ data class PlatformAsset (
   val type: Long,
   val createdAt: Long? = null,
   val updatedAt: Long? = null,
-  val durationInSeconds: Long,
-  val albumIds: List<String>
+  val durationInSeconds: Long
 )
  {
   companion object {
@@ -96,8 +95,7 @@ data class PlatformAsset (
       val createdAt = pigeonVar_list[3] as Long?
       val updatedAt = pigeonVar_list[4] as Long?
       val durationInSeconds = pigeonVar_list[5] as Long
-      val albumIds = pigeonVar_list[6] as List<String>
-      return PlatformAsset(id, name, type, createdAt, updatedAt, durationInSeconds, albumIds)
+      return PlatformAsset(id, name, type, createdAt, updatedAt, durationInSeconds)
     }
   }
   fun toList(): List<Any?> {
@@ -108,7 +106,6 @@ data class PlatformAsset (
       createdAt,
       updatedAt,
       durationInSeconds,
-      albumIds,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -127,7 +124,8 @@ data class PlatformAsset (
 data class SyncDelta (
   val hasChanges: Boolean,
   val updates: List<PlatformAsset>,
-  val deletes: List<String>
+  val deletes: List<String>,
+  val albumAssets: Map<String, List<String>>
 )
  {
   companion object {
@@ -135,7 +133,8 @@ data class SyncDelta (
       val hasChanges = pigeonVar_list[0] as Boolean
       val updates = pigeonVar_list[1] as List<PlatformAsset>
       val deletes = pigeonVar_list[2] as List<String>
-      return SyncDelta(hasChanges, updates, deletes)
+      val albumAssets = pigeonVar_list[3] as Map<String, List<String>>
+      return SyncDelta(hasChanges, updates, deletes, albumAssets)
     }
   }
   fun toList(): List<Any?> {
@@ -143,6 +142,7 @@ data class SyncDelta (
       hasChanges,
       updates,
       deletes,
+      albumAssets,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -188,7 +188,7 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
 }
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
-interface ImHostService {
+interface ImHostApi {
   fun shouldFullSync(): Boolean
   fun getMediaChanges(): SyncDelta
   fun checkpointSync()
@@ -196,17 +196,17 @@ interface ImHostService {
   fun getAssetIdsForAlbum(albumId: String): List<String>
 
   companion object {
-    /** The codec used by ImHostService. */
+    /** The codec used by ImHostApi. */
     val codec: MessageCodec<Any?> by lazy {
       MessagesPigeonCodec()
     }
-    /** Sets up an instance of `ImHostService` to handle messages through the `binaryMessenger`. */
+    /** Sets up an instance of `ImHostApi` to handle messages through the `binaryMessenger`. */
     @JvmOverloads
-    fun setUp(binaryMessenger: BinaryMessenger, api: ImHostService?, messageChannelSuffix: String = "") {
+    fun setUp(binaryMessenger: BinaryMessenger, api: ImHostApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
       val taskQueue = binaryMessenger.makeBackgroundTaskQueue()
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.shouldFullSync$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostApi.shouldFullSync$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
@@ -221,7 +221,7 @@ interface ImHostService {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.getMediaChanges$separatedMessageChannelSuffix", codec, taskQueue)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostApi.getMediaChanges$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
@@ -236,7 +236,7 @@ interface ImHostService {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.checkpointSync$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostApi.checkpointSync$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
@@ -252,7 +252,7 @@ interface ImHostService {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.clearSyncCheckpoint$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostApi.clearSyncCheckpoint$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
@@ -268,7 +268,7 @@ interface ImHostService {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostService.getAssetIdsForAlbum$separatedMessageChannelSuffix", codec, taskQueue)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ImHostApi.getAssetIdsForAlbum$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>

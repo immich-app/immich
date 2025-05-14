@@ -15,8 +15,8 @@ import '../service.mock.dart';
 void main() {
   late IAlbumMediaRepository mockAlbumMediaRepo;
   late ILocalAlbumRepository mockLocalAlbumRepo;
-  late ImHostService mockHostService;
-  late MockPlatform mockPlatformInstance;
+  late ImHostApi mockHostApi;
+  late MockPlatform mockPlatform;
   late DeviceSyncService sut;
 
   Future<T> mockTransaction<T>(Future<T> Function() action) => action();
@@ -24,20 +24,20 @@ void main() {
   setUp(() {
     mockAlbumMediaRepo = MockAlbumMediaRepository();
     mockLocalAlbumRepo = MockLocalAlbumRepository();
-    mockHostService = MockHostService();
-    mockPlatformInstance = MockPlatform();
+    mockHostApi = MockHostApi();
+    mockPlatform = MockPlatform();
 
     sut = DeviceSyncService(
       albumMediaRepository: mockAlbumMediaRepo,
       localAlbumRepository: mockLocalAlbumRepo,
-      hostService: mockHostService,
-      platform: mockPlatformInstance,
+      hostApi: mockHostApi,
+      platform: mockPlatform,
     );
 
     registerFallbackValue(LocalAlbumStub.album1);
     registerFallbackValue(LocalAssetStub.image1);
     registerFallbackValue(
-      SyncDelta(hasChanges: true, updates: [], deletes: []),
+      SyncDelta(hasChanges: true, updates: [], deletes: [], albumAssets: {}),
     );
 
     when(() => mockAlbumMediaRepo.getAll()).thenAnswer((_) async => []);
@@ -82,13 +82,18 @@ void main() {
 
     when(() => mockHostService.shouldFullSync()).thenAnswer((_) async => true);
     when(() => mockHostService.getMediaChanges()).thenAnswer(
-      (_) async => SyncDelta(hasChanges: false, updates: [], deletes: []),
+      (_) async => SyncDelta(
+        hasChanges: false,
+        updates: [],
+        deletes: [],
+        albumAssets: {},
+      ),
     );
     when(() => mockHostService.getAssetIdsForAlbum(any()))
         .thenAnswer((_) async => []);
     when(() => mockHostService.checkpointSync()).thenAnswer((_) async => {});
 
-    when(() => mockPlatformInstance.isAndroid).thenReturn(false);
+    when(() => mockPlatform.isAndroid).thenReturn(false);
   });
 
   group('sync', () {
@@ -119,7 +124,12 @@ void main() {
         when(() => mockHostService.shouldFullSync())
             .thenAnswer((_) async => false);
         when(() => mockHostService.getMediaChanges()).thenAnswer(
-          (_) async => SyncDelta(hasChanges: false, updates: [], deletes: []),
+          (_) async => SyncDelta(
+            hasChanges: false,
+            updates: [],
+            deletes: [],
+            albumAssets: {},
+          ),
         );
 
         await sut.sync();
@@ -140,6 +150,9 @@ void main() {
           hasChanges: true,
           updates: [PlatformAssetStub.image1],
           deletes: ["deleted"],
+          albumAssets: {
+            "albumId": ["asset1", "asset2"],
+          },
         );
         final deviceAlbums = [LocalAlbumStub.album1];
 
@@ -149,7 +162,7 @@ void main() {
             .thenAnswer((_) async => delta);
         when(() => mockAlbumMediaRepo.getAll())
             .thenAnswer((_) async => deviceAlbums);
-        when(() => mockPlatformInstance.isAndroid).thenReturn(false);
+        when(() => mockPlatform.isAndroid).thenReturn(false);
 
         await sut.sync();
 
@@ -172,6 +185,9 @@ void main() {
           hasChanges: true,
           updates: [PlatformAssetStub.image1],
           deletes: ["deleted"],
+          albumAssets: {
+            "dbAlbumId": ["asset1", "asset2"],
+          },
         );
         final deviceAlbums = [LocalAlbumStub.album1];
         final dbAlbums = [LocalAlbumStub.album2.copyWith(id: "dbAlbumId")];
@@ -185,7 +201,7 @@ void main() {
             .thenAnswer((_) async => deviceAlbums);
         when(() => mockLocalAlbumRepo.getAll())
             .thenAnswer((_) async => dbAlbums);
-        when(() => mockPlatformInstance.isAndroid).thenReturn(true);
+        when(() => mockPlatform.isAndroid).thenReturn(true);
         when(() => mockHostService.getAssetIdsForAlbum(dbAlbums.first.id))
             .thenAnswer((_) async => assetIdsForDbAlbum);
 
@@ -197,7 +213,7 @@ void main() {
           () => mockAlbumMediaRepo.getAll(),
           () => mockLocalAlbumRepo.updateAll(deviceAlbums),
           () => mockLocalAlbumRepo.processDelta(delta),
-          () => mockPlatformInstance.isAndroid,
+          () => mockPlatform.isAndroid,
           () => mockLocalAlbumRepo.getAll(),
           () => mockHostService.getAssetIdsForAlbum(dbAlbums.first.id),
           () => mockLocalAlbumRepo.syncAlbumDeletes(

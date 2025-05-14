@@ -11,6 +11,6 @@ class MockUserService extends Mock implements UserService {}
 
 class MockBackgroundSyncManager extends Mock implements BackgroundSyncManager {}
 
-class MockHostService extends Mock implements ImHostService {}
+class MockHostApi extends Mock implements ImHostApi {}
 
 class MockPlatform extends Mock implements Platform {}

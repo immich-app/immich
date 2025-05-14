@@ -13,7 +13,7 @@ final deviceSyncServiceProvider = Provider(
   (ref) => DeviceSyncService(
     albumMediaRepository: ref.watch(albumMediaRepositoryProvider),
     localAlbumRepository: ref.watch(localAlbumRepository),
-    hostService: ref.watch(hostServiceProvider),
+    hostApi: ref.watch(hostApiProvider),
   ),
 );
 

@@ -15,60 +15,59 @@ class DeviceSyncService {
   final IAlbumMediaRepository _albumMediaRepository;
   final ILocalAlbumRepository _localAlbumRepository;
   final Platform _platform;
-  final platform.ImHostService _hostService;
+  final platform.ImHostApi _hostApi;
   final Logger _log = Logger("DeviceSyncService");
 
   DeviceSyncService({
     required IAlbumMediaRepository albumMediaRepository,
     required ILocalAlbumRepository localAlbumRepository,
-    required platform.ImHostService hostService,
+    required platform.ImHostApi hostApi,
     Platform? platform,
   })  : _albumMediaRepository = albumMediaRepository,
         _localAlbumRepository = localAlbumRepository,
         _platform = platform ?? const LocalPlatform(),
-        _hostService = hostService;
+        _hostApi = hostApi;
 
   Future<void> sync() async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
-      if (await _hostService.shouldFullSync()) {
+      if (await _hostApi.shouldFullSync()) {
         _log.fine("Cannot use partial sync. Performing full sync");
         return await fullSync();
       }
 
-      final delta = await _hostService.getMediaChanges();
+      final delta = await _hostApi.getMediaChanges();
       if (!delta.hasChanges) {
         _log.fine("No media changes detected. Skipping sync");
         return;
       }
 
-      final deviceAlbums = await _albumMediaRepository.getAll();
+      final deviceAlbums =
+          await _albumMediaRepository.getAll(withModifiedTime: true);
       await _localAlbumRepository.updateAll(deviceAlbums);
       await _localAlbumRepository.processDelta(delta);
 
       if (_platform.isAndroid) {
         final dbAlbums = await _localAlbumRepository.getAll();
         for (final album in dbAlbums) {
-          final deviceIds = await _hostService.getAssetIdsForAlbum(album.id);
+          final deviceIds = await _hostApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncAlbumDeletes(album.id, deviceIds);
         }
       }
 
-      await _hostService.checkpointSync();
+      await _hostApi.checkpointSync();
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
+    } finally {
+      stopwatch.stop();
+      _log.info("Device sync took - ${stopwatch.elapsedMilliseconds}ms");
     }
-    stopwatch.stop();
-    _log.info("Device sync took - ${stopwatch.elapsedMilliseconds}ms");
   }
 
   Future<void> fullSync() async {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
-      // The deviceAlbums will not have the updatedAt field
-      // and the assetCount will be 0. They are refreshed later
-      // after the comparison. The orderby in the filter sorts the assets
-      // and not the albums.
+
       final deviceAlbums =
           (await _albumMediaRepository.getAll()).sortedBy((a) => a.id);
 
@@ -84,7 +83,7 @@ class DeviceSyncService {
         onlySecond: addAlbum,
       );
 
-      await _hostService.checkpointSync();
+      await _hostApi.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
     } catch (e, s) {
@@ -92,10 +91,9 @@ class DeviceSyncService {
     }
   }
 
-  Future<void> addAlbum(LocalAlbum newAlbum) async {
+  Future<void> addAlbum(LocalAlbum album) async {
     try {
-      _log.fine("Adding device album ${newAlbum.name}");
-      final album = await _albumMediaRepository.refresh(newAlbum.id);
+      _log.fine("Adding device album ${album.name}");
 
       final assets = album.assetCount > 0
           ? await _albumMediaRepository.getAssetsForAlbum(album.id)
@@ -119,15 +117,11 @@ class DeviceSyncService {
   }
 
   // The deviceAlbum is ignored since we are going to refresh it anyways
-  FutureOr<bool> updateAlbum(LocalAlbum dbAlbum, LocalAlbum _) async {
+  FutureOr<bool> updateAlbum(LocalAlbum dbAlbum, LocalAlbum deviceAlbum) async {
     try {
       _log.fine("Syncing device album ${dbAlbum.name}");
 
-      final deviceAlbum = await _albumMediaRepository.refresh(dbAlbum.id);
-
-      // Early return if album hasn't changed
-      if (deviceAlbum.updatedAt.isAtSameMomentAs(dbAlbum.updatedAt) &&
-          deviceAlbum.assetCount == dbAlbum.assetCount) {
+      if (_albumsEqual(deviceAlbum, dbAlbum)) {
         _log.fine(
           "Device album ${dbAlbum.name} has not changed. Skipping sync.",
         );
@@ -292,5 +286,11 @@ class DeviceSyncService {
         a.width == b.width &&
         a.height == b.height &&
         a.durationInSeconds == b.durationInSeconds;
+  }
+
+  bool _albumsEqual(LocalAlbum a, LocalAlbum b) {
+    return a.name == b.name &&
+        a.assetCount == b.assetCount &&
+        a.updatedAt.isAtSameMomentAs(b.updatedAt);
   }
 }

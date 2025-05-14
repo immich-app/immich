@@ -171,7 +171,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       ],
     )
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
-      ..orderBy([OrderingTerm.desc(_db.localAssetEntity.id)]);
+      ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
     return query
         .map((row) => row.readTable(_db.localAssetEntity).toDto())
         .get();
@@ -193,25 +193,37 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       await _deleteAssets(delta.deletes);
 
       await _upsertAssets(delta.updates.map((a) => a.toLocalAsset()));
+      // The ugly casting below is required for now because the generated code
+      // casts the returned values from the platform during decoding them
+      // and iterating over them causes the type to be List<Object?> instead of
+      // List<String>
       await _db.batch((batch) async {
-        for (final asset in delta.updates) {
+        delta.albumAssets
+            .cast<String, List<Object?>>()
+            .forEach((assetId, albumIds) {
           batch.deleteWhere(
             _db.localAlbumAssetEntity,
             (f) =>
-                f.albumId.isNotIn(asset.albumIds) & f.assetId.equals(asset.id),
+                f.albumId.isNotIn(albumIds.cast<String?>().nonNulls) &
+                f.assetId.equals(assetId),
           );
-
+        });
+      });
+      await _db.batch((batch) async {
+        delta.albumAssets
+            .cast<String, List<Object?>>()
+            .forEach((assetId, albumIds) {
           batch.insertAll(
             _db.localAlbumAssetEntity,
-            asset.albumIds.map(
-              (albumId) => LocalAlbumAssetEntityCompanion.insert(
-                assetId: asset.id,
-                albumId: albumId,
-              ),
-            ),
+            albumIds.cast<String?>().nonNulls.map(
+                  (albumId) => LocalAlbumAssetEntityCompanion.insert(
+                    assetId: assetId,
+                    albumId: albumId,
+                  ),
+                ),
             onConflict: DoNothing(),
           );
-        }
+        });
       });
     });
   }

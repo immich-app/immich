@@ -20,7 +20,6 @@ class PlatformAsset {
   final int? createdAt;
   final int? updatedAt;
   final int durationInSeconds;
-  final List<String> albumIds;
 
   const PlatformAsset({
     required this.id,
@@ -29,23 +28,26 @@ class PlatformAsset {
     this.createdAt,
     this.updatedAt,
     this.durationInSeconds = 0,
-    this.albumIds = const [],
   });
 }
 
 class SyncDelta {
-  SyncDelta({
+  final bool hasChanges;
+  final List<PlatformAsset> updates;
+  final List<String> deletes;
+  // Asset -> Album mapping
+  final Map<String, List<String>> albumAssets;
+
+  const SyncDelta({
     this.hasChanges = false,
     this.updates = const [],
     this.deletes = const [],
+    this.albumAssets = const {},
   });
-  bool hasChanges;
-  List<PlatformAsset> updates;
-  List<String> deletes;
 }
 
 @HostApi()
-abstract class ImHostService {
+abstract class ImHostApi {
   bool shouldFullSync();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

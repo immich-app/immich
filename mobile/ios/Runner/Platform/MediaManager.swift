@@ -97,7 +97,7 @@ class MediaManager {
     
     let currentToken = PHPhotoLibrary.shared().currentChangeToken
     if storedToken == currentToken {
-      return SyncDelta(hasChanges: false, updates: [], deletes: [])
+      return SyncDelta(hasChanges: false, updates: [], deletes: [], albumAssets: [:])
     }
 
     do {
@@ -110,6 +110,7 @@ class MediaManager {
         guard let details = try? change.changeDetails(for: PHObjectType.asset) else { continue }
         
         let updated = details.updatedLocalIdentifiers.union(details.insertedLocalIdentifiers)
+        deletedAssets.formUnion(details.deletedLocalIdentifiers)
         if (updated.isEmpty) { continue }
         
         let result = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: nil)
@@ -117,7 +118,7 @@ class MediaManager {
           let asset = result.object(at: i)
           
           // Asset wrapper only uses the id for comparison. Multiple change can contain the same asset, skip duplicate changes
-          let predicate = PlatformAsset(id: asset.localIdentifier, name: "", type: 0, createdAt: nil, updatedAt: nil, durationInSeconds: 0, albumIds: [])
+          let predicate = PlatformAsset(id: asset.localIdentifier, name: "", type: 0, createdAt: nil, updatedAt: nil, durationInSeconds: 0)
           if (updatedAssets.contains(AssetWrapper(with: predicate))) {
             continue
           }
@@ -136,37 +137,33 @@ class MediaManager {
             createdAt:  createdAt.map { Int64($0) },
             updatedAt: updatedAt.map { Int64($0) },
             durationInSeconds: durationInSeconds,
-            albumIds: self._getAlbumIds(forAsset: asset)
           ))
           
           updatedAssets.insert(domainAsset)
         }
-        
-        deletedAssets.formUnion(details.deletedLocalIdentifiers)
       }
       
-      return SyncDelta(hasChanges: true, updates: Array(updatedAssets.map { $0.asset }), deletes: Array(deletedAssets))
+      let updates = Array(updatedAssets.map { $0.asset })
+      return SyncDelta(hasChanges: true, updates: updates, deletes: Array(deletedAssets), albumAssets: buildAlbumAssetsMap(assets: updates))
     }
   }
   
-  @available(iOS 16, *)
-  func _getAlbumIds(forAsset: PHAsset) -> [String] {
-    var albumIds: [String] = []
+  private func buildAlbumAssetsMap(assets: Array<PlatformAsset>) -> [String: [String]] {
+    var albumAssets: [String: [String]] = [:]
     let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
-
+    
     albumTypes.forEach { type in
       let collections = PHAssetCollection.fetchAssetCollections(with: type, subtype: .any, options: nil)
       collections.enumerateObjects { (album, _, _) in
-        var options = PHFetchOptions()
-        options.fetchLimit = 1
-        options.predicate = NSPredicate(format: "localIdentifier == %@", forAsset.localIdentifier)
+        let options = PHFetchOptions()
+        options.predicate = NSPredicate(format: "localIdentifier IN %@", assets.map(\.id))
         let result = PHAsset.fetchAssets(in: album, options: options)
-        if(result.count == 1) {
-          albumIds.append(album.localIdentifier)
+        for i in 0..<result.count {
+          let asset = result.object(at: i)
+          albumAssets[asset.localIdentifier, default: []].append(album.localIdentifier)
         }
       }
     }
-    return albumIds
+    return albumAssets
   }
-
 }

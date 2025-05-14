@@ -8,7 +8,6 @@ abstract final class PlatformAssetStub {
         createdAt: DateTime(2024, 1, 1).millisecondsSinceEpoch,
         updatedAt: DateTime(2024, 1, 1).millisecondsSinceEpoch,
         durationInSeconds: 0,
-        albumIds: ["album1"],
       );
 
   static PlatformAsset get video1 => PlatformAsset(
@@ -18,6 +17,5 @@ abstract final class PlatformAssetStub {
         createdAt: DateTime(2024, 1, 2).millisecondsSinceEpoch,
         updatedAt: DateTime(2024, 1, 2).millisecondsSinceEpoch,
         durationInSeconds: 120,
-        albumIds: ["album1"],
       );
 }

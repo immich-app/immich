@@ -30,7 +30,7 @@ final _features = [
   _Feature(
     name: 'Clear Delta Checkpoint',
     icon: Icons.delete_rounded,
-    onTap: (_, ref) => ref.read(hostServiceProvider).clearSyncCheckpoint(),
+    onTap: (_, ref) => ref.read(hostApiProvider).clearSyncCheckpoint(),
   ),
   _Feature(
     name: 'Clear Local Data',

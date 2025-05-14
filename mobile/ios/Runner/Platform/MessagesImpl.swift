@@ -1,6 +1,6 @@
 import Photos
 
-class ImHostServiceImpl: ImHostService {
+class ImHostApiImpl: ImHostApi {
 
   private let mediaManager: MediaManager
   

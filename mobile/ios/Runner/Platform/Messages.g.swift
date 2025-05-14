@@ -136,7 +136,6 @@ struct PlatformAsset: Hashable {
   var createdAt: Int64? = nil
   var updatedAt: Int64? = nil
   var durationInSeconds: Int64
-  var albumIds: [String]
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -147,7 +146,6 @@ struct PlatformAsset: Hashable {
     let createdAt: Int64? = nilOrValue(pigeonVar_list[3])
     let updatedAt: Int64? = nilOrValue(pigeonVar_list[4])
     let durationInSeconds = pigeonVar_list[5] as! Int64
-    let albumIds = pigeonVar_list[6] as! [String]
 
     return PlatformAsset(
       id: id,
@@ -155,8 +153,7 @@ struct PlatformAsset: Hashable {
       type: type,
       createdAt: createdAt,
       updatedAt: updatedAt,
-      durationInSeconds: durationInSeconds,
-      albumIds: albumIds
+      durationInSeconds: durationInSeconds
     )
   }
   func toList() -> [Any?] {
@@ -167,7 +164,6 @@ struct PlatformAsset: Hashable {
       createdAt,
       updatedAt,
       durationInSeconds,
-      albumIds,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
@@ -182,6 +178,7 @@ struct SyncDelta: Hashable {
   var hasChanges: Bool
   var updates: [PlatformAsset]
   var deletes: [String]
+  var albumAssets: [String: [String]]
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -189,11 +186,13 @@ struct SyncDelta: Hashable {
     let hasChanges = pigeonVar_list[0] as! Bool
     let updates = pigeonVar_list[1] as! [PlatformAsset]
     let deletes = pigeonVar_list[2] as! [String]
+    let albumAssets = pigeonVar_list[3] as! [String: [String]]
 
     return SyncDelta(
       hasChanges: hasChanges,
       updates: updates,
-      deletes: deletes
+      deletes: deletes,
+      albumAssets: albumAssets
     )
   }
   func toList() -> [Any?] {
@@ -201,6 +200,7 @@ struct SyncDelta: Hashable {
       hasChanges,
       updates,
       deletes,
+      albumAssets,
     ]
   }
   static func == (lhs: SyncDelta, rhs: SyncDelta) -> Bool {
@@ -252,7 +252,7 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 }
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
-protocol ImHostService {
+protocol ImHostApi {
   func shouldFullSync() throws -> Bool
   func getMediaChanges() throws -> SyncDelta
   func checkpointSync() throws
@@ -261,17 +261,17 @@ protocol ImHostService {
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
-class ImHostServiceSetup {
+class ImHostApiSetup {
   static var codec: FlutterStandardMessageCodec { MessagesPigeonCodec.shared }
-  /// Sets up an instance of `ImHostService` to handle messages through the `binaryMessenger`.
-  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: ImHostService?, messageChannelSuffix: String = "") {
+  /// Sets up an instance of `ImHostApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: ImHostApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
     #if os(iOS)
       let taskQueue = binaryMessenger.makeBackgroundTaskQueue?()
     #else
       let taskQueue: FlutterTaskQueue? = nil
     #endif
-    let shouldFullSyncChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.shouldFullSync\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let shouldFullSyncChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostApi.shouldFullSync\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       shouldFullSyncChannel.setMessageHandler { _, reply in
         do {
@@ -285,8 +285,8 @@ class ImHostServiceSetup {
       shouldFullSyncChannel.setMessageHandler(nil)
     }
     let getMediaChangesChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
       getMediaChangesChannel.setMessageHandler { _, reply in
         do {
@@ -299,7 +299,7 @@ class ImHostServiceSetup {
     } else {
       getMediaChangesChannel.setMessageHandler(nil)
     }
-    let checkpointSyncChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.checkpointSync\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let checkpointSyncChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostApi.checkpointSync\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       checkpointSyncChannel.setMessageHandler { _, reply in
         do {
@@ -312,7 +312,7 @@ class ImHostServiceSetup {
     } else {
       checkpointSyncChannel.setMessageHandler(nil)
     }
-    let clearSyncCheckpointChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.clearSyncCheckpoint\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let clearSyncCheckpointChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostApi.clearSyncCheckpoint\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       clearSyncCheckpointChannel.setMessageHandler { _, reply in
         do {
@@ -326,8 +326,8 @@ class ImHostServiceSetup {
       clearSyncCheckpointChannel.setMessageHandler(nil)
     }
     let getAssetIdsForAlbumChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostService.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostApi.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ImHostApi.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
       getAssetIdsForAlbumChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]

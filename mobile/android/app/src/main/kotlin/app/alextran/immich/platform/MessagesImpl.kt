@@ -1,12 +1,12 @@
 package app.alextran.immich.platform
 
-import ImHostService
+import ImHostApi
 import SyncDelta
 import android.content.Context
 import android.os.Build
 import android.os.ext.SdkExtensions
 
-class MessagesImpl(context: Context) : ImHostService {
+class ImHostApiImpl(context: Context) : ImHostApi {
   private val ctx: Context = context.applicationContext
   private val mediaManager: MediaManager = MediaManager(ctx)
 
