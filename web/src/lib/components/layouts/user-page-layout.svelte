@@ -5,7 +5,7 @@
 <script lang="ts">
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-  import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+  import UserSidebar from '$lib/components/shared-components/side-bar/user-sidebar.svelte';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { Snippet } from 'svelte';
 
@@ -56,7 +56,7 @@
   {#if sidebar}
     {@render sidebar()}
   {:else}
-    <SideBar />
+    <UserSidebar />
   {/if}
 
   <main class="relative">
