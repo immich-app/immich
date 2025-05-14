@@ -57,7 +57,7 @@
 >
   <SkipLink text={$t('skip_to_content')} />
   <div
-    class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center py-2 dark:border-b-immich-dark-gray sidebar:grid-cols-[theme(spacing.64)_auto] {noBorder
+    class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center py-2 sidebar:grid-cols-[theme(spacing.64)_auto] {noBorder
       ? ''
       : 'border-b'}"
   >
