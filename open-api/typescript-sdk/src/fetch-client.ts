@@ -1078,6 +1078,21 @@ export type SessionResponseDto = {
     id: string;
     updatedAt: string;
 };
+export type SessionCreateDto = {
+    deviceOS?: string;
+    deviceType?: string;
+    /** session duration, in seconds */
+    duration?: number;
+};
+export type SessionCreateResponseDto = {
+    createdAt: string;
+    current: boolean;
+    deviceOS: string;
+    deviceType: string;
+    id: string;
+    token: string;
+    updatedAt: string;
+};
 export type SharedLinkResponseDto = {
     album?: AlbumResponseDto;
     allowDownload: boolean;
@@ -2917,6 +2932,18 @@ export function getSessions(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function createSession({ sessionCreateDto }: {
+    sessionCreateDto: SessionCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SessionCreateResponseDto;
+    }>("/sessions", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: sessionCreateDto
+    })));
+}
 export function deleteSession({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3678,6 +3705,7 @@ export enum Permission {
     PersonStatistics = "person.statistics",
     PersonMerge = "person.merge",
     PersonReassign = "person.reassign",
+    SessionCreate = "session.create",
     SessionRead = "session.read",
     SessionUpdate = "session.update",
     SessionDelete = "session.delete",

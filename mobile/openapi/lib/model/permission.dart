@@ -81,6 +81,7 @@ class Permission {
   static const personPeriodStatistics = Permission._(r'person.statistics');
   static const personPeriodMerge = Permission._(r'person.merge');
   static const personPeriodReassign = Permission._(r'person.reassign');
+  static const sessionPeriodCreate = Permission._(r'session.create');
   static const sessionPeriodRead = Permission._(r'session.read');
   static const sessionPeriodUpdate = Permission._(r'session.update');
   static const sessionPeriodDelete = Permission._(r'session.delete');
@@ -166,6 +167,7 @@ class Permission {
     personPeriodStatistics,
     personPeriodMerge,
     personPeriodReassign,
+    sessionPeriodCreate,
     sessionPeriodRead,
     sessionPeriodUpdate,
     sessionPeriodDelete,
@@ -286,6 +288,7 @@ class PermissionTypeTransformer {
         case r'person.statistics': return Permission.personPeriodStatistics;
         case r'person.merge': return Permission.personPeriodMerge;
         case r'person.reassign': return Permission.personPeriodReassign;
+        case r'session.create': return Permission.sessionPeriodCreate;
         case r'session.read': return Permission.sessionPeriodRead;
         case r'session.update': return Permission.sessionPeriodUpdate;
         case r'session.delete': return Permission.sessionPeriodDelete;

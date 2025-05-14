@@ -5618,6 +5618,46 @@
         "tags": [
           "Sessions"
         ]
+      },
+      "post": {
+        "operationId": "createSession",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
       }
     },
     "/sessions/{id}": {
@@ -11052,6 +11092,7 @@
           "person.statistics",
           "person.merge",
           "person.reassign",
+          "session.create",
           "session.read",
           "session.update",
           "session.delete",
@@ -12035,6 +12076,57 @@
           "major",
           "minor",
           "patch"
+        ],
+        "type": "object"
+      },
+      "SessionCreateDto": {
+        "properties": {
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "duration": {
+            "description": "session duration, in seconds",
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "SessionCreateResponseDto": {
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "current",
+          "deviceOS",
+          "deviceType",
+          "id",
+          "token",
+          "updatedAt"
         ],
         "type": "object"
       },

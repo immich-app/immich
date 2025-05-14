@@ -194,6 +194,7 @@ Class | Method | HTTP request | Description
 *ServerApi* | [**getVersionHistory**](doc//ServerApi.md#getversionhistory) | **GET** /server/version-history | 
 *ServerApi* | [**pingServer**](doc//ServerApi.md#pingserver) | **GET** /server/ping | 
 *ServerApi* | [**setServerLicense**](doc//ServerApi.md#setserverlicense) | **PUT** /server/license | 
+*SessionsApi* | [**createSession**](doc//SessionsApi.md#createsession) | **POST** /sessions | 
 *SessionsApi* | [**deleteAllSessions**](doc//SessionsApi.md#deleteallsessions) | **DELETE** /sessions | 
 *SessionsApi* | [**deleteSession**](doc//SessionsApi.md#deletesession) | **DELETE** /sessions/{id} | 
 *SessionsApi* | [**getSessions**](doc//SessionsApi.md#getsessions) | **GET** /sessions | 
@@ -420,6 +421,8 @@ Class | Method | HTTP request | Description
  - [ServerThemeDto](doc//ServerThemeDto.md)
  - [ServerVersionHistoryResponseDto](doc//ServerVersionHistoryResponseDto.md)
  - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
+ - [SessionCreateDto](doc//SessionCreateDto.md)
+ - [SessionCreateResponseDto](doc//SessionCreateResponseDto.md)
  - [SessionResponseDto](doc//SessionResponseDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)

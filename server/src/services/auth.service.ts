@@ -492,17 +492,17 @@ export class AuthService extends BaseService {
   }
 
   private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
-    const key = this.cryptoRepository.newPassword(32);
-    const token = this.cryptoRepository.hashSha256(key);
+    const token = this.cryptoRepository.randomBytesAsText(32);
+    const tokenHashed = this.cryptoRepository.hashSha256(token);
 
     await this.sessionRepository.create({
-      token,
+      token: tokenHashed,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
       userId: user.id,
     });
 
-    return mapLoginResponse(user, key);
+    return mapLoginResponse(user, token);
   }
 
   private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {

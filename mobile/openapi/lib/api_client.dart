@@ -492,6 +492,10 @@ class ApiClient {
           return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':
           return ServerVersionResponseDto.fromJson(value);
+        case 'SessionCreateDto':
+          return SessionCreateDto.fromJson(value);
+        case 'SessionCreateResponseDto':
+          return SessionCreateResponseDto.fromJson(value);
         case 'SessionResponseDto':
           return SessionResponseDto.fromJson(value);
         case 'SharedLinkCreateDto':

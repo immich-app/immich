@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
+import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB, Sessions } from 'src/db';
@@ -12,6 +13,19 @@ export type SessionSearchOptions = { updatedBefore: Date };
 @Injectable()
 export class SessionRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
+
+  cleanup() {
+    return this.db
+      .deleteFrom('sessions')
+      .where((eb) =>
+        eb.or([
+          eb('updatedAt', '<=', DateTime.now().minus({ days: 90 }).toJSDate()),
+          eb.and([eb('expiredAt', 'is not', null), eb('expiredAt', '<=', DateTime.now().toJSDate())]),
+        ]),
+      )
+      .returning(['id', 'deviceOS', 'deviceType'])
+      .execute();
+  }
 
   @GenerateSql({ params: [{ updatedBefore: DummyValue.DATE }] })
   search(options: SessionSearchOptions) {
@@ -37,6 +51,9 @@ export class SessionRepository {
         ).as('user'),
       ])
       .where('sessions.token', '=', token)
+      .where((eb) =>
+        eb.or([eb('sessions.expiredAt', 'is', null), eb('sessions.expiredAt', '>', DateTime.now().toJSDate())]),
+      )
       .executeTakeFirst();
   }
 

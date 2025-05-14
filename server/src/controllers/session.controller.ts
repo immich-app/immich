@@ -1,7 +1,7 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { SessionResponseDto } from 'src/dtos/session.dto';
+import { SessionCreateDto, SessionCreateResponseDto, SessionResponseDto } from 'src/dtos/session.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { SessionService } from 'src/services/session.service';
@@ -11,6 +11,12 @@ import { UUIDParamDto } from 'src/validation';
 @Controller('sessions')
 export class SessionController {
   constructor(private service: SessionService) {}
+
+  @Post()
+  @Authenticated({ permission: Permission.SESSION_CREATE })
+  createSession(@Auth() auth: AuthDto, @Body() dto: SessionCreateDto): Promise<SessionCreateResponseDto> {
+    return this.service.create(auth, dto);
+  }
 
   @Get()
   @Authenticated({ permission: Permission.SESSION_READ })
