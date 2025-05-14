@@ -20,7 +20,7 @@ class FaceDetector(InferenceModel):
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)
         self.model = RetinaFace(session=session)
-        self.model.prepare(ctx_id=0, det_thresh=self.min_score, input_size=(256, 256))
+        self.model.prepare(ctx_id=0, det_thresh=self.min_score, input_size=(640, 640))
 
         return session
 
