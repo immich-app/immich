@@ -7,7 +7,6 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
-  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import UnMergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -32,6 +31,7 @@
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
+  import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
@@ -44,7 +44,6 @@
   import {
     AssetVisibility,
     getPersonStatistics,
-    mergePerson,
     searchPerson,
     updatePerson,
     type AssetResponseDto,
@@ -122,7 +121,7 @@
   });
 
   const handleEscape = async () => {
-    if ($showAssetViewer || viewMode === PersonPageViewMode.SUGGEST_MERGE) {
+    if ($showAssetViewer) {
       return;
     }
     if (assetInteraction.selectionActive) {
@@ -220,31 +219,32 @@
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
 
-  const handleMergeSamePerson = async (response: [PersonResponseDto, PersonResponseDto]) => {
-    const [personToMerge, personToBeMergedIn] = response;
-    viewMode = PersonPageViewMode.VIEW_ASSETS;
-    isEditingName = false;
-    try {
-      await mergePerson({
-        id: personToBeMergedIn.id,
-        mergePersonDto: { ids: [personToMerge.id] },
-      });
-      notificationController.show({
-        message: $t('merge_people_successfully'),
-        type: NotificationType.Info,
-      });
-      people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
-      if (personToBeMergedIn.name != personName && person.id === personToBeMergedIn.id) {
-        await updateAssetCount();
-        return;
-      }
-      await goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_name'));
+  const handleMergeSuggestion = async () => {
+    if (!personMerge1 || !personMerge2) {
+      return;
     }
+
+    const result = await modalManager.show(PersonMergeSuggestionModal, {
+      personToMerge: personMerge1,
+      personToBeMergedInto: personMerge2,
+      potentialMergePeople,
+    });
+
+    if (!result) {
+      return;
+    }
+
+    const [personToMerge, personToBeMergedInto] = result;
+
+    people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
+    if (personToBeMergedInto.name != personName && person.id === personToBeMergedInto.id) {
+      await updateAssetCount();
+      return;
+    }
+    await goto(`${AppRoute.PEOPLE}/${personToBeMergedInto.id}`, { replaceState: true });
   };
 
-  const handleSuggestPeople = (person2: PersonResponseDto) => {
+  const handleSuggestPeople = async (person2: PersonResponseDto) => {
     isEditingName = false;
     if (person.id !== person2.id) {
       potentialMergePeople = [];
@@ -252,7 +252,8 @@
       personMerge1 = person;
       personMerge2 = person2;
       isSuggestionSelectedByUser = true;
-      viewMode = PersonPageViewMode.SUGGEST_MERGE;
+
+      await handleMergeSuggestion();
     }
   };
 
@@ -280,9 +281,6 @@
   };
 
   const handleCancelEditName = () => {
-    if (viewMode === PersonPageViewMode.SUGGEST_MERGE) {
-      return;
-    }
     isSearchingPeople = false;
     isEditingName = false;
   };
@@ -317,7 +315,7 @@
             !person.isHidden,
         )
         .slice(0, 3);
-      viewMode = PersonPageViewMode.SUGGEST_MERGE;
+      await handleMergeSuggestion();
       return;
     }
     await changeName();
@@ -382,7 +380,7 @@
       onSelect={handleSelectFeaturePhoto}
       onEscape={handleEscape}
     >
-      {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE}
+      {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
         <!-- Person information block -->
         <div
           class="relative w-fit p-4 sm:px-6"
@@ -497,17 +495,6 @@
   />
 {/if}
 
-{#if viewMode === PersonPageViewMode.SUGGEST_MERGE && personMerge1 && personMerge2}
-  <MergeSuggestionModal
-    {personMerge1}
-    {personMerge2}
-    {potentialMergePeople}
-    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
-    onReject={changeName}
-    onConfirm={handleMergeSamePerson}
-  />
-{/if}
-
 {#if viewMode === PersonPageViewMode.MERGE_PEOPLE}
   <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
 {/if}
@@ -553,7 +540,7 @@
       </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}
-    {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE}
+    {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
           <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>

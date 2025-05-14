@@ -3,9 +3,9 @@
   import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
   import { scrollMemory } from '$lib/actions/scroll-memory';
+  import { shortcut } from '$lib/actions/shortcut';
   import Icon from '$lib/components/elements/icon.svelte';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
-  import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
@@ -17,19 +17,13 @@
   import { ActionQueryParameterValue, AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
+  import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
-  import {
-    getAllPeople,
-    getPerson,
-    mergePerson,
-    searchPerson,
-    updatePerson,
-    type PersonResponseDto,
-  } from '@immich/sdk';
+  import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -46,7 +40,6 @@
 
   let selectHidden = $state(false);
   let searchName = $state('');
-  let showMergeModal = $state(false);
   let newName = $state('');
   let currentPage = $state(1);
   let nextPage = $state(data.people.hasNextPage ? 2 : null);
@@ -131,42 +124,41 @@
     }
   };
 
-  const handleMergeSamePerson = async (response: [PersonResponseDto, PersonResponseDto]) => {
-    const [personToMerge, personToBeMergedIn] = response;
-    showMergeModal = false;
-
-    if (!editingPerson) {
+  const handleMerge = async () => {
+    if (!editingPerson || !personMerge1 || !personMerge2) {
       return;
     }
-    try {
-      await mergePerson({
-        id: personToBeMergedIn.id,
-        mergePersonDto: { ids: [personToMerge.id] },
-      });
 
-      const mergedPerson = await getPerson({ id: personToBeMergedIn.id });
+    const response = await modalManager.show(PersonMergeSuggestionModal, {
+      personToMerge: personMerge1,
+      personToBeMergedInto: personMerge2,
+      potentialMergePeople,
+    });
 
-      people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
-      people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedIn.id ? mergedPerson : person));
-      notificationController.show({
-        message: $t('merge_people_successfully'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_name'));
+    if (!response) {
+      await updateName(personMerge1.id, newName);
+      return;
     }
-    if (personToBeMergedIn.name !== newName && editingPerson.id === personToBeMergedIn.id) {
+
+    const [personToMerge, personToBeMergedInto] = response;
+
+    const mergedPerson = await getPerson({ id: personToBeMergedInto.id });
+
+    people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
+    people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedInto.id ? mergedPerson : person));
+
+    if (personToBeMergedInto.name !== newName && editingPerson.id === personToBeMergedInto.id) {
       /*
        *
-       * If the user merges one of the suggested people into the person he's editing it, it's merging the suggested person AND renames
+       * If the user merges one of the suggested people into the person he's editing, it's merging the suggested person AND renames
        * the person he's editing
        *
        */
       try {
-        await updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: newName } });
+        await updatePerson({ id: personToBeMergedInto.id, personUpdateDto: { name: newName } });
 
         for (const person of people) {
-          if (person.id === personToBeMergedIn.id) {
+          if (person.id === personToBeMergedInto.id) {
             person.name = newName;
             break;
           }
@@ -263,7 +255,7 @@
 
   const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
     try {
-      if (name == targetPerson.name || showMergeModal) {
+      if (name == targetPerson.name) {
         return;
       }
 
@@ -285,7 +277,7 @@
               !person.isHidden,
           )
           .slice(0, 3);
-        showMergeModal = true;
+        await handleMerge();
         return;
       }
       await updateName(targetPerson.id, name);
@@ -315,31 +307,9 @@
       (person) => person.name.toLowerCase() === name.toLowerCase() && person.id !== personId && person.name,
     );
   };
-
-  const handleMergeCancel = async () => {
-    if (!personMerge1) {
-      return;
-    }
-
-    await updateName(personMerge1.id, newName);
-    showMergeModal = false;
-  };
 </script>
 
 <svelte:window bind:innerHeight />
-
-{#if showMergeModal && personMerge1 && personMerge2}
-  <MergeSuggestionModal
-    {personMerge1}
-    {personMerge2}
-    {potentialMergePeople}
-    onClose={() => {
-      showMergeModal = false;
-    }}
-    onReject={() => handleMergeCancel()}
-    onConfirm={handleMergeSamePerson}
-  />
-{/if}
 
 <UserPageLayout
   title={$t('people')}
@@ -403,17 +373,16 @@
             onToggleFavorite={() => handleToggleFavorite(person)}
           />
 
-          <form onsubmit={() => onNameChangeSubmit(newName, person)}>
-            <input
-              type="text"
-              class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-immich-primary dark:text-immich-dark-primary"
-              value={person.name}
-              placeholder={$t('add_a_name')}
-              onfocusin={() => onNameChangeInputFocus(person)}
-              onfocusout={() => onNameChangeSubmit(newName, person)}
-              oninput={(event) => onNameChangeInputUpdate(event)}
-            />
-          </form>
+          <input
+            type="text"
+            class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-immich-primary dark:text-immich-dark-primary"
+            value={person.name}
+            placeholder={$t('add_a_name')}
+            use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
+            onfocusin={() => onNameChangeInputFocus(person)}
+            onfocusout={() => onNameChangeSubmit(newName, person)}
+            oninput={(event) => onNameChangeInputUpdate(event)}
+          />
         </div>
       {/snippet}
     </PeopleInfiniteScroll>
