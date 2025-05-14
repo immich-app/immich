@@ -9,13 +9,14 @@
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
-  import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { ActionQueryParameterValue, AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
@@ -45,7 +46,6 @@
 
   let selectHidden = $state(false);
   let searchName = $state('');
-  let showSetBirthDateModal = $state(false);
   let showMergeModal = $state(false);
   let newName = $state('');
   let currentPage = $state(1);
@@ -53,7 +53,7 @@
   let personMerge1 = $state<PersonResponseDto>();
   let personMerge2 = $state<PersonResponseDto>();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
-  let edittingPerson: PersonResponseDto | null = $state(null);
+  let editingPerson: PersonResponseDto | null = $state(null);
   let searchedPeopleLocal: PersonResponseDto[] = $state([]);
   let innerHeight = $state(0);
   let searchPeopleElement = $state<ReturnType<typeof SearchPeople>>();
@@ -135,7 +135,7 @@
     const [personToMerge, personToBeMergedIn] = response;
     showMergeModal = false;
 
-    if (!edittingPerson) {
+    if (!editingPerson) {
       return;
     }
     try {
@@ -155,7 +155,7 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));
     }
-    if (personToBeMergedIn.name !== newName && edittingPerson.id === personToBeMergedIn.id) {
+    if (personToBeMergedIn.name !== newName && editingPerson.id === personToBeMergedIn.id) {
       /*
        *
        * If the user merges one of the suggested people into the person he's editing it, it's merging the suggested person AND renames
@@ -179,11 +179,6 @@
         handleError(error, $t('errors.unable_to_save_name'));
       }
     }
-  };
-
-  const handleSetBirthDate = (detail: PersonResponseDto) => {
-    showSetBirthDateModal = true;
-    edittingPerson = detail;
   };
 
   const handleHidePerson = async (detail: PersonResponseDto) => {
@@ -234,31 +229,19 @@
     );
   };
 
-  const submitBirthDateChange = async (value: string) => {
-    showSetBirthDateModal = false;
-    if (!edittingPerson || value === edittingPerson.birthDate) {
+  const handleChangeBirthDate = async (person: PersonResponseDto) => {
+    const updatedPerson = await modalManager.show(PersonEditBirthDateModal, { person });
+
+    if (!updatedPerson) {
       return;
     }
 
-    try {
-      const updatedPerson = await updatePerson({
-        id: edittingPerson.id,
-        personUpdateDto: { birthDate: value.length > 0 ? value : null },
-      });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-      notificationController.show({
-        message: $t('birthdate_saved'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_name'));
-    }
+    people = people.map((person: PersonResponseDto) => {
+      if (person.id === updatedPerson.id) {
+        return updatedPerson;
+      }
+      return person;
+    });
   };
 
   const onResetSearchBar = async () => {
@@ -274,7 +257,7 @@
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
-    edittingPerson = person;
+    editingPerson = person;
     newName = person.name;
   };
 
@@ -414,7 +397,7 @@
         >
           <PeopleCard
             {person}
-            onSetBirthDate={() => handleSetBirthDate(person)}
+            onSetBirthDate={() => handleChangeBirthDate(person)}
             onMergePeople={() => handleMergePeople(person)}
             onHidePerson={() => handleHidePerson(person)}
             onToggleFavorite={() => handleToggleFavorite(person)}
@@ -443,14 +426,6 @@
         </p>
       </div>
     </div>
-  {/if}
-
-  {#if showSetBirthDateModal}
-    <SetBirthDateModal
-      birthDate={edittingPerson?.birthDate ?? ''}
-      onClose={() => (showSetBirthDateModal = false)}
-      onUpdate={submitBirthDateChange}
-    />
   {/if}
 </UserPageLayout>
 

@@ -8,7 +8,6 @@
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
-  import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import UnMergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -31,6 +30,8 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
@@ -322,27 +323,19 @@
     await changeName();
   };
 
-  const handleSetBirthDate = async (birthDate: string) => {
-    try {
-      viewMode = PersonPageViewMode.VIEW_ASSETS;
-      person.birthDate = birthDate;
+  const handleSetBirthDate = async () => {
+    const updatedPerson = await modalManager.show(PersonEditBirthDateModal, { person });
 
-      const updatedPerson = await updatePerson({
-        id: person.id,
-        personUpdateDto: { birthDate: birthDate.length > 0 ? birthDate : null },
-      });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-
-      notificationController.show({ message: $t('date_of_birth_saved'), type: NotificationType.Info });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_date_of_birth'));
+    if (!updatedPerson) {
+      return;
     }
+
+    people = people.map((person: PersonResponseDto) => {
+      if (person.id === updatedPerson.id) {
+        return updatedPerson;
+      }
+      return person;
+    });
   };
 
   const handleGoBack = async () => {
@@ -389,7 +382,7 @@
       onSelect={handleSelectFeaturePhoto}
       onEscape={handleEscape}
     >
-      {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE || viewMode === PersonPageViewMode.BIRTH_DATE}
+      {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE}
         <!-- Person information block -->
         <div
           class="relative w-fit p-4 sm:px-6"
@@ -515,14 +508,6 @@
   />
 {/if}
 
-{#if viewMode === PersonPageViewMode.BIRTH_DATE}
-  <SetBirthDateModal
-    birthDate={person.birthDate ?? ''}
-    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
-    onUpdate={handleSetBirthDate}
-  />
-{/if}
-
 {#if viewMode === PersonPageViewMode.MERGE_PEOPLE}
   <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
 {/if}
@@ -568,7 +553,7 @@
       </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}
-    {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE || viewMode === PersonPageViewMode.BIRTH_DATE}
+    {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE}
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
           <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
@@ -582,11 +567,7 @@
               icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
               onClick={() => toggleHidePerson()}
             />
-            <MenuOption
-              text={$t('set_date_of_birth')}
-              icon={mdiCalendarEditOutline}
-              onClick={() => (viewMode = PersonPageViewMode.BIRTH_DATE)}
-            />
+            <MenuOption text={$t('set_date_of_birth')} icon={mdiCalendarEditOutline} onClick={handleSetBirthDate} />
             <MenuOption
               text={$t('merge_people')}
               icon={mdiAccountMultipleCheckOutline}
