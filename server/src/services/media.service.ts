@@ -5,9 +5,7 @@ import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
-  AssetFileType,
   AssetPathType,
-  AssetType,
   AssetVisibility,
   AudioCodec,
   Colorspace,
@@ -24,7 +22,6 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { UpsertFileOptions } from 'src/repositories/asset.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
 import {
@@ -162,69 +159,6 @@ export class MediaService extends BaseService {
       this.logger.verbose(`Thumbnail generation skipped for asset ${id}: not visible`);
       return JobStatus.SKIPPED;
     }
-
-    let generated: {
-      previewPath: string;
-      thumbnailPath: string;
-      fullsizePath?: string;
-      thumbhash: Buffer;
-    };
-    if (asset.type === AssetType.VIDEO || asset.originalFileName.toLowerCase().endsWith('.gif')) {
-      generated = await this.generateVideoThumbnails(asset);
-    } else if (asset.type === AssetType.IMAGE) {
-      generated = await this.generateImageThumbnails(asset);
-    } else {
-      this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
-      return JobStatus.SKIPPED;
-    }
-
-    const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files);
-    const toUpsert: UpsertFileOptions[] = [];
-    if (previewFile?.path !== generated.previewPath) {
-      toUpsert.push({ assetId: asset.id, path: generated.previewPath, type: AssetFileType.PREVIEW });
-    }
-
-    if (thumbnailFile?.path !== generated.thumbnailPath) {
-      toUpsert.push({ assetId: asset.id, path: generated.thumbnailPath, type: AssetFileType.THUMBNAIL });
-    }
-
-    if (generated.fullsizePath && fullsizeFile?.path !== generated.fullsizePath) {
-      toUpsert.push({ assetId: asset.id, path: generated.fullsizePath, type: AssetFileType.FULLSIZE });
-    }
-
-    if (toUpsert.length > 0) {
-      await this.assetRepository.upsertFiles(toUpsert);
-    }
-
-    const pathsToDelete: string[] = [];
-    if (previewFile && previewFile.path !== generated.previewPath) {
-      this.logger.debug(`Deleting old preview for asset ${asset.id}`);
-      pathsToDelete.push(previewFile.path);
-    }
-
-    if (thumbnailFile && thumbnailFile.path !== generated.thumbnailPath) {
-      this.logger.debug(`Deleting old thumbnail for asset ${asset.id}`);
-      pathsToDelete.push(thumbnailFile.path);
-    }
-
-    if (fullsizeFile && fullsizeFile.path !== generated.fullsizePath) {
-      this.logger.debug(`Deleting old fullsize preview image for asset ${asset.id}`);
-      pathsToDelete.push(fullsizeFile.path);
-      if (!generated.fullsizePath) {
-        // did not generate a new fullsize image, delete the existing record
-        await this.assetRepository.deleteFiles([fullsizeFile]);
-      }
-    }
-
-    if (pathsToDelete.length > 0) {
-      await Promise.all(pathsToDelete.map((path) => this.storageRepository.unlink(path)));
-    }
-
-    if (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) {
-      await this.assetRepository.update({ id: asset.id, thumbhash: generated.thumbhash });
-    }
-
-    await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date(), thumbnailAt: new Date() });
 
     return JobStatus.SUCCESS;
   }

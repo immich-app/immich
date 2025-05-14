@@ -100,7 +100,7 @@ export class SmartInfoService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForClipEncoding(id);
-    if (!asset || asset.files.length !== 1) {
+    if (!asset) {
       return JobStatus.FAILED;
     }
 
@@ -110,7 +110,7 @@ export class SmartInfoService extends BaseService {
 
     const embedding = await this.machineLearningRepository.encodeImage(
       machineLearning.urls,
-      asset.files[0].path,
+      asset.originalPath,
       machineLearning.clip,
     );
 

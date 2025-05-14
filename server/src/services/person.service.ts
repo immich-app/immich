@@ -290,8 +290,7 @@ export class PersonService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForDetectFacesJob(id);
-    const previewFile = asset?.files[0];
-    if (!asset || asset.files.length !== 1 || !previewFile) {
+    if (!asset) {
       return JobStatus.FAILED;
     }
 
@@ -301,10 +300,12 @@ export class PersonService extends BaseService {
 
     const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
       machineLearning.urls,
-      previewFile.path,
+      asset.originalPath,
       machineLearning.facialRecognition,
     );
-    this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
+    this.logger.debug(
+      `${faces.length} faces detected in ${asset.originalPath} with scores ${faces.map((f) => f.score)}`,
+    );
 
     const facesToAdd: (Insertable<AssetFaces> & { id: string })[] = [];
     const embeddings: FaceSearch[] = [];

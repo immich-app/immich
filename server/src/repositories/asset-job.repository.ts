@@ -169,8 +169,7 @@ export class AssetJobRepository {
   getForClipEncoding(id: string) {
     return this.db
       .selectFrom('assets')
-      .select(['assets.id', 'assets.visibility'])
-      .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
+      .select(['assets.id', 'assets.visibility', 'assets.originalPath'])
       .where('assets.id', '=', id)
       .executeTakeFirst();
   }
@@ -179,10 +178,9 @@ export class AssetJobRepository {
   getForDetectFacesJob(id: string) {
     return this.db
       .selectFrom('assets')
-      .select(['assets.id', 'assets.visibility'])
+      .select(['assets.id', 'assets.visibility', 'assets.originalPath'])
       .$call(withExifInner)
       .select((eb) => withFaces(eb, true))
-      .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
       .where('assets.id', '=', id)
       .executeTakeFirst();
   }
