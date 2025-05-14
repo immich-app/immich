@@ -40,7 +40,7 @@ export default {
       },
       borderColor: ({ theme }) => ({
         ...theme('colors'),
-        DEFAULT: 'rgb(var(--immich-ui-gray) / <alpha-value>)',
+        DEFAULT: 'rgb(var(--immich-ui-default-border) / <alpha-value>)',
       }),
       fontFamily: {
         'immich-mono': ['Overpass Mono', 'monospace'],

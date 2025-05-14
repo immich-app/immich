@@ -1,8 +1,8 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
 
   const accordionState = getAccordionState();
 
@@ -65,8 +65,8 @@
 
 <div
   class="border rounded-2xl my-4 px-6 py-4 transition-all {isOpen
-    ? 'border-immich-primary/40 dark:border-immich-dark-primary/50 shadow-md'
-    : 'dark:border-gray-800'}"
+    ? 'border-primary/40 dark:border-primary/50 shadow-md'
+    : ''}"
   bind:this={accordionElement}
 >
   <button
