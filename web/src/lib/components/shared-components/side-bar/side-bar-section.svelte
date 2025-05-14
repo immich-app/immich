@@ -35,7 +35,7 @@
   id="sidebar"
   aria-label={ariaLabel}
   tabindex="-1"
-  class="immich-scrollbar relative z-[1] w-0 sidebar:w-[16rem] overflow-y-auto overflow-x-hidden pt-8 transition-all duration-200"
+  class="immich-scrollbar relative z-[1] w-0 sidebar:w-[16rem] overflow-y-auto overflow-x-hidden pt-8 transition-all duration-200 bg-light"
   class:shadow-2xl={isExpanded}
   class:dark:border-e-immich-dark-gray={isExpanded}
   class:border-r={isExpanded}
