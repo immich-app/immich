@@ -4,6 +4,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { castManager, CastState } from '$lib/managers/cast-manager.svelte';
   import { mdiCastConnected, mdiPause, mdiPlay } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     poster: string;
@@ -64,7 +65,7 @@
 
 <span class="flex items-center space-x-2 text-gray-200 text-2xl font-bold">
   <Icon path={mdiCastConnected} class="text-primary" size="36" />
-  <span>Connected to {castManager.receiverName}</span>
+  <span>{$t('connected_to')} {castManager.receiverName}</span>
 </span>
 
 <img src={poster} alt="poster" class="rounded-xl m-4" />

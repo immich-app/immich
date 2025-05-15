@@ -662,6 +662,7 @@
   "confirm_keep_this_delete_others": "All other assets in the stack will be deleted except for this asset. Are you sure you want to continue?",
   "confirm_new_pin_code": "Confirm new PIN code",
   "confirm_password": "Confirm password",
+  "connected_to": "Connected to",
   "contain": "Contain",
   "context": "Context",
   "continue": "Continue",
