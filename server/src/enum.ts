@@ -148,6 +148,7 @@ export enum Permission {
   SESSION_READ = 'session.read',
   SESSION_UPDATE = 'session.update',
   SESSION_DELETE = 'session.delete',
+  SESSION_LOCK = 'session.lock',
 
   SHARED_LINK_CREATE = 'sharedLink.create',
   SHARED_LINK_READ = 'sharedLink.read',

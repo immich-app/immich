@@ -30,7 +30,7 @@ export class SessionService extends BaseService {
     const session = await this.sessionRepository.create({
       parentId: auth.session.id,
       userId: auth.user.id,
-      expiredAt: dto.duration ? DateTime.now().plus({ seconds: dto.duration }).toJSDate() : null,
+      expiresAt: dto.duration ? DateTime.now().plus({ seconds: dto.duration }).toJSDate() : null,
       deviceType: dto.deviceType,
       deviceOS: dto.deviceOS,
       token: tokenHashed,
@@ -47,6 +47,11 @@ export class SessionService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AUTH_DEVICE_DELETE, ids: [id] });
     await this.sessionRepository.delete(id);
+  }
+
+  async lock(auth: AuthDto, id: string): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.SESSION_LOCK, ids: [id] });
+    await this.sessionRepository.update(id, { pinExpiresAt: null });
   }
 
   async deleteAll(auth: AuthDto): Promise<void> {

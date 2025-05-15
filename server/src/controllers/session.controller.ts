@@ -37,4 +37,11 @@ export class SessionController {
   deleteSession(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
+
+  @Post(':id/lock')
+  @Authenticated({ permission: Permission.SESSION_LOCK })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  lockSession(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.lock(auth, id);
+  }
 }

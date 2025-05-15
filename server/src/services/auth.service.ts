@@ -18,6 +18,7 @@ import {
   PinCodeChangeDto,
   PinCodeResetDto,
   PinCodeSetupDto,
+  SessionUnlockDto,
   SignUpDto,
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
@@ -123,24 +124,21 @@ export class AuthService extends BaseService {
 
   async resetPinCode(auth: AuthDto, dto: PinCodeResetDto) {
     const user = await this.userRepository.getForPinCode(auth.user.id);
-    this.resetPinChecks(user, dto);
+    this.validatePinCode(user, dto);
 
     await this.userRepository.update(auth.user.id, { pinCode: null });
-    const sessions = await this.sessionRepository.getByUserId(auth.user.id);
-    for (const session of sessions) {
-      await this.sessionRepository.update(session.id, { pinExpiresAt: null });
-    }
+    await this.sessionRepository.lockAll(auth.user.id);
   }
 
   async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
     const user = await this.userRepository.getForPinCode(auth.user.id);
-    this.resetPinChecks(user, dto);
+    this.validatePinCode(user, dto);
 
     const hashed = await this.cryptoRepository.hashBcrypt(dto.newPinCode, SALT_ROUNDS);
     await this.userRepository.update(auth.user.id, { pinCode: hashed });
   }
 
-  private resetPinChecks(
+  private validatePinCode(
     user: { pinCode: string | null; password: string | null },
     dto: { pinCode?: string; password?: string },
   ) {
@@ -474,21 +472,25 @@ export class AuthService extends BaseService {
     throw new UnauthorizedException('Invalid user token');
   }
 
-  async verifyPinCode(auth: AuthDto, dto: PinCodeSetupDto): Promise<void> {
-    const user = await this.userRepository.getForPinCode(auth.user.id);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    this.resetPinChecks(user, { pinCode: dto.pinCode });
-
+  async unlockSession(auth: AuthDto, dto: SessionUnlockDto): Promise<void> {
     if (!auth.session) {
-      throw new BadRequestException('Session is missing');
+      throw new BadRequestException('This endpoint can only be used with a session token');
     }
+
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    this.validatePinCode(user, { pinCode: dto.pinCode });
 
     await this.sessionRepository.update(auth.session.id, {
-      pinExpiresAt: new Date(DateTime.now().plus({ minutes: 15 }).toJSDate()),
+      pinExpiresAt: DateTime.now().plus({ minutes: 15 }).toJSDate(),
     });
+  }
+
+  async lockSession(auth: AuthDto): Promise<void> {
+    if (!auth.session) {
+      throw new BadRequestException('This endpoint can only be used with a session token');
+    }
+
+    await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
   }
 
   private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
@@ -526,10 +528,14 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException();
     }
 
+    const session = auth.session ? await this.sessionRepository.get(auth.session.id) : undefined;
+
     return {
       pinCode: !!user.pinCode,
       password: !!user.password,
       isElevated: !!auth.session?.hasElevatedPermission,
+      expiresAt: session?.expiresAt?.toISOString(),
+      pinExpiresAt: session?.pinExpiresAt?.toISOString(),
     };
   }
 }

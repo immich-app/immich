@@ -434,6 +434,8 @@ class ApiClient {
           return PersonWithFacesResponseDto.fromJson(value);
         case 'PinCodeChangeDto':
           return PinCodeChangeDto.fromJson(value);
+        case 'PinCodeResetDto':
+          return PinCodeResetDto.fromJson(value);
         case 'PinCodeSetupDto':
           return PinCodeSetupDto.fromJson(value);
         case 'PlacesResponseDto':
@@ -498,6 +500,8 @@ class ApiClient {
           return SessionCreateResponseDto.fromJson(value);
         case 'SessionResponseDto':
           return SessionResponseDto.fromJson(value);
+        case 'SessionUnlockDto':
+          return SessionUnlockDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':

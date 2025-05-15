@@ -17,6 +17,7 @@ class SessionCreateResponseDto {
     required this.current,
     required this.deviceOS,
     required this.deviceType,
+    this.expiresAt,
     required this.id,
     required this.token,
     required this.updatedAt,
@@ -30,6 +31,14 @@ class SessionCreateResponseDto {
 
   String deviceType;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? expiresAt;
+
   String id;
 
   String token;
@@ -42,6 +51,7 @@ class SessionCreateResponseDto {
     other.current == current &&
     other.deviceOS == deviceOS &&
     other.deviceType == deviceType &&
+    other.expiresAt == expiresAt &&
     other.id == id &&
     other.token == token &&
     other.updatedAt == updatedAt;
@@ -53,12 +63,13 @@ class SessionCreateResponseDto {
     (current.hashCode) +
     (deviceOS.hashCode) +
     (deviceType.hashCode) +
+    (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
     (token.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SessionCreateResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, id=$id, token=$token, updatedAt=$updatedAt]';
+  String toString() => 'SessionCreateResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, token=$token, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -66,6 +77,11 @@ class SessionCreateResponseDto {
       json[r'current'] = this.current;
       json[r'deviceOS'] = this.deviceOS;
       json[r'deviceType'] = this.deviceType;
+    if (this.expiresAt != null) {
+      json[r'expiresAt'] = this.expiresAt;
+    } else {
+    //  json[r'expiresAt'] = null;
+    }
       json[r'id'] = this.id;
       json[r'token'] = this.token;
       json[r'updatedAt'] = this.updatedAt;
@@ -85,6 +101,7 @@ class SessionCreateResponseDto {
         current: mapValueOfType<bool>(json, r'current')!,
         deviceOS: mapValueOfType<String>(json, r'deviceOS')!,
         deviceType: mapValueOfType<String>(json, r'deviceType')!,
+        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         id: mapValueOfType<String>(json, r'id')!,
         token: mapValueOfType<String>(json, r'token')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,

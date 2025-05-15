@@ -280,6 +280,13 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return await access.partner.checkUpdateAccess(auth.user.id, ids);
     }
 
+    case Permission.SESSION_READ:
+    case Permission.SESSION_UPDATE:
+    case Permission.SESSION_DELETE:
+    case Permission.SESSION_LOCK: {
+      return access.session.checkOwnerAccess(auth.user.id, ids);
+    }
+
     case Permission.STACK_READ: {
       return access.stack.checkOwnerAccess(auth.user.id, ids);
     }
