@@ -383,7 +383,6 @@ export enum PersonPageViewMode {
   VIEW_ASSETS = 'view-assets',
   SELECT_PERSON = 'select-person',
   MERGE_PEOPLE = 'merge-people',
-  SUGGEST_MERGE = 'suggest-merge',
   UNASSIGN_ASSETS = 'unassign-faces',
 }
 
