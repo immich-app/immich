@@ -105,8 +105,6 @@ export class PersonRepository {
       .set({ personId: null })
       .where('asset_faces.sourceType', '=', sourceType)
       .execute();
-
-    await this.vacuum({ reindexVectors: false });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -121,8 +119,6 @@ export class PersonRepository {
   @GenerateSql({ params: [{ sourceType: SourceType.EXIF }] })
   async deleteFaces({ sourceType }: DeleteFacesOptions): Promise<void> {
     await this.db.deleteFrom('asset_faces').where('asset_faces.sourceType', '=', sourceType).execute();
-
-    await this.vacuum({ reindexVectors: sourceType === SourceType.MACHINE_LEARNING });
   }
 
   getAllFaces(options: GetAllFacesOptions = {}) {
@@ -519,7 +515,7 @@ export class PersonRepository {
     await this.db.updateTable('asset_faces').set({ deletedAt: new Date() }).where('asset_faces.id', '=', id).execute();
   }
 
-  private async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {
+  async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {
     await sql`VACUUM ANALYZE asset_faces, face_search, person`.execute(this.db);
     await sql`REINDEX TABLE asset_faces`.execute(this.db);
     await sql`REINDEX TABLE person`.execute(this.db);
