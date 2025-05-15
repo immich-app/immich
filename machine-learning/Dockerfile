@@ -20,14 +20,14 @@ RUN mkdir /opt/armnn && \
 
 FROM builder-cpu AS builder-rknn
 
+# Warning: 25GiB+ disk space required to pull this image
+# TODO: find a way to reduce the image size
+FROM rocm/dev-ubuntu-22.04:6.3.4-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS builder-rocm
+
 # renovate: datasource=github-releases depName=Kitware/CMake
 ARG CMAKE_VERSION="v3.30.1"
 # renovate: datasource=github-releases depName=Microsoft/onnxruntime
 ARG ONNXRUNTIME_VERSION="v1.20.1"
-
-# Warning: 25GiB+ disk space required to pull this image
-# TODO: find a way to reduce the image size
-FROM rocm/dev-ubuntu-22.04:6.3.4-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS builder-rocm
 
 WORKDIR /code
 
