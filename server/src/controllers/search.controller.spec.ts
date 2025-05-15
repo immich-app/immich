@@ -66,7 +66,7 @@ describe(SearchController.name, () => {
         .send({ visibility: 'immich' });
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['visibility must be one of the following values: archive, timeline, hidden']),
+        errorDto.badRequest(['visibility must be one of the following values: archive, timeline, hidden, locked']),
       );
     });
 

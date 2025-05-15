@@ -347,6 +347,7 @@ export interface Sessions {
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
   userId: string;
+  pinExpiresAt: Timestamp | null;
 }
 
 export interface SessionSyncCheckpoints {

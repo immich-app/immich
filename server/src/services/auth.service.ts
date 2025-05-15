@@ -126,6 +126,10 @@ export class AuthService extends BaseService {
     this.resetPinChecks(user, dto);
 
     await this.userRepository.update(auth.user.id, { pinCode: null });
+    const sessions = await this.sessionRepository.getByUserId(auth.user.id);
+    for (const session of sessions) {
+      await this.sessionRepository.update(session.id, { pinExpiresAt: null });
+    }
   }
 
   async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
@@ -444,15 +448,47 @@ export class AuthService extends BaseService {
         await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
       }
 
+      // Pin check
+      let hasElevatedPermission = false;
+
+      if (session.pinExpiresAt) {
+        const pinExpiresAt = DateTime.fromJSDate(session.pinExpiresAt);
+        hasElevatedPermission = pinExpiresAt > now;
+
+        if (hasElevatedPermission && now.plus({ minutes: 5 }) > pinExpiresAt) {
+          await this.sessionRepository.update(session.id, {
+            pinExpiresAt: DateTime.now().plus({ minutes: 5 }).toJSDate(),
+          });
+        }
+      }
+
       return {
         user: session.user,
         session: {
           id: session.id,
+          hasElevatedPermission,
         },
       };
     }
 
     throw new UnauthorizedException('Invalid user token');
+  }
+
+  async verifyPinCode(auth: AuthDto, dto: PinCodeSetupDto): Promise<void> {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    this.resetPinChecks(user, { pinCode: dto.pinCode });
+
+    if (!auth.session) {
+      throw new BadRequestException('Session is missing');
+    }
+
+    await this.sessionRepository.update(auth.session.id, {
+      pinExpiresAt: new Date(DateTime.now().plus({ minutes: 15 }).toJSDate()),
+    });
   }
 
   private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
@@ -493,6 +529,7 @@ export class AuthService extends BaseService {
     return {
       pinCode: !!user.pinCode,
       password: !!user.password,
+      isElevated: !!auth.session?.hasElevatedPermission,
     };
   }
 }

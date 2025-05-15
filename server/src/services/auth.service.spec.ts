@@ -253,6 +253,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -265,7 +266,7 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id },
+        session: { id: session.id, hasElevatedPermission: false },
       });
     });
   });
@@ -376,6 +377,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -388,7 +390,7 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id },
+        session: { id: session.id, hasElevatedPermission: false },
       });
     });
 
@@ -398,6 +400,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -417,6 +420,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -916,13 +920,17 @@ describe(AuthService.name, () => {
 
   describe('resetPinCode', () => {
     it('should reset the PIN code', async () => {
+      const currentSession = factory.session();
       const user = factory.userAdmin();
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
       mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+      mocks.session.getByUserId.mockResolvedValue([currentSession]);
+      mocks.session.update.mockResolvedValue(currentSession);
 
       await sut.resetPinCode(factory.auth({ user }), { pinCode: '123456' });
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: null });
+      expect(mocks.session.update).toHaveBeenCalledWith(currentSession.id, { pinExpiresAt: null });
     });
 
     it('should throw if the PIN code does not match', async () => {

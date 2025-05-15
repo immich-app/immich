@@ -2470,6 +2470,41 @@
         ]
       }
     },
+    "/auth/pin-code/verify": {
+      "post": {
+        "operationId": "verifyPinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeSetupDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
     "/auth/status": {
       "get": {
         "operationId": "getAuthStatus",
@@ -9150,6 +9185,15 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "visibility": {
+            "enum": [
+              "archive",
+              "timeline",
+              "hidden",
+              "locked"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -9171,7 +9215,8 @@
           "ownerId",
           "thumbhash",
           "type",
-          "updatedAt"
+          "updatedAt",
+          "visibility"
         ],
         "type": "object"
       },
@@ -9226,7 +9271,8 @@
         "enum": [
           "archive",
           "timeline",
-          "hidden"
+          "hidden",
+          "locked"
         ],
         "type": "string"
       },
@@ -9241,6 +9287,9 @@
       },
       "AuthStatusResponseDto": {
         "properties": {
+          "isElevated": {
+            "type": "boolean"
+          },
           "password": {
             "type": "boolean"
           },
@@ -9249,6 +9298,7 @@
           }
         },
         "required": [
+          "isElevated",
           "password",
           "pinCode"
         ],
@@ -12664,7 +12714,8 @@
             "enum": [
               "archive",
               "timeline",
-              "hidden"
+              "hidden",
+              "locked"
             ],
             "type": "string"
           }

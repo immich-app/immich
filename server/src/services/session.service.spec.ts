@@ -34,6 +34,7 @@ describe('SessionService', () => {
           token: '420',
           userId: '42',
           updateId: 'uuid-v7',
+          pinExpiresAt: null,
         },
       ]);
       mocks.session.delete.mockResolvedValue();

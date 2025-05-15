@@ -627,4 +627,5 @@ export enum AssetVisibility {
    * Video part of the LivePhotos and MotionPhotos
    */
   HIDDEN = 'hidden',
+  LOCKED = 'locked',
 }

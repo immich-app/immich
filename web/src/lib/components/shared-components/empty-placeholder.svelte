@@ -6,9 +6,10 @@
     text: string;
     fullWidth?: boolean;
     src?: string;
+    title?: string;
   }
 
-  let { onClick = undefined, text, fullWidth = false, src = empty1Url }: Props = $props();
+  let { onClick = undefined, text, fullWidth = false, src = empty1Url, title }: Props = $props();
 
   let width = $derived(fullWidth ? 'w-full' : 'w-1/2');
 
@@ -24,5 +25,9 @@
   class="{width} m-auto mt-10 flex flex-col place-content-center place-items-center rounded-3xl bg-gray-50 p-5 dark:bg-immich-dark-gray {hoverClasses}"
 >
   <img {src} alt="" width="500" draggable="false" />
-  <p class="text-immich-text-gray-500 dark:text-immich-dark-fg">{text}</p>
+
+  {#if title}
+    <h2 class="text-xl font-medium my-4">{title}</h2>
+  {/if}
+  <p class="text-immich-text-gray-500 dark:text-immich-dark-fg font-light">{text}</p>
 </svelte:element>

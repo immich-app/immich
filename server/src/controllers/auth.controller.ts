@@ -101,4 +101,11 @@ export class AuthController {
   async resetPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeChangeDto): Promise<void> {
     return this.service.resetPinCode(auth, dto);
   }
+
+  @Post('pin-code/verify')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated()
+  async verifyPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeSetupDto): Promise<void> {
+    return this.service.verifyPinCode(auth, dto);
+  }
 }

@@ -36,4 +36,7 @@ export class SessionTable {
 
   @UpdateIdColumn({ indexName: 'IDX_sessions_update_id' })
   updateId!: string;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  pinExpiresAt!: Date | null;
 }

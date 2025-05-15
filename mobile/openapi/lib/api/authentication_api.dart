@@ -396,4 +396,43 @@ class AuthenticationApi {
     }
     return null;
   }
+
+  /// Performs an HTTP 'POST /auth/pin-code/verify' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [PinCodeSetupDto] pinCodeSetupDto (required):
+  Future<Response> verifyPinCodeWithHttpInfo(PinCodeSetupDto pinCodeSetupDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/pin-code/verify';
+
+    // ignore: prefer_final_locals
+    Object? postBody = pinCodeSetupDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [PinCodeSetupDto] pinCodeSetupDto (required):
+  Future<void> verifyPinCode(PinCodeSetupDto pinCodeSetupDto,) async {
+    final response = await verifyPinCodeWithHttpInfo(pinCodeSetupDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
 }

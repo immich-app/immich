@@ -43,6 +43,7 @@ class AssetResponseDto {
     required this.type,
     this.unassignedFaces = const [],
     required this.updatedAt,
+    required this.visibility,
   });
 
   /// base64 encoded sha1 hash
@@ -132,6 +133,8 @@ class AssetResponseDto {
 
   DateTime updatedAt;
 
+  AssetResponseDtoVisibilityEnum visibility;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
     other.checksum == checksum &&
@@ -163,7 +166,8 @@ class AssetResponseDto {
     other.thumbhash == thumbhash &&
     other.type == type &&
     _deepEquality.equals(other.unassignedFaces, unassignedFaces) &&
-    other.updatedAt == updatedAt;
+    other.updatedAt == updatedAt &&
+    other.visibility == visibility;
 
   @override
   int get hashCode =>
@@ -197,10 +201,11 @@ class AssetResponseDto {
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
     (unassignedFaces.hashCode) +
-    (updatedAt.hashCode);
+    (updatedAt.hashCode) +
+    (visibility.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -270,6 +275,7 @@ class AssetResponseDto {
       json[r'type'] = this.type;
       json[r'unassignedFaces'] = this.unassignedFaces;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'visibility'] = this.visibility;
     return json;
   }
 
@@ -312,6 +318,7 @@ class AssetResponseDto {
         type: AssetTypeEnum.fromJson(json[r'type'])!,
         unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        visibility: AssetResponseDtoVisibilityEnum.fromJson(json[r'visibility'])!,
       );
     }
     return null;
@@ -378,6 +385,87 @@ class AssetResponseDto {
     'thumbhash',
     'type',
     'updatedAt',
+    'visibility',
   };
 }
+
+
+class AssetResponseDtoVisibilityEnum {
+  /// Instantiate a new enum with the provided [value].
+  const AssetResponseDtoVisibilityEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const archive = AssetResponseDtoVisibilityEnum._(r'archive');
+  static const timeline = AssetResponseDtoVisibilityEnum._(r'timeline');
+  static const hidden = AssetResponseDtoVisibilityEnum._(r'hidden');
+  static const locked = AssetResponseDtoVisibilityEnum._(r'locked');
+
+  /// List of all possible values in this [enum][AssetResponseDtoVisibilityEnum].
+  static const values = <AssetResponseDtoVisibilityEnum>[
+    archive,
+    timeline,
+    hidden,
+    locked,
+  ];
+
+  static AssetResponseDtoVisibilityEnum? fromJson(dynamic value) => AssetResponseDtoVisibilityEnumTypeTransformer().decode(value);
+
+  static List<AssetResponseDtoVisibilityEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetResponseDtoVisibilityEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = AssetResponseDtoVisibilityEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [AssetResponseDtoVisibilityEnum] to String,
+/// and [decode] dynamic data back to [AssetResponseDtoVisibilityEnum].
+class AssetResponseDtoVisibilityEnumTypeTransformer {
+  factory AssetResponseDtoVisibilityEnumTypeTransformer() => _instance ??= const AssetResponseDtoVisibilityEnumTypeTransformer._();
+
+  const AssetResponseDtoVisibilityEnumTypeTransformer._();
+
+  String encode(AssetResponseDtoVisibilityEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a AssetResponseDtoVisibilityEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  AssetResponseDtoVisibilityEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'archive': return AssetResponseDtoVisibilityEnum.archive;
+        case r'timeline': return AssetResponseDtoVisibilityEnum.timeline;
+        case r'hidden': return AssetResponseDtoVisibilityEnum.hidden;
+        case r'locked': return AssetResponseDtoVisibilityEnum.locked;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [AssetResponseDtoVisibilityEnumTypeTransformer] instance.
+  static AssetResponseDtoVisibilityEnumTypeTransformer? _instance;
+}
+
 

@@ -58,7 +58,7 @@ const authFactory = ({
   }
 
   if (session) {
-    auth.session = { id: session.id };
+    auth.session = { id: session.id, hasElevatedPermission: false };
   }
 
   if (sharedLink) {
@@ -127,6 +127,7 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   deviceType: 'mobile',
   token: 'abc123',
   userId: newUuid(),
+  pinExpiresAt: newDate(),
   ...session,
 });
 

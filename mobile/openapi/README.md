@@ -117,6 +117,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**setupPinCode**](doc//AuthenticationApi.md#setuppincode) | **POST** /auth/pin-code | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*AuthenticationApi* | [**verifyPinCode**](doc//AuthenticationApi.md#verifypincode) | **POST** /auth/pin-code/verify | 
 *DeprecatedApi* | [**getRandom**](doc//DeprecatedApi.md#getrandom) | **GET** /assets/random | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 

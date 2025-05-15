@@ -329,6 +329,7 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     updatedAt: string;
+    visibility: Visibility;
 };
 export type AlbumResponseDto = {
     albumName: string;
@@ -520,6 +521,7 @@ export type PinCodeSetupDto = {
     pinCode: string;
 };
 export type AuthStatusResponseDto = {
+    isElevated: boolean;
     password: boolean;
     pinCode: boolean;
 };
@@ -2076,6 +2078,15 @@ export function changePinCode({ pinCodeChangeDto }: {
         body: pinCodeChangeDto
     })));
 }
+export function verifyPinCode({ pinCodeSetupDto }: {
+    pinCodeSetupDto: PinCodeSetupDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code/verify", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: pinCodeSetupDto
+    })));
+}
 export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3574,7 +3585,8 @@ export enum UserStatus {
 export enum AssetVisibility {
     Archive = "archive",
     Timeline = "timeline",
-    Hidden = "hidden"
+    Hidden = "hidden",
+    Locked = "locked"
 }
 export enum AlbumUserRole {
     Editor = "editor",
@@ -3590,6 +3602,12 @@ export enum AssetTypeEnum {
     Video = "VIDEO",
     Audio = "AUDIO",
     Other = "OTHER"
+}
+export enum Visibility {
+    Archive = "archive",
+    Timeline = "timeline",
+    Hidden = "hidden",
+    Locked = "locked"
 }
 export enum AssetOrder {
     Asc = "asc",
