@@ -282,7 +282,7 @@ export class PersonRepository {
           .selectFrom('asset_files')
           .select('asset_files.path')
           .whereRef('asset_files.assetId', '=', 'assets.id')
-          .where('asset_files.type', '=', AssetFileType.PREVIEW)
+          .where('asset_files.type', '=', sql.lit(AssetFileType.PREVIEW))
           .as('previewPath'),
       )
       .where('person.id', '=', id)
