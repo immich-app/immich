@@ -31,8 +31,6 @@ In the Video Transcoding settings, set the `Transcode Policy` to `Videos higher 
 ### Other limitations
 
 - No preloading which means navigating between assets is slow
-- No support for slideshows
-- No video playback controls like pause, resume, and seek
 - Your Immich server must be accessible from the Chromecast device
 
 ## Troubleshooting

@@ -2,17 +2,16 @@
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { castManager } from '$lib/managers/cast-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
-  import GCastPlayer from '$lib/utils/cast/gcast-player';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { swipe } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
-  import { get } from 'svelte/store';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -44,8 +43,8 @@
   let isScrubbing = $state(false);
 
   onMount(() => {
+    assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
     if (videoPlayer) {
-      assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
       forceMuted = false;
       videoPlayer.load();
     }
@@ -101,34 +100,6 @@
       videoPlayer?.pause();
     }
   });
-
-  let castPlayer = GCastPlayer.getInstance();
-  let castState = $state(get(castPlayer.castState));
-
-  $effect(() => {
-    if (assetFileUrl) {
-      console.log('trying to cast');
-
-      void cast(assetFileUrl);
-    }
-  });
-
-  onMount(() => {
-    castPlayer.castState.subscribe((value) => {
-      if (castState !== value && value === 'CONNECTED') {
-        void cast(assetFileUrl);
-      }
-      castState = value;
-    });
-  });
-
-  const cast = async (url: string) => {
-    if (!url) {
-      return;
-    }
-    const fullUrl = new URL(url, window.location.href);
-    await castPlayer.loadMedia(fullUrl.href);
-  };
 </script>
 
 <div
@@ -137,9 +108,14 @@
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  {#if castState === 'CONNECTED'}
+  {#if castManager.isCasting}
     <div class="place-content-center h-full place-items-center">
-      <VideoRemoteViewer poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })} />
+      <VideoRemoteViewer
+        poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+        {onVideoStarted}
+        {onVideoEnded}
+        {assetFileUrl}
+      />
     </div>
   {:else}
     <video

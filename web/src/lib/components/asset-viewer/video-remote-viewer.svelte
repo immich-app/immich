@@ -1,94 +1,95 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import GCastPlayer from '$lib/utils/cast/gcast-player';
-  import { onMount } from 'svelte';
-  import { get } from 'svelte/store';
-
-  let castPlayer = GCastPlayer.getInstance();
-  let remotePlayer = $state(get(castPlayer.remotePlayer));
-  let castState = $state(get(castPlayer.castState));
-
-  let receiverFriendlyName = get(castPlayer.receiverFriendlyName);
+  import { castManager, CastState } from '$lib/managers/cast-manager.svelte';
+  import { mdiCastConnected, mdiPause, mdiPlay } from '@mdi/js';
+  import { on } from 'svelte/events';
 
   interface Props {
     poster: string;
+    assetFileUrl: string;
+    onVideoStarted: () => void;
+    onVideoEnded: () => void;
   }
 
-  let { poster }: Props = $props();
+  let { poster, assetFileUrl, onVideoEnded, onVideoStarted }: Props = $props();
 
-  const handlePlay = () => {
-    castPlayer.play();
+  let previousPlayerState: CastState | null = $state(null);
+
+  const handlePlayPauseButton = () => {
+    if (castManager.castState === CastState.PLAYING) {
+      castManager.pause();
+    } else if (castManager.castState === CastState.IDLE) {
+      void cast(assetFileUrl, true);
+    } else {
+      castManager.play();
+    }
   };
 
-  const handlePause = () => {
-    castPlayer.pause();
+  $effect(() => {
+    if (assetFileUrl) {
+      void cast(assetFileUrl);
+    }
+  });
+
+  $effect(() => {
+    if (
+      castManager.castState !== previousPlayerState &&
+      castManager.castState === CastState.IDLE &&
+      previousPlayerState !== CastState.PAUSED
+    ) {
+      onVideoEnded();
+    }
+
+    previousPlayerState = castManager.castState;
+  });
+
+  const cast = async (url: string, force: boolean = false) => {
+    if (!url) {
+      return;
+    }
+    const fullUrl = new URL(url, globalThis.location.href);
+    const didCast = await castManager.loadMedia(fullUrl.href, force);
+
+    if (didCast) {
+      onVideoStarted();
+    }
   };
 
   function handleSeek(event: Event) {
     const newTime: number = Number.parseFloat((event.target as HTMLInputElement).value);
-    castPlayer.seekTo(newTime);
+    castManager.seekTo(newTime);
   }
-
-  onMount(() => {
-    castPlayer.isConnected.subscribe((value) => {
-      remotePlayer.isConnected = value;
-    });
-
-    receiverFriendlyName = get(castPlayer.receiverFriendlyName);
-    castPlayer.receiverFriendlyName.subscribe((value) => {
-      receiverFriendlyName = value;
-    });
-
-    castPlayer.remotePlayer.subscribe((value) => {
-      remotePlayer = value;
-    });
-
-    castPlayer.mediaInfo.subscribe((value) => {
-      remotePlayer.mediaInfo = value;
-    });
-
-    castPlayer.currentTime.subscribe((value) => {
-      if (value) {
-        remotePlayer.currentTime = value;
-      }
-    });
-
-    castPlayer.duration.subscribe((value) => {
-      if (value && remotePlayer.mediaInfo) {
-        remotePlayer.mediaInfo.duration = value;
-      }
-    });
-
-    castPlayer.playerState.subscribe((value) => {
-      remotePlayer.playerState = value;
-    });
-
-    castPlayer.castState.subscribe((value) => {
-      castState = value;
-    });
-  });
 </script>
 
-<img src={poster} alt="poster" />
-<div class="absolute flex place-content-center place-items-center">
-  {#if castState === 'CONNECTED'}
-    Connected to {receiverFriendlyName}
-  {/if}
-  {remotePlayer.playerState}
-</div>
-{#if remotePlayer.playerState === 'BUFFERING'}
-  <LoadingSpinner />
-{/if}
-<Button onclick={handlePlay}>Play</Button>
-<Button onclick={handlePause}>Pause</Button>
+<span class="flex items-center space-x-2 text-gray-200 text-2xl font-bold">
+  <Icon path={mdiCastConnected} class="text-primary" size="36" />
+  <span>Connected to {castManager.receiverName}</span>
+</span>
 
-{#if remotePlayer.currentTime}
+<img src={poster} alt="poster" class="rounded-xl m-4" />
+
+<div class="flex place-content-center place-items-center">
+  {#if castManager.castState == CastState.BUFFERING}
+    <div class="p-3">
+      <LoadingSpinner />
+    </div>
+  {:else}
+    <CircleIconButton
+      color="opaque"
+      icon={castManager.castState == CastState.PLAYING ? mdiPause : mdiPlay}
+      onclick={() => handlePlayPauseButton()}
+      title={castManager.castState == CastState.PLAYING ? 'Pause' : 'Play'}
+    />
+  {/if}
+
   <input
     type="range"
     min="0"
-    max={remotePlayer.mediaInfo?.duration}
-    value={remotePlayer.currentTime}
-    on:change={handleSeek}
+    max={castManager.duration}
+    value={castManager.currentTime ?? 0}
+    onchange={handleSeek}
+    class="w-full h-4 bg-primary"
   />
-{/if}
+</div>

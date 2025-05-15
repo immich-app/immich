@@ -1,55 +1,39 @@
 <script lang="ts">
   import { t } from 'svelte-i18n';
-  import GCastPlayer, { loadCastFramework } from '$lib/utils/cast/gcast-player';
   import { onMount } from 'svelte';
-  import { mdiCast } from '@mdi/js';
+  import { mdiCast, mdiCastConnected } from '@mdi/js';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { IconButton } from '@immich/ui';
-
-  onMount(() => {
-    // Check if the GCastPlayer instance is already created
-    if (GCastPlayer.instanceCreated()) {
-      // If it is, we can use it directly
-      castPlayer = GCastPlayer.getInstance();
-    } else {
-      // Otherwise, Load the Cast framework
-      loadCastFramework();
-
-      window['__onGCastApiAvailable'] = function (isAvailable) {
-        console.log('GCast API available:', isAvailable);
-        // The cast sender can't be initialized until the API is available
-        if (isAvailable) {
-          castPlayer = GCastPlayer.getInstance();
-          castPlayer.isAvailable.set(true);
-        }
-      };
-    }
-  });
+  import { CastDestinationType, castManager } from '$lib/managers/cast-manager.svelte';
+  import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 
   interface Props {
     isNavBar?: boolean;
   }
 
   let { isNavBar }: Props = $props();
-  let castPlayer: GCastPlayer | undefined = $state();
+
+  onMount(() => {
+    void castManager.initialize();
+  });
 </script>
 
-{#if castPlayer?.isAvailable}
+{#if castManager.availableDestinations.length > 0 && castManager.availableDestinations[0].type == CastDestinationType.GCAST}
   {#if isNavBar}
     <IconButton
       shape="round"
-      color="secondary"
       variant="ghost"
       size="medium"
-      icon={mdiCast}
-      onclick={() => void castPlayer?.showCastDialog()}
+      color={castManager.isCasting ? 'primary' : 'secondary'}
+      icon={castManager.isCasting ? mdiCastConnected : mdiCast}
+      onclick={() => void GCastDestination.showCastDialog()}
       aria-label={$t('cast')}
     />
   {:else}
     <CircleIconButton
-      color="opaque"
-      icon={mdiCast}
-      onclick={() => void castPlayer?.showCastDialog()}
+      color={castManager.isCasting ? 'primary' : 'opaque'}
+      icon={castManager.isCasting ? mdiCastConnected : mdiCast}
+      onclick={() => void GCastDestination.showCastDialog()}
       title={$t('cast')}
     />
   {/if}

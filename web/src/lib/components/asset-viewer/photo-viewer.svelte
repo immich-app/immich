@@ -11,7 +11,6 @@
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
-  import GCastPlayer from '$lib/utils/cast/gcast-player';
   import { handleError } from '$lib/utils/handle-error';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
@@ -21,10 +20,10 @@
   import { onDestroy, onMount } from 'svelte';
   import { swipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
-  import { get } from 'svelte/store';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { castManager } from '$lib/managers/cast-manager.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -149,22 +148,10 @@
     return AssetMediaSize.Preview;
   });
 
-  let castPlayer = GCastPlayer.getInstance();
-  let castState = get(castPlayer.castState);
-
   $effect(() => {
     if (assetFileUrl) {
       void cast(assetFileUrl);
     }
-  });
-
-  onMount(() => {
-    castPlayer.castState.subscribe((value) => {
-      if (castState !== value) {
-        void cast(assetFileUrl);
-      }
-      castState = value;
-    });
   });
 
   const cast = async (url: string) => {
@@ -172,7 +159,7 @@
       return;
     }
     const fullUrl = new URL(url, globalThis.location.href);
-    await castPlayer.loadMedia(fullUrl.href);
+    await castManager.loadMedia(fullUrl.href);
   };
 
   const onload = () => {
