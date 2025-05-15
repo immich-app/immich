@@ -6,13 +6,13 @@
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -96,7 +96,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute start-0 top-0 z-[9999] h-full w-full bg-light"
+  class="absolute start-0 top-0 h-full w-full bg-light"
 >
   <ControlAppBar onClose={onBack}>
     {#snippet leading()}
@@ -108,10 +108,9 @@
       <div></div>
     {/snippet}
     {#snippet trailing()}
-      <Button size="sm" disabled={!hasSelection} onclick={handleMerge}>
-        <Icon path={mdiMerge} size={18} />
-        <span class="ms-2">{$t('merge')}</span></Button
-      >
+      <Button leadingIcon={mdiMerge} size="small" shape="round" disabled={!hasSelection} onclick={handleMerge}>
+        {$t('merge')}
+      </Button>
     {/snippet}
   </ControlAppBar>
   <section class="px-[70px] pt-[100px]">

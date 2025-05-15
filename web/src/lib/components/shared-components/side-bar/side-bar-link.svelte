@@ -37,7 +37,7 @@
 
 <div class="relative">
   {#if hasDropdown}
-    <span class="hidden md:block absolute start-1 z-50 h-full">
+    <span class="hidden md:block absolute start-1 h-full">
       <button
         type="button"
         aria-label={$t('recent-albums')}

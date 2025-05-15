@@ -4,12 +4,12 @@
   import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteUserAdmin, type UserResponseDto } from '@immich/sdk';
+  import { deleteUserAdmin, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
   interface Props {
     user: UserResponseDto;
-    onClose: (confirmed?: true) => void;
+    onClose: (user?: UserAdminResponseDto) => void;
   }
 
   let { user, onClose }: Props = $props();
@@ -20,14 +20,12 @@
 
   const handleDeleteUser = async () => {
     try {
-      const { deletedAt } = await deleteUserAdmin({
+      const result = await deleteUserAdmin({
         id: user.id,
         userAdminDeleteDto: { force: forceDelete },
       });
 
-      if (deletedAt !== undefined) {
-        onClose(true);
-      }
+      onClose(result);
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_user'));
     }

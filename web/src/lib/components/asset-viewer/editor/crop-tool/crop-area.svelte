@@ -170,7 +170,6 @@
     border: 2px solid white;
     box-sizing: border-box;
     pointer-events: none;
-    z-index: 1;
   }
 
   .corner {

@@ -17,10 +17,10 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
+  import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import type { Viewport } from '$lib/stores/assets-store.svelte';
@@ -88,7 +88,7 @@
 </script>
 
 {#if assetInteraction.selectionActive}
-  <div class="fixed z-[910] top-0 start-0 w-full">
+  <div class="fixed top-0 start-0 w-full">
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -131,7 +131,7 @@
 
 <UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
-    <SideBarSection>
+    <Sidebar>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
       <section>
         <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
@@ -144,7 +144,7 @@
           />
         </div>
       </section>
-    </SideBarSection>
+    </Sidebar>
   {/snippet}
 
   <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />

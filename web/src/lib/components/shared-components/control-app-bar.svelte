@@ -66,7 +66,7 @@
   let buttonClass = $derived(forceDark ? 'hover:text-immich-dark-gray' : undefined);
 </script>
 
-<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
+<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full bg-transparent z-[1]">
   <nav
     id="asset-selection-app-bar"
     class={[

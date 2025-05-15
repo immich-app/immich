@@ -15,6 +15,7 @@ export type OnArchive = (ids: string[], isArchived: boolean) => void;
 export type OnFavorite = (ids: string[], favorite: boolean) => void;
 export type OnStack = (result: StackResponse) => void;
 export type OnUnstack = (assets: TimelineAsset[]) => void;
+export type OnSetVisibility = (ids: string[]) => void;
 
 export const deleteAssets = async (force: boolean, onAssetDelete: OnDelete, ids: string[]) => {
   const $t = get(t);

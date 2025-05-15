@@ -313,7 +313,7 @@
 />
 
 {#if assetInteraction.selectionActive}
-  <div class="sticky top-0 z-[90]">
+  <div class="sticky top-0">
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -388,7 +388,7 @@
 
     {#if galleryInView}
       <div
-        class="fixed top-20 z-30 start-1/2 -translate-x-1/2 transition-opacity"
+        class="fixed top-20 start-1/2 -translate-x-1/2 transition-opacity"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >

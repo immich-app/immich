@@ -1,14 +1,14 @@
 <script lang="ts">
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import domtoimage from 'dom-to-image';
   import { onMount } from 'svelte';
-  import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { NotificationType, notificationController } from './notification/notification';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { t } from 'svelte-i18n';
+  import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
+  import { NotificationType, notificationController } from './notification/notification';
 
   interface Props {
     asset: AssetResponseDto;
@@ -99,6 +99,6 @@
   </div>
 
   {#snippet stickyBottom()}
-    <Button fullwidth onclick={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
+    <Button fullWidth shape="round" onclick={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
   {/snippet}
 </FullScreenModal>
