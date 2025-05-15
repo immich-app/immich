@@ -551,7 +551,7 @@
               </ButtonContextMenu>
             {/if}
 
-            {#if (isCreatingSharedAlbum && album.albumUsers.length === 0) || true}
+            {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
               <Button size="small" disabled={album.assetCount === 0} onclick={handleShare}>
                 {$t('share')}
               </Button>
