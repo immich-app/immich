@@ -207,7 +207,7 @@
       onSelect?.(asset);
     }
     if (document.activeElement === element && evt.key === 'Escape') {
-      moveFocus((element) => element.dataset.thumbnailFocusContainer === undefined, true);
+      moveFocus((element) => element.dataset.thumbnailFocusContainer === undefined, 'next');
     }
   }}
   onclick={handleClick}

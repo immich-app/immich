@@ -12,9 +12,10 @@ const getFocusedThumb = () => {
   }
 };
 
-export const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+export const focusNextAsset = () =>
+  moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
 export const focusPreviousAsset = () =>
-  moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
+  moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
 
 export const setFocusToAsset = async (scrollToAsset: (id: string) => Promise<boolean>, asset: { id: string }) => {
   const scrolled = await scrollToAsset(asset.id);
@@ -27,8 +28,8 @@ export const setFocusToAsset = async (scrollToAsset: (id: string) => Promise<boo
 export const setFocusTo = async (
   scrollToAsset: (id: string) => Promise<boolean>,
   store: AssetStore,
-  direction: 'next' | 'previous',
-  skip: 'day' | 'month' | 'year',
+  direction: 'earlier' | 'later',
+  magnitude: 'day' | 'month' | 'year',
 ) => {
   const thumb = getFocusedThumb();
   if (!thumb) {
@@ -36,7 +37,7 @@ export const setFocusTo = async (
       // there are unfinished running invocations, so return early
       return;
     }
-    return direction === 'next' ? focusNextAsset() : focusPreviousAsset();
+    return direction === 'earlier' ? focusNextAsset() : focusPreviousAsset();
   }
 
   const invocation = tracker.startInvocation();
@@ -47,7 +48,9 @@ export const setFocusTo = async (
   }
   try {
     const asset =
-      direction === 'next' ? await store.getNextAsset({ id }, skip) : await store.getPreviousAsset({ id }, skip);
+      direction === 'earlier'
+        ? await store.getEarlierAsset({ id }, magnitude)
+        : await store.getLaterAsset({ id }, magnitude);
     invocation.checkStillValid();
 
     if (!asset) {

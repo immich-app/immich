@@ -347,7 +347,7 @@ describe('AssetStore', () => {
     });
   });
 
-  describe('getPreviousAsset', () => {
+  describe('getLaterAsset', () => {
     let assetStore: AssetStore;
     const bucketAssets: Record<string, AssetResponseDto[]> = {
       '2024-03-01T00:00:00.000Z': assetFactory
@@ -374,8 +374,8 @@ describe('AssetStore', () => {
     });
 
     it('returns null for invalid assetId', async () => {
-      expect(() => assetStore.getPreviousAsset({ id: 'invalid' } as AssetResponseDto)).not.toThrow();
-      expect(await assetStore.getPreviousAsset({ id: 'invalid' } as AssetResponseDto)).toBeUndefined();
+      expect(() => assetStore.getLaterAsset({ id: 'invalid' } as AssetResponseDto)).not.toThrow();
+      expect(await assetStore.getLaterAsset({ id: 'invalid' } as AssetResponseDto)).toBeUndefined();
     });
 
     it('returns previous assetId', async () => {
@@ -384,7 +384,7 @@ describe('AssetStore', () => {
 
       const a = bucket!.getAssets()[0];
       const b = bucket!.getAssets()[1];
-      const previous = await assetStore.getPreviousAsset(b);
+      const previous = await assetStore.getLaterAsset(b);
       expect(previous).toEqual(a);
     });
 
@@ -396,7 +396,7 @@ describe('AssetStore', () => {
       const previousBucket = assetStore.getBucketByDate(2024, 3);
       const a = bucket!.getAssets()[0];
       const b = previousBucket!.getAssets()[0];
-      const previous = await assetStore.getPreviousAsset(a);
+      const previous = await assetStore.getLaterAsset(a);
       expect(previous).toEqual(b);
     });
 
@@ -408,7 +408,7 @@ describe('AssetStore', () => {
       const previousBucket = assetStore.getBucketByDate(2024, 3);
       const a = bucket!.getAssets()[0];
       const b = previousBucket!.getAssets()[0];
-      const previous = await assetStore.getPreviousAsset(a);
+      const previous = await assetStore.getLaterAsset(a);
       expect(previous).toEqual(b);
       expect(loadBucketSpy).toBeCalledTimes(1);
     });
@@ -420,12 +420,12 @@ describe('AssetStore', () => {
 
       const [assetOne, assetTwo, assetThree] = assetStore.getAssets();
       assetStore.removeAssets([assetTwo.id]);
-      expect(await assetStore.getPreviousAsset(assetThree)).toEqual(assetOne);
+      expect(await assetStore.getLaterAsset(assetThree)).toEqual(assetOne);
     });
 
     it('returns null when no more assets', async () => {
       await assetStore.loadBucket('2024-03-01T00:00:00.000Z');
-      expect(await assetStore.getPreviousAsset(assetStore.getAssets()[0])).toBeUndefined();
+      expect(await assetStore.getLaterAsset(assetStore.getAssets()[0])).toBeUndefined();
     });
   });
 

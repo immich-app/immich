@@ -260,8 +260,9 @@
     }
   };
 
-  const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
-  const focusPreviousAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
+  const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
+  const focusPreviousAsset = () =>
+    moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
 
   let isShortcutModalOpen = false;
 

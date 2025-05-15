@@ -36,6 +36,7 @@ export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
   deferInit?: boolean;
 };
+type AssetDescriptor = { id: string };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateObject(target: any, source: any): boolean {
@@ -60,6 +61,7 @@ function updateObject(target: any, source: any): boolean {
   }
   return updated;
 }
+type Direction = 'forward' | 'backward';
 
 export function assetSnapshot(asset: AssetResponseDto) {
   return $state.snapshot(asset);
@@ -514,20 +516,16 @@ export class AssetBucket {
     }
   }
 
-  findById(id: string) {
-    return this.assets().find((asset) => asset.id === id);
+  findAssetById(assetDescriptor: AssetDescriptor) {
+    return this.assets().find((asset) => asset.id === assetDescriptor.id);
   }
 
   findClosest(target: DateTime) {
-    let closest = this.assets().next().value;
-    if (!closest) {
-      return;
-    }
-
-    let smallestDiff = Math.abs(target.toMillis() - DateTime.fromISO(closest.localDateTime).toUTC().toMillis());
-
+    let closest = undefined;
+    let smallestDiff = Infinity;
     for (const current of this.assets()) {
-      const diff = Math.abs(target.toMillis() - DateTime.fromISO(current.localDateTime).toUTC().toMillis());
+      const currentDate = DateTime.fromISO(current.localDateTime).toUTC();
+      const diff = Math.abs(target.diff(currentDate).milliseconds);
       if (diff < smallestDiff) {
         smallestDiff = diff;
         closest = current;
@@ -584,6 +582,11 @@ type AssetStoreLayoutOptions = {
   headerHeight?: number;
   gap?: number;
 };
+interface UpdateGeometryOptions {
+  invalidateHeight: boolean;
+  noDefer?: boolean;
+}
+
 export class AssetStore {
   // --- public ----
   isInitialized = $state(false);
@@ -865,7 +868,7 @@ export class AssetStore {
   clearDeferredLayout(bucket: AssetBucket) {
     const hasDeferred = bucket.dateGroups.some((group) => group.deferredLayout);
     if (hasDeferred) {
-      this.#updateGeometry(bucket, true, true);
+      this.#updateGeometry(bucket, { invalidateHeight: true, noDefer: true });
       for (const group of bucket.dateGroups) {
         group.deferredLayout = false;
       }
@@ -987,7 +990,7 @@ export class AssetStore {
       return;
     }
     for (const bucket of this.buckets) {
-      this.#updateGeometry(bucket, changedWidth);
+      this.#updateGeometry(bucket, { invalidateHeight: changedWidth });
     }
     this.updateIntersections();
     this.#createScrubBuckets();
@@ -1013,7 +1016,9 @@ export class AssetStore {
       rowWidth: Math.floor(viewportWidth),
     };
   }
-  #updateGeometry(bucket: AssetBucket, invalidateHeight: boolean, noDefer: boolean = false) {
+
+  #updateGeometry(bucket: AssetBucket, options: UpdateGeometryOptions) {
+    const { invalidateHeight, noDefer = false } = options;
     if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
     }
@@ -1193,7 +1198,7 @@ export class AssetStore {
     }
     for (const bucket of updatedBuckets) {
       bucket.sortDateGroups();
-      this.#updateGeometry(bucket, true);
+      this.#updateGeometry(bucket, { invalidateHeight: true });
     }
     this.updateIntersections();
   }
@@ -1275,7 +1280,7 @@ export class AssetStore {
     }
     const changedGeometry = changedBuckets.size > 0;
     for (const bucket of changedBuckets) {
-      this.#updateGeometry(bucket, true);
+      this.#updateGeometry(bucket, { invalidateHeight: true });
     }
     if (changedGeometry) {
       this.updateIntersections();
@@ -1315,7 +1320,7 @@ export class AssetStore {
 
   refreshLayout() {
     for (const bucket of this.buckets) {
-      this.#updateGeometry(bucket, true);
+      this.#updateGeometry(bucket, { invalidateHeight: true });
     }
     this.updateIntersections();
   }
@@ -1324,126 +1329,18 @@ export class AssetStore {
     return this.buckets[0]?.getFirstAsset();
   }
 
-  async getPreviousAsset(
-    idable: { id: string },
-    skipTo: 'asset' | 'day' | 'month' | 'year' = 'asset',
+  async getLaterAsset(
+    assetDescriptor: AssetDescriptor,
+    magnitude: 'asset' | 'day' | 'month' | 'year' = 'asset',
   ): Promise<AssetResponseDto | undefined> {
-    const bucket = this.#findBucketForAsset(idable.id);
-    if (!bucket) {
-      return;
-    }
-    const asset = bucket.findById(idable.id);
-    if (!asset) {
-      return;
-    }
-    switch (skipTo) {
-      case 'day': {
-        return this.#getPreviousDay(asset, bucket);
-      }
-      case 'month': {
-        return this.#getPreviousMonth(asset, bucket);
-      }
-      case 'year': {
-        return this.#getPreviousYear(asset, bucket);
-      }
-      case 'asset': {
-        return this.#getPreviousAsset(asset, bucket);
-      }
-    }
+    return this.#getAssetWithOffset(assetDescriptor, magnitude, 'forward');
   }
 
-  async #getPreviousDay(asset: AssetResponseDto, bucket: AssetBucket) {
-    let nextDay = DateTime.fromISO(asset.localDateTime).toUTC().get('day') + 1;
-    const bucketIndex = this.buckets.indexOf(bucket);
-
-    let nextDaygroup;
-    while (nextDay <= 31) {
-      nextDaygroup = bucket.findDateGroupByDay(nextDay);
-      if (nextDaygroup) {
-        break;
-      }
-      nextDay++;
-    }
-    if (nextDaygroup === undefined) {
-      let previousBucketIndex = bucketIndex - 1;
-      while (previousBucketIndex >= 0) {
-        bucket = this.buckets[previousBucketIndex];
-        if (!bucket) {
-          return;
-        }
-        await this.loadBucket(bucket.bucketDate, { cancelable: false });
-        const previous = bucket.lastDateGroup?.intersetingAssets.at(0)?.asset;
-        if (previous) {
-          return previous;
-        }
-        previousBucketIndex--;
-      }
-    } else {
-      return nextDaygroup.intersetingAssets.at(0)?.asset;
-    }
-  }
-
-  async #getPreviousMonth(asset: AssetResponseDto, bucket: AssetBucket) {
-    const bucketIndex = this.buckets.indexOf(bucket);
-    const previousBucket = this.buckets[bucketIndex - 1];
-    if (previousBucket) {
-      await this.loadBucket(previousBucket.bucketDate, { cancelable: false });
-      return previousBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
-    }
-    return;
-  }
-
-  async #getPreviousYear(asset: AssetResponseDto, bucket: AssetBucket) {
-    const nextYear = DateTime.fromISO(asset.localDateTime).toUTC().get('year') + 1;
-    const bIdx = this.buckets.indexOf(bucket);
-
-    for (let idx = bIdx; idx >= 0; idx--) {
-      const otherBucket = this.buckets[idx];
-      const otherBucketYear = DateTime.fromISO(otherBucket.bucketDate).toUTC().get('year');
-      if (otherBucketYear >= nextYear) {
-        await this.loadBucket(otherBucket.bucketDate, { cancelable: false });
-        return otherBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
-      }
-    }
-    return;
-  }
-
-  async #getPreviousAsset(asset: AssetResponseDto, bucket: AssetBucket) {
-    // Find which date group contains this asset
-    for (let groupIndex = 0; groupIndex < bucket.dateGroups.length; groupIndex++) {
-      const group = bucket.dateGroups[groupIndex];
-      const assetIndex = group.intersetingAssets.findIndex((ia) => ia.id === asset.id);
-
-      if (assetIndex !== -1) {
-        // If not the first asset in this group, return the previous one
-        if (assetIndex > 0) {
-          return group.intersetingAssets[assetIndex - 1].asset;
-        }
-
-        // If there are previous date groups in this bucket, check the previous one
-        if (groupIndex > 0) {
-          const prevGroup = bucket.dateGroups[groupIndex - 1];
-          return prevGroup.intersetingAssets.at(-1)?.asset;
-        }
-
-        // Otherwise, we need to look in the previous bucket
-        break;
-      }
-    }
-
-    let bucketIndex = this.buckets.indexOf(bucket) - 1;
-    while (bucketIndex >= 0) {
-      bucket = this.buckets[bucketIndex];
-      if (!bucket) {
-        return;
-      }
-      await this.loadBucket(bucket.bucketDate);
-      const previous = bucket.lastDateGroup?.intersetingAssets.at(-1)?.asset;
-      if (previous) {
-        return previous;
-      }
-      bucketIndex--;
-    }
+  async getEarlierAsset(
+    assetDescriptor: AssetDescriptor,
+    magnitude: 'asset' | 'day' | 'month' | 'year' = 'asset',
+  ): Promise<AssetResponseDto | undefined> {
+    return this.#getAssetWithOffset(assetDescriptor, magnitude, 'backward');
   }
 
   async getClosestAssetToDate(date: DateTime) {
@@ -1457,92 +1354,110 @@ export class AssetStore {
       return asset;
     }
 
-    let bucketIndex = this.buckets.indexOf(bucket) + 1;
-    while (bucketIndex < this.buckets.length) {
-      bucket = this.buckets[bucketIndex];
+    const startIndex = this.buckets.indexOf(bucket);
+    for (let currentIndex = startIndex + 1; currentIndex < this.buckets.length; currentIndex++) {
+      bucket = this.buckets[currentIndex];
       await this.loadBucket(bucket.bucketDate);
       const next = bucket.dateGroups[0]?.intersetingAssets[0]?.asset;
       if (next) {
         return next;
       }
-      bucketIndex++;
     }
   }
 
-  async getNextAsset(
-    idable: { id: string },
-    skipTo: 'asset' | 'day' | 'month' | 'year' = 'asset',
+  async #getAssetWithOffset(
+    assetDescriptor: AssetDescriptor,
+    magnitude: 'asset' | 'day' | 'month' | 'year' = 'asset',
+    direction: Direction,
   ): Promise<AssetResponseDto | undefined> {
-    const bucket = this.#findBucketForAsset(idable.id);
+    const bucket = this.#findBucketForAsset(assetDescriptor.id);
     if (!bucket) {
       return;
     }
-    const asset = bucket.findById(idable.id);
+    const asset = bucket.findAssetById(assetDescriptor);
     if (!asset) {
       return;
     }
-
-    switch (skipTo) {
+    switch (magnitude) {
       case 'day': {
-        return this.#getNextDay(asset, bucket);
+        return this.#getAssetByDayOffset(asset, bucket, direction);
       }
       case 'month': {
-        return this.#getNextMonth(asset, bucket);
+        return this.#getAssetByMonthOffset(asset, bucket, direction);
       }
       case 'year': {
-        return this.#getNextYear(asset, bucket);
+        return this.#getAssetByYearOffset(asset, bucket, direction);
       }
       case 'asset': {
-        return this.#getNextAsset(asset, bucket);
+        return this.#getAssetByAssetOffset(asset, bucket, direction);
       }
     }
   }
 
-  async #getNextDay(asset: AssetResponseDto, bucket: AssetBucket) {
-    let prevDay = DateTime.fromISO(asset.localDateTime).toUTC().get('day') - 1;
-    const bucketIndex = this.buckets.indexOf(bucket);
+  async #getAssetByDayOffset(asset: AssetResponseDto, bucket: AssetBucket, direction: Direction) {
+    const currentDate = DateTime.fromISO(asset.localDateTime).toUTC();
+    const targetDate =
+      direction === 'forward'
+        ? currentDate.plus({ days: 1 }) // Moving forward in time (previous in UI)
+        : currentDate.minus({ days: 1 }); // Moving backward in time (next in UI)
 
-    let prevDayGroup;
-    while (prevDay >= 0) {
-      prevDayGroup = bucket.findDateGroupByDay(prevDay);
-      if (prevDayGroup) {
-        break;
+    // If the target day is in the same month/bucket
+    if (targetDate.month === currentDate.month && targetDate.year === currentDate.year) {
+      const targetDayGroup = bucket.findDateGroupByDay(targetDate.day);
+      if (targetDayGroup) {
+        return targetDayGroup.intersetingAssets.at(0)?.asset;
       }
-      prevDay--;
     }
-    if (prevDayGroup === undefined) {
-      let nextBucketIndex = bucketIndex + 1;
-      while (nextBucketIndex < this.buckets.length) {
-        const otherBucket = this.buckets[nextBucketIndex];
-        await this.loadBucket(otherBucket.bucketDate, { cancelable: false });
-        const next = otherBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
-        if (next) {
-          return next;
-        }
-        nextBucketIndex++;
+
+    // Need to look through other buckets
+    const startIndex = this.buckets.indexOf(bucket);
+    const endCondition = (currentIndex: number) =>
+      direction === 'forward' ? currentIndex >= 0 : currentIndex < this.buckets.length;
+    const increment = direction === 'forward' ? -1 : 1; // -1 for newer buckets, +1 for older buckets
+
+    for (let currentIndex = startIndex + increment; endCondition(currentIndex); currentIndex += increment) {
+      const targetBucket = this.buckets[currentIndex];
+      await this.loadBucket(targetBucket.bucketDate, { cancelable: false });
+      if (targetBucket.dateGroups.length > 0) {
+        return targetBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
       }
-    } else {
-      return prevDayGroup.intersetingAssets.at(0)?.asset;
     }
+    return undefined;
   }
 
-  async #getNextMonth(asset: AssetResponseDto, bucket: AssetBucket) {
+  async #getAssetByMonthOffset(asset: AssetResponseDto, bucket: AssetBucket, direction: Direction) {
     const bucketIndex = this.buckets.indexOf(bucket);
-    const nextMonthBucketIndex = this.buckets[bucketIndex + 1];
-    if (nextMonthBucketIndex) {
-      await this.loadBucket(nextMonthBucketIndex.bucketDate, { cancelable: false });
-      return nextMonthBucketIndex.dateGroups[0]?.intersetingAssets[0]?.asset;
+    const targetBucketIndex = bucketIndex + (direction === 'forward' ? -1 : 1);
+    const targetBucket = this.buckets[targetBucketIndex];
+
+    if (targetBucket) {
+      await this.loadBucket(targetBucket.bucketDate, { cancelable: false });
+      return targetBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
     }
     return;
   }
 
-  async #getNextYear(asset: AssetResponseDto, bucket: AssetBucket) {
-    const prevYear = DateTime.fromISO(asset.localDateTime).toUTC().get('year') - 1;
+  async #getAssetByYearOffset(asset: AssetResponseDto, bucket: AssetBucket, direction: Direction) {
+    const currentDate = DateTime.fromISO(asset.localDateTime).toUTC();
+    const targetYear = currentDate.get('year') + (direction === 'forward' ? 1 : -1);
     const bucketIndex = this.buckets.indexOf(bucket);
-    for (let idx = bucketIndex; idx < this.buckets.length - 1; idx++) {
-      const otherBucket = this.buckets[idx];
+
+    // Define search range based on direction
+    const startIndex = bucketIndex;
+    const endCondition = (currentIndex: number) =>
+      direction === 'forward' ? currentIndex >= 0 : currentIndex < this.buckets.length - 1;
+    const increment = direction === 'forward' ? -1 : 1;
+
+    for (let currentIndex = startIndex; endCondition(currentIndex); currentIndex += increment) {
+      const otherBucket = this.buckets[currentIndex];
       const otherBucketYear = DateTime.fromISO(otherBucket.bucketDate).toUTC().get('year');
-      if (otherBucketYear <= prevYear) {
+
+      const yearCondition =
+        direction === 'forward'
+          ? otherBucketYear >= targetYear // Looking for newer years
+          : otherBucketYear <= targetYear; // Looking for older years
+
+      if (yearCondition) {
         await this.loadBucket(otherBucket.bucketDate, { cancelable: false });
         return otherBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
       }
@@ -1550,38 +1465,51 @@ export class AssetStore {
     return;
   }
 
-  async #getNextAsset(asset: AssetResponseDto, bucket: AssetBucket) {
+  async #getAssetByAssetOffset(asset: AssetResponseDto, bucket: AssetBucket, direction: Direction) {
     // Find which date group contains this asset
     for (let groupIndex = 0; groupIndex < bucket.dateGroups.length; groupIndex++) {
       const group = bucket.dateGroups[groupIndex];
-      const assetIndex = group.intersetingAssets.findIndex((ia) => ia.id === asset.id);
+      const assetIndex = group.intersetingAssets.findIndex((intersectingAsset) => intersectingAsset.id === asset.id);
 
       if (assetIndex !== -1) {
-        // If not the last asset in this group, return the next one
-        if (assetIndex < group.intersetingAssets.length - 1) {
-          return group.intersetingAssets[assetIndex + 1].asset;
+        // If not at the boundary of the group, return the next/previous asset in this group
+        const nextIndex = direction === 'forward' ? assetIndex - 1 : assetIndex + 1;
+        if (direction === 'forward' ? assetIndex > 0 : assetIndex < group.intersetingAssets.length - 1) {
+          return group.intersetingAssets[nextIndex].asset;
         }
 
-        // If there are more date groups in this bucket, check the next one
-        if (groupIndex < bucket.dateGroups.length - 1) {
-          return bucket.dateGroups[groupIndex + 1].intersetingAssets[0]?.asset;
+        // If there are more date groups in this bucket, check the next/previous one
+        const nextGroupIndex = direction === 'forward' ? groupIndex - 1 : groupIndex + 1;
+        if (direction === 'forward' ? groupIndex > 0 : groupIndex < bucket.dateGroups.length - 1) {
+          const adjacentGroup = bucket.dateGroups[nextGroupIndex];
+          return direction === 'forward'
+            ? adjacentGroup.intersetingAssets.at(-1)?.asset
+            : adjacentGroup.intersetingAssets[0]?.asset;
         }
 
-        // Otherwise, we need to look in the next bucket
+        // Otherwise, we need to look in the adjacent bucket
         break;
       }
     }
 
-    let bucketIndex = this.buckets.indexOf(bucket) + 1;
-    while (bucketIndex < this.buckets.length) {
-      bucket = this.buckets[bucketIndex];
-      await this.loadBucket(bucket.bucketDate);
-      const next = bucket.dateGroups[0]?.intersetingAssets[0]?.asset;
-      if (next) {
-        return next;
+    // Look through adjacent buckets until we find one with assets
+    const startIndex = this.buckets.indexOf(bucket);
+    const endCondition = (currentIndex: number) =>
+      direction === 'forward' ? currentIndex >= 0 : currentIndex < this.buckets.length;
+    const increment = direction === 'forward' ? -1 : 1;
+
+    for (let currentIndex = startIndex + increment; endCondition(currentIndex); currentIndex += increment) {
+      const adjacentBucket = this.buckets[currentIndex];
+      await this.loadBucket(adjacentBucket.bucketDate);
+
+      if (adjacentBucket.dateGroups.length > 0) {
+        return direction === 'forward'
+          ? adjacentBucket.lastDateGroup?.intersetingAssets.at(-1)?.asset
+          : adjacentBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
       }
-      bucketIndex++;
     }
+
+    return undefined;
   }
 
   isExcluded(asset: AssetResponseDto) {

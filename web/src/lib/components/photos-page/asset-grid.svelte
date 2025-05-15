@@ -382,26 +382,26 @@
   };
 
   const handlePrevious = async () => {
-    const previousAsset = await assetStore.getPreviousAsset($viewingAsset);
+    const laterAsset = await assetStore.getLaterAsset($viewingAsset);
 
-    if (previousAsset) {
-      const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
-      assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
-      await navigate({ targetRoute: 'current', assetId: previousAsset.id });
+    if (laterAsset) {
+      const preloadAsset = await assetStore.getLaterAsset(laterAsset);
+      assetViewingStore.setAsset(laterAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: laterAsset.id });
     }
 
-    return !!previousAsset;
+    return !!laterAsset;
   };
 
   const handleNext = async () => {
-    const nextAsset = await assetStore.getNextAsset($viewingAsset);
-    if (nextAsset) {
-      const preloadAsset = await assetStore.getNextAsset(nextAsset);
-      assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
-      await navigate({ targetRoute: 'current', assetId: nextAsset.id });
+    const earlierAsset = await assetStore.getEarlierAsset($viewingAsset);
+    if (earlierAsset) {
+      const preloadAsset = await assetStore.getEarlierAsset(earlierAsset);
+      assetViewingStore.setAsset(earlierAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
     }
 
-    return !!nextAsset;
+    return !!earlierAsset;
   };
 
   const handleRandom = async () => {
@@ -629,8 +629,9 @@
     }
   };
 
-  const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
-  const focusPreviousAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
+  const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
+  const focusPreviousAsset = () =>
+    moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
@@ -669,12 +670,12 @@
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteraction) },
         { shortcut: { key: 'ArrowRight' }, onShortcut: focusNextAsset },
         { shortcut: { key: 'ArrowLeft' }, onShortcut: focusPreviousAsset },
-        { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('next', 'day') },
-        { shortcut: { key: 'D', shift: true }, onShortcut: () => setFocusTo('previous', 'day') },
-        { shortcut: { key: 'M' }, onShortcut: () => setFocusTo('next', 'month') },
-        { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('previous', 'month') },
-        { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('next', 'year') },
-        { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('previous', 'year') },
+        { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('earlier', 'day') },
+        { shortcut: { key: 'D', shift: true }, onShortcut: () => setFocusTo('later', 'day') },
+        { shortcut: { key: 'M' }, onShortcut: () => setFocusTo('earlier', 'month') },
+        { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
+        { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
+        { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
         { shortcut: { key: 'G' }, onShortcut: () => (isShowSelectDate = true) },
       ];
 
@@ -728,7 +729,7 @@
     timezoneInput={false}
     onConfirm={async (dateString: string) => {
       isShowSelectDate = false;
-      const date = DateTime.fromISO(dateString);
+      const date = DateTime.fromISO(dateString).toUTC();
       const asset = await assetStore.getClosestAssetToDate(date);
       if (asset) {
         await setFocusAsset(asset);
