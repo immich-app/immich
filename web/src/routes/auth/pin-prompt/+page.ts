@@ -4,7 +4,7 @@ import { getAuthStatus } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
-  await authenticate();
+  await authenticate(url);
 
   const { pinCode } = await getAuthStatus();
 
