@@ -14,6 +14,7 @@
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -43,6 +44,7 @@
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
+  import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 
   interface Props {
     ownedAlbums?: AlbumResponseDto[];
@@ -52,6 +54,7 @@
     allowEdit?: boolean;
     showOwner?: boolean;
     albumGroupIds?: string[];
+    isLoading?: boolean;
     empty?: Snippet;
   }
 
@@ -63,6 +66,7 @@
     allowEdit = false,
     showOwner = false,
     albumGroupIds = $bindable([]),
+    isLoading = false,
     empty,
   }: Props = $props();
 
@@ -290,20 +294,6 @@
     await Promise.allSettled(albumsToRemove.map((album) => handleDeleteAlbum(album)));
   };
 
-  const updateAlbumInfo = (album: AlbumResponseDto) => {
-    ownedAlbums[ownedAlbums.findIndex(({ id }) => id === album.id)] = album;
-    sharedAlbums[sharedAlbums.findIndex(({ id }) => id === album.id)] = album;
-  };
-
-  const updateRecentAlbumInfo = (album: AlbumResponseDto) => {
-    for (const cachedAlbum of userInteraction.recentAlbums || []) {
-      if (cachedAlbum.id === album.id) {
-        Object.assign(cachedAlbum, { ...cachedAlbum, ...album });
-        break;
-      }
-    }
-  };
-
   const successEditAlbumInfo = (album: AlbumResponseDto) => {
     albumToEdit = null;
 
@@ -318,8 +308,7 @@
       },
     });
 
-    updateAlbumInfo(album);
-    updateRecentAlbumInfo(album);
+    albumListingStore.updateAlbumLocally(album);
   };
 
   const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
@@ -333,7 +322,7 @@
           albumUsers,
         },
       });
-      updateAlbumInfo(album);
+      albumListingStore.updateAlbumLocally(album);
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_album_users'));
     } finally {
@@ -344,7 +333,7 @@
   const handleSharedLinkCreated = (album: AlbumResponseDto) => {
     album.shared = true;
     album.hasSharedLink = true;
-    updateAlbumInfo(album);
+    albumListingStore.updateAlbumLocally(album);
   };
 
   const openShareModal = async () => {
@@ -375,6 +364,12 @@
   };
 </script>
 
+{#if isLoading}
+  <div class="absolute top-7 right-5 pointer-events-none" in:fade out:fade>
+    <LoadingSpinner />
+  </div>
+{/if}
+
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}
     <!-- Album Cards -->
@@ -402,7 +397,7 @@
     <!-- Album Table -->
     <AlbumsTable {groupedAlbums} {albumGroupOption} onShowContextMenu={showAlbumContextMenu} />
   {/if}
-{:else}
+{:else if !isLoading}
   <!-- Empty Message -->
   {@render empty?.()}
 {/if}

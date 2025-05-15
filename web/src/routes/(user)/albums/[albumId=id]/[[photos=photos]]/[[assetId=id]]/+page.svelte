@@ -206,21 +206,12 @@
   const refreshAlbum = async () => {
     album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
+
   const handleAddAssets = async () => {
     const assetIds = timelineInteraction.selectedAssets.map((asset) => asset.id);
 
     try {
-      const results = await addAssetsToAlbum({
-        id: album.id,
-        bulkIdsDto: { ids: assetIds },
-      });
-
-      const count = results.filter(({ success }) => success).length;
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('assets_added_count', { values: { count } }),
-      });
-
+      await addAssetsToAlbum(album.id, assetIds, true, false);
       await refreshAlbum();
 
       timelineInteraction.clearMultiselect();
