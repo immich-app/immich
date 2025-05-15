@@ -153,7 +153,7 @@ select
       "asset_files"
     where
       "asset_files"."assetId" = "assets"."id"
-      and "asset_files"."type" = $1
+      and "asset_files"."type" = 'preview'
   ) as "previewPath"
 from
   "person"
@@ -161,7 +161,7 @@ from
   inner join "assets" on "asset_faces"."assetId" = "assets"."id"
   left join "exif" on "exif"."assetId" = "assets"."id"
 where
-  "person"."id" = $2
+  "person"."id" = $1
   and "asset_faces"."deletedAt" is null
 
 -- PersonRepository.reassignFace

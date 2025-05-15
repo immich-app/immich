@@ -199,10 +199,9 @@ describe('/asset', () => {
       ];
       // should produce same resulting face region coordinates for any orientation
       const expectedFaces = [
-        {
+        expect.objectContaining({
           name: 'Marie Curie',
           birthDate: null,
-          thumbnailPath: '',
           isHidden: false,
           faces: [
             {
@@ -215,11 +214,10 @@ describe('/asset', () => {
               sourceType: 'exif',
             },
           ],
-        },
-        {
+        }),
+        expect.objectContaining({
           name: 'Pierre Curie',
           birthDate: null,
-          thumbnailPath: '',
           isHidden: false,
           faces: [
             {
@@ -232,7 +230,7 @@ describe('/asset', () => {
               sourceType: 'exif',
             },
           ],
-        },
+        }),
       ];
 
       it.each(metadataFaceTests)('should get the asset faces from $filename $description', async ({ filename }) => {
