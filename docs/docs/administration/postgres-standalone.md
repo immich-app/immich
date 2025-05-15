@@ -15,7 +15,7 @@ You must install VectorChord into your instance of Postgres using their [instruc
 :::note
 Immich is known to work with Postgres versions 14, 15, 16 and 17. Earlier versions are unsupported.
 
-Make sure the installed version of VectorChord is compatible with your version of Immich. The current accepted range for VectorChord is `>= 0.3.0, < 0.4.0`.
+Make sure the installed version of VectorChord is compatible with your version of Immich. The current accepted range for VectorChord is `>= 0.3.0, < 1.0.0`.
 :::
 
 ## Specifying the connection URL
