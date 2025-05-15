@@ -36,6 +36,10 @@ from
   "sessions"
 where
   "sessions"."token" = $1
+  and (
+    "sessions"."expiredAt" is null
+    or "sessions"."expiredAt" > $2
+  )
 
 -- SessionRepository.getByUserId
 select

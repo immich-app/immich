@@ -17,30 +17,9 @@ describe('SessionService', () => {
   });
 
   describe('handleCleanup', () => {
-    it('should return skipped if nothing is to be deleted', async () => {
-      mocks.session.search.mockResolvedValue([]);
-      await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.SKIPPED);
-      expect(mocks.session.search).toHaveBeenCalled();
-    });
-
-    it('should delete sessions', async () => {
-      mocks.session.search.mockResolvedValue([
-        {
-          createdAt: new Date('1970-01-01T00:00:00.00Z'),
-          updatedAt: new Date('1970-01-02T00:00:00.00Z'),
-          deviceOS: '',
-          deviceType: '',
-          id: '123',
-          token: '420',
-          userId: '42',
-          updateId: 'uuid-v7',
-          pinExpiresAt: null,
-        },
-      ]);
-      mocks.session.delete.mockResolvedValue();
-
+    it('should clean sessions', async () => {
+      mocks.session.cleanup.mockResolvedValue([]);
       await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.SUCCESS);
-      expect(mocks.session.delete).toHaveBeenCalledWith('123');
     });
   });
 

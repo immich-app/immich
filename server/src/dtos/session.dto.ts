@@ -1,4 +1,24 @@
+import { IsInt, IsPositive, IsString } from 'class-validator';
 import { Session } from 'src/database';
+import { Optional } from 'src/validation';
+
+export class SessionCreateDto {
+  /**
+   * session duration, in seconds
+   */
+  @IsInt()
+  @IsPositive()
+  @Optional()
+  duration?: number;
+
+  @IsString()
+  @Optional()
+  deviceType?: string;
+
+  @IsString()
+  @Optional()
+  deviceOS?: string;
+}
 
 export class SessionResponseDto {
   id!: string;
@@ -7,6 +27,10 @@ export class SessionResponseDto {
   current!: boolean;
   deviceType!: string;
   deviceOS!: string;
+}
+
+export class SessionCreateResponseDto extends SessionResponseDto {
+  token!: string;
 }
 
 export const mapSession = (entity: Session, currentId?: string): SessionResponseDto => ({

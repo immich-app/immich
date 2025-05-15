@@ -218,6 +218,8 @@ part 'model/server_storage_response_dto.dart';
 part 'model/server_theme_dto.dart';
 part 'model/server_version_history_response_dto.dart';
 part 'model/server_version_response_dto.dart';
+part 'model/session_create_dto.dart';
+part 'model/session_create_response_dto.dart';
 part 'model/session_response_dto.dart';
 part 'model/shared_link_create_dto.dart';
 part 'model/shared_link_edit_dto.dart';

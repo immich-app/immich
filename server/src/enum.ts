@@ -144,6 +144,7 @@ export enum Permission {
   PERSON_MERGE = 'person.merge',
   PERSON_REASSIGN = 'person.reassign',
 
+  SESSION_CREATE = 'session.create',
   SESSION_READ = 'session.read',
   SESSION_UPDATE = 'session.update',
   SESSION_DELETE = 'session.delete',
