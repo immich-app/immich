@@ -37,7 +37,7 @@ services:
     image: redis:6.2-alpine@sha256:3211c33a618c457e5d241922c975dbc4f446d0bdb2dc75694f5573ef8e2d01fa
 
   database:
-    image: tensorchord/vchord-postgres:pg14-v0.3.0
+    image: ghcr.io/immich-app/postgres:14
     command: -c fsync=off -c shared_preload_libraries=vchord.so
     environment:
       POSTGRES_PASSWORD: postgres

@@ -643,7 +643,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: tensorchord/vchord-postgres:pg14-v0.3.0
+        image: ghcr.io/immich-app/postgres:14
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres

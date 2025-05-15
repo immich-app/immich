@@ -7,7 +7,7 @@ import { getKyselyConfig } from 'src/utils/database';
 import { GenericContainer, Wait } from 'testcontainers';
 
 const globalSetup = async () => {
-  const postgresContainer = await new GenericContainer('tensorchord/vchord-postgres:pg14-v0.3.0')
+  const postgresContainer = await new GenericContainer('ghcr.io/immich-app/postgres:14')
     .withExposedPorts(5432)
     .withEnvironment({
       POSTGRES_PASSWORD: 'postgres',
