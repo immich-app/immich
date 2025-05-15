@@ -7,7 +7,7 @@ import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
-  await authenticate();
+  await authenticate(url);
   const { isElevated, pinCode } = await getAuthStatus();
 
   if (!isElevated || !pinCode) {
