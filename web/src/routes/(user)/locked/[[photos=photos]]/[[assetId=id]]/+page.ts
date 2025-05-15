@@ -9,19 +9,10 @@ import type { PageLoad } from './$types';
 export const load = (async ({ params, url }) => {
   await authenticate();
   const { isElevated, pinCode } = await getAuthStatus();
-  let extractedPath: string | undefined;
-  const regex = /\/locked\/(photos\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
-  const match = url.pathname.match(regex);
-
-  if (match && match[1]) {
-    extractedPath = match[1];
-  }
 
   if (!isElevated || !pinCode) {
-    let redirectPath = `${AppRoute.AUTH_PIN_PROMPT}`;
-    if (extractedPath) {
-      redirectPath += `?continue=${extractedPath}`;
-    }
+    const continuePath = encodeURIComponent(url.pathname);
+    const redirectPath = `${AppRoute.AUTH_PIN_PROMPT}?continue=${continuePath}`;
 
     redirect(302, redirectPath);
   }

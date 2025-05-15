@@ -11,8 +11,9 @@ export const load = (async ({ url }) => {
   const { isElevated, pinCode } = await getAuthStatus();
 
   const continuePath = url.searchParams.get('continue');
+
   if (isElevated) {
-    redirect(302, AppRoute.LOCKED);
+    redirect(302, continuePath ?? AppRoute.LOCKED);
   }
 
   const $t = await getFormatter();

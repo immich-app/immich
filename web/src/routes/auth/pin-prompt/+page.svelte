@@ -25,24 +25,15 @@
 
   const onPinFilled = async (code: string) => {
     try {
-      await verifyPinCode({
-        pinCodeSetupDto: {
-          pinCode: code,
-        },
-      });
+      await verifyPinCode({ pinCodeSetupDto: { pinCode: code } });
 
       isVerified = true;
 
-      let redirectPath = `${AppRoute.LOCKED}`;
-      if (data.continuePath) {
-        redirectPath += `/${data.continuePath}`;
-      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      setTimeout(() => {
-        goto(redirectPath)
-          .then(() => {})
-          .catch(() => {});
-      }, 1000);
+      goto(data.continuePath ?? AppRoute.LOCKED)
+        .then(() => {})
+        .catch(() => {});
     } catch (error) {
       handleError(error, $t('wrong_pin_code'));
       isBadPinCode = true;
