@@ -7,22 +7,10 @@ set
 where
   "asset_faces"."personId" = $2
 
--- PersonRepository.unassignFaces
-update "asset_faces"
-set
-  "personId" = $1
-where
-  "asset_faces"."sourceType" = $2
-
 -- PersonRepository.delete
 delete from "person"
 where
-  "person"."id" in $1
-
--- PersonRepository.deleteFaces
-delete from "asset_faces"
-where
-  "asset_faces"."sourceType" = $1
+  "person"."id" in ($1)
 
 -- PersonRepository.getAllWithoutFaces
 select
@@ -215,21 +203,6 @@ from
 where
   "person"."ownerId" = $3
   and "asset_faces"."deletedAt" is null
-
--- PersonRepository.refreshFaces
-with
-  "added_embeddings" as (
-    insert into
-      "face_search" ("faceId", "embedding")
-    values
-      ($1, $2)
-  )
-select
-from
-  (
-    select
-      1
-  ) as "dummy"
 
 -- PersonRepository.getFacesByIds
 select

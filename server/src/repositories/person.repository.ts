@@ -98,7 +98,6 @@ export class PersonRepository {
     return Number(result.numChangedRows ?? 0);
   }
 
-  @GenerateSql({ params: [{ sourceType: SourceType.EXIF }] })
   async unassignFaces({ sourceType }: UnassignFacesOptions): Promise<void> {
     await this.db
       .updateTable('asset_faces')
@@ -107,7 +106,7 @@ export class PersonRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
+  @GenerateSql({ params: [[DummyValue.UUID]] })
   async delete(ids: string[]): Promise<void> {
     if (ids.length === 0) {
       return;
@@ -116,7 +115,6 @@ export class PersonRepository {
     await this.db.deleteFrom('person').where('person.id', 'in', ids).execute();
   }
 
-  @GenerateSql({ params: [{ sourceType: SourceType.EXIF }] })
   async deleteFaces({ sourceType }: DeleteFacesOptions): Promise<void> {
     await this.db.deleteFrom('asset_faces').where('asset_faces.sourceType', '=', sourceType).execute();
   }
@@ -400,7 +398,6 @@ export class PersonRepository {
     return results.map(({ id }) => id);
   }
 
-  @GenerateSql({ params: [[], [], [{ faceId: DummyValue.UUID, embedding: DummyValue.VECTOR }]] })
   async refreshFaces(
     facesToAdd: (Insertable<AssetFaces> & { assetId: string })[],
     faceIdsToRemove: string[],
