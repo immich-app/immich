@@ -28,6 +28,8 @@ const globalSetup = async () => {
       'full_page_writes=off',
       '-c',
       'synchronous_commit=off',
+      '-c',
+      'config_file=/var/lib/postgresql/data/postgresql.conf',
     ])
     .withWaitStrategy(Wait.forAll([Wait.forLogMessage('database system is ready to accept connections', 2)]))
     .start();
