@@ -151,7 +151,7 @@ class CastManager {
 // Persist castManager across Svelte HMRs
 let castManager: CastManager;
 
-if (import.meta.hot) {
+if (import.meta.hot && import.meta.hot.data) {
   if (!import.meta.hot.data.castManager) {
     import.meta.hot.data.castManager = new CastManager();
   }
