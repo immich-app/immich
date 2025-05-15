@@ -34,7 +34,7 @@
 
     try {
       loading = true;
-      const assetIds = [...getAssets()].map((asset) => asset.id);
+      const assetIds = getAssets().map(({ id }) => id);
 
       await updateAssets({
         assetBulkUpdateDto: {

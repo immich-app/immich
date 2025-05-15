@@ -2,11 +2,12 @@
   import { Card, CardBody, CardHeader, Heading, immichLogo, Logo, VStack } from '@immich/ui';
   import type { Snippet } from 'svelte';
   interface Props {
-    title: string;
+    title?: string;
     children?: Snippet;
+    withHeader?: boolean;
   }
 
-  let { title, children }: Props = $props();
+  let { title, children, withHeader = true }: Props = $props();
 </script>
 
 <section class="min-w-dvw flex min-h-dvh items-center justify-center relative">
@@ -18,12 +19,14 @@
   </div>
 
   <Card color="secondary" class="w-full max-w-lg border m-2">
-    <CardHeader class="mt-6">
-      <VStack>
-        <Logo variant="icon" size="giant" />
-        <Heading size="large" class="font-semibold" color="primary" tag="h1">{title}</Heading>
-      </VStack>
-    </CardHeader>
+    {#if withHeader}
+      <CardHeader class="mt-6">
+        <VStack>
+          <Logo variant="icon" size="giant" />
+          <Heading size="large" class="font-semibold" color="primary" tag="h1">{title}</Heading>
+        </VStack>
+      </CardHeader>
+    {/if}
 
     <CardBody class="p-8">
       {@render children?.()}

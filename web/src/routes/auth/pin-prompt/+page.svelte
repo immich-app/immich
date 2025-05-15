@@ -7,7 +7,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { verifyPinCode } from '@immich/sdk';
   import { Icon } from '@immich/ui';
-  import { mdiLockOpenVariantOutline, mdiLockOutline } from '@mdi/js';
+  import { mdiLockOpenVariantOutline, mdiLockOutline, mdiLockSmart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import type { PageData } from './$types';
@@ -33,9 +33,7 @@
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
-      goto(data.continuePath ?? AppRoute.LOCKED)
-        .then(() => {})
-        .catch(() => {});
+      void goto(data.continuePath ?? AppRoute.LOCKED);
     } catch (error) {
       handleError(error, $t('wrong_pin_code'));
       isBadPinCode = true;
@@ -43,24 +41,24 @@
   };
 </script>
 
-<AuthPageLayout title="">
+<AuthPageLayout withHeader={false}>
   {#if hasPinCode}
     <div class="flex items-center justify-center">
-      <div
-        class="w-96 bg-subtle flex flex-col gap-6 items-center justify-center p-8 rounded-2xl border border-gray-200 dark:border-gray-600"
-      >
-        <p class="text-center text-sm" style="text-wrap: pretty;">Enter your PIN code to access the locked folder</p>
-
+      <div class="w-96 flex flex-col gap-6 items-center justify-center">
         {#if isVerified}
           <div in:fade={{ duration: 200 }}>
-            <Icon icon={mdiLockOpenVariantOutline} size="48" class="text-success/90" />
+            <Icon icon={mdiLockOpenVariantOutline} size="64" class="text-success/90" />
           </div>
         {:else}
           <div class:text-danger={isBadPinCode} class:text-primary={!isBadPinCode}>
-            <Icon icon={mdiLockOutline} size="48" />
+            <Icon icon={mdiLockOutline} size="64" />
           </div>
         {/if}
+
+        <p class="text-center text-sm" style="text-wrap: pretty;">{$t('enter_your_pin_code_subtitle')}</p>
+
         <PincodeInput
+          type="password"
           autofocus
           label=""
           bind:value={pinCode}
@@ -73,6 +71,9 @@
   {:else}
     <div class="flex items-center justify-center">
       <div class="w-96 flex flex-col gap-6 items-center justify-center">
+        <div class="text-primary">
+          <Icon icon={mdiLockSmart} size="64" />
+        </div>
         <p class="text-center text-sm mb-4" style="text-wrap: pretty;">
           {$t('new_pin_code_subtitle')}
         </p>
