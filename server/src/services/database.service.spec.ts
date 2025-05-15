@@ -47,6 +47,7 @@ describe(DatabaseService.name, () => {
     describe.each(<Array<{ extension: VectorExtension; extensionName: string }>>[
       { extension: DatabaseExtension.VECTOR, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTOR] },
       { extension: DatabaseExtension.VECTORS, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTORS] },
+      { extension: DatabaseExtension.VECTORCHORD, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTORCHORD] },
     ])('should work with $extensionName', ({ extension, extensionName }) => {
       beforeEach(() => {
         mocks.database.getVectorExtension.mockResolvedValue(extension);
@@ -292,42 +293,7 @@ describe(DatabaseService.name, () => {
       expect(mocks.database.runMigrations).not.toHaveBeenCalled();
     });
 
-    it(`should throw error if pgvector extension could not be created`, async () => {
-      mocks.config.getEnv.mockReturnValue(
-        mockEnvData({
-          database: {
-            config: {
-              connectionType: 'parts',
-              host: 'database',
-              port: 5432,
-              username: 'postgres',
-              password: 'postgres',
-              database: 'immich',
-            },
-            skipMigrations: true,
-            vectorExtension: DatabaseExtension.VECTOR,
-          },
-        }),
-      );
-      mocks.database.getExtensionVersion.mockResolvedValue({
-        installedVersion: null,
-        availableVersion: minVersionInRange,
-      });
-      mocks.database.updateVectorExtension.mockResolvedValue({ restartRequired: false });
-      mocks.database.createExtension.mockRejectedValue(new Error('Failed to create extension'));
-
-      await expect(sut.onBootstrap()).rejects.toThrow('Failed to create extension');
-
-      expect(mocks.logger.fatal).toHaveBeenCalledTimes(1);
-      expect(mocks.logger.fatal.mock.calls[0][0]).toContain(
-        `Alternatively, if your Postgres instance has any of vector, vectors, vchord, you may use one of them instead by setting the environment variable 'DB_VECTOR_EXTENSION=<extension name>'`,
-      );
-      expect(mocks.database.createExtension).toHaveBeenCalledTimes(1);
-      expect(mocks.database.updateVectorExtension).not.toHaveBeenCalled();
-      expect(mocks.database.runMigrations).not.toHaveBeenCalled();
-    });
-
-    it(`should throw error if pgvecto.rs extension could not be created`, async () => {
+    it(`should throw error if extension could not be created`, async () => {
       mocks.database.getExtensionVersion.mockResolvedValue({
         installedVersion: null,
         availableVersion: minVersionInRange,
