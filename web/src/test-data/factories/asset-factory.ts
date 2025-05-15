@@ -35,7 +35,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
   localDateTime: Sync.each(() => faker.date.past().toISOString()),
   isFavorite: Sync.each(() => faker.datatype.boolean()),
-  isArchived: false,
+  visibility: Visibility.Timeline,
   isTrashed: false,
   isImage: true,
   isVideo: false,

@@ -1,5 +1,6 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { getAltText } from '$lib/utils/thumbnail-util';
+import { Visibility } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
 
 interface Person {
@@ -61,7 +62,7 @@ describe('getAltText', () => {
         ratio: 1,
         thumbhash: null,
         localDateTime: '2024-01-01T12:00:00.000Z',
-        isArchived: false,
+        visibility: Visibility.Timeline,
         isFavorite: false,
         isTrashed: false,
         isVideo,

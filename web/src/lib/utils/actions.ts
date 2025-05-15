@@ -1,7 +1,7 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import type { AssetStore, TimelineAsset } from '$lib/stores/assets-store.svelte';
 import type { StackResponse } from '$lib/utils/asset-utils';
-import { deleteAssets as deleteBulk } from '@immich/sdk';
+import { deleteAssets as deleteBulk, Visibility } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
@@ -11,7 +11,7 @@ export type OnRestore = (ids: string[]) => void;
 export type OnLink = (assets: { still: TimelineAsset; motion: TimelineAsset }) => void;
 export type OnUnlink = (assets: { still: TimelineAsset; motion: TimelineAsset }) => void;
 export type OnAddToAlbum = (ids: string[], albumId: string) => void;
-export type OnArchive = (ids: string[], isArchived: boolean) => void;
+export type OnArchive = (ids: string[], visibility: Visibility) => void;
 export type OnFavorite = (ids: string[], favorite: boolean) => void;
 export type OnStack = (result: StackResponse) => void;
 export type OnUnstack = (assets: TimelineAsset[]) => void;

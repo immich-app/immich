@@ -16,6 +16,7 @@ import {
   getTimeBucket,
   getTimeBuckets,
   TimeBucketSize,
+  Visibility,
   type AssetResponseDto,
   type AssetStackResponseDto,
 } from '@immich/sdk';
@@ -74,7 +75,7 @@ export type TimelineAsset = {
   ratio: number;
   thumbhash: string | null;
   localDateTime: string;
-  isArchived: boolean;
+  visibility: Visibility;
   isFavorite: boolean;
   isTrashed: boolean;
   isVideo: boolean;
@@ -552,8 +553,7 @@ export class AssetBucket {
   }
 }
 
-const isMismatched = (option: boolean | undefined, value: boolean): boolean =>
-  option === undefined ? false : option !== value;
+const isMismatched = <T>(option: T | undefined, value: T): boolean => (option === undefined ? false : option !== value);
 
 interface AddAsset {
   type: 'add';
@@ -1421,7 +1421,7 @@ export class AssetStore {
 
   isExcluded(asset: TimelineAsset) {
     return (
-      isMismatched(this.#options.visibility === AssetVisibility.Archive, asset.isArchived) ||
+      isMismatched(this.#options.visibility, asset.visibility as unknown as AssetVisibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );

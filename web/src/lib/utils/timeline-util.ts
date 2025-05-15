@@ -83,7 +83,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     thumbhash: assetResponse.thumbhash,
     localDateTime: assetResponse.localDateTime,
     isFavorite: assetResponse.isFavorite,
-    isArchived: assetResponse.isArchived,
+    visibility: assetResponse.visibility,
     isTrashed: assetResponse.isTrashed,
     isVideo: assetResponse.type == AssetTypeEnum.Video,
     isImage: assetResponse.type == AssetTypeEnum.Image,

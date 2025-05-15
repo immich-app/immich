@@ -19,7 +19,7 @@
   import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
   import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { type AssetResponseDto } from '@immich/sdk';
+  import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
@@ -96,7 +96,7 @@
         const display = layoutTopWithOffset < slidingWindow.bottom && layoutBottom > slidingWindow.top;
 
         const layout = {
-          asset: asset,
+          asset,
           top,
           left,
           width,
@@ -261,7 +261,10 @@
   };
 
   const toggleArchive = async () => {
-    const ids = await archiveAssets(assetInteraction.selectedAssets, !assetInteraction.isAllArchived);
+    const ids = await archiveAssets(
+      assetInteraction.selectedAssets,
+      !assetInteraction.isAllArchived ? AssetVisibility.Archive : AssetVisibility.Timeline,
+    );
     if (ids) {
       assets = assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();

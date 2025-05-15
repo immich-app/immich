@@ -1,6 +1,6 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { user } from '$lib/stores/user.store';
-import type { UserAdminResponseDto } from '@immich/sdk';
+import { Visibility, type UserAdminResponseDto } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import { fromStore } from 'svelte/store';
 
@@ -21,7 +21,7 @@ export class AssetInteraction {
   private userId = $derived(this.user.current?.id);
 
   isAllTrashed = $derived(this.selectedAssets.every((asset) => asset.isTrashed));
-  isAllArchived = $derived(this.selectedAssets.every((asset) => asset.isArchived));
+  isAllArchived = $derived(this.selectedAssets.every((asset) => asset.visibility === Visibility.Archive));
   isAllFavorite = $derived(this.selectedAssets.every((asset) => asset.isFavorite));
   isAllUserOwned = $derived(this.selectedAssets.every((asset) => asset.ownerId === this.userId));
 

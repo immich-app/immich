@@ -526,26 +526,29 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
   return asset;
 };
 
-export const archiveAssets = async (assets: { id: string }[], archive: boolean) => {
-  const isArchived = archive;
+export const archiveAssets = async (assets: { id: string }[], visibility: AssetVisibility) => {
   const ids = assets.map(({ id }) => id);
   const $t = get(t);
 
   try {
     if (ids.length > 0) {
       await updateAssets({
-        assetBulkUpdateDto: { ids, visibility: isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline },
+        assetBulkUpdateDto: { ids, visibility },
       });
     }
 
     notificationController.show({
-      message: isArchived
-        ? $t('archived_count', { values: { count: ids.length } })
-        : $t('unarchived_count', { values: { count: ids.length } }),
+      message:
+        visibility === AssetVisibility.Archive
+          ? $t('archived_count', { values: { count: ids.length } })
+          : $t('unarchived_count', { values: { count: ids.length } }),
       type: NotificationType.Info,
     });
   } catch (error) {
-    handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: isArchived } }));
+    handleError(
+      error,
+      $t('errors.unable_to_archive_unarchive', { values: { archived: visibility === AssetVisibility.Archive } }),
+    );
   }
 
   return ids;
