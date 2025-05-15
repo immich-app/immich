@@ -1,6 +1,7 @@
 <script lang="ts">
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
+  import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
@@ -32,7 +33,6 @@
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import SideBarLink from './side-bar-link.svelte';
-  import SideBarSection from './side-bar-section.svelte';
 
   let isArchiveSelected: boolean = $state(false);
   let isFavoritesSelected: boolean = $state(false);
@@ -45,7 +45,7 @@
   let isLockedFolderSelected: boolean = $state(false);
 </script>
 
-<SideBarSection ariaLabel={$t('primary')}>
+<Sidebar ariaLabel={$t('primary')}>
   <SideBarLink
     title={$t('photos')}
     routeId="/(user)/photos"
@@ -148,4 +148,4 @@
   {/if}
 
   <BottomInfo />
-</SideBarSection>
+</Sidebar>

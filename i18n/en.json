@@ -1,7 +1,8 @@
 {
+  "new_pin_code_subtitle": "This is your first time accessing the locked folder. Create a PIN code to securely access this page",
   "enter_your_pin_code": "Enter your PIN code",
+  "enter_your_pin_code_subtitle": "Enter your PIN code to access the locked folder",
   "pin_verification": "PIN code verification",
-  "pin_verification_subtitle": "Enter your PIN code to access the locked folder",
   "wrong_pin_code": "Wrong PIN code",
   "nothing_here_yet": "Nothing here yet",
   "move_to_locked_folder": "Move to Locked Folder",

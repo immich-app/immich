@@ -920,13 +920,17 @@ describe(AuthService.name, () => {
 
   describe('resetPinCode', () => {
     it('should reset the PIN code', async () => {
+      const currentSession = factory.session();
       const user = factory.userAdmin();
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
       mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+      mocks.session.getByUserId.mockResolvedValue([currentSession]);
+      mocks.session.update.mockResolvedValue(currentSession);
 
       await sut.resetPinCode(factory.auth({ user }), { pinCode: '123456' });
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: null });
+      expect(mocks.session.update).toHaveBeenCalledWith(currentSession.id, { pinExpiresAt: null });
     });
 
     it('should throw if the PIN code does not match', async () => {

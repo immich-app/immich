@@ -7,7 +7,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { verifyPinCode } from '@immich/sdk';
   import { Icon } from '@immich/ui';
-  import { mdiLockOpenVariantOutline, mdiLockOutline } from '@mdi/js';
+  import { mdiLockOpenVariantOutline, mdiLockOutline, mdiLockSmart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import type { PageData } from './$types';
@@ -23,26 +23,17 @@
   let hasPinCode = $derived(data.hasPinCode);
   let pinCode = $state('');
 
-  const onPinFilled = async (code: string) => {
+  const onPinFilled = async (code: string, withDelay = false) => {
     try {
-      await verifyPinCode({
-        pinCodeSetupDto: {
-          pinCode: code,
-        },
-      });
+      await verifyPinCode({ pinCodeSetupDto: { pinCode: code } });
 
       isVerified = true;
 
-      let redirectPath = `${AppRoute.LOCKED}`;
-      if (data.continuePath) {
-        redirectPath += `/${data.continuePath}`;
+      if (withDelay) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
-      setTimeout(() => {
-        goto(redirectPath)
-          .then(() => {})
-          .catch(() => {});
-      }, 1000);
+      void goto(data.continuePath ?? AppRoute.LOCKED);
     } catch (error) {
       handleError(error, $t('wrong_pin_code'));
       isBadPinCode = true;
@@ -50,35 +41,43 @@
   };
 </script>
 
-<AuthPageLayout title="">
+<AuthPageLayout withHeader={false}>
   {#if hasPinCode}
     <div class="flex items-center justify-center">
-      <div
-        class="w-96 bg-subtle flex flex-col gap-6 items-center justify-center p-8 rounded-2xl border border-gray-200 dark:border-gray-600"
-      >
-        <p class="text-center text-sm" style="text-wrap: pretty;">Enter your PIN code to access the locked folder</p>
-
+      <div class="w-96 flex flex-col gap-6 items-center justify-center">
         {#if isVerified}
           <div in:fade={{ duration: 200 }}>
-            <Icon icon={mdiLockOpenVariantOutline} size="48" class="text-success/90" />
+            <Icon icon={mdiLockOpenVariantOutline} size="64" class="text-success/90" />
           </div>
         {:else}
           <div class:text-danger={isBadPinCode} class:text-primary={!isBadPinCode}>
-            <Icon icon={mdiLockOutline} size="48" />
+            <Icon icon={mdiLockOutline} size="64" />
           </div>
         {/if}
-        <PincodeInput autofocus label="" bind:value={pinCode} tabindexStart={1} pinLength={6} onFilled={onPinFilled} />
+
+        <p class="text-center text-sm" style="text-wrap: pretty;">{$t('enter_your_pin_code_subtitle')}</p>
+
+        <PincodeInput
+          type="password"
+          autofocus
+          label=""
+          bind:value={pinCode}
+          tabindexStart={1}
+          pinLength={6}
+          onFilled={(pinCode) => onPinFilled(pinCode, true)}
+        />
       </div>
     </div>
   {:else}
     <div class="flex items-center justify-center">
-      <div
-        class="w-96 bg-subtle flex flex-col gap-6 items-center justify-center p-8 rounded-2xl border border-gray-200 dark:border-gray-600"
-      >
-        <p class="text-center text-sm" style="text-wrap: pretty;">
-          This is your first time accessing the locked folder. Create a PIN code to securely access this page
+      <div class="w-96 flex flex-col gap-6 items-center justify-center">
+        <div class="text-primary">
+          <Icon icon={mdiLockSmart} size="64" />
+        </div>
+        <p class="text-center text-sm mb-4" style="text-wrap: pretty;">
+          {$t('new_pin_code_subtitle')}
         </p>
-        <PinCodeCreateForm showLabel={false} onCreated={onPinFilled} />
+        <PinCodeCreateForm showLabel={false} onCreated={() => (hasPinCode = true)} />
       </div>
     </div>
   {/if}

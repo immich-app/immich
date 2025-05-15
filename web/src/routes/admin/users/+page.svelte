@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import Icon from '$lib/components/elements/icon.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import {
     NotificationType,
     notificationController,
@@ -85,7 +85,7 @@
   };
 </script>
 
-<UserPageLayout title={data.meta.title} admin>
+<AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={1}>
       <Button leadingIcon={mdiPlusBoxOutline} onclick={handleCreate} size="small" variant="ghost" color="secondary">
@@ -172,4 +172,4 @@
       </table>
     </section>
   </section>
-</UserPageLayout>
+</AdminPageLayout>

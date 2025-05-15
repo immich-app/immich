@@ -12,7 +12,6 @@ import { IBulkAsset } from 'src/types';
 export class MemoryRepository implements IBulkAsset {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID] })
   cleanup() {
     return this.db
       .deleteFrom('memories')
