@@ -231,30 +231,6 @@ where
 limit
   $3
 
--- AssetRepository.getTimeBuckets
-with
-  "assets" as (
-    select
-      date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' as "timeBucket"
-    from
-      "assets"
-    where
-      "assets"."deletedAt" is null
-      and (
-        "assets"."visibility" = $1
-        or "assets"."visibility" = $2
-      )
-  )
-select
-  "timeBucket",
-  count(*) as "count"
-from
-  "assets"
-group by
-  "timeBucket"
-order by
-  "timeBucket" desc
-
 -- AssetRepository.getTimeBucket
 with
   "cte" as (
