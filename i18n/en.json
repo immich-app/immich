@@ -1,6 +1,7 @@
 {
   "enter_your_pin_code": "Enter your PIN code",
   "pin_verification": "PIN code verification",
+  "pin_verification_subtitle": "Enter your PIN code to access the locked folder",
   "wrong_pin_code": "Wrong PIN code",
   "nothing_here_yet": "Nothing here yet",
   "move_to_locked_folder": "Move to Locked Folder",

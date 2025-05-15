@@ -31,4 +31,6 @@ abstract class ITimelineRepository {
   );
 
   Stream<RenderList> watchAssetSelectionTimeline(String userId);
+
+  Stream<RenderList> watchLockedTimeline(String userId);
 }

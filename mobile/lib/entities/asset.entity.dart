@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
@@ -45,7 +46,8 @@ class Asset {
             : remote.stack?.primaryAssetId,
         stackCount = remote.stack?.assetCount ?? 0,
         stackId = remote.stack?.id,
-        thumbhash = remote.thumbhash;
+        thumbhash = remote.thumbhash,
+        visibility = getVisibility(remote.visibility);
 
   Asset({
     this.id = Isar.autoIncrement,
@@ -71,6 +73,7 @@ class Asset {
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
+    this.visibility = AssetVisibilityEnum.timeline,
   });
 
   @ignore
@@ -172,6 +175,9 @@ class Asset {
   String? stackPrimaryAssetId;
 
   int stackCount;
+
+  @Enumerated(EnumType.ordinal)
+  AssetVisibilityEnum visibility;
 
   /// Returns null if the asset has no sync access to the exif info
   @ignore
@@ -542,6 +548,19 @@ class Asset {
   "isTrashed": $isTrashed,
   "isOffline": $isOffline,
 }""";
+  }
+
+  static getVisibility(AssetResponseDtoVisibilityEnum visibility) {
+    switch (visibility) {
+      case AssetResponseDtoVisibilityEnum.timeline:
+        return AssetVisibilityEnum.timeline;
+      case AssetResponseDtoVisibilityEnum.archive:
+        return AssetVisibilityEnum.archive;
+      case AssetResponseDtoVisibilityEnum.hidden:
+        return AssetVisibilityEnum.hidden;
+      case AssetResponseDtoVisibilityEnum.locked:
+        return AssetVisibilityEnum.locked;
+    }
   }
 }
 

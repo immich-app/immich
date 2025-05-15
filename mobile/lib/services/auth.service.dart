@@ -201,4 +201,8 @@ class AuthService {
 
     return null;
   }
+
+  Future<bool> verifyPinCode(String pinCode) {
+    return _authApiRepository.verifyPinCode(pinCode);
+  }
 }

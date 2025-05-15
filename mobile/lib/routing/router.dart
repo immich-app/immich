@@ -39,6 +39,8 @@ import 'package:immich_mobile/pages/library/favorite.page.dart';
 import 'package:immich_mobile/pages/library/folder/folder.page.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
 import 'package:immich_mobile/pages/library/local_albums.page.dart';
+import 'package:immich_mobile/pages/library/locked/locked.page.dart';
+import 'package:immich_mobile/pages/library/locked/pin_code.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner_detail.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
@@ -67,6 +69,7 @@ import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/backup_permission_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
+import 'package:immich_mobile/routing/locked_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -78,6 +81,7 @@ class AppRouter extends RootStackRouter {
   late final AuthGuard _authGuard;
   late final DuplicateGuard _duplicateGuard;
   late final BackupPermissionGuard _backupPermissionGuard;
+  late final LockedGuard _lockedGuard;
 
   AppRouter(
     ApiService apiService,
@@ -85,6 +89,7 @@ class AppRouter extends RootStackRouter {
   ) {
     _authGuard = AuthGuard(apiService);
     _duplicateGuard = DuplicateGuard();
+    _lockedGuard = LockedGuard(apiService);
     _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
   }
 
@@ -287,6 +292,14 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(
       page: ShareIntentRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: LockedRoute.page,
+      guards: [_authGuard, _lockedGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: PinCodeRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
   ];
