@@ -1867,6 +1867,7 @@
   "use_current_connection": "use current connection",
   "use_custom_date_range": "Use custom date range instead",
   "user": "User",
+  "user_has_been_deleted": "This user has been deleted.",
   "user_id": "User ID",
   "user_liked": "{user} liked {type, select, photo {this photo} video {this video} asset {this asset} other {it}}",
   "created_at": "Created",

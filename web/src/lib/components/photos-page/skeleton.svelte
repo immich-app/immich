@@ -9,7 +9,7 @@
 
 <div class="overflow-clip" style:height={height + 'px'}>
   <div
-    class="flex z-[100] pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-light dark:text-immich-dark-fg md:text-sm"
+    class="flex pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-light dark:text-immich-dark-fg md:text-sm"
   >
     {title}
   </div>

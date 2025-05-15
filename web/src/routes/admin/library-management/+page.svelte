@@ -4,7 +4,7 @@
   import LibraryRenameForm from '$lib/components/forms/library-rename-form.svelte';
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
   import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -240,26 +240,7 @@
   };
 </script>
 
-{#if toCreateLibrary}
-  <LibraryUserPickerForm onSubmit={handleCreate} onCancel={() => (toCreateLibrary = false)} />
-{/if}
-
-{#if toAddImportPath}
-  <LibraryImportPathForm
-    title={$t('add_import_path')}
-    submitText={$t('add')}
-    bind:importPath={importPathToAdd}
-    onSubmit={handleAddImportPath}
-    onCancel={() => {
-      toAddImportPath = false;
-      if (updateLibraryIndex) {
-        onEditImportPathClicked(updateLibraryIndex);
-      }
-    }}
-  />
-{/if}
-
-<UserPageLayout title={data.meta.title} admin>
+<AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       {#if libraries.length > 0}
@@ -382,12 +363,31 @@
       {/if}
     </div>
   </section>
-</UserPageLayout>
+</AdminPageLayout>
 
 {#if renameLibrary !== undefined}
   <LibraryRenameForm
     library={libraries[renameLibrary]}
     onSubmit={handleUpdate}
     onCancel={() => (renameLibrary = undefined)}
+  />
+{/if}
+
+{#if toCreateLibrary}
+  <LibraryUserPickerForm onSubmit={handleCreate} onCancel={() => (toCreateLibrary = false)} />
+{/if}
+
+{#if toAddImportPath}
+  <LibraryImportPathForm
+    title={$t('add_import_path')}
+    submitText={$t('add')}
+    bind:importPath={importPathToAdd}
+    onSubmit={handleAddImportPath}
+    onCancel={() => {
+      toAddImportPath = false;
+      if (updateLibraryIndex) {
+        onEditImportPathClicked(updateLibraryIndex);
+      }
+    }}
   />
 {/if}

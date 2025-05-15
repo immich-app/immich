@@ -30,10 +30,12 @@
 
   interface Props {
     showUploadButton?: boolean;
-    onUploadClick: () => void;
+    onUploadClick?: () => void;
+    // TODO: remove once this is only used in <AppShellHeader>
+    noBorder?: boolean;
   }
 
-  let { showUploadButton = true, onUploadClick }: Props = $props();
+  let { showUploadButton = true, onUploadClick, noBorder = false }: Props = $props();
 
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
@@ -51,11 +53,13 @@
 
 <nav
   id="dashboard-navbar"
-  class="z-auto max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm overflow-hidden"
+  class="max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-dvw text-sm overflow-hidden"
 >
   <SkipLink text={$t('skip_to_content')} />
   <div
-    class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center border-b py-2 dark:border-b-immich-dark-gray sidebar:grid-cols-[theme(spacing.64)_auto]"
+    class="grid h-full grid-cols-[theme(spacing.32)_auto] items-center py-2 sidebar:grid-cols-[theme(spacing.64)_auto] {noBorder
+      ? ''
+      : 'border-b'}"
   >
     <div class="flex flex-row gap-1 mx-4 items-center">
       <IconButton
@@ -103,7 +107,7 @@
           />
         {/if}
 
-        {#if !page.url.pathname.includes('/admin') && showUploadButton}
+        {#if !page.url.pathname.includes('/admin') && showUploadButton && onUploadClick}
           <Button
             leadingIcon={mdiTrayArrowUp}
             onclick={onUploadClick}

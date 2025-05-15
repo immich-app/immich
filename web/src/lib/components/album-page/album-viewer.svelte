@@ -58,6 +58,32 @@
   }}
 />
 
+<main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]">
+  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
+    <section class="pt-8 md:pt-24 px-2 md:px-0">
+      <!-- ALBUM TITLE -->
+      <h1
+        class="text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary"
+      >
+        {album.albumName}
+      </h1>
+
+      {#if album.assetCount > 0}
+        <AlbumSummary {album} />
+      {/if}
+
+      <!-- ALBUM DESCRIPTION -->
+      {#if album.description}
+        <p
+          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-start font-medium text-base text-black dark:text-gray-300"
+        >
+          {album.description}
+        </p>
+      {/if}
+    </section>
+  </AssetGrid>
+</main>
+
 <header>
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
@@ -100,29 +126,3 @@
     </ControlAppBar>
   {/if}
 </header>
-
-<main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]">
-  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
-    <section class="pt-8 md:pt-24 px-2 md:px-0">
-      <!-- ALBUM TITLE -->
-      <h1
-        class="text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary"
-      >
-        {album.albumName}
-      </h1>
-
-      {#if album.assetCount > 0}
-        <AlbumSummary {album} />
-      {/if}
-
-      <!-- ALBUM DESCRIPTION -->
-      {#if album.description}
-        <p
-          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-start font-medium text-base text-black dark:text-gray-300"
-        >
-          {album.description}
-        </p>
-      {/if}
-    </section>
-  </AssetGrid>
-</main>

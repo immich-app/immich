@@ -6,7 +6,6 @@
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
-  import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -37,6 +36,7 @@
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
+  import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -441,6 +441,14 @@
       await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
     }
   };
+
+  const handleEditUsers = async () => {
+    const changed = await modalManager.show(AlbumUsersModal, { album });
+
+    if (changed) {
+      album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    }
+  };
 </script>
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
@@ -631,13 +639,13 @@
                   {/if}
 
                   <!-- owner -->
-                  <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
+                  <button type="button" onclick={handleEditUsers}>
                     <UserAvatar user={album.owner} size="md" />
                   </button>
 
                   <!-- users with write access (collaborators) -->
                   {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                    <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
+                    <button type="button" onclick={handleEditUsers}>
                       <UserAvatar {user} size="md" />
                     </button>
                   {/each}
@@ -649,7 +657,7 @@
                       color="gray"
                       size="20"
                       icon={mdiDotsVertical}
-                      onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}
+                      onclick={handleEditUsers}
                     />
                   {/if}
 
@@ -721,15 +729,6 @@
     </div>
   {/if}
 </div>
-
-{#if viewMode === AlbumPageViewMode.VIEW_USERS}
-  <ShareInfoModal
-    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
-    {album}
-    onRemove={(userId) => handleRemoveUser(userId, AlbumPageViewMode.VIEW_USERS)}
-    onRefreshAlbum={refreshAlbum}
-  />
-{/if}
 
 {#if viewMode === AlbumPageViewMode.OPTIONS && $user}
   <AlbumOptions

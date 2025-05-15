@@ -114,7 +114,7 @@ export class UserAdminService extends BaseService {
   }
 
   async getStatistics(auth: AuthDto, id: string, dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
-    const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
+    const stats = await this.assetRepository.getStatistics(id, dto);
     return mapStats(stats);
   }
 

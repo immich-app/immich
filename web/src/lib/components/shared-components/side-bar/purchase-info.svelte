@@ -119,7 +119,7 @@
   {#if showMessage}
     <dialog
       open
-      class="hidden sidebar:block w-[500px] absolute bottom-[75px] start-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
+      class="hidden sidebar:block w-[500px] absolute bottom-[75px] start-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       onmouseover={() => (hoverMessage = true)}
       onmouseleave={() => (hoverMessage = false)}
