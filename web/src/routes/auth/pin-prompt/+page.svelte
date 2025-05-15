@@ -23,13 +23,15 @@
   let hasPinCode = $derived(data.hasPinCode);
   let pinCode = $state('');
 
-  const onPinFilled = async (code: string) => {
+  const onPinFilled = async (code: string, withDelay = false) => {
     try {
       await verifyPinCode({ pinCodeSetupDto: { pinCode: code } });
 
       isVerified = true;
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (withDelay) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
 
       goto(data.continuePath ?? AppRoute.LOCKED)
         .then(() => {})
@@ -58,18 +60,23 @@
             <Icon icon={mdiLockOutline} size="48" />
           </div>
         {/if}
-        <PincodeInput autofocus label="" bind:value={pinCode} tabindexStart={1} pinLength={6} onFilled={onPinFilled} />
+        <PincodeInput
+          autofocus
+          label=""
+          bind:value={pinCode}
+          tabindexStart={1}
+          pinLength={6}
+          onFilled={(pinCode) => onPinFilled(pinCode, true)}
+        />
       </div>
     </div>
   {:else}
     <div class="flex items-center justify-center">
-      <div
-        class="w-96 bg-subtle flex flex-col gap-6 items-center justify-center p-8 rounded-2xl border border-gray-200 dark:border-gray-600"
-      >
-        <p class="text-center text-sm" style="text-wrap: pretty;">
-          This is your first time accessing the locked folder. Create a PIN code to securely access this page
+      <div class="w-96 flex flex-col gap-6 items-center justify-center">
+        <p class="text-center text-sm mb-4" style="text-wrap: pretty;">
+          {$t('new_pin_code_subtitle')}
         </p>
-        <PinCodeCreateForm showLabel={false} onCreated={onPinFilled} />
+        <PinCodeCreateForm showLabel={false} onCreated={() => (hasPinCode = true)} />
       </div>
     </div>
   {/if}

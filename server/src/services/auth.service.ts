@@ -126,6 +126,10 @@ export class AuthService extends BaseService {
     this.resetPinChecks(user, dto);
 
     await this.userRepository.update(auth.user.id, { pinCode: null });
+    const sessions = await this.sessionRepository.getByUserId(auth.user.id);
+    for (const session of sessions) {
+      await this.sessionRepository.update(session.id, { pinExpiresAt: null });
+    }
   }
 
   async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
