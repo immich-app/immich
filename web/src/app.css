@@ -31,8 +31,9 @@
     --immich-ui-danger: 200 60 60;
     --immich-ui-warning: 216 143 64;
     --immich-ui-info: 8 111 230;
-    --immich-ui-default-border: 209 213 219;
     --immich-ui-gray: 246 246 246;
+
+    --immich-ui-default-border: 209 213 219;
   }
 
   .dark {
@@ -44,8 +45,9 @@
     --immich-ui-success: 72 237 152;
     --immich-ui-warning: 254 197 132;
     --immich-ui-info: 121 183 254;
-    --immich-ui-default-border: 55 65 81;
     --immich-ui-gray: 33 33 33;
+
+    --immich-ui-default-border: 55 65 81;
   }
 }
 

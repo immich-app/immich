@@ -19,7 +19,7 @@
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import UserSettings from '$lib/components/admin-page/settings/user-settings/user-settings.svelte';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { QueryParameter } from '$lib/constants';
@@ -241,7 +241,7 @@
 
 <input bind:this={inputElement} type="file" accept=".json" style="display: none" onchange={uploadConfig} />
 
-<UserPageLayout title={data.meta.title} admin>
+<AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={1}>
       <div class="hidden lg:block">
@@ -301,4 +301,4 @@
       </section>
     {/snippet}
   </AdminSettings>
-</UserPageLayout>
+</AdminPageLayout>

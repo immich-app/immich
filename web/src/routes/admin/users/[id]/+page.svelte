@@ -1,6 +1,6 @@
 <script lang="ts">
   import StatsCard from '$lib/components/admin-page/server-stats/stats-card.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import {
     notificationController,
     NotificationType,
@@ -166,7 +166,7 @@
   }
 </script>
 
-<UserPageLayout title={data.meta.title} admin>
+<AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={0}>
       {#if canResetPassword}
@@ -365,4 +365,4 @@
       </div>
     </Container>
   </div>
-</UserPageLayout>
+</AdminPageLayout>
