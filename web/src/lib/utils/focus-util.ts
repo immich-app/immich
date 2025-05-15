@@ -27,7 +27,7 @@ export const moveFocus = (
 
   // If no element is focused, focus the first matching element or the first focusable element
   if (currentIndex === -1) {
-    const firstMatchingElement = focusableElements.find(selector);
+    const firstMatchingElement = focusableElements.find((element) => selector(element));
     if (firstMatchingElement) {
       firstMatchingElement.focus();
     } else if (focusableElements[0]) {
