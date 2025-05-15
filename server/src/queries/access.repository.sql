@@ -199,6 +199,15 @@ where
   "partners"."sharedById" in ($1)
   and "partners"."sharedWithId" = $2
 
+-- AccessRepository.session.checkOwnerAccess
+select
+  "sessions"."id"
+from
+  "sessions"
+where
+  "sessions"."id" in ($1)
+  and "sessions"."userId" = $2
+
 -- AccessRepository.stack.checkOwnerAccess
 select
   "stacks"."id"

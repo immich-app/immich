@@ -2377,7 +2377,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PinCodeChangeDto"
+                "$ref": "#/components/schemas/PinCodeResetDto"
               }
             }
           },
@@ -2470,15 +2470,40 @@
         ]
       }
     },
-    "/auth/pin-code/verify": {
+    "/auth/session/lock": {
       "post": {
-        "operationId": "verifyPinCode",
+        "operationId": "lockAuthSession",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/session/unlock": {
+      "post": {
+        "operationId": "unlockAuthSession",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PinCodeSetupDto"
+                "$ref": "#/components/schemas/SessionUnlockDto"
               }
             }
           },
@@ -5663,6 +5688,41 @@
     "/sessions/{id}": {
       "delete": {
         "operationId": "deleteSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
+      }
+    },
+    "/sessions/{id}/lock": {
+      "post": {
+        "operationId": "lockSession",
         "parameters": [
           {
             "name": "id",
@@ -9327,6 +9387,9 @@
       },
       "AuthStatusResponseDto": {
         "properties": {
+          "expiresAt": {
+            "type": "string"
+          },
           "isElevated": {
             "type": "boolean"
           },
@@ -9335,6 +9398,9 @@
           },
           "pinCode": {
             "type": "boolean"
+          },
+          "pinExpiresAt": {
+            "type": "string"
           }
         },
         "required": [
@@ -11096,6 +11162,7 @@
           "session.read",
           "session.update",
           "session.delete",
+          "session.lock",
           "sharedLink.create",
           "sharedLink.read",
           "sharedLink.update",
@@ -11295,6 +11362,18 @@
         "required": [
           "newPinCode"
         ],
+        "type": "object"
+      },
+      "PinCodeResetDto": {
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "PinCodeSetupDto": {
@@ -12109,6 +12188,9 @@
           "deviceType": {
             "type": "string"
           },
+          "expiresAt": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -12144,6 +12226,9 @@
           "deviceType": {
             "type": "string"
           },
+          "expiresAt": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -12159,6 +12244,18 @@
           "id",
           "updatedAt"
         ],
+        "type": "object"
+      },
+      "SessionUnlockDto": {
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "SharedLinkCreateDto": {

@@ -20,20 +20,20 @@ export class SessionRepository {
       .where((eb) =>
         eb.or([
           eb('updatedAt', '<=', DateTime.now().minus({ days: 90 }).toJSDate()),
-          eb.and([eb('expiredAt', 'is not', null), eb('expiredAt', '<=', DateTime.now().toJSDate())]),
+          eb.and([eb('expiresAt', 'is not', null), eb('expiresAt', '<=', DateTime.now().toJSDate())]),
         ]),
       )
       .returning(['id', 'deviceOS', 'deviceType'])
       .execute();
   }
 
-  @GenerateSql({ params: [{ updatedBefore: DummyValue.DATE }] })
-  search(options: SessionSearchOptions) {
+  @GenerateSql({ params: [DummyValue.UUID] })
+  get(id: string) {
     return this.db
       .selectFrom('sessions')
-      .selectAll()
-      .where('sessions.updatedAt', '<=', options.updatedBefore)
-      .execute();
+      .select(['id', 'expiresAt', 'pinExpiresAt'])
+      .where('id', '=', id)
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
@@ -52,7 +52,7 @@ export class SessionRepository {
       ])
       .where('sessions.token', '=', token)
       .where((eb) =>
-        eb.or([eb('sessions.expiredAt', 'is', null), eb('sessions.expiredAt', '>', DateTime.now().toJSDate())]),
+        eb.or([eb('sessions.expiresAt', 'is', null), eb('sessions.expiresAt', '>', DateTime.now().toJSDate())]),
       )
       .executeTakeFirst();
   }
@@ -64,6 +64,9 @@ export class SessionRepository {
       .innerJoin('users', (join) => join.onRef('users.id', '=', 'sessions.userId').on('users.deletedAt', 'is', null))
       .selectAll('sessions')
       .where('sessions.userId', '=', userId)
+      .where((eb) =>
+        eb.or([eb('sessions.expiresAt', 'is', null), eb('sessions.expiresAt', '>', DateTime.now().toJSDate())]),
+      )
       .orderBy('sessions.updatedAt', 'desc')
       .orderBy('sessions.createdAt', 'desc')
       .execute();
@@ -85,5 +88,10 @@ export class SessionRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string) {
     await this.db.deleteFrom('sessions').where('id', '=', asUuid(id)).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async lockAll(userId: string) {
+    await this.db.updateTable('sessions').set({ pinExpiresAt: null }).where('userId', '=', userId).execute();
   }
 }

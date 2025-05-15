@@ -26,7 +26,7 @@ export class SessionTable {
   updatedAt!: Date;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  expiredAt!: Date | null;
+  expiresAt!: Date | null;
 
   @ForeignKeyColumn(() => UserTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   userId!: string;

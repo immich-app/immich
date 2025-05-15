@@ -85,6 +85,7 @@ class Permission {
   static const sessionPeriodRead = Permission._(r'session.read');
   static const sessionPeriodUpdate = Permission._(r'session.update');
   static const sessionPeriodDelete = Permission._(r'session.delete');
+  static const sessionPeriodLock = Permission._(r'session.lock');
   static const sharedLinkPeriodCreate = Permission._(r'sharedLink.create');
   static const sharedLinkPeriodRead = Permission._(r'sharedLink.read');
   static const sharedLinkPeriodUpdate = Permission._(r'sharedLink.update');
@@ -171,6 +172,7 @@ class Permission {
     sessionPeriodRead,
     sessionPeriodUpdate,
     sessionPeriodDelete,
+    sessionPeriodLock,
     sharedLinkPeriodCreate,
     sharedLinkPeriodRead,
     sharedLinkPeriodUpdate,
@@ -292,6 +294,7 @@ class PermissionTypeTransformer {
         case r'session.read': return Permission.sessionPeriodRead;
         case r'session.update': return Permission.sessionPeriodUpdate;
         case r'session.delete': return Permission.sessionPeriodDelete;
+        case r'session.lock': return Permission.sessionPeriodLock;
         case r'sharedLink.create': return Permission.sharedLinkPeriodCreate;
         case r'sharedLink.read': return Permission.sharedLinkPeriodRead;
         case r'sharedLink.update': return Permission.sharedLinkPeriodUpdate;

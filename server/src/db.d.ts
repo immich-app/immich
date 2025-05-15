@@ -344,7 +344,7 @@ export interface Sessions {
   deviceType: Generated<string>;
   id: Generated<string>;
   parentId: string | null;
-  expiredAt: Date | null;
+  expiresAt: Date | null;
   token: string;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
