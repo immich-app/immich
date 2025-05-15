@@ -1,13 +1,13 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiClose, mdiTag } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import Button from '../elements/buttons/button.svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import Combobox, { type ComboBoxOption } from '../shared-components/combobox.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import { onMount } from 'svelte';
-  import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     onTag: (tagIds: string[]) => void;
@@ -93,7 +93,7 @@
   </section>
 
   {#snippet stickyBottom()}
-    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
-    <Button type="submit" fullwidth form="create-tag-form" {disabled}>{$t('tag_assets')}</Button>
+    <Button shape="round" fullWidth color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
+    <Button type="submit" shape="round" fullWidth form="create-tag-form" {disabled}>{$t('tag_assets')}</Button>
   {/snippet}
 </FullScreenModal>
