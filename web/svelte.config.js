@@ -7,8 +7,6 @@ dotenv.config();
 process.env.PUBLIC_IMMICH_BUY_HOST = process.env.PUBLIC_IMMICH_BUY_HOST || 'https://buy.immich.app';
 process.env.PUBLIC_IMMICH_PAY_HOST = process.env.PUBLIC_IMMICH_PAY_HOST || 'https://pay.futo.org';
 
-process.env.PUBLIC_IMMICH_CAST_APPLICATION_ID = process.env.PUBLIC_IMMICH_CAST_APPLICATION_ID || 'com.immich.cast';
-
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   compilerOptions: {

@@ -65,7 +65,7 @@ export class GCastDestination implements CastDestination {
       this.remotePlayer = new cast.framework.RemotePlayer();
 
       castContext.setOptions({
-        receiverApplicationId: PUBLIC_IMMICH_CAST_APPLICATION_ID,
+        receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
         autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
       });
 
