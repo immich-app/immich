@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
@@ -261,7 +261,6 @@ export class PersonRepository {
       .innerJoin('asset_faces', 'asset_faces.id', 'person.faceAssetId')
       .innerJoin('assets', 'asset_faces.assetId', 'assets.id')
       .leftJoin('exif', 'exif.assetId', 'assets.id')
-      .leftJoin('asset_files', 'asset_files.assetId', 'assets.id')
       .select([
         'person.ownerId',
         'asset_faces.boundingBoxX1 as x1',
@@ -272,13 +271,18 @@ export class PersonRepository {
         'asset_faces.imageHeight as oldHeight',
         'assets.type',
         'assets.originalPath',
-        'asset_files.path as previewPath',
         'exif.orientation as exifOrientation',
       ])
+      .select((eb) =>
+        eb
+          .selectFrom('asset_files')
+          .select('asset_files.path')
+          .whereRef('asset_files.assetId', '=', 'assets.id')
+          .where('asset_files.type', '=', sql.lit(AssetFileType.PREVIEW))
+          .as('previewPath'),
+      )
       .where('person.id', '=', id)
       .where('asset_faces.deletedAt', 'is', null)
-      .where('asset_files.type', '=', AssetFileType.PREVIEW)
-      .$narrowType<{ exifImageWidth: NotNull; exifImageHeight: NotNull }>()
       .executeTakeFirst();
   }
 
