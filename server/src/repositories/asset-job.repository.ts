@@ -140,8 +140,7 @@ export class AssetJobRepository {
       .selectFrom('assets')
       .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .where('assets.deletedAt', 'is', null)
-      .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-      .where('job_status.previewAt', 'is not', null);
+      .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id');
   }
 
   @GenerateSql({ params: [], stream: true })
@@ -335,8 +334,13 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [], stream: true })
   streamForDetectFacesJob(force?: boolean) {
-    return this.assetsWithPreviews()
-      .$if(!force, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
+    return this.db
+      .selectFrom('assets')
+      .$if(!force, (qb) =>
+        qb.where((eb) =>
+          eb.not(eb.exists(eb.selectFrom('asset_faces').whereRef('asset_faces.assetId', '=', 'assets.id'))),
+        ),
+      )
       .select(['assets.id'])
       .orderBy('assets.createdAt', 'desc')
       .stream();
