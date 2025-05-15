@@ -4,7 +4,6 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { castManager, CastState } from '$lib/managers/cast-manager.svelte';
   import { mdiCastConnected, mdiPause, mdiPlay } from '@mdi/js';
-  import { on } from 'svelte/events';
 
   interface Props {
     poster: string;

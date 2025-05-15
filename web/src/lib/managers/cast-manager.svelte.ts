@@ -1,6 +1,5 @@
 import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 import { createSession, type SessionCreateResponseDto } from '@immich/sdk';
-import type { initial } from 'lodash-es';
 
 // follows chrome.cast.media.PlayerState
 export enum CastState {
