@@ -531,7 +531,7 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql()
+  @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     return (
       this.db
