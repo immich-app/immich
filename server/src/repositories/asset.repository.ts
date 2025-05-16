@@ -593,7 +593,7 @@ export class AssetRepository {
             'assets.duration',
             'assets.id',
             'assets.visibility',
-            sql`assets."isFavorite"`.as('isFavorite'),
+            'assets.isFavorite',
             sql`assets.type = 'IMAGE'`.as('isImage'),
             sql`assets."deletedAt" is null`.as('isTrashed'),
             'assets.livePhotoVideoId',

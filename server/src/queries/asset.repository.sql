@@ -238,7 +238,7 @@ with
       "assets"."duration",
       "assets"."id",
       "assets"."visibility",
-      assets."isFavorite" as "isFavorite",
+      "assets"."isFavorite",
       assets.type = 'IMAGE' as "isImage",
       assets."deletedAt" is null as "isTrashed",
       "assets"."livePhotoVideoId",
