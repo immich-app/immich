@@ -97,8 +97,8 @@ class ExifInfo {
 class ExifEntity extends Table with DriftDefaultsMixin {
   const ExifEntity();
 
-  BlobColumn get assetId => blob()
-      .references(RemoteAssetEntity, #remoteId, onDelete: KeyAction.cascade)();
+  BlobColumn get assetId =>
+      blob().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
 
   TextColumn get city => text().nullable()();
 

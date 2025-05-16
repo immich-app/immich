@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 class LocalAlbumEntity extends Table with DriftDefaultsMixin {
@@ -10,10 +9,10 @@ class LocalAlbumEntity extends Table with DriftDefaultsMixin {
   TextColumn get id => text()();
   TextColumn get name => text()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  TextColumn get thumbnailId => text()
-      .nullable()
-      .references(LocalAssetEntity, #localId, onDelete: KeyAction.setNull)();
   IntColumn get backupSelection => intEnum<BackupSelection>()();
+
+  // Used for mark & sweep
+  BoolColumn get marker_ => boolean().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -26,7 +25,6 @@ extension LocalAlbumEntityX on LocalAlbumEntityData {
       name: name,
       updatedAt: updatedAt,
       assetCount: assetCount,
-      thumbnailId: thumbnailId,
       backupSelection: backupSelection,
     );
   }

@@ -11,24 +11,20 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
   const AlbumMediaRepository({Platform platform = const LocalPlatform()})
       : _platform = platform;
 
-  PMFilter _getAlbumFilter({
-    withAssetTitle = false,
-    withModifiedTime = false,
-    DateTimeFilter? updateTimeCond,
-  }) =>
+  PMFilter _getAlbumFilter({DateTimeFilter? updateTimeCond}) =>
       FilterOptionGroup(
-        imageOption: FilterOption(
+        imageOption: const FilterOption(
           // needTitle is expected to be slow on iOS but is required to fetch the asset title
-          needTitle: withAssetTitle,
-          sizeConstraint: const SizeConstraint(ignoreSize: true),
+          needTitle: true,
+          sizeConstraint: SizeConstraint(ignoreSize: true),
         ),
-        videoOption: FilterOption(
-          needTitle: withAssetTitle,
-          sizeConstraint: const SizeConstraint(ignoreSize: true),
-          durationConstraint: const DurationConstraint(allowNullable: true),
+        videoOption: const FilterOption(
+          needTitle: true,
+          sizeConstraint: SizeConstraint(ignoreSize: true),
+          durationConstraint: DurationConstraint(allowNullable: true),
         ),
         // This is needed to get the modified time of the album
-        containsPathModified: withModifiedTime,
+        containsPathModified: true,
         createTimeCond: DateTimeCond.def().copyWith(ignore: true),
         updateTimeCond: updateTimeCond == null
             ? DateTimeCond.def().copyWith(ignore: true)
@@ -40,17 +36,15 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
       );
 
   @override
-  Future<List<LocalAlbum>> getAll() {
-    final filter = AdvancedCustomFilter(
-      orderBy: [OrderByItem.asc(CustomColumns.base.id)],
-    );
-
-    return PhotoManager.getAssetPathList(hasAll: true, filterOption: filter)
-        .then((e) {
+  Future<List<LocalAlbum>> getAll({bool withModifiedTime = false}) {
+    return PhotoManager.getAssetPathList(
+      hasAll: true,
+      filterOption: _getAlbumFilter(),
+    ).then((e) {
       if (_platform.isAndroid) {
         e.removeWhere((a) => a.isAll);
       }
-      return e.toDtoList();
+      return Future.wait(e.map((a) => a.toDto()));
     });
   }
 
@@ -61,10 +55,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
   }) async {
     final assetPathEntity = await AssetPathEntity.obtainPathFromProperties(
       id: albumId,
-      optionGroup: _getAlbumFilter(
-        withAssetTitle: true,
-        updateTimeCond: updateTimeCond,
-      ),
+      optionGroup: _getAlbumFilter(updateTimeCond: updateTimeCond),
     );
     final assets = <AssetEntity>[];
     int pageNumber = 0, lastPageCount = 0;
@@ -77,19 +68,8 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
       lastPageCount = page.length;
       pageNumber++;
     } while (lastPageCount == kFetchLocalAssetsBatchSize);
-    return assets.toDtoList();
+    return Future.wait(assets.map((a) => a.toDto()));
   }
-
-  @override
-  Future<LocalAlbum> refresh(
-    String albumId, {
-    bool withModifiedTime = true,
-    bool withAssetCount = true,
-  }) =>
-      AssetPathEntity.obtainPathFromProperties(
-        id: albumId,
-        optionGroup: _getAlbumFilter(withModifiedTime: withModifiedTime),
-      ).then((a) => a.toDto(withAssetCount: withAssetCount));
 }
 
 extension on AssetEntity {
@@ -110,11 +90,6 @@ extension on AssetEntity {
       );
 }
 
-extension on List<AssetEntity> {
-  Future<List<asset.LocalAsset>> toDtoList() =>
-      Future.wait(map((a) => a.toDto()));
-}
-
 extension on AssetPathEntity {
   Future<LocalAlbum> toDto({bool withAssetCount = true}) async => LocalAlbum(
         id: id,
@@ -124,9 +99,4 @@ extension on AssetPathEntity {
         assetCount: withAssetCount ? await assetCountAsync : 0,
         backupSelection: BackupSelection.none,
       );
-}
-
-extension on List<AssetPathEntity> {
-  Future<List<LocalAlbum>> toDtoList({bool withAssetCount = true}) =>
-      Future.wait(map((a) => a.toDto(withAssetCount: withAssetCount)));
 }

@@ -2,17 +2,11 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 
 abstract interface class IAlbumMediaRepository {
-  Future<List<LocalAlbum>> getAll();
+  Future<List<LocalAlbum>> getAll({bool withModifiedTime = false});
 
   Future<List<LocalAsset>> getAssetsForAlbum(
     String albumId, {
     DateTimeFilter? updateTimeCond,
-  });
-
-  Future<LocalAlbum> refresh(
-    String albumId, {
-    bool withModifiedTime = true,
-    bool withAssetCount = true,
   });
 }
 

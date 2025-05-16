@@ -1,20 +1,51 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
-  _Features(
+  _Feature(
     name: 'Sync Local',
     icon: Icons.photo_album_rounded,
-    onTap: (ref) => ref.read(backgroundSyncProvider).syncLocal(),
+    onTap: (_, ref) => ref.read(backgroundSyncProvider).syncLocal(),
   ),
-  _Features(
+  _Feature(
     name: 'Sync Remote',
     icon: Icons.refresh_rounded,
-    onTap: (ref) => ref.read(backgroundSyncProvider).syncRemote(),
+    onTap: (_, ref) => ref.read(backgroundSyncProvider).syncRemote(),
+  ),
+  _Feature(
+    name: 'WAL Checkpoint',
+    icon: Icons.save_rounded,
+    onTap: (_, ref) => ref
+        .read(driftProvider)
+        .customStatement("pragma wal_checkpoint(truncate)"),
+  ),
+  _Feature(
+    name: 'Clear Delta Checkpoint',
+    icon: Icons.delete_rounded,
+    onTap: (_, ref) => ref.read(hostApiProvider).clearSyncCheckpoint(),
+  ),
+  _Feature(
+    name: 'Clear Local Data',
+    icon: Icons.delete_forever_rounded,
+    onTap: (_, ref) async {
+      final db = ref.read(driftProvider);
+      await db.localAssetEntity.deleteAll();
+      await db.localAlbumEntity.deleteAll();
+      await db.localAlbumAssetEntity.deleteAll();
+    },
+  ),
+  _Feature(
+    name: 'Local Media Summary',
+    icon: Icons.table_chart_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const LocalMediaSummaryRoute()),
   ),
 ];
 
@@ -36,7 +67,7 @@ class FeatInDevPage extends StatelessWidget {
             builder: (ctx, ref, _) => ListTile(
               title: Text(feat.name),
               trailing: Icon(feat.icon),
-              onTap: () => unawaited(feat.onTap(ref)),
+              onTap: () => unawaited(feat.onTap(ctx, ref)),
             ),
           );
         },
@@ -46,8 +77,8 @@ class FeatInDevPage extends StatelessWidget {
   }
 }
 
-class _Features {
-  const _Features({
+class _Feature {
+  const _Feature({
     required this.name,
     required this.icon,
     required this.onTap,
@@ -55,5 +86,5 @@ class _Features {
 
   final String name;
   final IconData icon;
-  final Future<void> Function(WidgetRef _) onTap;
+  final Future<void> Function(BuildContext, WidgetRef _) onTap;
 }

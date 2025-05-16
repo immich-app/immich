@@ -8,7 +8,7 @@ class RemoteAssetEntity extends Table
     with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();
 
-  BlobColumn get remoteId => blob()();
+  BlobColumn get id => blob()();
 
   TextColumn get checksum => text().unique()();
 
@@ -24,5 +24,5 @@ class RemoteAssetEntity extends Table
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
   @override
-  Set<Column> get primaryKey => {remoteId};
+  Set<Column> get primaryKey => {id};
 }
