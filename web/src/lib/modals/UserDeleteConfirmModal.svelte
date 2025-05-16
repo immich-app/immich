@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Checkbox from '$lib/components/elements/checkbox.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteUserAdmin, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { Checkbox, Label } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -66,16 +66,14 @@
         </p>
       {/if}
 
-      <div class="flex justify-center m-4 gap-2">
+      <div class="flex justify-center items-center gap-2">
         <Checkbox
           id="queue-user-deletion-checkbox"
-          label={$t('admin.user_delete_immediately_checkbox')}
-          labelClass="text-sm dark:text-immich-dark-fg"
+          color="secondary"
           bind:checked={forceDelete}
-          onchange={() => {
-            deleteButtonDisabled = forceDelete;
-          }}
+          onCheckedChange={() => (deleteButtonDisabled = forceDelete)}
         />
+        <Label label={$t('admin.user_delete_immediately_checkbox')} for="queue-user-deletion-checkbox" />
       </div>
 
       {#if forceDelete}
