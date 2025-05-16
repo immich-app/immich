@@ -134,11 +134,6 @@ export interface DuplicateGroup {
   assets: MapAsset[];
 }
 
-export interface DuplicateGroupInfo {
-  duplicateId: string;
-  exampleAsset: AssetEntity;
-}
-
 export interface DayOfYearAssets {
   yearsAgo: number;
   assets: MapAsset[];
@@ -691,7 +686,7 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getDuplicatesInfo(userId: string): Promise<DuplicateGroupInfo[]> {
+  getDuplicatesInfo(userId: string) {
     return this.db
       .with('duplicates', (qb) =>
         qb
@@ -708,11 +703,11 @@ export class AssetRepository {
           )
           .select('assets.duplicateId')
           .select((eb) => eb.fn('jsonb_agg', [eb.table('asset')]).as('assets'))
-          .select((eb) => sql<any>`(${eb.fn('jsonb_agg', [eb.table('asset')])}->>0)::jsonb`.as('exampleAsset'))
+          .select((eb) => sql<MapAsset>`(${eb.fn('jsonb_agg', [eb.table('asset')])}->>0)::jsonb`.as('exampleAsset'))
           .where('assets.ownerId', '=', asUuid(userId))
           .where('assets.duplicateId', 'is not', null)
           .where('assets.deletedAt', 'is', null)
-          .where('assets.isVisible', '=', true)
+          .where('visibility', '!=', AssetVisibility.HIDDEN)
           .groupBy('assets.duplicateId'),
       )
       .with('unique', (qb) =>
@@ -733,11 +728,11 @@ export class AssetRepository {
       .where(({ not, exists }) =>
         not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
       )
-      .execute() as any as Promise<DuplicateGroupInfo[]>;
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getDuplicateById(userId: string, duplicateId: string): Promise<DuplicateGroup | undefined> {
+  getDuplicateById(userId: string, duplicateId: string) {
     return this.db
       .with('duplicates', (qb) =>
         qb
@@ -757,7 +752,7 @@ export class AssetRepository {
           .where('assets.ownerId', '=', asUuid(userId))
           .where('assets.duplicateId', 'is not', null)
           .where('assets.deletedAt', 'is', null)
-          .where('assets.isVisible', '=', true)
+          .where('visibility', '!=', AssetVisibility.HIDDEN)
           .groupBy('assets.duplicateId'),
       )
       .with('unique', (qb) =>
@@ -780,7 +775,7 @@ export class AssetRepository {
         not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
       )
       .limit(1)
-      .executeTakeFirst() as any as Promise<DuplicateGroup | undefined>;
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
