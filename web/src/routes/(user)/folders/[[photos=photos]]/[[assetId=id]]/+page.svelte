@@ -49,15 +49,15 @@
 
   const assetInteraction = new AssetInteraction();
 
-  onMount(async () => {
+  onMount(async function initializeFolders() {
     await foldersStore.fetchUniquePaths();
   });
 
-  const handleNavigation = async (folderName: string) => {
+  const handleNavigateToFolder = async function handleNavigateToFolder(folderName: string) {
     await navigateToView(normalizeTreePath(`${data.path || ''}/${folderName}`));
   };
 
-  const getLink = (path: string) => {
+  const getLinkForPath = function getLinkForPath(path: string) {
     const url = new URL(AppRoute.FOLDERS, globalThis.location.href);
     if (path) {
       url.searchParams.set(QueryParameter.PATH, path);
@@ -65,25 +65,27 @@
     return url.href;
   };
 
-  afterNavigate(() => {
+  afterNavigate(function clearAssetSelection() {
     // Clear the asset selection when we navigate (like going to another folder)
     cancelMultiselect(assetInteraction);
   });
 
-  const navigateToView = (path: string) => goto(getLink(path));
+  const navigateToView = function navigateToView(path: string) {
+    return goto(getLinkForPath(path));
+  };
 
-  const triggerAssetUpdate = async () => {
+  const triggerAssetUpdate = async function updateAssets() {
     cancelMultiselect(assetInteraction);
     await foldersStore.refreshAssetsByPath(data.path);
     await invalidateAll();
   };
 
-  const handleSelectAll = () => {
+  const handleSelectAllAssets = function handleSelectAllAssets() {
     if (!data.pathAssets) {
       return;
     }
 
-    assetInteraction.selectAssets(data.pathAssets.map((a) => toTimelineAsset(a)));
+    assetInteraction.selectAssets(data.pathAssets.map((asset) => toTimelineAsset(asset)));
   };
 </script>
 
@@ -94,14 +96,14 @@
       clearSelect={() => cancelMultiselect(assetInteraction)}
     >
       <CreateSharedLink />
-      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAllAssets} />
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
       </ButtonContextMenu>
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
-        onFavorite={(ids, isFavorite) => {
+        onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
           if (data.pathAssets && data.pathAssets.length > 0) {
             for (const id of ids) {
               const asset = data.pathAssets.find((asset) => asset.id === id);
@@ -140,17 +142,17 @@
             icons={{ default: mdiFolderOutline, active: mdiFolder }}
             items={tree}
             active={currentPath}
-            {getLink}
+            getLink={getLinkForPath}
           />
         </div>
       </section>
     </Sidebar>
   {/snippet}
 
-  <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />
+  <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 
   <section class="mt-2 h-[calc(100%-theme(spacing.20))] overflow-auto immich-scrollbar">
-    <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigation} />
+    <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigateToFolder} />
 
     <!-- Assets -->
     {#if data.pathAssets && data.pathAssets.length > 0}
