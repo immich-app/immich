@@ -567,6 +567,7 @@ export enum DatabaseLock {
   Library = 1337,
   GetSystemConfig = 69,
   BackupDatabase = 42,
+  MemoryCreation = 777,
 }
 
 export enum SyncRequestType {
