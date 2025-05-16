@@ -142,7 +142,7 @@ export class SyncService extends BaseService {
                 updateId,
                 data: {
                   ...data,
-                  checksum: hexOrBufferToBase64(checksum)!,
+                  checksum: hexOrBufferToBase64(checksum),
                   thumbhash: thumbhash ? hexOrBufferToBase64(thumbhash) : null,
                 },
               }),
@@ -172,7 +172,7 @@ export class SyncService extends BaseService {
                 updateId,
                 data: {
                   ...data,
-                  checksum: hexOrBufferToBase64(checksum)!,
+                  checksum: hexOrBufferToBase64(checksum),
                   thumbhash: thumbhash ? hexOrBufferToBase64(thumbhash) : null,
                 },
               }),
