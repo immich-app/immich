@@ -24,21 +24,18 @@ FROM builder-cpu AS builder-rknn
 # TODO: find a way to reduce the image size
 FROM rocm/dev-ubuntu-22.04:6.3.4-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS builder-rocm
 
-# renovate: datasource=github-releases depName=Kitware/CMake
-ARG CMAKE_VERSION="v3.30.1"
 # renovate: datasource=github-releases depName=Microsoft/onnxruntime
 ARG ONNXRUNTIME_VERSION="v1.20.1"
-
 WORKDIR /code
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
-RUN wget -nv https://github.com/Kitware/CMake/releases/download/${CMAKE_VERSION}/cmake-${CMAKE_VERSION#v}-linux-x86_64.sh && \
-    chmod +x cmake-${CMAKE_VERSION#v}-linux-x86_64.sh && \
-    mkdir -p /code/cmake-${CMAKE_VERSION#v}-linux-x86_64 && \
-    ./cmake-${CMAKE_VERSION#v}-linux-x86_64.sh --skip-license --prefix=/code/cmake-${CMAKE_VERSION#v}-linux-x86_64 && \
-    rm cmake-${CMAKE_VERSION#v}-linux-x86_64.sh
+RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.30.1-linux-x86_64.sh && \
+    chmod +x cmake-3.30.1-linux-x86_64.sh && \
+    mkdir -p /code/cmake-3.30.1-linux-x86_64 && \
+    ./cmake-3.30.1-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.30.1-linux-x86_64 && \
+    rm cmake-3.30.1-linux-x86_64.sh
 
-ENV PATH=/code/cmake-${CMAKE_VERSION#v}-linux-x86_64/bin:${PATH}
+ENV PATH=/code/cmake-3.30.1-linux-x86_64/bin:${PATH}
 
 RUN git clone --single-branch --branch "${ONNXRUNTIME_VERSION}" --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
