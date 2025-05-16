@@ -81,7 +81,7 @@
   };
 </script>
 
-<Modal title={$t('create_new_user')} {onClose} size="small" class="text-dark bg-light">
+<Modal title={$t('create_new_user')} {onClose} size="small">
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="create-new-user-form">
       {#if error}
