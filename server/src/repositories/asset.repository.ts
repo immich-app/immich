@@ -649,10 +649,7 @@ export class AssetRepository {
             )
             .select('assets.duplicateId')
             .select((eb) =>
-              eb
-                .fn('jsonb_agg', [eb.table('asset')])
-                .$castTo<MapAsset[]>()
-                .as('assets'),
+              eb.fn.jsonAgg('asset').orderBy('assets.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
             )
             .where('assets.ownerId', '=', asUuid(userId))
             .where('assets.duplicateId', 'is not', null)
@@ -666,7 +663,7 @@ export class AssetRepository {
           qb
             .selectFrom('duplicates')
             .select('duplicateId')
-            .where((eb) => eb(eb.fn('jsonb_array_length', ['assets']), '=', 1)),
+            .where((eb) => eb(eb.fn('json_array_length', ['assets']), '=', 1)),
         )
         .with('removed_unique', (qb) =>
           qb
@@ -677,7 +674,7 @@ export class AssetRepository {
         )
         .selectFrom('duplicates')
         .selectAll()
-        // TODO: compare with filtering by jsonb_array_length > 1
+        // TODO: compare with filtering by json_array_length > 1
         .where(({ not, exists }) =>
           not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
         )
