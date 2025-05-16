@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 import 'package:immich_mobile/services/api.service.dart';
@@ -17,39 +19,50 @@ class LockedGuard extends AutoRouteGuard {
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     final LocalAuthentication localAuth = LocalAuthentication();
     final authStatus = await _apiService.authenticationApi.getAuthStatus();
+    final storage = const FlutterSecureStorage();
 
     if (authStatus == null) {
       resolver.next(false);
       return;
     }
 
-    router.push(PinCodeRoute(createPinCode: true));
+    if (!authStatus.pinCode) {
+      router.push(PinCodeRoute(createPinCode: true));
+    }
 
-    // if (!authStatus.pinCode) {
-    //   router.push(PinCodeRoute(createPinCode: true));
-    // }
+    if (authStatus.isElevated) {
+      resolver.next(true);
+      return;
+    }
 
-    // try {
-    //   final bool didAuthenticate = await localAuth.authenticate(
-    //     localizedReason: 'Please authenticate to access the page',
-    //     options: const AuthenticationOptions(),
-    //   );
+    final securePinCode = await storage.read(key: kSecuredPinCode);
+    if (securePinCode == null) {
+      router.push(PinCodeRoute());
+      return;
+    }
 
-    //   if (didAuthenticate) {
-    //     resolver.next(true);
-    //   }
-    // } on PlatformException catch (error) {
-    //   switch (error.code) {
-    //     case auth_error.notAvailable:
-    //       print("notAvailable: $error");
-    //       break;
-    //     case auth_error.notEnrolled:
-    //       print("not enrolled");
-    //       break;
-    //     default:
-    //       print("error");
-    //       break;
-    //   }
-    // }
+    try {
+      final bool didAuthenticate = await localAuth.authenticate(
+        localizedReason: 'Please authenticate to access the locked page',
+        options: const AuthenticationOptions(),
+      );
+
+      if (!didAuthenticate) {
+        resolver.next(false);
+        return;
+      }
+    } on PlatformException catch (error) {
+      switch (error.code) {
+        case auth_error.notAvailable:
+          _log.severe("notAvailable: $error");
+          break;
+        case auth_error.notEnrolled:
+          _log.severe("not enrolled");
+          break;
+        default:
+          _log.severe("error");
+          break;
+      }
+    }
   }
 }

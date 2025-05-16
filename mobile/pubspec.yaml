@@ -66,7 +66,7 @@ dependencies:
   worker_manager: ^7.2.3
   local_auth: ^2.3.0
   pinput: ^5.0.1
-  # flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^9.2.4
 
   native_video_player:
     git:

@@ -54,16 +54,16 @@ ThemeData getThemeData({
     ),
     textTheme: const TextTheme(
       displayLarge: TextStyle(
-        fontSize: 26,
-        fontWeight: FontWeight.bold,
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
       ),
       displayMedium: TextStyle(
         fontSize: 14,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
       displaySmall: TextStyle(
         fontSize: 12,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
       titleSmall: TextStyle(
         fontSize: 16.0,

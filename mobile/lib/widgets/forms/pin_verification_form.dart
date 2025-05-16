@@ -1,16 +1,23 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:pinput/pinput.dart';
 
 class PinVerificationForm extends HookConsumerWidget {
-  final Function(String) onCompleted;
+  final Function() onSuccess;
 
-  const PinVerificationForm({super.key, required this.onCompleted});
+  const PinVerificationForm({
+    super.key,
+    required this.onSuccess,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hasError = useState(false);
+
     final defaultPinTheme = PinTheme(
       width: 60,
       height: 64,
@@ -21,7 +28,16 @@ class PinVerificationForm extends HookConsumerWidget {
       ),
     );
 
-    pinCodeValidator(String? pinCode) {}
+    verifyPin(String pinCode) async {
+      final isVerified =
+          await ref.read(authProvider.notifier).verifyPinCode(pinCode);
+
+      if (isVerified) {
+        onSuccess();
+      } else {
+        hasError.value = true;
+      }
+    }
 
     return Form(
       child: Column(
@@ -29,7 +45,9 @@ class PinVerificationForm extends HookConsumerWidget {
           Icon(
             Icons.lock,
             size: 64,
-            color: context.colorScheme.onSurface.withAlpha(100),
+            color: hasError.value
+                ? Colors.red[400]
+                : context.colorScheme.onSurface.withAlpha(100),
           ),
           const SizedBox(height: 54),
           SizedBox(
@@ -44,6 +62,9 @@ class PinVerificationForm extends HookConsumerWidget {
           ),
           const SizedBox(height: 16),
           Pinput(
+            forceErrorState: hasError.value,
+            errorText: hasError.value ? 'wrong_pin_code'.tr() : null,
+            autofocus: true,
             obscureText: true,
             obscuringWidget: Icon(
               Icons.vpn_key_rounded,
@@ -75,10 +96,14 @@ class PinVerificationForm extends HookConsumerWidget {
                 color: context.colorScheme.surfaceContainerHigh,
               ),
             ),
-            validator: pinCodeValidator,
             pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
             length: 6,
-            onCompleted: (pin) => onCompleted.call(pin),
+            onChanged: (pinCode) {
+              if (pinCode.length < 6) {
+                hasError.value = false;
+              }
+            },
+            onCompleted: verifyPin,
           ),
         ],
       ),
