@@ -1,4 +1,3 @@
-import { PUBLIC_IMMICH_CAST_APPLICATION_ID } from '$env/static/public';
 import { CastDestinationType, CastState, type CastDestination } from '$lib/managers/cast-manager.svelte';
 import 'chromecast-caf-sender';
 import { Duration } from 'luxon';
