@@ -6,10 +6,8 @@
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
-  import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
@@ -37,6 +35,7 @@
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
+  import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -67,6 +66,7 @@
     updateAlbumInfo,
     type AlbumUserAddDto,
   } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCogOutline,
@@ -441,6 +441,14 @@
       await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
     }
   };
+
+  const handleEditUsers = async () => {
+    const changed = await modalManager.show(AlbumUsersModal, { album });
+
+    if (changed) {
+      album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    }
+  };
 </script>
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
@@ -544,7 +552,7 @@
             {/if}
 
             {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
-              <Button size="sm" rounded="lg" disabled={album.assetCount === 0} onclick={handleShare}>
+              <Button size="small" disabled={album.assetCount === 0} onclick={handleShare}>
                 {$t('share')}
               </Button>
             {/if}
@@ -572,7 +580,7 @@
             >
               {$t('select_from_computer')}
             </button>
-            <Button size="sm" rounded="lg" disabled={!timelineInteraction.selectionActive} onclick={handleAddAssets}
+            <Button size="small" disabled={!timelineInteraction.selectionActive} onclick={handleAddAssets}
               >{$t('done')}</Button
             >
           {/snippet}
@@ -588,9 +596,7 @@
       {/if}
     {/if}
 
-    <main
-      class="relative h-dvh overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
-    >
+    <main class="relative h-dvh overflow-hidden px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]">
       <AssetGrid
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
@@ -633,13 +639,13 @@
                   {/if}
 
                   <!-- owner -->
-                  <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
+                  <button type="button" onclick={handleEditUsers}>
                     <UserAvatar user={album.owner} size="md" />
                   </button>
 
                   <!-- users with write access (collaborators) -->
                   {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                    <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
+                    <button type="button" onclick={handleEditUsers}>
                       <UserAvatar {user} size="md" />
                     </button>
                   {/each}
@@ -651,7 +657,7 @@
                       color="gray"
                       size="20"
                       icon={mdiDotsVertical}
-                      onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}
+                      onclick={handleEditUsers}
                     />
                   {/if}
 
@@ -678,7 +684,7 @@
                 <button
                   type="button"
                   onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
-                  class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                  class="mt-5 bg-subtle flex w-full place-items-center gap-6 rounded-md border px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                 >
                   <span class="text-text-immich-primary dark:text-immich-dark-primary"
                     ><Icon path={mdiPlus} size="24" />
@@ -709,7 +715,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
+        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
         translate="yes"
       >
         <ActivityViewer
@@ -723,15 +729,6 @@
     </div>
   {/if}
 </div>
-
-{#if viewMode === AlbumPageViewMode.VIEW_USERS}
-  <ShareInfoModal
-    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
-    {album}
-    onRemove={(userId) => handleRemoveUser(userId, AlbumPageViewMode.VIEW_USERS)}
-    onRefreshAlbum={refreshAlbum}
-  />
-{/if}
 
 {#if viewMode === AlbumPageViewMode.OPTIONS && $user}
   <AlbumOptions

@@ -1,10 +1,10 @@
 <script lang="ts">
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { websocketStore } from '$lib/stores/websocket';
   import type { ServerVersionResponseDto } from '@immich/sdk';
-  import Button from '../elements/buttons/button.svelte';
-  import FullScreenModal from './full-screen-modal.svelte';
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import FullScreenModal from './full-screen-modal.svelte';
 
   let showModal = $state(false);
 
@@ -65,7 +65,7 @@
     </div>
 
     {#snippet stickyBottom()}
-      <Button fullwidth onclick={onAcknowledge}>{$t('acknowledge')}</Button>
+      <Button fullWidth shape="round" onclick={onAcknowledge}>{$t('acknowledge')}</Button>
     {/snippet}
   </FullScreenModal>
 {/if}

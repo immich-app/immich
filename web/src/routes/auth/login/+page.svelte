@@ -26,7 +26,8 @@
   let oauthLoading = $state(true);
 
   const onSuccess = async (user: LoginResponseDto) => {
-    await goto(AppRoute.PHOTOS, { invalidateAll: true });
+    console.log(data.continueUrl);
+    await goto(data.continueUrl, { invalidateAll: true });
     eventManager.emit('auth.login', user);
   };
 

@@ -346,6 +346,15 @@
         "operationId": "searchUsersAdmin",
         "parameters": [
           {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "withDeleted",
             "required": false,
             "in": "query",
@@ -679,6 +688,72 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      }
+    },
+    "/admin/users/{id}/statistics": {
+      "get": {
+        "operationId": "getUserStatisticsAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetStatsResponseDto"
                 }
               }
             },
@@ -2302,7 +2377,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PinCodeChangeDto"
+                "$ref": "#/components/schemas/PinCodeResetDto"
               }
             }
           },
@@ -2369,6 +2444,66 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PinCodeChangeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/session/lock": {
+      "post": {
+        "operationId": "lockAuthSession",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/session/unlock": {
+      "post": {
+        "operationId": "unlockAuthSession",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionUnlockDto"
               }
             }
           },
@@ -5508,11 +5643,86 @@
         "tags": [
           "Sessions"
         ]
+      },
+      "post": {
+        "operationId": "createSession",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
       }
     },
     "/sessions/{id}": {
       "delete": {
         "operationId": "deleteSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
+      }
+    },
+    "/sessions/{id}/lock": {
+      "post": {
+        "operationId": "lockSession",
         "parameters": [
           {
             "name": "id",
@@ -9075,6 +9285,15 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "visibility": {
+            "enum": [
+              "archive",
+              "timeline",
+              "hidden",
+              "locked"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -9096,7 +9315,8 @@
           "ownerId",
           "thumbhash",
           "type",
-          "updatedAt"
+          "updatedAt",
+          "visibility"
         ],
         "type": "object"
       },
@@ -9151,7 +9371,8 @@
         "enum": [
           "archive",
           "timeline",
-          "hidden"
+          "hidden",
+          "locked"
         ],
         "type": "string"
       },
@@ -9166,14 +9387,24 @@
       },
       "AuthStatusResponseDto": {
         "properties": {
+          "expiresAt": {
+            "type": "string"
+          },
+          "isElevated": {
+            "type": "boolean"
+          },
           "password": {
             "type": "boolean"
           },
           "pinCode": {
             "type": "boolean"
+          },
+          "pinExpiresAt": {
+            "type": "string"
           }
         },
         "required": [
+          "isElevated",
           "password",
           "pinCode"
         ],
@@ -10927,9 +11158,11 @@
           "person.statistics",
           "person.merge",
           "person.reassign",
+          "session.create",
           "session.read",
           "session.update",
           "session.delete",
+          "session.lock",
           "sharedLink.create",
           "sharedLink.read",
           "sharedLink.update",
@@ -11129,6 +11362,18 @@
         "required": [
           "newPinCode"
         ],
+        "type": "object"
+      },
+      "PinCodeResetDto": {
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "PinCodeSetupDto": {
@@ -11913,6 +12158,60 @@
         ],
         "type": "object"
       },
+      "SessionCreateDto": {
+        "properties": {
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "duration": {
+            "description": "session duration, in seconds",
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "SessionCreateResponseDto": {
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "current",
+          "deviceOS",
+          "deviceType",
+          "id",
+          "token",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "SessionResponseDto": {
         "properties": {
           "createdAt": {
@@ -11925,6 +12224,9 @@
             "type": "string"
           },
           "deviceType": {
+            "type": "string"
+          },
+          "expiresAt": {
             "type": "string"
           },
           "id": {
@@ -11942,6 +12244,18 @@
           "id",
           "updatedAt"
         ],
+        "type": "object"
+      },
+      "SessionUnlockDto": {
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "SharedLinkCreateDto": {
@@ -12589,7 +12903,8 @@
             "enum": [
               "archive",
               "timeline",
-              "hidden"
+              "hidden",
+              "locked"
             ],
             "type": "string"
           }

@@ -18,7 +18,8 @@
     "lint:p": "eslint-p . --max-warnings 0 --concurrency=4",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --check .",
-    "format:fix": "prettier --write .",
+    "format:fix": "prettier --write . && npm run format:i18n",
+    "format:i18n": "npx --yes sort-json ../i18n/*.json",
     "test": "vitest --run",
     "test:cov": "vitest --coverage",
     "test:watch": "vitest dev",
@@ -27,7 +28,7 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.19.1",
+    "@immich/ui": "^0.21.1",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.11.5",
@@ -96,6 +97,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.14.0"
+    "node": "22.15.0"
   }
 }

@@ -32,7 +32,7 @@
     trailing,
   }: Props = $props();
 
-  let appBarBorder = $state('bg-immich-bg border border-transparent');
+  let appBarBorder = $state('bg-light border border-transparent');
 
   const onScroll = () => {
     if (window.scrollY > 80) {
@@ -42,7 +42,7 @@
         appBarBorder = 'border border-gray-600';
       }
     } else {
-      appBarBorder = 'bg-immich-bg border border-transparent';
+      appBarBorder = 'bg-light border border-transparent';
     }
   };
 
@@ -66,7 +66,7 @@
   let buttonClass = $derived(forceDark ? 'hover:text-immich-dark-gray' : undefined);
 </script>
 
-<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
+<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full bg-transparent z-[1]">
   <nav
     id="asset-selection-app-bar"
     class={[

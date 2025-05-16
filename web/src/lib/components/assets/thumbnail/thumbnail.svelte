@@ -215,7 +215,7 @@
       slow: ??ms
       -->
   <div
-    class={['group absolute  top-[0px] bottom-[0px]', { 'curstor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    class={['group absolute top-[0px] bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
     onmouseenter={onMouseEnter}
@@ -239,42 +239,6 @@
     tabindex={0}
     role="link"
   >
-    <!-- Select asset button  -->
-    {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
-      <!-- lazy show the url on mouse over-->
-      <a
-        class={['absolute  z-10 w-full top-0 bottom-0']}
-        style:cursor="unset"
-        href={currentUrlReplaceAssetId(asset.id)}
-        onclick={(evt) => evt.preventDefault()}
-        tabindex={-1}
-        aria-label="Thumbnail URL"
-      >
-      </a>
-    {/if}
-    {#if !readonly && (mouseOver || selected || selectionCandidate)}
-      <button
-        type="button"
-        onclick={onIconClickedHandler}
-        class={['absolute z-20 p-2 focus:outline-none', { 'cursor-not-allowed': disabled }]}
-        role="checkbox"
-        tabindex={-1}
-        onfocus={handleFocus}
-        aria-checked={selected}
-        {disabled}
-      >
-        {#if disabled}
-          <Icon path={mdiCheckCircle} size="24" class="text-zinc-800" />
-        {:else if selected}
-          <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon path={mdiCheckCircle} size="24" class="text-immich-primary" />
-          </div>
-        {:else}
-          <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
-        {/if}
-      </button>
-    {/if}
-
     <div
       class={[
         'absolute h-full w-full select-none bg-transparent transition-transform',
@@ -284,6 +248,19 @@
     >
       <!-- icon overlay -->
       <div>
+        {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
+          <!-- lazy show the url on mouse over-->
+          <a
+            class="absolute w-full top-0 bottom-0"
+            style:cursor="unset"
+            href={currentUrlReplaceAssetId(asset.id)}
+            onclick={(evt) => evt.preventDefault()}
+            tabindex={-1}
+            aria-label="Thumbnail URL"
+          >
+          </a>
+        {/if}
+
         <!-- Gradient overlay on hover -->
         {#if !usingMobileDevice && !disabled}
           <div
@@ -293,10 +270,10 @@
             ]}
           ></div>
         {/if}
-        <!-- Dimmed support -->
 
+        <!-- Dimmed support -->
         {#if dimmed && !mouseOver}
-          <div id="a" class={['absolute h-full w-full z-30  bg-gray-700/40', { 'rounded-xl': selected }]}></div>
+          <div id="a" class={['absolute h-full w-full bg-gray-700/40', { 'rounded-xl': selected }]}></div>
         {/if}
         <!-- Outline on focus -->
         <div
@@ -308,19 +285,19 @@
 
         <!-- Favorite asset star -->
         {#if !authManager.key && asset.isFavorite}
-          <div class="absolute bottom-2 start-2 z-10">
+          <div class="absolute bottom-2 start-2">
             <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if !authManager.key && showArchiveIcon && asset.isArchived}
-          <div class={['absolute start-2 z-10', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+          <div class={['absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
-          <div class="absolute end-0 top-0 z-10 flex place-items-center gap-1 text-xs font-medium text-white">
+          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
               <Icon path={mdiRotate360} size="24" />
             </span>
@@ -331,7 +308,7 @@
         {#if asset.stack && showStackedIcon}
           <div
             class={[
-              'absolute z-10 flex place-items-center gap-1 text-xs font-medium text-white',
+              'absolute flex place-items-center gap-1 text-xs font-medium text-white',
               asset.type == AssetTypeEnum.Image && !asset.livePhotoVideoId ? 'top-0 end-0' : 'top-7 end-1',
             ]}
           >
@@ -381,6 +358,30 @@
         in:fade={{ duration: 100 }}
         out:fade={{ duration: 100 }}
       ></div>
+    {/if}
+
+    <!-- Select asset button  -->
+    {#if !readonly && (mouseOver || selected || selectionCandidate)}
+      <button
+        type="button"
+        onclick={onIconClickedHandler}
+        class={['absolute p-2 focus:outline-none', { 'cursor-not-allowed': disabled }]}
+        role="checkbox"
+        tabindex={-1}
+        onfocus={handleFocus}
+        aria-checked={selected}
+        {disabled}
+      >
+        {#if disabled}
+          <Icon path={mdiCheckCircle} size="24" class="text-zinc-800" />
+        {:else if selected}
+          <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
+            <Icon path={mdiCheckCircle} size="24" class="text-immich-primary" />
+          </div>
+        {:else}
+          <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+        {/if}
+      </button>
     {/if}
   </div>
 </div>

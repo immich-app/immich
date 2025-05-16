@@ -2,6 +2,8 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
+  import { Button } from '@immich/ui';
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
@@ -10,12 +12,10 @@
     mdiPanorama,
     mdiShuffle,
   } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
-  import Button from './elements/buttons/button.svelte';
   import type { RenderedOption } from './elements/dropdown.svelte';
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
-  import { t } from 'svelte-i18n';
-  import { SettingInputFieldType } from '$lib/constants';
 
   const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook, slideshowTransition } = slideshowStore;
 
@@ -79,6 +79,6 @@
   </div>
 
   {#snippet stickyBottom()}
-    <Button fullwidth color="primary" onclick={(_) => onClose()}>{$t('done')}</Button>
+    <Button fullWidth shape="round" color="primary" onclick={() => onClose()}>{$t('done')}</Button>
   {/snippet}
 </FullScreenModal>

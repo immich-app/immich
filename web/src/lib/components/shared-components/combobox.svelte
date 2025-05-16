@@ -20,16 +20,16 @@
 </script>
 
 <script lang="ts">
-  import { fly } from 'svelte/transition';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
-  import { onMount, tick } from 'svelte';
-  import type { FormEventHandler } from 'svelte/elements';
-  import { shortcuts } from '$lib/actions/shortcut';
   import { focusOutside } from '$lib/actions/focus-outside';
-  import { generateId } from '$lib/utils/generate-id';
+  import { shortcuts } from '$lib/actions/shortcut';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { generateId } from '$lib/utils/generate-id';
+  import { mdiClose, mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';
+  import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
+  import type { FormEventHandler } from 'svelte/elements';
+  import { fly } from 'svelte/transition';
 
   interface Props {
     label: string;
@@ -341,7 +341,7 @@
     role="listbox"
     id={listboxId}
     transition:fly={{ duration: 250 }}
-    class="fixed text-start text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900 z-[10000]"
+    class="fixed z-[1] text-start text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900"
     class:rounded-b-xl={dropdownDirection === 'bottom'}
     class:rounded-t-xl={dropdownDirection === 'top'}
     class:shadow={dropdownDirection === 'bottom'}

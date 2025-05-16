@@ -1,4 +1,4 @@
-import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
+import SideBarSection from '$lib/components/sidebar/sidebar.svelte';
 import { sidebarStore } from '$lib/stores/sidebar.svelte';
 import { render, screen } from '@testing-library/svelte';
 import { vi } from 'vitest';
@@ -22,7 +22,7 @@ vi.mock('$lib/stores/sidebar.svelte', () => ({
   },
 }));
 
-describe('SideBarSection component', () => {
+describe('Sidebar component', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.mobileDevice.isFullSidebar = false;
