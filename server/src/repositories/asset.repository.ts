@@ -531,7 +531,7 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
+  @GenerateSql()
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     return (
       this.db
@@ -581,7 +581,7 @@ export class AssetRepository {
   }
 
   @GenerateSql({
-    params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH, withStacked: true }, { skip: 0, take: 1000 }],
+    params: [DummyValue.TIME_BUCKET, { withStacked: true }],
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions) {
     const query = this.db

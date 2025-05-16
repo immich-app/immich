@@ -50,9 +50,9 @@ export const getAltText = derived(t, ($t) => {
       date,
       city: asset.city,
       country: asset.country,
-      person1: peopleCount > 0 ? asset.people[0] : undefined,
-      person2: peopleCount > 1 ? asset.people[1] : undefined,
-      person3: peopleCount > 2 ? asset.people[2] : undefined,
+      person1: asset.people.at(0),
+      person2: asset.people.at(1),
+      person3: asset.people.at(2),
       isVideo,
       additionalCount: peopleCount > 3 ? peopleCount - 2 : 0,
     };
