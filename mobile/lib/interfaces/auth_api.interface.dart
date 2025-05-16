@@ -7,5 +7,8 @@ abstract interface class IAuthApiRepository {
 
   Future<void> changePassword(String newPassword);
 
-  Future<bool> verifyPinCode(String pinCode);
+  Future<bool> unlockPinCode(String pinCode);
+  Future<void> lockPinCode();
+
+  Future<void> setupPinCode(String pinCode);
 }

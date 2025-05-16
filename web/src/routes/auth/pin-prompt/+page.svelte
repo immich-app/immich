@@ -3,9 +3,8 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import PinCodeCreateForm from '$lib/components/user-settings-page/PinCodeCreateForm.svelte';
   import PincodeInput from '$lib/components/user-settings-page/PinCodeInput.svelte';
-  import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import { verifyPinCode } from '@immich/sdk';
+  import { unlockAuthSession } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline, mdiLockSmart } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -23,17 +22,15 @@
   let hasPinCode = $derived(data.hasPinCode);
   let pinCode = $state('');
 
-  const onPinFilled = async (code: string, withDelay = false) => {
+  const handleUnlockSession = async (code: string) => {
     try {
-      await verifyPinCode({ pinCodeSetupDto: { pinCode: code } });
+      await unlockAuthSession({ sessionUnlockDto: { pinCode: code } });
 
       isVerified = true;
 
-      if (withDelay) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      void goto(data.continuePath ?? AppRoute.LOCKED);
+      await goto(data.continueUrl);
     } catch (error) {
       handleError(error, $t('wrong_pin_code'));
       isBadPinCode = true;
@@ -64,7 +61,7 @@
           bind:value={pinCode}
           tabindexStart={1}
           pinLength={6}
-          onFilled={(pinCode) => onPinFilled(pinCode, true)}
+          onFilled={handleUnlockSession}
         />
       </div>
     </div>

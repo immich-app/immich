@@ -1,10 +1,9 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { handleError } from '$lib/utils/handle-error';
   import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
-  import { Heading } from '@immich/ui';
+  import { Button, Heading } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import UserPurchaseOptionCard from './individual-purchase-option-card.svelte';
   import ServerPurchaseOptionCard from './server-purchase-option-card.svelte';
@@ -74,7 +73,7 @@
         placeholder="IMCL-0KEY-0CAN-00BE-FOUD-FROM-YOUR-EMAIL-INBX"
         disabled={isLoading}
       />
-      <Button type="submit" rounded="lg"
+      <Button type="submit"
         >{#if isLoading}
           <LoadingSpinner />
         {:else}

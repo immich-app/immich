@@ -460,6 +460,7 @@ class MultiselectGrid extends HookConsumerWidget {
               onEditLocation: editEnabled ? onEditLocation : null,
               unfavorite: unfavorite,
               unarchive: unarchive,
+
               onRemoveFromAlbum: onRemoveFromAlbum != null
                   ? wrapLongRunningFun(
                       () => onRemoveFromAlbum!(selection.value),

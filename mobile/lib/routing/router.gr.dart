@@ -1379,15 +1379,15 @@ class PhotosRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [PinCodePage]
-class PinCodeRoute extends PageRouteInfo<PinCodeRouteArgs> {
-  PinCodeRoute({
+/// [PinAuthPage]
+class PinAuthRoute extends PageRouteInfo<PinAuthRouteArgs> {
+  PinAuthRoute({
     Key? key,
     bool createPinCode = false,
     List<PageRouteInfo>? children,
   }) : super(
-          PinCodeRoute.name,
-          args: PinCodeRouteArgs(
+          PinAuthRoute.name,
+          args: PinAuthRouteArgs(
             key: key,
             createPinCode: createPinCode,
           ),
@@ -1400,8 +1400,8 @@ class PinCodeRoute extends PageRouteInfo<PinCodeRouteArgs> {
     name,
     builder: (data) {
       final args =
-          data.argsAs<PinCodeRouteArgs>(orElse: () => const PinCodeRouteArgs());
-      return PinCodePage(
+          data.argsAs<PinAuthRouteArgs>(orElse: () => const PinAuthRouteArgs());
+      return PinAuthPage(
         key: args.key,
         createPinCode: args.createPinCode,
       );
@@ -1409,8 +1409,8 @@ class PinCodeRoute extends PageRouteInfo<PinCodeRouteArgs> {
   );
 }
 
-class PinCodeRouteArgs {
-  const PinCodeRouteArgs({
+class PinAuthRouteArgs {
+  const PinAuthRouteArgs({
     this.key,
     this.createPinCode = false,
   });
@@ -1421,7 +1421,7 @@ class PinCodeRouteArgs {
 
   @override
   String toString() {
-    return 'PinCodeRouteArgs{key: $key, createPinCode: $createPinCode}';
+    return 'PinAuthRouteArgs{key: $key, createPinCode: $createPinCode}';
   }
 }
 

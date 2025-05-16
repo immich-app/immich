@@ -355,7 +355,8 @@ class Asset {
         a.thumbhash != thumbhash ||
         stackId != a.stackId ||
         stackCount != a.stackCount ||
-        stackPrimaryAssetId == null && a.stackPrimaryAssetId != null;
+        stackPrimaryAssetId == null && a.stackPrimaryAssetId != null ||
+        visibility != a.visibility;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -458,6 +459,7 @@ class Asset {
     String? stackPrimaryAssetId,
     int? stackCount,
     String? thumbhash,
+    AssetVisibilityEnum? visibility,
   }) =>
       Asset(
         id: id ?? this.id,
@@ -483,6 +485,7 @@ class Asset {
         stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
         stackCount: stackCount ?? this.stackCount,
         thumbhash: thumbhash ?? this.thumbhash,
+        visibility: visibility ?? this.visibility,
       );
 
   Future<void> put(Isar db) async {
@@ -547,6 +550,7 @@ class Asset {
   "isArchived": $isArchived,
   "isTrashed": $isTrashed,
   "isOffline": $isOffline,
+  "visibility": "$visibility",
 }""";
   }
 

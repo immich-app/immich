@@ -5,8 +5,8 @@ import { getUserPreferencesAdmin, getUserStatisticsAdmin, searchUsersAdmin } fro
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params }) => {
-  await authenticate({ admin: true });
+export const load = (async ({ params, url }) => {
+  await authenticate(url, { admin: true });
   await requestServerInfo();
   const [user] = await searchUsersAdmin({ id: params.id, withDeleted: true }).catch(() => []);
   if (!user) {

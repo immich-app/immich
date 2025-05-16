@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -239,6 +240,9 @@ class AssetService {
 
       for (var element in assets) {
         element.isArchived = isArchived;
+        element.visibility = isArchived
+            ? AssetVisibilityEnum.archive
+            : AssetVisibilityEnum.timeline;
       }
 
       await _syncService.upsertAssetsWithExif(assets);

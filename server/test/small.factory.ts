@@ -126,6 +126,8 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   deviceOS: 'android',
   deviceType: 'mobile',
   token: 'abc123',
+  parentId: null,
+  expiresAt: null,
   userId: newUuid(),
   pinExpiresAt: newDate(),
   ...session,

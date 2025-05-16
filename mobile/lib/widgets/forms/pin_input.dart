@@ -1,10 +1,10 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:pinput/pinput.dart';
 
 class PinInput extends StatelessWidget {
   final Function(String)? onCompleted;
+  final Function(String)? onChanged;
   final int? length;
   final bool? obscureText;
   final bool? autoFocus;
@@ -15,6 +15,7 @@ class PinInput extends StatelessWidget {
   const PinInput({
     super.key,
     this.onCompleted,
+    this.onChanged,
     this.length,
     this.obscureText,
     this.autoFocus,
@@ -25,16 +26,31 @@ class PinInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    getPinSize() {
+      final minimumPadding = 18.0;
+      final gapWidth = 3.0;
+      final screenWidth = context.width;
+      final pinWidth =
+          (screenWidth - (minimumPadding * 2) - (gapWidth * 5)) / (length ?? 6);
+
+      if (pinWidth > 60) {
+        return const Size(60, 64);
+      }
+
+      final pinHeight = pinWidth / (60 / 64);
+      return Size(pinWidth, pinHeight);
+    }
+
     final defaultPinTheme = PinTheme(
-      width: 60,
-      height: 64,
+      width: getPinSize().width,
+      height: getPinSize().height,
       textStyle: TextStyle(
         fontSize: 24,
         color: context.colorScheme.onSurface,
         fontFamily: 'Overpass Mono',
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(19),
+        borderRadius: const BorderRadius.all(Radius.circular(19)),
         border: Border.all(color: context.colorScheme.surfaceBright),
         color: context.colorScheme.surfaceContainerHigh,
       ),
@@ -79,15 +95,27 @@ class PinInput extends StatelessWidget {
           defaultPinTheme: defaultPinTheme,
           focusedPinTheme: defaultPinTheme.copyWith(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(19),
+              borderRadius: const BorderRadius.all(Radius.circular(19)),
               border: Border.all(
-                color: context.primaryColor.withValues(alpha: 0.25),
+                color: context.primaryColor.withValues(alpha: 0.5),
+                width: 2,
               ),
               color: context.colorScheme.surfaceContainerHigh,
             ),
           ),
+          errorPinTheme: defaultPinTheme.copyWith(
+            decoration: BoxDecoration(
+              color: context.colorScheme.error.withAlpha(15),
+              borderRadius: const BorderRadius.all(Radius.circular(19)),
+              border: Border.all(
+                color: context.colorScheme.error.withAlpha(100),
+                width: 2,
+              ),
+            ),
+          ),
           pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
           length: length ?? 6,
+          onChanged: onChanged,
           onCompleted: onCompleted,
         ),
       ],

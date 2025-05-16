@@ -1,11 +1,11 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { type LibraryResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
-  import Button from '../elements/buttons/button.svelte';
   import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
 
   interface Props {
@@ -152,20 +152,21 @@
             {$t('admin.no_pattern_added')}
           {/if}
         </td>
-        <td class="w-1/4 text-ellipsis px-4 text-sm"
-          ><Button
-            size="sm"
+        <td class="w-1/4 text-ellipsis px-4 text-sm flex justify-center">
+          <Button
+            size="small"
+            shape="round"
             onclick={() => {
               addExclusionPattern = true;
             }}>{$t('add_exclusion_pattern')}</Button
-          ></td
-        ></tr
-      >
+          >
+        </td>
+      </tr>
     </tbody>
   </table>
 
-  <div class="flex w-full justify-end gap-4">
-    <Button size="sm" color="gray" onclick={onCancel}>{$t('cancel')}</Button>
-    <Button size="sm" type="submit">{$t('save')}</Button>
+  <div class="flex w-full justify-end gap-2">
+    <Button size="small" shape="round" color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
+    <Button size="small" shape="round" type="submit">{$t('save')}</Button>
   </div>
 </form>

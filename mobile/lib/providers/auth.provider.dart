@@ -189,7 +189,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return _authService.setOpenApiServiceEndpoint();
   }
 
-  Future<bool> verifyPinCode(String pinCode) {
-    return _authService.verifyPinCode(pinCode);
+  Future<bool> unlockPinCode(String pinCode) {
+    return _authService.unlockPinCode(pinCode);
+  }
+
+  Future<void> lockPinCode() {
+    return _authService.lockPinCode();
+  }
+
+  Future<void> setupPinCode(String pinCode) {
+    return _authService.setupPinCode(pinCode);
   }
 }

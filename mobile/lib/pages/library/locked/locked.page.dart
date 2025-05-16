@@ -29,9 +29,12 @@ class LockedPage extends HookConsumerWidget {
       appBar: ref.watch(multiselectProvider) ? null : buildAppBar(),
       body: MultiselectGrid(
         renderListProvider: lockedTimelineProvider,
-        favoriteEnabled: true,
-        editEnabled: true,
-        unfavorite: true,
+        editEnabled: false,
+        favoriteEnabled: false,
+        unfavorite: false,
+        archiveEnabled: false,
+        stackEnabled: false,
+        unarchive: false,
       ),
     );
   }

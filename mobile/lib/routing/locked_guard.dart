@@ -1,25 +1,30 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/local_auth.service.dart';
+import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
-import 'package:local_auth/local_auth.dart';
 import 'package:logging/logging.dart';
+// ignore: import_rule_openapi
+import 'package:openapi/api.dart';
 
 class LockedGuard extends AutoRouteGuard {
   final ApiService _apiService;
+  final SecureStorageService _secureStorageService;
+  final LocalAuthService _localAuth;
   final _log = Logger("AuthGuard");
 
-  LockedGuard(this._apiService);
+  LockedGuard(
+    this._apiService,
+    this._secureStorageService,
+    this._localAuth,
+  );
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
-    final LocalAuthentication localAuth = LocalAuthentication();
     final authStatus = await _apiService.authenticationApi.getAuthStatus();
-    final storage = const FlutterSecureStorage();
 
     if (authStatus == null) {
       resolver.next(false);
@@ -27,7 +32,7 @@ class LockedGuard extends AutoRouteGuard {
     }
 
     if (!authStatus.pinCode) {
-      router.push(PinCodeRoute(createPinCode: true));
+      router.push(PinAuthRoute(createPinCode: true));
     }
 
     if (authStatus.isElevated) {
@@ -35,22 +40,25 @@ class LockedGuard extends AutoRouteGuard {
       return;
     }
 
-    final securePinCode = await storage.read(key: kSecuredPinCode);
+    final securePinCode = await _secureStorageService.getPinCode();
     if (securePinCode == null) {
-      router.push(PinCodeRoute());
+      router.push(PinAuthRoute());
       return;
     }
 
     try {
-      final bool didAuthenticate = await localAuth.authenticate(
-        localizedReason: 'Please authenticate to access the locked page',
-        options: const AuthenticationOptions(),
-      );
+      final bool isAuth = await _localAuth.authenticate(null);
 
-      if (!didAuthenticate) {
+      if (!isAuth) {
         resolver.next(false);
         return;
       }
+
+      await _apiService.authenticationApi.unlockAuthSession(
+        SessionUnlockDto(pinCode: securePinCode),
+      );
+
+      resolver.next(true);
     } on PlatformException catch (error) {
       switch (error.code) {
         case auth_error.notAvailable:
@@ -63,6 +71,15 @@ class LockedGuard extends AutoRouteGuard {
           _log.severe("error");
           break;
       }
+
+      resolver.next(false);
+    } on ApiException {
+      // PIN code has changed, need to re-enter to access
+      await _secureStorageService.deletePinCode();
+      router.push(PinAuthRoute());
+    } catch (error) {
+      _log.severe("Failed to access locked page", error);
+      resolver.next(false);
     }
   }
 }

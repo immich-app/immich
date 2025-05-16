@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/widgets/forms/pin_input.dart';
-import 'package:pinput/pinput.dart';
 
 class PinRegistrationForm extends HookConsumerWidget {
   final Function() onDone;
@@ -18,8 +17,41 @@ class PinRegistrationForm extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasError = useState(false);
+    final newPinCodeController = useTextEditingController();
+    final confirmPinCodeController = useTextEditingController();
 
-    createNewPinCode(String pinCode) async {}
+    bool validatePinCode() {
+      if (confirmPinCodeController.text.length != 6) {
+        return false;
+      }
+
+      if (newPinCodeController.text != confirmPinCodeController.text) {
+        return false;
+      }
+
+      return true;
+    }
+
+    createNewPinCode() async {
+      final isValid = validatePinCode();
+      if (!isValid) {
+        hasError.value = true;
+        return;
+      }
+
+      try {
+        await ref.read(authProvider.notifier).setupPinCode(
+              newPinCodeController.text,
+            );
+
+        onDone();
+      } catch (error) {
+        hasError.value = true;
+        context.showSnackBar(
+          SnackBar(content: Text(error.toString())),
+        );
+      }
+    }
 
     return Form(
       child: Column(
@@ -29,7 +61,7 @@ class PinRegistrationForm extends HookConsumerWidget {
             size: 64,
             color: context.primaryColor,
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 32),
           SizedBox(
             width: context.width * 0.7,
             child: Text(
@@ -50,16 +82,30 @@ class PinRegistrationForm extends HookConsumerWidget {
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 32),
           PinInput(
+            controller: newPinCodeController,
             label: 'new_pin_code'.tr(),
             length: 6,
             autoFocus: true,
+            hasError: hasError.value,
+            onChanged: (input) {
+              if (input.length < 6) {
+                hasError.value = false;
+              }
+            },
           ),
           const SizedBox(height: 32),
           PinInput(
+            controller: confirmPinCodeController,
             label: 'confirm_new_pin_code'.tr(),
             length: 6,
+            hasError: hasError.value,
+            onChanged: (input) {
+              if (input.length < 6) {
+                hasError.value = false;
+              }
+            },
           ),
           const SizedBox(height: 48),
           Padding(
@@ -68,7 +114,7 @@ class PinRegistrationForm extends HookConsumerWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: createNewPinCode,
                     child: Text('create'.tr()),
                   ),
                 ),

@@ -25,8 +25,14 @@ export class SessionTable {
   @UpdateDateColumn()
   updatedAt!: Date;
 
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  expiresAt!: Date | null;
+
   @ForeignKeyColumn(() => UserTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   userId!: string;
+
+  @ForeignKeyColumn(() => SessionTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE', nullable: true })
+  parentId!: string | null;
 
   @Column({ default: '' })
   deviceType!: string;

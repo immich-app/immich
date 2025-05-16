@@ -4,99 +4,81 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:pinput/pinput.dart';
+import 'package:immich_mobile/widgets/forms/pin_input.dart';
 
 class PinVerificationForm extends HookConsumerWidget {
-  final Function() onSuccess;
+  final Function(String) onSuccess;
+  final VoidCallback? onError;
+  final bool? autoFocus;
+  final String? description;
+  final IconData? icon;
+  final IconData? successIcon;
 
   const PinVerificationForm({
     super.key,
     required this.onSuccess,
+    this.onError,
+    this.autoFocus,
+    this.description,
+    this.icon,
+    this.successIcon,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasError = useState(false);
-
-    final defaultPinTheme = PinTheme(
-      width: 60,
-      height: 64,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: context.colorScheme.surfaceBright),
-        color: context.colorScheme.surfaceContainerHigh,
-      ),
-    );
+    final isVerified = useState(false);
 
     verifyPin(String pinCode) async {
-      final isVerified =
-          await ref.read(authProvider.notifier).verifyPinCode(pinCode);
+      final isUnlocked =
+          await ref.read(authProvider.notifier).unlockPinCode(pinCode);
 
-      if (isVerified) {
-        onSuccess();
+      if (isUnlocked) {
+        isVerified.value = true;
+
+        await Future.delayed(const Duration(seconds: 1));
+        onSuccess(pinCode);
       } else {
         hasError.value = true;
+        onError?.call();
       }
     }
 
     return Form(
       child: Column(
         children: [
-          Icon(
-            Icons.lock,
-            size: 64,
-            color: hasError.value
-                ? Colors.red[400]
-                : context.colorScheme.onSurface.withAlpha(100),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: isVerified.value
+                ? Icon(
+                    successIcon ?? Icons.lock_open_rounded,
+                    size: 64,
+                    color: Colors.green[300],
+                  )
+                : Icon(
+                    icon ?? Icons.lock_outline_rounded,
+                    size: 64,
+                    color: hasError.value
+                        ? context.colorScheme.error
+                        : context.primaryColor,
+                  ),
           ),
-          const SizedBox(height: 54),
+          const SizedBox(height: 36),
           SizedBox(
             width: context.width * 0.7,
             child: Text(
-              'pin_verification_subtitle'.tr(),
+              description ?? 'enter_your_pin_code_subtitle'.tr(),
               style: context.textTheme.labelLarge!.copyWith(
                 fontSize: 18,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 16),
-          Pinput(
-            forceErrorState: hasError.value,
-            errorText: hasError.value ? 'wrong_pin_code'.tr() : null,
-            autofocus: true,
+          const SizedBox(height: 18),
+          PinInput(
             obscureText: true,
-            obscuringWidget: Icon(
-              Icons.vpn_key_rounded,
-              color: context.primaryColor,
-              size: 20,
-            ),
-            separatorBuilder: (index) => const SizedBox(
-              height: 64,
-              width: 3,
-            ),
-            cursor: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(bottom: 9),
-                  width: 18,
-                  height: 2,
-                  color: context.primaryColor,
-                ),
-              ],
-            ),
-            defaultPinTheme: defaultPinTheme,
-            focusedPinTheme: defaultPinTheme.copyWith(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(19),
-                border: Border.all(
-                  color: context.primaryColor.withValues(alpha: 0.25),
-                ),
-                color: context.colorScheme.surfaceContainerHigh,
-              ),
-            ),
-            pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+            autoFocus: autoFocus,
+            hasError: hasError.value,
             length: 6,
             onChanged: (pinCode) {
               if (pinCode.length < 6) {

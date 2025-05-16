@@ -40,7 +40,7 @@ import 'package:immich_mobile/pages/library/folder/folder.page.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
 import 'package:immich_mobile/pages/library/local_albums.page.dart';
 import 'package:immich_mobile/pages/library/locked/locked.page.dart';
-import 'package:immich_mobile/pages/library/locked/pin_code.page.dart';
+import 'package:immich_mobile/pages/library/locked/pin_auth.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner_detail.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
@@ -71,10 +71,21 @@ import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/locked_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/local_auth.service.dart';
+import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 part 'router.gr.dart';
+
+final appRouterProvider = Provider(
+  (ref) => AppRouter(
+    ref.watch(apiServiceProvider),
+    ref.watch(galleryPermissionNotifier.notifier),
+    ref.watch(secureStorageServiceProvider),
+    ref.watch(localAuthServiceProvider),
+  ),
+);
 
 @AutoRouterConfig(replaceInRouteName: 'Page,Route')
 class AppRouter extends RootStackRouter {
@@ -86,10 +97,13 @@ class AppRouter extends RootStackRouter {
   AppRouter(
     ApiService apiService,
     GalleryPermissionNotifier galleryPermissionNotifier,
+    SecureStorageService secureStorageService,
+    LocalAuthService localAuthService,
   ) {
     _authGuard = AuthGuard(apiService);
     _duplicateGuard = DuplicateGuard();
-    _lockedGuard = LockedGuard(apiService);
+    _lockedGuard =
+        LockedGuard(apiService, secureStorageService, localAuthService);
     _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
   }
 
@@ -299,15 +313,8 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _lockedGuard, _duplicateGuard],
     ),
     AutoRoute(
-      page: PinCodeRoute.page,
+      page: PinAuthRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
   ];
 }
-
-final appRouterProvider = Provider(
-  (ref) => AppRouter(
-    ref.watch(apiServiceProvider),
-    ref.watch(galleryPermissionNotifier.notifier),
-  ),
-);

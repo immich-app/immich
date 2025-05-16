@@ -6,6 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
@@ -77,6 +78,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
         ref.watch(albumProvider).where((a) => a.shared).toList();
     const bottomPadding = 0.20;
     final scrollController = useDraggableScrollController();
+    final inLockedView = ref.watch(inLockedViewProvider);
 
     void minimize() {
       scrollController.animateTo(
@@ -133,11 +135,12 @@ class ControlBottomAppBar extends HookConsumerWidget {
             label: "share".tr(),
             onPressed: enabled ? () => onShare(true) : null,
           ),
-        ControlBoxButton(
-          iconData: Icons.link_rounded,
-          label: "control_bottom_app_bar_share_link".tr(),
-          onPressed: enabled ? () => onShare(false) : null,
-        ),
+        if (!inLockedView)
+          ControlBoxButton(
+            iconData: Icons.link_rounded,
+            label: "share_link".tr(),
+            onPressed: enabled ? () => onShare(false) : null,
+          ),
         if (hasRemote && onArchive != null)
           ControlBoxButton(
             iconData:
@@ -307,20 +310,20 @@ class ControlBottomAppBar extends HookConsumerWidget {
                         children: renderActionButtons(),
                       ),
                     ),
-                    if (hasRemote)
+                    if (hasRemote && !inLockedView) ...[
                       const Divider(
                         indent: 16,
                         endIndent: 16,
                         thickness: 1,
                       ),
-                    if (hasRemote)
                       _AddToAlbumTitleRow(
                         onCreateNewAlbum: enabled ? onCreateNewAlbum : null,
                       ),
+                    ],
                   ],
                 ),
               ),
-              if (hasRemote)
+              if (hasRemote && !inLockedView)
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: AddToAlbumSliverList(

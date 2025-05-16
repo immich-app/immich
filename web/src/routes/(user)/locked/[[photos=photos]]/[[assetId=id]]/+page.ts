@@ -7,15 +7,13 @@ import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
-  await authenticate();
+  await authenticate(url);
+
   const { isElevated, pinCode } = await getAuthStatus();
-
   if (!isElevated || !pinCode) {
-    const continuePath = encodeURIComponent(url.pathname);
-    const redirectPath = `${AppRoute.AUTH_PIN_PROMPT}?continue=${continuePath}`;
-
-    redirect(302, redirectPath);
+    redirect(302, `${AppRoute.AUTH_PIN_PROMPT}?continue=${encodeURIComponent(url.pathname + url.search)}`);
   }
+
   const asset = await getAssetInfoFromParam(params);
   const $t = await getFormatter();
 

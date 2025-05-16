@@ -1,6 +1,5 @@
 <script lang="ts">
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
@@ -12,6 +11,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { getMySharedLink, SharedLinkType } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
