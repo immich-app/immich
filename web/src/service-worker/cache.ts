@@ -1,6 +1,5 @@
 import { build, files, version } from '$service-worker';
 
-const sw = globalThis as unknown as ServiceWorkerGlobalScope;
 const pendingLoads = new Map<string, AbortController>();
 
 const useCache = true;
