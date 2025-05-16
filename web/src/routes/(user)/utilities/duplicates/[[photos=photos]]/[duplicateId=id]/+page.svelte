@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import {
@@ -6,6 +7,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -19,8 +21,6 @@
   import { mdiInformationOutline, mdiKeyboard } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { AppRoute } from '$lib/constants';
-  import { goto } from '$app/navigation';
 
   interface Props {
     data: PageData;

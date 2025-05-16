@@ -1,23 +1,24 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import DuplicateThumbnail from '$lib/components/utilities-page/duplicates/duplicate-thumbnail.svelte';
-  import { locale } from '$lib/stores/preferences.store';
-  import type { PageData } from './$types';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import DuplicateThumbnail from '$lib/components/utilities-page/duplicates/duplicate-thumbnail.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
+  import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { deleteAssets, updateAssets } from '@immich/sdk';
   import { Button, HStack, Text } from '@immich/ui';
   import { mdiCheckOutline, mdiInformationOutline, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { handleError } from '$lib/utils/handle-error';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { Grid } from 'svelte-virtual';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import DuplicatesModal from '$lib/components/shared-components/duplicates-modal.svelte';
+  import type { PageData } from './$types';
+
   interface Props {
     data: PageData;
     isShowDuplicateInfo?: boolean;
@@ -42,7 +43,7 @@
 
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
-      const isConfirmed = await dialogController.show({ prompt, confirmText });
+      const isConfirmed = await modalManager.showDialog({ prompt, confirmText });
       if (!isConfirmed) {
         return;
       }
@@ -172,5 +173,5 @@
   </section>
 </UserPageLayout>
 {#if isShowDuplicateInfo}
-  <DuplicatesModal onClose={() => (isShowDuplicateInfo = false)} />
+  <DuplicatesInformationModal onClose={() => (isShowDuplicateInfo = false)} />
 {/if}
