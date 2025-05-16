@@ -14,7 +14,7 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
@@ -145,6 +145,10 @@ export class AssetService extends BaseService {
       options.rating !== undefined
     ) {
       await this.assetRepository.updateAll(ids, options);
+
+      if (options.visibility === AssetVisibility.LOCKED) {
+        await this.albumRepository.removeAssetsFromAll(ids);
+      }
     }
   }
 

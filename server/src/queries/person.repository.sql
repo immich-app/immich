@@ -7,34 +7,10 @@ set
 where
   "asset_faces"."personId" = $2
 
--- PersonRepository.unassignFaces
-update "asset_faces"
-set
-  "personId" = $1
-where
-  "asset_faces"."sourceType" = $2
-VACUUM
-ANALYZE asset_faces,
-face_search,
-person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
-
 -- PersonRepository.delete
 delete from "person"
 where
-  "person"."id" in $1
-
--- PersonRepository.deleteFaces
-delete from "asset_faces"
-where
-  "asset_faces"."sourceType" = $1
-VACUUM
-ANALYZE asset_faces,
-face_search,
-person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
+  "person"."id" in ($1)
 
 -- PersonRepository.getAllWithoutFaces
 select
@@ -145,18 +121,24 @@ select
   "asset_faces"."imageHeight" as "oldHeight",
   "assets"."type",
   "assets"."originalPath",
-  "asset_files"."path" as "previewPath",
-  "exif"."orientation" as "exifOrientation"
+  "exif"."orientation" as "exifOrientation",
+  (
+    select
+      "asset_files"."path"
+    from
+      "asset_files"
+    where
+      "asset_files"."assetId" = "assets"."id"
+      and "asset_files"."type" = 'preview'
+  ) as "previewPath"
 from
   "person"
   inner join "asset_faces" on "asset_faces"."id" = "person"."faceAssetId"
   inner join "assets" on "asset_faces"."assetId" = "assets"."id"
   left join "exif" on "exif"."assetId" = "assets"."id"
-  left join "asset_files" on "asset_files"."assetId" = "assets"."id"
 where
   "person"."id" = $1
   and "asset_faces"."deletedAt" is null
-  and "asset_files"."type" = $2
 
 -- PersonRepository.reassignFace
 update "asset_faces"
@@ -221,21 +203,6 @@ from
 where
   "person"."ownerId" = $3
   and "asset_faces"."deletedAt" is null
-
--- PersonRepository.refreshFaces
-with
-  "added_embeddings" as (
-    insert into
-      "face_search" ("faceId", "embedding")
-    values
-      ($1, $2)
-  )
-select
-from
-  (
-    select
-      1
-  ) as "dummy"
 
 -- PersonRepository.getFacesByIds
 select

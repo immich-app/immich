@@ -18,7 +18,8 @@
     "lint:p": "eslint-p . --max-warnings 0 --concurrency=4",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --check .",
-    "format:fix": "prettier --write .",
+    "format:fix": "prettier --write . && npm run format:i18n",
+    "format:i18n": "npx --yes sort-json ../i18n/*.json",
     "test": "vitest --run",
     "test:cov": "vitest --coverage",
     "test:watch": "vitest dev",
@@ -27,7 +28,7 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.19.1",
+    "@immich/ui": "^0.21.1",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.11.5",
@@ -59,7 +60,7 @@
     "@faker-js/faker": "^9.3.0",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.8",
-    "@sveltejs/enhanced-img": "^0.4.4",
+    "@sveltejs/enhanced-img": "^0.5.0",
     "@sveltejs/kit": "^2.15.2",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@testing-library/jest-dom": "^6.4.2",
@@ -75,7 +76,7 @@
     "dotenv": "^16.4.7",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-p": "^0.21.0",
+    "eslint-p": "^0.22.0",
     "eslint-plugin-svelte": "^3.0.0",
     "eslint-plugin-unicorn": "^57.0.0",
     "factory.ts": "^1.4.1",
@@ -96,6 +97,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.14.0"
+    "node": "22.15.0"
   }
 }

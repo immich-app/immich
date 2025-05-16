@@ -4,27 +4,27 @@
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
+  import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { Button, HStack, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { onDestroy } from 'svelte';
 
   interface Props {
     data: PageData;
@@ -116,11 +116,10 @@
       return;
     }
 
-    const isConfirm = await dialogController.show({
+    const isConfirm = await modalManager.showDialog({
       title: $t('delete_tag'),
       prompt: $t('delete_tag_confirmation_prompt', { values: { tagName: tag.value } }),
       confirmText: $t('delete'),
-      cancelText: $t('cancel'),
     });
 
     if (!isConfirm) {
@@ -143,7 +142,7 @@
 
 <UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
-    <SideBarSection>
+    <Sidebar>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} breakpoint="md" />
       <section>
         <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
@@ -157,7 +156,7 @@
           />
         </div>
       </section>
-    </SideBarSection>
+    </Sidebar>
   {/snippet}
 
   {#snippet buttons()}

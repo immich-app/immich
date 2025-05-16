@@ -2,6 +2,7 @@ import { NotificationType, notificationController } from '$lib/components/shared
 import { defaultLang, langs, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
+import { serverConfig } from '$lib/stores/server-config.store';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
@@ -256,8 +257,8 @@ export const copyToClipboard = async (secret: string) => {
   }
 };
 
-export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  return new URL(`share/${key}`, externalDomain || globalThis.location.origin).href;
+export const makeSharedLinkUrl = (key: string) => {
+  return new URL(`share/${key}`, get(serverConfig).externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {

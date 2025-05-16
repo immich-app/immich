@@ -18,6 +18,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   Validate,
   ValidateBy,
   ValidateIf,
@@ -71,6 +72,22 @@ export class UUIDParamDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
 }
+
+type PinCodeOptions = { optional?: boolean } & OptionalOptions;
+export const PinCode = ({ optional, ...options }: PinCodeOptions = {}) => {
+  const decorators = [
+    IsString(),
+    IsNotEmpty(),
+    Matches(/^\d{6}$/, { message: ({ property }) => `${property} must be a 6-digit numeric string` }),
+    ApiProperty({ example: '123456' }),
+  ];
+
+  if (optional) {
+    decorators.push(Optional(options));
+  }
+
+  return applyDecorators(...decorators);
+};
 
 export interface OptionalOptions extends ValidationOptions {
   nullable?: boolean;

@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, Visibility, type AssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const assetFactory = Sync.makeFactory<AssetResponseDto>({
@@ -24,4 +24,5 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   checksum: Sync.each(() => faker.string.alphanumeric(28)),
   isOffline: Sync.each(() => faker.datatype.boolean()),
   hasMetadata: Sync.each(() => faker.datatype.boolean()),
+  visibility: Visibility.Timeline,
 });

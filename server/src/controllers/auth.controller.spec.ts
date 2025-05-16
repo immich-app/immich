@@ -142,4 +142,50 @@ describe(AuthController.name, () => {
       expect(ctx.authenticate).toHaveBeenCalled();
     });
   });
+
+  describe('POST /auth/pin-code', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '123456' });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should reject 5 digits', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '12345' });
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorDto.badRequest(['pinCode must be a 6-digit numeric string']));
+    });
+
+    it('should reject 7 digits', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '1234567' });
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorDto.badRequest(['pinCode must be a 6-digit numeric string']));
+    });
+
+    it('should reject non-numbers', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: 'A12345' });
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorDto.badRequest(['pinCode must be a 6-digit numeric string']));
+    });
+  });
+
+  describe('PUT /auth/pin-code', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).put('/auth/pin-code').send({ pinCode: '123456', newPinCode: '654321' });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('DELETE /auth/pin-code', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).delete('/auth/pin-code').send({ pinCode: '123456' });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /auth/status', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get('/auth/status');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
 });

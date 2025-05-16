@@ -14,6 +14,7 @@ import { asUuid } from 'src/utils/database';
 type Upsert = Insertable<DbUserMetadata>;
 
 export interface UserListFilter {
+  id?: string;
   withDeleted?: boolean;
 }
 
@@ -89,13 +90,23 @@ export class UserRepository {
     return !!admin;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForPinCode(id: string) {
+    return this.db
+      .selectFrom('users')
+      .select(['users.pinCode', 'users.password'])
+      .where('users.id', '=', id)
+      .where('users.deletedAt', 'is', null)
+      .executeTakeFirstOrThrow();
+  }
+
   @GenerateSql({ params: [DummyValue.EMAIL] })
-  getByEmail(email: string, withPassword?: boolean) {
+  getByEmail(email: string, options?: { withPassword?: boolean }) {
     return this.db
       .selectFrom('users')
       .select(columns.userAdmin)
       .select(withMetadata)
-      .$if(!!withPassword, (eb) => eb.select('password'))
+      .$if(!!options?.withPassword, (eb) => eb.select('password'))
       .where('email', '=', email)
       .where('users.deletedAt', 'is', null)
       .executeTakeFirst();
@@ -131,12 +142,13 @@ export class UserRepository {
     { name: 'with deleted', params: [{ withDeleted: true }] },
     { name: 'without deleted', params: [{ withDeleted: false }] },
   )
-  getList({ withDeleted }: UserListFilter = {}) {
+  getList({ id, withDeleted }: UserListFilter = {}) {
     return this.db
       .selectFrom('users')
       .select(columns.userAdmin)
       .select(withMetadata)
       .$if(!withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
+      .$if(!!id, (eb) => eb.where('users.id', '=', id!))
       .orderBy('createdAt', 'desc')
       .execute();
   }
