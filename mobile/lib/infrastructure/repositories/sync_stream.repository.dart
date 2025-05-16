@@ -102,33 +102,33 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   // Assets
   @override
   Future<void> updateAssetsV1(Iterable<SyncAssetV1> data) async {
-    debugPrint("updateAssetsV1 - ${data.length}");
+    debugPrint('updateAssetsV1 - ${data.length}');
   }
 
   @override
   Future<void> deleteAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
-    debugPrint("deleteAssetsV1 - ${data.length}");
+    debugPrint('deleteAssetsV1 - ${data.length}');
   }
 
   // Partner Assets
   @override
   Future<void> updatePartnerAssetsV1(Iterable<SyncAssetV1> data) async {
-    debugPrint("updatePartnerAssetsV1 - ${data.length}");
+    debugPrint('updatePartnerAssetsV1 - ${data.length}');
   }
 
   @override
   Future<void> deletePartnerAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
-    debugPrint("deletePartnerAssetsV1 - ${data.length}");
+    debugPrint('deletePartnerAssetsV1 - ${data.length}');
   }
 
   // EXIF
   @override
   Future<void> updateAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
-    debugPrint("updateAssetsExifV1 - ${data.length}");
+    debugPrint('updateAssetsExifV1 - ${data.length}');
   }
 
   @override
   Future<void> updatePartnerAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
-    debugPrint("updatePartnerAssetsExifV1 - ${data.length}");
+    debugPrint('updatePartnerAssetsExifV1 - ${data.length}');
   }
 }

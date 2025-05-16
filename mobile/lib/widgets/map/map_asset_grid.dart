@@ -39,7 +39,7 @@ class MapAssetGrid extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final log = Logger("MapAssetGrid");
+    final log = Logger('MapAssetGrid');
     final assetsInBounds = useState<List<Asset>>([]);
     final cachedRenderList = useRef<RenderList?>(null);
     final lastRenderElementIndex = useRef<int?>(null);
@@ -177,7 +177,7 @@ class MapAssetGrid extends HookConsumerWidget {
                         },
                         error: (error, stackTrace) {
                           log.warning(
-                            "Cannot get assets in the current map bounds",
+                            'Cannot get assets in the current map bounds',
                             error,
                             stackTrace,
                           );
@@ -227,7 +227,7 @@ class _MapNoAssetsInSheet extends StatelessWidget {
           const SizedBox(height: 20),
           Center(
             child: Text(
-              "map_zoom_to_see_photos".tr(),
+              'map_zoom_to_see_photos'.tr(),
               style: context.textTheme.displayLarge?.copyWith(fontSize: 18),
             ),
           ),
@@ -253,9 +253,9 @@ class _MapSheetDragRegion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final assetsInBoundsText = assetsInBoundCount > 0
-        ? "map_assets_in_bounds"
+        ? 'map_assets_in_bounds'
             .tr(namedArgs: {'count': assetsInBoundCount.toString()})
-        : "map_no_assets_in_bounds".tr();
+        : 'map_no_assets_in_bounds'.tr();
 
     return SingleChildScrollView(
       controller: controller,

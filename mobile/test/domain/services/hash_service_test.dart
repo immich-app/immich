@@ -50,8 +50,8 @@ void main() {
         .thenAnswer((_) async => true);
   });
 
-  group("HashService: No DeviceAsset entry", () {
-    test("hash successfully", () async {
+  group('HashService: No DeviceAsset entry', () {
+    test('hash successfully', () async {
       final (mockAsset, file, deviceAsset, hash) =
           await _createAssetMock(AssetStub.image1);
 
@@ -87,9 +87,9 @@ void main() {
     });
   });
 
-  group("HashService: Has DeviceAsset entry", () {
-    test("when the asset is not modified", () async {
-      final hash = utf8.encode("image1-hash");
+  group('HashService: Has DeviceAsset entry', () {
+    test('when the asset is not modified', () async {
+      final hash = utf8.encode('image1-hash');
 
       when(
         () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
@@ -114,7 +114,7 @@ void main() {
       ]);
     });
 
-    test("hashed successful when asset is modified", () async {
+    test('hashed successful when asset is modified', () async {
       final (mockAsset, file, deviceAsset, hash) =
           await _createAssetMock(AssetStub.image1);
 
@@ -150,7 +150,7 @@ void main() {
     });
   });
 
-  group("HashService: Cleanup", () {
+  group('HashService: Cleanup', () {
     late Asset mockAsset;
     late Uint8List hash;
     late DeviceAsset deviceAsset;
@@ -167,8 +167,8 @@ void main() {
       ).thenAnswer((_) async => [deviceAsset]);
     });
 
-    test("cleanups DeviceAsset when local file cannot be obtained", () async {
-      when(() => mockAsset.local).thenThrow(Exception("File not found"));
+    test('cleanups DeviceAsset when local file cannot be obtained', () async {
+      when(() => mockAsset.local).thenThrow(Exception('File not found'));
       final result = await sut.hashAssets([mockAsset]);
 
       verifyNever(() => mockBackgroundService.digestFiles(any()));
@@ -181,7 +181,7 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test("cleanups DeviceAsset when hashing failed", () async {
+    test('cleanups DeviceAsset when hashing failed', () async {
       when(() => mockDeviceAssetRepository.transaction<Null>(any()))
           .thenAnswer((_) async {
         final capturedCallback = verify(
@@ -227,8 +227,8 @@ void main() {
     });
   });
 
-  group("HashService: Batch processing", () {
-    test("processes assets in batches when size limit is reached", () async {
+  group('HashService: Batch processing', () {
+    test('processes assets in batches when size limit is reached', () async {
       // Setup multiple assets with large file sizes
       final (mock1, mock2, mock3) = await (
         _createAssetMock(AssetStub.image1),
@@ -273,7 +273,7 @@ void main() {
       );
     });
 
-    test("processes assets in batches when file limit is reached", () async {
+    test('processes assets in batches when file limit is reached', () async {
       // Setup multiple assets with large file sizes
       final (mock1, mock2, mock3) = await (
         _createAssetMock(AssetStub.image1),
@@ -317,7 +317,7 @@ void main() {
       );
     });
 
-    test("HashService: Sort & Process different states", () async {
+    test('HashService: Sort & Process different states', () async {
       final (asset1, file1, deviceAsset1, hash1) =
           await _createAssetMock(AssetStub.image1); // Will need rehashing
       final (asset2, file2, deviceAsset2, hash2) =
@@ -325,7 +325,7 @@ void main() {
       final (asset3, file3, deviceAsset3, hash3) =
           await _createAssetMock(AssetStub.image3); // No DB entry
       final asset4 =
-          AssetStub.image3.copyWith(localId: "image4"); // Cannot be hashed
+          AssetStub.image3.copyWith(localId: 'image4'); // Cannot be hashed
 
       when(() => mockBackgroundService.digestFiles([file1.path, file3.path]))
           .thenAnswer((_) async => [hash1, hash3]);
@@ -359,8 +359,8 @@ void main() {
       ]);
     });
 
-    group("HashService: Edge cases", () {
-      test("handles empty list of assets", () async {
+    group('HashService: Edge cases', () {
+      test('handles empty list of assets', () async {
         when(() => mockDeviceAssetRepository.getByIds(any()))
             .thenAnswer((_) async => []);
 
@@ -373,7 +373,7 @@ void main() {
         expect(result, isEmpty);
       });
 
-      test("handles all file access failures", () async {
+      test('handles all file access failures', () async {
         // No DB entries
         when(
           () => mockDeviceAssetRepository.getByIds(
@@ -409,14 +409,14 @@ Future<(Asset, File, DeviceAsset, Uint8List)> _createAssetMock(
     modifiedTime: DateTime.now(),
   );
   final tmp = await fs.systemTempDirectory.createTemp();
-  final file = tmp.childFile("${asset.fileName}-path");
-  await file.writeAsString("${asset.fileName}-content");
+  final file = tmp.childFile('${asset.fileName}-path');
+  await file.writeAsString('${asset.fileName}-content');
 
   when(() => mockAsset.localId).thenReturn(asset.localId);
   when(() => mockAsset.fileName).thenReturn(asset.fileName);
   when(() => mockAsset.fileCreatedAt).thenReturn(asset.fileCreatedAt);
   when(() => mockAsset.fileModifiedAt).thenReturn(asset.fileModifiedAt);
-  when(() => mockAsset.copyWith(checksum: any(named: "checksum")))
+  when(() => mockAsset.copyWith(checksum: any(named: 'checksum')))
       .thenReturn(asset.copyWith(checksum: base64.encode(hash)));
   when(() => mockAsset.local).thenAnswer((_) => mockAssetEntity);
   when(() => mockAssetEntity.originFile).thenAnswer((_) async => file);

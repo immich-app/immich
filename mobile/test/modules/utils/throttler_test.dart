@@ -8,7 +8,7 @@ class _Counter {
 
   int get count => _count;
   void increment() {
-    debugPrint("Counter inside increment: $count");
+    debugPrint('Counter inside increment: $count');
     _count = _count + 1;
   }
 }

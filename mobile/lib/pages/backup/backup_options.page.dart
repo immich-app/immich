@@ -11,7 +11,7 @@ class BackupOptionsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Text("backup_options_page_title").tr(),
+        title: const Text('backup_options_page_title').tr(),
         leading: IconButton(
           onPressed: () => context.maybePop(true),
           splashRadius: 24,

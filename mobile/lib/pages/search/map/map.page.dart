@@ -244,7 +244,7 @@ class MapPage extends HookConsumerWidget {
             context: context,
             gravity: ToastGravity.BOTTOM,
             toastType: ToastType.error,
-            msg: "map_cannot_get_user_location".tr(),
+            msg: 'map_cannot_get_user_location'.tr(),
           );
         }
         return;

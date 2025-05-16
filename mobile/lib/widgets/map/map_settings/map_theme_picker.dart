@@ -22,7 +22,7 @@ class MapThemePicker extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 20),
           child: Center(
             child: Text(
-              "map_settings_theme_settings",
+              'map_settings_theme_settings',
               style: context.textTheme.bodyMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ).tr(),
@@ -33,19 +33,19 @@ class MapThemePicker extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _BorderedMapThumbnail(
-              name: "Light",
+              name: 'Light',
               mode: ThemeMode.light,
               shouldHighlight: themeMode == ThemeMode.light,
               onThemeChange: onThemeChange,
             ),
             _BorderedMapThumbnail(
-              name: "Dark",
+              name: 'Dark',
               mode: ThemeMode.dark,
               shouldHighlight: themeMode == ThemeMode.dark,
               onThemeChange: onThemeChange,
             ),
             _BorderedMapThumbnail(
-              name: "System",
+              name: 'System',
               mode: ThemeMode.system,
               shouldHighlight: themeMode == ThemeMode.system,
               onThemeChange: onThemeChange,

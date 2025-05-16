@@ -18,7 +18,6 @@ import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
-import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -40,7 +39,7 @@ final backgroundServiceProvider = Provider((ref) => BackgroundService());
 
 /// Background backup service
 class BackgroundService {
-  static const String _portNameLock = "immichLock";
+  static const String _portNameLock = 'immichLock';
   static const MethodChannel _foregroundChannel =
       MethodChannel('immich/foregroundChannel');
   static const MethodChannel _backgroundChannel =
@@ -56,7 +55,7 @@ class BackgroundService {
   bool _errorGracePeriodExceeded = true;
   int _uploadedAssetsCount = 0;
   int _assetsToUploadCount = 0;
-  String _lastPrintedDetailContent = "";
+  String _lastPrintedDetailContent = '';
   String? _lastPrintedDetailTitle;
   late final ThrottleProgressUpdate _throttledNotifiy =
       ThrottleProgressUpdate(_updateProgress, notifyInterval);
@@ -77,7 +76,7 @@ class BackgroundService {
     try {
       final callback = PluginUtilities.getCallbackHandle(_nativeEntry)!;
       final String title =
-          "backup_background_service_default_notification".tr();
+          'backup_background_service_default_notification'.tr();
       final bool ok = await _foregroundChannel
           .invokeMethod('enable', [callback.toRawHandle(), title, immediate]);
       return ok;
@@ -122,7 +121,7 @@ class BackgroundService {
   /// Returns `true` if the background service is enabled
   Future<bool> isBackgroundBackupEnabled() async {
     try {
-      return await _foregroundChannel.invokeMethod("isEnabled");
+      return await _foregroundChannel.invokeMethod('isEnabled');
     } catch (error) {
       return false;
     }
@@ -144,12 +143,12 @@ class BackgroundService {
 
   // Yet to be implemented
   Future<Uint8List?> digestFile(String path) {
-    return _foregroundChannel.invokeMethod<Uint8List>("digestFile", [path]);
+    return _foregroundChannel.invokeMethod<Uint8List>('digestFile', [path]);
   }
 
   Future<List<Uint8List?>?> digestFiles(List<String> paths) {
     return _foregroundChannel.invokeListMethod<Uint8List?>(
-      "digestFiles",
+      'digestFiles',
       paths,
     );
   }
@@ -172,7 +171,7 @@ class BackgroundService {
         );
       }
     } catch (error) {
-      debugPrint("[_updateNotification] failed to communicate with plugin");
+      debugPrint('[_updateNotification] failed to communicate with plugin');
     }
     return false;
   }
@@ -189,7 +188,7 @@ class BackgroundService {
             .invokeMethod('showError', [title, content, individualTag]);
       }
     } catch (error) {
-      debugPrint("[_showErrorNotification] failed to communicate with plugin");
+      debugPrint('[_showErrorNotification] failed to communicate with plugin');
     }
     return false;
   }
@@ -201,7 +200,7 @@ class BackgroundService {
       }
     } catch (error) {
       debugPrint(
-        "[_clearErrorNotifications] failed to communicate with plugin",
+        '[_clearErrorNotifications] failed to communicate with plugin',
       );
     }
     return false;
@@ -210,7 +209,7 @@ class BackgroundService {
   /// await to ensure this thread (foreground or background) has exclusive access
   Future<bool> acquireLock() async {
     if (_hasLock) {
-      debugPrint("WARNING: [acquireLock] called more than once");
+      debugPrint('WARNING: [acquireLock] called more than once');
       return true;
     }
     final int lockTime = Timeline.now;
@@ -304,8 +303,8 @@ class BackgroundService {
       PathProviderFoundation.registerWith();
     }
     switch (call.method) {
-      case "backgroundProcessing":
-      case "onAssetsChanged":
+      case 'backgroundProcessing':
+      case 'onAssetsChanged':
         try {
           _clearErrorNotifications();
 
@@ -321,13 +320,13 @@ class BackgroundService {
 
           final bool hasAccess = await waitForLock;
           if (!hasAccess) {
-            debugPrint("[_callHandler] could not acquire lock, exiting");
+            debugPrint('[_callHandler] could not acquire lock, exiting');
             return false;
           }
 
           final translationsOk = await loadTranslations();
           if (!translationsOk) {
-            debugPrint("[_callHandler] could not load translations");
+            debugPrint('[_callHandler] could not load translations');
           }
 
           final bool ok = await _onAssetsChanged();
@@ -338,12 +337,12 @@ class BackgroundService {
         } finally {
           releaseLock();
         }
-      case "systemStop":
+      case 'systemStop':
         _canceledBySystem = true;
         _cancellationToken?.cancel();
         return true;
       default:
-        debugPrint("Unknown method ${call.method}");
+        debugPrint('Unknown method ${call.method}');
         return false;
     }
   }
@@ -366,7 +365,7 @@ class BackgroundService {
     await ref.read(authServiceProvider).setOpenApiServiceEndpoint();
     if (kDebugMode) {
       debugPrint(
-        "[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}",
+        '[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}',
       );
     }
 
@@ -423,7 +422,7 @@ class BackgroundService {
       // Android should check for new assets added while performing backup
     } while (Platform.isAndroid &&
         true ==
-            await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
+            await _backgroundChannel.invokeMethod<bool>('hasContentChanged'));
     return true;
   }
 
@@ -452,8 +451,8 @@ class BackgroundService {
       toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
     } catch (e) {
       _showErrorNotification(
-        title: "backup_background_service_error_title".tr(),
-        content: "backup_background_service_connection_failed_message".tr(),
+        title: 'backup_background_service_error_title'.tr(),
+        content: 'backup_background_service_connection_failed_message'.tr(),
       );
       return false;
     }
@@ -468,7 +467,7 @@ class BackgroundService {
     _assetsToUploadCount = toUpload.length;
     _uploadedAssetsCount = 0;
     _updateNotification(
-      title: "backup_background_service_in_progress_notification".tr(),
+      title: 'backup_background_service_in_progress_notification'.tr(),
       content: notifyTotalProgress
           ? formatAssetBackupProgress(
               _uploadedAssetsCount,
@@ -489,7 +488,6 @@ class BackgroundService {
       _cancellationToken!,
       pmProgressHandler: pmProgressHandler,
       onSuccess: (result) => _onAssetUploaded(
-        result: result,
         shouldNotify: notifyTotalProgress,
       ),
       onProgress: (bytes, totalBytes) =>
@@ -502,8 +500,8 @@ class BackgroundService {
 
     if (!ok && !_cancellationToken!.isCancelled) {
       _showErrorNotification(
-        title: "backup_background_service_error_title".tr(),
-        content: "backup_background_service_backup_failed_message".tr(),
+        title: 'backup_background_service_error_title'.tr(),
+        content: 'backup_background_service_backup_failed_message'.tr(),
       );
     }
 
@@ -511,7 +509,6 @@ class BackgroundService {
   }
 
   void _onAssetUploaded({
-    required SuccessUploadAsset result,
     bool shouldNotify = false,
   }) async {
     if (!shouldNotify) {
@@ -532,7 +529,7 @@ class BackgroundService {
 
   void _updateDetailProgress(String? title, int progress, int total) {
     final String msg =
-        total > 0 ? humanReadableBytesProgress(progress, total) : "";
+        total > 0 ? humanReadableBytesProgress(progress, total) : '';
     // only update if message actually differs (to stop many useless notification updates on large assets or slow connections)
     if (msg != _lastPrintedDetailContent || _lastPrintedDetailTitle != title) {
       _lastPrintedDetailContent = msg;
@@ -561,7 +558,7 @@ class BackgroundService {
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     _showErrorNotification(
-      title: "backup_background_service_upload_failure_notification"
+      title: 'backup_background_service_upload_failure_notification'
           .tr(namedArgs: {'filename': errorAssetInfo.fileName}),
       individualTag: errorAssetInfo.id,
     );
@@ -576,7 +573,7 @@ class BackgroundService {
     }
 
     _throttledDetailNotify.title =
-        "backup_background_service_current_upload_notification"
+        'backup_background_service_current_upload_notification'
             .tr(namedArgs: {'filename': currentUploadAsset.fileName});
     _throttledDetailNotify.progress = 0;
     _throttledDetailNotify.total = 0;
@@ -604,7 +601,7 @@ class BackgroundService {
     } else if (value == 4) {
       return duration > const Duration(hours: 24);
     }
-    assert(false, "Invalid value");
+    assert(false, 'Invalid value');
     return true;
   }
 

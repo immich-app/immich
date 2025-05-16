@@ -50,7 +50,7 @@ class BackupInfoCard extends StatelessWidget {
               style: context.textTheme.titleLarge,
             ),
             Text(
-              "backup_info_card_assets",
+              'backup_info_card_assets',
               style: context.textTheme.labelLarge,
             ).tr(),
           ],

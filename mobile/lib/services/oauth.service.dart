@@ -20,7 +20,7 @@ class OAuthService {
     await _apiService.resolveAndSetEndpoint(serverUrl);
     final redirectUri = '$callbackUrlScheme:///oauth-callback';
     log.info(
-      "Starting OAuth flow with redirect URI: $redirectUri",
+      'Starting OAuth flow with redirect URI: $redirectUri',
     );
 
     final dto = await _apiService.oAuthApi.startOAuth(

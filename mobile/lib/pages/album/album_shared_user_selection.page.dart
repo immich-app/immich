@@ -157,7 +157,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
             ),
             onPressed: sharedUsersList.value.isEmpty ? null : createSharedAlbum,
             child: const Text(
-              "create_album",
+              'create_album',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,

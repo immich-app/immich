@@ -42,7 +42,7 @@ void main() {
       updatedAt: date,
       durationInSeconds: 0,
       type: AssetType.image,
-      fileName: localId ?? remoteId ?? "",
+      fileName: localId ?? remoteId ?? '',
       isFavorite: false,
       isArchived: false,
       isTrashed: false,
@@ -70,10 +70,10 @@ void main() {
     final MockUserService userService = MockUserService();
 
     final owner = UserDto(
-      id: "1",
+      id: '1',
       updatedAt: DateTime.now(),
-      email: "a@b.c",
-      name: "first last",
+      email: 'a@b.c',
+      name: 'first last',
       isAdmin: false,
     );
     late SyncService s;
@@ -90,11 +90,11 @@ void main() {
       );
     });
     final List<Asset> initialAssets = [
-      makeAsset(checksum: "a", remoteId: "0-1"),
-      makeAsset(checksum: "b", remoteId: "2-1"),
-      makeAsset(checksum: "c", localId: "1", remoteId: "1-1"),
-      makeAsset(checksum: "d", localId: "2"),
-      makeAsset(checksum: "e", localId: "3"),
+      makeAsset(checksum: 'a', remoteId: '0-1'),
+      makeAsset(checksum: 'b', remoteId: '2-1'),
+      makeAsset(checksum: 'c', localId: '1', remoteId: '1-1'),
+      makeAsset(checksum: 'd', localId: '2'),
+      makeAsset(checksum: 'e', localId: '3'),
     ];
     setUp(() {
       s = SyncService(
@@ -117,7 +117,7 @@ void main() {
       when(() => userService.getMyUser()).thenReturn(owner);
       when(() => eTagRepository.get(owner.id))
           .thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));
-      when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
+      when(() => eTagRepository.deleteByIds(['1'])).thenAnswer((_) async {});
       when(() => eTagRepository.upsertAll(any())).thenAnswer((_) async {});
       when(() => partnerRepository.getSharedWith()).thenAnswer((_) async => []);
       when(() => userRepository.getAll(sortBy: SortUserBy.id))
@@ -148,9 +148,9 @@ void main() {
     });
     test('test inserting existing assets', () async {
       final List<Asset> remoteAssets = [
-        makeAsset(checksum: "a", remoteId: "0-1"),
-        makeAsset(checksum: "b", remoteId: "2-1"),
-        makeAsset(checksum: "c", remoteId: "1-1"),
+        makeAsset(checksum: 'a', remoteId: '0-1'),
+        makeAsset(checksum: 'b', remoteId: '2-1'),
+        makeAsset(checksum: 'c', remoteId: '1-1'),
       ];
       final bool c1 = await s.syncRemoteAssetsToDb(
         users: [owner],
@@ -163,12 +163,12 @@ void main() {
 
     test('test inserting new assets', () async {
       final List<Asset> remoteAssets = [
-        makeAsset(checksum: "a", remoteId: "0-1"),
-        makeAsset(checksum: "b", remoteId: "2-1"),
-        makeAsset(checksum: "c", remoteId: "1-1"),
-        makeAsset(checksum: "d", remoteId: "1-2"),
-        makeAsset(checksum: "f", remoteId: "1-4"),
-        makeAsset(checksum: "g", remoteId: "3-1"),
+        makeAsset(checksum: 'a', remoteId: '0-1'),
+        makeAsset(checksum: 'b', remoteId: '2-1'),
+        makeAsset(checksum: 'c', remoteId: '1-1'),
+        makeAsset(checksum: 'd', remoteId: '1-2'),
+        makeAsset(checksum: 'f', remoteId: '1-4'),
+        makeAsset(checksum: 'g', remoteId: '3-1'),
       ];
       final bool c1 = await s.syncRemoteAssetsToDb(
         users: [owner],
@@ -185,12 +185,12 @@ void main() {
 
     test('test syncing duplicate assets', () async {
       final List<Asset> remoteAssets = [
-        makeAsset(checksum: "a", remoteId: "0-1"),
-        makeAsset(checksum: "b", remoteId: "1-1"),
-        makeAsset(checksum: "c", remoteId: "2-1"),
-        makeAsset(checksum: "h", remoteId: "2-1b"),
-        makeAsset(checksum: "i", remoteId: "2-1c"),
-        makeAsset(checksum: "j", remoteId: "2-1d"),
+        makeAsset(checksum: 'a', remoteId: '0-1'),
+        makeAsset(checksum: 'b', remoteId: '1-1'),
+        makeAsset(checksum: 'c', remoteId: '2-1'),
+        makeAsset(checksum: 'h', remoteId: '2-1b'),
+        makeAsset(checksum: 'i', remoteId: '2-1c'),
+        makeAsset(checksum: 'j', remoteId: '2-1d'),
       ];
       final bool c1 = await s.syncRemoteAssetsToDb(
         users: [owner],
@@ -224,8 +224,8 @@ void main() {
         loadAssets: (u, d) => remoteAssets,
       );
       expect(c3, isTrue);
-      remoteAssets.add(makeAsset(checksum: "k", remoteId: "2-1e"));
-      remoteAssets.add(makeAsset(checksum: "l", remoteId: "2-2"));
+      remoteAssets.add(makeAsset(checksum: 'k', remoteId: '2-1e'));
+      remoteAssets.add(makeAsset(checksum: 'l', remoteId: '2-2'));
       final bool c4 = await s.syncRemoteAssetsToDb(
         users: [owner],
         getChangedAssets: _failDiff,
@@ -243,17 +243,17 @@ void main() {
       ).thenAnswer((_) async {});
       when(
         () => assetRepository
-            .getAllByRemoteId(["2-1", "1-1"], state: AssetState.merged),
+            .getAllByRemoteId(['2-1', '1-1'], state: AssetState.merged),
       ).thenAnswer((_) async => [initialAssets[2]]);
       when(() => assetRepository.getAllByOwnerIdChecksum(any(), any()))
           .thenAnswer((_) async => [initialAssets[0], null, null]); //afg
       final List<Asset> toUpsert = [
-        makeAsset(checksum: "a", remoteId: "0-1"), // changed
-        makeAsset(checksum: "f", remoteId: "0-2"), // new
-        makeAsset(checksum: "g", remoteId: "0-3"), // new
+        makeAsset(checksum: 'a', remoteId: '0-1'), // changed
+        makeAsset(checksum: 'f', remoteId: '0-2'), // new
+        makeAsset(checksum: 'g', remoteId: '0-3'), // new
       ];
       toUpsert[0].isFavorite = true;
-      final List<String> toDelete = ["2-1", "1-1"];
+      final List<String> toDelete = ['2-1', '1-1'];
       final expected = [...toUpsert];
       expected[0].id = initialAssets[0].id;
       final bool c = await s.syncRemoteAssetsToDb(
@@ -265,7 +265,7 @@ void main() {
       verify(() => assetRepository.updateAll(expected));
     });
 
-    group("upsertAssetsWithExif", () {
+    group('upsertAssetsWithExif', () {
       test('test upsert with EXIF data', () async {
         final assets = [AssetStub.image1, AssetStub.image2];
 

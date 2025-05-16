@@ -62,27 +62,27 @@ Future<void> initApp() async {
   if (kReleaseMode && Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
-      debugPrint("Enabled high refresh mode");
+      debugPrint('Enabled high refresh mode');
     } catch (e) {
-      debugPrint("Error setting high refresh rate: $e");
+      debugPrint('Error setting high refresh rate: $e');
     }
   }
 
   await DynamicTheme.fetchSystemPalette();
 
-  final log = Logger("ImmichErrorLogger");
+  final log = Logger('ImmichErrorLogger');
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
     log.severe(
       'FlutterError - Catch all',
-      "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
+      '${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}',
       details.stack,
     );
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint("FlutterError - Catch all: $error \n $stack");
+    debugPrint('FlutterError - Catch all: $error \n $stack');
     log.severe('PlatformDispatcher - Catch all', error, stack);
     return true;
   };
@@ -122,23 +122,23 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        debugPrint("[APP STATE] resumed");
+        debugPrint('[APP STATE] resumed');
         ref.read(appStateProvider.notifier).handleAppResume();
         break;
       case AppLifecycleState.inactive:
-        debugPrint("[APP STATE] inactive");
+        debugPrint('[APP STATE] inactive');
         ref.read(appStateProvider.notifier).handleAppInactivity();
         break;
       case AppLifecycleState.paused:
-        debugPrint("[APP STATE] paused");
+        debugPrint('[APP STATE] paused');
         ref.read(appStateProvider.notifier).handleAppPause();
         break;
       case AppLifecycleState.detached:
-        debugPrint("[APP STATE] detached");
+        debugPrint('[APP STATE] detached');
         ref.read(appStateProvider.notifier).handleAppDetached();
         break;
       case AppLifecycleState.hidden:
-        debugPrint("[APP STATE] hidden");
+        debugPrint('[APP STATE] hidden');
         ref.read(appStateProvider.notifier).handleAppHidden();
         break;
     }
@@ -176,7 +176,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   initState() {
     super.initState();
-    initApp().then((_) => debugPrint("App Init Completed"));
+    initApp().then((_) => debugPrint('App Init Completed'));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
       ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
@@ -227,7 +227,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   }
 }
 
-// ignore: prefer-single-widget-per-file
 class MainWidget extends StatelessWidget {
   const MainWidget({super.key});
 

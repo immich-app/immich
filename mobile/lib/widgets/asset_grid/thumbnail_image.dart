@@ -48,7 +48,7 @@ class ThumbnailImage extends ConsumerWidget {
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
     final isFromDto = asset.id == noDbId;
 
-    Widget buildSelectionIcon(Asset asset) {
+    Widget buildSelectionIcon() {
       if (isSelected) {
         return Container(
           decoration: BoxDecoration(
@@ -109,7 +109,7 @@ class ThumbnailImage extends ConsumerWidget {
           children: [
             if (asset.stackCount > 1)
               Text(
-                "${asset.stackCount}",
+                '${asset.stackCount}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
@@ -233,7 +233,7 @@ class ThumbnailImage extends ConsumerWidget {
             padding: const EdgeInsets.all(3.0),
             child: Align(
               alignment: Alignment.topLeft,
-              child: buildSelectionIcon(asset),
+              child: buildSelectionIcon(),
             ),
           ),
       ],

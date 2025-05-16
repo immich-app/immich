@@ -49,7 +49,7 @@ class SearchPage extends HookConsumerWidget {
             ),
         mediaType: prefilter?.mediaType ?? AssetType.other,
         language:
-            "${context.locale.languageCode}-${context.locale.countryCode}",
+            '${context.locale.languageCode}-${context.locale.countryCode}',
       ),
     );
 
@@ -352,8 +352,8 @@ class SearchPage extends HookConsumerWidget {
         dateRangeCurrentFilterWidget.value = Text(
           'search_filter_date_interval'.tr(
             namedArgs: {
-              "start": DateFormat.yMMMd().format(date.start.toLocal()),
-              "end": DateFormat.yMMMd().format(date.end.toLocal()),
+              'start': DateFormat.yMMMd().format(date.start.toLocal()),
+              'end': DateFormat.yMMMd().format(date.end.toLocal()),
             },
           ),
           style: context.textTheme.labelLarge,

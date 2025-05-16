@@ -57,7 +57,7 @@ class BackgroundBackupSettings extends ConsumerWidget {
                   mode: LaunchMode.externalApplication,
                 ),
                 child: const Text(
-                  "backup_controller_page_background_battery_info_link",
+                  'backup_controller_page_background_battery_info_link',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 ).tr(),
               ),

@@ -142,7 +142,7 @@ class CreateAlbumPage extends HookConsumerWidget {
               AlbumActionFilledButton(
                 iconData: Icons.add_photo_alternate_outlined,
                 onPressed: onSelectPhotosButtonPressed,
-                labelText: "add_photos".tr(),
+                labelText: 'add_photos'.tr(),
               ),
             ],
           ),

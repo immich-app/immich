@@ -28,7 +28,7 @@ class AdvancedBottomSheet extends HookConsumerWidget {
               children: [
                 const Align(
                   child: Text(
-                    "ADVANCED INFO",
+                    'ADVANCED INFO',
                     style: TextStyle(fontSize: 12.0),
                   ),
                 ),
@@ -63,7 +63,7 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                                 context.scaffoldMessenger.showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      "Copied to clipboard",
+                                      'Copied to clipboard',
                                       style:
                                           context.textTheme.bodyLarge?.copyWith(
                                         color: context.primaryColor,
@@ -85,7 +85,7 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                           style: const TextStyle(
                             fontSize: 12.0,
                             fontWeight: FontWeight.bold,
-                            fontFamily: "Inconsolata",
+                            fontFamily: 'Inconsolata',
                           ),
                           showCursor: true,
                         ),

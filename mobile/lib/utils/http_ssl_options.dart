@@ -24,7 +24,7 @@ class HttpSSLOptions {
   static void _apply(bool allowSelfSignedSSLCert) {
     String? serverHost;
     if (allowSelfSignedSSLCert && Store.tryGet(StoreKey.currentUser) != null) {
-      serverHost = Uri.parse(Store.tryGet(StoreKey.serverEndpoint) ?? "").host;
+      serverHost = Uri.parse(Store.tryGet(StoreKey.serverEndpoint) ?? '').host;
     }
 
     SSLClientCertStoreVal? clientCert = SSLClientCertStoreVal.load();
@@ -33,13 +33,13 @@ class HttpSSLOptions {
         HttpSSLCertOverride(allowSelfSignedSSLCert, serverHost, clientCert);
 
     if (Platform.isAndroid) {
-      _channel.invokeMethod("apply", [
+      _channel.invokeMethod('apply', [
         allowSelfSignedSSLCert,
         serverHost,
         clientCert?.data,
         clientCert?.password,
       ]).onError<PlatformException>((e, _) {
-        final log = Logger("HttpSSLOptions");
+        final log = Logger('HttpSSLOptions');
         log.severe('Failed to set SSL options', e.message);
       });
     }

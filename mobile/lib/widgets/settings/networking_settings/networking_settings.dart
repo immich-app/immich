@@ -34,8 +34,8 @@ class NetworkingSettings extends HookConsumerWidget {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text("location_permission".tr()),
-              content: Text("location_permission_content".tr()),
+              title: Text('location_permission'.tr()),
+              content: Text('location_permission_content'.tr()),
               actions: [
                 TextButton(
                   onPressed: () async {
@@ -45,7 +45,7 @@ class NetworkingSettings extends HookConsumerWidget {
 
                     Navigator.pop(context, isGrant);
                   },
-                  child: Text("grant_permission".tr()),
+                  child: Text('grant_permission'.tr()),
                 ),
               ],
             );
@@ -58,8 +58,8 @@ class NetworkingSettings extends HookConsumerWidget {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text("background_location_permission".tr()),
-              content: Text("background_location_permission_content".tr()),
+              title: Text('background_location_permission'.tr()),
+              content: Text('background_location_permission_content'.tr()),
               actions: [
                 TextButton(
                   onPressed: () async {
@@ -69,7 +69,7 @@ class NetworkingSettings extends HookConsumerWidget {
 
                     Navigator.pop(context, isGrant);
                   },
-                  child: Text("grant_permission".tr()),
+                  child: Text('grant_permission'.tr()),
                 ),
               ],
             );
@@ -100,7 +100,7 @@ class NetworkingSettings extends HookConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 8),
           child: NetworkPreferenceTitle(
-            title: "current_server_address".tr().toUpperCase(),
+            title: 'current_server_address'.tr().toUpperCase(),
             icon: (currentEndpoint?.startsWith('https') ?? false)
                 ? Icons.https_outlined
                 : Icons.http_outlined,
@@ -127,7 +127,7 @@ class NetworkingSettings extends HookConsumerWidget {
                       Icons.circle_outlined,
                     ),
               title: Text(
-                currentEndpoint ?? "--",
+                currentEndpoint ?? '--',
                 style: TextStyle(
                   fontSize: 16,
                   fontFamily: 'Inconsolata',
@@ -147,13 +147,13 @@ class NetworkingSettings extends HookConsumerWidget {
         SettingsSwitchListTile(
           enabled: true,
           valueNotifier: featureEnabled,
-          title: "automatic_endpoint_switching_title".tr(),
-          subtitle: "automatic_endpoint_switching_subtitle".tr(),
+          title: 'automatic_endpoint_switching_title'.tr(),
+          subtitle: 'automatic_endpoint_switching_subtitle'.tr(),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 16),
           child: NetworkPreferenceTitle(
-            title: "local_network".tr().toUpperCase(),
+            title: 'local_network'.tr().toUpperCase(),
             icon: Icons.home_outlined,
           ),
         ),
@@ -163,7 +163,7 @@ class NetworkingSettings extends HookConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
           child: NetworkPreferenceTitle(
-            title: "external_network".tr().toUpperCase(),
+            title: 'external_network'.tr().toUpperCase(),
             icon: Icons.dns_outlined,
           ),
         ),

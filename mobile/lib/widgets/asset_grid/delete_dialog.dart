@@ -1,5 +1,3 @@
-// ignore_for_file: prefer-single-widget-per-file
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -8,10 +6,10 @@ import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 class DeleteDialog extends ConfirmDialog {
   const DeleteDialog({super.key, String? alert, required Function onDelete})
       : super(
-          title: "delete_dialog_title",
-          content: alert ?? "delete_dialog_alert",
-          cancel: "cancel",
-          ok: "delete",
+          title: 'delete_dialog_title',
+          content: alert ?? 'delete_dialog_alert',
+          cancel: 'cancel',
+          ok: 'delete',
           onOk: onDelete,
         );
 }
@@ -40,13 +38,13 @@ class DeleteLocalOnlyDialog extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
-      title: const Text("delete_dialog_title").tr(),
-      content: const Text("delete_dialog_alert_local_non_backed_up").tr(),
+      title: const Text('delete_dialog_title').tr(),
+      content: const Text('delete_dialog_alert_local_non_backed_up').tr(),
       actions: [
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
-            "cancel",
+            'cancel',
             style: TextStyle(
               color: context.primaryColor,
               fontWeight: FontWeight.bold,
@@ -56,7 +54,7 @@ class DeleteLocalOnlyDialog extends StatelessWidget {
         TextButton(
           onPressed: onDeleteBackedUpOnly,
           child: Text(
-            "delete_local_dialog_ok_backed_up_only",
+            'delete_local_dialog_ok_backed_up_only',
             style: TextStyle(
               color: context.colorScheme.tertiary,
               fontWeight: FontWeight.bold,
@@ -66,7 +64,7 @@ class DeleteLocalOnlyDialog extends StatelessWidget {
         TextButton(
           onPressed: onForceDelete,
           child: Text(
-            "delete_local_dialog_ok_force",
+            'delete_local_dialog_ok_force',
             style: TextStyle(
               color: Colors.red[400],
               fontWeight: FontWeight.bold,
