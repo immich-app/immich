@@ -67,13 +67,14 @@ export class TimeBucketAssetResponseDto implements TimeBucketAssets {
 
   ratio!: number[];
 
-  isFavorite!: number[];
+  isFavorite!: boolean[];
 
-  visibility!: string[];
+  @ApiProperty({ enum: AssetVisibility, enumName: 'AssetVisibility', isArray: true })
+  visibility!: AssetVisibility[];
 
-  isTrashed!: number[];
+  isTrashed!: boolean[];
 
-  isImage!: number[];
+  isImage!: boolean[];
 
   @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
   thumbhash!: (string | null)[];

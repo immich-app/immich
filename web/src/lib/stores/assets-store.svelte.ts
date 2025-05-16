@@ -30,19 +30,6 @@ const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
 } = TUNABLES;
 
-const getAssetVisibility = (string: string): AssetVisibility => {
-  switch (string) {
-    case AssetVisibility.Archive: {
-      return AssetVisibility.Archive;
-    }
-    case AssetVisibility.Hidden: {
-      return AssetVisibility.Hidden;
-    }
-    default: {
-      return AssetVisibility.Timeline;
-    }
-  }
-};
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
@@ -466,21 +453,22 @@ export class AssetBucket {
   // note - if the assets are not part of this bucket, they will not be added
   addAssets(bucketAssets: TimeBucketAssetResponseDto) {
     const addContext = new AddContext();
+    const people: string[] = [];
     for (let i = 0; i < bucketAssets.id.length; i++) {
       const timelineAsset: TimelineAsset = {
         city: bucketAssets.city[i],
         country: bucketAssets.country[i],
         duration: bucketAssets.duration[i],
         id: bucketAssets.id[i],
-        visibility: getAssetVisibility(bucketAssets.visibility[i]),
-        isFavorite: Boolean(bucketAssets.isFavorite[i]),
-        isImage: Boolean(bucketAssets.isImage[i]),
-        isTrashed: Boolean(bucketAssets.isTrashed[i]),
+        visibility: bucketAssets.visibility[i],
+        isFavorite: bucketAssets.isFavorite[i],
+        isImage: bucketAssets.isImage[i],
+        isTrashed: bucketAssets.isTrashed[i],
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime: bucketAssets.localDateTime[i],
         ownerId: bucketAssets.ownerId[i],
-        people: [],
+        people,
         projectionType: bucketAssets.projectionType[i],
         ratio: bucketAssets.ratio[i],
         stack: bucketAssets.stack?.[i]

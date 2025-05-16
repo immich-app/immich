@@ -14094,19 +14094,19 @@
           },
           "isFavorite": {
             "items": {
-              "type": "number"
+              "type": "boolean"
             },
             "type": "array"
           },
           "isImage": {
             "items": {
-              "type": "number"
+              "type": "boolean"
             },
             "type": "array"
           },
           "isTrashed": {
             "items": {
-              "type": "number"
+              "type": "boolean"
             },
             "type": "array"
           },
@@ -14164,7 +14164,7 @@
           },
           "visibility": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/AssetVisibility"
             },
             "type": "array"
           }

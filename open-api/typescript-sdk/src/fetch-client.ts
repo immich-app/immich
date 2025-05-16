@@ -1424,9 +1424,9 @@ export type TimeBucketAssetResponseDto = {
     country: (string | null)[];
     duration: (string | null)[];
     id: string[];
-    isFavorite: number[];
-    isImage: number[];
-    isTrashed: number[];
+    isFavorite: boolean[];
+    isImage: boolean[];
+    isTrashed: boolean[];
     livePhotoVideoId: (string | null)[];
     localDateTime: string[];
     ownerId: string[];
@@ -1435,7 +1435,7 @@ export type TimeBucketAssetResponseDto = {
     /** (stack ID, stack asset count) tuple */
     stack?: (string[] | null)[];
     thumbhash: (string | null)[];
-    visibility: string[];
+    visibility: AssetVisibility[];
 };
 export type TimeBucketsResponseDto = {
     count: number;

@@ -1,3 +1,5 @@
+import { AssetVisibility } from 'src/enum';
+
 export type TimelineStack = {
   id: string;
   primaryAssetId: string;
@@ -13,10 +15,10 @@ export type TimeBucketAssets = {
   id: string[];
   ownerId: string[];
   ratio: number[];
-  isFavorite: number[];
-  visibility: string[];
-  isTrashed: number[];
-  isImage: number[];
+  isFavorite: boolean[];
+  visibility: AssetVisibility[];
+  isTrashed: boolean[];
+  isImage: boolean[];
   thumbhash: (string | null)[];
   localDateTime: string[];
   stack?: ([string, string] | null)[];

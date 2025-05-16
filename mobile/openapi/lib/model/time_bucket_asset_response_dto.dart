@@ -38,11 +38,11 @@ class TimeBucketAssetResponseDto {
 
   List<String> id;
 
-  List<num> isFavorite;
+  List<bool> isFavorite;
 
-  List<num> isImage;
+  List<bool> isImage;
 
-  List<num> isTrashed;
+  List<bool> isTrashed;
 
   List<String?> livePhotoVideoId;
 
@@ -59,7 +59,7 @@ class TimeBucketAssetResponseDto {
 
   List<String?> thumbhash;
 
-  List<String> visibility;
+  List<AssetVisibility> visibility;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TimeBucketAssetResponseDto &&
@@ -143,13 +143,13 @@ class TimeBucketAssetResponseDto {
             ? (json[r'id'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         isFavorite: json[r'isFavorite'] is Iterable
-            ? (json[r'isFavorite'] as Iterable).cast<num>().toList(growable: false)
+            ? (json[r'isFavorite'] as Iterable).cast<bool>().toList(growable: false)
             : const [],
         isImage: json[r'isImage'] is Iterable
-            ? (json[r'isImage'] as Iterable).cast<num>().toList(growable: false)
+            ? (json[r'isImage'] as Iterable).cast<bool>().toList(growable: false)
             : const [],
         isTrashed: json[r'isTrashed'] is Iterable
-            ? (json[r'isTrashed'] as Iterable).cast<num>().toList(growable: false)
+            ? (json[r'isTrashed'] as Iterable).cast<bool>().toList(growable: false)
             : const [],
         livePhotoVideoId: json[r'livePhotoVideoId'] is Iterable
             ? (json[r'livePhotoVideoId'] as Iterable).cast<String>().toList(growable: false)
@@ -174,9 +174,7 @@ class TimeBucketAssetResponseDto {
         thumbhash: json[r'thumbhash'] is Iterable
             ? (json[r'thumbhash'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        visibility: json[r'visibility'] is Iterable
-            ? (json[r'visibility'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        visibility: AssetVisibility.listFromJson(json[r'visibility']),
       );
     }
     return null;

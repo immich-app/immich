@@ -1,5 +1,5 @@
 import { Controller, Get, Query, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TimeBucketAssetDto, TimeBucketAssetResponseDto, TimeBucketDto } from 'src/dtos/time-bucket.dto';
@@ -20,13 +20,9 @@ export class TimelineController {
 
   @Get('bucket')
   @Authenticated({ permission: Permission.ASSET_READ, sharedLink: true })
-  async getTimeBucket(
-    @Auth() auth: AuthDto,
-    @Query() dto: TimeBucketAssetDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<TimeBucketAssetResponseDto> {
+  @ApiOkResponse({ type: TimeBucketAssetResponseDto })
+  getTimeBucket(@Auth() auth: AuthDto, @Query() dto: TimeBucketAssetDto, @Res({ passthrough: true }) res: Response) {
     res.contentType('application/json');
-    const jsonBucket = await this.service.getTimeBucket(auth, dto);
-    return jsonBucket as unknown as TimeBucketAssetResponseDto;
+    return this.service.getTimeBucket(auth, dto);
   }
 }

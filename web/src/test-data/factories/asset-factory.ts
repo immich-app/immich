@@ -78,9 +78,9 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.duration.push(asset.duration!);
     bucketAssets.id.push(asset.id);
     bucketAssets.visibility.push(asset.visibility);
-    bucketAssets.isFavorite.push(asset.isFavorite ? 1 : 0);
-    bucketAssets.isImage.push(asset.isImage ? 1 : 0);
-    bucketAssets.isTrashed.push(asset.isTrashed ? 1 : 0);
+    bucketAssets.isFavorite.push(asset.isFavorite);
+    bucketAssets.isImage.push(asset.isImage);
+    bucketAssets.isTrashed.push(asset.isTrashed);
     bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
     bucketAssets.localDateTime.push(asset.localDateTime);
     bucketAssets.ownerId.push(asset.ownerId);
