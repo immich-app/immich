@@ -293,12 +293,14 @@ class SyncAssetV1VisibilityEnum {
   static const archive = SyncAssetV1VisibilityEnum._(r'archive');
   static const timeline = SyncAssetV1VisibilityEnum._(r'timeline');
   static const hidden = SyncAssetV1VisibilityEnum._(r'hidden');
+  static const locked = SyncAssetV1VisibilityEnum._(r'locked');
 
   /// List of all possible values in this [enum][SyncAssetV1VisibilityEnum].
   static const values = <SyncAssetV1VisibilityEnum>[
     archive,
     timeline,
     hidden,
+    locked,
   ];
 
   static SyncAssetV1VisibilityEnum? fromJson(dynamic value) => SyncAssetV1VisibilityEnumTypeTransformer().decode(value);
@@ -340,6 +342,7 @@ class SyncAssetV1VisibilityEnumTypeTransformer {
         case r'archive': return SyncAssetV1VisibilityEnum.archive;
         case r'timeline': return SyncAssetV1VisibilityEnum.timeline;
         case r'hidden': return SyncAssetV1VisibilityEnum.hidden;
+        case r'locked': return SyncAssetV1VisibilityEnum.locked;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

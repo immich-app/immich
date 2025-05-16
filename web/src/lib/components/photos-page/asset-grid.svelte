@@ -45,7 +45,13 @@
     enableRouting: boolean;
     assetStore: AssetStore;
     assetInteraction: AssetInteraction;
-    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.FAVORITE | AssetAction.UNFAVORITE | null;
+    removeAction?:
+      | AssetAction.UNARCHIVE
+      | AssetAction.ARCHIVE
+      | AssetAction.FAVORITE
+      | AssetAction.UNFAVORITE
+      | AssetAction.SET_VISIBILITY_TIMELINE
+      | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
     isShared?: boolean;
@@ -429,7 +435,9 @@
       case AssetAction.TRASH:
       case AssetAction.RESTORE:
       case AssetAction.DELETE:
-      case AssetAction.ARCHIVE: {
+      case AssetAction.ARCHIVE:
+      case AssetAction.SET_VISIBILITY_LOCKED:
+      case AssetAction.SET_VISIBILITY_TIMELINE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (await handleNext()) || (await handlePrevious()) || (await handleClose({ asset: action.asset }));
@@ -457,6 +465,7 @@
 
       case AssetAction.UNSTACK: {
         updateUnstackedAssetInTimeline(assetStore, action.assets);
+        break;
       }
     }
   };
