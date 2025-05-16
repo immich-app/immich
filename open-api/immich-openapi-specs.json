@@ -11075,6 +11075,7 @@
           },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
+            "format": "uuid",
             "type": "string"
           },
           "id": {
@@ -11280,6 +11281,7 @@
           },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
+            "format": "uuid",
             "type": "string"
           },
           "isFavorite": {

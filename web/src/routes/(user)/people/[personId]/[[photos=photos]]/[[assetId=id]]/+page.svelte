@@ -328,6 +328,7 @@
       return;
     }
 
+    person = updatedPerson;
     people = people.map((person: PersonResponseDto) => {
       if (person.id === updatedPerson.id) {
         return updatedPerson;
