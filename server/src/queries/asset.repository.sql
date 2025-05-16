@@ -494,3 +494,34 @@ where
   and "assets"."updatedAt" > $3
 limit
   $4
+
+-- AssetRepository.detectOfflineExternalAssets
+update "assets"
+set
+  "isOffline" = $1,
+  "deletedAt" = $2
+where
+  "isOffline" = $3
+  and "isExternal" = $4
+  and "libraryId" = $5::uuid
+  and (
+    not "originalPath" like $6
+    or "originalPath" like $7
+  )
+
+-- AssetRepository.filterNewExternalAssetPaths
+select
+  "path"
+from
+  unnest(array[$1]::text[]) as "path"
+where
+  not exists (
+    select
+      "originalPath"
+    from
+      "assets"
+    where
+      "assets"."originalPath" = "path"
+      and "libraryId" = $2::uuid
+      and "isExternal" = $3
+  )

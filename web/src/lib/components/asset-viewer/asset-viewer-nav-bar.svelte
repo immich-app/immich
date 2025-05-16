@@ -12,6 +12,7 @@
   import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/set-person-featured-action.svelte';
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/set-profile-picture-action.svelte';
+  import SetVisibilityAction from '$lib/components/asset-viewer/actions/set-visibility-action.svelte';
   import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
@@ -24,9 +25,11 @@
   import { getAssetJobName, getSharedLink } from '$lib/utils';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetJobName,
     AssetTypeEnum,
+    Visibility,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -91,6 +94,7 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
+  let isLocked = $derived(asset.visibility === Visibility.Locked);
 
   // $: showEditorButton =
   //   isOwner &&
@@ -112,7 +116,7 @@
     {/if}
   </div>
   <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
-    {#if !asset.isTrashed && $user}
+    {#if !asset.isTrashed && $user && !isLocked}
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
@@ -135,7 +139,7 @@
     {/if}
 
     {#if !isOwner && showDownloadButton}
-      <DownloadAction {asset} />
+      <DownloadAction asset={toTimelineAsset(asset)} />
     {/if}
 
     {#if showDetailButton}
@@ -159,17 +163,20 @@
       <DeleteAction {asset} {onAction} {preAction} />
 
       <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
-        {#if showSlideshow}
+        {#if showSlideshow && !isLocked}
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
         {#if showDownloadButton}
-          <DownloadAction {asset} menuItem />
+          <DownloadAction asset={toTimelineAsset(asset)} menuItem />
         {/if}
-        {#if asset.isTrashed}
-          <RestoreAction {asset} {onAction} />
-        {:else}
-          <AddToAlbumAction {asset} {onAction} />
-          <AddToAlbumAction {asset} {onAction} shared />
+
+        {#if !isLocked}
+          {#if asset.isTrashed}
+            <RestoreAction {asset} {onAction} />
+          {:else}
+            <AddToAlbumAction {asset} {onAction} />
+            <AddToAlbumAction {asset} {onAction} shared />
+          {/if}
         {/if}
 
         {#if isOwner}
@@ -183,21 +190,28 @@
           {#if person}
             <SetFeaturedPhotoAction {asset} {person} />
           {/if}
-          {#if asset.type === AssetTypeEnum.Image}
+          {#if asset.type === AssetTypeEnum.Image && !isLocked}
             <SetProfilePictureAction {asset} />
           {/if}
-          <ArchiveAction {asset} {onAction} {preAction} />
-          <MenuOption
-            icon={mdiUpload}
-            onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
-            text={$t('replace_with_upload')}
-          />
-          {#if !asset.isArchived && !asset.isTrashed}
+
+          {#if !isLocked}
+            <ArchiveAction {asset} {onAction} {preAction} />
             <MenuOption
-              icon={mdiImageSearch}
-              onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
-              text={$t('view_in_timeline')}
+              icon={mdiUpload}
+              onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+              text={$t('replace_with_upload')}
             />
+            {#if !asset.isArchived && !asset.isTrashed}
+              <MenuOption
+                icon={mdiImageSearch}
+                onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
+                text={$t('view_in_timeline')}
+              />
+            {/if}
+          {/if}
+
+          {#if !asset.isTrashed}
+            <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
           {/if}
           <hr />
           <MenuOption

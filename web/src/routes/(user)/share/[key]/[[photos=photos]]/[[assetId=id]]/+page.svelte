@@ -1,6 +1,5 @@
 <script lang="ts">
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
@@ -12,6 +11,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { getMySharedLink, SharedLinkType } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -58,17 +58,6 @@
   <meta name="description" content={description} />
 </svelte:head>
 {#if passwordRequired}
-  <header>
-    <ControlAppBar showBackButton={false}>
-      {#snippet leading()}
-        <ImmichLogoSmallLink />
-      {/snippet}
-
-      {#snippet trailing()}
-        <ThemeButton />
-      {/snippet}
-    </ControlAppBar>
-  </header>
   <main
     class="relative h-dvh overflow-hidden px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] sm:px-12 md:px-24 lg:px-40"
   >
@@ -85,6 +74,17 @@
       </div>
     </div>
   </main>
+  <header>
+    <ControlAppBar showBackButton={false}>
+      {#snippet leading()}
+        <ImmichLogoSmallLink />
+      {/snippet}
+
+      {#snippet trailing()}
+        <ThemeButton />
+      {/snippet}
+    </ControlAppBar>
+  </header>
 {/if}
 
 {#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}

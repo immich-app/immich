@@ -122,7 +122,7 @@
 
   const onAssetDelete = (assetIds: string[]) => {
     const assetIdSet = new Set(assetIds);
-    searchResultAssets = searchResultAssets.filter((a: TimelineAsset) => !assetIdSet.has(a.id));
+    searchResultAssets = searchResultAssets.filter((asset: TimelineAsset) => !assetIdSet.has(asset.id));
   };
   const handleSelectAll = () => {
     assetInteraction.selectAssets(searchResultAssets);
@@ -160,7 +160,7 @@
           : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
-      searchResultAssets.push(...assets.items.map((a) => toTimelineAsset(a)));
+      searchResultAssets.push(...assets.items.map((asset) => toTimelineAsset(asset)));
 
       nextPage = Number(assets.nextPage) || 0;
     } catch (error) {
@@ -238,7 +238,7 @@
 
     if (terms.isNotInAlbum.toString() == 'true') {
       const assetIdSet = new Set(assetIds);
-      searchResultAssets = searchResultAssets.filter((a) => !assetIdSet.has(a.id));
+      searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
     }
   };
 
@@ -251,7 +251,7 @@
 
 <section>
   {#if assetInteraction.selectionActive}
-    <div class="fixed z-[100] top-0 start-0 w-full">
+    <div class="fixed top-0 start-0 w-full">
       <AssetSelectControlBar
         assets={assetInteraction.selectedAssets}
         clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -264,9 +264,9 @@
         </ButtonContextMenu>
         <FavoriteAction
           removeFavorite={assetInteraction.isAllFavorite}
-          onFavorite={(ids, isFavorite) => {
-            for (const id of ids) {
-              const asset = searchResultAssets.find((asset) => asset.id === id);
+          onFavorite={(assetIds, isFavorite) => {
+            for (const assetId of assetIds) {
+              const asset = searchResultAssets.find((searchAsset) => searchAsset.id === assetId);
               if (asset) {
                 asset.isFavorite = isFavorite;
               }
@@ -289,9 +289,9 @@
       </AssetSelectControlBar>
     </div>
   {:else}
-    <div class="fixed z-[100] top-0 start-0 w-full">
+    <div class="fixed top-0 start-0 w-full">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
-        <div class="-z-[1] bg-light" style="position:absolute;top:0;left:0;right:0;bottom:0;"></div>
+        <div class="absolute bg-light"></div>
         <div class="w-full flex-1 ps-4">
           <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
         </div>
@@ -305,25 +305,25 @@
     id="search-chips"
     class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
   >
-    {#each getObjectKeys(terms) as key (key)}
-      {@const value = terms[key]}
+    {#each getObjectKeys(terms) as searchKey (searchKey)}
+      {@const value = terms[searchKey]}
       <div class="flex place-content-center place-items-center text-xs">
         <div
           class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
           {value === true ? 'rounded-full' : 'rounded-s-full'}"
         >
-          {getHumanReadableSearchKey(key as keyof SearchTerms)}
+          {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
         </div>
 
         {#if value !== true}
           <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-e-full">
-            {#if (key === 'takenAfter' || key === 'takenBefore') && typeof value === 'string'}
+            {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
               {getHumanReadableDate(value)}
-            {:else if key === 'personIds' && Array.isArray(value)}
+            {:else if searchKey === 'personIds' && Array.isArray(value)}
               {#await getPersonName(value) then personName}
                 {personName}
               {/await}
-            {:else if key === 'tagIds' && Array.isArray(value)}
+            {:else if searchKey === 'tagIds' && Array.isArray(value)}
               {#await getTagNames(value) then tagNames}
                 {tagNames}
               {/await}

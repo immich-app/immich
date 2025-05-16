@@ -21,32 +21,6 @@
     --immich-dark-success: 56 142 60;
     --immich-dark-warning: 245 124 0;
   }
-
-  :root {
-    /* light */
-    --immich-ui-primary: 66 80 175;
-    --immich-ui-dark: 58 58 58;
-    --immich-ui-light: 255 255 255;
-    --immich-ui-success: 16 188 99;
-    --immich-ui-danger: 200 60 60;
-    --immich-ui-warning: 216 143 64;
-    --immich-ui-info: 8 111 230;
-    --immich-ui-default-border: 209 213 219;
-    --immich-ui-gray: 246 246 246;
-  }
-
-  .dark {
-    /* dark */
-    --immich-ui-primary: 172 203 250;
-    --immich-ui-light: 0 0 0;
-    --immich-ui-dark: 229 231 235;
-    --immich-ui-danger: 246 125 125;
-    --immich-ui-success: 72 237 152;
-    --immich-ui-warning: 254 197 132;
-    --immich-ui-info: 121 183 254;
-    --immich-ui-default-border: 55 65 81;
-    --immich-ui-gray: 33 33 33;
-  }
 }
 
 @font-face {

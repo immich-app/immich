@@ -10,10 +10,10 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
+  import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -142,7 +142,7 @@
 
 <UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
-    <SideBarSection>
+    <Sidebar>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} breakpoint="md" />
       <section>
         <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
@@ -156,7 +156,7 @@
           />
         </div>
       </section>
-    </SideBarSection>
+    </Sidebar>
   {/snippet}
 
   {#snippet buttons()}

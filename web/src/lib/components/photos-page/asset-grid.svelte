@@ -5,6 +5,7 @@
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
+  import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -33,7 +34,6 @@
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
-  import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
 
@@ -46,7 +46,13 @@
     enableRouting: boolean;
     assetStore: AssetStore;
     assetInteraction: AssetInteraction;
-    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.FAVORITE | AssetAction.UNFAVORITE | null;
+    removeAction?:
+      | AssetAction.UNARCHIVE
+      | AssetAction.ARCHIVE
+      | AssetAction.FAVORITE
+      | AssetAction.UNFAVORITE
+      | AssetAction.SET_VISIBILITY_TIMELINE
+      | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
     isShared?: boolean;
@@ -426,7 +432,9 @@
       case AssetAction.TRASH:
       case AssetAction.RESTORE:
       case AssetAction.DELETE:
-      case AssetAction.ARCHIVE: {
+      case AssetAction.ARCHIVE:
+      case AssetAction.SET_VISIBILITY_LOCKED:
+      case AssetAction.SET_VISIBILITY_TIMELINE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (await handleNext()) || (await handlePrevious()) || (await handleClose(action.asset));
@@ -454,6 +462,7 @@
 
       case AssetAction.UNSTACK: {
         updateUnstackedAssetInTimeline(assetStore, action.assets);
+        break;
       }
     }
   };

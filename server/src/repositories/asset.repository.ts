@@ -890,9 +890,7 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({
-    params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
-  })
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING], [DummyValue.STRING]] })
   async detectOfflineExternalAssets(
     libraryId: string,
     importPaths: string[],
@@ -919,9 +917,7 @@ export class AssetRepository {
       .executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({
-    params: [{ libraryId: DummyValue.UUID, paths: [DummyValue.STRING] }],
-  })
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
   async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
     const result = await this.db
       .selectFrom(unnest(paths).as('path'))

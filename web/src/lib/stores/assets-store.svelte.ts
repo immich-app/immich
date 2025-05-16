@@ -615,8 +615,7 @@ export class AssetBucket {
   }
 }
 
-const isMismatched = (option: boolean | undefined, value: boolean): boolean =>
-  option === undefined ? false : option !== value;
+const isMismatched = <T>(option: T | undefined, value: T): boolean => (option === undefined ? false : option !== value);
 
 interface AddAsset {
   type: 'add';

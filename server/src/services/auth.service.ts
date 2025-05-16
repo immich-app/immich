@@ -18,6 +18,7 @@ import {
   PinCodeChangeDto,
   PinCodeResetDto,
   PinCodeSetupDto,
+  SessionUnlockDto,
   SignUpDto,
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
@@ -123,20 +124,21 @@ export class AuthService extends BaseService {
 
   async resetPinCode(auth: AuthDto, dto: PinCodeResetDto) {
     const user = await this.userRepository.getForPinCode(auth.user.id);
-    this.resetPinChecks(user, dto);
+    this.validatePinCode(user, dto);
 
     await this.userRepository.update(auth.user.id, { pinCode: null });
+    await this.sessionRepository.lockAll(auth.user.id);
   }
 
   async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
     const user = await this.userRepository.getForPinCode(auth.user.id);
-    this.resetPinChecks(user, dto);
+    this.validatePinCode(user, dto);
 
     const hashed = await this.cryptoRepository.hashBcrypt(dto.newPinCode, SALT_ROUNDS);
     await this.userRepository.update(auth.user.id, { pinCode: hashed });
   }
 
-  private resetPinChecks(
+  private validatePinCode(
     user: { pinCode: string | null; password: string | null },
     dto: { pinCode?: string; password?: string },
   ) {
@@ -444,10 +446,25 @@ export class AuthService extends BaseService {
         await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
       }
 
+      // Pin check
+      let hasElevatedPermission = false;
+
+      if (session.pinExpiresAt) {
+        const pinExpiresAt = DateTime.fromJSDate(session.pinExpiresAt);
+        hasElevatedPermission = pinExpiresAt > now;
+
+        if (hasElevatedPermission && now.plus({ minutes: 5 }) > pinExpiresAt) {
+          await this.sessionRepository.update(session.id, {
+            pinExpiresAt: DateTime.now().plus({ minutes: 5 }).toJSDate(),
+          });
+        }
+      }
+
       return {
         user: session.user,
         session: {
           id: session.id,
+          hasElevatedPermission,
         },
       };
     }
@@ -455,18 +472,39 @@ export class AuthService extends BaseService {
     throw new UnauthorizedException('Invalid user token');
   }
 
+  async unlockSession(auth: AuthDto, dto: SessionUnlockDto): Promise<void> {
+    if (!auth.session) {
+      throw new BadRequestException('This endpoint can only be used with a session token');
+    }
+
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    this.validatePinCode(user, { pinCode: dto.pinCode });
+
+    await this.sessionRepository.update(auth.session.id, {
+      pinExpiresAt: DateTime.now().plus({ minutes: 15 }).toJSDate(),
+    });
+  }
+
+  async lockSession(auth: AuthDto): Promise<void> {
+    if (!auth.session) {
+      throw new BadRequestException('This endpoint can only be used with a session token');
+    }
+
+    await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
+  }
+
   private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
-    const key = this.cryptoRepository.newPassword(32);
-    const token = this.cryptoRepository.hashSha256(key);
+    const token = this.cryptoRepository.randomBytesAsText(32);
+    const tokenHashed = this.cryptoRepository.hashSha256(token);
 
     await this.sessionRepository.create({
-      token,
+      token: tokenHashed,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
       userId: user.id,
     });
 
-    return mapLoginResponse(user, key);
+    return mapLoginResponse(user, token);
   }
 
   private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {
@@ -490,9 +528,14 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException();
     }
 
+    const session = auth.session ? await this.sessionRepository.get(auth.session.id) : undefined;
+
     return {
       pinCode: !!user.pinCode,
       password: !!user.password,
+      isElevated: !!auth.session?.hasElevatedPermission,
+      expiresAt: session?.expiresAt?.toISOString(),
+      pinExpiresAt: session?.pinExpiresAt?.toISOString(),
     };
   }
 }

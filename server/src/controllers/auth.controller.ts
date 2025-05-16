@@ -9,7 +9,9 @@ import {
   LoginResponseDto,
   LogoutResponseDto,
   PinCodeChangeDto,
+  PinCodeResetDto,
   PinCodeSetupDto,
+  SessionUnlockDto,
   SignUpDto,
   ValidateAccessTokenResponseDto,
 } from 'src/dtos/auth.dto';
@@ -98,7 +100,21 @@ export class AuthController {
 
   @Delete('pin-code')
   @Authenticated()
-  async resetPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeChangeDto): Promise<void> {
+  async resetPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeResetDto): Promise<void> {
     return this.service.resetPinCode(auth, dto);
+  }
+
+  @Post('session/unlock')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated()
+  async unlockAuthSession(@Auth() auth: AuthDto, @Body() dto: SessionUnlockDto): Promise<void> {
+    return this.service.unlockSession(auth, dto);
+  }
+
+  @Post('session/lock')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated()
+  async lockAuthSession(@Auth() auth: AuthDto): Promise<void> {
+    return this.service.lockSession(auth);
   }
 }

@@ -93,6 +93,8 @@ export class PinCodeResetDto {
   password?: string;
 }
 
+export class SessionUnlockDto extends PinCodeResetDto {}
+
 export class PinCodeChangeDto extends PinCodeResetDto {
   @PinCode()
   newPinCode!: string;
@@ -138,4 +140,7 @@ export class OAuthAuthorizeResponseDto {
 export class AuthStatusResponseDto {
   pinCode!: boolean;
   password!: boolean;
+  isElevated!: boolean;
+  expiresAt?: string;
+  pinExpiresAt?: string;
 }

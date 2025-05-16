@@ -27,9 +27,9 @@
     const isArchived = !unarchive;
     const assets = [...getOwnedAssets()].filter((asset) => asset.visibility !== AssetVisibility.Archive);
     loading = true;
-    const ids = await archiveAssets(assets, isArchived);
+    const ids = await archiveAssets(assets, isArchived as unknown as AssetVisibility);
     if (ids) {
-      onArchive?.(ids, isArchived);
+      onArchive?.(ids, isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline);
       clearSelect();
     }
     loading = false;

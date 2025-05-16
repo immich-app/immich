@@ -1,13 +1,13 @@
 <script lang="ts">
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import {
     AlbumUserRole,
     getMyUser,
@@ -16,22 +16,19 @@
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
+  import { Modal, ModalBody } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { handleError } from '../../utils/handle-error';
 
   interface Props {
     album: AlbumResponseDto;
-    onClose: () => void;
-    onRemove: (userId: string) => void;
-    onRefreshAlbum: () => void;
+    onClose: (changed?: boolean) => void;
   }
 
-  let { album, onClose, onRemove, onRefreshAlbum }: Props = $props();
+  let { album, onClose }: Props = $props();
 
   let currentUser: UserResponseDto | undefined = $state();
-  let selectedRemoveUser: UserResponseDto | null = $state(null);
 
   let isOwned = $derived(currentUser?.id == album.ownerId);
 
@@ -43,29 +40,43 @@
     }
   });
 
-  const handleMenuRemove = (user: UserResponseDto) => {
-    selectedRemoveUser = user;
-  };
-
-  const handleRemoveUser = async () => {
-    if (!selectedRemoveUser) {
+  const handleRemoveUser = async (user: UserResponseDto) => {
+    if (!user) {
       return;
     }
 
-    const userId = selectedRemoveUser.id === currentUser?.id ? 'me' : selectedRemoveUser.id;
+    const userId = user.id === currentUser?.id ? 'me' : user.id;
+    let confirmed: boolean | undefined;
+
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if (userId === 'me') {
+      confirmed = await modalManager.showDialog({
+        title: $t('album_leave'),
+        prompt: $t('album_leave_confirmation', { values: { album: album.albumName } }),
+        confirmText: $t('leave'),
+      });
+    } else {
+      confirmed = await modalManager.showDialog({
+        title: $t('album_remove_user'),
+        prompt: $t('album_remove_user_confirmation', { values: { user: user.name } }),
+        confirmText: $t('remove_user'),
+      });
+    }
+
+    if (!confirmed) {
+      return;
+    }
 
     try {
       await removeUserFromAlbum({ id: album.id, userId });
-      onRemove(userId);
       const message =
         userId === 'me'
           ? $t('album_user_left', { values: { album: album.albumName } })
-          : $t('album_user_removed', { values: { user: selectedRemoveUser.name } });
+          : $t('album_user_removed', { values: { user: user.name } });
       notificationController.show({ type: NotificationType.Info, message });
+      onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_album_users'));
-    } finally {
-      selectedRemoveUser = null;
     }
   };
 
@@ -75,18 +86,17 @@
       const message = $t('user_role_set', {
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
-      onRefreshAlbum();
+
       notificationController.show({ type: NotificationType.Info, message });
+      onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));
-    } finally {
-      selectedRemoveUser = null;
     }
   };
 </script>
 
-{#if !selectedRemoveUser}
-  <FullScreenModal title={$t('options')} {onClose}>
+<Modal title={$t('options')} size="small" {onClose}>
+  <ModalBody>
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
@@ -125,12 +135,12 @@
                     text={$t('disallow_edits')}
                   />
                 {/if}
-                <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
+                <MenuOption onClick={() => handleRemoveUser(user)} text={$t('remove')} />
               </ButtonContextMenu>
             {:else if user.id == currentUser?.id}
               <button
                 type="button"
-                onclick={() => (selectedRemoveUser = user)}
+                onclick={() => handleRemoveUser(user)}
                 class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
                 >{$t('leave')}</button
               >
@@ -139,23 +149,5 @@
         </div>
       {/each}
     </section>
-  </FullScreenModal>
-{/if}
-
-{#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
-  <ConfirmModal
-    title={$t('album_leave')}
-    prompt={$t('album_leave_confirmation', { values: { album: album.albumName } })}
-    confirmText={$t('leave')}
-    onClose={(confirmed) => (confirmed ? handleRemoveUser() : (selectedRemoveUser = null))}
-  />
-{/if}
-
-{#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
-  <ConfirmModal
-    title={$t('album_remove_user')}
-    prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
-    confirmText={$t('remove_user')}
-    onClose={(confirmed) => (confirmed ? handleRemoveUser() : (selectedRemoveUser = null))}
-  />
-{/if}
+  </ModalBody>
+</Modal>

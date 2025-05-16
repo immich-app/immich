@@ -47,9 +47,9 @@
   >
     <ArchiveAction
       unarchive
-      onArchive={(ids, isArchived) =>
+      onArchive={(ids, visibility) =>
         assetStore.updateAssetOperation(ids, (asset) => {
-          asset.visibility = isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline;
+          asset.visibility = visibility;
           return { remove: false };
         })}
     />

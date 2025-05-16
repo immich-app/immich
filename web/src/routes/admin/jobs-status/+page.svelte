@@ -1,6 +1,6 @@
 <script lang="ts">
   import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
@@ -34,7 +34,7 @@
   });
 </script>
 
-<UserPageLayout title={data.meta.title} admin>
+<AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={0}>
       <Button
@@ -64,4 +64,4 @@
       {/if}
     </section>
   </section>
-</UserPageLayout>
+</AdminPageLayout>

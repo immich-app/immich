@@ -45,9 +45,9 @@
     onscroll={onScroll}
   >
     {#if canScrollLeft || canScrollRight}
-      <div class="sticky start-0 z-20">
+      <div class="sticky start-0">
         {#if canScrollLeft}
-          <div class="absolute start-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
+          <div class="absolute start-4 top-[6rem]" transition:fade={{ duration: 200 }}>
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
@@ -60,7 +60,7 @@
           </div>
         {/if}
         {#if canScrollRight}
-          <div class="absolute end-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
+          <div class="absolute end-4 top-[6rem]" transition:fade={{ duration: 200 }}>
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
@@ -86,12 +86,12 @@
             alt={$t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } })}
             draggable="false"
           />
-          <p class="absolute bottom-2 start-4 z-10 text-lg text-white max-md:text-sm">
+          <div
+            class="absolute start-0 top-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
+          ></div>
+          <p class="absolute bottom-2 start-4 text-lg text-white max-md:text-sm">
             {$memoryLaneTitle(memory)}
           </p>
-          <div
-            class="absolute start-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
-          ></div>
         </a>
       {/each}
     </div>
