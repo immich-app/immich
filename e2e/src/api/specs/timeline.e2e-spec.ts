@@ -52,7 +52,7 @@ describe('/timeline', () => {
 
   describe('GET /timeline/buckets', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/timeline/buckets').query({});
+      const { status, body } = await request(app).get('/timeline/buckets');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -60,8 +60,7 @@ describe('/timeline', () => {
     it('should get time buckets by month', async () => {
       const { status, body } = await request(app)
         .get('/timeline/buckets')
-        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({});
+        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toEqual(
