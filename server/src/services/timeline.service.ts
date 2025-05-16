@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Stack } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/dtos/time-bucket.dto';
 import { AssetVisibility, Permission } from 'src/enum';
@@ -23,18 +22,6 @@ export class TimelineService extends BaseService {
     // TODO: use id cursor for pagination
     const bucket = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
     return bucket.assets;
-  }
-
-  mapStack(entity?: Stack | null) {
-    if (!entity) {
-      return null;
-    }
-
-    return {
-      id: entity.id!,
-      primaryAssetId: entity.primaryAssetId!,
-      assetCount: entity.assetCount as number,
-    };
   }
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {

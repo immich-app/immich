@@ -197,16 +197,3 @@ export const asRequest = (request: AuthRequest, file: Express.Multer.File) => {
     file: mapToUploadFile(file as ImmichFile),
   };
 };
-
-function isRotated90CW(orientation: number) {
-  return orientation === 5 || orientation === 6 || orientation === 90;
-}
-
-function isRotated270CW(orientation: number) {
-  return orientation === 7 || orientation === 8 || orientation === -90;
-}
-
-export function isFlipped(orientation?: string | null) {
-  const value = Number(orientation);
-  return value && (isRotated270CW(value) || isRotated90CW(value));
-}
