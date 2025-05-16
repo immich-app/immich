@@ -4,7 +4,9 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { dateFormats } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { locale } from '$lib/stores/preferences.store';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
@@ -132,7 +134,9 @@
             {#if $user.isAdmin && serverPurchaseInfo?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
                 {$t('purchase_activated_time', {
-                  values: { date: new Date(serverPurchaseInfo.activatedAt) },
+                  values: {
+                    date: new Date(serverPurchaseInfo.activatedAt).toLocaleString($locale, dateFormats.settings),
+                  },
                 })}
               </p>
             {:else}
@@ -161,7 +165,9 @@
             {#if $user.license?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
                 {$t('purchase_activated_time', {
-                  values: { date: new Date($user.license?.activatedAt) },
+                  values: {
+                    date: new Date($user.license?.activatedAt).toLocaleString($locale, dateFormats.settings),
+                  },
                 })}
               </p>
             {/if}
