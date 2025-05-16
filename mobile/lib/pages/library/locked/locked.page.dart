@@ -2,6 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
@@ -22,6 +24,28 @@ class LockedPage extends HookConsumerWidget {
         title: const Text(
           'locked_folder',
         ).tr(),
+        actions: [
+          IconButton(
+            onPressed: () {
+              ref.read(authProvider.notifier).lockPinCode();
+              context.pop();
+            },
+            icon: const Icon(Icons.lock_outline),
+            tooltip: 'lock'.tr(),
+          ),
+        ],
+      );
+    }
+
+    Widget infoBlock() {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Text(
+            'no_locked_photos_message'.tr(),
+            style: context.textTheme.labelLarge,
+          ),
+        ),
       );
     }
 
@@ -29,6 +53,7 @@ class LockedPage extends HookConsumerWidget {
       appBar: ref.watch(multiselectProvider) ? null : buildAppBar(),
       body: MultiselectGrid(
         renderListProvider: lockedTimelineProvider,
+        topWidget: infoBlock(),
         editEnabled: false,
         favoriteEnabled: false,
         unfavorite: false,

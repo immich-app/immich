@@ -109,6 +109,9 @@ class TimelineService {
   Stream<RenderList> watchLockedTimelineProvider() async* {
     final user = _userService.getMyUser();
 
-    yield* _timelineRepository.watchLockedTimeline(user.id);
+    yield* _timelineRepository.watchLockedTimeline(
+      user.id,
+      _getGroupByOption(),
+    );
   }
 }

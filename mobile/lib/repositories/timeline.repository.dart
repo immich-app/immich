@@ -165,18 +165,11 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
-  Stream<RenderList> _watchRenderList(
-    QueryBuilder<Asset, Asset, QAfterSortBy> query,
-    GroupAssetsBy groupAssetsBy,
-  ) async* {
-    yield await RenderList.fromQuery(query, groupAssetsBy);
-    await for (final _ in query.watchLazy()) {
-      yield await RenderList.fromQuery(query, groupAssetsBy);
-    }
-  }
-
   @override
-  Stream<RenderList> watchLockedTimeline(String userId) {
+  Stream<RenderList> watchLockedTimeline(
+    String userId,
+    GroupAssetsBy getGroupByOption,
+  ) {
     final query = db.assets
         .where()
         .ownerIdEqualToAnyChecksum(fastHash(userId))
@@ -185,6 +178,16 @@ class TimelineRepository extends DatabaseRepository
         .isTrashedEqualTo(false)
         .sortByFileCreatedAtDesc();
 
-    return _watchRenderList(query, GroupAssetsBy.none);
+    return _watchRenderList(query, getGroupByOption);
+  }
+
+  Stream<RenderList> _watchRenderList(
+    QueryBuilder<Asset, Asset, QAfterSortBy> query,
+    GroupAssetsBy groupAssetsBy,
+  ) async* {
+    yield await RenderList.fromQuery(query, groupAssetsBy);
+    await for (final _ in query.watchLazy()) {
+      yield await RenderList.fromQuery(query, groupAssetsBy);
+    }
   }
 }

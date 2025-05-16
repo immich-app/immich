@@ -1057,6 +1057,8 @@
   "home_page_delete_remote_err_local": "Local assets in delete remote selection, skipping",
   "home_page_favorite_err_local": "Can not favorite local assets yet, skipping",
   "home_page_favorite_err_partner": "Can not favorite partner assets yet, skipping",
+  "home_page_locked_error_local": "Can not move local assets to locked folder, skipping",
+  "home_page_locked_error_partner": "Can not move partner assets to locked folder, skipping",
   "home_page_first_time_notice": "If this is your first time using the app, please make sure to choose a backup album so that the timeline can populate photos and videos in it",
   "home_page_share_err_local": "Can not share local assets via link, skipping",
   "home_page_upload_err_limit": "Can only upload a maximum of 30 assets at a time, skipping",
@@ -1947,5 +1949,6 @@
   "yes": "Yes",
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
-  "zoom_image": "Zoom Image"
+  "zoom_image": "Zoom Image",
+  "share_link": "Share Link"
 }

@@ -32,6 +32,10 @@ class AppNavigationObserver extends AutoRouterObserver {
         debugPrint("Error refreshing user info $e");
       }
     }
+
+    Future(
+      () => ref.read(inLockedViewProvider.notifier).state = false,
+    );
   }
 
   @override
