@@ -263,7 +263,7 @@
   const toggleArchive = async () => {
     const ids = await archiveAssets(
       assetInteraction.selectedAssets,
-      !assetInteraction.isAllArchived ? AssetVisibility.Archive : AssetVisibility.Timeline,
+      assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
     if (ids) {
       assets = assets.filter((asset) => !ids.includes(asset.id));
