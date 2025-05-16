@@ -1,15 +1,15 @@
 import { build, files, version } from '$service-worker';
 
-const pendingLoads = new Map<string, AbortController>();
-
 const useCache = true;
-// Create a unique cache name for this deployment
 const CACHE = `cache-${version}`;
 
 export const APP_RESOURCES = [
   ...build, // the app itself
   ...files, // everything in `static`
 ];
+
+export const isURL = (request: URL | RequestInfo): request is URL => (request as URL).href !== undefined;
+export const isRequest = (request: RequestInfo): request is Request => (request as Request).url !== undefined;
 
 export async function deleteOldCaches() {
   for (const key of await caches.keys()) {
@@ -24,8 +24,15 @@ export async function addFilesToCache() {
   await cache.addAll(APP_RESOURCES);
 }
 
-export const isURL = (request: URL | RequestInfo): request is URL => (request as URL).href !== undefined;
-export const isRequest = (request: RequestInfo): request is Request => (request as Request).url !== undefined;
+const pendingLoads = new Map<string, AbortController>();
+
+export async function cancelLoad(urlString: string) {
+  const pending = pendingLoads.get(urlString);
+  if (pending) {
+    pending.abort();
+    pendingLoads.delete(urlString);
+  }
+}
 
 export async function getCachedOrFetch(request: URL | Request | string, cancelable: boolean = false) {
   const cached = await checkCache(request);
@@ -42,19 +49,10 @@ export async function getCachedOrFetch(request: URL | Request | string, cancelab
 
     return await fetchWithCancellation(request, cached.cache);
   } catch {
-    console.log('getCachedOrFetch error', request);
     return new Response(undefined, {
       status: 499,
       statusText: 'Request canceled: Instructions unclear, accidentally interrupted myself',
     });
-  }
-}
-
-export async function cancelLoad(urlString: string) {
-  const pending = pendingLoads.get(urlString);
-  if (pending) {
-    pending.abort();
-    pendingLoads.delete(urlString);
   }
 }
 

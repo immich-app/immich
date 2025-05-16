@@ -4,7 +4,7 @@
 /// <reference lib="webworker" />
 import { installBroadcastChannelListener } from './broadcast-channel';
 import { addFilesToCache, deleteOldCaches } from './cache';
-import { handleFetchEvent } from './fetchEvent';
+import { handleFetchEvent } from './fetch-event';
 
 const sw = globalThis as unknown as ServiceWorkerGlobalScope;
 
