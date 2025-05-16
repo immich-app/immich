@@ -1,22 +1,23 @@
 <script lang="ts">
+  import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
+  import { shortcuts } from '$lib/actions/shortcut';
   import CircleIconButton, {
     type Color,
     type Padding,
   } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
+  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import {
     getContextMenuPositionFromBoundingRect,
     getContextMenuPositionFromEvent,
     type Align,
   } from '$lib/utils/context-menu';
   import { generateId } from '$lib/utils/generate-id';
-  import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
 
-  interface Props {
+  type Props = {
     icon: string;
     title: string;
     /**
@@ -26,6 +27,7 @@
     /**
      * The direction in which the context menu should open.
      */
+    // TODO change to start vs end
     direction?: 'left' | 'right';
     color?: Color;
     size?: string | undefined;
@@ -36,7 +38,7 @@
     buttonClass?: string | undefined;
     hideContent?: boolean;
     children?: Snippet;
-  }
+  } & HTMLAttributes<HTMLDivElement>;
 
   let {
     icon,
@@ -49,6 +51,7 @@
     buttonClass = undefined,
     hideContent = false,
     children,
+    ...restProps
   }: Props = $props();
 
   let isOpen = $state(false);
@@ -61,7 +64,15 @@
   const menuId = `context-menu-${id}`;
 
   const openDropdown = (event: KeyboardEvent | MouseEvent) => {
-    contextMenuPosition = getContextMenuPositionFromEvent(event, align);
+    let layoutAlign = align;
+    if (languageManager.rtl) {
+      if (align.includes('left')) {
+        layoutAlign = align.replace('left', 'right') as Align;
+      } else if (align.includes('right')) {
+        layoutAlign = align.replace('right', 'left') as Align;
+      }
+    }
+    contextMenuPosition = getContextMenuPositionFromEvent(event, layoutAlign);
     isOpen = true;
     menuContainer?.focus();
   };
@@ -103,6 +114,19 @@
     closeDropdown();
   };
 
+  const handleDocumentClick = (event: MouseEvent) => {
+    if (!isOpen) {
+      return;
+    }
+
+    const target = event.target as Node | null;
+    if (buttonContainer?.contains(target)) {
+      return;
+    }
+
+    closeDropdown();
+  };
+
   const focusButton = () => {
     const button = buttonContainer?.querySelector(`#${buttonId}`) as HTMLButtonElement | null;
     button?.focus();
@@ -116,6 +140,7 @@
 </script>
 
 <svelte:window onresize={onResize} />
+<svelte:document onclick={handleDocumentClick} />
 
 <div
   use:contextMenuNavigation={{
@@ -127,8 +152,8 @@
     selectedId: $selectedIdStore,
     selectionChanged: (id) => ($selectedIdStore = id),
   }}
-  use:clickOutside={{ onOutclick: closeDropdown }}
   onresize={onResize}
+  {...restProps}
 >
   <div bind:this={buttonContainer}>
     <CircleIconButton

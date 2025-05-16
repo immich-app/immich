@@ -1,15 +1,15 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import { uploadAssetsStore } from '$lib/stores/upload';
+  import { uploadExecutionQueue } from '$lib/utils/file-uploader';
+  import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import { quartInOut } from 'svelte/easing';
   import { fade, scale } from 'svelte/transition';
-  import { uploadAssetsStore } from '$lib/stores/upload';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
-  import { uploadExecutionQueue } from '$lib/utils/file-uploader';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { mdiCog, mdiWindowMinimize, mdiCancel, mdiCloudUploadOutline } from '@mdi/js';
-  import { t } from 'svelte-i18n';
-  import { locale } from '$lib/stores/preferences.store';
 
   let showDetail = $state(false);
   let showOptions = $state(false);
@@ -48,7 +48,7 @@
       }
       uploadAssetsStore.reset();
     }}
-    class="fixed bottom-6 right-16 z-[10000]"
+    class="fixed bottom-6 end-16"
   >
     {#if showDetail}
       <div
@@ -136,7 +136,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="absolute -left-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
+          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
         >
           {$remainingUploads.toLocaleString($locale)}
         </button>
@@ -145,7 +145,7 @@
             type="button"
             in:scale={{ duration: 250, easing: quartInOut }}
             onclick={() => (showDetail = true)}
-            class="absolute -right-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
+            class="absolute -end-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
           >
             {$stats.errors.toLocaleString($locale)}
           </button>

@@ -137,7 +137,7 @@
   <div class="flex h-10 w-full items-center justify-between text-sm">
     <h2>{$t('editor_crop_tool_h2_aspect_ratios').toUpperCase()}</h2>
   </div>
-  {#each sizesRows as sizesRow}
+  {#each sizesRows as sizesRow, index (index)}
     <ul class="flex-wrap flex-row flex gap-x-6 py-2 justify-evenly">
       {#each sizesRow as size (size.name)}
         <CropPreset {size} {selectedSize} {rotateHorizontal} {selectType} />

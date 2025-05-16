@@ -11,7 +11,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/latlngbounds_extension.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/models/map/map_event.model.dart';
 import 'package:immich_mobile/models/map/map_marker.model.dart';
@@ -35,11 +34,12 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
 class MapPage extends HookConsumerWidget {
-  const MapPage({super.key});
+  const MapPage({super.key, this.initialLocation});
+  final LatLng? initialLocation;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mapController = useRef<MaplibreMapController?>(null);
+    final mapController = useRef<MapLibreMapController?>(null);
     final markers = useRef<List<MapMarker>>([]);
     final markersInBounds = useRef<List<MapMarker>>([]);
     final bottomSheetStreamController = useStreamController<MapEvent>();
@@ -162,7 +162,7 @@ class MapPage extends HookConsumerWidget {
       }
     }
 
-    void onMapCreated(MaplibreMapController controller) async {
+    void onMapCreated(MapLibreMapController controller) async {
       mapController.value = controller;
       controller.addListener(() {
         if (controller.isCameraMoving && selectedMarker.value != null) {
@@ -236,7 +236,8 @@ class MapPage extends HookConsumerWidget {
     }
 
     void onZoomToLocation() async {
-      final (location, error) = await MapUtils.checkPermAndGetLocation(context);
+      final (location, error) =
+          await MapUtils.checkPermAndGetLocation(context: context);
       if (error != null) {
         if (error == LocationPermission.unableToDetermine && context.mounted) {
           ImmichToast.show(
@@ -273,6 +274,7 @@ class MapPage extends HookConsumerWidget {
               body: Stack(
                 children: [
                   _MapWithMarker(
+                    initialLocation: initialLocation,
                     style: style,
                     selectedMarker: selectedMarker,
                     onMapCreated: onMapCreated,
@@ -304,6 +306,7 @@ class MapPage extends HookConsumerWidget {
                     body: Stack(
                       children: [
                         _MapWithMarker(
+                          initialLocation: initialLocation,
                           style: style,
                           selectedMarker: selectedMarker,
                           onMapCreated: onMapCreated,
@@ -369,6 +372,7 @@ class _MapWithMarker extends StatelessWidget {
   final OnStyleLoadedCallback onStyleLoaded;
   final Function()? onMarkerTapped;
   final ValueNotifier<_AssetMarkerMeta?> selectedMarker;
+  final LatLng? initialLocation;
 
   const _MapWithMarker({
     required this.style,
@@ -378,6 +382,7 @@ class _MapWithMarker extends StatelessWidget {
     required this.onStyleLoaded,
     required this.selectedMarker,
     this.onMarkerTapped,
+    this.initialLocation,
   });
 
   @override
@@ -389,9 +394,11 @@ class _MapWithMarker extends StatelessWidget {
         child: Stack(
           children: [
             style.widgetWhen(
-              onData: (style) => MaplibreMap(
-                initialCameraPosition:
-                    const CameraPosition(target: LatLng(0, 0)),
+              onData: (style) => MapLibreMap(
+                initialCameraPosition: CameraPosition(
+                  target: initialLocation ?? const LatLng(0, 0),
+                  zoom: initialLocation != null ? 12 : 0,
+                ),
                 styleString: style,
                 // This is needed to update the selectedMarker's position on map camera updates
                 // The changes are notified through the mapController ValueListener which is added in [onMapCreated]
@@ -403,7 +410,7 @@ class _MapWithMarker extends StatelessWidget {
                 tiltGesturesEnabled: false,
                 dragEnabled: false,
                 myLocationEnabled: false,
-                attributionButtonPosition: AttributionButtonPosition.TopRight,
+                attributionButtonPosition: AttributionButtonPosition.topRight,
                 rotateGesturesEnabled: false,
               ),
             ),

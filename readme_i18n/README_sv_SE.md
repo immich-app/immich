@@ -60,18 +60,12 @@ Dokumentation och installationsguider hittas på https://imiich.app/.
 
 ## Demo
 
-Ett webb-demo finns att testa på https://demo.immich.app
-
-Använd `https://demo.immich.app/api` i mobilappen som `Server Endpoint URL`
+Ett webb-demo finns att testa på https://demo.immich.app. Använd `https://demo.immich.app` i mobilappen som `Server Endpoint URL`
 
 ```bash title="Inloggningsuppgifter För Demo"
 Inloggsningsuppgifter
 epost: demo@immich.app
 lösenord: demo
-```
-
-```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
 ## Aktiviteter

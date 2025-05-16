@@ -48,7 +48,7 @@ class SharedLinkPage extends HookConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: const Text(
-                "shared_link_empty",
+                "you_dont_have_any_shared_links",
                 style: TextStyle(fontSize: 14),
               ).tr(),
             ),
@@ -58,7 +58,8 @@ class SharedLinkPage extends HookConsumerWidget {
               child: Icon(
                 Icons.link_off,
                 size: 100,
-                color: context.themeData.iconTheme.color?.withOpacity(0.5),
+                color:
+                    context.themeData.iconTheme.color?.withValues(alpha: 0.5),
               ),
             ),
           ),

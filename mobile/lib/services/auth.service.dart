@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -21,6 +24,7 @@ final authServiceProvider = Provider(
     ref.watch(authRepositoryProvider),
     ref.watch(apiServiceProvider),
     ref.watch(networkServiceProvider),
+    ref.watch(backgroundSyncProvider),
   ),
 );
 
@@ -29,6 +33,7 @@ class AuthService {
   final IAuthRepository _authRepository;
   final ApiService _apiService;
   final NetworkService _networkService;
+  final BackgroundSyncManager _backgroundSyncManager;
 
   final _log = Logger("AuthService");
 
@@ -37,6 +42,7 @@ class AuthService {
     this._authRepository,
     this._apiService,
     this._networkService,
+    this._backgroundSyncManager,
   );
 
   /// Validates the provided server URL by resolving and setting the endpoint.
@@ -74,7 +80,7 @@ class AuthService {
         isValid = true;
       }
     } catch (error) {
-      _log.severe("Error validating auxilary endpoint", error);
+      _log.severe("Error validating auxiliary endpoint", error);
     } finally {
       httpclient.close();
     }
@@ -114,8 +120,10 @@ class AuthService {
   /// - Asset ETag
   ///
   /// All deletions are executed in parallel using [Future.wait].
-  Future<void> clearLocalData() {
-    return Future.wait([
+  Future<void> clearLocalData() async {
+    // Cancel any ongoing background sync operations before clearing data
+    await _backgroundSyncManager.cancel();
+    await Future.wait([
       _authRepository.clearLocalData(),
       Store.delete(StoreKey.currentUser),
       Store.delete(StoreKey.accessToken),
@@ -186,7 +194,7 @@ class AuthService {
         _log.severe("Cannot resolve endpoint", error);
         continue;
       } catch (_) {
-        _log.severe("Auxilary server is not valid");
+        _log.severe("Auxiliary server is not valid");
         continue;
       }
     }

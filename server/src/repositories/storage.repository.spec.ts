@@ -2,8 +2,7 @@ import mockfs from 'mock-fs';
 import { CrawlOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
-import { ILoggingRepository, newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { Mocked } from 'vitest';
+import { automock } from 'test/utils';
 
 interface Test {
   test: string;
@@ -182,11 +181,10 @@ const tests: Test[] = [
 
 describe(StorageRepository.name, () => {
   let sut: StorageRepository;
-  let logger: Mocked<ILoggingRepository>;
 
   beforeEach(() => {
-    logger = newLoggingRepositoryMock();
-    sut = new StorageRepository(logger as ILoggingRepository as LoggingRepository);
+    // eslint-disable-next-line no-sparse-arrays
+    sut = new StorageRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 
   afterEach(() => {

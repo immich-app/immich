@@ -14,6 +14,9 @@ const upstream = {
 };
 
 export default defineConfig({
+  build: {
+    target: 'es2022',
+  },
   resolve: {
     alias: {
       'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
@@ -29,8 +32,10 @@ export default defineConfig({
       '/.well-known/immich': upstream,
       '/custom.css': upstream,
     },
+    allowedHosts: true,
   },
   plugins: [
+    enhancedImages(),
     sveltekit(),
     process.env.BUILD_STATS === 'true'
       ? visualizer({
@@ -38,7 +43,6 @@ export default defineConfig({
           filename: 'stats.html',
         })
       : undefined,
-    enhancedImages(),
     svelteTesting(),
   ],
   optimizeDeps: {

@@ -66,12 +66,8 @@
 
 ## Demonstração
 
-Acesse a demonstração [aqui](https://demo.immich.app). A demonstração está
-hospedada no Nível Gratuito da Oracle VM em Amsterdam com um processador 2.4Ghz
-quad-core ARM64 e 24GB de RAM.
-
-No aplicativo para dispositivos móveis, você pode usar
-`https://demo.immich.app/api` no campo `Server Endpoint URL`
+Acesse a demonstração [aqui](https://demo.immich.app). No aplicativo para dispositivos móveis, você pode usar
+`https://demo.immich.app` no campo `Server Endpoint URL`
 
 ### Credenciais de login
 

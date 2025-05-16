@@ -3,17 +3,14 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, AssetType, DatabaseLock, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
+import { JobOf, StorageAsset } from 'src/types';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
-import { usePagination } from 'src/utils/pagination';
 
 const storageTokens = {
   secondOptions: ['s', 'ss', 'SSS'],
@@ -31,6 +28,7 @@ const storagePresets = [
   '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
   '{{y}}/{{MM}}/{{filename}}',
   '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
+  '{{#if album}}{{album-startDate-y}}/{{album}}{{else}}{{y}}/Other/{{MM}}{{/if}}/{{filename}}',
   '{{y}}/{{MMM}}/{{filename}}',
   '{{y}}/{{MMMM}}/{{filename}}',
   '{{y}}/{{MM}}/{{dd}}/{{filename}}',
@@ -53,10 +51,12 @@ export interface MoveAssetMetadata {
 }
 
 interface RenderMetadata {
-  asset: AssetEntity;
+  asset: StorageAsset;
   filename: string;
   extension: string;
   albumName: string | null;
+  albumStartDate: Date | null;
+  albumEndDate: Date | null;
 }
 
 @Injectable()
@@ -65,6 +65,7 @@ export class StorageTemplateService extends BaseService {
     compiled: HandlebarsTemplateDelegate<any>;
     raw: string;
     needsAlbum: boolean;
+    needsAlbumMetadata: boolean;
   } | null = null;
 
   private get template() {
@@ -98,10 +99,12 @@ export class StorageTemplateService extends BaseService {
           originalPath: '/upload/test/IMG_123.jpg',
           type: AssetType.IMAGE,
           id: 'd587e44b-f8c0-4832-9ba3-43268bbf5d4e',
-        } as AssetEntity,
+        } as StorageAsset,
         filename: 'IMG_123',
         extension: 'jpg',
         albumName: 'album',
+        albumStartDate: new Date(),
+        albumEndDate: new Date(),
       });
     } catch (error) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
@@ -113,6 +116,11 @@ export class StorageTemplateService extends BaseService {
     return { ...storageTokens, presetOptions: storagePresets };
   }
 
+  @OnEvent({ name: 'asset.metadataExtracted' })
+  async onAssetMetadataExtracted({ source, assetId }: ArgOf<'asset.metadataExtracted'>) {
+    await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { source, id: assetId } });
+  }
+
   @OnJob({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, queue: QueueName.STORAGE_TEMPLATE_MIGRATION })
   async handleMigrationSingle({ id }: JobOf<JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: true });
@@ -121,7 +129,7 @@ export class StorageTemplateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
+    const asset = await this.assetJobRepository.getForStorageTemplateJob(id);
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -133,7 +141,7 @@ export class StorageTemplateService extends BaseService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId], { exifInfo: true });
+      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
       if (!livePhotoVideo) {
         return JobStatus.FAILED;
       }
@@ -152,18 +160,17 @@ export class StorageTemplateService extends BaseService {
       this.logger.log('Storage template migration disabled, skipping');
       return JobStatus.SKIPPED;
     }
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { withExif: true, withArchived: true }),
-    );
+
+    await this.moveRepository.cleanMoveHistory();
+
+    const assets = this.assetJobRepository.streamForStorageTemplateJob();
     const users = await this.userRepository.getList();
 
-    for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        const user = users.find((user) => user.id === asset.ownerId);
-        const storageLabel = user?.storageLabel || null;
-        const filename = asset.originalFileName || asset.id;
-        await this.moveAsset(asset, { storageLabel, filename });
-      }
+    for await (const asset of assets) {
+      const user = users.find((user) => user.id === asset.ownerId);
+      const storageLabel = user?.storageLabel || null;
+      const filename = asset.originalFileName || asset.id;
+      await this.moveAsset(asset, { storageLabel, filename });
     }
 
     this.logger.debug('Cleaning up empty directories...');
@@ -175,7 +182,13 @@ export class StorageTemplateService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
+  @OnEvent({ name: 'asset.delete' })
+  async handleMoveHistoryCleanup({ assetId }: ArgOf<'asset.delete'>) {
+    this.logger.debug(`Cleaning up move history for asset ${assetId}`);
+    await this.moveRepository.cleanMoveHistorySingle(assetId);
+  }
+
+  async moveAsset(asset: StorageAsset, metadata: MoveAssetMetadata) {
     if (asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
       // External assets are not affected by storage template
       // TODO: shouldn't this only apply to external assets?
@@ -183,11 +196,11 @@ export class StorageTemplateService extends BaseService {
     }
 
     return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
-      const { id, sidecarPath, originalPath, exifInfo, checksum } = asset;
+      const { id, sidecarPath, originalPath, checksum, fileSizeInByte } = asset;
       const oldPath = originalPath;
       const newPath = await this.getTemplatePath(asset, metadata);
 
-      if (!exifInfo || !exifInfo.fileSizeInByte) {
+      if (!fileSizeInByte) {
         this.logger.error(`Asset ${id} missing exif info, skipping storage template migration`);
         return;
       }
@@ -198,7 +211,7 @@ export class StorageTemplateService extends BaseService {
           pathType: AssetPathType.ORIGINAL,
           oldPath,
           newPath,
-          assetInfo: { sizeInBytes: exifInfo.fileSizeInByte, checksum },
+          assetInfo: { sizeInBytes: fileSizeInByte, checksum },
         });
         if (sidecarPath) {
           await this.storageCore.moveFile({
@@ -214,19 +227,59 @@ export class StorageTemplateService extends BaseService {
     });
   }
 
-  private async getTemplatePath(asset: AssetEntity, metadata: MoveAssetMetadata): Promise<string> {
+  private async getTemplatePath(asset: StorageAsset, metadata: MoveAssetMetadata): Promise<string> {
     const { storageLabel, filename } = metadata;
 
     try {
+      const filenameWithoutExtension = path.basename(filename, path.extname(filename));
+
       const source = asset.originalPath;
-      const extension = path.extname(source).split('.').pop() as string;
-      const sanitized = sanitize(path.basename(filename, `.${extension}`));
+      let extension = path.extname(source).split('.').pop() as string;
+      const sanitized = sanitize(path.basename(filenameWithoutExtension, `.${extension}`));
+      extension = extension?.toLowerCase();
       const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
 
+      switch (extension) {
+        case 'jpeg':
+        case 'jpe': {
+          extension = 'jpg';
+          break;
+        }
+        case 'tif': {
+          extension = 'tiff';
+          break;
+        }
+        case '3gpp': {
+          extension = '3gp';
+          break;
+        }
+        case 'mpeg':
+        case 'mpe': {
+          extension = 'mpg';
+          break;
+        }
+        case 'm2ts':
+        case 'm2t': {
+          extension = 'mts';
+          break;
+        }
+      }
+
       let albumName = null;
+      let albumStartDate = null;
+      let albumEndDate = null;
       if (this.template.needsAlbum) {
         const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
-        albumName = albums?.[0]?.albumName || null;
+        const album = albums?.[0];
+        if (album) {
+          albumName = album.albumName || null;
+
+          if (this.template.needsAlbumMetadata) {
+            const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
+            albumStartDate = metadata?.startDate || null;
+            albumEndDate = metadata?.endDate || null;
+          }
+        }
       }
 
       const storagePath = this.render(this.template.compiled, {
@@ -234,6 +287,8 @@ export class StorageTemplateService extends BaseService {
         filename: sanitized,
         extension,
         albumName,
+        albumStartDate,
+        albumEndDate,
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${extension}`;
@@ -292,28 +347,39 @@ export class StorageTemplateService extends BaseService {
     return {
       raw: template,
       compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
-      needsAlbum: template.includes('{{album}}'),
+      needsAlbum: template.includes('album'),
+      needsAlbumMetadata: template.includes('album-startDate') || template.includes('album-endDate'),
     };
   }
 
   private render(template: HandlebarsTemplateDelegate<any>, options: RenderMetadata) {
-    const { filename, extension, asset, albumName } = options;
+    const { filename, extension, asset, albumName, albumStartDate, albumEndDate } = options;
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
       filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
+      assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album
       album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '',
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const zone = asset.exifInfo?.timeZone || systemTimeZone;
+    const zone = asset.timeZone || systemTimeZone;
     const dt = DateTime.fromJSDate(asset.fileCreatedAt, { zone });
 
     for (const token of Object.values(storageTokens).flat()) {
       substitutions[token] = dt.toFormat(token);
+      if (albumName) {
+        // Use system time zone for album dates to ensure all assets get the exact same date.
+        substitutions['album-startDate-' + token] = albumStartDate
+          ? DateTime.fromJSDate(albumStartDate, { zone: systemTimeZone }).toFormat(token)
+          : '';
+        substitutions['album-endDate-' + token] = albumEndDate
+          ? DateTime.fromJSDate(albumEndDate, { zone: systemTimeZone }).toFormat(token)
+          : '';
+      }
     }
 
     return template(substitutions).replaceAll(/\/{2,}/gm, '/');

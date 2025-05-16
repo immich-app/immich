@@ -1,8 +1,10 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/asset_media.interface.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
 final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository());
@@ -23,7 +25,7 @@ class AssetMediaRepository implements IAssetMediaRepository {
     final Asset asset = Asset(
       checksum: "",
       localId: local.id,
-      ownerId: Store.get(StoreKey.currentUser).isarId,
+      ownerId: fastHash(Store.get(StoreKey.currentUser).id),
       fileCreatedAt: local.createDateTime,
       fileModifiedAt: local.modifiedDateTime,
       updatedAt: local.modifiedDateTime,
@@ -38,7 +40,8 @@ class AssetMediaRepository implements IAssetMediaRepository {
       asset.fileCreatedAt = asset.fileModifiedAt;
     }
     if (local.latitude != null) {
-      asset.exifInfo = ExifInfo(lat: local.latitude, long: local.longitude);
+      asset.exifInfo =
+          ExifInfo(latitude: local.latitude, longitude: local.longitude);
     }
     asset.local = local;
     return asset;

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -6,15 +7,15 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/widgets/search/thumbnail_with_info.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/search/thumbnail_with_info.dart';
 
 class SharedLinkItem extends ConsumerWidget {
   final SharedLink sharedLink;
@@ -33,7 +34,7 @@ class SharedLinkItem extends ConsumerWidget {
     if (sharedLink.expiresAt != null) {
       if (isExpired()) {
         return Text(
-          "shared_link_expired",
+          "expired",
           style: TextStyle(color: Colors.red[300]),
         ).tr();
       }
@@ -44,17 +45,17 @@ class SharedLinkItem extends ConsumerWidget {
         if (difference.inHours % 24 > 12) {
           dayDifference += 1;
         }
-        expiresText =
-            "shared_link_expires_days".tr(args: [dayDifference.toString()]);
+        expiresText = "shared_link_expires_days"
+            .tr(namedArgs: {'count': dayDifference.toString()});
       } else if (difference.inHours > 0) {
         expiresText = "shared_link_expires_hours"
-            .tr(args: [difference.inHours.toString()]);
+            .tr(namedArgs: {'count': difference.inHours.toString()});
       } else if (difference.inMinutes > 0) {
         expiresText = "shared_link_expires_minutes"
-            .tr(args: [difference.inMinutes.toString()]);
+            .tr(namedArgs: {'count': difference.inMinutes.toString()});
       } else if (difference.inSeconds > 0) {
         expiresText = "shared_link_expires_seconds"
-            .tr(args: [difference.inSeconds.toString()]);
+            .tr(namedArgs: {'count': difference.inSeconds.toString()});
       }
     }
     return Text(
@@ -114,7 +115,7 @@ class SharedLinkItem extends ConsumerWidget {
         builder: (BuildContext context) {
           return ConfirmDialog(
             title: "delete_shared_link_dialog_title",
-            content: "delete_shared_link_dialog_content",
+            content: "confirm_delete_shared_link",
             onOk: () => ref
                 .read(sharedLinksStateProvider.notifier)
                 .deleteLink(sharedLink.id),
@@ -178,10 +179,8 @@ class SharedLinkItem extends ConsumerWidget {
     Widget buildBottomInfo() {
       return Row(
         children: [
-          if (sharedLink.allowUpload)
-            buildInfoChip("shared_link_info_chip_upload".tr()),
-          if (sharedLink.allowDownload)
-            buildInfoChip("shared_link_info_chip_download".tr()),
+          if (sharedLink.allowUpload) buildInfoChip("upload".tr()),
+          if (sharedLink.allowDownload) buildInfoChip("download".tr()),
           if (sharedLink.showMetadata)
             buildInfoChip("shared_link_info_chip_metadata".tr()),
         ],
@@ -240,7 +239,7 @@ class SharedLinkItem extends ConsumerWidget {
             child: Tooltip(
               verticalOffset: 0,
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.9),
+                color: colorScheme.primary.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(10),
               ),
               textStyle: TextStyle(
@@ -268,7 +267,7 @@ class SharedLinkItem extends ConsumerWidget {
                 child: Tooltip(
                   verticalOffset: 0,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.9),
+                    color: colorScheme.primary.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   textStyle: TextStyle(

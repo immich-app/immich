@@ -1,6 +1,6 @@
 import { ActivityService } from 'src/services/activity.service';
 import { AlbumService } from 'src/services/album.service';
-import { APIKeyService } from 'src/services/api-key.service';
+import { ApiKeyService } from 'src/services/api-key.service';
 import { ApiService } from 'src/services/api.service';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { AssetService } from 'src/services/asset.service';
@@ -17,6 +17,7 @@ import { MapService } from 'src/services/map.service';
 import { MediaService } from 'src/services/media.service';
 import { MemoryService } from 'src/services/memory.service';
 import { MetadataService } from 'src/services/metadata.service';
+import { NotificationAdminService } from 'src/services/notification-admin.service';
 import { NotificationService } from 'src/services/notification.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
@@ -40,7 +41,7 @@ import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
 
 export const services = [
-  APIKeyService,
+  ApiKeyService,
   ActivityService,
   AlbumService,
   ApiService,
@@ -60,6 +61,7 @@ export const services = [
   MemoryService,
   MetadataService,
   NotificationService,
+  NotificationAdminService,
   PartnerService,
   PersonService,
   SearchService,

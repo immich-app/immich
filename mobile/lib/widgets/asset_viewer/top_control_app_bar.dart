@@ -5,7 +5,9 @@ import 'package:immich_mobile/providers/activity_statistics.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/motion_photo_button.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
@@ -13,6 +15,7 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.asset,
     required this.onMoreInfoPressed,
     required this.onDownloadPressed,
+    required this.onLocatePressed,
     required this.onAddToAlbumPressed,
     required this.onRestorePressed,
     required this.onFavorite,
@@ -26,6 +29,7 @@ class TopControlAppBar extends HookConsumerWidget {
   final Function onMoreInfoPressed;
   final VoidCallback? onUploadPressed;
   final VoidCallback? onDownloadPressed;
+  final VoidCallback onLocatePressed;
   final VoidCallback onAddToAlbumPressed;
   final VoidCallback onRestorePressed;
   final VoidCallback onActivitiesPressed;
@@ -49,6 +53,18 @@ class TopControlAppBar extends HookConsumerWidget {
         onPressed: () => onFavorite(a),
         icon: Icon(
           a.isFavorite ? Icons.favorite : Icons.favorite_border,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildLocateButton() {
+      return IconButton(
+        onPressed: () {
+          onLocatePressed();
+        },
+        icon: Icon(
+          Icons.image_search,
           color: Colors.grey[200],
         ),
       );
@@ -151,6 +167,9 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
+    bool isInHomePage = ref.read(tabProvider.notifier).state == TabEnum.home;
+    bool? isInTrash = ref.read(currentAssetProvider)?.isTrashed;
+
     return AppBar(
       foregroundColor: Colors.grey[100],
       backgroundColor: Colors.transparent,
@@ -159,6 +178,8 @@ class TopControlAppBar extends HookConsumerWidget {
       shape: const Border(),
       actions: [
         if (asset.isRemote && isOwner) buildFavoriteButton(a),
+        if (isOwner && !isInHomePage && !(isInTrash ?? false))
+          buildLocateButton(),
         if (asset.livePhotoVideoId != null) const MotionPhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal && isOwner) buildDownloadButton(),

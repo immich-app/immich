@@ -4,7 +4,24 @@ import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
 import { ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
 import { EmitEvent } from 'src/repositories/event.repository';
+import { immich_uuid_v7, updated_at } from 'src/schema/functions';
+import { BeforeUpdateTrigger, Column, ColumnOptions } from 'src/sql-tools';
 import { setUnion } from 'src/utils/set';
+
+const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
+  Column({ ...options, type: 'uuid', nullable: false, default: () => `${immich_uuid_v7.name}()` });
+
+export const UpdateIdColumn = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
+  GeneratedUuidV7Column(options);
+
+export const PrimaryGeneratedUuidV7Column = () => GeneratedUuidV7Column({ primary: true });
+
+export const UpdatedAtTrigger = (name: string) =>
+  BeforeUpdateTrigger({
+    name,
+    scope: 'row',
+    function: updated_at,
+  });
 
 // PostgreSQL uses a 16-bit integer to indicate the number of bound parameters. This means that the
 // maximum number of parameters is 65535. Any query that tries to bind more than that (e.g. searching
@@ -107,6 +124,7 @@ export const GENERATE_SQL_KEY = 'generate-sql-key';
 export interface GenerateSqlQueries {
   name?: string;
   params: unknown[];
+  stream?: boolean;
 }
 
 export const Telemetry = (options: { enabled?: boolean }) =>

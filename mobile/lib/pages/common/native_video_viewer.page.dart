@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -42,6 +43,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final controller = useState<NativeVideoPlayerController?>(null);
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
+
+    // Used to track whether the video should play when the app
+    // is brought back to the foreground
+    final shouldPlayOnForeground = useRef(true);
 
     // When a video is opened through the timeline, `isCurrent` will immediately be true.
     // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
@@ -366,6 +371,20 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       },
       const [],
     );
+
+    useOnAppLifecycleStateChange((_, state) async {
+      if (state == AppLifecycleState.resumed && shouldPlayOnForeground.value) {
+        controller.value?.play();
+      } else if (state == AppLifecycleState.paused) {
+        final videoPlaying = await controller.value?.isPlaying();
+        if (videoPlaying ?? true) {
+          shouldPlayOnForeground.value = true;
+          controller.value?.pause();
+        } else {
+          shouldPlayOnForeground.value = false;
+        }
+      }
+    });
 
     return Stack(
       children: [

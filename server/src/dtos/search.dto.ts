@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { Place } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { AssetOrder, AssetType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
+import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true, nullable: true })
@@ -23,13 +23,6 @@ class BaseSearchDto {
   type?: AssetType;
 
   @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  @ApiProperty({ default: false })
-  withArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
   isEncoded?: boolean;
 
   @ValidateBoolean({ optional: true })
@@ -41,8 +34,8 @@ class BaseSearchDto {
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @ValidateBoolean({ optional: true })
-  isVisible?: boolean;
+  @ValidateAssetVisibility({ optional: true })
+  visibility?: AssetVisibility;
 
   @ValidateBoolean({ optional: true })
   withDeleted?: boolean;
@@ -114,6 +107,12 @@ class BaseSearchDto {
 
   @ValidateUUID({ each: true, optional: true })
   tagIds?: string[];
+
+  @Optional()
+  @IsInt()
+  @Max(5)
+  @Min(-1)
+  rating?: number;
 }
 
 export class RandomSearchDto extends BaseSearchDto {
@@ -185,6 +184,11 @@ export class SmartSearchDto extends BaseSearchDto {
   @IsNotEmpty()
   query!: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  language?: string;
+
   @IsInt()
   @Min(1)
   @Type(() => Number)
@@ -215,15 +219,16 @@ export class PlacesResponseDto {
   admin2name?: string;
 }
 
-export function mapPlaces(place: GeodataPlacesEntity): PlacesResponseDto {
+export function mapPlaces(place: Place): PlacesResponseDto {
   return {
     name: place.name,
     latitude: place.latitude,
     longitude: place.longitude,
-    admin1name: place.admin1Name,
-    admin2name: place.admin2Name,
+    admin1name: place.admin1Name ?? undefined,
+    admin2name: place.admin2Name ?? undefined,
   };
 }
+
 export enum SearchSuggestionType {
   COUNTRY = 'country',
   STATE = 'state',

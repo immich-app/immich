@@ -58,18 +58,12 @@
 
 ## デモ
 
-web デモは https://demo.immich.app からアクセスできます
-
-モバイルアプリの場合、`Server Endpoint URL` には `https://demo.immich.app/api` を使用することができます
+web デモは https://demo.immich.app からアクセスできます。モバイルアプリの場合、`Server Endpoint URL` には `https://demo.immich.app` を使用することができます
 
 ```bash title="Demo Credential"
 The credential
 email: demo@immich.app
 password: demo
-```
-
-```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
 # 機能

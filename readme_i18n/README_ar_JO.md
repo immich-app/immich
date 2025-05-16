@@ -65,17 +65,13 @@ https://immich.app
 https://demo.immich.app
 
 بالنسبة لتطبيق الهاتف المحمول، يمكنك استخدام 
-`https://demo.immich.app/api` 
+`https://demo.immich.app` 
 ل `نقطة نهاية الخادم`
 
 ```bash title="Demo Credential"
 تفاصيل تسجيل  الدخول
 email: demo@immich.app
 password: demo
-```
-
-```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
 ## نشاط المساهمة

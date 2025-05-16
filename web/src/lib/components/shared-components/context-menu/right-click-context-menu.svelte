@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { tick, type Snippet } from 'svelte';
-  import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { generateId } from '$lib/utils/generate-id';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
+  import { shortcuts } from '$lib/actions/shortcut';
+  import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
+  import { generateId } from '$lib/utils/generate-id';
+  import { tick, type Snippet } from 'svelte';
 
   interface Props {
     title: string;
@@ -38,7 +38,7 @@
     const elements = document.elementsFromPoint(event.x, event.y);
 
     if (menuContainer && elements.includes(menuContainer)) {
-      // User right-clicked on the context menu itself, we keep the context
+      // User end-clicked on the context menu itself, we keep the context
       // menu as is
       return;
     }
@@ -91,7 +91,7 @@
         },
       ]}
     >
-      <section class="fixed left-0 top-0 z-10 flex h-screen w-screen" {oncontextmenu} role="presentation">
+      <section class="fixed start-0 top-0 flex h-dvh w-dvw" {oncontextmenu} role="presentation">
         <ContextMenu
           {direction}
           {x}

@@ -1,20 +1,21 @@
 import 'dart:math' as math;
+
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
-import 'package:immich_mobile/providers/asset_viewer/render_list.provider.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/models/map/map_event.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/widgets/common/drag_sheet.dart';
+import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/throttle.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/widgets/common/drag_sheet.dart';
 import 'package:logging/logging.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -46,12 +47,39 @@ class MapAssetGrid extends HookConsumerWidget {
     final gridScrollThrottler =
         useThrottler(interval: const Duration(milliseconds: 300));
 
+    // Add a cache for assets we've already loaded
+    final assetCache = useRef<Map<String, Asset>>({});
+
     void handleMapEvents(MapEvent event) async {
       if (event is MapAssetsInBoundsUpdated) {
-        assetsInBounds.value = await ref
-            .read(dbProvider)
-            .assets
-            .getAllByRemoteId(event.assetRemoteIds);
+        final assetIds = event.assetRemoteIds;
+        final missingIds = <String>[];
+        final currentAssets = <Asset>[];
+
+        for (final id in assetIds) {
+          final asset = assetCache.value[id];
+          if (asset != null) {
+            currentAssets.add(asset);
+          } else {
+            missingIds.add(id);
+          }
+        }
+
+        // Only fetch missing assets
+        if (missingIds.isNotEmpty) {
+          final newAssets =
+              await ref.read(dbProvider).assets.getAllByRemoteId(missingIds);
+
+          // Add new assets to cache and current list
+          for (final asset in newAssets) {
+            if (asset.remoteId != null) {
+              assetCache.value[asset.remoteId!] = asset;
+              currentAssets.add(asset);
+            }
+          }
+        }
+
+        assetsInBounds.value = currentAssets;
         return;
       }
     }
@@ -124,9 +152,11 @@ class MapAssetGrid extends HookConsumerWidget {
             alignment: Alignment.bottomCenter,
             child: FractionallySizedBox(
               // Place it just below the drag handle
-              heightFactor: 0.80,
+              heightFactor: 0.87,
               child: assetsInBounds.value.isNotEmpty
-                  ? ref.watch(renderListProvider(assetsInBounds.value)).when(
+                  ? ref
+                      .watch(assetsTimelineProvider(assetsInBounds.value))
+                      .when(
                         data: (renderList) {
                           // Cache render list here to use it back during visibleItemsListener
                           cachedRenderList.value = renderList;
@@ -223,7 +253,8 @@ class _MapSheetDragRegion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final assetsInBoundsText = assetsInBoundCount > 0
-        ? "map_assets_in_bounds".tr(args: [assetsInBoundCount.toString()])
+        ? "map_assets_in_bounds"
+            .tr(namedArgs: {'count': assetsInBoundCount.toString()})
         : "map_no_assets_in_bounds".tr();
 
     return SingleChildScrollView(
@@ -249,8 +280,18 @@ class _MapSheetDragRegion extends StatelessWidget {
                 const SizedBox(height: 15),
                 const CustomDraggingHandle(),
                 const SizedBox(height: 15),
-                Text(assetsInBoundsText, style: context.textTheme.bodyLarge),
-                const Divider(height: 35),
+                Center(
+                  child: Text(
+                    assetsInBoundsText,
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: context.textTheme.displayLarge?.color
+                          ?.withValues(alpha: 0.75),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
               ],
             ),
             ValueListenableBuilder(
@@ -258,14 +299,14 @@ class _MapSheetDragRegion extends StatelessWidget {
               builder: (_, value, __) => Visibility(
                 visible: value != null,
                 child: Positioned(
-                  right: 15,
-                  top: 15,
+                  right: 18,
+                  top: 24,
                   child: IconButton(
                     icon: Icon(
                       Icons.map_outlined,
                       color: context.textTheme.displayLarge?.color,
                     ),
-                    iconSize: 20,
+                    iconSize: 24,
                     tooltip: 'Zoom to bounds',
                     onPressed: () => onZoomToAsset?.call(value!),
                   ),

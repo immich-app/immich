@@ -2,8 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/favorite.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
+import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 
 @RoutePage()
@@ -21,7 +21,7 @@ class FavoritesPage extends HookConsumerWidget {
         centerTitle: true,
         automaticallyImplyLeading: false,
         title: const Text(
-          'favorites_page_title',
+          'favorites',
         ).tr(),
       );
     }
@@ -29,7 +29,7 @@ class FavoritesPage extends HookConsumerWidget {
     return Scaffold(
       appBar: ref.watch(multiselectProvider) ? null : buildAppBar(),
       body: MultiselectGrid(
-        renderListProvider: favoriteAssetsProvider,
+        renderListProvider: favoriteTimelineProvider,
         favoriteEnabled: true,
         editEnabled: true,
         unfavorite: true,

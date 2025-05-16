@@ -97,7 +97,7 @@ Make sure to [set your reverse proxy](/docs/administration/reverse-proxy/) to al
 Also, check the disk space of your reverse proxy.
 In some cases, proxies cache requests to disk before passing them on, and if disk space runs out, the request fails.
 
-If you are using Cloudflare Tunnel, please know that they set a maxiumum filesize of 100 MB that cannot be changed.
+If you are using Cloudflare Tunnel, please know that they set a maximum filesize of 100 MB that cannot be changed.
 At times, files larger than this may work, potentially up to 1 GB. However, the official limit is 100 MB.
 If you are having issues, we recommend switching to a different network deployment.
 
@@ -117,7 +117,7 @@ See [Backup and Restore](/docs/administration/backup-and-restore.md).
 
 ### Does Immich support reading existing face tag metadata?
 
-No, it currently does not. There is an [open feature request on GitHub](https://github.com/immich-app/immich/discussions/4348).
+Yes, it creates new faces and persons from the imported asset metadata. For details see the [feature request #4348](https://github.com/immich-app/immich/discussions/4348) and [PR #6455](https://github.com/immich-app/immich/pull/6455).
 
 ### Does Immich support the filtering of NSFW images?
 
@@ -170,7 +170,7 @@ If you aren't able to or prefer not to mount Samba on the host (such as Windows 
 Below is an example in the `docker-compose.yml`.
 
 Change your username, password, local IP, and share name, and see below where the line `- originals:/usr/src/app/originals`,
-corrolates to the section where the volume `originals` was created. You can call this whatever you like, and map it to the docker container as you like.
+correlates to the section where the volume `originals` was created. You can call this whatever you like, and map it to the docker container as you like.
 For example you could change `originals:` to `Photos:`, and change `- originals:/usr/src/app/originals` to `Photos:/usr/src/app/photos`.
 
 ```diff
@@ -262,7 +262,7 @@ No, this is not supported. Only models listed in the [Hugging Face][huggingface]
 
 ### I want to be able to search in other languages besides English. How can I do that?
 
-You can change to a multilingual CLIP model. See [here](/docs/features/searching#clip-model) for instructions.
+You can change to a multilingual CLIP model. See [here](/docs/features/searching#clip-models) for instructions.
 
 ### Does Immich support Facial Recognition for videos?
 

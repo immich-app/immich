@@ -4,16 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
-import 'package:immich_mobile/providers/trash.provider.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/timeline.provider.dart';
+import 'package:immich_mobile/providers/trash.provider.dart';
+import 'package:immich_mobile/utils/immich_loading_overlay.dart';
+import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
+import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 
 @RoutePage()
 class TrashPage extends HookConsumerWidget {
@@ -21,7 +23,7 @@ class TrashPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final trashedAssets = ref.watch(trashedAssetsProvider);
+    final trashRenderList = ref.watch(trashTimelineProvider);
     final trashDays =
         ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
     final selectionEnabledHook = useState(false);
@@ -55,8 +57,8 @@ class TrashPage extends HookConsumerWidget {
         context: context,
         builder: (context) => ConfirmDialog(
           onOk: () => onEmptyTrash(),
-          title: "trash_page_empty_trash_btn".tr(),
-          ok: "trash_page_empty_trash_dialog_ok".tr(),
+          title: "empty_trash".tr(),
+          ok: "ok".tr(),
           content: "trash_page_empty_trash_dialog_content".tr(),
         ),
       );
@@ -67,15 +69,15 @@ class TrashPage extends HookConsumerWidget {
       try {
         if (selection.value.isNotEmpty) {
           final isRemoved = await ref
-              .read(trashProvider.notifier)
-              .removeAssets(selection.value);
+              .read(assetProvider.notifier)
+              .deleteAssets(selection.value, force: true);
 
           if (isRemoved) {
             if (context.mounted) {
               ImmichToast.show(
                 context: context,
                 msg: 'assets_deleted_permanently'
-                    .tr(args: ["${selection.value.length}"]),
+                    .tr(namedArgs: {'count': "${selection.value.length}"}),
                 gravity: ToastGravity.BOTTOM,
               );
             }
@@ -116,7 +118,7 @@ class TrashPage extends HookConsumerWidget {
             ImmichToast.show(
               context: context,
               msg: 'assets_restored_successfully'
-                  .tr(args: ["${selection.value.length}"]),
+                  .tr(namedArgs: {'count': "${selection.value.length}"}),
               gravity: ToastGravity.BOTTOM,
             );
           }
@@ -133,7 +135,7 @@ class TrashPage extends HookConsumerWidget {
             ? "${selection.value.length}"
             : "trash_page_select_assets_btn".tr();
       }
-      return 'trash_page_title'.tr(args: [count]);
+      return 'trash_page_title'.tr(namedArgs: {'count': count});
     }
 
     AppBar buildAppBar(String count) {
@@ -159,11 +161,11 @@ class TrashPage extends HookConsumerWidget {
                 return [
                   PopupMenuItem(
                     value: () => selectionEnabledHook.value = true,
-                    child: const Text('trash_page_select_btn').tr(),
+                    child: const Text('select').tr(),
                   ),
                   PopupMenuItem(
                     value: handleEmptyTrash,
-                    child: const Text('trash_page_empty_trash_btn').tr(),
+                    child: const Text('empty_trash').tr(),
                   ),
                 ];
               },
@@ -192,7 +194,7 @@ class TrashPage extends HookConsumerWidget {
                     label: Text(
                       selection.value.isEmpty
                           ? 'trash_page_delete_all'.tr()
-                          : 'trash_page_delete'.tr(),
+                          : 'delete'.tr(),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.red[400],
@@ -212,7 +214,7 @@ class TrashPage extends HookConsumerWidget {
                     label: Text(
                       selection.value.isEmpty
                           ? 'trash_page_restore_all'.tr()
-                          : 'trash_page_restore'.tr(),
+                          : 'restore'.tr(),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -233,11 +235,11 @@ class TrashPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: trashedAssets.maybeWhen(
+      appBar: trashRenderList.maybeWhen(
         orElse: () => buildAppBar("?"),
         data: (data) => buildAppBar(data.totalAssets.toString()),
       ),
-      body: trashedAssets.widgetWhen(
+      body: trashRenderList.widgetWhen(
         onData: (data) => data.isEmpty
             ? Center(
                 child: Text('trash_page_no_assets'.tr()),
@@ -258,7 +260,7 @@ class TrashPage extends HookConsumerWidget {
                         ),
                         child: const Text(
                           "trash_page_info",
-                        ).tr(args: ["$trashDays"]),
+                        ).tr(namedArgs: {"days": "$trashDays"}),
                       ),
                     ),
                   ),

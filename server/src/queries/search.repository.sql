@@ -7,15 +7,12 @@ from
   "assets"
   inner join "exif" on "assets"."id" = "exif"."assetId"
 where
-  "assets"."fileCreatedAt" >= $1
-  and "exif"."lensModel" = $2
-  and "assets"."ownerId" = any ($3::uuid[])
-  and "assets"."isFavorite" = $4
-  and "assets"."isArchived" = $5
+  "assets"."visibility" = $1
+  and "assets"."fileCreatedAt" >= $2
+  and "exif"."lensModel" = $3
+  and "assets"."ownerId" = any ($4::uuid[])
+  and "assets"."isFavorite" = $5
   and "assets"."deletedAt" is null
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
 order by
   "assets"."fileCreatedAt" desc
 limit
@@ -31,15 +28,12 @@ offset
     "assets"
     inner join "exif" on "assets"."id" = "exif"."assetId"
   where
-    "assets"."fileCreatedAt" >= $1
-    and "exif"."lensModel" = $2
-    and "assets"."ownerId" = any ($3::uuid[])
-    and "assets"."isFavorite" = $4
-    and "assets"."isArchived" = $5
+    "assets"."visibility" = $1
+    and "assets"."fileCreatedAt" >= $2
+    and "exif"."lensModel" = $3
+    and "assets"."ownerId" = any ($4::uuid[])
+    and "assets"."isFavorite" = $5
     and "assets"."deletedAt" is null
-    and "assets"."fileCreatedAt" is not null
-    and "assets"."fileModifiedAt" is not null
-    and "assets"."localDateTime" is not null
     and "assets"."id" < $6
   order by
     random()
@@ -54,15 +48,12 @@ union all
     "assets"
     inner join "exif" on "assets"."id" = "exif"."assetId"
   where
-    "assets"."fileCreatedAt" >= $8
-    and "exif"."lensModel" = $9
-    and "assets"."ownerId" = any ($10::uuid[])
-    and "assets"."isFavorite" = $11
-    and "assets"."isArchived" = $12
+    "assets"."visibility" = $8
+    and "assets"."fileCreatedAt" >= $9
+    and "exif"."lensModel" = $10
+    and "assets"."ownerId" = any ($11::uuid[])
+    and "assets"."isFavorite" = $12
     and "assets"."deletedAt" is null
-    and "assets"."fileCreatedAt" is not null
-    and "assets"."fileModifiedAt" is not null
-    and "assets"."localDateTime" is not null
     and "assets"."id" > $13
   order by
     random()
@@ -80,15 +71,12 @@ from
   inner join "exif" on "assets"."id" = "exif"."assetId"
   inner join "smart_search" on "assets"."id" = "smart_search"."assetId"
 where
-  "assets"."fileCreatedAt" >= $1
-  and "exif"."lensModel" = $2
-  and "assets"."ownerId" = any ($3::uuid[])
-  and "assets"."isFavorite" = $4
-  and "assets"."isArchived" = $5
+  "assets"."visibility" = $1
+  and "assets"."fileCreatedAt" >= $2
+  and "exif"."lensModel" = $3
+  and "assets"."ownerId" = any ($4::uuid[])
+  and "assets"."isFavorite" = $5
   and "assets"."deletedAt" is null
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
 order by
   smart_search.embedding <=> $6
 limit
@@ -109,9 +97,10 @@ with
     where
       "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
-      and "assets"."isVisible" = $3
+      and "assets"."visibility" != $3
       and "assets"."type" = $4
       and "assets"."id" != $5::uuid
+      and "assets"."stackId" is null
     order by
       smart_search.embedding <=> $6
     limit
@@ -135,6 +124,7 @@ with
       "asset_faces"
       inner join "assets" on "assets"."id" = "asset_faces"."assetId"
       inner join "face_search" on "face_search"."faceId" = "asset_faces"."id"
+      left join "person" on "person"."id" = "asset_faces"."personId"
     where
       "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
@@ -186,14 +176,13 @@ with recursive
         inner join "assets" on "assets"."id" = "exif"."assetId"
       where
         "assets"."ownerId" = any ($1::uuid[])
-        and "assets"."isVisible" = $2
-        and "assets"."isArchived" = $3
-        and "assets"."type" = $4
+        and "assets"."visibility" = $2
+        and "assets"."type" = $3
         and "assets"."deletedAt" is null
       order by
         "city"
       limit
-        $5
+        $4
     )
     union all
     (
@@ -210,16 +199,15 @@ with recursive
             "exif"
             inner join "assets" on "assets"."id" = "exif"."assetId"
           where
-            "assets"."ownerId" = any ($6::uuid[])
-            and "assets"."isVisible" = $7
-            and "assets"."isArchived" = $8
-            and "assets"."type" = $9
+            "assets"."ownerId" = any ($5::uuid[])
+            and "assets"."visibility" = $6
+            and "assets"."type" = $7
             and "assets"."deletedAt" is null
             and "exif"."city" > "cte"."city"
           order by
             "city"
           limit
-            $10
+            $8
         ) as "l" on true
     )
   )
@@ -241,7 +229,7 @@ from
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
   "ownerId" = any ($1::uuid[])
-  and "isVisible" = $2
+  and "visibility" != $2
   and "deletedAt" is null
   and "state" is not null
 
@@ -253,7 +241,7 @@ from
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
   "ownerId" = any ($1::uuid[])
-  and "isVisible" = $2
+  and "visibility" != $2
   and "deletedAt" is null
   and "city" is not null
 
@@ -265,7 +253,7 @@ from
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
   "ownerId" = any ($1::uuid[])
-  and "isVisible" = $2
+  and "visibility" != $2
   and "deletedAt" is null
   and "make" is not null
 
@@ -277,6 +265,6 @@ from
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
   "ownerId" = any ($1::uuid[])
-  and "isVisible" = $2
+  and "visibility" != $2
   and "deletedAt" is null
   and "model" is not null

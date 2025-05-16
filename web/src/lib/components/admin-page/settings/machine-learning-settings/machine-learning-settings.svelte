@@ -1,20 +1,20 @@
 <script lang="ts">
-  import type { SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { t } from 'svelte-i18n';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import type { SystemConfigDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiMinusCircle } from '@mdi/js';
+  import { isEqual } from 'lodash-es';
+  import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -46,12 +46,12 @@
         <hr />
 
         <div>
-          {#each config.machineLearning.urls as _, i}
+          {#each config.machineLearning.urls as _, i (i)}
             {#snippet removeButton()}
               {#if config.machineLearning.urls.length > 1}
                 <CircleIconButton
                   size="24"
-                  class="ml-2"
+                  class="ms-2"
                   padding="2"
                   color="red"
                   title=""
@@ -76,8 +76,8 @@
 
         <Button
           class="mb-2"
-          type="button"
-          size="sm"
+          size="small"
+          shape="round"
           onclick={() => config.machineLearning.urls.splice(0, 0, '')}
           disabled={disabled || !config.machineLearning.enabled}>{$t('add_url')}</Button
         >
@@ -88,7 +88,7 @@
         title={$t('admin.machine_learning_smart_search')}
         subtitle={$t('admin.machine_learning_smart_search_description')}
       >
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+        <div class="ms-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('admin.machine_learning_smart_search_enabled')}
             subtitle={$t('admin.machine_learning_smart_search_enabled_description')}
@@ -110,7 +110,7 @@
               <p class="immich-form-label pb-2 text-sm">
                 <FormatMessage key="admin.machine_learning_clip_model_description">
                   {#snippet children({ message })}
-                    <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
+                    <a target="_blank" href="https://huggingface.co/immich-app"><u>{message}</u></a>
                   {/snippet}
                 </FormatMessage>
               </p>
@@ -124,7 +124,7 @@
         title={$t('admin.machine_learning_duplicate_detection')}
         subtitle={$t('admin.machine_learning_duplicate_detection_setting_description')}
       >
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+        <div class="ms-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('admin.machine_learning_duplicate_detection_enabled')}
             subtitle={$t('admin.machine_learning_duplicate_detection_enabled_description')}
@@ -154,7 +154,7 @@
         title={$t('admin.machine_learning_facial_recognition')}
         subtitle={$t('admin.machine_learning_facial_recognition_description')}
       >
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+        <div class="ms-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('admin.machine_learning_facial_recognition_setting')}
             subtitle={$t('admin.machine_learning_facial_recognition_setting_description')}

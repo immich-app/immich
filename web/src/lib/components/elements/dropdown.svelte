@@ -82,10 +82,10 @@
   const getAlignClass = (position: 'bottom-left' | 'bottom-right') => {
     switch (position) {
       case 'bottom-left': {
-        return 'left-0';
+        return 'start-0';
       }
       case 'bottom-right': {
-        return 'right-0';
+        return 'end-0';
       }
 
       default: {
@@ -108,7 +108,7 @@
   {#if showMenu}
     <div
       transition:fly={{ y: -30, duration: 250 }}
-      class="text-sm font-medium absolute z-50 flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className} {getAlignClass(
+      class="text-sm font-medium z-[1] absolute flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className} {getAlignClass(
         position,
       )}"
     >

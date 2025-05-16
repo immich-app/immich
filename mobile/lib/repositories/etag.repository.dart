@@ -15,7 +15,7 @@ class ETagRepository extends DatabaseRepository implements IETagRepository {
   Future<List<String>> getAllIds() => db.eTags.where().idProperty().findAll();
 
   @override
-  Future<ETag?> get(int id) => db.eTags.get(id);
+  Future<ETag?> get(String id) => db.eTags.getById(id);
 
   @override
   Future<void> upsertAll(List<ETag> etags) => txn(() => db.eTags.putAll(etags));
@@ -26,4 +26,11 @@ class ETagRepository extends DatabaseRepository implements IETagRepository {
 
   @override
   Future<ETag?> getById(String id) => db.eTags.getById(id);
+
+  @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.eTags.clear();
+    });
+  }
 }

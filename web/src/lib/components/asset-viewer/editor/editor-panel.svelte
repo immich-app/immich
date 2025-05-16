@@ -1,13 +1,13 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
+  import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
-  import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
-  import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
-  import { shortcut } from '$lib/actions/shortcut';
+  import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
 
   onMount(() => {
     return websocketEvents.on('on_asset_update', (assetUpdate) => {
@@ -31,10 +31,13 @@
   setTimeout(() => {
     onUpdateSelectedType(selectedType);
   }, 1);
+
   function selectType(name: string) {
     selectedType = name;
     onUpdateSelectedType(selectedType);
   }
+
+  const onConfirm = () => (typeof $showCancelConfirmDialog === 'boolean' ? null : $showCancelConfirmDialog());
 </script>
 
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
@@ -64,16 +67,11 @@
 </section>
 
 {#if $showCancelConfirmDialog}
-  <ConfirmDialog
+  <ConfirmModal
     title={$t('editor_close_without_save_title')}
     prompt={$t('editor_close_without_save_prompt')}
-    cancelText={$t('no')}
-    cancelColor="secondary"
-    confirmColor="red"
+    confirmColor="danger"
     confirmText={$t('close')}
-    onCancel={() => {
-      $showCancelConfirmDialog = false;
-    }}
-    onConfirm={() => (typeof $showCancelConfirmDialog === 'boolean' ? null : $showCancelConfirmDialog())}
+    onClose={(confirmed) => (confirmed ? onConfirm() : ($showCancelConfirmDialog = false))}
   />
 {/if}

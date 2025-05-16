@@ -1,19 +1,21 @@
 <script lang="ts">
+  import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
-  import { swipe } from 'svelte-gestures';
   import type { SwipeCustomEvent } from 'svelte-gestures';
-  import { fade } from 'svelte/transition';
+  import { swipe } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
 
   interface Props {
     assetId: string;
     loopVideo: boolean;
-    checksum: string;
+    cacheKey: string | null;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -24,7 +26,7 @@
   let {
     assetId,
     loopVideo,
-    checksum,
+    cacheKey,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
@@ -36,10 +38,11 @@
   let isLoading = $state(true);
   let assetFileUrl = $state('');
   let forceMuted = $state(false);
+  let isScrubbing = $state(false);
 
   onMount(() => {
     if (videoPlayer) {
-      assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
+      assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
       forceMuted = false;
       videoPlayer.load();
     }
@@ -53,8 +56,10 @@
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
-      await video.play();
-      onVideoStarted();
+      if (!video.paused && !isScrubbing) {
+        await video.play();
+        onVideoStarted();
+      }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
         await tryForceMutedPlay(video);
@@ -84,9 +89,23 @@
       onPreviousAsset();
     }
   };
+
+  let containerWidth = $state(0);
+  let containerHeight = $state(0);
+
+  $effect(() => {
+    if (isFaceEditMode.value) {
+      videoPlayer?.pause();
+    }
+  });
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
+<div
+  transition:fade={{ duration: 150 }}
+  class="flex h-full select-none place-content-center place-items-center"
+  bind:clientWidth={containerWidth}
+  bind:clientHeight={containerHeight}
+>
   <video
     bind:this={videoPlayer}
     loop={$loopVideoPreference && loopVideo}
@@ -103,10 +122,15 @@
         $videoViewerMuted = e.currentTarget.muted;
       }
     }}
+    onseeking={() => (isScrubbing = true)}
+    onseeked={() => (isScrubbing = false)}
+    onplaying={(e) => {
+      e.currentTarget.focus();
+    }}
     onclose={() => onClose()}
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
+    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
     src={assetFileUrl}
   >
   </video>
@@ -115,5 +139,9 @@
     <div class="absolute flex place-content-center place-items-center">
       <LoadingSpinner />
     </div>
+  {/if}
+
+  {#if isFaceEditMode.value}
+    <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
   {/if}
 </div>

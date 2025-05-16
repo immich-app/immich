@@ -17,6 +17,9 @@ e2e:
 prod:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
+prod-down:
+	docker compose -f ./docker/docker-compose.prod.yml down --remove-orphans
+
 prod-scale:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
 
@@ -39,7 +42,7 @@ attach-server:
 renovate:
   LOG_LEVEL=debug npx renovate --platform=local --repository-cache=reset
 
-MODULES = e2e server web cli sdk docs
+MODULES = e2e server web cli sdk docs .github
 
 audit-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) audit fix
@@ -77,14 +80,14 @@ test-medium:
 test-medium-dev:
 	docker exec -it immich_server /bin/sh -c "npm run test:medium"
 
-build-all: $(foreach M,$(filter-out e2e,$(MODULES)),build-$M) ;
+build-all: $(foreach M,$(filter-out e2e .github,$(MODULES)),build-$M) ;
 install-all: $(foreach M,$(MODULES),install-$M) ;
-check-all: $(foreach M,$(filter-out sdk cli docs,$(MODULES)),check-$M) ;
-lint-all: $(foreach M,$(filter-out sdk docs,$(MODULES)),lint-$M) ;
+check-all: $(foreach M,$(filter-out sdk cli docs .github,$(MODULES)),check-$M) ;
+lint-all: $(foreach M,$(filter-out sdk docs .github,$(MODULES)),lint-$M) ;
 format-all: $(foreach M,$(filter-out sdk,$(MODULES)),format-$M) ;
 audit-all:  $(foreach M,$(MODULES),audit-$M) ;
 hygiene-all: lint-all format-all check-all sql audit-all;
-test-all: $(foreach M,$(filter-out sdk docs,$(MODULES)),test-$M) ;
+test-all: $(foreach M,$(filter-out sdk docs .github,$(MODULES)),test-$M) ;
 
 clean:
 	find . -name "node_modules" -type d -prune -exec rm -rf '{}' +

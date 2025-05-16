@@ -1,31 +1,32 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
+import 'package:immich_mobile/domain/interfaces/user.interface.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
-import 'package:immich_mobile/interfaces/backup.interface.dart';
+import 'package:immich_mobile/interfaces/asset_media.interface.dart';
+import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
-import 'package:immich_mobile/interfaces/exif_info.interface.dart';
-import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
-import 'package:immich_mobile/repositories/exif_info.repository.dart';
-import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
-import 'package:immich_mobile/services/user.service.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:openapi/api.dart';
@@ -34,15 +35,16 @@ final assetServiceProvider = Provider(
   (ref) => AssetService(
     ref.watch(assetApiRepositoryProvider),
     ref.watch(assetRepositoryProvider),
-    ref.watch(exifInfoRepositoryProvider),
+    ref.watch(exifRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(etagRepositoryProvider),
-    ref.watch(backupRepositoryProvider),
+    ref.watch(backupAlbumRepositoryProvider),
     ref.watch(apiServiceProvider),
     ref.watch(syncServiceProvider),
-    ref.watch(userServiceProvider),
     ref.watch(backupServiceProvider),
     ref.watch(albumServiceProvider),
+    ref.watch(userServiceProvider),
+    ref.watch(assetMediaRepositoryProvider),
   ),
 );
 
@@ -52,12 +54,13 @@ class AssetService {
   final IExifInfoRepository _exifInfoRepository;
   final IUserRepository _userRepository;
   final IETagRepository _etagRepository;
-  final IBackupRepository _backupRepository;
+  final IBackupAlbumRepository _backupRepository;
   final ApiService _apiService;
   final SyncService _syncService;
-  final UserService _userService;
   final BackupService _backupService;
   final AlbumService _albumService;
+  final UserService _userService;
+  final IAssetMediaRepository _assetMediaRepository;
   final log = Logger('AssetService');
 
   AssetService(
@@ -69,24 +72,24 @@ class AssetService {
     this._backupRepository,
     this._apiService,
     this._syncService,
-    this._userService,
     this._backupService,
     this._albumService,
+    this._userService,
+    this._assetMediaRepository,
   );
 
   /// Checks the server for updated assets and updates the local database if
   /// required. Returns `true` if there were any changes.
   Future<bool> refreshRemoteAssets() async {
     final syncedUserIds = await _etagRepository.getAllIds();
-    final List<User> syncedUsers = syncedUserIds.isEmpty
+    final List<UserDto> syncedUsers = syncedUserIds.isEmpty
         ? []
-        : await _userRepository.getByIds(syncedUserIds);
+        : (await _userRepository.getByUserIds(syncedUserIds)).nonNulls.toList();
     final Stopwatch sw = Stopwatch()..start();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
       users: syncedUsers,
       getChangedAssets: _getRemoteAssetChanges,
       loadAssets: _getRemoteAssets,
-      refreshUsers: _userService.getUsersFromServer,
     );
     debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
     return changes;
@@ -94,7 +97,7 @@ class AssetService {
 
   /// Returns `(null, null)` if changes are invalid -> requires full sync
   Future<(List<Asset>? toUpsert, List<String>? toDelete)>
-      _getRemoteAssetChanges(List<User> users, DateTime since) async {
+      _getRemoteAssetChanges(List<UserDto> users, DateTime since) async {
     final dto = AssetDeltaSyncDto(
       updatedAfter: since,
       userIds: users.map((e) => e.id).toList(),
@@ -127,7 +130,7 @@ class AssetService {
   }
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<Asset>?> _getRemoteAssets(User user, DateTime until) async {
+  Future<List<Asset>?> _getRemoteAssets(UserDto user, DateTime until) async {
     const int chunkSize = 10000;
     try {
       final List<Asset> allAssets = [];
@@ -158,44 +161,21 @@ class AssetService {
     }
   }
 
-  Future<bool> deleteAssets(
-    Iterable<Asset> deleteAssets, {
-    bool? force = false,
-  }) async {
-    try {
-      final List<String> payload = [];
-
-      for (final asset in deleteAssets) {
-        payload.add(asset.remoteId!);
-      }
-
-      await _apiService.assetsApi.deleteAssets(
-        AssetBulkDeleteDto(
-          ids: payload,
-          force: force,
-        ),
-      );
-      return true;
-    } catch (error, stack) {
-      log.severe("Error while deleting assets", error, stack);
-    }
-    return false;
-  }
-
   /// Loads the exif information from the database. If there is none, loads
   /// the exif info from the server (remote assets only)
   Future<Asset> loadExif(Asset a) async {
-    a.exifInfo ??= await _exifInfoRepository.get(a.id);
+    a.exifInfo ??= (await _exifInfoRepository.get(a.id));
     // fileSize is always filled on the server but not set on client
     if (a.exifInfo?.fileSize == null) {
       if (a.isRemote) {
         final dto = await _apiService.assetsApi.getAssetInfo(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
-          final newExif = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
+          final newExif = Asset.remote(dto).exifInfo!.copyWith(assetId: a.id);
           a.exifInfo = newExif;
           if (newExif != a.exifInfo) {
             if (a.isInDb) {
-              _assetRepository.transaction(() => _assetRepository.update(a));
+              await _assetRepository
+                  .transaction(() => _assetRepository.update(a));
             } else {
               debugPrint("[loadExif] parameter Asset is not from DB!");
             }
@@ -217,7 +197,7 @@ class AssetService {
         ids: assets.map((e) => e.remoteId!).toList(),
         dateTimeOriginal: updateAssetDto.dateTimeOriginal,
         isFavorite: updateAssetDto.isFavorite,
-        isArchived: updateAssetDto.isArchived,
+        visibility: updateAssetDto.visibility,
         latitude: updateAssetDto.latitude,
         longitude: updateAssetDto.longitude,
       ),
@@ -249,7 +229,13 @@ class AssetService {
     bool isArchived,
   ) async {
     try {
-      await updateAssets(assets, UpdateAssetDto(isArchived: isArchived));
+      await updateAssets(
+        assets,
+        UpdateAssetDto(
+          visibility:
+              isArchived ? AssetVisibility.archive : AssetVisibility.timeline,
+        ),
+      );
 
       for (var element in assets) {
         element.isArchived = isArchived;
@@ -276,7 +262,8 @@ class AssetService {
 
       for (var element in assets) {
         element.fileCreatedAt = DateTime.parse(updatedDt);
-        element.exifInfo?.dateTimeOriginal = DateTime.parse(updatedDt);
+        element.exifInfo = element.exifInfo
+            ?.copyWith(dateTimeOriginal: DateTime.parse(updatedDt));
       }
 
       await _syncService.upsertAssetsWithExif(assets);
@@ -302,8 +289,10 @@ class AssetService {
       );
 
       for (var element in assets) {
-        element.exifInfo?.lat = location.latitude;
-        element.exifInfo?.long = location.longitude;
+        element.exifInfo = element.exifInfo?.copyWith(
+          latitude: location.latitude,
+          longitude: location.longitude,
+        );
       }
 
       await _syncService.upsertAssetsWithExif(assets);
@@ -329,9 +318,9 @@ class AssetService {
       );
 
       await refreshRemoteAssets();
-      final owner = await _userRepository.me();
+      final owner = _userService.getMyUser();
       final remoteAssets = await _assetRepository.getAll(
-        ownerId: owner.isarId,
+        ownerId: owner.id,
         state: AssetState.merged,
       );
 
@@ -367,7 +356,7 @@ class AssetService {
     String newDescription,
   ) async {
     final remoteAssetId = asset.remoteId;
-    final localExifId = asset.exifInfo?.id;
+    final localExifId = asset.exifInfo?.assetId;
 
     // Guard [remoteAssetId] and [localExifId] null
     if (remoteAssetId == null || localExifId == null) {
@@ -385,14 +374,14 @@ class AssetService {
       var exifInfo = await _exifInfoRepository.get(localExifId);
 
       if (exifInfo != null) {
-        exifInfo.description = description;
-        await _exifInfoRepository.update(exifInfo);
+        await _exifInfoRepository
+            .update(exifInfo.copyWith(description: description));
       }
     }
   }
 
   Future<String> getDescription(Asset asset) async {
-    final localExifId = asset.exifInfo?.id;
+    final localExifId = asset.exifInfo?.assetId;
 
     // Guard [remoteAssetId] and [localExifId] null
     if (localExifId == null) {
@@ -405,10 +394,7 @@ class AssetService {
   }
 
   Future<double> getAspectRatio(Asset asset) async {
-    // platform_manager always returns 0 for orientation on iOS, so only prefer it on Android
-    if (asset.isLocal && Platform.isAndroid) {
-      await asset.localAsync;
-    } else if (asset.isRemote) {
+    if (asset.isRemote) {
       asset = await loadExif(asset);
     } else if (asset.isLocal) {
       await asset.localAsync;
@@ -427,5 +413,120 @@ class AssetService {
     }
 
     return 1.0;
+  }
+
+  Future<List<Asset>> getStackAssets(String stackId) {
+    return _assetRepository.getStackAssets(stackId);
+  }
+
+  Future<void> clearTable() {
+    return _assetRepository.clearTable();
+  }
+
+  /// Delete assets from local file system and unreference from the database
+  Future<void> deleteLocalAssets(Iterable<Asset> assets) async {
+    // Delete files from local gallery
+    final candidates = assets.where((asset) => asset.isLocal);
+
+    final deletedIds = await _assetMediaRepository
+        .deleteAll(candidates.map((asset) => asset.localId!).toList());
+
+    // Modify local database by removing the reference to the local assets
+    if (deletedIds.isNotEmpty) {
+      // Delete records from local database
+      final isarIds = assets
+          .where((asset) => asset.storage == AssetState.local)
+          .map((asset) => asset.id)
+          .toList();
+      await _assetRepository.deleteByIds(isarIds);
+
+      // Modify Merged asset to be remote only
+      final updatedAssets = assets
+          .where((asset) => asset.storage == AssetState.merged)
+          .map((asset) {
+        asset.localId = null;
+        return asset;
+      }).toList();
+
+      await _assetRepository.updateAll(updatedAssets);
+    }
+  }
+
+  /// Delete assets from the server and unreference from the database
+  Future<void> deleteRemoteAssets(
+    Iterable<Asset> assets, {
+    bool shouldDeletePermanently = false,
+  }) async {
+    final candidates = assets.where((a) => a.isRemote);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    await _apiService.assetsApi.deleteAssets(
+      AssetBulkDeleteDto(
+        ids: candidates.map((a) => a.remoteId!).toList(),
+        force: shouldDeletePermanently,
+      ),
+    );
+
+    /// Update asset info bassed on the deletion type.
+    final payload = shouldDeletePermanently
+        ? assets
+            .where((asset) => asset.storage == AssetState.merged)
+            .map((asset) {
+            asset.remoteId = null;
+            return asset;
+          })
+        : assets.where((asset) => asset.isRemote).map((asset) {
+            asset.isTrashed = true;
+            return asset;
+          });
+
+    await _assetRepository.transaction(() async {
+      await _assetRepository.updateAll(payload.toList());
+
+      if (shouldDeletePermanently) {
+        final remoteAssetIds = assets
+            .where((asset) => asset.storage == AssetState.remote)
+            .map((asset) => asset.id)
+            .toList();
+        await _assetRepository.deleteByIds(remoteAssetIds);
+      }
+    });
+  }
+
+  /// Delete assets on both local file system and the server.
+  /// Unreference from the database.
+  Future<void> deleteAssets(
+    Iterable<Asset> assets, {
+    bool shouldDeletePermanently = false,
+  }) async {
+    final hasLocal = assets.any((asset) => asset.isLocal);
+    final hasRemote = assets.any((asset) => asset.isRemote);
+
+    if (hasLocal) {
+      await deleteLocalAssets(assets);
+    }
+
+    if (hasRemote) {
+      await deleteRemoteAssets(
+        assets,
+        shouldDeletePermanently: shouldDeletePermanently,
+      );
+    }
+  }
+
+  Stream<Asset?> watchAsset(int id, {bool fireImmediately = false}) {
+    return _assetRepository.watchAsset(id, fireImmediately: fireImmediately);
+  }
+
+  Future<List<Asset>> getRecentlyTakenAssets() {
+    final me = _userService.getMyUser();
+    return _assetRepository.getRecentlyTakenAssets(me.id);
+  }
+
+  Future<List<Asset>> getMotionAssets() {
+    final me = _userService.getMyUser();
+    return _assetRepository.getMotionAssets(me.id);
   }
 }

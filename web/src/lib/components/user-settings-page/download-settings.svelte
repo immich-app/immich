@@ -3,17 +3,16 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { updateMyPreferences } from '@immich/sdk';
-  import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
-
-  import { preferences } from '$lib/stores/user.store';
-  import Button from '../elements/buttons/button.svelte';
-  import { t } from 'svelte-i18n';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import { preferences } from '$lib/stores/user.store';
+  import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
+  import { updateMyPreferences } from '@immich/sdk';
+  import { Button } from '@immich/ui';
+  import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import { handleError } from '../../utils/handle-error';
 
   let archiveSize = $state(convertFromBytes($preferences?.download?.archiveSize || 4, ByteUnit.GiB));
   let includeEmbeddedVideos = $state($preferences?.download?.includeEmbeddedVideos || false);
@@ -44,7 +43,7 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
+      <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           label={$t('archive_size')}
@@ -57,7 +56,7 @@
           bind:checked={includeEmbeddedVideos}
         ></SettingSwitch>
         <div class="flex justify-end">
-          <Button type="submit" size="sm" onclick={() => handleSave()}>{$t('save')}</Button>
+          <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

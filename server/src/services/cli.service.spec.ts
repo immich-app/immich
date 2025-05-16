@@ -1,5 +1,5 @@
 import { CliService } from 'src/services/cli.service';
-import { userStub } from 'test/fixtures/user.stub';
+import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 import { describe, it } from 'vitest';
 
@@ -13,7 +13,7 @@ describe(CliService.name, () => {
 
   describe('listUsers', () => {
     it('should list users', async () => {
-      mocks.user.getList.mockResolvedValue([userStub.admin]);
+      mocks.user.getList.mockResolvedValue([factory.userAdmin({ isAdmin: true })]);
       await expect(sut.listUsers()).resolves.toEqual([expect.objectContaining({ isAdmin: true })]);
       expect(mocks.user.getList).toHaveBeenCalledWith({ withDeleted: true });
     });
@@ -30,7 +30,11 @@ describe(CliService.name, () => {
     });
 
     it('should default to a random password', async () => {
-      mocks.user.getAdmin.mockResolvedValue(userStub.admin);
+      const admin = factory.userAdmin({ isAdmin: true });
+
+      mocks.user.getAdmin.mockResolvedValue(admin);
+      mocks.user.update.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+
       const ask = vitest.fn().mockImplementation(() => {});
 
       const response = await sut.resetAdminPassword(ask);
@@ -39,12 +43,16 @@ describe(CliService.name, () => {
 
       expect(response.provided).toBe(false);
       expect(ask).toHaveBeenCalled();
-      expect(id).toEqual(userStub.admin.id);
+      expect(id).toEqual(admin.id);
       expect(update.password).toBeDefined();
     });
 
     it('should use the supplied password', async () => {
-      mocks.user.getAdmin.mockResolvedValue(userStub.admin);
+      const admin = factory.userAdmin({ isAdmin: true });
+
+      mocks.user.getAdmin.mockResolvedValue(admin);
+      mocks.user.update.mockResolvedValue(admin);
+
       const ask = vitest.fn().mockResolvedValue('new-password');
 
       const response = await sut.resetAdminPassword(ask);
@@ -53,7 +61,7 @@ describe(CliService.name, () => {
 
       expect(response.provided).toBe(true);
       expect(ask).toHaveBeenCalled();
-      expect(id).toEqual(userStub.admin.id);
+      expect(id).toEqual(admin.id);
       expect(update.password).toBeDefined();
     });
   });

@@ -1,22 +1,21 @@
 <script lang="ts">
-  import { createBubbler, preventDefault } from 'svelte/legacy';
-
-  const bubble = createBubbler();
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { updateMyUser } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { cloneDeep } from 'lodash-es';
+  import { t } from 'svelte-i18n';
+  import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
-  import Button from '../elements/buttons/button.svelte';
-  import { t } from 'svelte-i18n';
-  import { SettingInputFieldType } from '$lib/constants';
 
   let editedUser = $state(cloneDeep($user));
+  const bubble = createBubbler();
 
   const handleSaveProfile = async () => {
     try {
@@ -43,7 +42,7 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
+      <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('user_id')}
@@ -69,7 +68,7 @@
         />
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" onclick={() => handleSaveProfile()}>{$t('save')}</Button>
+          <Button shape="round" type="submit" size="small" onclick={() => handleSaveProfile()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

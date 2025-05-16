@@ -53,22 +53,12 @@ describe(DatabaseService.name, () => {
           mockEnvData({
             database: {
               config: {
-                kysely: {
-                  host: 'database',
-                  port: 5432,
-                  user: 'postgres',
-                  password: 'postgres',
-                  database: 'immich',
-                },
-                typeorm: {
-                  connectionType: 'parts',
-                  type: 'postgres',
-                  host: 'database',
-                  port: 5432,
-                  username: 'postgres',
-                  password: 'postgres',
-                  database: 'immich',
-                },
+                connectionType: 'parts',
+                host: 'database',
+                port: 5432,
+                username: 'postgres',
+                password: 'postgres',
+                database: 'immich',
               },
               skipMigrations: false,
               vectorExtension: extension,
@@ -292,22 +282,12 @@ describe(DatabaseService.name, () => {
         mockEnvData({
           database: {
             config: {
-              kysely: {
-                host: 'database',
-                port: 5432,
-                user: 'postgres',
-                password: 'postgres',
-                database: 'immich',
-              },
-              typeorm: {
-                connectionType: 'parts',
-                type: 'postgres',
-                host: 'database',
-                port: 5432,
-                username: 'postgres',
-                password: 'postgres',
-                database: 'immich',
-              },
+              connectionType: 'parts',
+              host: 'database',
+              port: 5432,
+              username: 'postgres',
+              password: 'postgres',
+              database: 'immich',
             },
             skipMigrations: true,
             vectorExtension: DatabaseExtension.VECTORS,
@@ -325,22 +305,12 @@ describe(DatabaseService.name, () => {
         mockEnvData({
           database: {
             config: {
-              kysely: {
-                host: 'database',
-                port: 5432,
-                user: 'postgres',
-                password: 'postgres',
-                database: 'immich',
-              },
-              typeorm: {
-                connectionType: 'parts',
-                type: 'postgres',
-                host: 'database',
-                port: 5432,
-                username: 'postgres',
-                password: 'postgres',
-                database: 'immich',
-              },
+              connectionType: 'parts',
+              host: 'database',
+              port: 5432,
+              username: 'postgres',
+              password: 'postgres',
+              database: 'immich',
             },
             skipMigrations: true,
             vectorExtension: DatabaseExtension.VECTOR,
@@ -382,52 +352,6 @@ describe(DatabaseService.name, () => {
       expect(mocks.database.createExtension).toHaveBeenCalledTimes(1);
       expect(mocks.database.updateVectorExtension).not.toHaveBeenCalled();
       expect(mocks.database.runMigrations).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('handleConnectionError', () => {
-    beforeAll(() => {
-      vi.useFakeTimers();
-    });
-
-    afterAll(() => {
-      vi.useRealTimers();
-    });
-
-    it('should not override interval', () => {
-      sut.handleConnectionError(new Error('Error'));
-      expect(mocks.logger.error).toHaveBeenCalled();
-
-      sut.handleConnectionError(new Error('foo'));
-      expect(mocks.logger.error).toHaveBeenCalledTimes(1);
-    });
-
-    it('should reconnect when interval elapses', async () => {
-      mocks.database.reconnect.mockResolvedValue(true);
-
-      sut.handleConnectionError(new Error('error'));
-      await vi.advanceTimersByTimeAsync(5000);
-
-      expect(mocks.database.reconnect).toHaveBeenCalledTimes(1);
-      expect(mocks.logger.log).toHaveBeenCalledWith('Database reconnected');
-
-      await vi.advanceTimersByTimeAsync(5000);
-      expect(mocks.database.reconnect).toHaveBeenCalledTimes(1);
-    });
-
-    it('should try again when reconnection fails', async () => {
-      mocks.database.reconnect.mockResolvedValueOnce(false);
-
-      sut.handleConnectionError(new Error('error'));
-      await vi.advanceTimersByTimeAsync(5000);
-
-      expect(mocks.database.reconnect).toHaveBeenCalledTimes(1);
-      expect(mocks.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Database connection failed'));
-
-      mocks.database.reconnect.mockResolvedValueOnce(true);
-      await vi.advanceTimersByTimeAsync(5000);
-      expect(mocks.database.reconnect).toHaveBeenCalledTimes(2);
-      expect(mocks.logger.log).toHaveBeenCalledWith('Database reconnected');
     });
   });
 });

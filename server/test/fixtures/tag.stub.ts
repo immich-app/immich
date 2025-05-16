@@ -1,49 +1,51 @@
+import { Tag } from 'src/database';
 import { TagResponseDto } from 'src/dtos/tag.dto';
-import { TagEntity } from 'src/entities/tag.entity';
-import { userStub } from 'test/fixtures/user.stub';
 
-const parent = Object.freeze<TagEntity>({
+const parent = Object.freeze<Tag>({
   id: 'tag-parent',
   createdAt: new Date('2021-01-01T00:00:00Z'),
   updatedAt: new Date('2021-01-01T00:00:00Z'),
   value: 'Parent',
   color: null,
-  userId: userStub.admin.id,
-  user: userStub.admin,
+  parentId: null,
 });
 
-const child = Object.freeze<TagEntity>({
+const child = Object.freeze<Tag>({
   id: 'tag-child',
   createdAt: new Date('2021-01-01T00:00:00Z'),
   updatedAt: new Date('2021-01-01T00:00:00Z'),
   value: 'Parent/Child',
   color: null,
-  parent,
-  userId: userStub.admin.id,
-  user: userStub.admin,
+  parentId: parent.id,
 });
 
+const tag = {
+  id: 'tag-1',
+  createdAt: new Date('2021-01-01T00:00:00Z'),
+  updatedAt: new Date('2021-01-01T00:00:00Z'),
+  value: 'Tag1',
+  color: null,
+  parentId: null,
+};
+
+const color = {
+  id: 'tag-1',
+  createdAt: new Date('2021-01-01T00:00:00Z'),
+  updatedAt: new Date('2021-01-01T00:00:00Z'),
+  value: 'Tag1',
+  color: '#000000',
+  parentId: null,
+};
+
+const upsert = { userId: 'tag-user', updateId: 'uuid-v7' };
+
 export const tagStub = {
-  tag1: Object.freeze<TagEntity>({
-    id: 'tag-1',
-    createdAt: new Date('2021-01-01T00:00:00Z'),
-    updatedAt: new Date('2021-01-01T00:00:00Z'),
-    value: 'Tag1',
-    color: null,
-    userId: userStub.admin.id,
-    user: userStub.admin,
-  }),
-  parent,
-  child,
-  color1: Object.freeze<TagEntity>({
-    id: 'tag-1',
-    createdAt: new Date('2021-01-01T00:00:00Z'),
-    updatedAt: new Date('2021-01-01T00:00:00Z'),
-    value: 'Tag1',
-    color: '#000000',
-    userId: userStub.admin.id,
-    user: userStub.admin,
-  }),
+  tag,
+  tagCreate: { ...tag, ...upsert },
+  color,
+  colorCreate: { ...color, ...upsert },
+  parentUpsert: { ...parent, ...upsert },
+  childUpsert: { ...child, ...upsert },
 };
 
 export const tagResponseStub = {

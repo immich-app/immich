@@ -2,11 +2,65 @@
 
 -- MemoryRepository.search
 select
-  *
+  "memories".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "assets".*
+        from
+          "assets"
+          inner join "memories_assets_assets" on "assets"."id" = "memories_assets_assets"."assetsId"
+        where
+          "memories_assets_assets"."memoriesId" = "memories"."id"
+          and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" asc
+      ) as agg
+  ) as "assets"
 from
   "memories"
 where
-  "ownerId" = $1
+  "deletedAt" is null
+  and "ownerId" = $1
+order by
+  "memoryAt" desc
+
+-- MemoryRepository.search (date filter)
+select
+  "memories".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "assets".*
+        from
+          "assets"
+          inner join "memories_assets_assets" on "assets"."id" = "memories_assets_assets"."assetsId"
+        where
+          "memories_assets_assets"."memoriesId" = "memories"."id"
+          and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" asc
+      ) as agg
+  ) as "assets"
+from
+  "memories"
+where
+  (
+    "showAt" is null
+    or "showAt" <= $1
+  )
+  and (
+    "hideAt" is null
+    or "hideAt" >= $2
+  )
+  and "deletedAt" is null
+  and "ownerId" = $3
 order by
   "memoryAt" desc
 
@@ -26,6 +80,8 @@ select
         where
           "memories_assets_assets"."memoriesId" = "memories"."id"
           and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from
@@ -56,6 +112,8 @@ select
         where
           "memories_assets_assets"."memoriesId" = "memories"."id"
           and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from

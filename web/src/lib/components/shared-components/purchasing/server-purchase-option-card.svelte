@@ -1,14 +1,16 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ImmichProduct } from '$lib/constants';
   import { getLicenseLink } from '$lib/utils/license-utils';
+  import { Button } from '@immich/ui';
   import { mdiCheckCircleOutline, mdiServer } from '@mdi/js';
   import { t } from 'svelte-i18n';
 </script>
 
 <!-- SERVER Purchase Options -->
-<div class="border border-gray-300 dark:border-gray-800 w-[375px] p-8 rounded-3xl bg-gray-100 dark:bg-gray-900">
+<div
+  class="border border-gray-300 dark:border-gray-800 w-[min(375px,100%)] p-8 rounded-3xl bg-gray-100 dark:bg-gray-900"
+>
   <div class="text-immich-primary dark:text-immich-dark-primary">
     <Icon path={mdiServer} size="56" />
     <p class="font-semibold text-lg mt-1">{$t('purchase_server_title')}</p>
@@ -37,6 +39,6 @@
       </div>
     </div>
 
-    <Button href={getLicenseLink(ImmichProduct.Server)} fullwidth>{$t('purchase_button_select')}</Button>
+    <Button shape="round" href={getLicenseLink(ImmichProduct.Server)} fullWidth>{$t('purchase_button_select')}</Button>
   </div>
 </div>

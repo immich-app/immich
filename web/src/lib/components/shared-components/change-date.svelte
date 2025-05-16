@@ -1,9 +1,9 @@
 <script lang="ts">
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { DateTime } from 'luxon';
-  import ConfirmDialog from './dialog/confirm-dialog.svelte';
-  import Combobox, { type ComboBoxOption } from './combobox.svelte';
-  import DateInput from '../elements/date-input.svelte';
   import { t } from 'svelte-i18n';
+  import DateInput from '../elements/date-input.svelte';
+  import Combobox, { type ComboBoxOption } from './combobox.svelte';
 
   interface Props {
     initialDate?: DateTime;
@@ -133,18 +133,17 @@
   let date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
 
-<ConfirmDialog
+<ConfirmModal
   confirmColor="primary"
   title={$t('edit_date_and_time')}
   prompt="Please select a new date:"
   disabled={!date.isValid}
-  onConfirm={handleConfirm}
-  {onCancel}
+  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
 >
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   {#snippet promptSnippet()}
-    <div class="flex flex-col text-left gap-2">
+    <div class="flex flex-col text-start gap-2">
       <div class="flex flex-col">
         <label for="datetime">{$t('date_and_time')}</label>
         <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
@@ -160,4 +159,4 @@
       </div>
     </div>
   {/snippet}
-</ConfirmDialog>
+</ConfirmModal>

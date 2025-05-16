@@ -21,35 +21,40 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-root
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   bump_version:
     runs-on: ubuntu-latest
-
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
-
+    permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: true
 
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
 
       - name: Bump version
-        run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
+        env:
+          SERVER_BUMP: ${{ inputs.serverBump }}
+          MOBILE_BUMP: ${{ inputs.mobileBump }}
+        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
 
       - name: Commit and tag
         id: push-tag
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
         with:
           default_author: github_actions
           message: 'chore: version ${{ env.IMMICH_VERSION }}'
@@ -59,37 +64,47 @@ jobs:
   build_mobile:
     uses: ./.github/workflows/build-mobile.yml
     needs: bump_version
-    secrets: inherit
+    permissions:
+      contents: read
+    secrets:
+      KEY_JKS: ${{ secrets.KEY_JKS }}
+      ALIAS: ${{ secrets.ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
     with:
       ref: ${{ needs.bump_version.outputs.ref }}
 
   prepare_release:
     runs-on: ubuntu-latest
     needs: build_mobile
-
+    permissions:
+      actions: read # To download the app artifact
+      # No content permissions are needed because it uses the app-token
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
-      
+
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: false
 
       - name: Download APK
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-apk-signed
 
       - name: Create draft release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
         with:
           draft: true
           tag_name: ${{ env.IMMICH_VERSION }}
+          token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true
           body_path: misc/release/notes.tmpl
           files: |

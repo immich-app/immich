@@ -3,14 +3,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/providers/asset_viewer/render_list.provider.dart';
+import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:isar/isar.dart';
 
 @RoutePage()
 class AlbumAssetSelectionPage extends HookConsumerWidget {
@@ -18,16 +17,14 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
     super.key,
     required this.existingAssets,
     this.canDeselect = false,
-    required this.query,
   });
 
   final Set<Asset> existingAssets;
-  final QueryBuilder<Asset, Asset, QAfterSortBy>? query;
   final bool canDeselect;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final renderList = ref.watch(renderListQueryProvider(query));
+    final assetSelectionRenderList = ref.watch(assetSelectionTimelineProvider);
     final selected = useState<Set<Asset>>(existingAssets);
     final selectionEnabledHook = useState(true);
 
@@ -56,13 +53,13 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
         ),
         title: selected.value.isEmpty
             ? const Text(
-                'share_add_photos',
+                'add_photos',
                 style: TextStyle(fontSize: 18),
               ).tr()
             : const Text(
                 'share_assets_selected',
                 style: TextStyle(fontSize: 18),
-              ).tr(args: [selected.value.length.toString()]),
+              ).tr(namedArgs: {'count': selected.value.length.toString()}),
         centerTitle: false,
         actions: [
           if (selected.value.isNotEmpty || canDeselect)
@@ -74,7 +71,7 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
                     .popForced<AssetSelectionPageResult>(payload);
               },
               child: Text(
-                canDeselect ? "share_done" : "share_add",
+                canDeselect ? "done" : "add",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: context.primaryColor,
@@ -83,7 +80,7 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
             ),
         ],
       ),
-      body: renderList.widgetWhen(
+      body: assetSelectionRenderList.widgetWhen(
         onData: (data) => buildBody(data),
       ),
     );

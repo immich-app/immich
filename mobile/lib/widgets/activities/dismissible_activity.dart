@@ -30,7 +30,7 @@ class DismissibleActivity extends StatelessWidget {
                 onOk: () {},
                 title: "shared_album_activity_remove_title",
                 content: "shared_album_activity_remove_content",
-                ok: "delete_dialog_ok",
+                ok: "delete",
               ),
             )
           : Future.value(false),

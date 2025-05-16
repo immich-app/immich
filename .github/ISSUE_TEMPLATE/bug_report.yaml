@@ -1,6 +1,13 @@
 name: Report an issue with Immich
 description: Report an issue with Immich
 body:
+  - type: checkboxes
+    attributes:
+      label: I have searched the existing issues, both open and closed, to make sure this is not a duplicate report.
+      options:
+        - label: 'Yes'
+          required: true
+
   - type: markdown
     attributes:
       value: |
@@ -77,7 +84,7 @@ body:
     id: repro
     attributes:
       label: Reproduction steps
-      description: "How do you trigger this bug? Please walk us through it step by step."
+      description: 'How do you trigger this bug? Please walk us through it step by step.'
       value: |
         1.
         2.
@@ -90,12 +97,13 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant logs below. (code formatting is
+      description:
+        Please copy and paste any relevant logs below. (code formatting is
         enabled, no need for backticks)
       render: shell
     validations:
       required: false
-      
+
   - type: textarea
     attributes:
       label: Additional information

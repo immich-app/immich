@@ -27,7 +27,16 @@
       <p class="font-medium text-immich-primary dark:text-immich-dark-primary uppercase">{$t('other').toUpperCase()}</p>
       <ul>
         <li>{`{{assetId}}`} - Asset ID</li>
+        <li>{`{{assetIdShort}}`} - Asset ID (last 12 characters)</li>
         <li>{`{{album}}`} - Album Name</li>
+        <li>
+          {`{{album-startDate-x}}`} - Album Start Date and Time (e.g. album-startDate-yy).
+          {$t('admin.storage_template_date_time_sample', { values: { date: '2021-12-31T05:32:41.750' } })}
+        </li>
+        <li>
+          {`{{album-endDate-x}}`} - Album End Date and Time (e.g. album-endDate-MM).
+          {$t('admin.storage_template_date_time_sample', { values: { date: '2023-05-06T09:15:17.100' } })}
+        </li>
       </ul>
     </div>
   </div>

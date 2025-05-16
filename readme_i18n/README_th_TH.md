@@ -63,9 +63,7 @@
 
 ## สาธิต
 
-เข้าถึงการสาธิตได้ [ที่นี่](https://demo.immich.app) โดยการสาธิตนี้ทำงานบน Oracle VM Free-tier ตั้งอยู่ที่อัมสเตอร์ดัม ใช้ซีพียู ARM64 quad-core 2.4Ghz และแรม 24GB
-
-สำหรับแอปมือถือ คุณสามารถใช้ `https://demo.immich.app/api` เป็น `Server Endpoint URL`
+เข้าถึงการสาธิตได้ [ที่นี่](https://demo.immich.app) สำหรับแอปมือถือ คุณสามารถใช้ `https://demo.immich.app` เป็น `Server Endpoint URL`
 
 ### ข้อมูลการเข้าสู่ระบบ
 

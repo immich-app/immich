@@ -3,6 +3,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { getJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -20,10 +21,9 @@
     mdiVideo,
   } from '@mdi/js';
   import type { Component } from 'svelte';
+  import { t } from 'svelte-i18n';
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     jobs: AllJobStatusResponseDto;
@@ -45,7 +45,7 @@
 
   const handleConfirmCommand = async (jobId: JobName, dto: JobCommandDto) => {
     if (dto.force) {
-      const isConfirmed = await dialogController.show({
+      const isConfirmed = await modalManager.showDialog({
         prompt: $t('admin.confirm_reprocess_all_faces'),
       });
 
@@ -79,8 +79,7 @@
       icon: mdiLibraryShelves,
       title: $getJobName(JobName.Library),
       subtitle: $t('admin.library_tasks_description'),
-      allText: $t('all'),
-      missingText: $t('refresh'),
+      missingText: $t('rescan'),
     },
     [JobName.Sidecar]: {
       title: $getJobName(JobName.Sidecar),
@@ -135,14 +134,14 @@
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
       title: $getJobName(JobName.StorageTemplateMigration),
-      missingText: $t('missing'),
+      missingText: $t('start'),
       description: StorageMigrationDescription,
     },
     [JobName.Migration]: {
       icon: mdiFolderMove,
       title: $getJobName(JobName.Migration),
       subtitle: $t('admin.migration_job_description'),
-      missingText: $t('missing'),
+      missingText: $t('start'),
     },
   };
 
@@ -170,7 +169,7 @@
 </script>
 
 <div class="flex flex-col gap-7">
-  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, icon, handleCommand: handleCommandOverride }]}
+  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, icon, handleCommand: handleCommandOverride }] (jobName)}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile
       {icon}

@@ -1,29 +1,34 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { isString } from 'class-validator';
-import cookieParser from 'cookie';
+import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
+import { join } from 'node:path';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
-import { OnEvent } from 'src/decorators';
+import { StorageCore } from 'src/cores/storage.core';
+import { UserAdmin } from 'src/database';
 import {
   AuthDto,
+  AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
   LogoutResponseDto,
-  OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
+  PinCodeChangeDto,
+  PinCodeResetDto,
+  PinCodeSetupDto,
+  SessionUnlockDto,
   SignUpDto,
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { UserEntity } from 'src/entities/user.entity';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission, StorageFolder } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
-
+import { mimeTypes } from 'src/utils/mime-types';
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
@@ -50,20 +55,15 @@ export type ValidateRequest = {
 
 @Injectable()
 export class AuthService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap' })
-  onBootstrap() {
-    this.oauthRepository.init();
-  }
-
   async login(dto: LoginCredentialDto, details: LoginDetails) {
     const config = await this.getConfig({ withCache: false });
     if (!config.passwordLogin.enabled) {
       throw new UnauthorizedException('Password login has been disabled');
     }
 
-    let user = await this.userRepository.getByEmail(dto.email, true);
+    let user = await this.userRepository.getByEmail(dto.email, { withPassword: true });
     if (user) {
-      const isAuthenticated = this.validatePassword(dto.password, user);
+      const isAuthenticated = this.validateSecret(dto.password, user.password);
       if (!isAuthenticated) {
         user = undefined;
       }
@@ -91,12 +91,12 @@ export class AuthService extends BaseService {
 
   async changePassword(auth: AuthDto, dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
     const { password, newPassword } = dto;
-    const user = await this.userRepository.getByEmail(auth.user.email, true);
+    const user = await this.userRepository.getByEmail(auth.user.email, { withPassword: true });
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    const valid = this.validatePassword(password, user);
+    const valid = this.validateSecret(password, user.password);
     if (!valid) {
       throw new BadRequestException('Wrong password');
     }
@@ -106,6 +106,57 @@ export class AuthService extends BaseService {
     const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
 
     return mapUserAdmin(updatedUser);
+  }
+
+  async setupPinCode(auth: AuthDto, { pinCode }: PinCodeSetupDto) {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    if (user.pinCode) {
+      throw new BadRequestException('User already has a PIN code');
+    }
+
+    const hashed = await this.cryptoRepository.hashBcrypt(pinCode, SALT_ROUNDS);
+    await this.userRepository.update(auth.user.id, { pinCode: hashed });
+  }
+
+  async resetPinCode(auth: AuthDto, dto: PinCodeResetDto) {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    this.validatePinCode(user, dto);
+
+    await this.userRepository.update(auth.user.id, { pinCode: null });
+    await this.sessionRepository.lockAll(auth.user.id);
+  }
+
+  async changePinCode(auth: AuthDto, dto: PinCodeChangeDto) {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    this.validatePinCode(user, dto);
+
+    const hashed = await this.cryptoRepository.hashBcrypt(dto.newPinCode, SALT_ROUNDS);
+    await this.userRepository.update(auth.user.id, { pinCode: hashed });
+  }
+
+  private validatePinCode(
+    user: { pinCode: string | null; password: string | null },
+    dto: { pinCode?: string; password?: string },
+  ) {
+    if (!user.pinCode) {
+      throw new BadRequestException('User does not have a PIN code');
+    }
+
+    if (dto.password) {
+      if (!this.validateSecret(dto.password, user.password)) {
+        throw new BadRequestException('Wrong password');
+      }
+    } else if (dto.pinCode) {
+      if (!this.validateSecret(dto.pinCode, user.pinCode)) {
+        throw new BadRequestException('Wrong PIN code');
+      }
+    } else {
+      throw new BadRequestException('Either password or pinCode is required');
+    }
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
@@ -174,23 +225,38 @@ export class AuthService extends BaseService {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
   }
 
-  async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
+  async authorize(dto: OAuthConfigDto) {
     const { oauth } = await this.getConfig({ withCache: false });
 
     if (!oauth.enabled) {
       throw new BadRequestException('OAuth is not enabled');
     }
 
-    const url = await this.oauthRepository.authorize(oauth, this.resolveRedirectUri(oauth, dto.redirectUri));
-    return { url };
+    return await this.oauthRepository.authorize(
+      oauth,
+      this.resolveRedirectUri(oauth, dto.redirectUri),
+      dto.state,
+      dto.codeChallenge,
+    );
   }
 
-  async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
+  async callback(dto: OAuthCallbackDto, headers: IncomingHttpHeaders, loginDetails: LoginDetails) {
+    const expectedState = dto.state ?? this.getCookieOauthState(headers);
+    if (!expectedState?.length) {
+      throw new BadRequestException('OAuth state is missing');
+    }
+
+    const codeVerifier = dto.codeVerifier ?? this.getCookieCodeVerifier(headers);
+    if (!codeVerifier?.length) {
+      throw new BadRequestException('OAuth code verifier is missing');
+    }
+
     const { oauth } = await this.getConfig({ withCache: false });
-    const profile = await this.oauthRepository.getProfile(oauth, dto.url, this.resolveRedirectUri(oauth, dto.url));
+    const url = this.resolveRedirectUri(oauth, dto.url);
+    const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
-    let user = await this.userRepository.getByOAuthId(profile.sub);
+    let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
     // link by email
     if (!user && profile.email) {
@@ -239,16 +305,49 @@ export class AuthService extends BaseService {
       });
     }
 
+    if (!user.profileImagePath && profile.picture) {
+      await this.syncProfilePicture(user, profile.picture);
+    }
+
     return this.createLoginResponse(user, loginDetails);
   }
 
-  async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserAdminResponseDto> {
+  private async syncProfilePicture(user: UserAdmin, url: string) {
+    try {
+      const oldPath = user.profileImagePath;
+
+      const { contentType, data } = await this.oauthRepository.getProfilePicture(url);
+      const extensionWithDot = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
+      const profileImagePath = join(
+        StorageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
+        `${this.cryptoRepository.randomUUID()}${extensionWithDot}`,
+      );
+
+      this.storageCore.ensureFolders(profileImagePath);
+      await this.storageRepository.createFile(profileImagePath, Buffer.from(data));
+      await this.userRepository.update(user.id, { profileImagePath, profileChangedAt: new Date() });
+
+      if (oldPath) {
+        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldPath] } });
+      }
+    } catch (error: Error | any) {
+      this.logger.warn(`Unable to sync oauth profile picture: ${error}`, error?.stack);
+    }
+  }
+
+  async link(auth: AuthDto, dto: OAuthCallbackDto, headers: IncomingHttpHeaders): Promise<UserAdminResponseDto> {
+    const expectedState = dto.state ?? this.getCookieOauthState(headers);
+    if (!expectedState?.length) {
+      throw new BadRequestException('OAuth state is missing');
+    }
+
+    const codeVerifier = dto.codeVerifier ?? this.getCookieCodeVerifier(headers);
+    if (!codeVerifier?.length) {
+      throw new BadRequestException('OAuth code verifier is missing');
+    }
+
     const { oauth } = await this.getConfig({ withCache: false });
-    const { sub: oauthId } = await this.oauthRepository.getProfile(
-      oauth,
-      dto.url,
-      this.resolveRedirectUri(oauth, dto.url),
-    );
+    const { sub: oauthId } = await this.oauthRepository.getProfile(oauth, dto.url, expectedState, codeVerifier);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
@@ -287,8 +386,18 @@ export class AuthService extends BaseService {
   }
 
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
-    const cookies = cookieParser.parse(headers.cookie || '');
+    const cookies = parse(headers.cookie || '');
     return cookies[ImmichCookie.ACCESS_TOKEN] || null;
+  }
+
+  private getCookieOauthState(headers: IncomingHttpHeaders): string | null {
+    const cookies = parse(headers.cookie || '');
+    return cookies[ImmichCookie.OAUTH_STATE] || null;
+  }
+
+  private getCookieCodeVerifier(headers: IncomingHttpHeaders): string | null {
+    const cookies = parse(headers.cookie || '');
+    return cookies[ImmichCookie.OAUTH_CODE_VERIFIER] || null;
   }
 
   async validateSharedLink(key: string | string[]): Promise<AuthDto> {
@@ -307,7 +416,7 @@ export class AuthService extends BaseService {
 
   private async validateApiKey(key: string): Promise<AuthDto> {
     const hashedKey = this.cryptoRepository.hashSha256(key);
-    const apiKey = await this.keyRepository.getKey(hashedKey);
+    const apiKey = await this.apiKeyRepository.getKey(hashedKey);
     if (apiKey?.user) {
       return {
         user: apiKey.user,
@@ -318,11 +427,12 @@ export class AuthService extends BaseService {
     throw new UnauthorizedException('Invalid API key');
   }
 
-  private validatePassword(inputPassword: string, user: UserEntity): boolean {
-    if (!user || !user.password) {
+  private validateSecret(inputSecret: string, existingHash?: string | null): boolean {
+    if (!existingHash) {
       return false;
     }
-    return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
+
+    return this.cryptoRepository.compareBcrypt(inputSecret, existingHash);
   }
 
   private async validateSession(tokenValue: string): Promise<AuthDto> {
@@ -336,27 +446,65 @@ export class AuthService extends BaseService {
         await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
       }
 
+      // Pin check
+      let hasElevatedPermission = false;
+
+      if (session.pinExpiresAt) {
+        const pinExpiresAt = DateTime.fromJSDate(session.pinExpiresAt);
+        hasElevatedPermission = pinExpiresAt > now;
+
+        if (hasElevatedPermission && now.plus({ minutes: 5 }) > pinExpiresAt) {
+          await this.sessionRepository.update(session.id, {
+            pinExpiresAt: DateTime.now().plus({ minutes: 5 }).toJSDate(),
+          });
+        }
+      }
+
       return {
         user: session.user,
-        session,
+        session: {
+          id: session.id,
+          hasElevatedPermission,
+        },
       };
     }
 
     throw new UnauthorizedException('Invalid user token');
   }
 
-  private async createLoginResponse(user: UserEntity, loginDetails: LoginDetails) {
-    const key = this.cryptoRepository.newPassword(32);
-    const token = this.cryptoRepository.hashSha256(key);
+  async unlockSession(auth: AuthDto, dto: SessionUnlockDto): Promise<void> {
+    if (!auth.session) {
+      throw new BadRequestException('This endpoint can only be used with a session token');
+    }
+
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    this.validatePinCode(user, { pinCode: dto.pinCode });
+
+    await this.sessionRepository.update(auth.session.id, {
+      pinExpiresAt: DateTime.now().plus({ minutes: 15 }).toJSDate(),
+    });
+  }
+
+  async lockSession(auth: AuthDto): Promise<void> {
+    if (!auth.session) {
+      throw new BadRequestException('This endpoint can only be used with a session token');
+    }
+
+    await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
+  }
+
+  private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
+    const token = this.cryptoRepository.randomBytesAsText(32);
+    const tokenHashed = this.cryptoRepository.hashSha256(token);
 
     await this.sessionRepository.create({
-      token,
+      token: tokenHashed,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
       userId: user.id,
     });
 
-    return mapLoginResponse(user, key);
+    return mapLoginResponse(user, token);
   }
 
   private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {
@@ -368,11 +516,26 @@ export class AuthService extends BaseService {
     { mobileRedirectUri, mobileOverrideEnabled }: { mobileRedirectUri: string; mobileOverrideEnabled: boolean },
     url: string,
   ) {
-    const redirectUri = url.split('?')[0];
-    const isMobile = redirectUri.startsWith('app.immich:/');
-    if (isMobile && mobileOverrideEnabled && mobileRedirectUri) {
-      return mobileRedirectUri;
+    if (mobileOverrideEnabled && mobileRedirectUri) {
+      return url.replace(/app\.immich:\/+oauth-callback/, mobileRedirectUri);
     }
-    return redirectUri;
+    return url;
+  }
+
+  async getAuthStatus(auth: AuthDto): Promise<AuthStatusResponseDto> {
+    const user = await this.userRepository.getForPinCode(auth.user.id);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const session = auth.session ? await this.sessionRepository.get(auth.session.id) : undefined;
+
+    return {
+      pinCode: !!user.pinCode,
+      password: !!user.password,
+      isElevated: !!auth.session?.hasElevatedPermission,
+      expiresAt: session?.expiresAt?.toISOString(),
+      pinExpiresAt: session?.pinExpiresAt?.toISOString(),
+    };
   }
 }

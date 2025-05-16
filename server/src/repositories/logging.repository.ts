@@ -1,9 +1,12 @@
-import { ConsoleLogger, Injectable, Scope } from '@nestjs/common';
+import { ConsoleLogger, Inject, Injectable, Scope } from '@nestjs/common';
 import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
 import { ClsService } from 'nestjs-cls';
 import { Telemetry } from 'src/decorators';
 import { LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
+
+type LogDetails = any;
+type LogFunction = () => string;
 
 const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 
@@ -16,38 +19,26 @@ enum LogColor {
   CYAN_BRIGHT = 96,
 }
 
-@Injectable({ scope: Scope.TRANSIENT })
-@Telemetry({ enabled: false })
-export class LoggingRepository extends ConsoleLogger {
-  private static logLevels: LogLevel[] = [LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
-  private noColor: boolean;
+let appName: string | undefined;
+let logLevels: LogLevel[] = [LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
+
+export class MyConsoleLogger extends ConsoleLogger {
+  private isColorEnabled: boolean;
 
   constructor(
-    private cls: ClsService,
-    configRepository: ConfigRepository,
+    private cls: ClsService | undefined,
+    options?: { color?: boolean; context?: string },
   ) {
-    super(LoggingRepository.name);
-
-    const { noColor } = configRepository.getEnv();
-    this.noColor = noColor;
-  }
-
-  private static appName?: string = undefined;
-
-  setAppName(name: string): void {
-    LoggingRepository.appName = name.charAt(0).toUpperCase() + name.slice(1);
+    super(options?.context || MyConsoleLogger.name);
+    this.isColorEnabled = options?.color || false;
   }
 
   isLevelEnabled(level: LogLevel) {
-    return isLogLevelEnabled(level, LoggingRepository.logLevels);
+    return isLogLevelEnabled(level, logLevels);
   }
 
-  setLogLevel(level: LogLevel | false): void {
-    LoggingRepository.logLevels = level ? LOG_LEVELS.slice(LOG_LEVELS.indexOf(level)) : [];
-  }
-
-  protected formatContext(context: string): string {
-    let prefix = LoggingRepository.appName || '';
+  formatContext(context: string): string {
+    let prefix = appName || '';
     if (context) {
       prefix += (prefix ? ':' : '') + context;
     }
@@ -74,6 +65,115 @@ export class LoggingRepository extends ConsoleLogger {
   };
 
   private withColor(text: string, color: LogColor) {
-    return this.noColor ? text : `\u001B[${color}m${text}\u001B[39m`;
+    return this.isColorEnabled ? `\u001B[${color}m${text}\u001B[39m` : text;
+  }
+}
+
+@Injectable({ scope: Scope.TRANSIENT })
+@Telemetry({ enabled: false })
+export class LoggingRepository {
+  private logger: MyConsoleLogger;
+
+  constructor(
+    @Inject(ClsService) cls: ClsService | undefined,
+    @Inject(ConfigRepository) configRepository: ConfigRepository | undefined,
+  ) {
+    let noColor = false;
+    if (configRepository) {
+      noColor = configRepository.getEnv().noColor;
+    }
+    this.logger = new MyConsoleLogger(cls, { context: LoggingRepository.name, color: !noColor });
+  }
+
+  static create() {
+    return new LoggingRepository(undefined, undefined);
+  }
+
+  setAppName(name: string): void {
+    appName = name.charAt(0).toUpperCase() + name.slice(1);
+  }
+
+  setContext(context: string) {
+    this.logger.setContext(context);
+  }
+
+  isLevelEnabled(level: LogLevel) {
+    return this.logger.isLevelEnabled(level);
+  }
+
+  setLogLevel(level: LogLevel | false): void {
+    logLevels = level ? LOG_LEVELS.slice(LOG_LEVELS.indexOf(level)) : [];
+  }
+
+  verbose(message: string, ...details: LogDetails) {
+    this.handleMessage(LogLevel.VERBOSE, message, details);
+  }
+
+  verboseFn(message: LogFunction, ...details: LogDetails) {
+    this.handleFunction(LogLevel.VERBOSE, message, details);
+  }
+
+  debug(message: string, ...details: LogDetails) {
+    this.handleMessage(LogLevel.DEBUG, message, details);
+  }
+
+  debugFn(message: LogFunction, ...details: LogDetails) {
+    this.handleFunction(LogLevel.DEBUG, message, details);
+  }
+
+  log(message: string, ...details: LogDetails) {
+    this.handleMessage(LogLevel.LOG, message, details);
+  }
+
+  warn(message: string, ...details: LogDetails) {
+    this.handleMessage(LogLevel.WARN, message, details);
+  }
+
+  error(message: string | Error, ...details: LogDetails) {
+    this.handleMessage(LogLevel.ERROR, message, details);
+  }
+
+  fatal(message: string, ...details: LogDetails) {
+    this.handleMessage(LogLevel.FATAL, message, details);
+  }
+
+  private handleFunction(level: LogLevel, message: LogFunction, details: LogDetails[]) {
+    if (this.logger.isLevelEnabled(level)) {
+      this.handleMessage(level, message(), details);
+    }
+  }
+
+  private handleMessage(level: LogLevel, message: string | Error, details: LogDetails[]) {
+    switch (level) {
+      case LogLevel.VERBOSE: {
+        this.logger.verbose(message, ...details);
+        break;
+      }
+
+      case LogLevel.DEBUG: {
+        this.logger.debug(message, ...details);
+        break;
+      }
+
+      case LogLevel.LOG: {
+        this.logger.log(message, ...details);
+        break;
+      }
+
+      case LogLevel.WARN: {
+        this.logger.warn(message, ...details);
+        break;
+      }
+
+      case LogLevel.ERROR: {
+        this.logger.error(message, ...details);
+        break;
+      }
+
+      case LogLevel.FATAL: {
+        this.logger.fatal(message, ...details);
+        break;
+      }
+    }
   }
 }

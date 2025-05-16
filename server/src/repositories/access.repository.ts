@@ -1,8 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserRole } from 'src/enum';
+import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { asUuid } from 'src/utils/database';
 
 class ActivityAccess {
@@ -167,7 +168,7 @@ class AssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, assetIds: Set<string>) {
+  async checkOwnerAccess(userId: string, assetIds: Set<string>, hasElevatedPermission: boolean | undefined) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
@@ -177,6 +178,7 @@ class AssetAccess {
       .select('assets.id')
       .where('assets.id', 'in', [...assetIds])
       .where('assets.ownerId', '=', userId)
+      .$if(!hasElevatedPermission, (eb) => eb.where('assets.visibility', '!=', AssetVisibility.LOCKED))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
@@ -198,7 +200,13 @@ class AssetAccess {
       )
       .select('assets.id')
       .where('partner.sharedWithId', '=', userId)
-      .where('assets.isArchived', '=', false)
+      .where((eb) =>
+        eb.or([
+          eb('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE)),
+          eb('assets.visibility', '=', sql.lit(AssetVisibility.HIDDEN)),
+        ]),
+      )
+
       .where('assets.id', 'in', [...assetIds])
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
@@ -278,6 +286,45 @@ class AuthDeviceAccess {
   }
 }
 
+class NotificationAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, notificationIds: Set<string>) {
+    if (notificationIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('notifications')
+      .select('notifications.id')
+      .where('notifications.id', 'in', [...notificationIds])
+      .where('notifications.userId', '=', userId)
+      .execute()
+      .then((stacks) => new Set(stacks.map((stack) => stack.id)));
+  }
+}
+
+class SessionAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, sessionIds: Set<string>) {
+    if (sessionIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('sessions')
+      .select('sessions.id')
+      .where('sessions.id', 'in', [...sessionIds])
+      .where('sessions.userId', '=', userId)
+      .execute()
+      .then((sessions) => new Set(sessions.map((session) => session.id)));
+  }
+}
 class StackAccess {
   constructor(private db: Kysely<DB>) {}
 
@@ -418,14 +465,17 @@ class TagAccess {
   }
 }
 
+@Injectable()
 export class AccessRepository {
   activity: ActivityAccess;
   album: AlbumAccess;
   asset: AssetAccess;
   authDevice: AuthDeviceAccess;
   memory: MemoryAccess;
+  notification: NotificationAccess;
   person: PersonAccess;
   partner: PartnerAccess;
+  session: SessionAccess;
   stack: StackAccess;
   tag: TagAccess;
   timeline: TimelineAccess;
@@ -436,8 +486,10 @@ export class AccessRepository {
     this.asset = new AssetAccess(db);
     this.authDevice = new AuthDeviceAccess(db);
     this.memory = new MemoryAccess(db);
+    this.notification = new NotificationAccess(db);
     this.person = new PersonAccess(db);
     this.partner = new PartnerAccess(db);
+    this.session = new SessionAccess(db);
     this.stack = new StackAccess(db);
     this.tag = new TagAccess(db);
     this.timeline = new TimelineAccess(db);

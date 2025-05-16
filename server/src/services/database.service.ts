@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Duration } from 'luxon';
 import semver from 'semver';
 import { EXTENSION_NAMES } from 'src/constants';
 import { OnEvent } from 'src/decorators';
@@ -54,12 +53,8 @@ const messages = {
     If ${name} ${installedVersion} is compatible with Immich, please ensure the Postgres instance has this available.`,
 };
 
-const RETRY_DURATION = Duration.fromObject({ seconds: 5 });
-
 @Injectable()
 export class DatabaseService extends BaseService {
-  private reconnection?: NodeJS.Timeout;
-
   @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.DatabaseService })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
@@ -108,28 +103,7 @@ export class DatabaseService extends BaseService {
       if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
       }
-      this.databaseRepository.init();
     });
-  }
-
-  handleConnectionError(error: Error) {
-    if (this.reconnection) {
-      return;
-    }
-
-    this.logger.error(`Database disconnected: ${error}`);
-    this.reconnection = setInterval(() => void this.reconnect(), RETRY_DURATION.toMillis());
-  }
-
-  private async reconnect() {
-    const isConnected = await this.databaseRepository.reconnect();
-    if (isConnected) {
-      this.logger.log('Database reconnected');
-      clearInterval(this.reconnection);
-      delete this.reconnection;
-    } else {
-      this.logger.warn(`Database connection failed, retrying in ${RETRY_DURATION.toHuman()}`);
-    }
   }
 
   private async createExtension(extension: DatabaseExtension) {

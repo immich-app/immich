@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { beforeNavigate } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -11,6 +12,7 @@
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import LinkLivePhotoAction from '$lib/components/photos-page/actions/link-live-photo-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import StackAction from '$lib/components/photos-page/actions/stack-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
@@ -21,20 +23,29 @@
   import { AssetAction } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
-  import type { OnLink, OnUnlink } from '$lib/utils/actions';
+  import {
+    updateStackedAssetInTimeline,
+    updateUnstackedAssetInTimeline,
+    type OnLink,
+    type OnUnlink,
+  } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { AssetTypeEnum } from '@immich/sdk';
+  import { AssetTypeEnum, AssetVisibility } from '@immich/sdk';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
+  const assetStore = new AssetStore();
+  void assetStore.updateOptions({ visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true });
+  onDestroy(() => assetStore.destroy());
+
   const assetInteraction = new AssetInteraction();
 
-  let selectedAssets = $derived(assetInteraction.selectedAssetsArray);
+  let selectedAssets = $derived(assetInteraction.selectedAssets);
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);
   let isLinkActionAvailable = $derived.by(() => {
     const isLivePhoto = selectedAssets.length === 1 && !!selectedAssets[0].livePhotoVideoId;
@@ -65,53 +76,15 @@
     assetStore.updateAssets([still]);
   };
 
-  onDestroy(() => {
-    assetStore.destroy();
+  const handleSetVisibility = (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+  };
+
+  beforeNavigate(() => {
+    isFaceEditMode.value = false;
   });
 </script>
-
-{#if assetInteraction.selectionActive}
-  <AssetSelectControlBar
-    ownerId={$user.id}
-    assets={assetInteraction.selectedAssets}
-    clearSelect={() => assetInteraction.clearMultiselect()}
-  >
-    <CreateSharedLink />
-    <SelectAllAssets {assetStore} {assetInteraction} />
-    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </ButtonContextMenu>
-    <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-      <DownloadAction menuItem />
-      {#if assetInteraction.selectedAssets.size > 1 || isAssetStackSelected}
-        <StackAction
-          unstack={isAssetStackSelected}
-          onStack={(assetIds) => assetStore.removeAssets(assetIds)}
-          onUnstack={(assets) => assetStore.addAssets(assets)}
-        />
-      {/if}
-      {#if isLinkActionAvailable}
-        <LinkLivePhotoAction
-          menuItem
-          unlink={assetInteraction.selectedAssets.size === 1}
-          onLink={handleLink}
-          onUnlink={handleUnlink}
-        />
-      {/if}
-      <ChangeDate menuItem />
-      <ChangeLocation menuItem />
-      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
-      {#if $preferences.tags.enabled}
-        <TagAction menuItem />
-      {/if}
-      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
-      <hr />
-      <AssetJobActions />
-    </ButtonContextMenu>
-  </AssetSelectControlBar>
-{/if}
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
   <AssetGrid
@@ -130,3 +103,54 @@
     {/snippet}
   </AssetGrid>
 </UserPageLayout>
+
+{#if assetInteraction.selectionActive}
+  <AssetSelectControlBar
+    ownerId={$user.id}
+    assets={assetInteraction.selectedAssets}
+    clearSelect={() => assetInteraction.clearMultiselect()}
+  >
+    <CreateSharedLink />
+    <SelectAllAssets {assetStore} {assetInteraction} />
+    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
+      <AddToAlbum />
+      <AddToAlbum shared />
+    </ButtonContextMenu>
+    <FavoriteAction
+      removeFavorite={assetInteraction.isAllFavorite}
+      onFavorite={(ids, isFavorite) =>
+        assetStore.updateAssetOperation(ids, (asset) => {
+          asset.isFavorite = isFavorite;
+          return { remove: false };
+        })}
+    ></FavoriteAction>
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+      <DownloadAction menuItem />
+      {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
+        <StackAction
+          unstack={isAssetStackSelected}
+          onStack={(result) => updateStackedAssetInTimeline(assetStore, result)}
+          onUnstack={(assets) => updateUnstackedAssetInTimeline(assetStore, assets)}
+        />
+      {/if}
+      {#if isLinkActionAvailable}
+        <LinkLivePhotoAction
+          menuItem
+          unlink={assetInteraction.selectedAssets.length === 1}
+          onLink={handleLink}
+          onUnlink={handleUnlink}
+        />
+      {/if}
+      <ChangeDate menuItem />
+      <ChangeLocation menuItem />
+      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      {#if $preferences.tags.enabled}
+        <TagAction menuItem />
+      {/if}
+      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+      <hr />
+      <AssetJobActions />
+    </ButtonContextMenu>
+  </AssetSelectControlBar>
+{/if}

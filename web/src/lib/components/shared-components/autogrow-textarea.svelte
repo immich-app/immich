@@ -11,10 +11,7 @@
 
   let { content = '', class: className = '', onContentUpdate = () => null, placeholder = '' }: Props = $props();
 
-  let newContent = $state(content);
-  $effect(() => {
-    newContent = content;
-  });
+  let newContent = $derived(content);
 
   const updateContent = () => {
     if (content === newContent) {

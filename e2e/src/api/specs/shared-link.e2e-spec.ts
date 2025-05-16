@@ -95,7 +95,7 @@ describe('/shared-links', () => {
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
       expect(resp.text).toContain(
-        `<meta name="description" content="${metadataAlbum.assets.length} shared photos & videos" />`,
+        `<meta name="description" content="${metadataAlbum.assets.length} shared photos &amp; videos" />`,
       );
     });
 
@@ -103,21 +103,21 @@ describe('/shared-links', () => {
       const resp = await request(shareUrl).get(`/${linkWithAlbum.key}`);
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
-      expect(resp.text).toContain(`<meta name="description" content="0 shared photos & videos" />`);
+      expect(resp.text).toContain(`<meta name="description" content="0 shared photos &amp; videos" />`);
     });
 
     it('should have correct asset count in meta tag for shared asset', async () => {
       const resp = await request(shareUrl).get(`/${linkWithAssets.key}`);
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
-      expect(resp.text).toContain(`<meta name="description" content="1 shared photos & videos" />`);
+      expect(resp.text).toContain(`<meta name="description" content="1 shared photos &amp; videos" />`);
     });
 
     it('should have fqdn og:image meta tag for shared asset', async () => {
       const resp = await request(shareUrl).get(`/${linkWithAssets.key}`);
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
-      expect(resp.text).toContain(`<meta property="og:image" content="http://`);
+      expect(resp.text).toContain(`<meta property="og:image" content="https://my.immich.app`);
     });
   });
 
@@ -246,15 +246,7 @@ describe('/shared-links', () => {
       const { status, body } = await request(app).get('/shared-links/me').query({ key: linkWithMetadata.key });
 
       expect(status).toBe(200);
-      expect(body.assets).toHaveLength(1);
-      expect(body.assets[0]).toEqual(
-        expect.objectContaining({
-          originalFileName: 'example.png',
-          localDateTime: expect.any(String),
-          fileCreatedAt: expect.any(String),
-          exifInfo: expect.any(Object),
-        }),
-      );
+      expect(body.assets).toHaveLength(0);
       expect(body.album).toBeDefined();
     });
 

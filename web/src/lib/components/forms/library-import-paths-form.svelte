@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { handleError } from '../../utils/handle-error';
-  import Button from '../elements/buttons/button.svelte';
-  import LibraryImportPathForm from './library-import-path-form.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
-  import { validate, type LibraryResponseDto } from '@immich/sdk';
-  import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
+  import { validate, type LibraryResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
+  import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { handleError } from '../../utils/handle-error';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import LibraryImportPathForm from './library-import-path-form.svelte';
 
   interface Props {
     library: LibraryResponseDto;
@@ -173,17 +173,13 @@
 {/if}
 
 <form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
-  <table class="text-left">
+  <table class="text-start">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-      {#each validatedPaths as validatedPath, listIndex}
+      {#each validatedPaths as validatedPath, listIndex (validatedPath.importPath)}
         <tr
-          class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-            listIndex % 2 == 0
-              ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-              : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-          }`}
+          class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
         >
-          <td class="w-1/8 text-ellipsis pl-8 text-sm">
+          <td class="w-1/8 text-ellipsis ps-8 text-sm">
             {#if validatedPath.isValid}
               <Icon
                 path={mdiCheckCircleOutline}
@@ -217,38 +213,28 @@
         </tr>
       {/each}
       <tr
-        class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-          importPaths.length % 2 == 0
-            ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-            : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-        }`}
+        class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
       >
         <td class="w-4/5 text-ellipsis px-4 text-sm">
           {#if importPaths.length === 0}
             {$t('admin.no_paths_added')}
           {/if}</td
         >
-        <td class="w-1/5 text-ellipsis px-4 text-sm"
-          ><Button
-            type="button"
-            size="sm"
-            onclick={() => {
-              addImportPath = true;
-            }}>{$t('add_path')}</Button
-          ></td
-        >
+        <td class="w-1/5 text-ellipsis px-4 text-sm">
+          <Button shape="round" size="small" onclick={() => (addImportPath = true)}>{$t('add_path')}</Button>
+        </td>
       </tr>
     </tbody>
   </table>
   <div class="flex justify-between w-full">
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" onclick={() => revalidate()}
-        ><Icon path={mdiRefresh} size={20} />{$t('validate')}</Button
+      <Button shape="round" leadingIcon={mdiRefresh} size="small" color="secondary" onclick={() => revalidate()}
+        >{$t('validate')}</Button
       >
     </div>
-    <div class="justify-end gap-2">
-      <Button size="sm" color="gray" onclick={onCancel}>{$t('cancel')}</Button>
-      <Button size="sm" type="submit">{$t('save')}</Button>
+    <div class="flex justify-end gap-2">
+      <Button shape="round" size="small" color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
+      <Button shape="round" size="small" type="submit">{$t('save')}</Button>
     </div>
   </div>
 </form>

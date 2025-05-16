@@ -83,7 +83,6 @@ class AlbumAssetSelectionRoute
     Key? key,
     required Set<Asset> existingAssets,
     bool canDeselect = false,
-    required QueryBuilder<Asset, Asset, QAfterSortBy>? query,
     List<PageRouteInfo>? children,
   }) : super(
           AlbumAssetSelectionRoute.name,
@@ -91,7 +90,6 @@ class AlbumAssetSelectionRoute
             key: key,
             existingAssets: existingAssets,
             canDeselect: canDeselect,
-            query: query,
           ),
           initialChildren: children,
         );
@@ -106,7 +104,6 @@ class AlbumAssetSelectionRoute
         key: args.key,
         existingAssets: args.existingAssets,
         canDeselect: args.canDeselect,
-        query: args.query,
       );
     },
   );
@@ -117,7 +114,6 @@ class AlbumAssetSelectionRouteArgs {
     this.key,
     required this.existingAssets,
     this.canDeselect = false,
-    required this.query,
   });
 
   final Key? key;
@@ -126,11 +122,9 @@ class AlbumAssetSelectionRouteArgs {
 
   final bool canDeselect;
 
-  final QueryBuilder<Asset, Asset, QAfterSortBy>? query;
-
   @override
   String toString() {
-    return 'AlbumAssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect, query: $query}';
+    return 'AlbumAssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect}';
   }
 }
 
@@ -392,7 +386,7 @@ class AllVideosRoute extends PageRouteInfo<void> {
 class AppLogDetailRoute extends PageRouteInfo<AppLogDetailRouteArgs> {
   AppLogDetailRoute({
     Key? key,
-    required LoggerMessage logMessage,
+    required LogMessage logMessage,
     List<PageRouteInfo>? children,
   }) : super(
           AppLogDetailRoute.name,
@@ -425,7 +419,7 @@ class AppLogDetailRouteArgs {
 
   final Key? key;
 
-  final LoggerMessage logMessage;
+  final LogMessage logMessage;
 
   @override
   String toString() {
@@ -795,6 +789,53 @@ class FilterImageRouteArgs {
 }
 
 /// generated route for
+/// [FolderPage]
+class FolderRoute extends PageRouteInfo<FolderRouteArgs> {
+  FolderRoute({
+    Key? key,
+    RecursiveFolder? folder,
+    List<PageRouteInfo>? children,
+  }) : super(
+          FolderRoute.name,
+          args: FolderRouteArgs(
+            key: key,
+            folder: folder,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'FolderRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args =
+          data.argsAs<FolderRouteArgs>(orElse: () => const FolderRouteArgs());
+      return FolderPage(
+        key: args.key,
+        folder: args.folder,
+      );
+    },
+  );
+}
+
+class FolderRouteArgs {
+  const FolderRouteArgs({
+    this.key,
+    this.folder,
+  });
+
+  final Key? key;
+
+  final RecursiveFolder? folder;
+
+  @override
+  String toString() {
+    return 'FolderRouteArgs{key: $key, folder: $folder}';
+  }
+}
+
+/// generated route for
 /// [GalleryViewerPage]
 class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute({
@@ -983,10 +1024,17 @@ class MapLocationPickerRouteArgs {
 
 /// generated route for
 /// [MapPage]
-class MapRoute extends PageRouteInfo<void> {
-  const MapRoute({List<PageRouteInfo>? children})
-      : super(
+class MapRoute extends PageRouteInfo<MapRouteArgs> {
+  MapRoute({
+    Key? key,
+    LatLng? initialLocation,
+    List<PageRouteInfo>? children,
+  }) : super(
           MapRoute.name,
+          args: MapRouteArgs(
+            key: key,
+            initialLocation: initialLocation,
+          ),
           initialChildren: children,
         );
 
@@ -995,9 +1043,30 @@ class MapRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const MapPage();
+      final args =
+          data.argsAs<MapRouteArgs>(orElse: () => const MapRouteArgs());
+      return MapPage(
+        key: args.key,
+        initialLocation: args.initialLocation,
+      );
     },
   );
+}
+
+class MapRouteArgs {
+  const MapRouteArgs({
+    this.key,
+    this.initialLocation,
+  });
+
+  final Key? key;
+
+  final LatLng? initialLocation;
+
+  @override
+  String toString() {
+    return 'MapRouteArgs{key: $key, initialLocation: $initialLocation}';
+  }
 }
 
 /// generated route for
@@ -1060,6 +1129,7 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
     required Asset asset,
     required Widget image,
     bool showControls = true,
+    int playbackDelayFactor = 1,
     List<PageRouteInfo>? children,
   }) : super(
           NativeVideoViewerRoute.name,
@@ -1068,6 +1138,7 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
             asset: asset,
             image: image,
             showControls: showControls,
+            playbackDelayFactor: playbackDelayFactor,
           ),
           initialChildren: children,
         );
@@ -1083,6 +1154,7 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
         asset: args.asset,
         image: args.image,
         showControls: args.showControls,
+        playbackDelayFactor: args.playbackDelayFactor,
       );
     },
   );
@@ -1094,6 +1166,7 @@ class NativeVideoViewerRouteArgs {
     required this.asset,
     required this.image,
     this.showControls = true,
+    this.playbackDelayFactor = 1,
   });
 
   final Key? key;
@@ -1104,9 +1177,11 @@ class NativeVideoViewerRouteArgs {
 
   final bool showControls;
 
+  final int playbackDelayFactor;
+
   @override
   String toString() {
-    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, image: $image, showControls: $showControls}';
+    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, image: $image, showControls: $showControls, playbackDelayFactor: $playbackDelayFactor}';
   }
 }
 
@@ -1115,7 +1190,7 @@ class NativeVideoViewerRouteArgs {
 class PartnerDetailRoute extends PageRouteInfo<PartnerDetailRouteArgs> {
   PartnerDetailRoute({
     Key? key,
-    required User partner,
+    required UserDto partner,
     List<PageRouteInfo>? children,
   }) : super(
           PartnerDetailRoute.name,
@@ -1148,7 +1223,7 @@ class PartnerDetailRouteArgs {
 
   final Key? key;
 
-  final User partner;
+  final UserDto partner;
 
   @override
   String toString() {
@@ -1286,10 +1361,17 @@ class PhotosRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [PlacesCollectionPage]
-class PlacesCollectionRoute extends PageRouteInfo<void> {
-  const PlacesCollectionRoute({List<PageRouteInfo>? children})
-      : super(
+class PlacesCollectionRoute extends PageRouteInfo<PlacesCollectionRouteArgs> {
+  PlacesCollectionRoute({
+    Key? key,
+    LatLng? currentLocation,
+    List<PageRouteInfo>? children,
+  }) : super(
           PlacesCollectionRoute.name,
+          args: PlacesCollectionRouteArgs(
+            key: key,
+            currentLocation: currentLocation,
+          ),
           initialChildren: children,
         );
 
@@ -1298,26 +1380,47 @@ class PlacesCollectionRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const PlacesCollectionPage();
+      final args = data.argsAs<PlacesCollectionRouteArgs>(
+          orElse: () => const PlacesCollectionRouteArgs());
+      return PlacesCollectionPage(
+        key: args.key,
+        currentLocation: args.currentLocation,
+      );
     },
   );
 }
 
+class PlacesCollectionRouteArgs {
+  const PlacesCollectionRouteArgs({
+    this.key,
+    this.currentLocation,
+  });
+
+  final Key? key;
+
+  final LatLng? currentLocation;
+
+  @override
+  String toString() {
+    return 'PlacesCollectionRouteArgs{key: $key, currentLocation: $currentLocation}';
+  }
+}
+
 /// generated route for
-/// [RecentlyAddedPage]
-class RecentlyAddedRoute extends PageRouteInfo<void> {
-  const RecentlyAddedRoute({List<PageRouteInfo>? children})
+/// [RecentlyTakenPage]
+class RecentlyTakenRoute extends PageRouteInfo<void> {
+  const RecentlyTakenRoute({List<PageRouteInfo>? children})
       : super(
-          RecentlyAddedRoute.name,
+          RecentlyTakenRoute.name,
           initialChildren: children,
         );
 
-  static const String name = 'RecentlyAddedRoute';
+  static const String name = 'RecentlyTakenRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const RecentlyAddedPage();
+      return const RecentlyTakenPage();
     },
   );
 }

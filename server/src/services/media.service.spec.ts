@@ -1,27 +1,28 @@
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
+import { Exif } from 'src/database';
 import {
   AssetFileType,
   AssetPathType,
   AssetType,
   AudioCodec,
   Colorspace,
+  ExifOrientation,
   ImageFormat,
   JobName,
   JobStatus,
+  RawExtractedFormat,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
 } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { MediaService } from 'src/services/media.service';
 import { JobCounts, RawImageInfo } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
-import { personStub } from 'test/fixtures/person.stub';
+import { personStub, personThumbnailStub } from 'test/fixtures/person.stub';
+import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 describe(MediaService.name, () => {
@@ -38,18 +39,14 @@ describe(MediaService.name, () => {
 
   describe('handleQueueGenerateThumbnails', () => {
     it('should queue all assets', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.image]));
 
       mocks.person.getAll.mockReturnValue(makeStream([personStub.newThumbnail]));
       mocks.person.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalled();
-      expect(mocks.asset.getWithout).not.toHaveBeenCalled();
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -67,19 +64,12 @@ describe(MediaService.name, () => {
     });
 
     it('should queue trashed assets when force is true', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.trashed],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.archived]));
       mocks.person.getAll.mockReturnValue(makeStream());
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalledWith(
-        { skip: 0, take: 1000 },
-        expect.objectContaining({ withDeleted: true }),
-      );
-      expect(mocks.asset.getWithout).not.toHaveBeenCalled();
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -89,19 +79,12 @@ describe(MediaService.name, () => {
     });
 
     it('should queue archived assets when force is true', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.archived],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.archived]));
       mocks.person.getAll.mockReturnValue(makeStream());
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalledWith(
-        { skip: 0, take: 1000 },
-        expect.objectContaining({ withArchived: true }),
-      );
-      expect(mocks.asset.getWithout).not.toHaveBeenCalled();
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -111,18 +94,13 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all people with missing thumbnail path', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.image]));
       mocks.person.getAll.mockReturnValue(makeStream([personStub.noThumbnail, personStub.noThumbnail]));
       mocks.person.getRandomFace.mockResolvedValueOnce(faceStub.face1);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
-
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
       expect(mocks.person.getRandomFace).toHaveBeenCalled();
       expect(mocks.person.update).toHaveBeenCalledTimes(1);
@@ -137,15 +115,11 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all assets with missing resize path', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.noResizePath],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noResizePath]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -157,15 +131,11 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all assets with missing webp path', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.noWebpPath],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noWebpPath]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -177,15 +147,11 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all assets with missing thumbhash', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.noThumbhash],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noThumbhash]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_THUMBNAILS,
@@ -199,7 +165,7 @@ describe(MediaService.name, () => {
 
   describe('handleQueueMigration', () => {
     it('should remove empty directories and queue jobs', async () => {
-      mocks.asset.getAll.mockResolvedValue({ hasNextPage: false, items: [assetStub.image] });
+      mocks.assetJob.streamForMigrationJob.mockReturnValue(makeStream([assetStub.image]));
       mocks.job.getJobCounts.mockResolvedValue({ active: 1, waiting: 0 } as JobCounts);
       mocks.person.getAll.mockReturnValue(makeStream([personStub.withName]));
 
@@ -217,13 +183,14 @@ describe(MediaService.name, () => {
 
   describe('handleAssetMigration', () => {
     it('should fail if asset does not exist', async () => {
+      mocks.assetJob.getForMigrationJob.mockResolvedValue(void 0);
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.FAILED);
 
       expect(mocks.move.getByEntity).not.toHaveBeenCalled();
     });
 
     it('should move asset files', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
+      mocks.assetJob.getForMigrationJob.mockResolvedValue(assetStub.image);
       mocks.move.create.mockResolvedValue({
         entityId: assetStub.image.id,
         id: 'move-id',
@@ -233,21 +200,50 @@ describe(MediaService.name, () => {
       });
 
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.move.create).toHaveBeenCalledTimes(2);
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.FULLSIZE,
+        oldPath: '/uploads/user-id/fullsize/path.webp',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+      });
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.PREVIEW,
+        oldPath: '/uploads/user-id/thumbs/path.jpg',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      });
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.THUMBNAIL,
+        oldPath: '/uploads/user-id/webp/path.ext',
+        newPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      });
+      expect(mocks.move.create).toHaveBeenCalledTimes(3);
     });
   });
 
   describe('handleGenerateThumbnails', () => {
     let rawBuffer: Buffer;
+    let fullsizeBuffer: Buffer;
+    let extractedBuffer: Buffer;
     let rawInfo: RawImageInfo;
 
     beforeEach(() => {
-      rawBuffer = Buffer.from('image data');
+      fullsizeBuffer = Buffer.from('embedded image data');
+      rawBuffer = Buffer.from('raw image data');
+      extractedBuffer = Buffer.from('embedded image file');
       rawInfo = { width: 100, height: 100, channels: 3 };
-      mocks.media.decodeImage.mockResolvedValue({ data: rawBuffer, info: rawInfo as OutputInfo });
+      mocks.media.decodeImage.mockImplementation((input) =>
+        Promise.resolve(
+          typeof input === 'string'
+            ? { data: rawBuffer, info: rawInfo as OutputInfo } // string implies original file
+            : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
+        ),
+      );
     });
 
     it('should skip thumbnail generation if asset not found', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(void 0);
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
@@ -255,7 +251,7 @@ describe(MediaService.name, () => {
     });
 
     it('should skip thumbnail generation if asset type is unknown', async () => {
-      mocks.asset.getById.mockResolvedValue({ ...assetStub.image, type: 'foo' } as never as AssetEntity);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({ ...assetStub.image, type: 'foo' as AssetType });
 
       await expect(sut.handleGenerateThumbnails({ id: assetStub.image.id })).resolves.toBe(JobStatus.SKIPPED);
       expect(mocks.media.probe).not.toHaveBeenCalled();
@@ -265,14 +261,14 @@ describe(MediaService.name, () => {
 
     it('should skip video thumbnail generation if no video stream', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.noVideoStreams);
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await expect(sut.handleGenerateThumbnails({ id: assetStub.video.id })).rejects.toThrowError();
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalledWith();
     });
 
     it('should skip invisible assets', async () => {
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.livePhotoMotionAsset);
 
       expect(await sut.handleGenerateThumbnails({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
 
@@ -282,7 +278,7 @@ describe(MediaService.name, () => {
 
     it('should delete previous preview if different path', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.WEBP } } });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -290,9 +286,9 @@ describe(MediaService.name, () => {
     });
 
     it('should generate P3 thumbnails for a wide gamut image', async () => {
-      mocks.asset.getById.mockResolvedValue({
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
         ...assetStub.image,
-        exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity,
+        exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as Exif,
       });
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
@@ -358,7 +354,7 @@ describe(MediaService.name, () => {
 
     it('should generate a thumbnail for a video', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
@@ -393,7 +389,7 @@ describe(MediaService.name, () => {
 
     it('should tonemap thumbnail for hdr video', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
@@ -431,7 +427,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { twoPass: true, maxBitrate: '5000k' },
       });
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -452,7 +448,7 @@ describe(MediaService.name, () => {
     });
     it('should not skip intra frames for MTS file', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamMTS);
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -470,7 +466,7 @@ describe(MediaService.name, () => {
     it('should use scaling divisible by 2 even when using quick sync', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV } });
-      mocks.asset.getById.mockResolvedValue(assetStub.video);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -486,7 +482,7 @@ describe(MediaService.name, () => {
 
     it.each(Object.values(ImageFormat))('should generate an image preview in %s format', async (format) => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { preview: { format } } });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
@@ -531,7 +527,7 @@ describe(MediaService.name, () => {
 
     it.each(Object.values(ImageFormat))('should generate an image thumbnail in %s format', async (format) => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format } } });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.jpeg`;
@@ -576,7 +572,7 @@ describe(MediaService.name, () => {
 
     it('should delete previous thumbnail if different path', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.WEBP } } });
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -584,46 +580,39 @@ describe(MediaService.name, () => {
     });
 
     it('should extract embedded image if enabled and available', async () => {
-      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      const extractedPath = mocks.media.extract.mock.calls.at(-1)?.[1].toString();
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
       });
-      expect(extractedPath?.endsWith('.tmp')).toBe(true);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(extractedPath);
     });
 
     it('should resize original image if embedded image is too small', async () => {
-      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 1000, height: 1000 });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
       });
-      const extractedPath = mocks.media.extract.mock.calls.at(-1)?.[1].toString();
-      expect(extractedPath?.endsWith('.tmp')).toBe(true);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(extractedPath);
     });
 
     it('should resize original image if embedded image not found', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -638,7 +627,7 @@ describe(MediaService.name, () => {
 
     it('should resize original image if embedded image extraction is not enabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: false } });
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -655,7 +644,7 @@ describe(MediaService.name, () => {
     it('should process invalid images if enabled', async () => {
       vi.stubEnv('IMMICH_PROCESS_INVALID_IMAGES', 'true');
 
-      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -668,38 +657,548 @@ describe(MediaService.name, () => {
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
-        expect.objectContaining({ processInvalidImages: true }),
+        expect.objectContaining({ processInvalidImages: false }),
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
-        expect.objectContaining({ processInvalidImages: true }),
+        expect.objectContaining({ processInvalidImages: false }),
         'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
       expect(mocks.media.generateThumbhash).toHaveBeenCalledWith(
         rawBuffer,
-        expect.objectContaining({ processInvalidImages: true }),
+        expect.objectContaining({ processInvalidImages: false }),
       );
 
       expect(mocks.media.getImageDimensions).not.toHaveBeenCalled();
       vi.unstubAllEnvs();
     });
+
+    it('should extract full-size JPEG preview from RAW', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.WEBP }, extractEmbedded: true },
+      });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+        size: 1440, // capped to preview size as fullsize conversion is skipped
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        fullsizeBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          size: 1440,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      );
+    });
+
+    it('should convert full-size WEBP preview from JXL preview of RAW', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.WEBP }, extractEmbedded: true },
+      });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JXL });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        fullsizeBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.WEBP,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.webp',
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        fullsizeBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          size: 1440,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      );
+    });
+
+    it('should generate full-size preview directly from RAW images when extractEmbedded is false', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageDng);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          size: 1440,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      );
+    });
+
+    it('should generate full-size preview from non-web-friendly images', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+      );
+    });
+
+    it('should skip generating full-size preview for web-friendly images', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
+        colorspace: Colorspace.SRGB,
+        processInvalidImages: false,
+        size: 1440,
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+      );
+    });
+
+    it('should respect encoding options when generating full-size preview', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.WEBP, quality: 90 } },
+      });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.JPEG });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.WEBP,
+          quality: 90,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.webp',
+      );
+    });
+  });
+
+  describe('handleGeneratePersonThumbnail', () => {
+    it('should skip if machine learning is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.SKIPPED);
+      expect(mocks.asset.getByIds).not.toHaveBeenCalled();
+      expect(mocks.systemMetadata.get).toHaveBeenCalled();
+    });
+
+    it('should skip a person not found', async () => {
+      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should skip a person without a face asset id', async () => {
+      mocks.person.getById.mockResolvedValue(personStub.noThumbnail);
+      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should skip a person with face not found', async () => {
+      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should generate a thumbnail', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 1000, height: 1000 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 238,
+            top: 163,
+            width: 274,
+            height: 274,
+          },
+          raw: info,
+          processInvalidImages: false,
+          size: 250,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        id: 'person-1',
+        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      });
+    });
+
+    it('should generate a thumbnail without going negative', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailStart);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 2160, height: 3840 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailStart.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 0,
+            top: 85,
+            width: 510,
+            height: 510,
+          },
+          raw: info,
+          processInvalidImages: false,
+          size: 250,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should generate a thumbnail without overflowing', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailEnd);
+      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 1000, height: 1000 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailEnd.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 591,
+            top: 591,
+            width: 408,
+            height: 408,
+          },
+          raw: info,
+          processInvalidImages: false,
+          size: 250,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should handle negative coordinates', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.negativeCoordinate);
+      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 4624, height: 3080 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.negativeCoordinate.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 0,
+            top: 62,
+            width: 412,
+            height: 412,
+          },
+          raw: info,
+          processInvalidImages: false,
+          size: 250,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should handle overflowing coordinate', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.overflowingCoordinate);
+      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 4624, height: 3080 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.overflowingCoordinate.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 4485,
+            top: 94,
+            width: 138,
+            height: 138,
+          },
+          raw: info,
+          processInvalidImages: false,
+          size: 250,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should use embedded preview if enabled and raw image', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
+      mocks.person.update.mockResolvedValue(personStub.primaryPerson);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const extracted = Buffer.from('');
+      const data = Buffer.from('');
+      const info = { width: 2160, height: 3840 } as OutputInfo;
+      mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.JPEG });
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.getImageDimensions.mockResolvedValue(info);
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extracted, {
+        colorspace: Colorspace.P3,
+        orientation: ExifOrientation.Horizontal,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            height: 844,
+            left: 388,
+            top: 730,
+            width: 844,
+          },
+          raw: info,
+          processInvalidImages: false,
+          size: 250,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+    });
+
+    it('should not use embedded preview if enabled and not raw image', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 2160, height: 3840 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.extract).not.toHaveBeenCalled();
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
+
+    it('should not use embedded preview if enabled and raw image if not exists', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 2160, height: 3840 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
+
+    it('should not use embedded preview if enabled and raw image if low resolution', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const extracted = Buffer.from('');
+      const data = Buffer.from('');
+      const info = { width: 1000, height: 1000 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.JPEG });
+      mocks.media.getImageDimensions.mockResolvedValue(info);
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.media.extract).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath);
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.rawEmbeddedThumbnail.originalPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
   });
 
   describe('handleQueueVideoConversion', () => {
     it('should queue all video assets', async () => {
-      mocks.asset.getAll.mockResolvedValue({
-        items: [assetStub.video],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForVideoConversion.mockReturnValue(makeStream([assetStub.video]));
       mocks.person.getAll.mockReturnValue(makeStream());
 
       await sut.handleQueueVideoConversion({ force: true });
 
-      expect(mocks.asset.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { type: AssetType.VIDEO });
-      expect(mocks.asset.getWithout).not.toHaveBeenCalled();
+      expect(mocks.assetJob.streamForVideoConversion).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.VIDEO_CONVERSION,
@@ -709,15 +1208,11 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all video assets without encoded videos', async () => {
-      mocks.asset.getWithout.mockResolvedValue({
-        items: [assetStub.video],
-        hasNextPage: false,
-      });
+      mocks.assetJob.streamForVideoConversion.mockReturnValue(makeStream([assetStub.video]));
 
       await sut.handleQueueVideoConversion({});
 
-      expect(mocks.asset.getAll).not.toHaveBeenCalled();
-      expect(mocks.asset.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.ENCODED_VIDEO);
+      expect(mocks.assetJob.streamForVideoConversion).toHaveBeenCalledWith(void 0);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.VIDEO_CONVERSION,
@@ -729,26 +1224,18 @@ describe(MediaService.name, () => {
 
   describe('handleVideoConversion', () => {
     beforeEach(() => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
+      mocks.assetJob.getForVideoConversion.mockResolvedValue(assetStub.video);
       sut.videoInterfaces = { dri: ['renderD128'], mali: true };
     });
 
     it('should skip transcoding if asset not found', async () => {
-      mocks.asset.getByIds.mockResolvedValue([]);
+      mocks.assetJob.getForVideoConversion.mockResolvedValue(void 0);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.probe).not.toHaveBeenCalled();
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
 
-    it('should skip transcoding if non-video asset', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
-      await sut.handleVideoConversion({ id: assetStub.image.id });
-      expect(mocks.media.probe).not.toHaveBeenCalled();
-      expect(mocks.media.transcode).not.toHaveBeenCalled();
-    });
-
     it('should transcode the longest stream', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       mocks.logger.isLevelEnabled.mockReturnValue(false);
       mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
 
@@ -770,14 +1257,12 @@ describe(MediaService.name, () => {
 
     it('should skip a video without any streams', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.noVideoStreams);
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
 
     it('should skip a video without any height', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.noHeight);
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
@@ -785,7 +1270,6 @@ describe(MediaService.name, () => {
     it('should throw an error if an unknown transcode policy is configured', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.noAudioStreams);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: 'foo' } } as never as SystemConfig);
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).rejects.toThrowError();
       expect(mocks.media.transcode).not.toHaveBeenCalled();
@@ -796,7 +1280,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { transcode: TranscodePolicy.ALL, accel: TranscodeHWAccel.DISABLED },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       mocks.media.transcode.mockRejectedValue(new Error('Error transcoding video'));
 
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toBe(JobStatus.FAILED);
@@ -806,7 +1289,6 @@ describe(MediaService.name, () => {
     it('should transcode when set to all', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.ALL } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -884,7 +1366,6 @@ describe(MediaService.name, () => {
     it('should scale horizontally when video is horizontal', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -900,7 +1381,6 @@ describe(MediaService.name, () => {
     it('should scale vertically when video is vertical', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -918,7 +1398,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { transcode: TranscodePolicy.ALL, targetResolution: 'original' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -936,7 +1415,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { transcode: TranscodePolicy.ALL, targetResolution: 'original' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -954,7 +1432,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { targetVideoCodec: VideoCodec.HEVC, acceptedAudioCodecs: [AudioCodec.AAC] },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -976,7 +1453,6 @@ describe(MediaService.name, () => {
           acceptedAudioCodecs: [AudioCodec.AAC],
         },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -998,7 +1474,6 @@ describe(MediaService.name, () => {
           acceptedAudioCodecs: [AudioCodec.AAC],
         },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1014,7 +1489,6 @@ describe(MediaService.name, () => {
     it('should copy audio stream when audio matches target', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.audioStreamAac);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1029,7 +1503,6 @@ describe(MediaService.name, () => {
 
     it('should remux when input is not an accepted container', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamAvi);
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1053,7 +1526,6 @@ describe(MediaService.name, () => {
     it('should not transcode if transcoding is disabled', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.DISABLED } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
@@ -1061,7 +1533,6 @@ describe(MediaService.name, () => {
     it('should not remux when input is not an accepted container and transcoding is disabled', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.DISABLED } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
@@ -1069,7 +1540,6 @@ describe(MediaService.name, () => {
     it('should not transcode if target codec is invalid', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: 'invalid' as any } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
@@ -1078,7 +1548,7 @@ describe(MediaService.name, () => {
       const asset = assetStub.hasEncodedVideo;
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.DISABLED } });
-      mocks.asset.getByIds.mockResolvedValue([asset]);
+      mocks.assetJob.getForVideoConversion.mockResolvedValue(asset);
 
       await sut.handleVideoConversion({ id: asset.id });
 
@@ -1092,7 +1562,6 @@ describe(MediaService.name, () => {
     it('should set max bitrate if above 0', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { maxBitrate: '4500k' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1108,7 +1577,6 @@ describe(MediaService.name, () => {
     it('should default max bitrate to kbps if no unit is provided', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { maxBitrate: '4500' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1124,7 +1592,6 @@ describe(MediaService.name, () => {
     it('should transcode in two passes for h264/h265 when enabled and max bitrate is above 0', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { twoPass: true, maxBitrate: '4500k' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1140,7 +1607,6 @@ describe(MediaService.name, () => {
     it('should fallback to one pass for h264/h265 if two-pass is enabled but no max bitrate is set', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { twoPass: true } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1162,7 +1628,6 @@ describe(MediaService.name, () => {
           targetVideoCodec: VideoCodec.VP9,
         },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1184,7 +1649,6 @@ describe(MediaService.name, () => {
           targetVideoCodec: VideoCodec.VP9,
         },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1200,7 +1664,6 @@ describe(MediaService.name, () => {
     it('should configure preset for vp9', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.VP9, preset: 'slow' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1216,7 +1679,6 @@ describe(MediaService.name, () => {
     it('should not configure preset for vp9 if invalid', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { preset: 'invalid', targetVideoCodec: VideoCodec.VP9 } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1232,7 +1694,6 @@ describe(MediaService.name, () => {
     it('should configure threads if above 0', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.VP9, threads: 2 } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1248,7 +1709,6 @@ describe(MediaService.name, () => {
     it('should disable thread pooling for h264 if thread limit is 1', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { threads: 1 } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1264,7 +1724,6 @@ describe(MediaService.name, () => {
     it('should omit thread flags for h264 if thread limit is at or below 0', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { threads: 0 } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1280,7 +1739,6 @@ describe(MediaService.name, () => {
     it('should disable thread pooling for hevc if thread limit is 1', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamVp9);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { threads: 1, targetVideoCodec: VideoCodec.HEVC } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1296,7 +1754,6 @@ describe(MediaService.name, () => {
     it('should omit thread flags for hevc if thread limit is at or below 0', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamVp9);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { threads: 0, targetVideoCodec: VideoCodec.HEVC } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1312,7 +1769,6 @@ describe(MediaService.name, () => {
     it('should use av1 if specified', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamVp9);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.AV1 } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1338,7 +1794,6 @@ describe(MediaService.name, () => {
     it('should map `veryslow` preset to 4 for av1', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamVp9);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.AV1, preset: 'veryslow' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1354,7 +1809,6 @@ describe(MediaService.name, () => {
     it('should set max bitrate for av1 if specified', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamVp9);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.AV1, maxBitrate: '2M' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1370,7 +1824,6 @@ describe(MediaService.name, () => {
     it('should set threads for av1 if specified', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamVp9);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.AV1, threads: 4 } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1388,7 +1841,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { targetVideoCodec: VideoCodec.AV1, threads: 4, maxBitrate: '2M' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1410,7 +1862,6 @@ describe(MediaService.name, () => {
           targetResolution: '1080p',
         },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
@@ -1420,7 +1871,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.NVENC, targetVideoCodec: VideoCodec.VP9 },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).rejects.toThrowError();
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
@@ -1428,7 +1878,6 @@ describe(MediaService.name, () => {
     it('should fail if hwaccel option is invalid', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: 'invalid' as any } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).rejects.toThrowError();
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
@@ -1436,7 +1885,6 @@ describe(MediaService.name, () => {
     it('should set options for nvenc', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1474,7 +1922,6 @@ describe(MediaService.name, () => {
           twoPass: true,
         },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1490,7 +1937,6 @@ describe(MediaService.name, () => {
     it('should set vbr options for nvenc when max bitrate is enabled', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC, maxBitrate: '10000k' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1506,7 +1952,6 @@ describe(MediaService.name, () => {
     it('should set cq options for nvenc when max bitrate is disabled', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC, maxBitrate: '10000k' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1522,7 +1967,6 @@ describe(MediaService.name, () => {
     it('should omit preset for nvenc if invalid', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC, preset: 'invalid' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1538,7 +1982,6 @@ describe(MediaService.name, () => {
     it('should ignore two pass for nvenc if max bitrate is disabled', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1556,7 +1999,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1579,7 +2021,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1601,14 +2042,13 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
-          outputOptions: expect.arrayContaining([expect.stringContaining('format=nv12')]),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale_cuda=-2:720:format=nv12')]),
           twoPass: false,
         }),
       );
@@ -1617,7 +2057,6 @@ describe(MediaService.name, () => {
     it('should set options for qsv', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV, maxBitrate: '10000k' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1658,7 +2097,6 @@ describe(MediaService.name, () => {
           preferredHwDevice: '/dev/dri/renderD128',
         },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1677,7 +2115,6 @@ describe(MediaService.name, () => {
     it('should omit preset for qsv if invalid', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV, preset: 'invalid' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1698,7 +2135,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.QSV, targetVideoCodec: VideoCodec.VP9 },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1718,7 +2154,6 @@ describe(MediaService.name, () => {
       sut.videoInterfaces = { dri: [], mali: false };
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).rejects.toThrowError();
 
@@ -1729,7 +2164,6 @@ describe(MediaService.name, () => {
       sut.videoInterfaces = { dri: ['card1', 'renderD129', 'card0', 'renderD128'], mali: false };
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1750,7 +2184,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.QSV, accelDecode: true },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
@@ -1766,9 +2199,7 @@ describe(MediaService.name, () => {
             '-threads 1',
             '-qsv_device /dev/dri/renderD128',
           ]),
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq:format=nv12'),
-          ]),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq')]),
           twoPass: false,
         }),
       );
@@ -1779,7 +2210,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.QSV, accelDecode: true },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
@@ -1809,7 +2239,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.QSV, accelDecode: true, preferredHwDevice: 'renderD129' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -1828,7 +2257,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.QSV, accelDecode: true },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
@@ -1851,7 +2279,6 @@ describe(MediaService.name, () => {
     it('should set options for vaapi', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1882,7 +2309,6 @@ describe(MediaService.name, () => {
     it('should set vbr options for vaapi when max bitrate is enabled', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI, maxBitrate: '10000k' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1907,7 +2333,6 @@ describe(MediaService.name, () => {
     it('should set cq options for vaapi when max bitrate is disabled', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1932,7 +2357,6 @@ describe(MediaService.name, () => {
     it('should omit preset for vaapi if invalid', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI, preset: 'invalid' } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1952,7 +2376,6 @@ describe(MediaService.name, () => {
       sut.videoInterfaces = { dri: ['card1', 'renderD129', 'card0', 'renderD128'], mali: false };
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1974,7 +2397,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.VAAPI, preferredHwDevice: '/dev/dri/renderD128' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -1995,7 +2417,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
@@ -2010,9 +2431,7 @@ describe(MediaService.name, () => {
             '-threads 1',
             '-hwaccel_device /dev/dri/renderD128',
           ]),
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining('scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12'),
-          ]),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale_vaapi=-2:720:mode=hq:out_range=pc')]),
           twoPass: false,
         }),
       );
@@ -2023,7 +2442,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
@@ -2047,7 +2465,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
@@ -2068,7 +2485,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true, preferredHwDevice: 'renderD129' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -2085,7 +2501,6 @@ describe(MediaService.name, () => {
     it('should fallback to hw encoding and sw decoding if hw transcoding fails and hw decoding is enabled', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       mocks.media.transcode.mockRejectedValueOnce(new Error('error'));
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledTimes(2);
@@ -2106,7 +2521,6 @@ describe(MediaService.name, () => {
     it('should fallback to sw decoding if fallback to sw decoding + hw encoding fails', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       mocks.media.transcode.mockRejectedValueOnce(new Error('error'));
       mocks.media.transcode.mockRejectedValueOnce(new Error('error'));
       await sut.handleVideoConversion({ id: assetStub.video.id });
@@ -2125,7 +2539,6 @@ describe(MediaService.name, () => {
     it('should fallback to sw transcoding if hw transcoding fails and hw decoding is disabled', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       mocks.media.transcode.mockRejectedValueOnce(new Error('error'));
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledTimes(2);
@@ -2144,7 +2557,6 @@ describe(MediaService.name, () => {
       sut.videoInterfaces = { dri: [], mali: true };
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).rejects.toThrowError();
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
@@ -2152,7 +2564,6 @@ describe(MediaService.name, () => {
     it('should set options for rkmpp', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2193,7 +2604,6 @@ describe(MediaService.name, () => {
           targetVideoCodec: VideoCodec.HEVC,
         },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2211,7 +2621,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2229,7 +2638,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2252,7 +2660,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2272,7 +2679,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: false, crf: 30, maxBitrate: '0' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2295,7 +2701,6 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
       });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2315,7 +2720,6 @@ describe(MediaService.name, () => {
     it('should tonemap when policy is required and video is hdr', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.REQUIRED } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2335,7 +2739,6 @@ describe(MediaService.name, () => {
     it('should tonemap when policy is optimal and video is hdr', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2355,7 +2758,6 @@ describe(MediaService.name, () => {
     it('should transcode when policy is required and video is not yuv420p', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream10Bit);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.REQUIRED } });
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2368,10 +2770,24 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should convert to yuv420p when scaling without tone-mapping', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStream4K10Bit);
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.REQUIRED } });
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy', '-vf scale=-2:720,format=yuv420p']),
+          twoPass: false,
+        }),
+      );
+    });
+
     it('should count frames for progress when log level is debug', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
       mocks.logger.isLevelEnabled.mockReturnValue(true);
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
@@ -2394,7 +2810,6 @@ describe(MediaService.name, () => {
     it('should not count frames for progress when log level is not debug', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.logger.isLevelEnabled.mockReturnValue(false);
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
       expect(mocks.media.probe).toHaveBeenCalledWith(assetStub.video.originalPath, { countFrames: false });
@@ -2419,48 +2834,39 @@ describe(MediaService.name, () => {
 
   describe('isSRGB', () => {
     it('should return true for srgb colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB' } as ExifEntity };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ colorspace: 'sRGB' } as Exif)).toEqual(true);
     });
 
     it('should return true for srgb profile description', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB v1.31' } as ExifEntity };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ profileDescription: 'sRGB v1.31' } as Exif)).toEqual(true);
     });
 
     it('should return true for 8-bit image with no colorspace metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 8 } as ExifEntity };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ bitsPerSample: 8 } as Exif)).toEqual(true);
     });
 
     it('should return true for image with no colorspace or bit depth metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: {} as ExifEntity };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({} as Exif)).toEqual(true);
     });
 
     it('should return false for non-srgb colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'Adobe RGB' } as ExifEntity };
-      expect(sut.isSRGB(asset)).toEqual(false);
+      expect(sut.isSRGB({ colorspace: 'Adobe RGB' } as Exif)).toEqual(false);
     });
 
     it('should return false for non-srgb profile description', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sP3C' } as ExifEntity };
-      expect(sut.isSRGB(asset)).toEqual(false);
+      expect(sut.isSRGB({ profileDescription: 'sP3C' } as Exif)).toEqual(false);
     });
 
     it('should return false for 16-bit image with no colorspace metadata', () => {
-      const asset = { ...assetStub.image, exifInfo: { bitsPerSample: 16 } as ExifEntity };
-      expect(sut.isSRGB(asset)).toEqual(false);
+      expect(sut.isSRGB({ bitsPerSample: 16 } as Exif)).toEqual(false);
     });
 
     it('should return true for 16-bit image with sRGB colorspace', () => {
-      const asset = { ...assetStub.image, exifInfo: { colorspace: 'sRGB', bitsPerSample: 16 } as ExifEntity };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ colorspace: 'sRGB', bitsPerSample: 16 } as Exif)).toEqual(true);
     });
 
     it('should return true for 16-bit image with sRGB profile', () => {
-      const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB', bitsPerSample: 16 } as ExifEntity };
-      expect(sut.isSRGB(asset)).toEqual(true);
+      expect(sut.isSRGB({ profileDescription: 'sRGB', bitsPerSample: 16 } as Exif)).toEqual(true);
     });
   });
 });

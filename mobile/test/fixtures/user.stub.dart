@@ -1,35 +1,36 @@
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 
-final class UserStub {
+abstract final class UserStub {
   const UserStub._();
 
-  static final admin = User(
+  static final admin = UserDto(
     id: "admin",
-    updatedAt: DateTime(2021),
     email: "admin@test.com",
     name: "admin",
-    avatarColor: AvatarColorEnum.green,
-    profileImagePath: '',
     isAdmin: true,
+    updatedAt: DateTime(2021),
+    profileImagePath: null,
+    avatarColor: AvatarColor.green,
   );
 
-  static final user1 = User(
+  static final user1 = UserDto(
     id: "user1",
-    updatedAt: DateTime(2022),
     email: "user1@test.com",
     name: "user1",
-    avatarColor: AvatarColorEnum.red,
-    profileImagePath: '',
     isAdmin: false,
+    updatedAt: DateTime(2022),
+    profileImagePath: null,
+    avatarColor: AvatarColor.red,
   );
 
-  static final user2 = User(
+  static final user2 = UserDto(
     id: "user2",
-    updatedAt: DateTime(2023),
     email: "user2@test.com",
     name: "user2",
-    avatarColor: AvatarColorEnum.primary,
-    profileImagePath: '',
     isAdmin: false,
+    updatedAt: DateTime(2023),
+    profileImagePath: null,
+    avatarColor: AvatarColor.primary,
   );
 }

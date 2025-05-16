@@ -1,7 +1,7 @@
 # Database Queries
 
 :::danger
-Keep in mind that mucking around in the database might set the moon on fire. Avoid modifying the database directly when possible, and always have current backups.
+Keep in mind that mucking around in the database might set the Moon on fire. Avoid modifying the database directly when possible, and always have current backups.
 :::
 
 :::tip
@@ -29,6 +29,10 @@ SELECT * FROM "assets" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
 
 ```sql title="Find by ID"
 SELECT * FROM "assets" WHERE "id" = '9f94e60f-65b6-47b7-ae44-a4df7b57f0e9';
+```
+
+```sql title="Find by partial ID"
+SELECT * FROM "assets" WHERE "id"::text LIKE '%ab431d3a%';
 ```
 
 :::note

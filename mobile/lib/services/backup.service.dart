@@ -6,6 +6,7 @@ import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
@@ -350,7 +351,6 @@ class BackupService {
           );
 
           baseRequest.headers.addAll(ApiService.getRequestHeaders());
-          baseRequest.headers["Transfer-Encoding"] = "chunked";
           baseRequest.fields['deviceAssetId'] = asset.localId!;
           baseRequest.fields['deviceId'] = deviceId;
           baseRequest.fields['fileCreatedAt'] =

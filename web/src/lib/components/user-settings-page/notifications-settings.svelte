@@ -9,8 +9,8 @@
 
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
-  import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
+  import { Button } from '@immich/ui';
 
   let emailNotificationsEnabled = $state($preferences?.emailNotifications?.enabled ?? true);
   let albumInviteNotificationEnabled = $state($preferences?.emailNotifications?.albumInvite ?? true);
@@ -46,14 +46,14 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
-        <div class="ml-4">
+      <div class="ms-4 mt-4 flex flex-col gap-4">
+        <div class="ms-4">
           <SettingSwitch
             title={$t('notification_toggle_setting_description')}
             bind:checked={emailNotificationsEnabled}
           />
         </div>
-        <div class="ml-4">
+        <div class="ms-4">
           <SettingSwitch
             title={$t('album_added')}
             subtitle={$t('album_added_notification_setting_description')}
@@ -61,7 +61,7 @@
             disabled={!emailNotificationsEnabled}
           />
         </div>
-        <div class="ml-4">
+        <div class="ms-4">
           <SettingSwitch
             title={$t('album_updated')}
             subtitle={$t('album_updated_setting_description')}
@@ -71,7 +71,7 @@
         </div>
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" onclick={() => handleSave()}>{$t('save')}</Button>
+          <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

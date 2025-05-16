@@ -2,9 +2,11 @@
   import { thumbhash } from '$lib/actions/thumbhash';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import type { ActionReturn } from 'svelte/action';
+  import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -19,10 +21,10 @@
     circle?: boolean;
     hidden?: boolean;
     border?: boolean;
-    preload?: boolean;
     hiddenIconClass?: string;
-    onComplete?: (() => void) | undefined;
-    onClick?: (() => void) | undefined;
+    class?: ClassValue;
+    brokenAssetClass?: ClassValue;
+    onComplete?: ((errored: boolean) => void) | undefined;
   }
 
   let {
@@ -37,9 +39,10 @@
     circle = false,
     hidden = false,
     border = false,
-    preload = true,
     hiddenIconClass = 'text-white',
     onComplete = undefined,
+    class: imageClass = '',
+    brokenAssetClass = '',
   }: Props = $props();
 
   let {
@@ -49,21 +52,24 @@
   let loaded = $state(false);
   let errored = $state(false);
 
-  let img = $state<HTMLImageElement>();
-
   const setLoaded = () => {
     loaded = true;
-    onComplete?.();
+    onComplete?.(false);
   };
   const setErrored = () => {
     errored = true;
-    onComplete?.();
+    onComplete?.(true);
   };
-  onMount(() => {
-    if (img?.complete) {
-      setLoaded();
+
+  function mount(elem: HTMLImageElement): ActionReturn {
+    if (elem.complete) {
+      loaded = true;
+      onComplete?.(false);
     }
-  });
+    return {
+      destroy: () => cancelImageUrl(url),
+    };
+  }
 
   let optionalClasses = $derived(
     [
@@ -72,6 +78,7 @@
       shadow && 'shadow-lg',
       (circle || !heightStyle) && 'aspect-square',
       border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+      brokenAssetClass,
     ]
       .filter(Boolean)
       .join(' '),
@@ -82,10 +89,9 @@
   <BrokenAsset class={optionalClasses} width={widthStyle} height={heightStyle} />
 {:else}
   <img
-    bind:this={img}
+    use:mount
     onload={setLoaded}
     onerror={setErrored}
-    loading={preload ? 'eager' : 'lazy'}
     style:width={widthStyle}
     style:height={heightStyle}
     style:filter={hidden ? 'grayscale(50%)' : 'none'}
@@ -93,14 +99,14 @@
     src={url}
     alt={loaded || errored ? altText : ''}
     {title}
-    class="object-cover {optionalClasses}"
+    class={['object-cover', optionalClasses, imageClass]}
     class:opacity-0={!thumbhash && !loaded}
     draggable="false"
   />
 {/if}
 
 {#if hidden}
-  <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+  <div class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
     <Icon {title} path={mdiEyeOffOutline} size="2em" class={hiddenIconClass} />
   </div>
 {/if}

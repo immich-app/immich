@@ -5,6 +5,7 @@ import {
   CQMode,
   ImageFormat,
   LogLevel,
+  OAuthTokenEndpointAuthMethod,
   QueueName,
   ToneMapping,
   TranscodeHWAccel,
@@ -12,7 +13,7 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { ConcurrentQueueName, ImageOptions } from 'src/types';
+import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
 export interface SystemConfig {
   backup: {
@@ -96,6 +97,8 @@ export interface SystemConfig {
     scope: string;
     signingAlgorithm: string;
     profileSigningAlgorithm: string;
+    tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
+    timeout: number;
     storageLabelClaim: string;
     storageQuotaClaim: string;
   };
@@ -112,6 +115,7 @@ export interface SystemConfig {
     preview: ImageOptions;
     colorspace: Colorspace;
     extractEmbedded: boolean;
+    fullsize: FullsizeImageOptions;
   };
   newVersionCheck: {
     enabled: boolean;
@@ -259,6 +263,8 @@ export const defaults = Object.freeze<SystemConfig>({
     profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
+    tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.CLIENT_SECRET_POST,
+    timeout: 30_000,
   },
   passwordLogin: {
     enabled: true,
@@ -281,6 +287,11 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
+    fullsize: {
+      enabled: false,
+      format: ImageFormat.JPEG,
+      quality: 80,
+    },
   },
   newVersionCheck: {
     enabled: true,

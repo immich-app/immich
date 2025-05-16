@@ -37,7 +37,7 @@ To validate that Immich can reach your external library, start a shell inside th
 
 ### Exclusion Patterns
 
-By default, all files in the import paths will be added to the library. If there are files that should not be added, exclusion patterns can be used to exclude them. Exclusion patterns are glob patterns are matched against the full file path. If a file matches an exclusion pattern, it will not be added to the library. Exclusion patterns can be added in the Scan Settings page for each library. Under the hood, Immich uses the [glob](https://www.npmjs.com/package/glob) package to match patterns, so please refer to [their documentation](https://github.com/isaacs/node-glob#glob-primer) to see what patterns are supported.
+By default, all files in the import paths will be added to the library. If there are files that should not be added, exclusion patterns can be used to exclude them. Exclusion patterns are glob patterns are matched against the full file path. If a file matches an exclusion pattern, it will not be added to the library. Exclusion patterns can be added in the Scan Settings page for each library.
 
 Some basic examples:
 
@@ -48,7 +48,11 @@ Some basic examples:
 
 Special characters such as @ should be escaped, for instance:
 
-- `**/\@eadir/**` will exclude all files in any directory named `@eadir`
+- `**/\@eaDir/**` will exclude all files in any directory named `@eaDir`
+
+:::info
+Internally, Immich uses the [glob](https://www.npmjs.com/package/glob) package to process exclusion patterns, and sometimes those patterns are translated into [Postgres LIKE patterns](https://www.postgresql.org/docs/current/functions-matching.html). The intention is to support basic folder exclusions but we recommend against advanced usage since those can't reliably be translated to the Postgres syntax. Please refer to the [glob documentation](https://github.com/isaacs/node-glob#glob-primer) for a basic overview on glob patterns.
+:::
 
 ### Automatic watching (EXPERIMENTAL)
 
@@ -68,7 +72,7 @@ In rare cases, the library watcher can hang, preventing Immich from starting up.
 
 ### Nightly job
 
-There is an automatic scan job that is scheduled to run once a day. This job also cleans up any libraries stuck in deletion.
+There is an automatic scan job that is scheduled to run once a day. This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
 
 ## Usage
 
@@ -91,7 +95,7 @@ The `immich-server` container will need access to the gallery. Modify your docke
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
-+     - /mnt/media/videos2:/mnt/media/videos2 # the files in this folder can be deleted, as it does not end with :ro
++     - /mnt/media/videos2:/mnt/media/videos2 # WARNING: Immich will be able to delete the files in this folder, as it does not end with :ro
 +     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 ```
 
@@ -111,11 +115,10 @@ These actions must be performed by the Immich administrator.
 - Click on Administration -> Libraries
 - Click on Create External Library
 - Select which user owns the library, this can not be changed later
+- Enter `/mnt/media/christmas-trip` then click Add
+- Click on Save
 - Click the drop-down menu on the newly created library
 - Click on Rename Library and rename it to "Christmas Trip"
-- Click Edit Import Paths
-- Click on Add Path
-- Enter `/mnt/media/christmas-trip` then click Add
 
 NOTE: We have to use the `/mnt/media/christmas-trip` path and not the `/mnt/nas/christmas-trip` path since all paths have to be what the Docker containers see.
 

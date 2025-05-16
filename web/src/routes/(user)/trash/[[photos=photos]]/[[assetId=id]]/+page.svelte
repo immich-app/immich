@@ -7,15 +7,15 @@
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -36,15 +36,14 @@
     handlePromiseError(goto(AppRoute.PHOTOS));
   }
 
-  const options = { isTrashed: true };
-  const assetStore = new AssetStore(options);
+  const assetStore = new AssetStore();
+  void assetStore.updateOptions({ isTrashed: true });
+  onDestroy(() => assetStore.destroy());
+
   const assetInteraction = new AssetInteraction();
 
   const handleEmptyTrash = async () => {
-    const isConfirmed = await dialogController.show({
-      prompt: $t('empty_trash_confirmation'),
-    });
-
+    const isConfirmed = await modalManager.showDialog({ prompt: $t('empty_trash_confirmation') });
     if (!isConfirmed) {
       return;
     }
@@ -56,19 +55,13 @@
         message: $t('assets_permanently_deleted_count', { values: { count } }),
         type: NotificationType.Info,
       });
-
-      // reset asset grid (TODO fix in asset store that it should reset when it is empty)
-      await assetStore.updateOptions(options);
     } catch (error) {
       handleError(error, $t('errors.unable_to_empty_trash'));
     }
   };
 
   const handleRestoreTrash = async () => {
-    const isConfirmed = await dialogController.show({
-      prompt: $t('assets_restore_confirmation'),
-    });
-
+    const isConfirmed = await modalManager.showDialog({ prompt: $t('assets_restore_confirmation') });
     if (!isConfirmed) {
       return;
     }
@@ -80,7 +73,10 @@
       });
 
       // reset asset grid (TODO fix in asset store that it should reset when it is empty)
-      await assetStore.updateOptions(options);
+      // note - this is still a problem, but updateOptions with the same value will not
+      // do anything, so need to flip it for it to reload/reinit
+      // await assetStore.updateOptions({ deferInit: true, isTrashed: true });
+      // await assetStore.updateOptions({ deferInit: false, isTrashed: true });
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_trash'));
     }
@@ -92,10 +88,6 @@
       return;
     }
   };
-
-  onDestroy(() => {
-    assetStore.destroy();
-  });
 </script>
 
 {#if assetInteraction.selectionActive}

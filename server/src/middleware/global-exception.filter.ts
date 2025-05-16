@@ -22,6 +22,13 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
     }
   }
 
+  handleError(res: Response, error: Error) {
+    const { status, body } = this.fromError(error);
+    if (!res.headersSent) {
+      res.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
+    }
+  }
+
   private fromError(error: Error) {
     logGlobalError(this.logger, error);
 

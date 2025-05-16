@@ -2,53 +2,13 @@
 sidebar_position: 30
 ---
 
-import CodeBlock from '@theme/CodeBlock';
-import ExampleEnv from '!!raw-loader!../../../docker/example.env';
-
 # Docker Compose [Recommended]
 
 Docker Compose is the recommended method to run Immich in production. Below are the steps to deploy Immich with Docker Compose.
 
-## Step 1 - Download the required files
+import DockerComposeSteps from '/docs/partials/_docker-compose-install-steps.mdx';
 
-Create a directory of your choice (e.g. `./immich-app`) to hold the `docker-compose.yml` and `.env` files.
-
-```bash title="Move to the directory you created"
-mkdir ./immich-app
-cd ./immich-app
-```
-
-Download [`docker-compose.yml`][compose-file] and [`example.env`][env-file] by running the following commands:
-
-```bash title="Get docker-compose.yml file"
-wget -O docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
-```
-
-```bash title="Get .env file"
-wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
-```
-
-You can alternatively download these two files from your browser and move them to the directory that you created, in which case ensure that you rename `example.env` to `.env`.
-
-## Step 2 - Populate the .env file with custom values
-
-<CodeBlock language="bash" title="Default environmental variable content">
-  {ExampleEnv}
-</CodeBlock>
-
-- Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets. It should be a new directory on the server with enough free space.
-- Consider changing `DB_PASSWORD` to a custom value. Postgres is not publically exposed, so this password is only used for local authentication.
-  To avoid issues with Docker parsing this value, it is best to use only the characters `A-Za-z0-9`. `pwgen` is a handy utility for this.
-- Set your timezone by uncommenting the `TZ=` line.
-- Populate custom database information if necessary.
-
-## Step 3 - Start the containers
-
-From the directory you created in Step 1 (which should now contain your customized `docker-compose.yml` and `.env` files), run the following command to start Immich as a background service:
-
-```bash title="Start the containers"
-docker compose up -d
-```
+<DockerComposeSteps />
 
 :::info Docker version
 If you get an error such as `unknown shorthand flag: 'd' in -d` or `open <location of your .env file>: permission denied`, you are probably running the wrong Docker version. (This happens, for example, with the docker.io package in Ubuntu 22.04.3 LTS.) You can correct the problem by following the complete [Docker Engine install](https://docs.docker.com/engine/install/) procedure for your distribution, crucially the "Uninstall old versions" and "Install using the apt/rpm repository" sections. These replace the distro's Docker packages with Docker's official ones.
@@ -69,39 +29,4 @@ If you get an error `can't set healthcheck.start_interval as feature require Doc
 
 ## Next Steps
 
-Read the [Post Installation](/docs/install/post-install.mdx) steps or setup optional features below.
-
-### Setting up optional features
-
-- [External Libraries](/docs/features/libraries.md): Adding your existing photo library to Immich
-- [Hardware Transcoding](/docs/features/hardware-transcoding.md): Speeding up video transcoding
-- [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md): Speeding up various machine learning tasks in Immich
-
-### Upgrading
-
-:::danger Read the release notes
-Immich is currently under heavy development, which means you can expect [breaking changes][breaking] and bugs. Therefore, we recommend reading the release notes prior to updating and to take special care when using automated tools like [Watchtower][watchtower].
-
-You can see versions that had breaking changes [here][breaking].
-:::
-
-If `IMMICH_VERSION` is set, it will need to be updated to the latest or desired version.
-
-When a new version of Immich is [released][releases], the application can be upgraded and restarted with the following commands, run in the directory with the `docker-compose.yml` file:
-
-```bash title="Upgrade and restart Immich"
-docker compose pull && docker compose up -d
-```
-
-To clean up disk space, the old version's obsolete container images can be deleted with the following command:
-
-```bash title="Clean up unused Docker images"
-docker image prune
-```
-
-[compose-file]: https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
-[env-file]: https://github.com/immich-app/immich/releases/latest/download/example.env
-[watchtower]: https://containrrr.dev/watchtower/
-[breaking]: https://github.com/immich-app/immich/discussions?discussions_q=label%3Achangelog%3Abreaking-change+sort%3Adate_created
-[container-auth]: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
-[releases]: https://github.com/immich-app/immich/releases
+Read the [Post Installation](/docs/install/post-install.mdx) steps and [upgrade instructions](/docs/install/upgrading.md).

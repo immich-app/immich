@@ -115,7 +115,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Text(
-                        "server_info_box_server_version".tr(),
+                        "server_version".tr(),
                         style: TextStyle(
                           fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
@@ -170,7 +170,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Tooltip(
                         verticalOffset: 0,
                         decoration: BoxDecoration(
-                          color: context.primaryColor.withOpacity(0.9),
+                          color: context.primaryColor.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         textStyle: TextStyle(
@@ -218,7 +218,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                               ),
                             ),
                           Text(
-                            "server_info_box_latest_release".tr(),
+                            "latest_version".tr(),
                             style: TextStyle(
                               fontSize: titleFontSize,
                               color: context.textTheme.labelSmall?.color,

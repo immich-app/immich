@@ -6,7 +6,6 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 
 final memoryServiceProvider = StateProvider<MemoryService>((ref) {
   return MemoryService(
@@ -26,9 +25,8 @@ class MemoryService {
   Future<List<Memory>?> getMemoryLane() async {
     try {
       final now = DateTime.now();
-      final data = await _apiService.assetsApi.getMemoryLane(
-        now.day,
-        now.month,
+      final data = await _apiService.memoriesApi.searchMemories(
+        for_: DateTime.utc(now.year, now.month, now.day, 0, 0, 0),
       );
 
       if (data == null) {
@@ -36,13 +34,16 @@ class MemoryService {
       }
 
       List<Memory> memories = [];
-      for (final MemoryLaneResponseDto(:yearsAgo, :assets) in data) {
-        final dbAssets =
-            await _assetRepository.getAllByRemoteId(assets.map((e) => e.id));
+
+      for (final memory in data) {
+        final dbAssets = await _assetRepository
+            .getAllByRemoteId(memory.assets.map((e) => e.id));
+        final yearsAgo = now.year - memory.data.year;
         if (dbAssets.isNotEmpty) {
           final String title = yearsAgo <= 1
               ? 'memories_year_ago'.tr()
-              : 'memories_years_ago'.tr(args: [yearsAgo.toString()]);
+              : 'memories_years_ago'
+                  .tr(namedArgs: {'years': yearsAgo.toString()});
           memories.add(
             Memory(
               title: title,

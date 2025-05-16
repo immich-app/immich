@@ -1,14 +1,13 @@
 <script lang="ts">
+  import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { user } from '$lib/stores/user.store';
   import { getConfig, type SystemConfigDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiIncognito } from '@mdi/js';
   import { onMount } from 'svelte';
-  import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import OnboardingCard from './onboarding-card.svelte';
   import { t } from 'svelte-i18n';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import OnboardingCard from './onboarding-card.svelte';
 
   interface Props {
     onDone: () => void;
@@ -32,41 +31,44 @@
 
   {#if config && $user}
     <AdminSettings bind:config bind:this={adminSettingsComponent}>
-      {#snippet children()}
-        {#if config}
-          <SettingSwitch
-            title={$t('admin.map_settings')}
-            subtitle={$t('admin.map_implications')}
-            bind:checked={config.map.enabled}
-          />
-          <SettingSwitch
-            title={$t('admin.version_check_settings')}
-            subtitle={$t('admin.version_check_implications')}
-            bind:checked={config.newVersionCheck.enabled}
-          />
-          <div class="flex pt-4">
-            <div class="w-full flex place-content-start">
-              <Button class="flex gap-2 place-content-center" onclick={() => onPrevious()}>
-                <Icon path={mdiArrowLeft} size="18" />
-                <p>{$t('theme')}</p>
-              </Button>
-            </div>
-            <div class="flex w-full place-content-end">
-              <Button
-                onclick={() => {
-                  adminSettingsComponent?.handleSave({ map: config?.map, newVersionCheck: config?.newVersionCheck });
-                  onDone();
-                }}
-              >
-                <span class="flex place-content-center place-items-center gap-2">
-                  {$t('admin.storage_template_settings')}
-                  <Icon path={mdiArrowRight} size="18" />
-                </span>
-              </Button>
-            </div>
+      {#if config}
+        <SettingSwitch
+          title={$t('admin.map_settings')}
+          subtitle={$t('admin.map_implications')}
+          bind:checked={config.map.enabled}
+        />
+        <SettingSwitch
+          title={$t('admin.version_check_settings')}
+          subtitle={$t('admin.version_check_implications')}
+          bind:checked={config.newVersionCheck.enabled}
+        />
+        <div class="flex pt-4">
+          <div class="w-full flex place-content-start">
+            <Button
+              shape="round"
+              leadingIcon={mdiArrowLeft}
+              class="flex gap-2 place-content-center"
+              onclick={() => onPrevious()}
+            >
+              <p>{$t('theme')}</p>
+            </Button>
           </div>
-        {/if}
-      {/snippet}
+          <div class="flex w-full place-content-end">
+            <Button
+              shape="round"
+              trailingIcon={mdiArrowRight}
+              onclick={() => {
+                adminSettingsComponent?.handleSave({ map: config?.map, newVersionCheck: config?.newVersionCheck });
+                onDone();
+              }}
+            >
+              <span class="flex place-content-center place-items-center gap-2">
+                {$t('admin.storage_template_settings')}
+              </span>
+            </Button>
+          </div>
+        </div>
+      {/if}
     </AdminSettings>
   {/if}
 </OnboardingCard>

@@ -1,20 +1,20 @@
 <script lang="ts">
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
-  import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import PasswordField from '$lib/components/shared-components/password-field.svelte';
-  import { user } from '$lib/stores/user.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getMySharedLink, SharedLinkType } from '@immich/sdk';
-  import type { PageData } from './$types';
-  import { setSharedLink } from '$lib/utils';
-  import { t } from 'svelte-i18n';
-  import { navigate } from '$lib/utils/navigation';
+  import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { user } from '$lib/stores/user.store';
+  import { setSharedLink } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { navigate } from '$lib/utils/navigation';
+  import { getMySharedLink, SharedLinkType } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { tick } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -27,7 +27,6 @@
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
-  let innerWidth: number = $state(0);
 
   const handlePasswordSubmit = async () => {
     try {
@@ -54,26 +53,13 @@
   };
 </script>
 
-<svelte:window bind:innerWidth />
-
 <svelte:head>
   <title>{title}</title>
   <meta name="description" content={description} />
 </svelte:head>
 {#if passwordRequired}
-  <header>
-    <ControlAppBar showBackButton={false}>
-      {#snippet leading()}
-        <ImmichLogoSmallLink width={innerWidth} />
-      {/snippet}
-
-      {#snippet trailing()}
-        <ThemeButton />
-      {/snippet}
-    </ControlAppBar>
-  </header>
   <main
-    class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+    class="relative h-dvh overflow-hidden px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] sm:px-12 md:px-24 lg:px-40"
   >
     <div class="flex flex-col items-center justify-center mt-20">
       <div class="text-2xl font-bold text-immich-primary dark:text-immich-dark-primary">{$t('password_required')}</div>
@@ -88,6 +74,17 @@
       </div>
     </div>
   </main>
+  <header>
+    <ControlAppBar showBackButton={false}>
+      {#snippet leading()}
+        <ImmichLogoSmallLink />
+      {/snippet}
+
+      {#snippet trailing()}
+        <ThemeButton />
+      {/snippet}
+    </ControlAppBar>
+  </header>
 {/if}
 
 {#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}

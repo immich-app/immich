@@ -1,46 +1,36 @@
+import { SystemConfig } from 'src/config';
 import {
+  AssetType,
   DatabaseExtension,
+  DatabaseSslMode,
   ExifOrientation,
   ImageFormat,
   JobName,
+  MemoryType,
   QueueName,
+  StorageFolder,
+  SyncEntityType,
+  SystemMetadataKey,
   TranscodeTarget,
+  UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
-import { ActivityRepository } from 'src/repositories/activity.repository';
-import { ApiKeyRepository } from 'src/repositories/api-key.repository';
-import { MemoryRepository } from 'src/repositories/memory.repository';
-import { SessionRepository } from 'src/repositories/session.repository';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
-
-type IActivityRepository = RepositoryInterface<ActivityRepository>;
-type IApiKeyRepository = RepositoryInterface<ApiKeyRepository>;
-type IMemoryRepository = RepositoryInterface<MemoryRepository>;
-type ISessionRepository = RepositoryInterface<SessionRepository>;
-
-export type ActivityItem =
-  | Awaited<ReturnType<IActivityRepository['create']>>
-  | Awaited<ReturnType<IActivityRepository['search']>>[0];
-
-export type ApiKeyItem =
-  | Awaited<ReturnType<IApiKeyRepository['create']>>
-  | NonNullable<Awaited<ReturnType<IApiKeyRepository['getById']>>>
-  | Awaited<ReturnType<IApiKeyRepository['getByUserId']>>[0];
-
-export type MemoryItem =
-  | Awaited<ReturnType<IMemoryRepository['create']>>
-  | Awaited<ReturnType<IMemoryRepository['search']>>[0];
-
-export type SessionItem = Awaited<ReturnType<ISessionRepository['getByUserId']>>[0];
 
 export interface CropOptions {
   top: number;
   left: number;
   width: number;
   height: number;
+}
+
+export interface FullsizeImageOptions {
+  format: ImageFormat;
+  quality: number;
+  enabled: boolean;
 }
 
 export interface ImageOptions {
@@ -63,11 +53,11 @@ interface DecodeImageOptions {
 }
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
-  size: number;
+  size?: number;
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = ImageOptions & DecodeImageOptions;
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality'> & DecodeToBufferOptions;
 
 export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
 
@@ -188,9 +178,10 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
+export type JobSource = 'upload' | 'sidecar-write' | 'copy';
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'sidecar-write' | 'copy';
+  source?: JobSource;
   notify?: boolean;
 }
 
@@ -198,17 +189,23 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
-export interface ILibraryFileJob extends IEntityJob {
-  ownerId: string;
-  assetPath: string;
+export interface ILibraryFileJob {
+  libraryId: string;
+  paths: string[];
+  progressCounter?: number;
+  totalAssets?: number;
 }
 
-export interface ILibraryAssetJob extends IEntityJob {
+export interface ILibraryBulkIdsJob {
+  libraryId: string;
   importPaths: string[];
   exclusionPatterns: string[];
+  assetIds: string[];
+  progressCounter: number;
+  totalAssets: number;
 }
 
-export interface IBulkEntityJob extends IBaseJob {
+export interface IBulkEntityJob {
   ids: string[];
 }
 
@@ -256,7 +253,7 @@ export interface INotifyAlbumInviteJob extends IEntityJob {
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
-  recipientIds: string[];
+  recipientId: string;
 }
 
 export interface JobCounts {
@@ -302,7 +299,10 @@ export type JobItem =
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
-  | { name: JobName.LINK_LIVE_PHOTOS; data: IEntityJob }
+
+  // Notifications
+  | { name: JobName.NOTIFICATIONS_CLEANUP; data?: IBaseJob }
+
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
@@ -325,6 +325,10 @@ export type JobItem =
   | { name: JobName.QUEUE_DUPLICATE_DETECTION; data: IBaseJob }
   | { name: JobName.DUPLICATE_DETECTION; data: IEntityJob }
 
+  // Memories
+  | { name: JobName.MEMORIES_CLEANUP; data?: IBaseJob }
+  | { name: JobName.MEMORIES_CREATE; data?: IBaseJob }
+
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
 
@@ -341,12 +345,13 @@ export type JobItem =
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Library Management
-  | { name: JobName.LIBRARY_SYNC_FILE; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_SYNC_FILES; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
-  | { name: JobName.LIBRARY_SYNC_ASSET; data: ILibraryAssetJob }
+  | { name: JobName.LIBRARY_SYNC_ASSETS; data: ILibraryBulkIdsJob }
+  | { name: JobName.LIBRARY_ASSET_REMOVAL; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
-  | { name: JobName.LIBRARY_QUEUE_SYNC_ALL; data?: IBaseJob }
+  | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data?: IBaseJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Notification
@@ -356,7 +361,11 @@ export type JobItem =
   | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
 
   // Version check
-  | { name: JobName.VERSION_CHECK; data: IBaseJob };
+  | { name: JobName.VERSION_CHECK; data: IBaseJob }
+
+  // Memories
+  | { name: JobName.MEMORIES_CLEANUP; data?: IBaseJob }
+  | { name: JobName.MEMORIES_CREATE; data?: IBaseJob };
 
 export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
 
@@ -372,6 +381,7 @@ export type DatabaseConnectionParts = {
   username: string;
   password: string;
   database: string;
+  ssl?: DatabaseSslMode;
 };
 
 export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;
@@ -408,4 +418,96 @@ export interface IBulkAsset {
   getAssetIds: (id: string, assetIds: string[]) => Promise<Set<string>>;
   addAssetIds: (id: string, assetIds: string[]) => Promise<void>;
   removeAssetIds: (id: string, assetIds: string[]) => Promise<void>;
+}
+
+export type SyncAck = {
+  type: SyncEntityType;
+  updateId: string;
+};
+
+export type StorageAsset = {
+  id: string;
+  ownerId: string;
+  livePhotoVideoId: string | null;
+  type: AssetType;
+  isExternal: boolean;
+  checksum: Buffer;
+  timeZone: string | null;
+  fileCreatedAt: Date;
+  originalPath: string;
+  originalFileName: string;
+  sidecarPath: string | null;
+  fileSizeInByte: number | null;
+};
+
+export type OnThisDayData = { year: number };
+
+export interface MemoryData {
+  [MemoryType.ON_THIS_DAY]: OnThisDayData;
+}
+
+export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
+export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
+export type MemoriesState = {
+  /** memories have already been created through this date */
+  lastOnThisDayDate: string;
+};
+
+export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
+  [SystemMetadataKey.ADMIN_ONBOARDING]: { isOnboarded: boolean };
+  [SystemMetadataKey.FACIAL_RECOGNITION_STATE]: { lastRun?: string };
+  [SystemMetadataKey.LICENSE]: { licenseKey: string; activationKey: string; activatedAt: Date };
+  [SystemMetadataKey.REVERSE_GEOCODING_STATE]: { lastUpdate?: string; lastImportFileName?: string };
+  [SystemMetadataKey.SYSTEM_CONFIG]: DeepPartial<SystemConfig>;
+  [SystemMetadataKey.SYSTEM_FLAGS]: DeepPartial<SystemFlags>;
+  [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
+  [SystemMetadataKey.MEMORIES_STATE]: MemoriesState;
+}
+
+export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
+  key: T;
+  value: UserMetadata[T];
+};
+
+export interface UserPreferences {
+  folders: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  memories: {
+    enabled: boolean;
+  };
+  people: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  ratings: {
+    enabled: boolean;
+  };
+  sharedLinks: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  tags: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  emailNotifications: {
+    enabled: boolean;
+    albumInvite: boolean;
+    albumUpdate: boolean;
+  };
+  download: {
+    archiveSize: number;
+    includeEmbeddedVideos: boolean;
+  };
+  purchase: {
+    showSupportBadge: boolean;
+    hideBuyButtonUntil: string;
+  };
+}
+
+export interface UserMetadata extends Record<UserMetadataKey, Record<string, any>> {
+  [UserMetadataKey.PREFERENCES]: DeepPartial<UserPreferences>;
+  [UserMetadataKey.LICENSE]: { licenseKey: string; activationKey: string; activatedAt: string };
 }

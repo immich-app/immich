@@ -15,3 +15,9 @@ where
   "id" = $1
 returning
   *
+
+-- MoveRepository.cleanMoveHistorySingle
+delete from "move_history"
+where
+  "move_history"."pathType" = 'original'
+  and "entityId" = $1

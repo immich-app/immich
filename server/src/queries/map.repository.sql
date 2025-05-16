@@ -13,10 +13,19 @@ from
   inner join "exif" on "assets"."id" = "exif"."assetId"
   and "exif"."latitude" is not null
   and "exif"."longitude" is not null
-  left join "albums_assets_assets" on "assets"."id" = "albums_assets_assets"."assetsId"
 where
-  "isVisible" = $1
+  "assets"."visibility" = $1
   and "deletedAt" is null
-  and "ownerId" in ($2)
+  and (
+    "ownerId" in ($2)
+    or exists (
+      select
+      from
+        "albums_assets_assets"
+      where
+        "assets"."id" = "albums_assets_assets"."assetsId"
+        and "albums_assets_assets"."albumsId" in ($3)
+    )
+  )
 order by
   "fileCreatedAt" desc

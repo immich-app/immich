@@ -94,7 +94,7 @@ class DropdownSearchMenu<T> extends HookWidget {
             focusNode: focusNode,
             controller: textEditingController,
             decoration: inputDecoration.copyWith(
-              hintText: "edit_date_time_dialog_search_timezone".tr(),
+              hintText: "search_timezone".tr(),
             ),
             maxLines: 1,
             style: context.textTheme.bodyMedium,
@@ -146,7 +146,7 @@ class DropdownSearchMenu<T> extends HookWidget {
                                 ? Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withOpacity(0.12)
+                                    .withValues(alpha: 0.12)
                                 : null,
                             padding: const EdgeInsets.all(16.0),
                             child: Text(

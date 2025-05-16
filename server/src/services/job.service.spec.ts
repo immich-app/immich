@@ -40,6 +40,8 @@ describe(JobService.name, () => {
         { name: JobName.ASSET_DELETION_CHECK },
         { name: JobName.USER_DELETE_CHECK },
         { name: JobName.PERSON_CLEANUP },
+        { name: JobName.MEMORIES_CLEANUP },
+        { name: JobName.MEMORIES_CREATE },
         { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
         { name: JobName.CLEAN_OLD_AUDIT_LOGS },
         { name: JobName.USER_SYNC_USAGE },
@@ -193,6 +195,14 @@ describe(JobService.name, () => {
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
     });
 
+    it('should handle a start backup database command', async () => {
+      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+
+      await sut.handleCommand(QueueName.BACKUP_DATABASE, { command: JobCommand.START, force: false });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.BACKUP_DATABASE, data: { force: false } });
+    });
+
     it('should throw a bad request when an invalid queue is used', async () => {
       mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
@@ -220,7 +230,7 @@ describe(JobService.name, () => {
       expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
-    const tests: Array<{ item: JobItem; jobs: JobName[] }> = [
+    const tests: Array<{ item: JobItem; jobs: JobName[]; stub?: any }> = [
       {
         item: { name: JobName.SIDECAR_SYNC, data: { id: 'asset-1' } },
         jobs: [JobName.METADATA_EXTRACTION],
@@ -228,14 +238,6 @@ describe(JobService.name, () => {
       {
         item: { name: JobName.SIDECAR_DISCOVERY, data: { id: 'asset-1' } },
         jobs: [JobName.METADATA_EXTRACTION],
-      },
-      {
-        item: { name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } },
-        jobs: [JobName.LINK_LIVE_PHOTOS],
-      },
-      {
-        item: { name: JobName.LINK_LIVE_PHOTOS, data: { id: 'asset-1' } },
-        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
@@ -252,14 +254,22 @@ describe(JobService.name, () => {
       {
         item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1' } },
         jobs: [],
+        stub: [assetStub.image],
+      },
+      {
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1' } },
+        jobs: [],
+        stub: [assetStub.video],
+      },
+      {
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1', source: 'upload' } },
+        jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION],
+        stub: [assetStub.livePhotoStillAsset],
       },
       {
         item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1', source: 'upload' } },
         jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION, JobName.VIDEO_CONVERSION],
-      },
-      {
-        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-live-image', source: 'upload' } },
-        jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION, JobName.VIDEO_CONVERSION],
+        stub: [assetStub.video],
       },
       {
         item: { name: JobName.SMART_SEARCH, data: { id: 'asset-1' } },
@@ -275,14 +285,10 @@ describe(JobService.name, () => {
       },
     ];
 
-    for (const { item, jobs } of tests) {
+    for (const { item, jobs, stub } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        if (item.name === JobName.GENERATE_THUMBNAILS && item.data.source === 'upload') {
-          if (item.data.id === 'asset-live-image') {
-            mocks.asset.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoStillAsset]);
-          } else {
-            mocks.asset.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoMotionAsset]);
-          }
+        if (stub) {
+          mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue(stub);
         }
 
         mocks.job.run.mockResolvedValue(JobStatus.SUCCESS);

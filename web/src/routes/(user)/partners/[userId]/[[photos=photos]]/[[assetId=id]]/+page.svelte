@@ -4,16 +4,17 @@
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { AppRoute } from '$lib/constants';
-  import { AssetStore } from '$lib/stores/assets.store';
-  import { onDestroy } from 'svelte';
-  import type { PageData } from './$types';
-  import { mdiPlus, mdiArrowLeft } from '@mdi/js';
-  import { t } from 'svelte-i18n';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetVisibility } from '@immich/sdk';
+  import { mdiArrowLeft, mdiPlus } from '@mdi/js';
+  import { onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -21,7 +22,16 @@
 
   let { data }: Props = $props();
 
-  const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false, withStacked: true });
+  const assetStore = new AssetStore();
+  $effect(
+    () =>
+      void assetStore.updateOptions({
+        userId: data.partner.id,
+        visibility: AssetVisibility.Timeline,
+        withStacked: true,
+      }),
+  );
+  onDestroy(() => assetStore.destroy());
   const assetInteraction = new AssetInteraction();
 
   const handleEscape = () => {
@@ -30,20 +40,16 @@
       return;
     }
   };
-
-  onDestroy(() => {
-    assetStore.destroy();
-  });
 </script>
 
-<main class="grid h-screen bg-immich-bg pt-18 dark:bg-immich-dark-bg">
+<main class="grid h-dvh pt-18">
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}
       clearSelect={() => assetInteraction.clearMultiselect()}
     >
       <CreateSharedLink />
-      <ButtonContextMenu icon={mdiPlus} title={$t('add')}>
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -61,6 +62,37 @@ class MemoryPage extends HookConsumerWidget {
       );
     }
 
+    void toPreviousMemory() {
+      if (currentMemoryIndex.value > 0) {
+        // Move to the previous memory page
+        memoryPageController.previousPage(
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeIn,
+        );
+
+        // Wait for the next frame to ensure the page is built
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          final previousIndex = currentMemoryIndex.value - 1;
+          final previousMemoryController =
+              memoryAssetPageControllers[previousIndex];
+
+          // Ensure the controller is attached
+          if (previousMemoryController.hasClients) {
+            previousMemoryController
+                .jumpToPage(memories[previousIndex].assets.length - 1);
+          } else {
+            // Wait for the next frame until it is attached
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              if (previousMemoryController.hasClients) {
+                previousMemoryController
+                    .jumpToPage(memories[previousIndex].assets.length - 1);
+              }
+            });
+          }
+        });
+      }
+    }
+
     toNextAsset(int currentAssetIndex) {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
@@ -74,6 +106,22 @@ class MemoryPage extends HookConsumerWidget {
       } else {
         // Go to the next memory since we are at the end of our assets
         toNextMemory();
+      }
+    }
+
+    toPreviousAsset(int currentAssetIndex) {
+      if (currentAssetIndex > 0) {
+        // Go to the previous asset
+        PageController controller =
+            memoryAssetPageControllers[currentMemoryIndex.value];
+
+        controller.previousPage(
+          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 500),
+        );
+      } else {
+        // Go to the previous memory since we are at the end of our assets
+        toPreviousMemory();
       }
     }
 
@@ -141,17 +189,17 @@ class MemoryPage extends HookConsumerWidget {
       currentAssetPage.value = otherIndex;
       updateProgressText();
 
+      // Wait for page change animation to finish
+      await Future.delayed(const Duration(milliseconds: 400));
+      // And then precache the next asset
+      await precacheAsset(otherIndex + 1);
+
       final asset = currentMemory.value.assets[otherIndex];
       currentAsset.value = asset;
       ref.read(currentAssetProvider.notifier).set(asset);
       if (asset.isVideo || asset.isMotionPhoto) {
         ref.read(videoPlaybackValueProvider.notifier).reset();
       }
-
-      // Wait for page change animation to finish
-      await Future.delayed(const Duration(milliseconds: 400));
-      // And then precache the next asset
-      await precacheAsset(otherIndex + 1);
     }
 
     /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called
@@ -248,19 +296,42 @@ class MemoryPage extends HookConsumerWidget {
                           itemCount: memories[mIndex].assets.length,
                           itemBuilder: (context, index) {
                             final asset = memories[mIndex].assets[index];
-                            return GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onTap: () {
-                                toNextAsset(index);
-                              },
-                              child: Container(
-                                color: Colors.black,
-                                child: MemoryCard(
-                                  asset: asset,
-                                  title: memories[mIndex].title,
-                                  showTitle: index == 0,
+                            return Stack(
+                              children: [
+                                Container(
+                                  color: Colors.black,
+                                  child: MemoryCard(
+                                    asset: asset,
+                                    title: memories[mIndex].title,
+                                    showTitle: index == 0,
+                                  ),
                                 ),
-                              ),
+                                Positioned.fill(
+                                  child: Row(
+                                    children: [
+                                      // Left side of the screen
+                                      Expanded(
+                                        child: GestureDetector(
+                                          behavior: HitTestBehavior.translucent,
+                                          onTap: () {
+                                            toPreviousAsset(index);
+                                          },
+                                        ),
+                                      ),
+
+                                      // Right side of the screen
+                                      Expanded(
+                                        child: GestureDetector(
+                                          behavior: HitTestBehavior.translucent,
+                                          onTap: () {
+                                            toNextAsset(index);
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             );
                           },
                         ),
@@ -279,7 +350,7 @@ class MemoryPage extends HookConsumerWidget {
                               );
                             },
                             shape: const CircleBorder(),
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             elevation: 0,
                             child: const Icon(
                               Icons.close_rounded,

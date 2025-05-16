@@ -73,10 +73,13 @@
       filetype: 'IMG',
       filetypefull: 'IMAGE',
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
+      assetIdShort: '56717ccba856',
       album: $t('album_name'),
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
+    const albumStartTime = luxon.DateTime.fromISO(new Date('2021-12-31T05:32:41.750').toISOString());
+    const albumEndTime = luxon.DateTime.fromISO(new Date('2023-05-06T09:15:17.100').toISOString());
 
     const dateTokens = [
       ...templateOptions.yearOptions,
@@ -90,6 +93,8 @@
 
     for (const token of dateTokens) {
       substitutions[token] = dt.toFormat(token);
+      substitutions['album-startDate-' + token] = albumStartTime.toFormat(token);
+      substitutions['album-endDate-' + token] = albumEndTime.toFormat(token);
     }
 
     return template(substitutions);
@@ -136,7 +141,7 @@
     </p>
   </div>
   {#await getTemplateOptions() then}
-    <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
+    <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ms-4 mt-4'}">
       <SettingSwitch
         title={$t('admin.storage_template_enable_description')}
         {disabled}
@@ -203,7 +208,7 @@
 
           <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
             <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
-              >UPLOAD_LOCATION/{$user.storageLabel || $user.id}</span
+              >UPLOAD_LOCATION/library/{$user.storageLabel || $user.id}</span
             >/{parsedTemplate()}.jpg
           </p>
 
@@ -224,7 +229,7 @@
                   bind:value={selectedPreset}
                   onchange={handlePresetSelection}
                 >
-                  {#each templateOptions.presetOptions as preset}
+                  {#each templateOptions.presetOptions as preset (preset)}
                     <option value={preset}>{renderTemplate(preset)}</option>
                   {/each}
                 </select>
@@ -245,7 +250,7 @@
                 <SettingInputField
                   label={$t('extension')}
                   inputType={SettingInputFieldType.TEXT}
-                  value={'.jpg'}
+                  value=".jpg"
                   disabled
                 />
               </div>

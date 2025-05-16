@@ -1,6 +1,8 @@
-name: "Pull Request Labeler"
+name: 'Pull Request Labeler'
 on:
-- pull_request_target
+  - pull_request_target # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
+
+permissions: {}
 
 jobs:
   labeler:
@@ -9,4 +11,4 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/labeler@v5
+      - uses: actions/labeler@8558fd74291d67161a8a78ce36a881fa63b766a9 # v5.0.0

@@ -1,12 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
 
 @RoutePage()
@@ -16,6 +18,8 @@ class PeopleCollectionPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final people = ref.watch(getAllPeopleProvider);
     final headers = ApiService.getRequestHeaders();
+    final formFocus = useFocusNode();
+    final ValueNotifier<String?> search = useState(null);
 
     showNameEditModel(
       String personId,
@@ -36,10 +40,35 @@ class PeopleCollectionPage extends HookConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text('people'.tr()),
+            automaticallyImplyLeading: search.value == null,
+            title: search.value != null
+                ? SearchField(
+                    focusNode: formFocus,
+                    onTapOutside: (_) => formFocus.unfocus(),
+                    onChanged: (value) => search.value = value,
+                    filled: true,
+                    hintText: 'filter_people'.tr(),
+                    autofocus: true,
+                  )
+                : Text('people'.tr()),
+            actions: [
+              IconButton(
+                icon: Icon(search.value != null ? Icons.close : Icons.search),
+                onPressed: () {
+                  search.value = search.value == null ? '' : null;
+                },
+              ),
+            ],
           ),
           body: people.when(
             data: (people) {
+              if (search.value != null) {
+                people = people.where((person) {
+                  return person.name
+                      .toLowerCase()
+                      .contains(search.value!.toLowerCase());
+                }).toList();
+              }
               return GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: isTablet ? 6 : 3,

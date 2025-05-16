@@ -3,6 +3,7 @@ import {
   AssetMediaCreateDto,
   AssetMediaResponseDto,
   AssetResponseDto,
+  AssetVisibility,
   CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
@@ -28,8 +29,10 @@ import {
   deleteAssets,
   getAllJobsStatus,
   getAssetInfo,
+  getConfig,
   getConfigDefaults,
   login,
+  scanLibrary,
   searchAssets,
   sendJobCommand,
   setBaseUrl,
@@ -120,6 +123,7 @@ const execPromise = promisify(exec);
 const onEvent = ({ event, id }: { event: EventType; id: string }) => {
   // console.log(`Received event: ${event} [id=${id}]`);
   const set = events[event];
+
   set.add(id);
 
   const idCallback = idCallbacks[id];
@@ -414,6 +418,8 @@ export const utils = {
     rmSync(path, { recursive: true });
   },
 
+  getSystemConfig: (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) }),
+
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
 
   checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
@@ -424,7 +430,10 @@ export const utils = {
   },
 
   archiveAssets: (accessToken: string, ids: string[]) =>
-    updateAssets({ assetBulkUpdateDto: { ids, isArchived: true } }, { headers: asBearerAuth(accessToken) }),
+    updateAssets(
+      { assetBulkUpdateDto: { ids, visibility: AssetVisibility.Archive } },
+      { headers: asBearerAuth(accessToken) },
+    ),
 
   deleteAssets: (accessToken: string, ids: string[]) =>
     deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
@@ -488,7 +497,7 @@ export const utils = {
         value: accessToken,
         domain,
         path: '/',
-        expires: 1_742_402_728,
+        expires: 2_058_028_213,
         httpOnly: true,
         secure: false,
         sameSite: 'Lax',
@@ -498,7 +507,7 @@ export const utils = {
         value: 'password',
         domain,
         path: '/',
-        expires: 1_742_402_728,
+        expires: 2_058_028_213,
         httpOnly: true,
         secure: false,
         sameSite: 'Lax',
@@ -508,7 +517,7 @@ export const utils = {
         value: 'true',
         domain,
         path: '/',
-        expires: 1_742_402_728,
+        expires: 2_058_028_213,
         httpOnly: false,
         secure: false,
         sameSite: 'Lax',
@@ -532,6 +541,7 @@ export const utils = {
   },
 
   waitForQueueFinish: (accessToken: string, queue: keyof AllJobStatusResponseDto, ms?: number) => {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise<void>(async (resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 10_000);
 
@@ -552,6 +562,14 @@ export const utils = {
     const key = await utils.createApiKey(accessToken, [Permission.All]);
     await immichCli(['login', app, `${key.secret}`]);
     return key.secret;
+  },
+
+  scan: async (accessToken: string, id: string) => {
+    await scanLibrary({ id }, { headers: asBearerAuth(accessToken) });
+
+    await utils.waitForQueueFinish(accessToken, 'library');
+    await utils.waitForQueueFinish(accessToken, 'sidecar');
+    await utils.waitForQueueFinish(accessToken, 'metadataExtraction');
   },
 };
 

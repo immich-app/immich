@@ -1,39 +1,29 @@
-import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import typescriptEslint from 'typescript-eslint';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
 
-export default [
+export default typescriptEslint.config([
+  eslintPluginUnicorn.configs.recommended,
+  eslintPluginPrettierRecommended,
+  js.configs.recommended,
+  typescriptEslint.configs.recommended,
   {
     ignores: ['eslint.config.mjs'],
   },
-  ...compat.extends(
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
-    'plugin:unicorn/recommended',
-  ),
   {
-    plugins: {
-      '@typescript-eslint': typescriptEslint,
-    },
-
     languageOptions: {
       globals: {
         ...globals.node,
       },
 
-      parser: tsParser,
+      parser: typescriptEslint.parser,
       ecmaVersion: 5,
       sourceType: 'module',
 
@@ -57,6 +47,7 @@ export default [
       'unicorn/no-thenable': 'off',
       'unicorn/import-style': 'off',
       'unicorn/prefer-structured-clone': 'off',
+      'unicorn/no-for-loop': 'off',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       'require-await': 'off',
@@ -76,6 +67,14 @@ export default [
           ],
         },
       ],
+
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
     },
   },
-];
+]);

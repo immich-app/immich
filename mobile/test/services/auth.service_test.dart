@@ -1,10 +1,14 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
+
+import '../domain/service.mock.dart';
 import '../repository.mocks.dart';
 import '../service.mocks.dart';
 import '../test_utils.dart';
@@ -15,21 +19,31 @@ void main() {
   late MockAuthRepository authRepository;
   late MockApiService apiService;
   late MockNetworkService networkService;
+  late MockBackgroundSyncManager backgroundSyncManager;
+  late Isar db;
 
   setUp(() async {
     authApiRepository = MockAuthApiRepository();
     authRepository = MockAuthRepository();
     apiService = MockApiService();
     networkService = MockNetworkService();
+    backgroundSyncManager = MockBackgroundSyncManager();
 
     sut = AuthService(
       authApiRepository,
       authRepository,
       apiService,
       networkService,
+      backgroundSyncManager,
     );
 
     registerFallbackValue(Uri());
+  });
+
+  setUpAll(() async {
+    db = await TestUtils.initIsar();
+    db.writeTxnSync(() => db.clearSync());
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
   });
 
   group('validateServerUrl', () {
@@ -37,7 +51,7 @@ void main() {
       WidgetsFlutterBinding.ensureInitialized();
       final db = await TestUtils.initIsar();
       db.writeTxnSync(() => db.clearSync());
-      Store.init(db);
+      await StoreService.init(storeRepository: IsarStoreRepository(db));
     });
 
     test('Should resolve HTTP endpoint', () async {
@@ -106,24 +120,28 @@ void main() {
   group('logout', () {
     test('Should logout user', () async {
       when(() => authApiRepository.logout()).thenAnswer((_) async => {});
+      when(() => backgroundSyncManager.cancel()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData())
           .thenAnswer((_) => Future.value(null));
 
       await sut.logout();
 
       verify(() => authApiRepository.logout()).called(1);
+      verify(() => backgroundSyncManager.cancel()).called(1);
       verify(() => authRepository.clearLocalData()).called(1);
     });
 
     test('Should clear local data even on server error', () async {
       when(() => authApiRepository.logout())
           .thenThrow(Exception('Server error'));
+      when(() => backgroundSyncManager.cancel()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData())
           .thenAnswer((_) => Future.value(null));
 
       await sut.logout();
 
       verify(() => authApiRepository.logout()).called(1);
+      verify(() => backgroundSyncManager.cancel()).called(1);
       verify(() => authRepository.clearLocalData()).called(1);
     });
   });

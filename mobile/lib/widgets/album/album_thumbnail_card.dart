@@ -1,12 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
-class AlbumThumbnailCard extends StatelessWidget {
+class AlbumThumbnailCard extends ConsumerWidget {
   final Function()? onTap;
 
   /// Whether or not to show the owner of the album (or "Owned")
@@ -25,7 +26,7 @@ class AlbumThumbnailCard extends StatelessWidget {
   final Album album;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return LayoutBuilder(
       builder: (context, constraints) {
         var cardSize = constraints.maxWidth;
@@ -57,10 +58,11 @@ class AlbumThumbnailCard extends StatelessWidget {
           // Add the owner name to the subtitle
           String? owner;
           if (showOwner) {
-            if (album.ownerId == Store.get(StoreKey.currentUser).id) {
-              owner = 'album_thumbnail_owned'.tr();
+            if (album.ownerId == ref.read(currentUserProvider)?.id) {
+              owner = 'owned'.tr();
             } else if (album.ownerName != null) {
-              owner = 'album_thumbnail_shared_by'.tr(args: [album.ownerName!]);
+              owner = 'album_thumbnail_shared_by'
+                  .tr(namedArgs: {'user': album.ownerName!});
             }
           }
 
@@ -73,10 +75,9 @@ class AlbumThumbnailCard extends StatelessWidget {
               children: [
                 TextSpan(
                   text: album.assetCount == 1
-                      ? 'album_thumbnail_card_item'
-                          .tr(args: ['${album.assetCount}'])
+                      ? 'album_thumbnail_card_item'.tr()
                       : 'album_thumbnail_card_items'
-                          .tr(args: ['${album.assetCount}']),
+                          .tr(namedArgs: {'count': '${album.assetCount}'}),
                 ),
                 if (owner != null) const TextSpan(text: ' • '),
                 if (owner != null) TextSpan(text: owner),

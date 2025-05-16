@@ -24,9 +24,8 @@ ThemeData getThemeData({
     hintColor: colorScheme.onSurfaceSecondary,
     focusColor: colorScheme.primary,
     scaffoldBackgroundColor: colorScheme.surface,
-    splashColor: colorScheme.primary.withOpacity(0.1),
-    highlightColor: colorScheme.primary.withOpacity(0.1),
-    dialogBackgroundColor: colorScheme.surfaceContainer,
+    splashColor: colorScheme.primary.withValues(alpha: 0.1),
+    highlightColor: colorScheme.primary.withValues(alpha: 0.1),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: colorScheme.surfaceContainer,
     ),
@@ -162,6 +161,14 @@ ThemeData getThemeData({
           fontWeight: FontWeight.normal,
         ),
       ),
+    ),
+    dialogTheme: DialogThemeData(backgroundColor: colorScheme.surfaceContainer),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      // ignore: deprecated_member_use
+      year2023: false,
+      // TODO: Uncommented after upgrade to version later than 3.29.2
+      // circularTrackColor: Colors.black12,
+      trackGap: 3,
     ),
   );
 }

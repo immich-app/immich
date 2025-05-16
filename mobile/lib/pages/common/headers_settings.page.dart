@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:immich_mobile/entities/store.entity.dart' as store_keys;
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 
 class SettingsHeader {
   String key = "";
@@ -22,8 +23,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     final headers = useState<List<SettingsHeader>>([]);
     final setInitialHeaders = useState(false);
 
-    var headersStr =
-        store_keys.Store.get(store_keys.StoreKey.customHeaders, "");
+    var headersStr = Store.get(StoreKey.customHeaders, "");
     if (!setInitialHeaders.value) {
       if (headersStr.isNotEmpty) {
         var customHeaders = jsonDecode(headersStr) as Map;
@@ -60,7 +60,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('header_settings_page_title').tr(),
+        title: const Text('advanced_settings_proxy_headers_title').tr(),
         centerTitle: false,
         actions: [
           IconButton(
@@ -99,7 +99,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     }
 
     var encoded = jsonEncode(headersMap);
-    store_keys.Store.put(store_keys.StoreKey.customHeaders, encoded);
+    Store.put(StoreKey.customHeaders, encoded);
   }
 }
 
