@@ -37,7 +37,12 @@ export class MemoryService extends BaseService {
           continue;
         }
 
-        await Promise.all(users.map((owner, i) => this.createOnThisDayMemories(owner.id, usersIds[i], target)));
+        try {
+          await Promise.all(users.map((owner, i) => this.createOnThisDayMemories(owner.id, usersIds[i], target)));
+        } catch (error) {
+          this.logger.error(`Failed to create memories for ${target.toISO()}`, error);
+        }
+        // update system metadata even when there is an error to minimize the chance of duplicates
         await this.systemMetadataRepository.set(SystemMetadataKey.MEMORIES_STATE, {
           ...state,
           lastOnThisDayDate: target.toISO(),
