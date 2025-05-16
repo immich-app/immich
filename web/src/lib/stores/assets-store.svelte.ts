@@ -15,10 +15,8 @@ import {
   getAssetInfo,
   getTimeBucket,
   getTimeBuckets,
-  TimeBucketSize,
-  Visibility,
-  type AssetResponseDto,
   type AssetStackResponseDto,
+  type TimeBucketAssetResponseDto,
 } from '@immich/sdk';
 import { clamp, debounce, isEqual, throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -27,11 +25,13 @@ import { SvelteSet } from 'svelte/reactivity';
 import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
+
 const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
 } = TUNABLES;
 
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
+
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
   deferInit?: boolean;
@@ -75,7 +75,7 @@ export type TimelineAsset = {
   ratio: number;
   thumbhash: string | null;
   localDateTime: string;
-  visibility: Visibility;
+  visibility: AssetVisibility;
   isFavorite: boolean;
   isTrashed: boolean;
   isVideo: boolean;
@@ -84,12 +84,11 @@ export type TimelineAsset = {
   duration: string | null;
   projectionType: string | null;
   livePhotoVideoId: string | null;
-  text: {
-    city: string | null;
-    country: string | null;
-    people: string[];
-  };
+  city: string | null;
+  country: string | null;
+  people: string[];
 };
+
 class IntersectingAsset {
   // --- public ---
   readonly #group: AssetDateGroup;
@@ -121,9 +120,11 @@ class IntersectingAsset {
     this.asset = asset;
   }
 }
+
 type AssetOperation = (asset: TimelineAsset) => { remove: boolean };
 
 type MoveAsset = { asset: TimelineAsset; year: number; month: number };
+
 export class AssetDateGroup {
   // --- public
   readonly bucket: AssetBucket;
@@ -166,6 +167,7 @@ export class AssetDateGroup {
   getFirstAsset() {
     return this.intersetingAssets[0]?.asset;
   }
+
   getRandomAsset() {
     const random = Math.floor(Math.random() * this.intersetingAssets.length);
     return this.intersetingAssets[random];
@@ -243,6 +245,7 @@ export interface Viewport {
   width: number;
   height: number;
 }
+
 export type ViewportXY = Viewport & {
   x: number;
   y: number;
@@ -250,23 +253,47 @@ export type ViewportXY = Viewport & {
 
 class AddContext {
   lookupCache: {
-    [dayOfMonth: number]: AssetDateGroup;
+    [year: number]: { [month: number]: { [day: number]: AssetDateGroup } };
   } = {};
   unprocessedAssets: TimelineAsset[] = [];
   changedDateGroups = new Set<AssetDateGroup>();
   newDateGroups = new Set<AssetDateGroup>();
-  sort(bucket: AssetBucket, sortOrder: AssetOrder = AssetOrder.Desc) {
+
+  getDateGroup(year: number, month: number, day: number): AssetDateGroup | undefined {
+    return this.lookupCache[year]?.[month]?.[day];
+  }
+
+  setDateGroup(dateGroup: AssetDateGroup, year: number, month: number, day: number) {
+    if (!this.lookupCache[year]) {
+      this.lookupCache[year] = {};
+    }
+    if (!this.lookupCache[year][month]) {
+      this.lookupCache[year][month] = {};
+    }
+    this.lookupCache[year][month][day] = dateGroup;
+  }
+
+  get existingDateGroups() {
+    return this.changedDateGroups.difference(this.newDateGroups);
+  }
+
+  get updatedBuckets() {
+    const updated = new Set<AssetBucket>();
     for (const group of this.changedDateGroups) {
-      group.sortAssets(sortOrder);
+      updated.add(group.bucket);
     }
+    return updated;
+  }
+
+  get bucketsWithNewDateGroups() {
+    const updated = new Set<AssetBucket>();
     for (const group of this.newDateGroups) {
-      group.sortAssets(sortOrder);
+      updated.add(group.bucket);
     }
-    if (this.newDateGroups.size > 0) {
-      bucket.sortDateGroups();
-    }
+    return updated;
   }
 }
+
 export class AssetBucket {
   // --- public ---
   #intersecting: boolean = $state(false);
@@ -331,6 +358,7 @@ export class AssetBucket {
       this.handleLoadError,
     );
   }
+
   set intersecting(newValue: boolean) {
     const old = this.#intersecting;
     if (old !== newValue) {
@@ -423,51 +451,72 @@ export class AssetBucket {
   }
 
   // note - if the assets are not part of this bucket, they will not be added
-  addAssets(bucketResponse: AssetResponseDto[]) {
+  addAssets(bucketAssets: TimeBucketAssetResponseDto) {
     const addContext = new AddContext();
-    for (const asset of bucketResponse) {
-      const timelineAsset = toTimelineAsset(asset);
+    const people: string[] = [];
+    for (let i = 0; i < bucketAssets.id.length; i++) {
+      const timelineAsset: TimelineAsset = {
+        city: bucketAssets.city[i],
+        country: bucketAssets.country[i],
+        duration: bucketAssets.duration[i],
+        id: bucketAssets.id[i],
+        visibility: bucketAssets.visibility[i],
+        isFavorite: bucketAssets.isFavorite[i],
+        isImage: bucketAssets.isImage[i],
+        isTrashed: bucketAssets.isTrashed[i],
+        isVideo: !bucketAssets.isImage[i],
+        livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
+        localDateTime: bucketAssets.localDateTime[i],
+        ownerId: bucketAssets.ownerId[i],
+        people,
+        projectionType: bucketAssets.projectionType[i],
+        ratio: bucketAssets.ratio[i],
+        stack: bucketAssets.stack?.[i]
+          ? {
+              id: bucketAssets.stack[i]![0],
+              primaryAssetId: bucketAssets.id[i],
+              assetCount: Number.parseInt(bucketAssets.stack[i]![1]),
+            }
+          : null,
+        thumbhash: bucketAssets.thumbhash[i],
+      };
       this.addTimelineAsset(timelineAsset, addContext);
     }
 
-    addContext.sort(this, this.#sortOrder);
+    for (const group of addContext.existingDateGroups) {
+      group.sortAssets(this.#sortOrder);
+    }
+
+    if (addContext.newDateGroups.size > 0) {
+      this.sortDateGroups();
+    }
+
     return addContext.unprocessedAssets;
   }
 
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: AddContext) {
-    const { id, localDateTime } = timelineAsset;
+    const { localDateTime } = timelineAsset;
     const date = DateTime.fromISO(localDateTime).toUTC();
-
     const month = date.get('month');
     const year = date.get('year');
 
-    // If the timeline asset does not belong to the current bucket, mark it as unprocessed
     if (this.month !== month || this.year !== year) {
       addContext.unprocessedAssets.push(timelineAsset);
       return;
     }
 
     const day = date.get('day');
-    let dateGroup: AssetDateGroup | undefined = addContext.lookupCache[day] || this.findDateGroupByDay(day);
+    let dateGroup = addContext.getDateGroup(year, month, day) || this.findDateGroupByDay(day);
 
     if (dateGroup) {
-      // Cache the found date group for future lookups
-      addContext.lookupCache[day] = dateGroup;
+      addContext.setDateGroup(dateGroup, year, month, day);
     } else {
-      // Create a new date group if none exists for the given day
       dateGroup = new AssetDateGroup(this, this.dateGroups.length, date, day);
       this.dateGroups.push(dateGroup);
-      addContext.lookupCache[day] = dateGroup;
+      addContext.setDateGroup(dateGroup, year, month, day);
       addContext.newDateGroups.add(dateGroup);
     }
 
-    // Check for duplicate assets in the date group
-    if (dateGroup.intersetingAssets.some((a) => a.id === id)) {
-      console.error(`Ignoring attempt to add duplicate asset ${id} to ${dateGroup.groupTitle}`);
-      return;
-    }
-
-    // Add the timeline asset to the date group
     const intersectingAsset = new IntersectingAsset(dateGroup, timelineAsset);
     dateGroup.intersetingAssets.push(intersectingAsset);
     addContext.changedDateGroups.add(dateGroup);
@@ -521,6 +570,7 @@ export class AssetBucket {
       }
     }
   }
+
   get bucketHeight() {
     return this.#bucketHeight;
   }
@@ -909,7 +959,6 @@ export class AssetStore {
   async #initialiazeTimeBuckets() {
     const timebuckets = await getTimeBuckets({
       ...this.#options,
-      size: TimeBucketSize.Month,
       key: authManager.key,
     });
 
@@ -1016,6 +1065,7 @@ export class AssetStore {
       rowWidth: Math.floor(viewportWidth),
     };
   }
+
   #updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
     if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
@@ -1117,7 +1167,7 @@ export class AssetStore {
         {
           ...this.#options,
           timeBucket: bucketDate,
-          size: TimeBucketSize.Month,
+
           key: authManager.key,
         },
         { signal },
@@ -1128,12 +1178,11 @@ export class AssetStore {
             {
               albumId: this.#options.timelineAlbumId,
               timeBucket: bucketDate,
-              size: TimeBucketSize.Month,
               key: authManager.key,
             },
             { signal },
           );
-          for (const { id } of albumAssets) {
+          for (const id of albumAssets.id) {
             this.albumAssets.add(id);
           }
         }
@@ -1169,9 +1218,9 @@ export class AssetStore {
     if (assets.length === 0) {
       return;
     }
-    const updatedBuckets = new Set<AssetBucket>();
-    const updatedDateGroups = new Set<AssetDateGroup>();
 
+    const addContext = new AddContext();
+    const bucketCount = this.buckets.length;
     for (const asset of assets) {
       const utc = DateTime.fromISO(asset.localDateTime).toUTC().startOf('month');
       const year = utc.get('year');
@@ -1182,21 +1231,24 @@ export class AssetStore {
         bucket = new AssetBucket(this, utc, 1, this.#options.order);
         this.buckets.push(bucket);
       }
-      const addContext = new AddContext();
       bucket.addTimelineAsset(asset, addContext);
-      addContext.sort(bucket, this.#options.order);
-      updatedBuckets.add(bucket);
     }
 
-    this.buckets.sort((a, b) => {
-      return a.year === b.year ? b.month - a.month : b.year - a.year;
-    });
-
-    for (const dateGroup of updatedDateGroups) {
-      dateGroup.sortAssets(this.#options.order);
+    if (this.buckets.length !== bucketCount) {
+      this.buckets.sort((a, b) => {
+        return a.year === b.year ? b.month - a.month : b.year - a.year;
+      });
     }
-    for (const bucket of updatedBuckets) {
+
+    for (const group of addContext.existingDateGroups) {
+      group.sortAssets(this.#options.order);
+    }
+
+    for (const bucket of addContext.bucketsWithNewDateGroups) {
       bucket.sortDateGroups();
+    }
+
+    for (const bucket of addContext.updatedBuckets) {
       this.#updateGeometry(bucket, true);
     }
     this.updateIntersections();
@@ -1421,7 +1473,7 @@ export class AssetStore {
 
   isExcluded(asset: TimelineAsset) {
     return (
-      isMismatched(this.#options.visibility, asset.visibility as unknown as AssetVisibility) ||
+      (this.#options.visibility === undefined ? false : this.#options.visibility !== asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );

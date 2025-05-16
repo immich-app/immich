@@ -271,7 +271,7 @@ export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
 }
 
 export function truncatedDate<O>(size: TimeBucketSize) {
-  return sql<O>`date_trunc(${size}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
+  return sql<O>`date_trunc(${sql.lit(size)}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: string) {
@@ -285,6 +285,7 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: str
     ),
   );
 }
+
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 

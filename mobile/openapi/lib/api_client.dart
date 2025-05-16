@@ -634,10 +634,10 @@ class ApiClient {
           return TemplateResponseDto.fromJson(value);
         case 'TestEmailResponseDto':
           return TestEmailResponseDto.fromJson(value);
-        case 'TimeBucketResponseDto':
-          return TimeBucketResponseDto.fromJson(value);
-        case 'TimeBucketSize':
-          return TimeBucketSizeTypeTransformer().decode(value);
+        case 'TimeBucketAssetResponseDto':
+          return TimeBucketAssetResponseDto.fromJson(value);
+        case 'TimeBucketsResponseDto':
+          return TimeBucketsResponseDto.fromJson(value);
         case 'ToneMapping':
           return ToneMappingTypeTransformer().decode(value);
         case 'TranscodeHWAccel':
