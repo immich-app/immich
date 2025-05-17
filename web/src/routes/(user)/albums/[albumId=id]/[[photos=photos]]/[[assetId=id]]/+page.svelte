@@ -2,6 +2,7 @@
   import { afterNavigate, goto, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
+  import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
@@ -56,6 +57,7 @@
   import {
     AlbumUserRole,
     AssetOrder,
+    AssetVisibility,
     addAssetsToAlbum,
     addUsersToAlbum,
     deleteAlbum,
@@ -371,7 +373,11 @@
     if (viewMode === AlbumPageViewMode.VIEW) {
       void assetStore.updateOptions({ albumId, order: albumOrder });
     } else if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
-      void assetStore.updateOptions({ isArchived: false, withPartners: true, timelineAlbumId: albumId });
+      void assetStore.updateOptions({
+        visibility: AssetVisibility.Timeline,
+        withPartners: true,
+        timelineAlbumId: albumId,
+      });
     }
   });
 
@@ -384,9 +390,6 @@
     activityManager.reset();
     assetStore.destroy();
   });
-  // let timelineStore = new AssetStore();
-  // $effect(() => void timelineStore.updateOptions({ isArchived: false, withPartners: true, timelineAlbumId: albumId }));
-  // onDestroy(() => timelineStore.destroy());
 
   let isOwned = $derived($user.id == album.ownerId);
 
@@ -499,6 +502,8 @@
                 icon={mdiShareVariantOutline}
               />
             {/if}
+
+            <AlbumMap {album} />
 
             {#if album.assetCount > 0}
               <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />

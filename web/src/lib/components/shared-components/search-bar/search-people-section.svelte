@@ -1,16 +1,16 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { mdiClose, mdiArrowRight } from '@mdi/js';
-  import { handleError } from '$lib/utils/handle-error';
-  import { t } from 'svelte-i18n';
-  import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
-  import type { SvelteSet } from 'svelte/reactivity';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
+  import { mdiArrowRight, mdiClose } from '@mdi/js';
+  import { t } from 'svelte-i18n';
+  import type { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     selectedPeople: SvelteSet<string>;
@@ -76,7 +76,7 @@
         {#each peopleList as person (person.id)}
           <button
             type="button"
-            class="flex flex-col items-center rounded-3xl border-2 hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
+            class="flex flex-col items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
               person.id,
             )
               ? 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white'

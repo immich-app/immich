@@ -494,6 +494,7 @@
           },
         ]}
         center={latlng}
+        showSettings={false}
         zoom={12.5}
         simplified
         useLocationPin

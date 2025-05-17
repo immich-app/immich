@@ -61,7 +61,8 @@ class AlbumThumbnailCard extends ConsumerWidget {
             if (album.ownerId == ref.read(currentUserProvider)?.id) {
               owner = 'owned'.tr();
             } else if (album.ownerName != null) {
-              owner = 'album_thumbnail_shared_by'.tr(args: [album.ownerName!]);
+              owner = 'album_thumbnail_shared_by'
+                  .tr(namedArgs: {'user': album.ownerName!});
             }
           }
 
@@ -74,10 +75,9 @@ class AlbumThumbnailCard extends ConsumerWidget {
               children: [
                 TextSpan(
                   text: album.assetCount == 1
-                      ? 'album_thumbnail_card_item'
-                          .tr(args: ['${album.assetCount}'])
+                      ? 'album_thumbnail_card_item'.tr()
                       : 'album_thumbnail_card_items'
-                          .tr(args: ['${album.assetCount}']),
+                          .tr(namedArgs: {'count': '${album.assetCount}'}),
                 ),
                 if (owner != null) const TextSpan(text: ' • '),
                 if (owner != null) TextSpan(text: owner),

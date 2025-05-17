@@ -82,14 +82,13 @@ export type ControllerContext = {
 
 export const controllerSetup = async (controller: ClassConstructor<unknown>, providers: Provider[]) => {
   const noopInterceptor = { intercept: (ctx: never, next: CallHandler<unknown>) => next.handle() };
-  const authenticate = vi.fn();
   const moduleRef = await Test.createTestingModule({
     controllers: [controller],
     providers: [
       { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
       { provide: APP_GUARD, useClass: AuthGuard },
       { provide: LoggingRepository, useValue: LoggingRepository.create() },
-      { provide: AuthService, useValue: { authenticate } },
+      { provide: AuthService, useValue: { authenticate: vi.fn() } },
       ...providers,
     ],
   })
@@ -100,6 +99,9 @@ export const controllerSetup = async (controller: ClassConstructor<unknown>, pro
     .compile();
   const app = moduleRef.createNestApplication();
   await app.init();
+
+  // allow the AuthController to override the AuthService itself
+  const authenticate = app.get<Mocked<AuthService>>(AuthService).authenticate as Mock;
 
   return {
     authenticate,
@@ -113,13 +115,17 @@ export const controllerSetup = async (controller: ClassConstructor<unknown>, pro
   };
 };
 
+export type AutoMocked<T> = Mocked<T> & { resetAllMocks: () => void };
+
 const mockFn = (label: string, { strict }: { strict: boolean }) => {
   const message = `Called a mock function without a mock implementation (${label})`;
-  return vitest.fn().mockImplementation(() => {
-    if (strict) {
-      assert.fail(message);
-    } else {
-      // console.warn(message);
+  return vitest.fn(() => {
+    {
+      if (strict) {
+        assert.fail(message);
+      } else {
+        // console.warn(message);
+      }
     }
   });
 };
@@ -134,10 +140,12 @@ export const automock = <T>(
     args?: ConstructorParameters<ClassConstructor<T>>;
     strict?: boolean;
   },
-): Mocked<T> => {
+): AutoMocked<T> => {
   const mock: Record<string, unknown> = {};
   const strict = options?.strict ?? true;
   const args = options?.args ?? [];
+
+  const mocks: Mock[] = [];
 
   const instance = new Dependency(...args);
   for (const property of Object.getOwnPropertyNames(Dependency.prototype)) {
@@ -151,7 +159,9 @@ export const automock = <T>(
 
       const target = instance[property as keyof T];
       if (typeof target === 'function') {
-        mock[property] = mockFn(label, { strict });
+        const mockImplementation = mockFn(label, { strict });
+        mock[property] = mockImplementation;
+        mocks.push(mockImplementation);
         continue;
       }
     } catch {
@@ -159,7 +169,14 @@ export const automock = <T>(
     }
   }
 
-  return mock as Mocked<T>;
+  const result = mock as AutoMocked<T>;
+  result.resetAllMocks = () => {
+    for (const mock of mocks) {
+      mock.mockReset();
+    }
+  };
+
+  return result;
 };
 
 export type ServiceOverrides = {
