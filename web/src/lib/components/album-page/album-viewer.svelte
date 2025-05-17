@@ -58,7 +58,7 @@
   }}
 />
 
-<main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]">
+<main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
   <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->

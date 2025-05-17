@@ -446,7 +446,7 @@
   aria-valuemax={toScrollY(1)}
   aria-valuemin={toScrollY(0)}
   data-id="immich-scrubbable-scrollbar"
-  class="absolute end-0 z-[1] select-none hover:cursor-row-resize"
+  class="absolute end-0 z-1 select-none hover:cursor-row-resize"
   style:padding-top={PADDING_TOP + 'px'}
   style:padding-bottom={PADDING_BOTTOM + 'px'}
   style:width
@@ -483,7 +483,7 @@
       out:fade={{ duration: 200 }}
     >
       <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -end-[2px]" />
-      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-[1px] -end-[2px]" />
+      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-px -end-[2px]" />
       {#if (assetStore.scrolling && scrollHoverLabel) || isHover || isDragging}
         <p
           transition:fade={{ duration: 200 }}
@@ -521,7 +521,7 @@
     data-label={segments.at(0)?.dateFormatted}
   >
     {#if relativeTopOffset > 6}
-      <div class="absolute end-[0.75rem] h-[4px] w-[4px] rounded-full bg-gray-300"></div>
+      <div class="absolute end-3 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
     {/if}
   </div>
   <!-- Time Segment -->
@@ -535,12 +535,12 @@
     >
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
-          <div class="absolute end-[1.25rem] top-[-16px] text-[12px] dark:text-immich-dark-fg font-immich-mono">
+          <div class="absolute end-5 top-[-16px] text-[12px] dark:text-immich-dark-fg font-immich-mono">
             {segment.date.year}
           </div>
         {/if}
         {#if segment.hasDot}
-          <div class="absolute end-[0.75rem] bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
+          <div class="absolute end-3 bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
         {/if}
       {/if}
     </div>

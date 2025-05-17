@@ -31,7 +31,7 @@
       <Icon
         path={mdiChevronRight}
         size="24"
-        class="inline-block -mt-2.5 transition-all duration-[250ms] {iconRotation}"
+        class="inline-block -mt-2.5 transition-all duration-250 {iconRotation}"
       />
       <span class="font-bold text-3xl text-black dark:text-white">{group.name}</span>
       <span class="ms-1.5">({$t('places_count', { values: { count: places.length } })})</span>
