@@ -63,6 +63,7 @@ class ExploreGrid extends StatelessWidget {
                     SearchRoute(
                       prefilter: SearchFilter(
                         people: {},
+                        tags: SearchTagsFilter(),
                         location: SearchLocationFilter(
                           city: content.label,
                         ),

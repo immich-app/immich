@@ -176,10 +176,12 @@ final assetDetailProvider =
     StreamProvider.autoDispose.family<Asset, Asset>((ref, asset) async* {
   final assetService = ref.watch(assetServiceProvider);
   yield await assetService.loadExif(asset);
+  yield await assetService.getTagsOfAsset(asset);
 
   await for (final asset in assetService.watchAsset(asset.id)) {
     if (asset != null) {
       yield await ref.watch(assetServiceProvider).loadExif(asset);
+      yield await ref.watch(assetServiceProvider).getTagsOfAsset(asset);
     }
   }
 });

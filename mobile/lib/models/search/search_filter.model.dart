@@ -1,8 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
+import 'package:openapi/api.dart';
 
 class SearchLocationFilter {
   String? country;
@@ -232,6 +234,58 @@ class SearchDisplayFilters {
       isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
 }
 
+class SearchTagsFilter {
+  List<TagResponseDto>? selectedTags;
+
+  SearchTagsFilter({
+    this.selectedTags,
+  });
+
+  SearchTagsFilter copyWith({
+    List<TagResponseDto>? selectedTags,
+  }) {
+    return SearchTagsFilter(
+      selectedTags: selectedTags ?? this.selectedTags,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'selectedTags': selectedTags != null ? jsonEncode(selectedTags) : null
+    };
+  }
+
+  factory SearchTagsFilter.fromMap(Map<String, dynamic> map) {
+    return SearchTagsFilter(
+      selectedTags:
+          map['selectedTags'] != null ? jsonDecode(map['selectedTags']) : null,
+    );
+  }
+
+  bool get isEmpty {
+    if (selectedTags == null)
+      return true;
+    else if (selectedTags!.isEmpty)
+      return true;
+    else
+      return false;
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory SearchTagsFilter.fromJson(String source) =>
+      SearchTagsFilter.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() => 'SearchDateFilter(selectedTags: $selectedTags)';
+
+  @override
+  bool operator ==(covariant SearchTagsFilter other) {
+    if (identical(this, other)) return true;
+    return listEquals(other.selectedTags, selectedTags);
+  }
+}
+
 class SearchFilter {
   String? context;
   String? filename;
@@ -242,6 +296,7 @@ class SearchFilter {
   SearchCameraFilter camera;
   SearchDateFilter date;
   SearchDisplayFilters display;
+  SearchTagsFilter tags;
 
   // Enum
   AssetType mediaType;
@@ -257,6 +312,7 @@ class SearchFilter {
     required this.date,
     required this.display,
     required this.mediaType,
+    required this.tags,
   });
 
   bool get isEmpty {
@@ -264,6 +320,7 @@ class SearchFilter {
         (filename == null || (filename!.isEmpty)) &&
         (description == null || (description!.isEmpty)) &&
         people.isEmpty &&
+        tags.isEmpty &&
         location.country == null &&
         location.state == null &&
         location.city == null &&
@@ -288,6 +345,7 @@ class SearchFilter {
     SearchDateFilter? date,
     SearchDisplayFilters? display,
     AssetType? mediaType,
+    SearchTagsFilter? tags,
   }) {
     return SearchFilter(
       context: context ?? this.context,
@@ -300,12 +358,13 @@ class SearchFilter {
       date: date ?? this.date,
       display: display ?? this.display,
       mediaType: mediaType ?? this.mediaType,
+      tags: tags ?? this.tags,
     );
   }
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType, tags: $tags)';
   }
 
   @override
@@ -321,7 +380,8 @@ class SearchFilter {
         other.camera == camera &&
         other.date == date &&
         other.display == display &&
-        other.mediaType == mediaType;
+        other.mediaType == mediaType &&
+        other.tags == tags;
   }
 
   @override
@@ -335,6 +395,7 @@ class SearchFilter {
         camera.hashCode ^
         date.hashCode ^
         display.hashCode ^
-        mediaType.hashCode;
+        mediaType.hashCode ^
+        tags.hashCode;
   }
 }
