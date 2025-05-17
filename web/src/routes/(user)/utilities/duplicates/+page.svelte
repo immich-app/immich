@@ -21,13 +21,13 @@
 
   interface Props {
     data: PageData;
-    isShowDuplicateInfo?: boolean;
   }
 
-  let { data = $bindable(), isShowDuplicateInfo = $bindable(false) }: Props = $props();
+  let { data = $bindable() }: Props = $props();
 
   let duplicates = $state(data.duplicates);
   let hasDuplicates = $derived(duplicates.length > 0);
+  let isShowingDuplicateInfo = $state(false);
 
   let virtualGridContainer = $state<HTMLElement>();
 
@@ -156,7 +156,7 @@
       title={$t('deduplication_info')}
       size="16"
       padding="2"
-      onclick={() => (isShowDuplicateInfo = true)}
+      onclick={() => (isShowingDuplicateInfo = true)}
     />
   </div>
   <section
@@ -172,6 +172,6 @@
     </Grid>
   </section>
 </UserPageLayout>
-{#if isShowDuplicateInfo}
-  <DuplicatesInformationModal onClose={() => (isShowDuplicateInfo = false)} />
+{#if isShowingDuplicateInfo}
+  <DuplicatesInformationModal onClose={() => (isShowingDuplicateInfo = false)} />
 {/if}

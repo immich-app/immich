@@ -35,7 +35,6 @@
     mdiEyeOff,
     mdiImageMultipleOutline,
     mdiImageOutline,
-    mdiImageSearch,
     mdiInformationOutline,
     mdiOpenInNew,
     mdiPencil,
