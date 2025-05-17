@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { type AlbumResponseDto, getAllAlbums } from '@immich/sdk';
-  import { onMount } from 'svelte';
-  import AlbumListItem from '../../asset-viewer/album-list-item.svelte';
-  import NewAlbumListItem from './new-album-list-item.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { initInput } from '$lib/actions/focus';
-  import { t } from 'svelte-i18n';
-  import { albumViewSettings } from '$lib/stores/preferences.store';
   import {
     AlbumModalRowConverter,
     AlbumModalRowType,
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { albumViewSettings } from '$lib/stores/preferences.store';
+  import { type AlbumResponseDto, getAllAlbums } from '@immich/sdk';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import AlbumListItem from '../../asset-viewer/album-list-item.svelte';
+  import NewAlbumListItem from './new-album-list-item.svelte';
 
   let albums: AlbumResponseDto[] = $state([]);
   let recentAlbums: AlbumResponseDto[] = $state([]);
@@ -98,7 +98,7 @@
       {/each}
     {:else}
       <input
-        class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
+        class="border-b-4 border-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:focus:border-immich-dark-primary"
         placeholder={$t('search')}
         {onkeydown}
         bind:value={search}

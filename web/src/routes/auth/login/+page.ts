@@ -6,7 +6,7 @@ import { redirect } from '@sveltejs/kit';
 import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ parent }) => {
+export const load = (async ({ parent, url }) => {
   await parent();
   const { isInitialized } = get(serverConfig);
 
@@ -20,5 +20,6 @@ export const load = (async ({ parent }) => {
     meta: {
       title: $t('login'),
     },
+    continueUrl: url.searchParams.get('continue') || AppRoute.PHOTOS,
   };
 }) satisfies PageLoad;

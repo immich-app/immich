@@ -2,6 +2,8 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
+  import { Button } from '@immich/ui';
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
@@ -10,11 +12,8 @@
     mdiPanorama,
     mdiShuffle,
   } from '@mdi/js';
-
-  import { SettingInputFieldType } from '$lib/constants';
   import { t } from 'svelte-i18n';
   import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
-  import Button from './elements/buttons/button.svelte';
   import type { RenderedOption } from './elements/dropdown.svelte';
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
 
@@ -96,7 +95,7 @@
   </div>
 
   {#snippet stickyBottom()}
-    <Button color="secondary" fullwidth onclick={() => onClose()}>{$t('cancel')}</Button>
-    <Button fullwidth color="primary" onclick={applyChanges}>{$t('confirm')}</Button>
+    <Button color="secondary" shape="round" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
+    <Button fullWidth color="primary" shape="round" onclick={applyChanges}>{$t('confirm')}</Button>
   {/snippet}
 </FullScreenModal>

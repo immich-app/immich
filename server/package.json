@@ -48,7 +48,7 @@
     "@opentelemetry/context-async-hooks": "^2.0.0",
     "@opentelemetry/exporter-prometheus": "^0.200.0",
     "@opentelemetry/sdk-node": "^0.200.0",
-    "@react-email/components": "^0.0.37",
+    "@react-email/components": "^0.0.38",
     "@socket.io/redis-adapter": "^8.3.0",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
@@ -117,9 +117,9 @@
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.16",
     "@types/nodemailer": "^6.4.14",
-    "@types/picomatch": "^3.0.0",
+    "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
     "@types/react": "^19.0.0",
     "@types/sanitize-html": "^2.13.0",
@@ -154,7 +154,7 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.14.0"
+    "node": "22.15.0"
   },
   "overrides": {
     "sharp": "^0.34.0"

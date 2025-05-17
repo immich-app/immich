@@ -7,14 +7,15 @@
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
+  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/restore-action.svelte';
   import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/set-person-featured-action.svelte';
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/set-profile-picture-action.svelte';
+  import SetVisibilityAction from '$lib/components/asset-viewer/actions/set-visibility-action.svelte';
   import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
-  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -22,10 +23,12 @@
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
+  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import {
     AssetJobName,
     AssetTypeEnum,
+    Visibility,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -45,9 +48,8 @@
     mdiPresentationPlay,
     mdiUpload,
   } from '@mdi/js';
-  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
-  import { t } from 'svelte-i18n';
   import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     asset: AssetResponseDto;
@@ -91,6 +93,7 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
+  let isLocked = $derived(asset.visibility === Visibility.Locked);
 
   // $: showEditorButton =
   //   isOwner &&
@@ -104,7 +107,7 @@
 </script>
 
 <div
-  class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
+  class="flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
     {#if showCloseButton}
@@ -112,7 +115,7 @@
     {/if}
   </div>
   <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
-    {#if !asset.isTrashed && $user}
+    {#if !asset.isTrashed && $user && !isLocked}
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
@@ -159,17 +162,20 @@
       <DeleteAction {asset} {onAction} {preAction} />
 
       <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
-        {#if showSlideshow}
+        {#if showSlideshow && !isLocked}
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
         {#if showDownloadButton}
           <DownloadAction {asset} menuItem />
         {/if}
-        {#if asset.isTrashed}
-          <RestoreAction {asset} {onAction} />
-        {:else}
-          <AddToAlbumAction {asset} {onAction} />
-          <AddToAlbumAction {asset} {onAction} shared />
+
+        {#if !isLocked}
+          {#if asset.isTrashed}
+            <RestoreAction {asset} {onAction} />
+          {:else}
+            <AddToAlbumAction {asset} {onAction} />
+            <AddToAlbumAction {asset} {onAction} shared />
+          {/if}
         {/if}
 
         {#if isOwner}
@@ -183,21 +189,28 @@
           {#if person}
             <SetFeaturedPhotoAction {asset} {person} />
           {/if}
-          {#if asset.type === AssetTypeEnum.Image}
+          {#if asset.type === AssetTypeEnum.Image && !isLocked}
             <SetProfilePictureAction {asset} />
           {/if}
-          <ArchiveAction {asset} {onAction} {preAction} />
-          <MenuOption
-            icon={mdiUpload}
-            onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
-            text={$t('replace_with_upload')}
-          />
-          {#if !asset.isArchived && !asset.isTrashed}
+
+          {#if !isLocked}
+            <ArchiveAction {asset} {onAction} {preAction} />
             <MenuOption
-              icon={mdiImageSearch}
-              onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
-              text={$t('view_in_timeline')}
+              icon={mdiUpload}
+              onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+              text={$t('replace_with_upload')}
             />
+            {#if !asset.isArchived && !asset.isTrashed}
+              <MenuOption
+                icon={mdiImageSearch}
+                onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
+                text={$t('view_in_timeline')}
+              />
+            {/if}
+          {/if}
+
+          {#if !asset.isTrashed}
+            <SetVisibilityAction {asset} {onAction} {preAction} />
           {/if}
           <hr />
           <MenuOption

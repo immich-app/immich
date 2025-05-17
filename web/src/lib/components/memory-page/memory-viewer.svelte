@@ -123,7 +123,7 @@
           await progressBarController.set(1);
         } catch (error) {
           // this may happen if browser blocks auto-play of the video on first page load. This can either be a setting
-          // or just defaut in certain browsers on page load without any DOM interaction by user.
+          // or just default in certain browsers on page load without any DOM interaction by user.
           console.error(`handleAction[${callingContext}] videoPlayer play problem: ${error}`);
           paused = true;
           await progressBarController.set(0);
@@ -305,7 +305,7 @@
 />
 
 {#if assetInteraction.selectionActive}
-  <div class="sticky top-0 z-[90]">
+  <div class="sticky top-0">
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -380,7 +380,7 @@
 
     {#if galleryInView}
       <div
-        class="fixed top-20 z-30 start-1/2 -translate-x-1/2 transition-opacity"
+        class="fixed top-20 start-1/2 -translate-x-1/2 transition-opacity"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >

@@ -19,7 +19,6 @@
 </script>
 
 <script lang="ts">
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SearchCameraSection, {
     type SearchCameraFilter,
   } from '$lib/components/shared-components/search-bar/search-camera-section.svelte';
@@ -35,7 +34,7 @@
   import { parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -85,8 +84,8 @@
     },
     display: {
       isArchive: searchQuery.visibility === AssetVisibility.Archive,
-      isFavorite: searchQuery.isFavorite,
-      isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
+      isFavorite: searchQuery.isFavorite ?? false,
+      isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
     },
     mediaType:
       searchQuery.type === AssetTypeEnum.Image
@@ -106,7 +105,11 @@
       location: {},
       camera: {},
       date: {},
-      display: {},
+      display: {
+        isArchive: false,
+        isFavorite: false,
+        isNotInAlbum: false,
+      },
       mediaType: MediaType.All,
       rating: undefined,
     };
@@ -162,44 +165,50 @@
   });
 </script>
 
-<FullScreenModal icon={mdiTune} width="extra-wide" title={$t('search_options')} {onClose}>
-  <form id={formId} autocomplete="off" {onsubmit} {onreset}>
-    <div class="space-y-10 pb-10" tabindex="-1">
-      <!-- PEOPLE -->
-      <SearchPeopleSection bind:selectedPeople={filter.personIds} />
+<Modal icon={mdiTune} size="giant" title={$t('search_options')} {onClose}>
+  <ModalBody>
+    <form id={formId} autocomplete="off" {onsubmit} {onreset}>
+      <div class="space-y-10 pb-10" tabindex="-1">
+        <!-- PEOPLE -->
+        <SearchPeopleSection bind:selectedPeople={filter.personIds} />
 
-      <!-- TEXT -->
-      <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
+        <!-- TEXT -->
+        <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
 
-      <!-- TAGS -->
-      <SearchTagsSection bind:selectedTags={filter.tagIds} />
+        <!-- TAGS -->
+        <SearchTagsSection bind:selectedTags={filter.tagIds} />
 
-      <!-- LOCATION -->
-      <SearchLocationSection bind:filters={filter.location} />
+        <!-- LOCATION -->
+        <SearchLocationSection bind:filters={filter.location} />
 
-      <!-- CAMERA MODEL -->
-      <SearchCameraSection bind:filters={filter.camera} />
+        <!-- CAMERA MODEL -->
+        <SearchCameraSection bind:filters={filter.camera} />
 
-      <!-- DATE RANGE -->
-      <SearchDateSection bind:filters={filter.date} />
+        <!-- DATE RANGE -->
+        <SearchDateSection bind:filters={filter.date} />
 
-      <!-- RATING -->
-      {#if $preferences?.ratings.enabled}
-        <SearchRatingsSection bind:rating={filter.rating} />
-      {/if}
+        <!-- RATING -->
+        {#if $preferences?.ratings.enabled}
+          <SearchRatingsSection bind:rating={filter.rating} />
+        {/if}
 
-      <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
-        <!-- MEDIA TYPE -->
-        <SearchMediaSection bind:filteredMedia={filter.mediaType} />
+        <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
+          <!-- MEDIA TYPE -->
+          <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 
-        <!-- DISPLAY OPTIONS -->
-        <SearchDisplaySection bind:filters={filter.display} />
+          <!-- DISPLAY OPTIONS -->
+          <SearchDisplaySection bind:filters={filter.display} />
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+  </ModalBody>
 
-  {#snippet stickyBottom()}
-    <Button shape="round" size="large" type="reset" color="secondary" fullWidth form={formId}>{$t('clear_all')}</Button>
-    <Button shape="round" size="large" type="submit" fullWidth form={formId}>{$t('search')}</Button>
-  {/snippet}
-</FullScreenModal>
+  <ModalFooter>
+    <div class="flex gap-3 w-full">
+      <Button shape="round" size="large" type="reset" color="secondary" fullWidth form={formId}
+        >{$t('clear_all')}</Button
+      >
+      <Button shape="round" size="large" type="submit" fullWidth form={formId}>{$t('search')}</Button>
+    </div>
+  </ModalFooter>
+</Modal>

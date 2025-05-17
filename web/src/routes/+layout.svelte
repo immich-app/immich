@@ -5,7 +5,6 @@
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
-  import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
@@ -17,6 +16,7 @@
   import { copyToClipboard } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { setTranslations } from '@immich/ui';
+  import '@immich/ui/theme/default.css';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
@@ -122,7 +122,6 @@
 <DownloadPanel />
 <UploadPanel />
 <NotificationList />
-<DialogWrapper />
 
 {#if $user?.isAdmin}
   <VersionAnnouncementBox />

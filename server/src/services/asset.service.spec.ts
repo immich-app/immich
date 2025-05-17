@@ -122,6 +122,7 @@ describe(AssetService.name, () => {
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set([assetStub.image.id]),
+        undefined,
       );
     });
 
