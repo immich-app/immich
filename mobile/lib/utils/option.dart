@@ -66,6 +66,13 @@ class Some<T> extends Option<T> {
   final T value;
 
   const Some(this.value);
+
+  static Some<U>? tryFrom<U>(U? value) {
+    if (value == null) {
+      return null;
+    }
+    return Some(value);
+  }
 }
 
 class None extends Option<Never> {

@@ -51,7 +51,7 @@ class TagUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return TagUpdateDto(
-        color: Option.from(mapValueOfType<String>(json, r'color')),
+        color: Some.tryFrom(mapValueOfType<String>(json, r'color')),
       );
     }
     return null;

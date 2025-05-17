@@ -146,7 +146,7 @@ class SharedLinkCreateDto {
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt:  Option.from(mapDateTime(json, r'expiresAt', r'')),
+        expiresAt:  Some.tryFrom(mapDateTime(json, r'expiresAt', r'')),
         password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata') ?? true,
         type: SharedLinkType.fromJson(json[r'type'])!,

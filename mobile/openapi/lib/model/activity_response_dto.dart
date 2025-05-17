@@ -87,8 +87,8 @@ class ActivityResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ActivityResponseDto(
-        assetId: Option.from(mapValueOfType<String>(json, r'assetId')),
-        comment: Option.from(mapValueOfType<String>(json, r'comment')),
+        assetId: Some.tryFrom(mapValueOfType<String>(json, r'assetId')),
+        comment: Some.tryFrom(mapValueOfType<String>(json, r'comment')),
         createdAt:  mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         type: ReactionType.fromJson(json[r'type'])!,

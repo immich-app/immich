@@ -152,14 +152,14 @@ class UserAdminUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return UserAdminUpdateDto(
-        avatarColor: Option.from(UserAvatarColor.fromJson(json[r'avatarColor'])),
+        avatarColor: Some.tryFrom(UserAvatarColor.fromJson(json[r'avatarColor'])),
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
-        pinCode: Option.from(mapValueOfType<String>(json, r'pinCode')),
-        quotaSizeInBytes: Option.from(mapValueOfType<int>(json, r'quotaSizeInBytes')),
+        pinCode: Some.tryFrom(mapValueOfType<String>(json, r'pinCode')),
+        quotaSizeInBytes: Some.tryFrom(mapValueOfType<int>(json, r'quotaSizeInBytes')),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
-        storageLabel: Option.from(mapValueOfType<String>(json, r'storageLabel')),
+        storageLabel: Some.tryFrom(mapValueOfType<String>(json, r'storageLabel')),
       );
     }
     return null;

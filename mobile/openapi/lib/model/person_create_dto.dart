@@ -114,8 +114,8 @@ class PersonCreateDto {
       final json = value.cast<String, dynamic>();
 
       return PersonCreateDto(
-        birthDate: Option.from(mapDateTime(json, r'birthDate', r'')),
-        color: Option.from(mapValueOfType<String>(json, r'color')),
+        birthDate: Some.tryFrom(mapDateTime(json, r'birthDate', r'')),
+        color: Some.tryFrom(mapValueOfType<String>(json, r'color')),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),

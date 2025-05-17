@@ -502,8 +502,8 @@ class SmartSearchDto {
       final json = value.cast<String, dynamic>();
 
       return SmartSearchDto(
-        city: Option.from(mapValueOfType<String>(json, r'city')),
-        country: Option.from(mapValueOfType<String>(json, r'country')),
+        city: Some.tryFrom(mapValueOfType<String>(json, r'city')),
+        country: Some.tryFrom(mapValueOfType<String>(json, r'country')),
         createdAfter:  mapDateTime(json, r'createdAfter', r''),
         createdBefore:  mapDateTime(json, r'createdBefore', r''),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
@@ -513,10 +513,10 @@ class SmartSearchDto {
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
         language: mapValueOfType<String>(json, r'language'),
-        lensModel: Option.from(mapValueOfType<String>(json, r'lensModel')),
-        libraryId: Option.from(mapValueOfType<String>(json, r'libraryId')),
+        lensModel: Some.tryFrom(mapValueOfType<String>(json, r'lensModel')),
+        libraryId: Some.tryFrom(mapValueOfType<String>(json, r'libraryId')),
         make: mapValueOfType<String>(json, r'make'),
-        model: Option.from(mapValueOfType<String>(json, r'model')),
+        model: Some.tryFrom(mapValueOfType<String>(json, r'model')),
         page: num.parse('${json[r'page']}'),
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
@@ -524,7 +524,7 @@ class SmartSearchDto {
         query: mapValueOfType<String>(json, r'query')!,
         rating: num.parse('${json[r'rating']}'),
         size: num.parse('${json[r'size']}'),
-        state: Option.from(mapValueOfType<String>(json, r'state')),
+        state: Some.tryFrom(mapValueOfType<String>(json, r'state')),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],

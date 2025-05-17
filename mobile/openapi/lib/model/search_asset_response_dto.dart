@@ -78,7 +78,7 @@ class SearchAssetResponseDto {
         count: mapValueOfType<int>(json, r'count')!,
         facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
         items: AssetResponseDto.listFromJson(json[r'items']),
-        nextPage: Option.from(mapValueOfType<String>(json, r'nextPage')),
+        nextPage: Some.tryFrom(mapValueOfType<String>(json, r'nextPage')),
         total: mapValueOfType<int>(json, r'total')!,
       );
     }

@@ -75,9 +75,9 @@ class MapReverseGeocodeResponseDto {
       final json = value.cast<String, dynamic>();
 
       return MapReverseGeocodeResponseDto(
-        city: Option.from(mapValueOfType<String>(json, r'city')),
-        country: Option.from(mapValueOfType<String>(json, r'country')),
-        state: Option.from(mapValueOfType<String>(json, r'state')),
+        city: Some.tryFrom(mapValueOfType<String>(json, r'city')),
+        country: Some.tryFrom(mapValueOfType<String>(json, r'country')),
+        state: Some.tryFrom(mapValueOfType<String>(json, r'state')),
       );
     }
     return null;

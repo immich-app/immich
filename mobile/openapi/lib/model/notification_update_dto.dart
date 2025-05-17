@@ -51,7 +51,7 @@ class NotificationUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return NotificationUpdateDto(
-        readAt:  Option.from(mapDateTime(json, r'readAt', r'')),
+        readAt:  Some.tryFrom(mapDateTime(json, r'readAt', r'')),
       );
     }
     return null;

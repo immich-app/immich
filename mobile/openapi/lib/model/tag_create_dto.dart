@@ -75,7 +75,7 @@ class TagCreateDto {
       return TagCreateDto(
         color: mapValueOfType<String>(json, r'color'),
         name: mapValueOfType<String>(json, r'name')!,
-        parentId: Option.from(mapValueOfType<String>(json, r'parentId')),
+        parentId: Some.tryFrom(mapValueOfType<String>(json, r'parentId')),
       );
     }
     return null;

@@ -169,7 +169,7 @@ class UpdateAssetDto {
         description: mapValueOfType<String>(json, r'description'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
-        livePhotoVideoId: Option.from(mapValueOfType<String>(json, r'livePhotoVideoId')),
+        livePhotoVideoId: Some.tryFrom(mapValueOfType<String>(json, r'livePhotoVideoId')),
         longitude: num.parse('${json[r'longitude']}'),
         rating: num.parse('${json[r'rating']}'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),

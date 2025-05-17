@@ -62,11 +62,11 @@ class SearchService {
           SmartSearchDto(
             query: filter.context!,
             language: filter.language,
-            country: Option.from(filter.location.country),
-            state: Option.from(filter.location.state),
-            city: Option.from(filter.location.city),
+            country: Some.tryFrom(filter.location.country),
+            state: Some.tryFrom(filter.location.state),
+            city: Some.tryFrom(filter.location.city),
             make: filter.camera.make,
-            model: Option.from(filter.camera.model),
+            model: Some.tryFrom(filter.camera.model),
             takenAfter: filter.date.takenAfter,
             takenBefore: filter.date.takenBefore,
             visibility: filter.display.isArchive
@@ -87,15 +87,15 @@ class SearchService {
                 filter.filename != null && filter.filename!.isNotEmpty
                     ? filter.filename
                     : null,
-            country: Option.from(filter.location.country),
+            country: Some.tryFrom(filter.location.country),
             description:
                 filter.description != null && filter.description!.isNotEmpty
                     ? filter.description
                     : null,
-            state: Option.from(filter.location.state),
-            city: Option.from(filter.location.city),
+            state: Some.tryFrom(filter.location.state),
+            city: Some.tryFrom(filter.location.city),
             make: filter.camera.make,
-            model: Option.from(filter.camera.model),
+            model: Some.tryFrom(filter.camera.model),
             takenAfter: filter.date.takenAfter,
             takenBefore: filter.date.takenBefore,
             visibility: filter.display.isArchive

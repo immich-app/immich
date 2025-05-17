@@ -63,8 +63,8 @@ class ReverseGeocodingStateResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ReverseGeocodingStateResponseDto(
-        lastImportFileName: Option.from(mapValueOfType<String>(json, r'lastImportFileName')),
-        lastUpdate: Option.from(mapValueOfType<String>(json, r'lastUpdate')),
+        lastImportFileName: Some.tryFrom(mapValueOfType<String>(json, r'lastImportFileName')),
+        lastUpdate: Some.tryFrom(mapValueOfType<String>(json, r'lastUpdate')),
       );
     }
     return null;

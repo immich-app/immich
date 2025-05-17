@@ -152,7 +152,7 @@ class SharedLinkEditDto {
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         changeExpiryTime: mapValueOfType<bool>(json, r'changeExpiryTime'),
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt:  Option.from(mapDateTime(json, r'expiresAt', r'')),
+        expiresAt:  Some.tryFrom(mapDateTime(json, r'expiresAt', r'')),
         password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
       );

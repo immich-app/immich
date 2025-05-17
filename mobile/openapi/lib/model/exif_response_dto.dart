@@ -303,44 +303,44 @@ class ExifResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ExifResponseDto(
-        city: Option.from(mapValueOfType<String>(json, r'city')),
-        country: Option.from(mapValueOfType<String>(json, r'country')),
-        dateTimeOriginal:  Option.from(mapDateTime(json, r'dateTimeOriginal', r'')),
-        description: Option.from(mapValueOfType<String>(json, r'description')),
-        exifImageHeight: Option.from(json[r'exifImageHeight'] == null
+        city: Some.tryFrom(mapValueOfType<String>(json, r'city')),
+        country: Some.tryFrom(mapValueOfType<String>(json, r'country')),
+        dateTimeOriginal:  Some.tryFrom(mapDateTime(json, r'dateTimeOriginal', r'')),
+        description: Some.tryFrom(mapValueOfType<String>(json, r'description')),
+        exifImageHeight: Some.tryFrom(json[r'exifImageHeight'] == null
             ? null
             : num.parse('${json[r'exifImageHeight']}')),
-        exifImageWidth: Option.from(json[r'exifImageWidth'] == null
+        exifImageWidth: Some.tryFrom(json[r'exifImageWidth'] == null
             ? null
             : num.parse('${json[r'exifImageWidth']}')),
-        exposureTime: Option.from(mapValueOfType<String>(json, r'exposureTime')),
-        fNumber: Option.from(json[r'fNumber'] == null
+        exposureTime: Some.tryFrom(mapValueOfType<String>(json, r'exposureTime')),
+        fNumber: Some.tryFrom(json[r'fNumber'] == null
             ? null
             : num.parse('${json[r'fNumber']}')),
-        fileSizeInByte: Option.from(mapValueOfType<int>(json, r'fileSizeInByte')),
-        focalLength: Option.from(json[r'focalLength'] == null
+        fileSizeInByte: Some.tryFrom(mapValueOfType<int>(json, r'fileSizeInByte')),
+        focalLength: Some.tryFrom(json[r'focalLength'] == null
             ? null
             : num.parse('${json[r'focalLength']}')),
-        iso: Option.from(json[r'iso'] == null
+        iso: Some.tryFrom(json[r'iso'] == null
             ? null
             : num.parse('${json[r'iso']}')),
-        latitude: Option.from(json[r'latitude'] == null
+        latitude: Some.tryFrom(json[r'latitude'] == null
             ? null
             : num.parse('${json[r'latitude']}')),
-        lensModel: Option.from(mapValueOfType<String>(json, r'lensModel')),
-        longitude: Option.from(json[r'longitude'] == null
+        lensModel: Some.tryFrom(mapValueOfType<String>(json, r'lensModel')),
+        longitude: Some.tryFrom(json[r'longitude'] == null
             ? null
             : num.parse('${json[r'longitude']}')),
-        make: Option.from(mapValueOfType<String>(json, r'make')),
-        model: Option.from(mapValueOfType<String>(json, r'model')),
-        modifyDate:  Option.from(mapDateTime(json, r'modifyDate', r'')),
-        orientation: Option.from(mapValueOfType<String>(json, r'orientation')),
-        projectionType: Option.from(mapValueOfType<String>(json, r'projectionType')),
-        rating: Option.from(json[r'rating'] == null
+        make: Some.tryFrom(mapValueOfType<String>(json, r'make')),
+        model: Some.tryFrom(mapValueOfType<String>(json, r'model')),
+        modifyDate:  Some.tryFrom(mapDateTime(json, r'modifyDate', r'')),
+        orientation: Some.tryFrom(mapValueOfType<String>(json, r'orientation')),
+        projectionType: Some.tryFrom(mapValueOfType<String>(json, r'projectionType')),
+        rating: Some.tryFrom(json[r'rating'] == null
             ? null
             : num.parse('${json[r'rating']}')),
-        state: Option.from(mapValueOfType<String>(json, r'state')),
-        timeZone: Option.from(mapValueOfType<String>(json, r'timeZone')),
+        state: Some.tryFrom(mapValueOfType<String>(json, r'state')),
+        timeZone: Some.tryFrom(mapValueOfType<String>(json, r'timeZone')),
       );
     }
     return null;

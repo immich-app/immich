@@ -663,8 +663,8 @@ class MetadataSearchDto {
 
       return MetadataSearchDto(
         checksum: mapValueOfType<String>(json, r'checksum'),
-        city: Option.from(mapValueOfType<String>(json, r'city')),
-        country: Option.from(mapValueOfType<String>(json, r'country')),
+        city: Some.tryFrom(mapValueOfType<String>(json, r'city')),
+        country: Some.tryFrom(mapValueOfType<String>(json, r'country')),
         createdAfter:  mapDateTime(json, r'createdAfter', r''),
         createdBefore:  mapDateTime(json, r'createdBefore', r''),
         description: mapValueOfType<String>(json, r'description'),
@@ -677,10 +677,10 @@ class MetadataSearchDto {
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
-        lensModel: Option.from(mapValueOfType<String>(json, r'lensModel')),
-        libraryId: Option.from(mapValueOfType<String>(json, r'libraryId')),
+        lensModel: Some.tryFrom(mapValueOfType<String>(json, r'lensModel')),
+        libraryId: Some.tryFrom(mapValueOfType<String>(json, r'libraryId')),
         make: mapValueOfType<String>(json, r'make'),
-        model: Option.from(mapValueOfType<String>(json, r'model')),
+        model: Some.tryFrom(mapValueOfType<String>(json, r'model')),
         order: AssetOrder.fromJson(json[r'order']) ?? AssetOrder.desc,
         originalFileName: mapValueOfType<String>(json, r'originalFileName'),
         originalPath: mapValueOfType<String>(json, r'originalPath'),
@@ -691,7 +691,7 @@ class MetadataSearchDto {
         previewPath: mapValueOfType<String>(json, r'previewPath'),
         rating: num.parse('${json[r'rating']}'),
         size: num.parse('${json[r'size']}'),
-        state: Option.from(mapValueOfType<String>(json, r'state')),
+        state: Some.tryFrom(mapValueOfType<String>(json, r'state')),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],

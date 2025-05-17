@@ -94,7 +94,7 @@ class UsageByUserDto {
 
       return UsageByUserDto(
         photos: mapValueOfType<int>(json, r'photos')!,
-        quotaSizeInBytes: Option.from(mapValueOfType<int>(json, r'quotaSizeInBytes')),
+        quotaSizeInBytes: Some.tryFrom(mapValueOfType<int>(json, r'quotaSizeInBytes')),
         usage: mapValueOfType<int>(json, r'usage')!,
         usagePhotos: mapValueOfType<int>(json, r'usagePhotos')!,
         usageVideos: mapValueOfType<int>(json, r'usageVideos')!,

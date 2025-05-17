@@ -69,7 +69,7 @@ class SyncUserV1 {
       final json = value.cast<String, dynamic>();
 
       return SyncUserV1(
-        deletedAt:  Option.from(mapDateTime(json, r'deletedAt', r'')),
+        deletedAt:  Some.tryFrom(mapDateTime(json, r'deletedAt', r'')),
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,

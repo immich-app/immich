@@ -120,10 +120,10 @@ class {{{classname}}} {
       return {{{classname}}}(
   {{#vars}}
     {{#isDateTime}}
-        {{{name}}}:  {{#isNullable}}Option.from({{/isNullable}}mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
+        {{{name}}}:  {{#isNullable}}Some.tryFrom({{/isNullable}}mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
     {{/isDateTime}}
     {{#isDate}}
-        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
+        {{{name}}}: {{#isNullable}}Some.tryFrom({{/isNullable}}mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
     {{/isDate}}
     {{^isDateTime}}
       {{^isDate}}
@@ -181,7 +181,7 @@ class {{{classname}}} {
         {{{name}}}: null, // No support for decoding binary content from JSON
               {{/isBinary}}
               {{^isBinary}}
-        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}{{{complexType}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
+        {{{name}}}: {{#isNullable}}Some.tryFrom({{/isNullable}}{{{complexType}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
               {{/isBinary}}
             {{/isMap}}
           {{/isArray}}
@@ -203,20 +203,20 @@ class {{{classname}}} {
             {{/isMap}}
             {{^isMap}}
               {{#isNumber}}
-        {{{name}}}: {{#isNullable}}Option.from(json[r'{{{baseName}}}'] == null
+        {{{name}}}: {{#isNullable}}Some.tryFrom(json[r'{{{baseName}}}'] == null
             ? {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}
             : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'){{#isNullable}}){{/isNullable}},
               {{/isNumber}}
               {{#isDouble}}
-        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}(mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}).toDouble(){{#isNullable}}){{/isNullable}},
+        {{{name}}}: {{#isNullable}}Some.tryFrom({{/isNullable}}(mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}).toDouble(){{#isNullable}}){{/isNullable}},
               {{/isDouble}}
               {{^isDouble}}
               {{^isNumber}}
                 {{^isEnum}}
-        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}mapValueOfType<{{{datatypeWithEnum}}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
+        {{{name}}}: {{#isNullable}}Some.tryFrom({{/isNullable}}mapValueOfType<{{{datatypeWithEnum}}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
                 {{/isEnum}}
                 {{#isEnum}}
-        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}{{{enumName}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
+        {{{name}}}: {{#isNullable}}Some.tryFrom({{/isNullable}}{{{enumName}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
                 {{/isEnum}}
               {{/isNumber}}
               {{/isDouble}}

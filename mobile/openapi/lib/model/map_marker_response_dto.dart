@@ -93,12 +93,12 @@ class MapMarkerResponseDto {
       final json = value.cast<String, dynamic>();
 
       return MapMarkerResponseDto(
-        city: Option.from(mapValueOfType<String>(json, r'city')),
-        country: Option.from(mapValueOfType<String>(json, r'country')),
+        city: Some.tryFrom(mapValueOfType<String>(json, r'city')),
+        country: Some.tryFrom(mapValueOfType<String>(json, r'country')),
         id: mapValueOfType<String>(json, r'id')!,
         lat: (mapValueOfType<num>(json, r'lat')!).toDouble(),
         lon: (mapValueOfType<num>(json, r'lon')!).toDouble(),
-        state: Option.from(mapValueOfType<String>(json, r'state')),
+        state: Some.tryFrom(mapValueOfType<String>(json, r'state')),
       );
     }
     return null;

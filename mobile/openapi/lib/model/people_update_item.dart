@@ -138,8 +138,8 @@ class PeopleUpdateItem {
       final json = value.cast<String, dynamic>();
 
       return PeopleUpdateItem(
-        birthDate: Option.from(mapDateTime(json, r'birthDate', r'')),
-        color: Option.from(mapValueOfType<String>(json, r'color')),
+        birthDate: Some.tryFrom(mapDateTime(json, r'birthDate', r'')),
+        color: Some.tryFrom(mapValueOfType<String>(json, r'color')),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),

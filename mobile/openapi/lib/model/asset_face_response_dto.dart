@@ -116,7 +116,7 @@ class AssetFaceResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
-        person: Option.from(PersonResponseDto.fromJson(json[r'person'])),
+        person: Some.tryFrom(PersonResponseDto.fromJson(json[r'person'])),
         sourceType: SourceType.fromJson(json[r'sourceType']),
       );
     }

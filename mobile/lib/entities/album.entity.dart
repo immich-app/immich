@@ -163,8 +163,7 @@ class Album {
           dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc;
     }
 
-    if (dto.albumThumbnailAssetId != null &&
-        dto.albumThumbnailAssetId!.isSome) {
+    if (dto.albumThumbnailAssetId?.unwrapOrNull() != null) {
       a.thumbnail.value = await db.assets
           .where()
           .remoteIdEqualTo(dto.albumThumbnailAssetId!.unwrap())

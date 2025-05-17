@@ -136,14 +136,14 @@ class SyncAssetV1 {
 
       return SyncAssetV1(
         checksum: mapValueOfType<String>(json, r'checksum')!,
-        deletedAt:  Option.from(mapDateTime(json, r'deletedAt', r'')),
-        fileCreatedAt:  Option.from(mapDateTime(json, r'fileCreatedAt', r'')),
-        fileModifiedAt:  Option.from(mapDateTime(json, r'fileModifiedAt', r'')),
+        deletedAt:  Some.tryFrom(mapDateTime(json, r'deletedAt', r'')),
+        fileCreatedAt:  Some.tryFrom(mapDateTime(json, r'fileCreatedAt', r'')),
+        fileModifiedAt:  Some.tryFrom(mapDateTime(json, r'fileModifiedAt', r'')),
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
-        localDateTime:  Option.from(mapDateTime(json, r'localDateTime', r'')),
+        localDateTime:  Some.tryFrom(mapDateTime(json, r'localDateTime', r'')),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        thumbhash: Option.from(mapValueOfType<String>(json, r'thumbhash')),
+        thumbhash: Some.tryFrom(mapValueOfType<String>(json, r'thumbhash')),
         type: SyncAssetV1TypeEnum.fromJson(json[r'type'])!,
         visibility: SyncAssetV1VisibilityEnum.fromJson(json[r'visibility'])!,
       );

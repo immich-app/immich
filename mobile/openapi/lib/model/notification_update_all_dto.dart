@@ -60,7 +60,7 @@ class NotificationUpdateAllDto {
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        readAt:  Option.from(mapDateTime(json, r'readAt', r'')),
+        readAt:  Some.tryFrom(mapDateTime(json, r'readAt', r'')),
       );
     }
     return null;

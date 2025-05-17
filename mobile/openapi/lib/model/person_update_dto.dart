@@ -131,8 +131,8 @@ class PersonUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return PersonUpdateDto(
-        birthDate: Option.from(mapDateTime(json, r'birthDate', r'')),
-        color: Option.from(mapValueOfType<String>(json, r'color')),
+        birthDate: Some.tryFrom(mapDateTime(json, r'birthDate', r'')),
+        color: Some.tryFrom(mapValueOfType<String>(json, r'color')),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),

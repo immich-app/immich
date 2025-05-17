@@ -110,7 +110,7 @@ class LibraryResponseDto {
             : const [],
         name: mapValueOfType<String>(json, r'name')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        refreshedAt:  Option.from(mapDateTime(json, r'refreshedAt', r'')),
+        refreshedAt:  Some.tryFrom(mapDateTime(json, r'refreshedAt', r'')),
         updatedAt:  mapDateTime(json, r'updatedAt', r'')!,
       );
     }

@@ -156,7 +156,7 @@ class AssetBulkUpdateDto {
 
       return AssetBulkUpdateDto(
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
-        duplicateId: Option.from(mapValueOfType<String>(json, r'duplicateId')),
+        duplicateId: Some.tryFrom(mapValueOfType<String>(json, r'duplicateId')),
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],

@@ -132,7 +132,7 @@ class PersonWithFacesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PersonWithFacesResponseDto(
-        birthDate: Option.from(mapDateTime(json, r'birthDate', r'')),
+        birthDate: Some.tryFrom(mapDateTime(json, r'birthDate', r'')),
         color: mapValueOfType<String>(json, r'color'),
         faces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'faces']),
         id: mapValueOfType<String>(json, r'id')!,

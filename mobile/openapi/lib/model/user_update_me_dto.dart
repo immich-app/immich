@@ -99,7 +99,7 @@ class UserUpdateMeDto {
       final json = value.cast<String, dynamic>();
 
       return UserUpdateMeDto(
-        avatarColor: Option.from(UserAvatarColor.fromJson(json[r'avatarColor'])),
+        avatarColor: Some.tryFrom(UserAvatarColor.fromJson(json[r'avatarColor'])),
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),

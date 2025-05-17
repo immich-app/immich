@@ -194,7 +194,7 @@ class AlbumResponseDto {
 
       return AlbumResponseDto(
         albumName: mapValueOfType<String>(json, r'albumName')!,
-        albumThumbnailAssetId: Option.from(mapValueOfType<String>(json, r'albumThumbnailAssetId')),
+        albumThumbnailAssetId: Some.tryFrom(mapValueOfType<String>(json, r'albumThumbnailAssetId')),
         albumUsers: AlbumUserResponseDto.listFromJson(json[r'albumUsers']),
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),

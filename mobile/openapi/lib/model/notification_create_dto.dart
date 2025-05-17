@@ -124,9 +124,9 @@ class NotificationCreateDto {
 
       return NotificationCreateDto(
         data: mapValueOfType<Object>(json, r'data'),
-        description: Option.from(mapValueOfType<String>(json, r'description')),
+        description: Some.tryFrom(mapValueOfType<String>(json, r'description')),
         level: NotificationLevel.fromJson(json[r'level']),
-        readAt:  Option.from(mapDateTime(json, r'readAt', r'')),
+        readAt:  Some.tryFrom(mapDateTime(json, r'readAt', r'')),
         title: mapValueOfType<String>(json, r'title')!,
         type: NotificationType.fromJson(json[r'type']),
         userId: mapValueOfType<String>(json, r'userId')!,
