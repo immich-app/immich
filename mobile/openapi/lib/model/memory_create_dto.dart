@@ -100,8 +100,8 @@ class MemoryCreateDto {
             : const [],
         data: OnThisDayDto.fromJson(json[r'data'])!,
         isSaved: mapValueOfType<bool>(json, r'isSaved'),
-        memoryAt: mapDateTime(json, r'memoryAt', r'')!,
-        seenAt: mapDateTime(json, r'seenAt', r''),
+        memoryAt:  mapDateTime(json, r'memoryAt', r'')!,
+        seenAt:  mapDateTime(json, r'seenAt', r''),
         type: MemoryType.fromJson(json[r'type'])!,
       );
     }

@@ -22,9 +22,9 @@ class PersonUpdateDto {
   });
 
   /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
-  DateTime? birthDate;
+  Option<DateTime>? birthDate;
 
-  String? color;
+  Option<String>? color;
 
   /// Asset is used to get the feature face thumbnail.
   ///
@@ -85,15 +85,19 @@ class PersonUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+    if (this.birthDate?.isSome ?? false) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.unwrap().toUtc());
     } else {
-    //  json[r'birthDate'] = null;
+      if(this.birthDate?.isNone ?? false) {
+        json[r'birthDate'] = null;
+      }
     }
-    if (this.color != null) {
+    if (this.color?.isSome ?? false) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      if(this.color?.isNone ?? false) {
+        json[r'color'] = null;
+      }
     }
     if (this.featureFaceAssetId != null) {
       json[r'featureFaceAssetId'] = this.featureFaceAssetId;
@@ -127,8 +131,8 @@ class PersonUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return PersonUpdateDto(
-        birthDate: mapDateTime(json, r'birthDate', r''),
-        color: mapValueOfType<String>(json, r'color'),
+        birthDate: Option.from(mapDateTime(json, r'birthDate', r'')),
+        color: Option.from(mapValueOfType<String>(json, r'color')),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),

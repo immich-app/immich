@@ -21,9 +21,9 @@ class PersonCreateDto {
   });
 
   /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
-  DateTime? birthDate;
+  Option<DateTime>? birthDate;
 
-  String? color;
+  Option<String>? color;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -73,15 +73,19 @@ class PersonCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+    if (this.birthDate?.isSome ?? false) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.unwrap().toUtc());
     } else {
-    //  json[r'birthDate'] = null;
+      if(this.birthDate?.isNone ?? false) {
+        json[r'birthDate'] = null;
+      }
     }
-    if (this.color != null) {
+    if (this.color?.isSome ?? false) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      if(this.color?.isNone ?? false) {
+        json[r'color'] = null;
+      }
     }
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
@@ -110,8 +114,8 @@ class PersonCreateDto {
       final json = value.cast<String, dynamic>();
 
       return PersonCreateDto(
-        birthDate: mapDateTime(json, r'birthDate', r''),
-        color: mapValueOfType<String>(json, r'color'),
+        birthDate: Option.from(mapDateTime(json, r'birthDate', r'')),
+        color: Option.from(mapValueOfType<String>(json, r'color')),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),

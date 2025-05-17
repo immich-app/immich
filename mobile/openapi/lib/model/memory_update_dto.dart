@@ -88,8 +88,8 @@ class MemoryUpdateDto {
 
       return MemoryUpdateDto(
         isSaved: mapValueOfType<bool>(json, r'isSaved'),
-        memoryAt: mapDateTime(json, r'memoryAt', r''),
-        seenAt: mapDateTime(json, r'seenAt', r''),
+        memoryAt:  mapDateTime(json, r'memoryAt', r''),
+        seenAt:  mapDateTime(json, r'seenAt', r''),
       );
     }
     return null;

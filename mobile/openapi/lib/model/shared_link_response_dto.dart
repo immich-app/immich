@@ -45,19 +45,19 @@ class SharedLinkResponseDto {
 
   DateTime createdAt;
 
-  String? description;
+  Option<String>? description;
 
-  DateTime? expiresAt;
+  Option<DateTime>? expiresAt;
 
   String id;
 
   String key;
 
-  String? password;
+  Option<String>? password;
 
   bool showMetadata;
 
-  String? token;
+  Option<String>? token;
 
   SharedLinkType type;
 
@@ -112,28 +112,36 @@ class SharedLinkResponseDto {
       json[r'allowUpload'] = this.allowUpload;
       json[r'assets'] = this.assets;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-    if (this.description != null) {
+    if (this.description?.isSome ?? false) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      if(this.description?.isNone ?? false) {
+        json[r'description'] = null;
+      }
     }
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
+    if (this.expiresAt?.isSome ?? false) {
+      json[r'expiresAt'] = this.expiresAt!.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'expiresAt'] = null;
+      if(this.expiresAt?.isNone ?? false) {
+        json[r'expiresAt'] = null;
+      }
     }
       json[r'id'] = this.id;
       json[r'key'] = this.key;
-    if (this.password != null) {
+    if (this.password?.isSome ?? false) {
       json[r'password'] = this.password;
     } else {
-    //  json[r'password'] = null;
+      if(this.password?.isNone ?? false) {
+        json[r'password'] = null;
+      }
     }
       json[r'showMetadata'] = this.showMetadata;
-    if (this.token != null) {
+    if (this.token?.isSome ?? false) {
       json[r'token'] = this.token;
     } else {
-    //  json[r'token'] = null;
+      if(this.token?.isNone ?? false) {
+        json[r'token'] = null;
+      }
     }
       json[r'type'] = this.type;
       json[r'userId'] = this.userId;
@@ -153,14 +161,14 @@ class SharedLinkResponseDto {
         allowDownload: mapValueOfType<bool>(json, r'allowDownload')!,
         allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
-        description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
+        description: Option.from(mapValueOfType<String>(json, r'description')),
+        expiresAt:  Option.from(mapDateTime(json, r'expiresAt', r'')),
         id: mapValueOfType<String>(json, r'id')!,
         key: mapValueOfType<String>(json, r'key')!,
-        password: mapValueOfType<String>(json, r'password'),
+        password: Option.from(mapValueOfType<String>(json, r'password')),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata')!,
-        token: mapValueOfType<String>(json, r'token'),
+        token: Option.from(mapValueOfType<String>(json, r'token')),
         type: SharedLinkType.fromJson(json[r'type'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );

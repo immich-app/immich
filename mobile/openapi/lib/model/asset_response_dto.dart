@@ -53,7 +53,7 @@ class AssetResponseDto {
 
   String deviceId;
 
-  String? duplicateId;
+  Option<String>? duplicateId;
 
   String duration;
 
@@ -82,9 +82,9 @@ class AssetResponseDto {
   bool isTrashed;
 
   /// This property was deprecated in v1.106.0
-  String? libraryId;
+  Option<String>? libraryId;
 
-  String? livePhotoVideoId;
+  Option<String>? livePhotoVideoId;
 
   DateTime localDateTime;
 
@@ -121,11 +121,11 @@ class AssetResponseDto {
   ///
   bool? resized;
 
-  AssetStackResponseDto? stack;
+  Option<AssetStackResponseDto>? stack;
 
   List<TagResponseDto> tags;
 
-  String? thumbhash;
+  Option<String>? thumbhash;
 
   AssetTypeEnum type;
 
@@ -212,10 +212,12 @@ class AssetResponseDto {
       json[r'checksum'] = this.checksum;
       json[r'deviceAssetId'] = this.deviceAssetId;
       json[r'deviceId'] = this.deviceId;
-    if (this.duplicateId != null) {
+    if (this.duplicateId?.isSome ?? false) {
       json[r'duplicateId'] = this.duplicateId;
     } else {
-    //  json[r'duplicateId'] = null;
+      if(this.duplicateId?.isNone ?? false) {
+        json[r'duplicateId'] = null;
+      }
     }
       json[r'duration'] = this.duration;
     if (this.exifInfo != null) {
@@ -231,15 +233,19 @@ class AssetResponseDto {
       json[r'isFavorite'] = this.isFavorite;
       json[r'isOffline'] = this.isOffline;
       json[r'isTrashed'] = this.isTrashed;
-    if (this.libraryId != null) {
+    if (this.libraryId?.isSome ?? false) {
       json[r'libraryId'] = this.libraryId;
     } else {
-    //  json[r'libraryId'] = null;
+      if(this.libraryId?.isNone ?? false) {
+        json[r'libraryId'] = null;
+      }
     }
-    if (this.livePhotoVideoId != null) {
+    if (this.livePhotoVideoId?.isSome ?? false) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
-    //  json[r'livePhotoVideoId'] = null;
+      if(this.livePhotoVideoId?.isNone ?? false) {
+        json[r'livePhotoVideoId'] = null;
+      }
     }
       json[r'localDateTime'] = this.localDateTime.toUtc().toIso8601String();
       json[r'originalFileName'] = this.originalFileName;
@@ -261,16 +267,20 @@ class AssetResponseDto {
     } else {
     //  json[r'resized'] = null;
     }
-    if (this.stack != null) {
+    if (this.stack?.isSome ?? false) {
       json[r'stack'] = this.stack;
     } else {
-    //  json[r'stack'] = null;
+      if(this.stack?.isNone ?? false) {
+        json[r'stack'] = null;
+      }
     }
       json[r'tags'] = this.tags;
-    if (this.thumbhash != null) {
+    if (this.thumbhash?.isSome ?? false) {
       json[r'thumbhash'] = this.thumbhash;
     } else {
-    //  json[r'thumbhash'] = null;
+      if(this.thumbhash?.isNone ?? false) {
+        json[r'thumbhash'] = null;
+      }
     }
       json[r'type'] = this.type;
       json[r'unassignedFaces'] = this.unassignedFaces;
@@ -291,20 +301,20 @@ class AssetResponseDto {
         checksum: mapValueOfType<String>(json, r'checksum')!,
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
-        duplicateId: mapValueOfType<String>(json, r'duplicateId'),
+        duplicateId: Option.from(mapValueOfType<String>(json, r'duplicateId')),
         duration: mapValueOfType<String>(json, r'duration')!,
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
+        fileCreatedAt:  mapDateTime(json, r'fileCreatedAt', r'')!,
+        fileModifiedAt:  mapDateTime(json, r'fileModifiedAt', r'')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isOffline: mapValueOfType<bool>(json, r'isOffline')!,
         isTrashed: mapValueOfType<bool>(json, r'isTrashed')!,
-        libraryId: mapValueOfType<String>(json, r'libraryId'),
-        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        localDateTime: mapDateTime(json, r'localDateTime', r'')!,
+        libraryId: Option.from(mapValueOfType<String>(json, r'libraryId')),
+        livePhotoVideoId: Option.from(mapValueOfType<String>(json, r'livePhotoVideoId')),
+        localDateTime:  mapDateTime(json, r'localDateTime', r'')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         originalMimeType: mapValueOfType<String>(json, r'originalMimeType'),
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
@@ -312,12 +322,12 @@ class AssetResponseDto {
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         people: PersonWithFacesResponseDto.listFromJson(json[r'people']),
         resized: mapValueOfType<bool>(json, r'resized'),
-        stack: AssetStackResponseDto.fromJson(json[r'stack']),
+        stack: Option.from(AssetStackResponseDto.fromJson(json[r'stack'])),
         tags: TagResponseDto.listFromJson(json[r'tags']),
-        thumbhash: mapValueOfType<String>(json, r'thumbhash'),
+        thumbhash: Option.from(mapValueOfType<String>(json, r'thumbhash')),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
         unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt:  mapDateTime(json, r'updatedAt', r'')!,
         visibility: AssetResponseDtoVisibilityEnum.fromJson(json[r'visibility'])!,
       );
     }

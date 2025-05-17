@@ -16,7 +16,7 @@ class TagUpdateDto {
     this.color,
   });
 
-  String? color;
+  Option<String>? color;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagUpdateDto &&
@@ -32,10 +32,12 @@ class TagUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.color != null) {
+    if (this.color?.isSome ?? false) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      if(this.color?.isNone ?? false) {
+        json[r'color'] = null;
+      }
     }
     return json;
   }
@@ -49,7 +51,7 @@ class TagUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return TagUpdateDto(
-        color: mapValueOfType<String>(json, r'color'),
+        color: Option.from(mapValueOfType<String>(json, r'color')),
       );
     }
     return null;

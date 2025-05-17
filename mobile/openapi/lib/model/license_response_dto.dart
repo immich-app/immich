@@ -57,7 +57,7 @@ class LicenseResponseDto {
       final json = value.cast<String, dynamic>();
 
       return LicenseResponseDto(
-        activatedAt: mapDateTime(json, r'activatedAt', r'')!,
+        activatedAt:  mapDateTime(json, r'activatedAt', r'')!,
         activationKey: mapValueOfType<String>(json, r'activationKey')!,
         licenseKey: mapValueOfType<String>(json, r'licenseKey')!,
       );

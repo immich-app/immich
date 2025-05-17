@@ -25,7 +25,7 @@ class UsageByUserDto {
 
   int photos;
 
-  int? quotaSizeInBytes;
+  Option<int>? quotaSizeInBytes;
 
   int usage;
 
@@ -68,10 +68,12 @@ class UsageByUserDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'photos'] = this.photos;
-    if (this.quotaSizeInBytes != null) {
+    if (this.quotaSizeInBytes?.isSome ?? false) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-    //  json[r'quotaSizeInBytes'] = null;
+      if(this.quotaSizeInBytes?.isNone ?? false) {
+        json[r'quotaSizeInBytes'] = null;
+      }
     }
       json[r'usage'] = this.usage;
       json[r'usagePhotos'] = this.usagePhotos;
@@ -92,7 +94,7 @@ class UsageByUserDto {
 
       return UsageByUserDto(
         photos: mapValueOfType<int>(json, r'photos')!,
-        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
+        quotaSizeInBytes: Option.from(mapValueOfType<int>(json, r'quotaSizeInBytes')),
         usage: mapValueOfType<int>(json, r'usage')!,
         usagePhotos: mapValueOfType<int>(json, r'usagePhotos')!,
         usageVideos: mapValueOfType<int>(json, r'usageVideos')!,

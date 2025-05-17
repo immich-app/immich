@@ -28,7 +28,7 @@ class TagCreateDto {
 
   String name;
 
-  String? parentId;
+  Option<String>? parentId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagCreateDto &&
@@ -54,10 +54,12 @@ class TagCreateDto {
     //  json[r'color'] = null;
     }
       json[r'name'] = this.name;
-    if (this.parentId != null) {
+    if (this.parentId?.isSome ?? false) {
       json[r'parentId'] = this.parentId;
     } else {
-    //  json[r'parentId'] = null;
+      if(this.parentId?.isNone ?? false) {
+        json[r'parentId'] = null;
+      }
     }
     return json;
   }
@@ -73,7 +75,7 @@ class TagCreateDto {
       return TagCreateDto(
         color: mapValueOfType<String>(json, r'color'),
         name: mapValueOfType<String>(json, r'name')!,
-        parentId: mapValueOfType<String>(json, r'parentId'),
+        parentId: Option.from(mapValueOfType<String>(json, r'parentId')),
       );
     }
     return null;

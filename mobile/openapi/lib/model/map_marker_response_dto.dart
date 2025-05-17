@@ -21,9 +21,9 @@ class MapMarkerResponseDto {
     required this.state,
   });
 
-  String? city;
+  Option<String>? city;
 
-  String? country;
+  Option<String>? country;
 
   String id;
 
@@ -31,7 +31,7 @@ class MapMarkerResponseDto {
 
   double lon;
 
-  String? state;
+  Option<String>? state;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapMarkerResponseDto &&
@@ -57,23 +57,29 @@ class MapMarkerResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.city != null) {
+    if (this.city?.isSome ?? false) {
       json[r'city'] = this.city;
     } else {
-    //  json[r'city'] = null;
+      if(this.city?.isNone ?? false) {
+        json[r'city'] = null;
+      }
     }
-    if (this.country != null) {
+    if (this.country?.isSome ?? false) {
       json[r'country'] = this.country;
     } else {
-    //  json[r'country'] = null;
+      if(this.country?.isNone ?? false) {
+        json[r'country'] = null;
+      }
     }
       json[r'id'] = this.id;
       json[r'lat'] = this.lat;
       json[r'lon'] = this.lon;
-    if (this.state != null) {
+    if (this.state?.isSome ?? false) {
       json[r'state'] = this.state;
     } else {
-    //  json[r'state'] = null;
+      if(this.state?.isNone ?? false) {
+        json[r'state'] = null;
+      }
     }
     return json;
   }
@@ -87,12 +93,12 @@ class MapMarkerResponseDto {
       final json = value.cast<String, dynamic>();
 
       return MapMarkerResponseDto(
-        city: mapValueOfType<String>(json, r'city'),
-        country: mapValueOfType<String>(json, r'country'),
+        city: Option.from(mapValueOfType<String>(json, r'city')),
+        country: Option.from(mapValueOfType<String>(json, r'country')),
         id: mapValueOfType<String>(json, r'id')!,
         lat: (mapValueOfType<num>(json, r'lat')!).toDouble(),
         lon: (mapValueOfType<num>(json, r'lon')!).toDouble(),
-        state: mapValueOfType<String>(json, r'state'),
+        state: Option.from(mapValueOfType<String>(json, r'state')),
       );
     }
     return null;

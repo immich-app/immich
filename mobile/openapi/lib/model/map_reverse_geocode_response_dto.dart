@@ -18,11 +18,11 @@ class MapReverseGeocodeResponseDto {
     required this.state,
   });
 
-  String? city;
+  Option<String>? city;
 
-  String? country;
+  Option<String>? country;
 
-  String? state;
+  Option<String>? state;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapReverseGeocodeResponseDto &&
@@ -42,20 +42,26 @@ class MapReverseGeocodeResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.city != null) {
+    if (this.city?.isSome ?? false) {
       json[r'city'] = this.city;
     } else {
-    //  json[r'city'] = null;
+      if(this.city?.isNone ?? false) {
+        json[r'city'] = null;
+      }
     }
-    if (this.country != null) {
+    if (this.country?.isSome ?? false) {
       json[r'country'] = this.country;
     } else {
-    //  json[r'country'] = null;
+      if(this.country?.isNone ?? false) {
+        json[r'country'] = null;
+      }
     }
-    if (this.state != null) {
+    if (this.state?.isSome ?? false) {
       json[r'state'] = this.state;
     } else {
-    //  json[r'state'] = null;
+      if(this.state?.isNone ?? false) {
+        json[r'state'] = null;
+      }
     }
     return json;
   }
@@ -69,9 +75,9 @@ class MapReverseGeocodeResponseDto {
       final json = value.cast<String, dynamic>();
 
       return MapReverseGeocodeResponseDto(
-        city: mapValueOfType<String>(json, r'city'),
-        country: mapValueOfType<String>(json, r'country'),
-        state: mapValueOfType<String>(json, r'state'),
+        city: Option.from(mapValueOfType<String>(json, r'city')),
+        country: Option.from(mapValueOfType<String>(json, r'country')),
+        state: Option.from(mapValueOfType<String>(json, r'state')),
       );
     }
     return null;

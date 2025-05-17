@@ -65,9 +65,9 @@ class MetadataSearchDto {
   ///
   String? checksum;
 
-  String? city;
+  Option<String>? city;
 
-  String? country;
+  Option<String>? country;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -165,9 +165,9 @@ class MetadataSearchDto {
   ///
   bool? isOffline;
 
-  String? lensModel;
+  Option<String>? lensModel;
 
-  String? libraryId;
+  Option<String>? libraryId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -177,7 +177,7 @@ class MetadataSearchDto {
   ///
   String? make;
 
-  String? model;
+  Option<String>? model;
 
   AssetOrder order;
 
@@ -236,7 +236,7 @@ class MetadataSearchDto {
   ///
   num? size;
 
-  String? state;
+  Option<String>? state;
 
   List<String> tagIds;
 
@@ -445,15 +445,19 @@ class MetadataSearchDto {
     } else {
     //  json[r'checksum'] = null;
     }
-    if (this.city != null) {
+    if (this.city?.isSome ?? false) {
       json[r'city'] = this.city;
     } else {
-    //  json[r'city'] = null;
+      if(this.city?.isNone ?? false) {
+        json[r'city'] = null;
+      }
     }
-    if (this.country != null) {
+    if (this.country?.isSome ?? false) {
       json[r'country'] = this.country;
     } else {
-    //  json[r'country'] = null;
+      if(this.country?.isNone ?? false) {
+        json[r'country'] = null;
+      }
     }
     if (this.createdAfter != null) {
       json[r'createdAfter'] = this.createdAfter!.toUtc().toIso8601String();
@@ -515,25 +519,31 @@ class MetadataSearchDto {
     } else {
     //  json[r'isOffline'] = null;
     }
-    if (this.lensModel != null) {
+    if (this.lensModel?.isSome ?? false) {
       json[r'lensModel'] = this.lensModel;
     } else {
-    //  json[r'lensModel'] = null;
+      if(this.lensModel?.isNone ?? false) {
+        json[r'lensModel'] = null;
+      }
     }
-    if (this.libraryId != null) {
+    if (this.libraryId?.isSome ?? false) {
       json[r'libraryId'] = this.libraryId;
     } else {
-    //  json[r'libraryId'] = null;
+      if(this.libraryId?.isNone ?? false) {
+        json[r'libraryId'] = null;
+      }
     }
     if (this.make != null) {
       json[r'make'] = this.make;
     } else {
     //  json[r'make'] = null;
     }
-    if (this.model != null) {
+    if (this.model?.isSome ?? false) {
       json[r'model'] = this.model;
     } else {
-    //  json[r'model'] = null;
+      if(this.model?.isNone ?? false) {
+        json[r'model'] = null;
+      }
     }
       json[r'order'] = this.order;
     if (this.originalFileName != null) {
@@ -567,10 +577,12 @@ class MetadataSearchDto {
     } else {
     //  json[r'size'] = null;
     }
-    if (this.state != null) {
+    if (this.state?.isSome ?? false) {
       json[r'state'] = this.state;
     } else {
-    //  json[r'state'] = null;
+      if(this.state?.isNone ?? false) {
+        json[r'state'] = null;
+      }
     }
       json[r'tagIds'] = this.tagIds;
     if (this.takenAfter != null) {
@@ -651,10 +663,10 @@ class MetadataSearchDto {
 
       return MetadataSearchDto(
         checksum: mapValueOfType<String>(json, r'checksum'),
-        city: mapValueOfType<String>(json, r'city'),
-        country: mapValueOfType<String>(json, r'country'),
-        createdAfter: mapDateTime(json, r'createdAfter', r''),
-        createdBefore: mapDateTime(json, r'createdBefore', r''),
+        city: Option.from(mapValueOfType<String>(json, r'city')),
+        country: Option.from(mapValueOfType<String>(json, r'country')),
+        createdAfter:  mapDateTime(json, r'createdAfter', r''),
+        createdBefore:  mapDateTime(json, r'createdBefore', r''),
         description: mapValueOfType<String>(json, r'description'),
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId'),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
@@ -665,10 +677,10 @@ class MetadataSearchDto {
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
-        lensModel: mapValueOfType<String>(json, r'lensModel'),
-        libraryId: mapValueOfType<String>(json, r'libraryId'),
+        lensModel: Option.from(mapValueOfType<String>(json, r'lensModel')),
+        libraryId: Option.from(mapValueOfType<String>(json, r'libraryId')),
         make: mapValueOfType<String>(json, r'make'),
-        model: mapValueOfType<String>(json, r'model'),
+        model: Option.from(mapValueOfType<String>(json, r'model')),
         order: AssetOrder.fromJson(json[r'order']) ?? AssetOrder.desc,
         originalFileName: mapValueOfType<String>(json, r'originalFileName'),
         originalPath: mapValueOfType<String>(json, r'originalPath'),
@@ -679,18 +691,18 @@ class MetadataSearchDto {
         previewPath: mapValueOfType<String>(json, r'previewPath'),
         rating: num.parse('${json[r'rating']}'),
         size: num.parse('${json[r'size']}'),
-        state: mapValueOfType<String>(json, r'state'),
+        state: Option.from(mapValueOfType<String>(json, r'state')),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        takenAfter: mapDateTime(json, r'takenAfter', r''),
-        takenBefore: mapDateTime(json, r'takenBefore', r''),
+        takenAfter:  mapDateTime(json, r'takenAfter', r''),
+        takenBefore:  mapDateTime(json, r'takenBefore', r''),
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath'),
-        trashedAfter: mapDateTime(json, r'trashedAfter', r''),
-        trashedBefore: mapDateTime(json, r'trashedBefore', r''),
+        trashedAfter:  mapDateTime(json, r'trashedAfter', r''),
+        trashedBefore:  mapDateTime(json, r'trashedBefore', r''),
         type: AssetTypeEnum.fromJson(json[r'type']),
-        updatedAfter: mapDateTime(json, r'updatedAfter', r''),
-        updatedBefore: mapDateTime(json, r'updatedBefore', r''),
+        updatedAfter:  mapDateTime(json, r'updatedAfter', r''),
+        updatedBefore:  mapDateTime(json, r'updatedBefore', r''),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),

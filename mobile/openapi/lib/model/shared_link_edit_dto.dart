@@ -55,7 +55,7 @@ class SharedLinkEditDto {
   ///
   String? description;
 
-  DateTime? expiresAt;
+  Option<DateTime>? expiresAt;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -119,10 +119,12 @@ class SharedLinkEditDto {
     } else {
     //  json[r'description'] = null;
     }
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
+    if (this.expiresAt?.isSome ?? false) {
+      json[r'expiresAt'] = this.expiresAt!.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'expiresAt'] = null;
+      if(this.expiresAt?.isNone ?? false) {
+        json[r'expiresAt'] = null;
+      }
     }
     if (this.password != null) {
       json[r'password'] = this.password;
@@ -150,7 +152,7 @@ class SharedLinkEditDto {
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         changeExpiryTime: mapValueOfType<bool>(json, r'changeExpiryTime'),
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
+        expiresAt:  Option.from(mapDateTime(json, r'expiresAt', r'')),
         password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
       );

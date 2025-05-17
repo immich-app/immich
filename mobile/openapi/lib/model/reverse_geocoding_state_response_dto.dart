@@ -17,9 +17,9 @@ class ReverseGeocodingStateResponseDto {
     required this.lastUpdate,
   });
 
-  String? lastImportFileName;
+  Option<String>? lastImportFileName;
 
-  String? lastUpdate;
+  Option<String>? lastUpdate;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ReverseGeocodingStateResponseDto &&
@@ -37,15 +37,19 @@ class ReverseGeocodingStateResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.lastImportFileName != null) {
+    if (this.lastImportFileName?.isSome ?? false) {
       json[r'lastImportFileName'] = this.lastImportFileName;
     } else {
-    //  json[r'lastImportFileName'] = null;
+      if(this.lastImportFileName?.isNone ?? false) {
+        json[r'lastImportFileName'] = null;
+      }
     }
-    if (this.lastUpdate != null) {
+    if (this.lastUpdate?.isSome ?? false) {
       json[r'lastUpdate'] = this.lastUpdate;
     } else {
-    //  json[r'lastUpdate'] = null;
+      if(this.lastUpdate?.isNone ?? false) {
+        json[r'lastUpdate'] = null;
+      }
     }
     return json;
   }
@@ -59,8 +63,8 @@ class ReverseGeocodingStateResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ReverseGeocodingStateResponseDto(
-        lastImportFileName: mapValueOfType<String>(json, r'lastImportFileName'),
-        lastUpdate: mapValueOfType<String>(json, r'lastUpdate'),
+        lastImportFileName: Option.from(mapValueOfType<String>(json, r'lastImportFileName')),
+        lastUpdate: Option.from(mapValueOfType<String>(json, r'lastUpdate')),
       );
     }
     return null;

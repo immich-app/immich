@@ -57,7 +57,7 @@ class UserLicense {
       final json = value.cast<String, dynamic>();
 
       return UserLicense(
-        activatedAt: mapDateTime(json, r'activatedAt', r'')!,
+        activatedAt:  mapDateTime(json, r'activatedAt', r'')!,
         activationKey: mapValueOfType<String>(json, r'activationKey')!,
         licenseKey: mapValueOfType<String>(json, r'licenseKey')!,
       );

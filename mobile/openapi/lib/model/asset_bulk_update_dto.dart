@@ -31,7 +31,7 @@ class AssetBulkUpdateDto {
   ///
   String? dateTimeOriginal;
 
-  String? duplicateId;
+  Option<String>? duplicateId;
 
   List<String> ids;
 
@@ -110,10 +110,12 @@ class AssetBulkUpdateDto {
     } else {
     //  json[r'dateTimeOriginal'] = null;
     }
-    if (this.duplicateId != null) {
+    if (this.duplicateId?.isSome ?? false) {
       json[r'duplicateId'] = this.duplicateId;
     } else {
-    //  json[r'duplicateId'] = null;
+      if(this.duplicateId?.isNone ?? false) {
+        json[r'duplicateId'] = null;
+      }
     }
       json[r'ids'] = this.ids;
     if (this.isFavorite != null) {
@@ -154,7 +156,7 @@ class AssetBulkUpdateDto {
 
       return AssetBulkUpdateDto(
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
-        duplicateId: mapValueOfType<String>(json, r'duplicateId'),
+        duplicateId: Option.from(mapValueOfType<String>(json, r'duplicateId')),
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],

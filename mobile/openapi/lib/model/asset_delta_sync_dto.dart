@@ -51,7 +51,7 @@ class AssetDeltaSyncDto {
       final json = value.cast<String, dynamic>();
 
       return AssetDeltaSyncDto(
-        updatedAfter: mapDateTime(json, r'updatedAfter', r'')!,
+        updatedAfter:  mapDateTime(json, r'updatedAfter', r'')!,
         userIds: json[r'userIds'] is Iterable
             ? (json[r'userIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],

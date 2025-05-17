@@ -23,7 +23,7 @@ class UserAdminUpdateDto {
     this.storageLabel,
   });
 
-  UserAvatarColor? avatarColor;
+  Option<UserAvatarColor>? avatarColor;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -49,10 +49,10 @@ class UserAdminUpdateDto {
   ///
   String? password;
 
-  String? pinCode;
+  Option<String>? pinCode;
 
   /// Minimum value: 0
-  int? quotaSizeInBytes;
+  Option<int>? quotaSizeInBytes;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -62,7 +62,7 @@ class UserAdminUpdateDto {
   ///
   bool? shouldChangePassword;
 
-  String? storageLabel;
+  Option<String>? storageLabel;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminUpdateDto &&
@@ -92,10 +92,12 @@ class UserAdminUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor != null) {
+    if (this.avatarColor?.isSome ?? false) {
       json[r'avatarColor'] = this.avatarColor;
     } else {
-    //  json[r'avatarColor'] = null;
+      if(this.avatarColor?.isNone ?? false) {
+        json[r'avatarColor'] = null;
+      }
     }
     if (this.email != null) {
       json[r'email'] = this.email;
@@ -112,25 +114,31 @@ class UserAdminUpdateDto {
     } else {
     //  json[r'password'] = null;
     }
-    if (this.pinCode != null) {
+    if (this.pinCode?.isSome ?? false) {
       json[r'pinCode'] = this.pinCode;
     } else {
-    //  json[r'pinCode'] = null;
+      if(this.pinCode?.isNone ?? false) {
+        json[r'pinCode'] = null;
+      }
     }
-    if (this.quotaSizeInBytes != null) {
+    if (this.quotaSizeInBytes?.isSome ?? false) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-    //  json[r'quotaSizeInBytes'] = null;
+      if(this.quotaSizeInBytes?.isNone ?? false) {
+        json[r'quotaSizeInBytes'] = null;
+      }
     }
     if (this.shouldChangePassword != null) {
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
     //  json[r'shouldChangePassword'] = null;
     }
-    if (this.storageLabel != null) {
+    if (this.storageLabel?.isSome ?? false) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-    //  json[r'storageLabel'] = null;
+      if(this.storageLabel?.isNone ?? false) {
+        json[r'storageLabel'] = null;
+      }
     }
     return json;
   }
@@ -144,14 +152,14 @@ class UserAdminUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return UserAdminUpdateDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
+        avatarColor: Option.from(UserAvatarColor.fromJson(json[r'avatarColor'])),
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
-        pinCode: mapValueOfType<String>(json, r'pinCode'),
-        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
+        pinCode: Option.from(mapValueOfType<String>(json, r'pinCode')),
+        quotaSizeInBytes: Option.from(mapValueOfType<int>(json, r'quotaSizeInBytes')),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
-        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
+        storageLabel: Option.from(mapValueOfType<String>(json, r'storageLabel')),
       );
     }
     return null;

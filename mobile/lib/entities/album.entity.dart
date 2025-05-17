@@ -163,10 +163,11 @@ class Album {
           dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc;
     }
 
-    if (dto.albumThumbnailAssetId != null) {
+    if (dto.albumThumbnailAssetId != null &&
+        dto.albumThumbnailAssetId!.isSome) {
       a.thumbnail.value = await db.assets
           .where()
-          .remoteIdEqualTo(dto.albumThumbnailAssetId)
+          .remoteIdEqualTo(dto.albumThumbnailAssetId!.unwrap())
           .findFirst();
     }
     if (dto.albumUsers.isNotEmpty) {

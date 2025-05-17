@@ -23,7 +23,7 @@ class PersonResponseDto {
     this.updatedAt,
   });
 
-  DateTime? birthDate;
+  Option<DateTime>? birthDate;
 
   /// This property was added in v1.126.0
   ///
@@ -88,10 +88,12 @@ class PersonResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+    if (this.birthDate?.isSome ?? false) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.unwrap().toUtc());
     } else {
-    //  json[r'birthDate'] = null;
+      if(this.birthDate?.isNone ?? false) {
+        json[r'birthDate'] = null;
+      }
     }
     if (this.color != null) {
       json[r'color'] = this.color;
@@ -124,14 +126,14 @@ class PersonResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PersonResponseDto(
-        birthDate: mapDateTime(json, r'birthDate', r''),
+        birthDate: Option.from(mapDateTime(json, r'birthDate', r'')),
         color: mapValueOfType<String>(json, r'color'),
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
-        updatedAt: mapDateTime(json, r'updatedAt', r''),
+        updatedAt:  mapDateTime(json, r'updatedAt', r''),
       );
     }
     return null;

@@ -158,18 +158,18 @@ class MemoryResponseDto {
 
       return MemoryResponseDto(
         assets: AssetResponseDto.listFromJson(json[r'assets']),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
         data: OnThisDayDto.fromJson(json[r'data'])!,
-        deletedAt: mapDateTime(json, r'deletedAt', r''),
-        hideAt: mapDateTime(json, r'hideAt', r''),
+        deletedAt:  mapDateTime(json, r'deletedAt', r''),
+        hideAt:  mapDateTime(json, r'hideAt', r''),
         id: mapValueOfType<String>(json, r'id')!,
         isSaved: mapValueOfType<bool>(json, r'isSaved')!,
-        memoryAt: mapDateTime(json, r'memoryAt', r'')!,
+        memoryAt:  mapDateTime(json, r'memoryAt', r'')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        seenAt: mapDateTime(json, r'seenAt', r''),
-        showAt: mapDateTime(json, r'showAt', r''),
+        seenAt:  mapDateTime(json, r'seenAt', r''),
+        showAt:  mapDateTime(json, r'showAt', r''),
         type: MemoryType.fromJson(json[r'type'])!,
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt:  mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;

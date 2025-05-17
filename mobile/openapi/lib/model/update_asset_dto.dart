@@ -55,7 +55,7 @@ class UpdateAssetDto {
   ///
   num? latitude;
 
-  String? livePhotoVideoId;
+  Option<String>? livePhotoVideoId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -131,10 +131,12 @@ class UpdateAssetDto {
     } else {
     //  json[r'latitude'] = null;
     }
-    if (this.livePhotoVideoId != null) {
+    if (this.livePhotoVideoId?.isSome ?? false) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
-    //  json[r'livePhotoVideoId'] = null;
+      if(this.livePhotoVideoId?.isNone ?? false) {
+        json[r'livePhotoVideoId'] = null;
+      }
     }
     if (this.longitude != null) {
       json[r'longitude'] = this.longitude;
@@ -167,7 +169,7 @@ class UpdateAssetDto {
         description: mapValueOfType<String>(json, r'description'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
-        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
+        livePhotoVideoId: Option.from(mapValueOfType<String>(json, r'livePhotoVideoId')),
         longitude: num.parse('${json[r'longitude']}'),
         rating: num.parse('${json[r'rating']}'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),

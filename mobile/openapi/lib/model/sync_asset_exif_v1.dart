@@ -42,53 +42,53 @@ class SyncAssetExifV1 {
 
   String assetId;
 
-  String? city;
+  Option<String>? city;
 
-  String? country;
+  Option<String>? country;
 
-  DateTime? dateTimeOriginal;
+  Option<DateTime>? dateTimeOriginal;
 
-  String? description;
+  Option<String>? description;
 
-  int? exifImageHeight;
+  Option<int>? exifImageHeight;
 
-  int? exifImageWidth;
+  Option<int>? exifImageWidth;
 
-  String? exposureTime;
+  Option<String>? exposureTime;
 
-  int? fNumber;
+  Option<int>? fNumber;
 
-  int? fileSizeInByte;
+  Option<int>? fileSizeInByte;
 
-  int? focalLength;
+  Option<int>? focalLength;
 
-  int? fps;
+  Option<int>? fps;
 
-  int? iso;
+  Option<int>? iso;
 
-  int? latitude;
+  Option<int>? latitude;
 
-  String? lensModel;
+  Option<String>? lensModel;
 
-  int? longitude;
+  Option<int>? longitude;
 
-  String? make;
+  Option<String>? make;
 
-  String? model;
+  Option<String>? model;
 
-  DateTime? modifyDate;
+  Option<DateTime>? modifyDate;
 
-  String? orientation;
+  Option<String>? orientation;
 
-  String? profileDescription;
+  Option<String>? profileDescription;
 
-  String? projectionType;
+  Option<String>? projectionType;
 
-  int? rating;
+  Option<int>? rating;
 
-  String? state;
+  Option<String>? state;
 
-  String? timeZone;
+  Option<String>? timeZone;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetExifV1 &&
@@ -153,125 +153,173 @@ class SyncAssetExifV1 {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetId'] = this.assetId;
-    if (this.city != null) {
+    if (this.city?.isSome ?? false) {
       json[r'city'] = this.city;
     } else {
-    //  json[r'city'] = null;
+      if(this.city?.isNone ?? false) {
+        json[r'city'] = null;
+      }
     }
-    if (this.country != null) {
+    if (this.country?.isSome ?? false) {
       json[r'country'] = this.country;
     } else {
-    //  json[r'country'] = null;
+      if(this.country?.isNone ?? false) {
+        json[r'country'] = null;
+      }
     }
-    if (this.dateTimeOriginal != null) {
-      json[r'dateTimeOriginal'] = this.dateTimeOriginal!.toUtc().toIso8601String();
+    if (this.dateTimeOriginal?.isSome ?? false) {
+      json[r'dateTimeOriginal'] = this.dateTimeOriginal!.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'dateTimeOriginal'] = null;
+      if(this.dateTimeOriginal?.isNone ?? false) {
+        json[r'dateTimeOriginal'] = null;
+      }
     }
-    if (this.description != null) {
+    if (this.description?.isSome ?? false) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      if(this.description?.isNone ?? false) {
+        json[r'description'] = null;
+      }
     }
-    if (this.exifImageHeight != null) {
+    if (this.exifImageHeight?.isSome ?? false) {
       json[r'exifImageHeight'] = this.exifImageHeight;
     } else {
-    //  json[r'exifImageHeight'] = null;
+      if(this.exifImageHeight?.isNone ?? false) {
+        json[r'exifImageHeight'] = null;
+      }
     }
-    if (this.exifImageWidth != null) {
+    if (this.exifImageWidth?.isSome ?? false) {
       json[r'exifImageWidth'] = this.exifImageWidth;
     } else {
-    //  json[r'exifImageWidth'] = null;
+      if(this.exifImageWidth?.isNone ?? false) {
+        json[r'exifImageWidth'] = null;
+      }
     }
-    if (this.exposureTime != null) {
+    if (this.exposureTime?.isSome ?? false) {
       json[r'exposureTime'] = this.exposureTime;
     } else {
-    //  json[r'exposureTime'] = null;
+      if(this.exposureTime?.isNone ?? false) {
+        json[r'exposureTime'] = null;
+      }
     }
-    if (this.fNumber != null) {
+    if (this.fNumber?.isSome ?? false) {
       json[r'fNumber'] = this.fNumber;
     } else {
-    //  json[r'fNumber'] = null;
+      if(this.fNumber?.isNone ?? false) {
+        json[r'fNumber'] = null;
+      }
     }
-    if (this.fileSizeInByte != null) {
+    if (this.fileSizeInByte?.isSome ?? false) {
       json[r'fileSizeInByte'] = this.fileSizeInByte;
     } else {
-    //  json[r'fileSizeInByte'] = null;
+      if(this.fileSizeInByte?.isNone ?? false) {
+        json[r'fileSizeInByte'] = null;
+      }
     }
-    if (this.focalLength != null) {
+    if (this.focalLength?.isSome ?? false) {
       json[r'focalLength'] = this.focalLength;
     } else {
-    //  json[r'focalLength'] = null;
+      if(this.focalLength?.isNone ?? false) {
+        json[r'focalLength'] = null;
+      }
     }
-    if (this.fps != null) {
+    if (this.fps?.isSome ?? false) {
       json[r'fps'] = this.fps;
     } else {
-    //  json[r'fps'] = null;
+      if(this.fps?.isNone ?? false) {
+        json[r'fps'] = null;
+      }
     }
-    if (this.iso != null) {
+    if (this.iso?.isSome ?? false) {
       json[r'iso'] = this.iso;
     } else {
-    //  json[r'iso'] = null;
+      if(this.iso?.isNone ?? false) {
+        json[r'iso'] = null;
+      }
     }
-    if (this.latitude != null) {
+    if (this.latitude?.isSome ?? false) {
       json[r'latitude'] = this.latitude;
     } else {
-    //  json[r'latitude'] = null;
+      if(this.latitude?.isNone ?? false) {
+        json[r'latitude'] = null;
+      }
     }
-    if (this.lensModel != null) {
+    if (this.lensModel?.isSome ?? false) {
       json[r'lensModel'] = this.lensModel;
     } else {
-    //  json[r'lensModel'] = null;
+      if(this.lensModel?.isNone ?? false) {
+        json[r'lensModel'] = null;
+      }
     }
-    if (this.longitude != null) {
+    if (this.longitude?.isSome ?? false) {
       json[r'longitude'] = this.longitude;
     } else {
-    //  json[r'longitude'] = null;
+      if(this.longitude?.isNone ?? false) {
+        json[r'longitude'] = null;
+      }
     }
-    if (this.make != null) {
+    if (this.make?.isSome ?? false) {
       json[r'make'] = this.make;
     } else {
-    //  json[r'make'] = null;
+      if(this.make?.isNone ?? false) {
+        json[r'make'] = null;
+      }
     }
-    if (this.model != null) {
+    if (this.model?.isSome ?? false) {
       json[r'model'] = this.model;
     } else {
-    //  json[r'model'] = null;
+      if(this.model?.isNone ?? false) {
+        json[r'model'] = null;
+      }
     }
-    if (this.modifyDate != null) {
-      json[r'modifyDate'] = this.modifyDate!.toUtc().toIso8601String();
+    if (this.modifyDate?.isSome ?? false) {
+      json[r'modifyDate'] = this.modifyDate!.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'modifyDate'] = null;
+      if(this.modifyDate?.isNone ?? false) {
+        json[r'modifyDate'] = null;
+      }
     }
-    if (this.orientation != null) {
+    if (this.orientation?.isSome ?? false) {
       json[r'orientation'] = this.orientation;
     } else {
-    //  json[r'orientation'] = null;
+      if(this.orientation?.isNone ?? false) {
+        json[r'orientation'] = null;
+      }
     }
-    if (this.profileDescription != null) {
+    if (this.profileDescription?.isSome ?? false) {
       json[r'profileDescription'] = this.profileDescription;
     } else {
-    //  json[r'profileDescription'] = null;
+      if(this.profileDescription?.isNone ?? false) {
+        json[r'profileDescription'] = null;
+      }
     }
-    if (this.projectionType != null) {
+    if (this.projectionType?.isSome ?? false) {
       json[r'projectionType'] = this.projectionType;
     } else {
-    //  json[r'projectionType'] = null;
+      if(this.projectionType?.isNone ?? false) {
+        json[r'projectionType'] = null;
+      }
     }
-    if (this.rating != null) {
+    if (this.rating?.isSome ?? false) {
       json[r'rating'] = this.rating;
     } else {
-    //  json[r'rating'] = null;
+      if(this.rating?.isNone ?? false) {
+        json[r'rating'] = null;
+      }
     }
-    if (this.state != null) {
+    if (this.state?.isSome ?? false) {
       json[r'state'] = this.state;
     } else {
-    //  json[r'state'] = null;
+      if(this.state?.isNone ?? false) {
+        json[r'state'] = null;
+      }
     }
-    if (this.timeZone != null) {
+    if (this.timeZone?.isSome ?? false) {
       json[r'timeZone'] = this.timeZone;
     } else {
-    //  json[r'timeZone'] = null;
+      if(this.timeZone?.isNone ?? false) {
+        json[r'timeZone'] = null;
+      }
     }
     return json;
   }
@@ -286,30 +334,30 @@ class SyncAssetExifV1 {
 
       return SyncAssetExifV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        city: mapValueOfType<String>(json, r'city'),
-        country: mapValueOfType<String>(json, r'country'),
-        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
-        description: mapValueOfType<String>(json, r'description'),
-        exifImageHeight: mapValueOfType<int>(json, r'exifImageHeight'),
-        exifImageWidth: mapValueOfType<int>(json, r'exifImageWidth'),
-        exposureTime: mapValueOfType<String>(json, r'exposureTime'),
-        fNumber: mapValueOfType<int>(json, r'fNumber'),
-        fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
-        focalLength: mapValueOfType<int>(json, r'focalLength'),
-        fps: mapValueOfType<int>(json, r'fps'),
-        iso: mapValueOfType<int>(json, r'iso'),
-        latitude: mapValueOfType<int>(json, r'latitude'),
-        lensModel: mapValueOfType<String>(json, r'lensModel'),
-        longitude: mapValueOfType<int>(json, r'longitude'),
-        make: mapValueOfType<String>(json, r'make'),
-        model: mapValueOfType<String>(json, r'model'),
-        modifyDate: mapDateTime(json, r'modifyDate', r''),
-        orientation: mapValueOfType<String>(json, r'orientation'),
-        profileDescription: mapValueOfType<String>(json, r'profileDescription'),
-        projectionType: mapValueOfType<String>(json, r'projectionType'),
-        rating: mapValueOfType<int>(json, r'rating'),
-        state: mapValueOfType<String>(json, r'state'),
-        timeZone: mapValueOfType<String>(json, r'timeZone'),
+        city: Option.from(mapValueOfType<String>(json, r'city')),
+        country: Option.from(mapValueOfType<String>(json, r'country')),
+        dateTimeOriginal:  Option.from(mapDateTime(json, r'dateTimeOriginal', r'')),
+        description: Option.from(mapValueOfType<String>(json, r'description')),
+        exifImageHeight: Option.from(mapValueOfType<int>(json, r'exifImageHeight')),
+        exifImageWidth: Option.from(mapValueOfType<int>(json, r'exifImageWidth')),
+        exposureTime: Option.from(mapValueOfType<String>(json, r'exposureTime')),
+        fNumber: Option.from(mapValueOfType<int>(json, r'fNumber')),
+        fileSizeInByte: Option.from(mapValueOfType<int>(json, r'fileSizeInByte')),
+        focalLength: Option.from(mapValueOfType<int>(json, r'focalLength')),
+        fps: Option.from(mapValueOfType<int>(json, r'fps')),
+        iso: Option.from(mapValueOfType<int>(json, r'iso')),
+        latitude: Option.from(mapValueOfType<int>(json, r'latitude')),
+        lensModel: Option.from(mapValueOfType<String>(json, r'lensModel')),
+        longitude: Option.from(mapValueOfType<int>(json, r'longitude')),
+        make: Option.from(mapValueOfType<String>(json, r'make')),
+        model: Option.from(mapValueOfType<String>(json, r'model')),
+        modifyDate:  Option.from(mapDateTime(json, r'modifyDate', r'')),
+        orientation: Option.from(mapValueOfType<String>(json, r'orientation')),
+        profileDescription: Option.from(mapValueOfType<String>(json, r'profileDescription')),
+        projectionType: Option.from(mapValueOfType<String>(json, r'projectionType')),
+        rating: Option.from(mapValueOfType<int>(json, r'rating')),
+        state: Option.from(mapValueOfType<String>(json, r'state')),
+        timeZone: Option.from(mapValueOfType<String>(json, r'timeZone')),
       );
     }
     return null;

@@ -28,21 +28,21 @@ class SyncAssetV1 {
 
   String checksum;
 
-  DateTime? deletedAt;
+  Option<DateTime>? deletedAt;
 
-  DateTime? fileCreatedAt;
+  Option<DateTime>? fileCreatedAt;
 
-  DateTime? fileModifiedAt;
+  Option<DateTime>? fileModifiedAt;
 
   String id;
 
   bool isFavorite;
 
-  DateTime? localDateTime;
+  Option<DateTime>? localDateTime;
 
   String ownerId;
 
-  String? thumbhash;
+  Option<String>? thumbhash;
 
   SyncAssetV1TypeEnum type;
 
@@ -83,33 +83,43 @@ class SyncAssetV1 {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum'] = this.checksum;
-    if (this.deletedAt != null) {
-      json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
+    if (this.deletedAt?.isSome ?? false) {
+      json[r'deletedAt'] = this.deletedAt!.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      if(this.deletedAt?.isNone ?? false) {
+        json[r'deletedAt'] = null;
+      }
     }
-    if (this.fileCreatedAt != null) {
-      json[r'fileCreatedAt'] = this.fileCreatedAt!.toUtc().toIso8601String();
+    if (this.fileCreatedAt?.isSome ?? false) {
+      json[r'fileCreatedAt'] = this.fileCreatedAt!.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'fileCreatedAt'] = null;
+      if(this.fileCreatedAt?.isNone ?? false) {
+        json[r'fileCreatedAt'] = null;
+      }
     }
-    if (this.fileModifiedAt != null) {
-      json[r'fileModifiedAt'] = this.fileModifiedAt!.toUtc().toIso8601String();
+    if (this.fileModifiedAt?.isSome ?? false) {
+      json[r'fileModifiedAt'] = this.fileModifiedAt!.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'fileModifiedAt'] = null;
+      if(this.fileModifiedAt?.isNone ?? false) {
+        json[r'fileModifiedAt'] = null;
+      }
     }
       json[r'id'] = this.id;
       json[r'isFavorite'] = this.isFavorite;
-    if (this.localDateTime != null) {
-      json[r'localDateTime'] = this.localDateTime!.toUtc().toIso8601String();
+    if (this.localDateTime?.isSome ?? false) {
+      json[r'localDateTime'] = this.localDateTime!.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'localDateTime'] = null;
+      if(this.localDateTime?.isNone ?? false) {
+        json[r'localDateTime'] = null;
+      }
     }
       json[r'ownerId'] = this.ownerId;
-    if (this.thumbhash != null) {
+    if (this.thumbhash?.isSome ?? false) {
       json[r'thumbhash'] = this.thumbhash;
     } else {
-    //  json[r'thumbhash'] = null;
+      if(this.thumbhash?.isNone ?? false) {
+        json[r'thumbhash'] = null;
+      }
     }
       json[r'type'] = this.type;
       json[r'visibility'] = this.visibility;
@@ -126,14 +136,14 @@ class SyncAssetV1 {
 
       return SyncAssetV1(
         checksum: mapValueOfType<String>(json, r'checksum')!,
-        deletedAt: mapDateTime(json, r'deletedAt', r''),
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r''),
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r''),
+        deletedAt:  Option.from(mapDateTime(json, r'deletedAt', r'')),
+        fileCreatedAt:  Option.from(mapDateTime(json, r'fileCreatedAt', r'')),
+        fileModifiedAt:  Option.from(mapDateTime(json, r'fileModifiedAt', r'')),
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
-        localDateTime: mapDateTime(json, r'localDateTime', r''),
+        localDateTime:  Option.from(mapDateTime(json, r'localDateTime', r'')),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        thumbhash: mapValueOfType<String>(json, r'thumbhash'),
+        thumbhash: Option.from(mapValueOfType<String>(json, r'thumbhash')),
         type: SyncAssetV1TypeEnum.fromJson(json[r'type'])!,
         visibility: SyncAssetV1VisibilityEnum.fromJson(json[r'visibility'])!,
       );
