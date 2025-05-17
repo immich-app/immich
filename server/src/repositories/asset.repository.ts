@@ -708,7 +708,7 @@ export class AssetRepository {
           .$narrowType<{ duplicateId: NotNull }>()
           .where('assets.ownerId', '=', asUuid(userId))
           .where('assets.deletedAt', 'is', null)
-          .where('visibility', '!=', AssetVisibility.HIDDEN)
+          .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
           .groupBy('assets.duplicateId'),
       )
       .with('unique', (qb) =>
