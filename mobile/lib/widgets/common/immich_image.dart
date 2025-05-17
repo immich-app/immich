@@ -75,13 +75,10 @@ class ImmichImage extends StatelessWidget {
       );
     }
 
-    final double requestWidth = width ?? context.width;
-    final double requestHeight = height ?? context.height;
-
     final imageProviderInstance = ImmichImage.imageProvider(
       asset: asset,
-      width: requestWidth,
-      height: requestHeight,
+      width: context.width,
+      height: context.height,
     );
 
     return OctoImage(
