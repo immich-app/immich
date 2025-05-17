@@ -4,8 +4,8 @@ import { getAssetDuplicates } from '@immich/sdk';
 import { fail } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params }) => {
-  await authenticate();
+export const load = (async ({ params, url }) => {
+  await authenticate(url);
   const duplicates = await getAssetDuplicates();
   const $t = await getFormatter();
 

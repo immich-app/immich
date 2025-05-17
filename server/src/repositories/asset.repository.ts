@@ -704,8 +704,9 @@ export class AssetRepository {
           .select('assets.duplicateId')
           .select((eb) => eb.fn('jsonb_agg', [eb.table('asset')]).as('assets'))
           .select((eb) => sql<MapAsset>`(${eb.fn('jsonb_agg', [eb.table('asset')])}->>0)::jsonb`.as('exampleAsset'))
-          .where('assets.ownerId', '=', asUuid(userId))
           .where('assets.duplicateId', 'is not', null)
+          .$narrowType<{ duplicateId: NotNull }>()
+          .where('assets.ownerId', '=', asUuid(userId))
           .where('assets.deletedAt', 'is', null)
           .where('visibility', '!=', AssetVisibility.HIDDEN)
           .groupBy('assets.duplicateId'),
@@ -725,6 +726,7 @@ export class AssetRepository {
       )
       .selectFrom('duplicates')
       .select(['duplicateId', 'exampleAsset'])
+      .where('duplicateId', 'is not', null)
       .where(({ not, exists }) =>
         not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
       )
@@ -748,9 +750,15 @@ export class AssetRepository {
             (join) => join.onTrue(),
           )
           .select('assets.duplicateId')
-          .select((eb) => eb.fn('jsonb_agg', [eb.table('asset')]).as('assets'))
+          .select((eb) =>
+            eb
+              .fn('jsonb_agg', [eb.table('asset')])
+              .$castTo<MapAsset[]>()
+              .as('assets'),
+          )
           .where('assets.ownerId', '=', asUuid(userId))
           .where('assets.duplicateId', 'is not', null)
+          .$narrowType<{ duplicateId: NotNull }>()
           .where('assets.deletedAt', 'is', null)
           .where('visibility', '!=', AssetVisibility.HIDDEN)
           .groupBy('assets.duplicateId'),
