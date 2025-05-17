@@ -1350,7 +1350,7 @@
   "public_share": "Chia sẻ công khai",
   "purchase_account_info": "Người hỗ trợ",
   "purchase_activated_subtitle": "Cảm ơn bạn đã hỗ trợ Immich và phần mềm mã nguồn mở",
-  "purchase_activated_time": "Đã kích hoạt vào {date, date}",
+  "purchase_activated_time": "Đã kích hoạt vào {date}",
   "purchase_activated_title": "Khóa của bạn đã được kích hoạt thành công",
   "purchase_button_activate": "Kích hoạt",
   "purchase_button_buy": "Mua",

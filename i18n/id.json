@@ -1383,7 +1383,7 @@
   "public_share": "Pembagian Publik",
   "purchase_account_info": "Pendukung",
   "purchase_activated_subtitle": "Terima kasih telah mendukung Immich dan perangkat lunak sumber terbuka",
-  "purchase_activated_time": "Di aktivasi pada {date, date}",
+  "purchase_activated_time": "Di aktivasi pada {date}",
   "purchase_activated_title": "Kunci kamu telah sukses di aktivasi",
   "purchase_button_activate": "Aktifkan",
   "purchase_button_buy": "Beli",

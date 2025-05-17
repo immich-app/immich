@@ -1380,7 +1380,7 @@
   "public_share": "Distribuire Publică",
   "purchase_account_info": "Suporter",
   "purchase_activated_subtitle": "Vă mulțumim că susțineți Immich și software-ul open-source",
-  "purchase_activated_time": "Activat pe data de {date, date}",
+  "purchase_activated_time": "Activat pe data de {date}",
   "purchase_activated_title": "Cheia dvs. a fost activată cu succes",
   "purchase_button_activate": "Activați",
   "purchase_button_buy": "Cumpărați",

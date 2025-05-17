@@ -984,7 +984,7 @@
   "public_share": "பொது பங்கு",
   "purchase_account_info": "ஆதரவாளர்",
   "purchase_activated_subtitle": "இம்மிச் மற்றும் திறந்த மூல மென்பொருளை ஆதரித்ததற்கு நன்றி",
-  "purchase_activated_time": "{தேதி, தேதி} இல் செயல்படுத்தப்பட்டது",
+  "purchase_activated_time": "{date} இல் செயல்படுத்தப்பட்டது",
   "purchase_activated_title": "உங்கள் திறவுகோல் வெற்றிகரமாக செயல்படுத்தப்பட்டுள்ளது",
   "purchase_button_activate": "செயல்படுத்து",
   "purchase_button_buy": "வாங்க",

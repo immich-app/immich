@@ -1368,7 +1368,7 @@
   "public_share": "Verejné zdieľanie",
   "purchase_account_info": "Podporovateľ",
   "purchase_activated_subtitle": "Ďakujeme za podporu Immich a softvéru s otvorenými zdrojákmi",
-  "purchase_activated_time": "Aktivované {date, date}",
+  "purchase_activated_time": "Aktivované {date}",
   "purchase_activated_title": "Váš kľúč je úspešne aktivovaný",
   "purchase_button_activate": "Aktivovať",
   "purchase_button_buy": "Kúpiť",
