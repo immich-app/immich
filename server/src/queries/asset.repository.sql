@@ -347,6 +347,122 @@ where
       "unique"."duplicateId" = "duplicates"."duplicateId"
   )
 
+-- AssetRepository.getDuplicatesInfo
+with
+  "duplicates" as (
+    select
+      "assets"."duplicateId",
+      jsonb_agg("asset") as "assets",
+      (jsonb_agg("asset") ->> 0)::jsonb as "exampleAsset"
+    from
+      "assets"
+      left join lateral (
+        select
+          "assets".*,
+          "exif" as "exifInfo"
+        from
+          "exif"
+        where
+          "exif"."assetId" = "assets"."id"
+      ) as "asset" on true
+    where
+      "assets"."duplicateId" is not null
+      and "assets"."ownerId" = $1::uuid
+      and "assets"."deletedAt" is null
+      and "assets"."visibility" != $2
+    group by
+      "assets"."duplicateId"
+  ),
+  "unique" as (
+    select
+      "duplicateId"
+    from
+      "duplicates"
+    where
+      jsonb_array_length("assets") = $3
+  ),
+  "removed_unique" as (
+    update "assets"
+    set
+      "duplicateId" = $4
+    from
+      "unique"
+    where
+      "assets"."duplicateId" = "unique"."duplicateId"
+  )
+select
+  "duplicateId",
+  "exampleAsset"
+from
+  "duplicates"
+where
+  "duplicateId" is not null
+  and not exists (
+    select
+    from
+      "unique"
+    where
+      "unique"."duplicateId" = "duplicates"."duplicateId"
+  )
+
+-- AssetRepository.getDuplicateById
+with
+  "duplicates" as (
+    select
+      "assets"."duplicateId",
+      jsonb_agg("asset") as "assets"
+    from
+      "assets"
+      left join lateral (
+        select
+          "assets".*,
+          "exif" as "exifInfo"
+        from
+          "exif"
+        where
+          "exif"."assetId" = "assets"."id"
+      ) as "asset" on true
+    where
+      "assets"."ownerId" = $1::uuid
+      and "assets"."duplicateId" is not null
+      and "assets"."deletedAt" is null
+      and "assets"."visibility" != $2
+    group by
+      "assets"."duplicateId"
+  ),
+  "unique" as (
+    select
+      "duplicateId"
+    from
+      "duplicates"
+    where
+      jsonb_array_length("assets") = $3
+  ),
+  "removed_unique" as (
+    update "assets"
+    set
+      "duplicateId" = $4
+    from
+      "unique"
+    where
+      "assets"."duplicateId" = "unique"."duplicateId"
+  )
+select
+  *
+from
+  "duplicates"
+where
+  "duplicates"."duplicateId" = $5::uuid
+  and not exists (
+    select
+    from
+      "unique"
+    where
+      "unique"."duplicateId" = "duplicates"."duplicateId"
+  )
+limit
+  $6
+
 -- AssetRepository.getAssetIdByCity
 with
   "cities" as (
