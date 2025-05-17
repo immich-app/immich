@@ -33,7 +33,7 @@ export class PersonCreateDto {
   @ApiProperty({ format: 'date' })
   @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
   @IsDateStringFormat('yyyy-MM-dd')
-  @Optional({ nullable: true })
+  @Optional({ nullable: true, emptyToNull: true })
   birthDate?: Date | null;
 
   /**
@@ -54,8 +54,7 @@ export class PersonUpdateDto extends PersonCreateDto {
   /**
    * Asset is used to get the feature face thumbnail.
    */
-  @Optional()
-  @IsString()
+  @ValidateUUID({ optional: true })
   featureFaceAssetId?: string;
 }
 

@@ -1310,7 +1310,7 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalledWith(
         expect.objectContaining({ visibility: AssetVisibility.HIDDEN }),
       );
-      expect(mocks.album.removeAsset).not.toHaveBeenCalled();
+      expect(mocks.album.removeAssetsFromAll).not.toHaveBeenCalled();
     });
 
     it('should handle not finding a match', async () => {
@@ -1331,7 +1331,7 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalledWith(
         expect.objectContaining({ visibility: AssetVisibility.HIDDEN }),
       );
-      expect(mocks.album.removeAsset).not.toHaveBeenCalled();
+      expect(mocks.album.removeAssetsFromAll).not.toHaveBeenCalled();
     });
 
     it('should link photo and video', async () => {
@@ -1356,7 +1356,7 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoMotionAsset.id,
         visibility: AssetVisibility.HIDDEN,
       });
-      expect(mocks.album.removeAsset).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.id);
+      expect(mocks.album.removeAssetsFromAll).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id]);
     });
 
     it('should notify clients on live photo link', async () => {

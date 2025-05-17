@@ -5,10 +5,9 @@
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiCake } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import Button from '../components/elements/buttons/button.svelte';
   import DateInput from '../components/elements/date-input.svelte';
 
   interface Props {
@@ -25,7 +24,7 @@
     try {
       const updatedPerson = await updatePerson({
         id: person.id,
-        personUpdateDto: { birthDate: birthDate.length > 0 ? birthDate : null },
+        personUpdateDto: { birthDate },
       });
 
       notificationController.show({ message: $t('date_of_birth_saved'), type: NotificationType.Info });
@@ -54,14 +53,25 @@
           bind:value={birthDate}
           max={todayFormatted}
         />
+        {#if person.birthDate}
+          <div class="flex justify-end">
+            <Button shape="round" color="secondary" size="small" onclick={() => (birthDate = '')}>
+              {$t('clear')}
+            </Button>
+          </div>
+        {/if}
       </div>
     </form>
   </ModalBody>
 
   <ModalFooter>
     <div class="flex gap-3 w-full">
-      <Button color="secondary" fullwidth onclick={() => onClose()}>{$t('cancel')}</Button>
-      <Button type="submit" fullwidth form="set-birth-date-form">{$t('set')}</Button>
+      <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>
+        {$t('cancel')}
+      </Button>
+      <Button type="submit" shape="round" color="primary" fullWidth form="set-birth-date-form">
+        {$t('save')}
+      </Button>
     </div>
   </ModalFooter>
 </Modal>

@@ -8,12 +8,12 @@
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -67,6 +67,7 @@
     updateAlbumInfo,
     type AlbumUserAddDto,
   } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCogOutline,
@@ -478,6 +479,7 @@
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if assetInteraction.isAllUserOwned}
             <ChangeDate menuItem />
+            <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             {#if assetInteraction.selectedAssets.length === 1}
               <MenuOption
@@ -552,7 +554,7 @@
             {/if}
 
             {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
-              <Button size="sm" rounded="lg" disabled={album.assetCount === 0} onclick={handleShare}>
+              <Button size="small" disabled={album.assetCount === 0} onclick={handleShare}>
                 {$t('share')}
               </Button>
             {/if}
@@ -580,7 +582,7 @@
             >
               {$t('select_from_computer')}
             </button>
-            <Button size="sm" rounded="lg" disabled={!timelineInteraction.selectionActive} onclick={handleAddAssets}
+            <Button size="small" disabled={!timelineInteraction.selectionActive} onclick={handleAddAssets}
               >{$t('done')}</Button
             >
           {/snippet}

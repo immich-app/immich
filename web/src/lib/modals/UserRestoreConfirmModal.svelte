@@ -23,7 +23,7 @@
   };
 </script>
 
-<Modal title={$t('restore_user')} {onClose} icon={mdiDeleteRestore} size="small" class="bg-light text-dark">
+<Modal title={$t('restore_user')} {onClose} icon={mdiDeleteRestore} size="small">
   <ModalBody>
     <p>
       <FormatMessage key="admin.user_restore_description" values={{ user: user.name }}>

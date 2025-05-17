@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ImmichProduct } from '$lib/constants';
   import { getLicenseLink } from '$lib/utils/license-utils';
+  import { Button } from '@immich/ui';
   import { mdiCheckCircleOutline, mdiServer } from '@mdi/js';
   import { t } from 'svelte-i18n';
 </script>
@@ -39,6 +39,6 @@
       </div>
     </div>
 
-    <Button href={getLicenseLink(ImmichProduct.Server)} fullwidth>{$t('purchase_button_select')}</Button>
+    <Button shape="round" href={getLicenseLink(ImmichProduct.Server)} fullWidth>{$t('purchase_button_select')}</Button>
   </div>
 </div>
