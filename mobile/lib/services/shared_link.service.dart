@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -56,7 +57,7 @@ class SharedLinkService {
           showMetadata: showMeta,
           allowDownload: allowDownload,
           allowUpload: allowUpload,
-          expiresAt: expiresAt,
+          expiresAt: Option.from(expiresAt),
           description: description,
           password: password,
         );
@@ -66,7 +67,7 @@ class SharedLinkService {
           showMetadata: showMeta,
           allowDownload: allowDownload,
           allowUpload: allowUpload,
-          expiresAt: expiresAt,
+          expiresAt: Option.from(expiresAt),
           description: description,
           password: password,
           assetIds: assetIds,
@@ -103,7 +104,7 @@ class SharedLinkService {
           showMetadata: showMeta,
           allowDownload: allowDownload,
           allowUpload: allowUpload,
-          expiresAt: expiresAt,
+          expiresAt: Option.from(expiresAt),
           description: description,
           password: password,
           changeExpiryTime: changeExpiry,

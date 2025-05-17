@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/search/search_result.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -61,11 +62,11 @@ class SearchService {
           SmartSearchDto(
             query: filter.context!,
             language: filter.language,
-            country: filter.location.country,
-            state: filter.location.state,
-            city: filter.location.city,
+            country: Option.from(filter.location.country),
+            state: Option.from(filter.location.state),
+            city: Option.from(filter.location.city),
             make: filter.camera.make,
-            model: filter.camera.model,
+            model: Option.from(filter.camera.model),
             takenAfter: filter.date.takenAfter,
             takenBefore: filter.date.takenBefore,
             visibility: filter.display.isArchive
@@ -86,15 +87,15 @@ class SearchService {
                 filter.filename != null && filter.filename!.isNotEmpty
                     ? filter.filename
                     : null,
-            country: filter.location.country,
+            country: Option.from(filter.location.country),
             description:
                 filter.description != null && filter.description!.isNotEmpty
                     ? filter.description
                     : null,
-            state: filter.location.state,
-            city: filter.location.city,
+            state: Option.from(filter.location.state),
+            city: Option.from(filter.location.city),
             make: filter.camera.make,
-            model: filter.camera.model,
+            model: Option.from(filter.camera.model),
             takenAfter: filter.date.takenAfter,
             takenBefore: filter.date.takenBefore,
             visibility: filter.display.isArchive
@@ -118,7 +119,7 @@ class SearchService {
         assets: await _assetRepository.getAllByRemoteId(
           response.assets.items.map((e) => e.id),
         ),
-        nextPage: response.assets.nextPage?.toInt(),
+        nextPage: response.assets.nextPage.unwrapOrNull()?.toInt(),
       );
     } catch (error, stackTrace) {
       _log.severe("Failed to search for assets", error, stackTrace);

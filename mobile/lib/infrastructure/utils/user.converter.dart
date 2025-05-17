@@ -31,8 +31,8 @@ abstract final class UserConverter {
         inTimeline: false,
         isPartnerSharedBy: false,
         isPartnerSharedWith: false,
-        quotaUsageInBytes: adminDto.quotaUsageInBytes ?? 0,
-        quotaSizeInBytes: adminDto.quotaSizeInBytes ?? 0,
+        quotaUsageInBytes: adminDto.quotaUsageInBytes.unwrapOrNull() ?? 0,
+        quotaSizeInBytes: adminDto.quotaSizeInBytes.unwrapOrNull() ?? 0,
       );
 
   static UserDto fromPartnerDto(PartnerResponseDto dto) => UserDto(

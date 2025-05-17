@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
-
 import 'package:immich_mobile/services/search.service.dart';
 
 final getPreviewPlacesProvider =
@@ -41,7 +40,7 @@ final getAllPlacesProvider =
   final curatedContent = assetPlaces
       .map(
         (data) => SearchCuratedContent(
-          label: data.exifInfo!.city!,
+          label: data.exifInfo!.city.unwrap(),
           id: data.id,
         ),
       )

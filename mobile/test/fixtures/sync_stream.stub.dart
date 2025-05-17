@@ -1,11 +1,12 @@
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:openapi/api.dart';
 
 abstract final class SyncStreamStub {
   static final userV1Admin = SyncEvent(
     type: SyncEntityType.userV1,
     data: SyncUserV1(
-      deletedAt: DateTime(2020),
+      deletedAt: Some(DateTime(2020)),
       email: "admin@admin",
       id: "1",
       name: "Admin",
@@ -15,7 +16,7 @@ abstract final class SyncStreamStub {
   static final userV1User = SyncEvent(
     type: SyncEntityType.userV1,
     data: SyncUserV1(
-      deletedAt: DateTime(2021),
+      deletedAt: Some(DateTime(2021)),
       email: "user@user",
       id: "5",
       name: "User",

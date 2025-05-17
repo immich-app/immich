@@ -27,9 +27,9 @@ class Asset {
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
         fileName = remote.originalFileName,
-        height = remote.exifInfo?.exifImageHeight?.toInt(),
-        width = remote.exifInfo?.exifImageWidth?.toInt(),
-        livePhotoVideoId = remote.livePhotoVideoId,
+        height = remote.exifInfo?.exifImageHeight.unwrapOrNull()?.toInt(),
+        width = remote.exifInfo?.exifImageWidth.unwrapOrNull()?.toInt(),
+        livePhotoVideoId = remote.livePhotoVideoId.unwrapOrNull(),
         ownerId = fastHash(remote.ownerId),
         exifInfo = remote.exifInfo == null
             ? null
@@ -40,12 +40,13 @@ class Asset {
         isOffline = remote.isOffline,
         // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
         // stack handling to properly handle it
-        stackPrimaryAssetId = remote.stack?.primaryAssetId == remote.id
-            ? null
-            : remote.stack?.primaryAssetId,
-        stackCount = remote.stack?.assetCount ?? 0,
-        stackId = remote.stack?.id,
-        thumbhash = remote.thumbhash;
+        stackPrimaryAssetId =
+            remote.stack.unwrapOrNull()?.primaryAssetId == remote.id
+                ? null
+                : remote.stack.unwrapOrNull()?.primaryAssetId,
+        stackCount = remote.stack.unwrapOrNull()?.assetCount ?? 0,
+        stackId = remote.stack.unwrapOrNull()?.id,
+        thumbhash = remote.thumbhash.unwrapOrNull();
 
   Asset({
     this.id = Isar.autoIncrement,
