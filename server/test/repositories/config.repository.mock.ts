@@ -84,7 +84,7 @@ const envData: EnvData = {
     metrics: new Set(),
   },
 
-  workers: [ImmichWorker.API, ImmichWorker.MICROSERVICES],
+  workers: [ImmichWorker.API, ImmichWorker.MICROSERVICES, ImmichWorker.TRANSCODER],
 
   noColor: false,
 };

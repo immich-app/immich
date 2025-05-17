@@ -29,6 +29,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
               trash: true,
               oauthEnabled: false,
               passwordLogin: true,
+              streamingType: ""
             ),
             serverConfig: const ServerConfig(
               trashDays: 30,

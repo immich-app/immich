@@ -16,7 +16,7 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { NotificationDto } from 'src/dtos/notification.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { ImmichWorker, MetadataKey, QueueName } from 'src/enum';
+import { ImmichWorker, MetadataKey, QueueName, VideoCodec } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { JobItem, JobSource } from 'src/types';
@@ -84,9 +84,18 @@ type EventMap = {
 
   // websocket events
   'websocket.connect': [{ userId: string }];
+
+  'media.liveTranscode': [{
+    path: string,
+    id: string,
+    quality: string,
+    partTimes: number[],
+    keyTimes: number[],
+    codec: VideoCodec,
+  }]
 };
 
-export const serverEvents = ['config.update'] as const;
+export const serverEvents = ['config.update', 'media.liveTranscode'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export type EmitEvent = keyof EventMap;
