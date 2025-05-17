@@ -150,7 +150,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@9559e51d05873b0ea467c42bbabcb5c067642ccc # v2.1.5
+        uses: gruntwork-io/terragrunt-action@aee21a7df999be8b471c2a8564c6cd853cb674e1 # v2.1.8
         with:
           tg_version: '0.58.12'
           tofu_version: '1.7.1'
@@ -165,7 +165,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@9559e51d05873b0ea467c42bbabcb5c067642ccc # v2.1.5
+        uses: gruntwork-io/terragrunt-action@aee21a7df999be8b471c2a8564c6cd853cb674e1 # v2.1.8
         with:
           tg_version: '0.58.12'
           tofu_version: '1.7.1'
@@ -199,7 +199,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@9559e51d05873b0ea467c42bbabcb5c067642ccc # v2.1.5
+        uses: gruntwork-io/terragrunt-action@aee21a7df999be8b471c2a8564c6cd853cb674e1 # v2.1.8
         with:
           tg_version: '0.58.12'
           tofu_version: '1.7.1'
