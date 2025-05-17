@@ -3021,6 +3021,49 @@
         ]
       }
     },
+    "/large-assets": {
+      "get": {
+        "operationId": "getLargeAssets",
+        "parameters": [
+          {
+            "name": "take",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LargeAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "LargeAssets"
+        ]
+      }
+    },
     "/libraries": {
       "get": {
         "operationId": "getAllLibraries",
@@ -10129,6 +10172,20 @@
         "required": [
           "jobCounts",
           "queueStatus"
+        ],
+        "type": "object"
+      },
+      "LargeAssetsResponseDto": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assets"
         ],
         "type": "object"
       },
