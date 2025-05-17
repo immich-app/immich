@@ -1,0 +1,12 @@
+diff --git a/dart_constructor.mustache b/dart_constructor.mustache
+index dc5dfec..4993ab9 100644
+--- a/dart_constructor.mustache
++++ b/dart_constructor.mustache
+@@ -5,6 +5,6 @@
+         A field is required in Dart when it is
+         required && !defaultValue in OAS
+     }}
+-    {{#required}}{{^defaultValue}}required {{/defaultValue}}{{/required}}this.{{{name}}}{{#defaultValue}} = {{#isEnum}}{{^isContainer}}const {{{enumName}}}._({{/isContainer}}{{/isEnum}}{{{.}}}{{#isEnum}}{{^isContainer}}){{/isContainer}}{{/isEnum}}{{/defaultValue}},
++    {{^isNullable}}{{#required}}{{^defaultValue}}required {{/defaultValue}}{{/required}}{{/isNullable}}this.{{{name}}}{{#isNullable}} = const None(){{/isNullable}}{{^isNullable}}{{#defaultValue}} = {{#isEnum}}{{^isContainer}}const {{{enumName}}}._({{/isContainer}}{{/isEnum}}{{{.}}}{{#isEnum}}{{^isContainer}}){{/isContainer}}{{/isEnum}}{{/defaultValue}}{{/isNullable}},
+   {{/vars}}
+   });

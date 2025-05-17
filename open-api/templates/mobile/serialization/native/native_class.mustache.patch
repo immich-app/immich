@@ -1,11 +1,73 @@
---- native_class.mustache	2024-09-19 11:41:07.855683995 -0400
-+++ native_class_temp.mustache	2024-09-19 11:41:57.113249395 -0400
-@@ -91,14 +91,14 @@
+diff --git a/native_class.mustache b/native_class.mustache
+index 3a6c457..e321056 100644
+--- a/native_class.mustache
++++ b/native_class.mustache
+@@ -32,7 +32,7 @@ class {{{classname}}} {
+       {{/required}}
+     {{/isNullable}}
+   {{/isEnum}}
+-  {{{datatypeWithEnum}}}{{#isNullable}}?{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}?{{/defaultValue}}{{/required}}{{/isNullable}} {{{name}}};
++  {{#isNullable}}Option<{{/isNullable}}{{{datatypeWithEnum}}}{{#isNullable}}>{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}?{{/defaultValue}}{{/required}}{{/isNullable}} {{{name}}};
+ 
+ {{/vars}}
+   @override
+@@ -45,7 +45,7 @@ class {{{classname}}} {
+   int get hashCode =>
+     // ignore: unnecessary_parenthesis
+   {{#vars}}
+-    ({{#isNullable}}{{{name}}} == null ? 0 : {{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}{{{name}}} == null ? 0 : {{/defaultValue}}{{/required}}{{/isNullable}}{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.hashCode){{^-last}} +{{/-last}}{{#-last}};{{/-last}}
++    ({{^isNullable}}{{^required}}{{^defaultValue}}{{{name}}} == null ? 0 : {{/defaultValue}}{{/required}}{{/isNullable}}{{{name}}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.hashCode){{^-last}} +{{/-last}}{{#-last}};{{/-last}}
+   {{/vars}}
+ 
+   @override
+@@ -55,7 +55,7 @@ class {{{classname}}} {
+     final json = <String, dynamic>{};
+   {{#vars}}
+     {{#isNullable}}
+-    if (this.{{{name}}} != null) {
++    if (this.{{{name}}}.unwrapOrNull() != null) {
+     {{/isNullable}}
+     {{^isNullable}}
+       {{^required}}
+@@ -67,38 +67,40 @@ class {{{classname}}} {
+     {{#isDateTime}}
+       {{#pattern}}
+       json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
+-        ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
+-        : this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
++        ? this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
++        : this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
+       {{/pattern}}
+       {{^pattern}}
+-      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
++      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
+       {{/pattern}}
+     {{/isDateTime}}
+     {{#isDate}}
+       {{#pattern}}
+       json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
+-        ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
+-        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
++        ? this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
++        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
+       {{/pattern}}
+       {{^pattern}}
+-      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
++      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
+       {{/pattern}}
+     {{/isDate}}
+     {{^isDateTime}}
+       {{^isDate}}
+-      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isArray}}{{#uniqueItems}}{{#isNullable}}!{{/isNullable}}.toList(growable: false){{/uniqueItems}}{{/isArray}};
++      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isArray}}{{#uniqueItems}}{{#isNullable}}.unwrap(){{/isNullable}}.toList(growable: false){{/uniqueItems}}{{/isArray}};
+       {{/isDate}}
      {{/isDateTime}}
      {{#isNullable}}
      } else {
 -      json[r'{{{baseName}}}'] = null;
-+    //  json[r'{{{baseName}}}'] = null;
++      if(this.{{{name}}}.isSome) {
++        json[r'{{{baseName}}}'] = null;
++      }
      }
      {{/isNullable}}
      {{^isNullable}}
@@ -17,14 +79,14 @@
      }
          {{/defaultValue}}
        {{/required}}
-@@ -111,20 +111,10 @@
+@@ -111,27 +113,17 @@ class {{{classname}}} {
    /// [value] if it's a [Map], null otherwise.
    // ignore: prefer_constructors_over_static_methods
    static {{{classname}}}? fromJson(dynamic value) {
 +    upgradeDto(value, "{{{classname}}}");
      if (value is Map) {
        final json = value.cast<String, dynamic>();
-
+ 
 -      // Ensure that the map contains the required keys.
 -      // Note 1: the values aren't checked for validity beyond being non-null.
 -      // Note 2: this code is stripped in release mode!
@@ -39,19 +101,46 @@
        return {{{classname}}}(
    {{#vars}}
      {{#isDateTime}}
-@@ -215,6 +205,10 @@
+-        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
++        {{{name}}}:  {{#isNullable}}Option.from({{/isNullable}}mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
+     {{/isDateTime}}
+     {{#isDate}}
+-        {{{name}}}: mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
++        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}mapDateTime(json, r'{{{baseName}}}', r'{{{pattern}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
+     {{/isDate}}
+     {{^isDateTime}}
+       {{^isDate}}
+@@ -189,7 +181,7 @@ class {{{classname}}} {
+         {{{name}}}: null, // No support for decoding binary content from JSON
+               {{/isBinary}}
+               {{^isBinary}}
+-        {{{name}}}: {{{complexType}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
++        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}{{{complexType}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
+               {{/isBinary}}
+             {{/isMap}}
+           {{/isArray}}
+@@ -211,18 +203,23 @@ class {{{classname}}} {
+             {{/isMap}}
+             {{^isMap}}
+               {{#isNumber}}
+-        {{{name}}}: {{#isNullable}}json[r'{{{baseName}}}'] == null
++        {{{name}}}: {{#isNullable}}Option.from(json[r'{{{baseName}}}'] == null
              ? {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}
-             : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
+-            : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
++            : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'){{#isNullable}}){{/isNullable}},
                {{/isNumber}}
 +              {{#isDouble}}
-+        {{{name}}}: (mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}).toDouble(),
++        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}(mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}).toDouble(){{#isNullable}}){{/isNullable}},
 +              {{/isDouble}}
 +              {{^isDouble}}
                {{^isNumber}}
                  {{^isEnum}}
-         {{{name}}}: mapValueOfType<{{{datatypeWithEnum}}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
-@@ -223,6 +217,7 @@
-         {{{name}}}: {{{enumName}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+-        {{{name}}}: mapValueOfType<{{{datatypeWithEnum}}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
++        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}mapValueOfType<{{{datatypeWithEnum}}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
+                 {{/isEnum}}
+                 {{#isEnum}}
+-        {{{name}}}: {{{enumName}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
++        {{{name}}}: {{#isNullable}}Option.from({{/isNullable}}{{{enumName}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}{{#isNullable}}){{/isNullable}},
                  {{/isEnum}}
                {{/isNumber}}
 +              {{/isDouble}}

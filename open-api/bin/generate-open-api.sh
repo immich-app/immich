@@ -13,6 +13,9 @@ function dart {
   wget -O api.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/dart2/api.mustache
   patch --no-backup-if-mismatch -u api.mustache <api.mustache.patch
 
+  wget -O dart_constructor.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/dart2/dart_constructor.mustache
+  patch --no-backup-if-mismatch -u dart_constructor.mustache <dart_constructor.mustache.patch
+
   cd ../../
   npx --yes @openapitools/openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t ./templates/mobile
 
