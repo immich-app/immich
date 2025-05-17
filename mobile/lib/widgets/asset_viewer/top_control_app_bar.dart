@@ -6,6 +6,7 @@ import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
+import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/asset_viewer/motion_photo_button.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 
@@ -167,6 +168,20 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
+    Widget buildCastButton() {
+      return IconButton(
+        onPressed: () {
+          showDialog(
+              context: context, builder: (context) => const CastDialog());
+        },
+        icon: Icon(
+          Icons.cast,
+          size: 20.0,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
     bool isInHomePage = ref.read(tabProvider.notifier).state == TabEnum.home;
     bool? isInTrash = ref.read(currentAssetProvider)?.isTrashed;
 
@@ -183,6 +198,7 @@ class TopControlAppBar extends HookConsumerWidget {
         if (asset.livePhotoVideoId != null) const MotionPhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal && isOwner) buildDownloadButton(),
+        buildCastButton(),
         if (asset.isRemote && (isOwner || isPartner) && !asset.isTrashed)
           buildAddToAlbumButton(),
         if (asset.isTrashed) buildRestoreButton(),
