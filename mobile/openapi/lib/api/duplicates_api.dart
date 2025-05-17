@@ -19,7 +19,7 @@ class DuplicatesApi {
   /// Performs an HTTP 'GET /duplicates/info' operation and returns the [Response].
   Future<Response> getAllDuplicatesInfoWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/duplicates/info';
+    final apiPath = r'/duplicates/info';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -32,7 +32,7 @@ class DuplicatesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -63,7 +63,7 @@ class DuplicatesApi {
   /// Performs an HTTP 'GET /duplicates' operation and returns the [Response].
   Future<Response> getAssetDuplicatesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/duplicates';
+    final apiPath = r'/duplicates';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -76,7 +76,7 @@ class DuplicatesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -110,7 +110,7 @@ class DuplicatesApi {
   /// * [String] id (required):
   Future<Response> getDuplicateByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/duplicates/{id}'
+    final apiPath = r'/duplicates/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -124,7 +124,7 @@ class DuplicatesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
