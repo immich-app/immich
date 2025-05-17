@@ -7,6 +7,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
+import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/asset_viewer/motion_photo_button.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 
@@ -169,6 +170,20 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
+    Widget buildCastButton() {
+      return IconButton(
+        onPressed: () {
+          showDialog(
+              context: context, builder: (context) => const CastDialog());
+        },
+        icon: Icon(
+          Icons.cast,
+          size: 20.0,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
     bool isInHomePage = ref.read(tabProvider.notifier).state == TabEnum.home;
     bool? isInTrash = ref.read(currentAssetProvider)?.isTrashed;
 
@@ -193,6 +208,7 @@ class TopControlAppBar extends HookConsumerWidget {
             !asset.isTrashed &&
             !isInLockedView)
           buildAddToAlbumButton(),
+        buildCastButton(),
         if (asset.isTrashed) buildRestoreButton(),
         if (album != null && album.shared && !isInLockedView)
           buildActivitiesButton(),
