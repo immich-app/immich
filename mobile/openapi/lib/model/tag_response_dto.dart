@@ -102,11 +102,11 @@ class TagResponseDto {
 
       return TagResponseDto(
         color: mapValueOfType<String>(json, r'color'),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
         parentId: mapValueOfType<String>(json, r'parentId'),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt:  mapDateTime(json, r'updatedAt', r'')!,
         value: mapValueOfType<String>(json, r'value')!,
       );
     }

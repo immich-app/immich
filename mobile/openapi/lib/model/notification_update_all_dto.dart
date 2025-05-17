@@ -14,12 +14,12 @@ class NotificationUpdateAllDto {
   /// Returns a new [NotificationUpdateAllDto] instance.
   NotificationUpdateAllDto({
     this.ids = const [],
-    this.readAt,
+    this.readAt = const None(),
   });
 
   List<String> ids;
 
-  DateTime? readAt;
+  Option<DateTime> readAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is NotificationUpdateAllDto &&
@@ -30,7 +30,7 @@ class NotificationUpdateAllDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (ids.hashCode) +
-    (readAt == null ? 0 : readAt!.hashCode);
+    (readAt.hashCode);
 
   @override
   String toString() => 'NotificationUpdateAllDto[ids=$ids, readAt=$readAt]';
@@ -38,10 +38,12 @@ class NotificationUpdateAllDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'ids'] = this.ids;
-    if (this.readAt != null) {
-      json[r'readAt'] = this.readAt!.toUtc().toIso8601String();
+    if (this.readAt.unwrapOrNull() != null) {
+      json[r'readAt'] = this.readAt.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'readAt'] = null;
+      if(this.readAt.isSome) {
+        json[r'readAt'] = null;
+      }
     }
     return json;
   }
@@ -58,7 +60,7 @@ class NotificationUpdateAllDto {
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        readAt: mapDateTime(json, r'readAt', r''),
+        readAt:  Option.from(mapDateTime(json, r'readAt', r'')),
       );
     }
     return null;

@@ -14,9 +14,9 @@ class NotificationCreateDto {
   /// Returns a new [NotificationCreateDto] instance.
   NotificationCreateDto({
     this.data,
-    this.description,
+    this.description = const None(),
     this.level,
-    this.readAt,
+    this.readAt = const None(),
     required this.title,
     this.type,
     required this.userId,
@@ -30,7 +30,7 @@ class NotificationCreateDto {
   ///
   Object? data;
 
-  String? description;
+  Option<String> description;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -40,7 +40,7 @@ class NotificationCreateDto {
   ///
   NotificationLevel? level;
 
-  DateTime? readAt;
+  Option<DateTime> readAt;
 
   String title;
 
@@ -68,9 +68,9 @@ class NotificationCreateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (data == null ? 0 : data!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
+    (description.hashCode) +
     (level == null ? 0 : level!.hashCode) +
-    (readAt == null ? 0 : readAt!.hashCode) +
+    (readAt.hashCode) +
     (title.hashCode) +
     (type == null ? 0 : type!.hashCode) +
     (userId.hashCode);
@@ -85,20 +85,24 @@ class NotificationCreateDto {
     } else {
     //  json[r'data'] = null;
     }
-    if (this.description != null) {
+    if (this.description.unwrapOrNull() != null) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      if(this.description.isSome) {
+        json[r'description'] = null;
+      }
     }
     if (this.level != null) {
       json[r'level'] = this.level;
     } else {
     //  json[r'level'] = null;
     }
-    if (this.readAt != null) {
-      json[r'readAt'] = this.readAt!.toUtc().toIso8601String();
+    if (this.readAt.unwrapOrNull() != null) {
+      json[r'readAt'] = this.readAt.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'readAt'] = null;
+      if(this.readAt.isSome) {
+        json[r'readAt'] = null;
+      }
     }
       json[r'title'] = this.title;
     if (this.type != null) {
@@ -120,9 +124,9 @@ class NotificationCreateDto {
 
       return NotificationCreateDto(
         data: mapValueOfType<Object>(json, r'data'),
-        description: mapValueOfType<String>(json, r'description'),
+        description: Option.from(mapValueOfType<String>(json, r'description')),
         level: NotificationLevel.fromJson(json[r'level']),
-        readAt: mapDateTime(json, r'readAt', r''),
+        readAt:  Option.from(mapDateTime(json, r'readAt', r'')),
         title: mapValueOfType<String>(json, r'title')!,
         type: NotificationType.fromJson(json[r'type']),
         userId: mapValueOfType<String>(json, r'userId')!,

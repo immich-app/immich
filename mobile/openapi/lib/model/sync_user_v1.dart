@@ -13,13 +13,13 @@ part of openapi.api;
 class SyncUserV1 {
   /// Returns a new [SyncUserV1] instance.
   SyncUserV1({
-    required this.deletedAt,
+    this.deletedAt = const None(),
     required this.email,
     required this.id,
     required this.name,
   });
 
-  DateTime? deletedAt;
+  Option<DateTime> deletedAt;
 
   String email;
 
@@ -37,7 +37,7 @@ class SyncUserV1 {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (deletedAt == null ? 0 : deletedAt!.hashCode) +
+    (deletedAt.hashCode) +
     (email.hashCode) +
     (id.hashCode) +
     (name.hashCode);
@@ -47,10 +47,12 @@ class SyncUserV1 {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.deletedAt != null) {
-      json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
+    if (this.deletedAt.unwrapOrNull() != null) {
+      json[r'deletedAt'] = this.deletedAt.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      if(this.deletedAt.isSome) {
+        json[r'deletedAt'] = null;
+      }
     }
       json[r'email'] = this.email;
       json[r'id'] = this.id;
@@ -67,7 +69,7 @@ class SyncUserV1 {
       final json = value.cast<String, dynamic>();
 
       return SyncUserV1(
-        deletedAt: mapDateTime(json, r'deletedAt', r''),
+        deletedAt:  Option.from(mapDateTime(json, r'deletedAt', r'')),
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,

@@ -20,7 +20,7 @@ class AssetFaceResponseDto {
     required this.id,
     required this.imageHeight,
     required this.imageWidth,
-    required this.person,
+    this.person = const None(),
     this.sourceType,
   });
 
@@ -38,7 +38,7 @@ class AssetFaceResponseDto {
 
   int imageWidth;
 
-  PersonResponseDto? person;
+  Option<PersonResponseDto> person;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -70,7 +70,7 @@ class AssetFaceResponseDto {
     (id.hashCode) +
     (imageHeight.hashCode) +
     (imageWidth.hashCode) +
-    (person == null ? 0 : person!.hashCode) +
+    (person.hashCode) +
     (sourceType == null ? 0 : sourceType!.hashCode);
 
   @override
@@ -85,10 +85,12 @@ class AssetFaceResponseDto {
       json[r'id'] = this.id;
       json[r'imageHeight'] = this.imageHeight;
       json[r'imageWidth'] = this.imageWidth;
-    if (this.person != null) {
+    if (this.person.unwrapOrNull() != null) {
       json[r'person'] = this.person;
     } else {
-    //  json[r'person'] = null;
+      if(this.person.isSome) {
+        json[r'person'] = null;
+      }
     }
     if (this.sourceType != null) {
       json[r'sourceType'] = this.sourceType;
@@ -114,7 +116,7 @@ class AssetFaceResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
-        person: PersonResponseDto.fromJson(json[r'person']),
+        person: Option.from(PersonResponseDto.fromJson(json[r'person'])),
         sourceType: SourceType.fromJson(json[r'sourceType']),
       );
     }

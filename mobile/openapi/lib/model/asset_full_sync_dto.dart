@@ -86,7 +86,7 @@ class AssetFullSyncDto {
       return AssetFullSyncDto(
         lastId: mapValueOfType<String>(json, r'lastId'),
         limit: mapValueOfType<int>(json, r'limit')!,
-        updatedUntil: mapDateTime(json, r'updatedUntil', r'')!,
+        updatedUntil:  mapDateTime(json, r'updatedUntil', r'')!,
         userId: mapValueOfType<String>(json, r'userId'),
       );
     }

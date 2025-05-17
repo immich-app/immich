@@ -13,13 +13,13 @@ part of openapi.api;
 class ReverseGeocodingStateResponseDto {
   /// Returns a new [ReverseGeocodingStateResponseDto] instance.
   ReverseGeocodingStateResponseDto({
-    required this.lastImportFileName,
-    required this.lastUpdate,
+    this.lastImportFileName = const None(),
+    this.lastUpdate = const None(),
   });
 
-  String? lastImportFileName;
+  Option<String> lastImportFileName;
 
-  String? lastUpdate;
+  Option<String> lastUpdate;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ReverseGeocodingStateResponseDto &&
@@ -29,23 +29,27 @@ class ReverseGeocodingStateResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (lastImportFileName == null ? 0 : lastImportFileName!.hashCode) +
-    (lastUpdate == null ? 0 : lastUpdate!.hashCode);
+    (lastImportFileName.hashCode) +
+    (lastUpdate.hashCode);
 
   @override
   String toString() => 'ReverseGeocodingStateResponseDto[lastImportFileName=$lastImportFileName, lastUpdate=$lastUpdate]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.lastImportFileName != null) {
+    if (this.lastImportFileName.unwrapOrNull() != null) {
       json[r'lastImportFileName'] = this.lastImportFileName;
     } else {
-    //  json[r'lastImportFileName'] = null;
+      if(this.lastImportFileName.isSome) {
+        json[r'lastImportFileName'] = null;
+      }
     }
-    if (this.lastUpdate != null) {
+    if (this.lastUpdate.unwrapOrNull() != null) {
       json[r'lastUpdate'] = this.lastUpdate;
     } else {
-    //  json[r'lastUpdate'] = null;
+      if(this.lastUpdate.isSome) {
+        json[r'lastUpdate'] = null;
+      }
     }
     return json;
   }
@@ -59,8 +63,8 @@ class ReverseGeocodingStateResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ReverseGeocodingStateResponseDto(
-        lastImportFileName: mapValueOfType<String>(json, r'lastImportFileName'),
-        lastUpdate: mapValueOfType<String>(json, r'lastUpdate'),
+        lastImportFileName: Option.from(mapValueOfType<String>(json, r'lastImportFileName')),
+        lastUpdate: Option.from(mapValueOfType<String>(json, r'lastUpdate')),
       );
     }
     return null;

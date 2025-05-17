@@ -13,17 +13,17 @@ part of openapi.api;
 class PersonCreateDto {
   /// Returns a new [PersonCreateDto] instance.
   PersonCreateDto({
-    this.birthDate,
-    this.color,
+    this.birthDate = const None(),
+    this.color = const None(),
     this.isFavorite,
     this.isHidden,
     this.name,
   });
 
   /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
-  DateTime? birthDate;
+  Option<DateTime> birthDate;
 
-  String? color;
+  Option<String> color;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -62,8 +62,8 @@ class PersonCreateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (birthDate == null ? 0 : birthDate!.hashCode) +
-    (color == null ? 0 : color!.hashCode) +
+    (birthDate.hashCode) +
+    (color.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
     (name == null ? 0 : name!.hashCode);
@@ -73,15 +73,19 @@ class PersonCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+    if (this.birthDate.unwrapOrNull() != null) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate.unwrap().toUtc());
     } else {
-    //  json[r'birthDate'] = null;
+      if(this.birthDate.isSome) {
+        json[r'birthDate'] = null;
+      }
     }
-    if (this.color != null) {
+    if (this.color.unwrapOrNull() != null) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      if(this.color.isSome) {
+        json[r'color'] = null;
+      }
     }
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
@@ -110,8 +114,8 @@ class PersonCreateDto {
       final json = value.cast<String, dynamic>();
 
       return PersonCreateDto(
-        birthDate: mapDateTime(json, r'birthDate', r''),
-        color: mapValueOfType<String>(json, r'color'),
+        birthDate: Option.from(mapDateTime(json, r'birthDate', r'')),
+        color: Option.from(mapValueOfType<String>(json, r'color')),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),

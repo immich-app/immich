@@ -57,7 +57,7 @@ class ServerVersionHistoryResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ServerVersionHistoryResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         version: mapValueOfType<String>(json, r'version')!,
       );

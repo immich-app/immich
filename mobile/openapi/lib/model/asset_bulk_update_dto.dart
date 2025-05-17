@@ -14,7 +14,7 @@ class AssetBulkUpdateDto {
   /// Returns a new [AssetBulkUpdateDto] instance.
   AssetBulkUpdateDto({
     this.dateTimeOriginal,
-    this.duplicateId,
+    this.duplicateId = const None(),
     this.ids = const [],
     this.isFavorite,
     this.latitude,
@@ -31,7 +31,7 @@ class AssetBulkUpdateDto {
   ///
   String? dateTimeOriginal;
 
-  String? duplicateId;
+  Option<String> duplicateId;
 
   List<String> ids;
 
@@ -92,7 +92,7 @@ class AssetBulkUpdateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
-    (duplicateId == null ? 0 : duplicateId!.hashCode) +
+    (duplicateId.hashCode) +
     (ids.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
@@ -110,10 +110,12 @@ class AssetBulkUpdateDto {
     } else {
     //  json[r'dateTimeOriginal'] = null;
     }
-    if (this.duplicateId != null) {
+    if (this.duplicateId.unwrapOrNull() != null) {
       json[r'duplicateId'] = this.duplicateId;
     } else {
-    //  json[r'duplicateId'] = null;
+      if(this.duplicateId.isSome) {
+        json[r'duplicateId'] = null;
+      }
     }
       json[r'ids'] = this.ids;
     if (this.isFavorite != null) {
@@ -154,7 +156,7 @@ class AssetBulkUpdateDto {
 
       return AssetBulkUpdateDto(
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
-        duplicateId: mapValueOfType<String>(json, r'duplicateId'),
+        duplicateId: Option.from(mapValueOfType<String>(json, r'duplicateId')),
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],

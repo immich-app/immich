@@ -16,7 +16,7 @@ class SearchAssetResponseDto {
     required this.count,
     this.facets = const [],
     this.items = const [],
-    required this.nextPage,
+    this.nextPage = const None(),
     required this.total,
   });
 
@@ -26,7 +26,7 @@ class SearchAssetResponseDto {
 
   List<AssetResponseDto> items;
 
-  String? nextPage;
+  Option<String> nextPage;
 
   int total;
 
@@ -44,7 +44,7 @@ class SearchAssetResponseDto {
     (count.hashCode) +
     (facets.hashCode) +
     (items.hashCode) +
-    (nextPage == null ? 0 : nextPage!.hashCode) +
+    (nextPage.hashCode) +
     (total.hashCode);
 
   @override
@@ -55,10 +55,12 @@ class SearchAssetResponseDto {
       json[r'count'] = this.count;
       json[r'facets'] = this.facets;
       json[r'items'] = this.items;
-    if (this.nextPage != null) {
+    if (this.nextPage.unwrapOrNull() != null) {
       json[r'nextPage'] = this.nextPage;
     } else {
-    //  json[r'nextPage'] = null;
+      if(this.nextPage.isSome) {
+        json[r'nextPage'] = null;
+      }
     }
       json[r'total'] = this.total;
     return json;
@@ -76,7 +78,7 @@ class SearchAssetResponseDto {
         count: mapValueOfType<int>(json, r'count')!,
         facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
         items: AssetResponseDto.listFromJson(json[r'items']),
-        nextPage: mapValueOfType<String>(json, r'nextPage'),
+        nextPage: Option.from(mapValueOfType<String>(json, r'nextPage')),
         total: mapValueOfType<int>(json, r'total')!,
       );
     }

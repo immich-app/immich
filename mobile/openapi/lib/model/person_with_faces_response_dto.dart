@@ -13,7 +13,7 @@ part of openapi.api;
 class PersonWithFacesResponseDto {
   /// Returns a new [PersonWithFacesResponseDto] instance.
   PersonWithFacesResponseDto({
-    required this.birthDate,
+    this.birthDate = const None(),
     this.color,
     this.faces = const [],
     required this.id,
@@ -24,7 +24,7 @@ class PersonWithFacesResponseDto {
     this.updatedAt,
   });
 
-  DateTime? birthDate;
+  Option<DateTime> birthDate;
 
   /// This property was added in v1.126.0
   ///
@@ -78,7 +78,7 @@ class PersonWithFacesResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (birthDate == null ? 0 : birthDate!.hashCode) +
+    (birthDate.hashCode) +
     (color == null ? 0 : color!.hashCode) +
     (faces.hashCode) +
     (id.hashCode) +
@@ -93,10 +93,12 @@ class PersonWithFacesResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+    if (this.birthDate.unwrapOrNull() != null) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate.unwrap().toUtc());
     } else {
-    //  json[r'birthDate'] = null;
+      if(this.birthDate.isSome) {
+        json[r'birthDate'] = null;
+      }
     }
     if (this.color != null) {
       json[r'color'] = this.color;
@@ -130,7 +132,7 @@ class PersonWithFacesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PersonWithFacesResponseDto(
-        birthDate: mapDateTime(json, r'birthDate', r''),
+        birthDate: Option.from(mapDateTime(json, r'birthDate', r'')),
         color: mapValueOfType<String>(json, r'color'),
         faces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'faces']),
         id: mapValueOfType<String>(json, r'id')!,
@@ -138,7 +140,7 @@ class PersonWithFacesResponseDto {
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
-        updatedAt: mapDateTime(json, r'updatedAt', r''),
+        updatedAt:  mapDateTime(json, r'updatedAt', r''),
       );
     }
     return null;

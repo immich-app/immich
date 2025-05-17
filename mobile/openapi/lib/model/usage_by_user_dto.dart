@@ -14,7 +14,7 @@ class UsageByUserDto {
   /// Returns a new [UsageByUserDto] instance.
   UsageByUserDto({
     required this.photos,
-    required this.quotaSizeInBytes,
+    this.quotaSizeInBytes = const None(),
     required this.usage,
     required this.usagePhotos,
     required this.usageVideos,
@@ -25,7 +25,7 @@ class UsageByUserDto {
 
   int photos;
 
-  int? quotaSizeInBytes;
+  Option<int> quotaSizeInBytes;
 
   int usage;
 
@@ -54,7 +54,7 @@ class UsageByUserDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (photos.hashCode) +
-    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+    (quotaSizeInBytes.hashCode) +
     (usage.hashCode) +
     (usagePhotos.hashCode) +
     (usageVideos.hashCode) +
@@ -68,10 +68,12 @@ class UsageByUserDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'photos'] = this.photos;
-    if (this.quotaSizeInBytes != null) {
+    if (this.quotaSizeInBytes.unwrapOrNull() != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-    //  json[r'quotaSizeInBytes'] = null;
+      if(this.quotaSizeInBytes.isSome) {
+        json[r'quotaSizeInBytes'] = null;
+      }
     }
       json[r'usage'] = this.usage;
       json[r'usagePhotos'] = this.usagePhotos;
@@ -92,7 +94,7 @@ class UsageByUserDto {
 
       return UsageByUserDto(
         photos: mapValueOfType<int>(json, r'photos')!,
-        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
+        quotaSizeInBytes: Option.from(mapValueOfType<int>(json, r'quotaSizeInBytes')),
         usage: mapValueOfType<int>(json, r'usage')!,
         usagePhotos: mapValueOfType<int>(json, r'usagePhotos')!,
         usageVideos: mapValueOfType<int>(json, r'usageVideos')!,

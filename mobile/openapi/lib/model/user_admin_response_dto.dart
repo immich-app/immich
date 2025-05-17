@@ -15,20 +15,20 @@ class UserAdminResponseDto {
   UserAdminResponseDto({
     required this.avatarColor,
     required this.createdAt,
-    required this.deletedAt,
+    this.deletedAt = const None(),
     required this.email,
     required this.id,
     required this.isAdmin,
-    required this.license,
+    this.license = const None(),
     required this.name,
     required this.oauthId,
     required this.profileChangedAt,
     required this.profileImagePath,
-    required this.quotaSizeInBytes,
-    required this.quotaUsageInBytes,
+    this.quotaSizeInBytes = const None(),
+    this.quotaUsageInBytes = const None(),
     required this.shouldChangePassword,
     required this.status,
-    required this.storageLabel,
+    this.storageLabel = const None(),
     required this.updatedAt,
   });
 
@@ -36,7 +36,7 @@ class UserAdminResponseDto {
 
   DateTime createdAt;
 
-  DateTime? deletedAt;
+  Option<DateTime> deletedAt;
 
   String email;
 
@@ -44,7 +44,7 @@ class UserAdminResponseDto {
 
   bool isAdmin;
 
-  UserLicense? license;
+  Option<UserLicense> license;
 
   String name;
 
@@ -54,15 +54,15 @@ class UserAdminResponseDto {
 
   String profileImagePath;
 
-  int? quotaSizeInBytes;
+  Option<int> quotaSizeInBytes;
 
-  int? quotaUsageInBytes;
+  Option<int> quotaUsageInBytes;
 
   bool shouldChangePassword;
 
   UserStatus status;
 
-  String? storageLabel;
+  Option<String> storageLabel;
 
   DateTime updatedAt;
 
@@ -91,20 +91,20 @@ class UserAdminResponseDto {
     // ignore: unnecessary_parenthesis
     (avatarColor.hashCode) +
     (createdAt.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode) +
+    (deletedAt.hashCode) +
     (email.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
-    (license == null ? 0 : license!.hashCode) +
+    (license.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
     (profileChangedAt.hashCode) +
     (profileImagePath.hashCode) +
-    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
-    (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
+    (quotaSizeInBytes.hashCode) +
+    (quotaUsageInBytes.hashCode) +
     (shouldChangePassword.hashCode) +
     (status.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode) +
+    (storageLabel.hashCode) +
     (updatedAt.hashCode);
 
   @override
@@ -114,39 +114,49 @@ class UserAdminResponseDto {
     final json = <String, dynamic>{};
       json[r'avatarColor'] = this.avatarColor;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-    if (this.deletedAt != null) {
-      json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
+    if (this.deletedAt.unwrapOrNull() != null) {
+      json[r'deletedAt'] = this.deletedAt.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      if(this.deletedAt.isSome) {
+        json[r'deletedAt'] = null;
+      }
     }
       json[r'email'] = this.email;
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
-    if (this.license != null) {
+    if (this.license.unwrapOrNull() != null) {
       json[r'license'] = this.license;
     } else {
-    //  json[r'license'] = null;
+      if(this.license.isSome) {
+        json[r'license'] = null;
+      }
     }
       json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
       json[r'profileImagePath'] = this.profileImagePath;
-    if (this.quotaSizeInBytes != null) {
+    if (this.quotaSizeInBytes.unwrapOrNull() != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-    //  json[r'quotaSizeInBytes'] = null;
+      if(this.quotaSizeInBytes.isSome) {
+        json[r'quotaSizeInBytes'] = null;
+      }
     }
-    if (this.quotaUsageInBytes != null) {
+    if (this.quotaUsageInBytes.unwrapOrNull() != null) {
       json[r'quotaUsageInBytes'] = this.quotaUsageInBytes;
     } else {
-    //  json[r'quotaUsageInBytes'] = null;
+      if(this.quotaUsageInBytes.isSome) {
+        json[r'quotaUsageInBytes'] = null;
+      }
     }
       json[r'shouldChangePassword'] = this.shouldChangePassword;
       json[r'status'] = this.status;
-    if (this.storageLabel != null) {
+    if (this.storageLabel.unwrapOrNull() != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-    //  json[r'storageLabel'] = null;
+      if(this.storageLabel.isSome) {
+        json[r'storageLabel'] = null;
+      }
     }
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
@@ -162,22 +172,22 @@ class UserAdminResponseDto {
 
       return UserAdminResponseDto(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
-        deletedAt: mapDateTime(json, r'deletedAt', r''),
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
+        deletedAt:  Option.from(mapDateTime(json, r'deletedAt', r'')),
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        license: UserLicense.fromJson(json[r'license']),
+        license: Option.from(UserLicense.fromJson(json[r'license'])),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
-        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
+        profileChangedAt:  mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
-        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
-        quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
+        quotaSizeInBytes: Option.from(mapValueOfType<int>(json, r'quotaSizeInBytes')),
+        quotaUsageInBytes: Option.from(mapValueOfType<int>(json, r'quotaUsageInBytes')),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         status: UserStatus.fromJson(json[r'status'])!,
-        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        storageLabel: Option.from(mapValueOfType<String>(json, r'storageLabel')),
+        updatedAt:  mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;

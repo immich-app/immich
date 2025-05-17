@@ -13,13 +13,13 @@ part of openapi.api;
 class UserUpdateMeDto {
   /// Returns a new [UserUpdateMeDto] instance.
   UserUpdateMeDto({
-    this.avatarColor,
+    this.avatarColor = const None(),
     this.email,
     this.name,
     this.password,
   });
 
-  UserAvatarColor? avatarColor;
+  Option<UserAvatarColor> avatarColor;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -55,7 +55,7 @@ class UserUpdateMeDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatarColor == null ? 0 : avatarColor!.hashCode) +
+    (avatarColor.hashCode) +
     (email == null ? 0 : email!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode);
@@ -65,10 +65,12 @@ class UserUpdateMeDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor != null) {
+    if (this.avatarColor.unwrapOrNull() != null) {
       json[r'avatarColor'] = this.avatarColor;
     } else {
-    //  json[r'avatarColor'] = null;
+      if(this.avatarColor.isSome) {
+        json[r'avatarColor'] = null;
+      }
     }
     if (this.email != null) {
       json[r'email'] = this.email;
@@ -97,7 +99,7 @@ class UserUpdateMeDto {
       final json = value.cast<String, dynamic>();
 
       return UserUpdateMeDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
+        avatarColor: Option.from(UserAvatarColor.fromJson(json[r'avatarColor'])),
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),

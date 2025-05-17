@@ -57,7 +57,7 @@ class CreateProfileImageResponseDto {
       final json = value.cast<String, dynamic>();
 
       return CreateProfileImageResponseDto(
-        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
+        profileChangedAt:  mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );

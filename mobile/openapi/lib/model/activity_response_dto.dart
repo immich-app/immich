@@ -13,17 +13,17 @@ part of openapi.api;
 class ActivityResponseDto {
   /// Returns a new [ActivityResponseDto] instance.
   ActivityResponseDto({
-    required this.assetId,
-    this.comment,
+    this.assetId = const None(),
+    this.comment = const None(),
     required this.createdAt,
     required this.id,
     required this.type,
     required this.user,
   });
 
-  String? assetId;
+  Option<String> assetId;
 
-  String? comment;
+  Option<String> comment;
 
   DateTime createdAt;
 
@@ -45,8 +45,8 @@ class ActivityResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetId == null ? 0 : assetId!.hashCode) +
-    (comment == null ? 0 : comment!.hashCode) +
+    (assetId.hashCode) +
+    (comment.hashCode) +
     (createdAt.hashCode) +
     (id.hashCode) +
     (type.hashCode) +
@@ -57,15 +57,19 @@ class ActivityResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.assetId != null) {
+    if (this.assetId.unwrapOrNull() != null) {
       json[r'assetId'] = this.assetId;
     } else {
-    //  json[r'assetId'] = null;
+      if(this.assetId.isSome) {
+        json[r'assetId'] = null;
+      }
     }
-    if (this.comment != null) {
+    if (this.comment.unwrapOrNull() != null) {
       json[r'comment'] = this.comment;
     } else {
-    //  json[r'comment'] = null;
+      if(this.comment.isSome) {
+        json[r'comment'] = null;
+      }
     }
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
@@ -83,9 +87,9 @@ class ActivityResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ActivityResponseDto(
-        assetId: mapValueOfType<String>(json, r'assetId'),
-        comment: mapValueOfType<String>(json, r'comment'),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        assetId: Option.from(mapValueOfType<String>(json, r'assetId')),
+        comment: Option.from(mapValueOfType<String>(json, r'comment')),
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         type: ReactionType.fromJson(json[r'type'])!,
         user: UserResponseDto.fromJson(json[r'user'])!,

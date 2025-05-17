@@ -14,7 +14,7 @@ class AlbumResponseDto {
   /// Returns a new [AlbumResponseDto] instance.
   AlbumResponseDto({
     required this.albumName,
-    required this.albumThumbnailAssetId,
+    this.albumThumbnailAssetId = const None(),
     this.albumUsers = const [],
     required this.assetCount,
     this.assets = const [],
@@ -35,7 +35,7 @@ class AlbumResponseDto {
 
   String albumName;
 
-  String? albumThumbnailAssetId;
+  Option<String> albumThumbnailAssetId;
 
   List<AlbumUserResponseDto> albumUsers;
 
@@ -118,7 +118,7 @@ class AlbumResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumName.hashCode) +
-    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
+    (albumThumbnailAssetId.hashCode) +
     (albumUsers.hashCode) +
     (assetCount.hashCode) +
     (assets.hashCode) +
@@ -142,10 +142,12 @@ class AlbumResponseDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumName'] = this.albumName;
-    if (this.albumThumbnailAssetId != null) {
+    if (this.albumThumbnailAssetId.unwrapOrNull() != null) {
       json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
-    //  json[r'albumThumbnailAssetId'] = null;
+      if(this.albumThumbnailAssetId.isSome) {
+        json[r'albumThumbnailAssetId'] = null;
+      }
     }
       json[r'albumUsers'] = this.albumUsers;
       json[r'assetCount'] = this.assetCount;
@@ -192,23 +194,23 @@ class AlbumResponseDto {
 
       return AlbumResponseDto(
         albumName: mapValueOfType<String>(json, r'albumName')!,
-        albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
+        albumThumbnailAssetId: Option.from(mapValueOfType<String>(json, r'albumThumbnailAssetId')),
         albumUsers: AlbumUserResponseDto.listFromJson(json[r'albumUsers']),
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
         description: mapValueOfType<String>(json, r'description')!,
-        endDate: mapDateTime(json, r'endDate', r''),
+        endDate:  mapDateTime(json, r'endDate', r''),
         hasSharedLink: mapValueOfType<bool>(json, r'hasSharedLink')!,
         id: mapValueOfType<String>(json, r'id')!,
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
-        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', r''),
+        lastModifiedAssetTimestamp:  mapDateTime(json, r'lastModifiedAssetTimestamp', r''),
         order: AssetOrder.fromJson(json[r'order']),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         shared: mapValueOfType<bool>(json, r'shared')!,
-        startDate: mapDateTime(json, r'startDate', r''),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        startDate:  mapDateTime(json, r'startDate', r''),
+        updatedAt:  mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;

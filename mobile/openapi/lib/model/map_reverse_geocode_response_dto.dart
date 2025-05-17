@@ -13,16 +13,16 @@ part of openapi.api;
 class MapReverseGeocodeResponseDto {
   /// Returns a new [MapReverseGeocodeResponseDto] instance.
   MapReverseGeocodeResponseDto({
-    required this.city,
-    required this.country,
-    required this.state,
+    this.city = const None(),
+    this.country = const None(),
+    this.state = const None(),
   });
 
-  String? city;
+  Option<String> city;
 
-  String? country;
+  Option<String> country;
 
-  String? state;
+  Option<String> state;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapReverseGeocodeResponseDto &&
@@ -33,29 +33,35 @@ class MapReverseGeocodeResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (city == null ? 0 : city!.hashCode) +
-    (country == null ? 0 : country!.hashCode) +
-    (state == null ? 0 : state!.hashCode);
+    (city.hashCode) +
+    (country.hashCode) +
+    (state.hashCode);
 
   @override
   String toString() => 'MapReverseGeocodeResponseDto[city=$city, country=$country, state=$state]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.city != null) {
+    if (this.city.unwrapOrNull() != null) {
       json[r'city'] = this.city;
     } else {
-    //  json[r'city'] = null;
+      if(this.city.isSome) {
+        json[r'city'] = null;
+      }
     }
-    if (this.country != null) {
+    if (this.country.unwrapOrNull() != null) {
       json[r'country'] = this.country;
     } else {
-    //  json[r'country'] = null;
+      if(this.country.isSome) {
+        json[r'country'] = null;
+      }
     }
-    if (this.state != null) {
+    if (this.state.unwrapOrNull() != null) {
       json[r'state'] = this.state;
     } else {
-    //  json[r'state'] = null;
+      if(this.state.isSome) {
+        json[r'state'] = null;
+      }
     }
     return json;
   }
@@ -69,9 +75,9 @@ class MapReverseGeocodeResponseDto {
       final json = value.cast<String, dynamic>();
 
       return MapReverseGeocodeResponseDto(
-        city: mapValueOfType<String>(json, r'city'),
-        country: mapValueOfType<String>(json, r'country'),
-        state: mapValueOfType<String>(json, r'state'),
+        city: Option.from(mapValueOfType<String>(json, r'city')),
+        country: Option.from(mapValueOfType<String>(json, r'country')),
+        state: Option.from(mapValueOfType<String>(json, r'state')),
       );
     }
     return null;

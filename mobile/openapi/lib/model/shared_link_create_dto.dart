@@ -18,7 +18,7 @@ class SharedLinkCreateDto {
     this.allowUpload,
     this.assetIds = const [],
     this.description,
-    this.expiresAt,
+    this.expiresAt = const None(),
     this.password,
     this.showMetadata = true,
     required this.type,
@@ -52,7 +52,7 @@ class SharedLinkCreateDto {
   ///
   String? description;
 
-  DateTime? expiresAt;
+  Option<DateTime> expiresAt;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -86,7 +86,7 @@ class SharedLinkCreateDto {
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
     (assetIds.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
+    (expiresAt.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (showMetadata.hashCode) +
     (type.hashCode);
@@ -113,10 +113,12 @@ class SharedLinkCreateDto {
     } else {
     //  json[r'description'] = null;
     }
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
+    if (this.expiresAt.unwrapOrNull() != null) {
+      json[r'expiresAt'] = this.expiresAt.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'expiresAt'] = null;
+      if(this.expiresAt.isSome) {
+        json[r'expiresAt'] = null;
+      }
     }
     if (this.password != null) {
       json[r'password'] = this.password;
@@ -144,7 +146,7 @@ class SharedLinkCreateDto {
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
+        expiresAt:  Option.from(mapDateTime(json, r'expiresAt', r'')),
         password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata') ?? true,
         type: SharedLinkType.fromJson(json[r'type'])!,

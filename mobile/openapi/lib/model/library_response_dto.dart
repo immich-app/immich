@@ -20,7 +20,7 @@ class LibraryResponseDto {
     this.importPaths = const [],
     required this.name,
     required this.ownerId,
-    required this.refreshedAt,
+    this.refreshedAt = const None(),
     required this.updatedAt,
   });
 
@@ -38,7 +38,7 @@ class LibraryResponseDto {
 
   String ownerId;
 
-  DateTime? refreshedAt;
+  Option<DateTime> refreshedAt;
 
   DateTime updatedAt;
 
@@ -64,7 +64,7 @@ class LibraryResponseDto {
     (importPaths.hashCode) +
     (name.hashCode) +
     (ownerId.hashCode) +
-    (refreshedAt == null ? 0 : refreshedAt!.hashCode) +
+    (refreshedAt.hashCode) +
     (updatedAt.hashCode);
 
   @override
@@ -79,10 +79,12 @@ class LibraryResponseDto {
       json[r'importPaths'] = this.importPaths;
       json[r'name'] = this.name;
       json[r'ownerId'] = this.ownerId;
-    if (this.refreshedAt != null) {
-      json[r'refreshedAt'] = this.refreshedAt!.toUtc().toIso8601String();
+    if (this.refreshedAt.unwrapOrNull() != null) {
+      json[r'refreshedAt'] = this.refreshedAt.unwrap().toUtc().toIso8601String();
     } else {
-    //  json[r'refreshedAt'] = null;
+      if(this.refreshedAt.isSome) {
+        json[r'refreshedAt'] = null;
+      }
     }
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
@@ -98,7 +100,7 @@ class LibraryResponseDto {
 
       return LibraryResponseDto(
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
         exclusionPatterns: json[r'exclusionPatterns'] is Iterable
             ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -108,8 +110,8 @@ class LibraryResponseDto {
             : const [],
         name: mapValueOfType<String>(json, r'name')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        refreshedAt: mapDateTime(json, r'refreshedAt', r''),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        refreshedAt:  Option.from(mapDateTime(json, r'refreshedAt', r'')),
+        updatedAt:  mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;

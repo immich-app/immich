@@ -13,17 +13,17 @@ part of openapi.api;
 class MapMarkerResponseDto {
   /// Returns a new [MapMarkerResponseDto] instance.
   MapMarkerResponseDto({
-    required this.city,
-    required this.country,
+    this.city = const None(),
+    this.country = const None(),
     required this.id,
     required this.lat,
     required this.lon,
-    required this.state,
+    this.state = const None(),
   });
 
-  String? city;
+  Option<String> city;
 
-  String? country;
+  Option<String> country;
 
   String id;
 
@@ -31,7 +31,7 @@ class MapMarkerResponseDto {
 
   double lon;
 
-  String? state;
+  Option<String> state;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapMarkerResponseDto &&
@@ -45,35 +45,41 @@ class MapMarkerResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (city == null ? 0 : city!.hashCode) +
-    (country == null ? 0 : country!.hashCode) +
+    (city.hashCode) +
+    (country.hashCode) +
     (id.hashCode) +
     (lat.hashCode) +
     (lon.hashCode) +
-    (state == null ? 0 : state!.hashCode);
+    (state.hashCode);
 
   @override
   String toString() => 'MapMarkerResponseDto[city=$city, country=$country, id=$id, lat=$lat, lon=$lon, state=$state]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.city != null) {
+    if (this.city.unwrapOrNull() != null) {
       json[r'city'] = this.city;
     } else {
-    //  json[r'city'] = null;
+      if(this.city.isSome) {
+        json[r'city'] = null;
+      }
     }
-    if (this.country != null) {
+    if (this.country.unwrapOrNull() != null) {
       json[r'country'] = this.country;
     } else {
-    //  json[r'country'] = null;
+      if(this.country.isSome) {
+        json[r'country'] = null;
+      }
     }
       json[r'id'] = this.id;
       json[r'lat'] = this.lat;
       json[r'lon'] = this.lon;
-    if (this.state != null) {
+    if (this.state.unwrapOrNull() != null) {
       json[r'state'] = this.state;
     } else {
-    //  json[r'state'] = null;
+      if(this.state.isSome) {
+        json[r'state'] = null;
+      }
     }
     return json;
   }
@@ -87,12 +93,12 @@ class MapMarkerResponseDto {
       final json = value.cast<String, dynamic>();
 
       return MapMarkerResponseDto(
-        city: mapValueOfType<String>(json, r'city'),
-        country: mapValueOfType<String>(json, r'country'),
+        city: Option.from(mapValueOfType<String>(json, r'city')),
+        country: Option.from(mapValueOfType<String>(json, r'country')),
         id: mapValueOfType<String>(json, r'id')!,
         lat: (mapValueOfType<num>(json, r'lat')!).toDouble(),
         lon: (mapValueOfType<num>(json, r'lon')!).toDouble(),
-        state: mapValueOfType<String>(json, r'state'),
+        state: Option.from(mapValueOfType<String>(json, r'state')),
       );
     }
     return null;

@@ -96,7 +96,7 @@ class PartnerResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         inTimeline: mapValueOfType<bool>(json, r'inTimeline'),
         name: mapValueOfType<String>(json, r'name')!,
-        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
+        profileChangedAt:  mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );
     }

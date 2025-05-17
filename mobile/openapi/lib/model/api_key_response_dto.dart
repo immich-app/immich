@@ -69,11 +69,11 @@ class APIKeyResponseDto {
       final json = value.cast<String, dynamic>();
 
       return APIKeyResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
         permissions: Permission.listFromJson(json[r'permissions']),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        updatedAt:  mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;

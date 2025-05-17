@@ -117,12 +117,12 @@ class NotificationDto {
       final json = value.cast<String, dynamic>();
 
       return NotificationDto(
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt:  mapDateTime(json, r'createdAt', r'')!,
         data: mapValueOfType<Object>(json, r'data'),
         description: mapValueOfType<String>(json, r'description'),
         id: mapValueOfType<String>(json, r'id')!,
         level: NotificationLevel.fromJson(json[r'level'])!,
-        readAt: mapDateTime(json, r'readAt', r''),
+        readAt:  mapDateTime(json, r'readAt', r''),
         title: mapValueOfType<String>(json, r'title')!,
         type: NotificationType.fromJson(json[r'type'])!,
       );
