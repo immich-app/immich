@@ -14,9 +14,9 @@ class NotificationCreateDto {
   /// Returns a new [NotificationCreateDto] instance.
   NotificationCreateDto({
     this.data,
-    this.description = const None(),
+    this.description,
     this.level,
-    this.readAt = const None(),
+    this.readAt,
     required this.title,
     this.type,
     required this.userId,
@@ -30,7 +30,7 @@ class NotificationCreateDto {
   ///
   Object? data;
 
-  Option<String> description;
+  Option<String>? description;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -40,7 +40,7 @@ class NotificationCreateDto {
   ///
   NotificationLevel? level;
 
-  Option<DateTime> readAt;
+  Option<DateTime>? readAt;
 
   String title;
 
@@ -68,9 +68,9 @@ class NotificationCreateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (data == null ? 0 : data!.hashCode) +
-    (description.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
     (level == null ? 0 : level!.hashCode) +
-    (readAt.hashCode) +
+    (readAt == null ? 0 : readAt!.hashCode) +
     (title.hashCode) +
     (type == null ? 0 : type!.hashCode) +
     (userId.hashCode);
@@ -85,10 +85,10 @@ class NotificationCreateDto {
     } else {
     //  json[r'data'] = null;
     }
-    if (this.description.unwrapOrNull() != null) {
+    if (this.description?.isSome ?? false) {
       json[r'description'] = this.description;
     } else {
-      if(this.description.isSome) {
+      if(this.description?.isNone ?? false) {
         json[r'description'] = null;
       }
     }
@@ -97,10 +97,10 @@ class NotificationCreateDto {
     } else {
     //  json[r'level'] = null;
     }
-    if (this.readAt.unwrapOrNull() != null) {
-      json[r'readAt'] = this.readAt.unwrap().toUtc().toIso8601String();
+    if (this.readAt?.isSome ?? false) {
+      json[r'readAt'] = this.readAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.readAt.isSome) {
+      if(this.readAt?.isNone ?? false) {
         json[r'readAt'] = null;
       }
     }

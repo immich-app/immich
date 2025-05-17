@@ -17,7 +17,7 @@ class SharedLinkEditDto {
     this.allowUpload,
     this.changeExpiryTime,
     this.description,
-    this.expiresAt = const None(),
+    this.expiresAt,
     this.password,
     this.showMetadata,
   });
@@ -55,7 +55,7 @@ class SharedLinkEditDto {
   ///
   String? description;
 
-  Option<DateTime> expiresAt;
+  Option<DateTime>? expiresAt;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -90,7 +90,7 @@ class SharedLinkEditDto {
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
     (changeExpiryTime == null ? 0 : changeExpiryTime!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (expiresAt.hashCode) +
+    (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (showMetadata == null ? 0 : showMetadata!.hashCode);
 
@@ -119,10 +119,10 @@ class SharedLinkEditDto {
     } else {
     //  json[r'description'] = null;
     }
-    if (this.expiresAt.unwrapOrNull() != null) {
-      json[r'expiresAt'] = this.expiresAt.unwrap().toUtc().toIso8601String();
+    if (this.expiresAt?.isSome ?? false) {
+      json[r'expiresAt'] = this.expiresAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.expiresAt.isSome) {
+      if(this.expiresAt?.isNone ?? false) {
         json[r'expiresAt'] = null;
       }
     }

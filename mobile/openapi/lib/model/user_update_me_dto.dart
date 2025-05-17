@@ -13,13 +13,13 @@ part of openapi.api;
 class UserUpdateMeDto {
   /// Returns a new [UserUpdateMeDto] instance.
   UserUpdateMeDto({
-    this.avatarColor = const None(),
+    this.avatarColor,
     this.email,
     this.name,
     this.password,
   });
 
-  Option<UserAvatarColor> avatarColor;
+  Option<UserAvatarColor>? avatarColor;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -55,7 +55,7 @@ class UserUpdateMeDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatarColor.hashCode) +
+    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode);
@@ -65,10 +65,10 @@ class UserUpdateMeDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor.unwrapOrNull() != null) {
+    if (this.avatarColor?.isSome ?? false) {
       json[r'avatarColor'] = this.avatarColor;
     } else {
-      if(this.avatarColor.isSome) {
+      if(this.avatarColor?.isNone ?? false) {
         json[r'avatarColor'] = null;
       }
     }

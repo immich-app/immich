@@ -14,81 +14,81 @@ class SyncAssetExifV1 {
   /// Returns a new [SyncAssetExifV1] instance.
   SyncAssetExifV1({
     required this.assetId,
-    this.city = const None(),
-    this.country = const None(),
-    this.dateTimeOriginal = const None(),
-    this.description = const None(),
-    this.exifImageHeight = const None(),
-    this.exifImageWidth = const None(),
-    this.exposureTime = const None(),
-    this.fNumber = const None(),
-    this.fileSizeInByte = const None(),
-    this.focalLength = const None(),
-    this.fps = const None(),
-    this.iso = const None(),
-    this.latitude = const None(),
-    this.lensModel = const None(),
-    this.longitude = const None(),
-    this.make = const None(),
-    this.model = const None(),
-    this.modifyDate = const None(),
-    this.orientation = const None(),
-    this.profileDescription = const None(),
-    this.projectionType = const None(),
-    this.rating = const None(),
-    this.state = const None(),
-    this.timeZone = const None(),
+    required this.city,
+    required this.country,
+    required this.dateTimeOriginal,
+    required this.description,
+    required this.exifImageHeight,
+    required this.exifImageWidth,
+    required this.exposureTime,
+    required this.fNumber,
+    required this.fileSizeInByte,
+    required this.focalLength,
+    required this.fps,
+    required this.iso,
+    required this.latitude,
+    required this.lensModel,
+    required this.longitude,
+    required this.make,
+    required this.model,
+    required this.modifyDate,
+    required this.orientation,
+    required this.profileDescription,
+    required this.projectionType,
+    required this.rating,
+    required this.state,
+    required this.timeZone,
   });
 
   String assetId;
 
-  Option<String> city;
+  Option<String>? city;
 
-  Option<String> country;
+  Option<String>? country;
 
-  Option<DateTime> dateTimeOriginal;
+  Option<DateTime>? dateTimeOriginal;
 
-  Option<String> description;
+  Option<String>? description;
 
-  Option<int> exifImageHeight;
+  Option<int>? exifImageHeight;
 
-  Option<int> exifImageWidth;
+  Option<int>? exifImageWidth;
 
-  Option<String> exposureTime;
+  Option<String>? exposureTime;
 
-  Option<int> fNumber;
+  Option<int>? fNumber;
 
-  Option<int> fileSizeInByte;
+  Option<int>? fileSizeInByte;
 
-  Option<int> focalLength;
+  Option<int>? focalLength;
 
-  Option<int> fps;
+  Option<int>? fps;
 
-  Option<int> iso;
+  Option<int>? iso;
 
-  Option<int> latitude;
+  Option<int>? latitude;
 
-  Option<String> lensModel;
+  Option<String>? lensModel;
 
-  Option<int> longitude;
+  Option<int>? longitude;
 
-  Option<String> make;
+  Option<String>? make;
 
-  Option<String> model;
+  Option<String>? model;
 
-  Option<DateTime> modifyDate;
+  Option<DateTime>? modifyDate;
 
-  Option<String> orientation;
+  Option<String>? orientation;
 
-  Option<String> profileDescription;
+  Option<String>? profileDescription;
 
-  Option<String> projectionType;
+  Option<String>? projectionType;
 
-  Option<int> rating;
+  Option<int>? rating;
 
-  Option<String> state;
+  Option<String>? state;
 
-  Option<String> timeZone;
+  Option<String>? timeZone;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetExifV1 &&
@@ -122,30 +122,30 @@ class SyncAssetExifV1 {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assetId.hashCode) +
-    (city.hashCode) +
-    (country.hashCode) +
-    (dateTimeOriginal.hashCode) +
-    (description.hashCode) +
-    (exifImageHeight.hashCode) +
-    (exifImageWidth.hashCode) +
-    (exposureTime.hashCode) +
-    (fNumber.hashCode) +
-    (fileSizeInByte.hashCode) +
-    (focalLength.hashCode) +
-    (fps.hashCode) +
-    (iso.hashCode) +
-    (latitude.hashCode) +
-    (lensModel.hashCode) +
-    (longitude.hashCode) +
-    (make.hashCode) +
-    (model.hashCode) +
-    (modifyDate.hashCode) +
-    (orientation.hashCode) +
-    (profileDescription.hashCode) +
-    (projectionType.hashCode) +
-    (rating.hashCode) +
-    (state.hashCode) +
-    (timeZone.hashCode);
+    (city == null ? 0 : city!.hashCode) +
+    (country == null ? 0 : country!.hashCode) +
+    (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
+    (exifImageHeight == null ? 0 : exifImageHeight!.hashCode) +
+    (exifImageWidth == null ? 0 : exifImageWidth!.hashCode) +
+    (exposureTime == null ? 0 : exposureTime!.hashCode) +
+    (fNumber == null ? 0 : fNumber!.hashCode) +
+    (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
+    (focalLength == null ? 0 : focalLength!.hashCode) +
+    (fps == null ? 0 : fps!.hashCode) +
+    (iso == null ? 0 : iso!.hashCode) +
+    (latitude == null ? 0 : latitude!.hashCode) +
+    (lensModel == null ? 0 : lensModel!.hashCode) +
+    (longitude == null ? 0 : longitude!.hashCode) +
+    (make == null ? 0 : make!.hashCode) +
+    (model == null ? 0 : model!.hashCode) +
+    (modifyDate == null ? 0 : modifyDate!.hashCode) +
+    (orientation == null ? 0 : orientation!.hashCode) +
+    (profileDescription == null ? 0 : profileDescription!.hashCode) +
+    (projectionType == null ? 0 : projectionType!.hashCode) +
+    (rating == null ? 0 : rating!.hashCode) +
+    (state == null ? 0 : state!.hashCode) +
+    (timeZone == null ? 0 : timeZone!.hashCode);
 
   @override
   String toString() => 'SyncAssetExifV1[assetId=$assetId, city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, fps=$fps, iso=$iso, latitude=$latitude, lensModel=$lensModel, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, profileDescription=$profileDescription, projectionType=$projectionType, rating=$rating, state=$state, timeZone=$timeZone]';
@@ -153,171 +153,171 @@ class SyncAssetExifV1 {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetId'] = this.assetId;
-    if (this.city.unwrapOrNull() != null) {
+    if (this.city?.isSome ?? false) {
       json[r'city'] = this.city;
     } else {
-      if(this.city.isSome) {
+      if(this.city?.isNone ?? false) {
         json[r'city'] = null;
       }
     }
-    if (this.country.unwrapOrNull() != null) {
+    if (this.country?.isSome ?? false) {
       json[r'country'] = this.country;
     } else {
-      if(this.country.isSome) {
+      if(this.country?.isNone ?? false) {
         json[r'country'] = null;
       }
     }
-    if (this.dateTimeOriginal.unwrapOrNull() != null) {
-      json[r'dateTimeOriginal'] = this.dateTimeOriginal.unwrap().toUtc().toIso8601String();
+    if (this.dateTimeOriginal?.isSome ?? false) {
+      json[r'dateTimeOriginal'] = this.dateTimeOriginal!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.dateTimeOriginal.isSome) {
+      if(this.dateTimeOriginal?.isNone ?? false) {
         json[r'dateTimeOriginal'] = null;
       }
     }
-    if (this.description.unwrapOrNull() != null) {
+    if (this.description?.isSome ?? false) {
       json[r'description'] = this.description;
     } else {
-      if(this.description.isSome) {
+      if(this.description?.isNone ?? false) {
         json[r'description'] = null;
       }
     }
-    if (this.exifImageHeight.unwrapOrNull() != null) {
+    if (this.exifImageHeight?.isSome ?? false) {
       json[r'exifImageHeight'] = this.exifImageHeight;
     } else {
-      if(this.exifImageHeight.isSome) {
+      if(this.exifImageHeight?.isNone ?? false) {
         json[r'exifImageHeight'] = null;
       }
     }
-    if (this.exifImageWidth.unwrapOrNull() != null) {
+    if (this.exifImageWidth?.isSome ?? false) {
       json[r'exifImageWidth'] = this.exifImageWidth;
     } else {
-      if(this.exifImageWidth.isSome) {
+      if(this.exifImageWidth?.isNone ?? false) {
         json[r'exifImageWidth'] = null;
       }
     }
-    if (this.exposureTime.unwrapOrNull() != null) {
+    if (this.exposureTime?.isSome ?? false) {
       json[r'exposureTime'] = this.exposureTime;
     } else {
-      if(this.exposureTime.isSome) {
+      if(this.exposureTime?.isNone ?? false) {
         json[r'exposureTime'] = null;
       }
     }
-    if (this.fNumber.unwrapOrNull() != null) {
+    if (this.fNumber?.isSome ?? false) {
       json[r'fNumber'] = this.fNumber;
     } else {
-      if(this.fNumber.isSome) {
+      if(this.fNumber?.isNone ?? false) {
         json[r'fNumber'] = null;
       }
     }
-    if (this.fileSizeInByte.unwrapOrNull() != null) {
+    if (this.fileSizeInByte?.isSome ?? false) {
       json[r'fileSizeInByte'] = this.fileSizeInByte;
     } else {
-      if(this.fileSizeInByte.isSome) {
+      if(this.fileSizeInByte?.isNone ?? false) {
         json[r'fileSizeInByte'] = null;
       }
     }
-    if (this.focalLength.unwrapOrNull() != null) {
+    if (this.focalLength?.isSome ?? false) {
       json[r'focalLength'] = this.focalLength;
     } else {
-      if(this.focalLength.isSome) {
+      if(this.focalLength?.isNone ?? false) {
         json[r'focalLength'] = null;
       }
     }
-    if (this.fps.unwrapOrNull() != null) {
+    if (this.fps?.isSome ?? false) {
       json[r'fps'] = this.fps;
     } else {
-      if(this.fps.isSome) {
+      if(this.fps?.isNone ?? false) {
         json[r'fps'] = null;
       }
     }
-    if (this.iso.unwrapOrNull() != null) {
+    if (this.iso?.isSome ?? false) {
       json[r'iso'] = this.iso;
     } else {
-      if(this.iso.isSome) {
+      if(this.iso?.isNone ?? false) {
         json[r'iso'] = null;
       }
     }
-    if (this.latitude.unwrapOrNull() != null) {
+    if (this.latitude?.isSome ?? false) {
       json[r'latitude'] = this.latitude;
     } else {
-      if(this.latitude.isSome) {
+      if(this.latitude?.isNone ?? false) {
         json[r'latitude'] = null;
       }
     }
-    if (this.lensModel.unwrapOrNull() != null) {
+    if (this.lensModel?.isSome ?? false) {
       json[r'lensModel'] = this.lensModel;
     } else {
-      if(this.lensModel.isSome) {
+      if(this.lensModel?.isNone ?? false) {
         json[r'lensModel'] = null;
       }
     }
-    if (this.longitude.unwrapOrNull() != null) {
+    if (this.longitude?.isSome ?? false) {
       json[r'longitude'] = this.longitude;
     } else {
-      if(this.longitude.isSome) {
+      if(this.longitude?.isNone ?? false) {
         json[r'longitude'] = null;
       }
     }
-    if (this.make.unwrapOrNull() != null) {
+    if (this.make?.isSome ?? false) {
       json[r'make'] = this.make;
     } else {
-      if(this.make.isSome) {
+      if(this.make?.isNone ?? false) {
         json[r'make'] = null;
       }
     }
-    if (this.model.unwrapOrNull() != null) {
+    if (this.model?.isSome ?? false) {
       json[r'model'] = this.model;
     } else {
-      if(this.model.isSome) {
+      if(this.model?.isNone ?? false) {
         json[r'model'] = null;
       }
     }
-    if (this.modifyDate.unwrapOrNull() != null) {
-      json[r'modifyDate'] = this.modifyDate.unwrap().toUtc().toIso8601String();
+    if (this.modifyDate?.isSome ?? false) {
+      json[r'modifyDate'] = this.modifyDate!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.modifyDate.isSome) {
+      if(this.modifyDate?.isNone ?? false) {
         json[r'modifyDate'] = null;
       }
     }
-    if (this.orientation.unwrapOrNull() != null) {
+    if (this.orientation?.isSome ?? false) {
       json[r'orientation'] = this.orientation;
     } else {
-      if(this.orientation.isSome) {
+      if(this.orientation?.isNone ?? false) {
         json[r'orientation'] = null;
       }
     }
-    if (this.profileDescription.unwrapOrNull() != null) {
+    if (this.profileDescription?.isSome ?? false) {
       json[r'profileDescription'] = this.profileDescription;
     } else {
-      if(this.profileDescription.isSome) {
+      if(this.profileDescription?.isNone ?? false) {
         json[r'profileDescription'] = null;
       }
     }
-    if (this.projectionType.unwrapOrNull() != null) {
+    if (this.projectionType?.isSome ?? false) {
       json[r'projectionType'] = this.projectionType;
     } else {
-      if(this.projectionType.isSome) {
+      if(this.projectionType?.isNone ?? false) {
         json[r'projectionType'] = null;
       }
     }
-    if (this.rating.unwrapOrNull() != null) {
+    if (this.rating?.isSome ?? false) {
       json[r'rating'] = this.rating;
     } else {
-      if(this.rating.isSome) {
+      if(this.rating?.isNone ?? false) {
         json[r'rating'] = null;
       }
     }
-    if (this.state.unwrapOrNull() != null) {
+    if (this.state?.isSome ?? false) {
       json[r'state'] = this.state;
     } else {
-      if(this.state.isSome) {
+      if(this.state?.isNone ?? false) {
         json[r'state'] = null;
       }
     }
-    if (this.timeZone.unwrapOrNull() != null) {
+    if (this.timeZone?.isSome ?? false) {
       json[r'timeZone'] = this.timeZone;
     } else {
-      if(this.timeZone.isSome) {
+      if(this.timeZone?.isNone ?? false) {
         json[r'timeZone'] = null;
       }
     }

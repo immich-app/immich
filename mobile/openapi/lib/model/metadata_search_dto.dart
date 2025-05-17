@@ -14,8 +14,8 @@ class MetadataSearchDto {
   /// Returns a new [MetadataSearchDto] instance.
   MetadataSearchDto({
     this.checksum,
-    this.city = const None(),
-    this.country = const None(),
+    this.city,
+    this.country,
     this.createdAfter,
     this.createdBefore,
     this.description,
@@ -28,10 +28,10 @@ class MetadataSearchDto {
     this.isMotion,
     this.isNotInAlbum,
     this.isOffline,
-    this.lensModel = const None(),
-    this.libraryId = const None(),
+    this.lensModel,
+    this.libraryId,
     this.make,
-    this.model = const None(),
+    this.model,
     this.order = AssetOrder.desc,
     this.originalFileName,
     this.originalPath,
@@ -40,7 +40,7 @@ class MetadataSearchDto {
     this.previewPath,
     this.rating,
     this.size,
-    this.state = const None(),
+    this.state,
     this.tagIds = const [],
     this.takenAfter,
     this.takenBefore,
@@ -65,9 +65,9 @@ class MetadataSearchDto {
   ///
   String? checksum;
 
-  Option<String> city;
+  Option<String>? city;
 
-  Option<String> country;
+  Option<String>? country;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -165,9 +165,9 @@ class MetadataSearchDto {
   ///
   bool? isOffline;
 
-  Option<String> lensModel;
+  Option<String>? lensModel;
 
-  Option<String> libraryId;
+  Option<String>? libraryId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -177,7 +177,7 @@ class MetadataSearchDto {
   ///
   String? make;
 
-  Option<String> model;
+  Option<String>? model;
 
   AssetOrder order;
 
@@ -236,7 +236,7 @@ class MetadataSearchDto {
   ///
   num? size;
 
-  Option<String> state;
+  Option<String>? state;
 
   List<String> tagIds;
 
@@ -393,8 +393,8 @@ class MetadataSearchDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (checksum == null ? 0 : checksum!.hashCode) +
-    (city.hashCode) +
-    (country.hashCode) +
+    (city == null ? 0 : city!.hashCode) +
+    (country == null ? 0 : country!.hashCode) +
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
@@ -407,10 +407,10 @@ class MetadataSearchDto {
     (isMotion == null ? 0 : isMotion!.hashCode) +
     (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
-    (lensModel.hashCode) +
-    (libraryId.hashCode) +
+    (lensModel == null ? 0 : lensModel!.hashCode) +
+    (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
-    (model.hashCode) +
+    (model == null ? 0 : model!.hashCode) +
     (order.hashCode) +
     (originalFileName == null ? 0 : originalFileName!.hashCode) +
     (originalPath == null ? 0 : originalPath!.hashCode) +
@@ -419,7 +419,7 @@ class MetadataSearchDto {
     (previewPath == null ? 0 : previewPath!.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
-    (state.hashCode) +
+    (state == null ? 0 : state!.hashCode) +
     (tagIds.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
     (takenBefore == null ? 0 : takenBefore!.hashCode) +
@@ -445,17 +445,17 @@ class MetadataSearchDto {
     } else {
     //  json[r'checksum'] = null;
     }
-    if (this.city.unwrapOrNull() != null) {
+    if (this.city?.isSome ?? false) {
       json[r'city'] = this.city;
     } else {
-      if(this.city.isSome) {
+      if(this.city?.isNone ?? false) {
         json[r'city'] = null;
       }
     }
-    if (this.country.unwrapOrNull() != null) {
+    if (this.country?.isSome ?? false) {
       json[r'country'] = this.country;
     } else {
-      if(this.country.isSome) {
+      if(this.country?.isNone ?? false) {
         json[r'country'] = null;
       }
     }
@@ -519,17 +519,17 @@ class MetadataSearchDto {
     } else {
     //  json[r'isOffline'] = null;
     }
-    if (this.lensModel.unwrapOrNull() != null) {
+    if (this.lensModel?.isSome ?? false) {
       json[r'lensModel'] = this.lensModel;
     } else {
-      if(this.lensModel.isSome) {
+      if(this.lensModel?.isNone ?? false) {
         json[r'lensModel'] = null;
       }
     }
-    if (this.libraryId.unwrapOrNull() != null) {
+    if (this.libraryId?.isSome ?? false) {
       json[r'libraryId'] = this.libraryId;
     } else {
-      if(this.libraryId.isSome) {
+      if(this.libraryId?.isNone ?? false) {
         json[r'libraryId'] = null;
       }
     }
@@ -538,10 +538,10 @@ class MetadataSearchDto {
     } else {
     //  json[r'make'] = null;
     }
-    if (this.model.unwrapOrNull() != null) {
+    if (this.model?.isSome ?? false) {
       json[r'model'] = this.model;
     } else {
-      if(this.model.isSome) {
+      if(this.model?.isNone ?? false) {
         json[r'model'] = null;
       }
     }
@@ -577,10 +577,10 @@ class MetadataSearchDto {
     } else {
     //  json[r'size'] = null;
     }
-    if (this.state.unwrapOrNull() != null) {
+    if (this.state?.isSome ?? false) {
       json[r'state'] = this.state;
     } else {
-      if(this.state.isSome) {
+      if(this.state?.isNone ?? false) {
         json[r'state'] = null;
       }
     }

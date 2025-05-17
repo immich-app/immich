@@ -16,7 +16,7 @@ class SearchAssetResponseDto {
     required this.count,
     this.facets = const [],
     this.items = const [],
-    this.nextPage = const None(),
+    required this.nextPage,
     required this.total,
   });
 
@@ -26,7 +26,7 @@ class SearchAssetResponseDto {
 
   List<AssetResponseDto> items;
 
-  Option<String> nextPage;
+  Option<String>? nextPage;
 
   int total;
 
@@ -44,7 +44,7 @@ class SearchAssetResponseDto {
     (count.hashCode) +
     (facets.hashCode) +
     (items.hashCode) +
-    (nextPage.hashCode) +
+    (nextPage == null ? 0 : nextPage!.hashCode) +
     (total.hashCode);
 
   @override
@@ -55,10 +55,10 @@ class SearchAssetResponseDto {
       json[r'count'] = this.count;
       json[r'facets'] = this.facets;
       json[r'items'] = this.items;
-    if (this.nextPage.unwrapOrNull() != null) {
+    if (this.nextPage?.isSome ?? false) {
       json[r'nextPage'] = this.nextPage;
     } else {
-      if(this.nextPage.isSome) {
+      if(this.nextPage?.isNone ?? false) {
         json[r'nextPage'] = null;
       }
     }

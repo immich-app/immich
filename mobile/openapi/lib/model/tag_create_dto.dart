@@ -15,7 +15,7 @@ class TagCreateDto {
   TagCreateDto({
     this.color,
     required this.name,
-    this.parentId = const None(),
+    this.parentId,
   });
 
   ///
@@ -28,7 +28,7 @@ class TagCreateDto {
 
   String name;
 
-  Option<String> parentId;
+  Option<String>? parentId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagCreateDto &&
@@ -41,7 +41,7 @@ class TagCreateDto {
     // ignore: unnecessary_parenthesis
     (color == null ? 0 : color!.hashCode) +
     (name.hashCode) +
-    (parentId.hashCode);
+    (parentId == null ? 0 : parentId!.hashCode);
 
   @override
   String toString() => 'TagCreateDto[color=$color, name=$name, parentId=$parentId]';
@@ -54,10 +54,10 @@ class TagCreateDto {
     //  json[r'color'] = null;
     }
       json[r'name'] = this.name;
-    if (this.parentId.unwrapOrNull() != null) {
+    if (this.parentId?.isSome ?? false) {
       json[r'parentId'] = this.parentId;
     } else {
-      if(this.parentId.isSome) {
+      if(this.parentId?.isNone ?? false) {
         json[r'parentId'] = null;
       }
     }

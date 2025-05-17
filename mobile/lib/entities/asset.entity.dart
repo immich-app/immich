@@ -27,9 +27,9 @@ class Asset {
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
         fileName = remote.originalFileName,
-        height = remote.exifInfo?.exifImageHeight.unwrapOrNull()?.toInt(),
-        width = remote.exifInfo?.exifImageWidth.unwrapOrNull()?.toInt(),
-        livePhotoVideoId = remote.livePhotoVideoId.unwrapOrNull(),
+        height = remote.exifInfo?.exifImageHeight?.unwrapOrNull()?.toInt(),
+        width = remote.exifInfo?.exifImageWidth?.unwrapOrNull()?.toInt(),
+        livePhotoVideoId = remote.livePhotoVideoId?.unwrapOrNull(),
         ownerId = fastHash(remote.ownerId),
         exifInfo = remote.exifInfo == null
             ? null
@@ -41,12 +41,12 @@ class Asset {
         // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
         // stack handling to properly handle it
         stackPrimaryAssetId =
-            remote.stack.unwrapOrNull()?.primaryAssetId == remote.id
+            remote.stack?.unwrapOrNull()?.primaryAssetId == remote.id
                 ? null
-                : remote.stack.unwrapOrNull()?.primaryAssetId,
-        stackCount = remote.stack.unwrapOrNull()?.assetCount ?? 0,
-        stackId = remote.stack.unwrapOrNull()?.id,
-        thumbhash = remote.thumbhash.unwrapOrNull();
+                : remote.stack?.unwrapOrNull()?.primaryAssetId,
+        stackCount = remote.stack?.unwrapOrNull()?.assetCount ?? 0,
+        stackId = remote.stack?.unwrapOrNull()?.id,
+        thumbhash = remote.thumbhash?.unwrapOrNull();
 
   Asset({
     this.id = Isar.autoIncrement,

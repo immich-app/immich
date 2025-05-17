@@ -14,7 +14,7 @@ class AssetBulkUpdateDto {
   /// Returns a new [AssetBulkUpdateDto] instance.
   AssetBulkUpdateDto({
     this.dateTimeOriginal,
-    this.duplicateId = const None(),
+    this.duplicateId,
     this.ids = const [],
     this.isFavorite,
     this.latitude,
@@ -31,7 +31,7 @@ class AssetBulkUpdateDto {
   ///
   String? dateTimeOriginal;
 
-  Option<String> duplicateId;
+  Option<String>? duplicateId;
 
   List<String> ids;
 
@@ -92,7 +92,7 @@ class AssetBulkUpdateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
-    (duplicateId.hashCode) +
+    (duplicateId == null ? 0 : duplicateId!.hashCode) +
     (ids.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
@@ -110,10 +110,10 @@ class AssetBulkUpdateDto {
     } else {
     //  json[r'dateTimeOriginal'] = null;
     }
-    if (this.duplicateId.unwrapOrNull() != null) {
+    if (this.duplicateId?.isSome ?? false) {
       json[r'duplicateId'] = this.duplicateId;
     } else {
-      if(this.duplicateId.isSome) {
+      if(this.duplicateId?.isNone ?? false) {
         json[r'duplicateId'] = null;
       }
     }

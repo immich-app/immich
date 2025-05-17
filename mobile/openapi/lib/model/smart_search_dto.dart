@@ -13,8 +13,8 @@ part of openapi.api;
 class SmartSearchDto {
   /// Returns a new [SmartSearchDto] instance.
   SmartSearchDto({
-    this.city = const None(),
-    this.country = const None(),
+    this.city,
+    this.country,
     this.createdAfter,
     this.createdBefore,
     this.deviceId,
@@ -24,16 +24,16 @@ class SmartSearchDto {
     this.isNotInAlbum,
     this.isOffline,
     this.language,
-    this.lensModel = const None(),
-    this.libraryId = const None(),
+    this.lensModel,
+    this.libraryId,
     this.make,
-    this.model = const None(),
+    this.model,
     this.page,
     this.personIds = const [],
     required this.query,
     this.rating,
     this.size,
-    this.state = const None(),
+    this.state,
     this.tagIds = const [],
     this.takenAfter,
     this.takenBefore,
@@ -47,9 +47,9 @@ class SmartSearchDto {
     this.withExif,
   });
 
-  Option<String> city;
+  Option<String>? city;
 
-  Option<String> country;
+  Option<String>? country;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -123,9 +123,9 @@ class SmartSearchDto {
   ///
   String? language;
 
-  Option<String> lensModel;
+  Option<String>? lensModel;
 
-  Option<String> libraryId;
+  Option<String>? libraryId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -135,7 +135,7 @@ class SmartSearchDto {
   ///
   String? make;
 
-  Option<String> model;
+  Option<String>? model;
 
   /// Minimum value: 1
   ///
@@ -170,7 +170,7 @@ class SmartSearchDto {
   ///
   num? size;
 
-  Option<String> state;
+  Option<String>? state;
 
   List<String> tagIds;
 
@@ -292,8 +292,8 @@ class SmartSearchDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (city.hashCode) +
-    (country.hashCode) +
+    (city == null ? 0 : city!.hashCode) +
+    (country == null ? 0 : country!.hashCode) +
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
     (deviceId == null ? 0 : deviceId!.hashCode) +
@@ -303,16 +303,16 @@ class SmartSearchDto {
     (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
     (language == null ? 0 : language!.hashCode) +
-    (lensModel.hashCode) +
-    (libraryId.hashCode) +
+    (lensModel == null ? 0 : lensModel!.hashCode) +
+    (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
-    (model.hashCode) +
+    (model == null ? 0 : model!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
     (personIds.hashCode) +
     (query.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
-    (state.hashCode) +
+    (state == null ? 0 : state!.hashCode) +
     (tagIds.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
     (takenBefore == null ? 0 : takenBefore!.hashCode) +
@@ -330,17 +330,17 @@ class SmartSearchDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.city.unwrapOrNull() != null) {
+    if (this.city?.isSome ?? false) {
       json[r'city'] = this.city;
     } else {
-      if(this.city.isSome) {
+      if(this.city?.isNone ?? false) {
         json[r'city'] = null;
       }
     }
-    if (this.country.unwrapOrNull() != null) {
+    if (this.country?.isSome ?? false) {
       json[r'country'] = this.country;
     } else {
-      if(this.country.isSome) {
+      if(this.country?.isNone ?? false) {
         json[r'country'] = null;
       }
     }
@@ -389,17 +389,17 @@ class SmartSearchDto {
     } else {
     //  json[r'language'] = null;
     }
-    if (this.lensModel.unwrapOrNull() != null) {
+    if (this.lensModel?.isSome ?? false) {
       json[r'lensModel'] = this.lensModel;
     } else {
-      if(this.lensModel.isSome) {
+      if(this.lensModel?.isNone ?? false) {
         json[r'lensModel'] = null;
       }
     }
-    if (this.libraryId.unwrapOrNull() != null) {
+    if (this.libraryId?.isSome ?? false) {
       json[r'libraryId'] = this.libraryId;
     } else {
-      if(this.libraryId.isSome) {
+      if(this.libraryId?.isNone ?? false) {
         json[r'libraryId'] = null;
       }
     }
@@ -408,10 +408,10 @@ class SmartSearchDto {
     } else {
     //  json[r'make'] = null;
     }
-    if (this.model.unwrapOrNull() != null) {
+    if (this.model?.isSome ?? false) {
       json[r'model'] = this.model;
     } else {
-      if(this.model.isSome) {
+      if(this.model?.isNone ?? false) {
         json[r'model'] = null;
       }
     }
@@ -432,10 +432,10 @@ class SmartSearchDto {
     } else {
     //  json[r'size'] = null;
     }
-    if (this.state.unwrapOrNull() != null) {
+    if (this.state?.isSome ?? false) {
       json[r'state'] = this.state;
     } else {
-      if(this.state.isSome) {
+      if(this.state?.isNone ?? false) {
         json[r'state'] = null;
       }
     }

@@ -13,7 +13,7 @@ part of openapi.api;
 class PersonResponseDto {
   /// Returns a new [PersonResponseDto] instance.
   PersonResponseDto({
-    this.birthDate = const None(),
+    required this.birthDate,
     this.color,
     required this.id,
     this.isFavorite,
@@ -23,7 +23,7 @@ class PersonResponseDto {
     this.updatedAt,
   });
 
-  Option<DateTime> birthDate;
+  Option<DateTime>? birthDate;
 
   /// This property was added in v1.126.0
   ///
@@ -74,7 +74,7 @@ class PersonResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (birthDate.hashCode) +
+    (birthDate == null ? 0 : birthDate!.hashCode) +
     (color == null ? 0 : color!.hashCode) +
     (id.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
@@ -88,10 +88,10 @@ class PersonResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate.unwrapOrNull() != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate.unwrap().toUtc());
+    if (this.birthDate?.isSome ?? false) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.unwrap().toUtc());
     } else {
-      if(this.birthDate.isSome) {
+      if(this.birthDate?.isNone ?? false) {
         json[r'birthDate'] = null;
       }
     }

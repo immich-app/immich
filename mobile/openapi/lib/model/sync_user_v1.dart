@@ -13,13 +13,13 @@ part of openapi.api;
 class SyncUserV1 {
   /// Returns a new [SyncUserV1] instance.
   SyncUserV1({
-    this.deletedAt = const None(),
+    required this.deletedAt,
     required this.email,
     required this.id,
     required this.name,
   });
 
-  Option<DateTime> deletedAt;
+  Option<DateTime>? deletedAt;
 
   String email;
 
@@ -37,7 +37,7 @@ class SyncUserV1 {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (deletedAt.hashCode) +
+    (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
     (id.hashCode) +
     (name.hashCode);
@@ -47,10 +47,10 @@ class SyncUserV1 {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.deletedAt.unwrapOrNull() != null) {
-      json[r'deletedAt'] = this.deletedAt.unwrap().toUtc().toIso8601String();
+    if (this.deletedAt?.isSome ?? false) {
+      json[r'deletedAt'] = this.deletedAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.deletedAt.isSome) {
+      if(this.deletedAt?.isNone ?? false) {
         json[r'deletedAt'] = null;
       }
     }

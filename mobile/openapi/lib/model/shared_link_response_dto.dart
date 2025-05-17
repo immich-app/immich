@@ -18,13 +18,13 @@ class SharedLinkResponseDto {
     required this.allowUpload,
     this.assets = const [],
     required this.createdAt,
-    this.description = const None(),
-    this.expiresAt = const None(),
+    required this.description,
+    required this.expiresAt,
     required this.id,
     required this.key,
-    this.password = const None(),
+    required this.password,
     required this.showMetadata,
-    this.token = const None(),
+    this.token,
     required this.type,
     required this.userId,
   });
@@ -45,19 +45,19 @@ class SharedLinkResponseDto {
 
   DateTime createdAt;
 
-  Option<String> description;
+  Option<String>? description;
 
-  Option<DateTime> expiresAt;
+  Option<DateTime>? expiresAt;
 
   String id;
 
   String key;
 
-  Option<String> password;
+  Option<String>? password;
 
   bool showMetadata;
 
-  Option<String> token;
+  Option<String>? token;
 
   SharedLinkType type;
 
@@ -88,13 +88,13 @@ class SharedLinkResponseDto {
     (allowUpload.hashCode) +
     (assets.hashCode) +
     (createdAt.hashCode) +
-    (description.hashCode) +
-    (expiresAt.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
+    (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
     (key.hashCode) +
-    (password.hashCode) +
+    (password == null ? 0 : password!.hashCode) +
     (showMetadata.hashCode) +
-    (token.hashCode) +
+    (token == null ? 0 : token!.hashCode) +
     (type.hashCode) +
     (userId.hashCode);
 
@@ -112,34 +112,34 @@ class SharedLinkResponseDto {
       json[r'allowUpload'] = this.allowUpload;
       json[r'assets'] = this.assets;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-    if (this.description.unwrapOrNull() != null) {
+    if (this.description?.isSome ?? false) {
       json[r'description'] = this.description;
     } else {
-      if(this.description.isSome) {
+      if(this.description?.isNone ?? false) {
         json[r'description'] = null;
       }
     }
-    if (this.expiresAt.unwrapOrNull() != null) {
-      json[r'expiresAt'] = this.expiresAt.unwrap().toUtc().toIso8601String();
+    if (this.expiresAt?.isSome ?? false) {
+      json[r'expiresAt'] = this.expiresAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.expiresAt.isSome) {
+      if(this.expiresAt?.isNone ?? false) {
         json[r'expiresAt'] = null;
       }
     }
       json[r'id'] = this.id;
       json[r'key'] = this.key;
-    if (this.password.unwrapOrNull() != null) {
+    if (this.password?.isSome ?? false) {
       json[r'password'] = this.password;
     } else {
-      if(this.password.isSome) {
+      if(this.password?.isNone ?? false) {
         json[r'password'] = null;
       }
     }
       json[r'showMetadata'] = this.showMetadata;
-    if (this.token.unwrapOrNull() != null) {
+    if (this.token?.isSome ?? false) {
       json[r'token'] = this.token;
     } else {
-      if(this.token.isSome) {
+      if(this.token?.isNone ?? false) {
         json[r'token'] = null;
       }
     }

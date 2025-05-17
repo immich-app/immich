@@ -13,17 +13,17 @@ part of openapi.api;
 class MapMarkerResponseDto {
   /// Returns a new [MapMarkerResponseDto] instance.
   MapMarkerResponseDto({
-    this.city = const None(),
-    this.country = const None(),
+    required this.city,
+    required this.country,
     required this.id,
     required this.lat,
     required this.lon,
-    this.state = const None(),
+    required this.state,
   });
 
-  Option<String> city;
+  Option<String>? city;
 
-  Option<String> country;
+  Option<String>? country;
 
   String id;
 
@@ -31,7 +31,7 @@ class MapMarkerResponseDto {
 
   double lon;
 
-  Option<String> state;
+  Option<String>? state;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapMarkerResponseDto &&
@@ -45,39 +45,39 @@ class MapMarkerResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (city.hashCode) +
-    (country.hashCode) +
+    (city == null ? 0 : city!.hashCode) +
+    (country == null ? 0 : country!.hashCode) +
     (id.hashCode) +
     (lat.hashCode) +
     (lon.hashCode) +
-    (state.hashCode);
+    (state == null ? 0 : state!.hashCode);
 
   @override
   String toString() => 'MapMarkerResponseDto[city=$city, country=$country, id=$id, lat=$lat, lon=$lon, state=$state]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.city.unwrapOrNull() != null) {
+    if (this.city?.isSome ?? false) {
       json[r'city'] = this.city;
     } else {
-      if(this.city.isSome) {
+      if(this.city?.isNone ?? false) {
         json[r'city'] = null;
       }
     }
-    if (this.country.unwrapOrNull() != null) {
+    if (this.country?.isSome ?? false) {
       json[r'country'] = this.country;
     } else {
-      if(this.country.isSome) {
+      if(this.country?.isNone ?? false) {
         json[r'country'] = null;
       }
     }
       json[r'id'] = this.id;
       json[r'lat'] = this.lat;
       json[r'lon'] = this.lon;
-    if (this.state.unwrapOrNull() != null) {
+    if (this.state?.isSome ?? false) {
       json[r'state'] = this.state;
     } else {
-      if(this.state.isSome) {
+      if(this.state?.isNone ?? false) {
         json[r'state'] = null;
       }
     }

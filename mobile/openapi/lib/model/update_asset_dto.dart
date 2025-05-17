@@ -17,7 +17,7 @@ class UpdateAssetDto {
     this.description,
     this.isFavorite,
     this.latitude,
-    this.livePhotoVideoId = const None(),
+    this.livePhotoVideoId,
     this.longitude,
     this.rating,
     this.visibility,
@@ -55,7 +55,7 @@ class UpdateAssetDto {
   ///
   num? latitude;
 
-  Option<String> livePhotoVideoId;
+  Option<String>? livePhotoVideoId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -101,7 +101,7 @@ class UpdateAssetDto {
     (description == null ? 0 : description!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
-    (livePhotoVideoId.hashCode) +
+    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (visibility == null ? 0 : visibility!.hashCode);
@@ -131,10 +131,10 @@ class UpdateAssetDto {
     } else {
     //  json[r'latitude'] = null;
     }
-    if (this.livePhotoVideoId.unwrapOrNull() != null) {
+    if (this.livePhotoVideoId?.isSome ?? false) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
-      if(this.livePhotoVideoId.isSome) {
+      if(this.livePhotoVideoId?.isNone ?? false) {
         json[r'livePhotoVideoId'] = null;
       }
     }

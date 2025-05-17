@@ -13,17 +13,17 @@ part of openapi.api;
 class UserAdminUpdateDto {
   /// Returns a new [UserAdminUpdateDto] instance.
   UserAdminUpdateDto({
-    this.avatarColor = const None(),
+    this.avatarColor,
     this.email,
     this.name,
     this.password,
-    this.pinCode = const None(),
-    this.quotaSizeInBytes = const None(),
+    this.pinCode,
+    this.quotaSizeInBytes,
     this.shouldChangePassword,
-    this.storageLabel = const None(),
+    this.storageLabel,
   });
 
-  Option<UserAvatarColor> avatarColor;
+  Option<UserAvatarColor>? avatarColor;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -49,10 +49,10 @@ class UserAdminUpdateDto {
   ///
   String? password;
 
-  Option<String> pinCode;
+  Option<String>? pinCode;
 
   /// Minimum value: 0
-  Option<int> quotaSizeInBytes;
+  Option<int>? quotaSizeInBytes;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -62,7 +62,7 @@ class UserAdminUpdateDto {
   ///
   bool? shouldChangePassword;
 
-  Option<String> storageLabel;
+  Option<String>? storageLabel;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminUpdateDto &&
@@ -78,24 +78,24 @@ class UserAdminUpdateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatarColor.hashCode) +
+    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
-    (pinCode.hashCode) +
-    (quotaSizeInBytes.hashCode) +
+    (pinCode == null ? 0 : pinCode!.hashCode) +
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
-    (storageLabel.hashCode);
+    (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
   String toString() => 'UserAdminUpdateDto[avatarColor=$avatarColor, email=$email, name=$name, password=$password, pinCode=$pinCode, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor.unwrapOrNull() != null) {
+    if (this.avatarColor?.isSome ?? false) {
       json[r'avatarColor'] = this.avatarColor;
     } else {
-      if(this.avatarColor.isSome) {
+      if(this.avatarColor?.isNone ?? false) {
         json[r'avatarColor'] = null;
       }
     }
@@ -114,17 +114,17 @@ class UserAdminUpdateDto {
     } else {
     //  json[r'password'] = null;
     }
-    if (this.pinCode.unwrapOrNull() != null) {
+    if (this.pinCode?.isSome ?? false) {
       json[r'pinCode'] = this.pinCode;
     } else {
-      if(this.pinCode.isSome) {
+      if(this.pinCode?.isNone ?? false) {
         json[r'pinCode'] = null;
       }
     }
-    if (this.quotaSizeInBytes.unwrapOrNull() != null) {
+    if (this.quotaSizeInBytes?.isSome ?? false) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-      if(this.quotaSizeInBytes.isSome) {
+      if(this.quotaSizeInBytes?.isNone ?? false) {
         json[r'quotaSizeInBytes'] = null;
       }
     }
@@ -133,10 +133,10 @@ class UserAdminUpdateDto {
     } else {
     //  json[r'shouldChangePassword'] = null;
     }
-    if (this.storageLabel.unwrapOrNull() != null) {
+    if (this.storageLabel?.isSome ?? false) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-      if(this.storageLabel.isSome) {
+      if(this.storageLabel?.isNone ?? false) {
         json[r'storageLabel'] = null;
       }
     }

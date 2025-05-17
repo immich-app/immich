@@ -45,9 +45,9 @@ class PeopleInfo extends ConsumerWidget {
               (p) => SearchCuratedContent(
                 id: p.id,
                 label: p.name,
-                subtitle: p.birthDate.unwrapOrNull() != null &&
-                        p.birthDate.unwrap().isBefore(asset.fileCreatedAt)
-                    ? _formatAge(p.birthDate.unwrap(), asset.fileCreatedAt)
+                subtitle: p.birthDate?.unwrapOrNull() != null &&
+                        p.birthDate!.unwrap().isBefore(asset.fileCreatedAt)
+                    ? _formatAge(p.birthDate!.unwrap(), asset.fileCreatedAt)
                     : null,
               ),
             )

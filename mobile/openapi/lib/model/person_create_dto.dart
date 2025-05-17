@@ -13,17 +13,17 @@ part of openapi.api;
 class PersonCreateDto {
   /// Returns a new [PersonCreateDto] instance.
   PersonCreateDto({
-    this.birthDate = const None(),
-    this.color = const None(),
+    this.birthDate,
+    this.color,
     this.isFavorite,
     this.isHidden,
     this.name,
   });
 
   /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
-  Option<DateTime> birthDate;
+  Option<DateTime>? birthDate;
 
-  Option<String> color;
+  Option<String>? color;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -62,8 +62,8 @@ class PersonCreateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (birthDate.hashCode) +
-    (color.hashCode) +
+    (birthDate == null ? 0 : birthDate!.hashCode) +
+    (color == null ? 0 : color!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
     (name == null ? 0 : name!.hashCode);
@@ -73,17 +73,17 @@ class PersonCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate.unwrapOrNull() != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate.unwrap().toUtc());
+    if (this.birthDate?.isSome ?? false) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.unwrap().toUtc());
     } else {
-      if(this.birthDate.isSome) {
+      if(this.birthDate?.isNone ?? false) {
         json[r'birthDate'] = null;
       }
     }
-    if (this.color.unwrapOrNull() != null) {
+    if (this.color?.isSome ?? false) {
       json[r'color'] = this.color;
     } else {
-      if(this.color.isSome) {
+      if(this.color?.isNone ?? false) {
         json[r'color'] = null;
       }
     }

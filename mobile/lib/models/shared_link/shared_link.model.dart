@@ -61,9 +61,9 @@ class SharedLink {
       : id = dto.id,
         allowDownload = dto.allowDownload,
         allowUpload = dto.allowUpload,
-        description = dto.description.unwrapOrNull(),
-        password = dto.password.unwrapOrNull(),
-        expiresAt = dto.expiresAt.unwrapOrNull(),
+        description = dto.description?.unwrapOrNull(),
+        password = dto.password?.unwrapOrNull(),
+        expiresAt = dto.expiresAt?.unwrapOrNull(),
         key = dto.key,
         showMetadata = dto.showMetadata,
         type = dto.type == SharedLinkType.ALBUM
@@ -73,7 +73,7 @@ class SharedLink {
             ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
             : "INDIVIDUAL SHARE",
         thumbAssetId = dto.type == SharedLinkType.ALBUM
-            ? dto.album?.albumThumbnailAssetId.unwrapOrNull()
+            ? dto.album?.albumThumbnailAssetId?.unwrapOrNull()
             : dto.assets.isNotEmpty
                 ? dto.assets[0].id
                 : null;

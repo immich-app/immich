@@ -13,16 +13,16 @@ part of openapi.api;
 class MapReverseGeocodeResponseDto {
   /// Returns a new [MapReverseGeocodeResponseDto] instance.
   MapReverseGeocodeResponseDto({
-    this.city = const None(),
-    this.country = const None(),
-    this.state = const None(),
+    required this.city,
+    required this.country,
+    required this.state,
   });
 
-  Option<String> city;
+  Option<String>? city;
 
-  Option<String> country;
+  Option<String>? country;
 
-  Option<String> state;
+  Option<String>? state;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapReverseGeocodeResponseDto &&
@@ -33,33 +33,33 @@ class MapReverseGeocodeResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (city.hashCode) +
-    (country.hashCode) +
-    (state.hashCode);
+    (city == null ? 0 : city!.hashCode) +
+    (country == null ? 0 : country!.hashCode) +
+    (state == null ? 0 : state!.hashCode);
 
   @override
   String toString() => 'MapReverseGeocodeResponseDto[city=$city, country=$country, state=$state]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.city.unwrapOrNull() != null) {
+    if (this.city?.isSome ?? false) {
       json[r'city'] = this.city;
     } else {
-      if(this.city.isSome) {
+      if(this.city?.isNone ?? false) {
         json[r'city'] = null;
       }
     }
-    if (this.country.unwrapOrNull() != null) {
+    if (this.country?.isSome ?? false) {
       json[r'country'] = this.country;
     } else {
-      if(this.country.isSome) {
+      if(this.country?.isNone ?? false) {
         json[r'country'] = null;
       }
     }
-    if (this.state.unwrapOrNull() != null) {
+    if (this.state?.isSome ?? false) {
       json[r'state'] = this.state;
     } else {
-      if(this.state.isSome) {
+      if(this.state?.isNone ?? false) {
         json[r'state'] = null;
       }
     }

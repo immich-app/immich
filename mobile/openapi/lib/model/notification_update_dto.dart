@@ -13,10 +13,10 @@ part of openapi.api;
 class NotificationUpdateDto {
   /// Returns a new [NotificationUpdateDto] instance.
   NotificationUpdateDto({
-    this.readAt = const None(),
+    this.readAt,
   });
 
-  Option<DateTime> readAt;
+  Option<DateTime>? readAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is NotificationUpdateDto &&
@@ -25,17 +25,17 @@ class NotificationUpdateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (readAt.hashCode);
+    (readAt == null ? 0 : readAt!.hashCode);
 
   @override
   String toString() => 'NotificationUpdateDto[readAt=$readAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.readAt.unwrapOrNull() != null) {
-      json[r'readAt'] = this.readAt.unwrap().toUtc().toIso8601String();
+    if (this.readAt?.isSome ?? false) {
+      json[r'readAt'] = this.readAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.readAt.isSome) {
+      if(this.readAt?.isNone ?? false) {
         json[r'readAt'] = null;
       }
     }

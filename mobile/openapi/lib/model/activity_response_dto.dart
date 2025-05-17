@@ -13,17 +13,17 @@ part of openapi.api;
 class ActivityResponseDto {
   /// Returns a new [ActivityResponseDto] instance.
   ActivityResponseDto({
-    this.assetId = const None(),
-    this.comment = const None(),
+    required this.assetId,
+    this.comment,
     required this.createdAt,
     required this.id,
     required this.type,
     required this.user,
   });
 
-  Option<String> assetId;
+  Option<String>? assetId;
 
-  Option<String> comment;
+  Option<String>? comment;
 
   DateTime createdAt;
 
@@ -45,8 +45,8 @@ class ActivityResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetId.hashCode) +
-    (comment.hashCode) +
+    (assetId == null ? 0 : assetId!.hashCode) +
+    (comment == null ? 0 : comment!.hashCode) +
     (createdAt.hashCode) +
     (id.hashCode) +
     (type.hashCode) +
@@ -57,17 +57,17 @@ class ActivityResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.assetId.unwrapOrNull() != null) {
+    if (this.assetId?.isSome ?? false) {
       json[r'assetId'] = this.assetId;
     } else {
-      if(this.assetId.isSome) {
+      if(this.assetId?.isNone ?? false) {
         json[r'assetId'] = null;
       }
     }
-    if (this.comment.unwrapOrNull() != null) {
+    if (this.comment?.isSome ?? false) {
       json[r'comment'] = this.comment;
     } else {
-      if(this.comment.isSome) {
+      if(this.comment?.isNone ?? false) {
         json[r'comment'] = null;
       }
     }

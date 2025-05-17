@@ -15,20 +15,20 @@ class UserAdminResponseDto {
   UserAdminResponseDto({
     required this.avatarColor,
     required this.createdAt,
-    this.deletedAt = const None(),
+    required this.deletedAt,
     required this.email,
     required this.id,
     required this.isAdmin,
-    this.license = const None(),
+    required this.license,
     required this.name,
     required this.oauthId,
     required this.profileChangedAt,
     required this.profileImagePath,
-    this.quotaSizeInBytes = const None(),
-    this.quotaUsageInBytes = const None(),
+    required this.quotaSizeInBytes,
+    required this.quotaUsageInBytes,
     required this.shouldChangePassword,
     required this.status,
-    this.storageLabel = const None(),
+    required this.storageLabel,
     required this.updatedAt,
   });
 
@@ -36,7 +36,7 @@ class UserAdminResponseDto {
 
   DateTime createdAt;
 
-  Option<DateTime> deletedAt;
+  Option<DateTime>? deletedAt;
 
   String email;
 
@@ -44,7 +44,7 @@ class UserAdminResponseDto {
 
   bool isAdmin;
 
-  Option<UserLicense> license;
+  Option<UserLicense>? license;
 
   String name;
 
@@ -54,15 +54,15 @@ class UserAdminResponseDto {
 
   String profileImagePath;
 
-  Option<int> quotaSizeInBytes;
+  Option<int>? quotaSizeInBytes;
 
-  Option<int> quotaUsageInBytes;
+  Option<int>? quotaUsageInBytes;
 
   bool shouldChangePassword;
 
   UserStatus status;
 
-  Option<String> storageLabel;
+  Option<String>? storageLabel;
 
   DateTime updatedAt;
 
@@ -91,20 +91,20 @@ class UserAdminResponseDto {
     // ignore: unnecessary_parenthesis
     (avatarColor.hashCode) +
     (createdAt.hashCode) +
-    (deletedAt.hashCode) +
+    (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
-    (license.hashCode) +
+    (license == null ? 0 : license!.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
     (profileChangedAt.hashCode) +
     (profileImagePath.hashCode) +
-    (quotaSizeInBytes.hashCode) +
-    (quotaUsageInBytes.hashCode) +
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+    (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
     (shouldChangePassword.hashCode) +
     (status.hashCode) +
-    (storageLabel.hashCode) +
+    (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (updatedAt.hashCode);
 
   @override
@@ -114,20 +114,20 @@ class UserAdminResponseDto {
     final json = <String, dynamic>{};
       json[r'avatarColor'] = this.avatarColor;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-    if (this.deletedAt.unwrapOrNull() != null) {
-      json[r'deletedAt'] = this.deletedAt.unwrap().toUtc().toIso8601String();
+    if (this.deletedAt?.isSome ?? false) {
+      json[r'deletedAt'] = this.deletedAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.deletedAt.isSome) {
+      if(this.deletedAt?.isNone ?? false) {
         json[r'deletedAt'] = null;
       }
     }
       json[r'email'] = this.email;
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
-    if (this.license.unwrapOrNull() != null) {
+    if (this.license?.isSome ?? false) {
       json[r'license'] = this.license;
     } else {
-      if(this.license.isSome) {
+      if(this.license?.isNone ?? false) {
         json[r'license'] = null;
       }
     }
@@ -135,26 +135,26 @@ class UserAdminResponseDto {
       json[r'oauthId'] = this.oauthId;
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
       json[r'profileImagePath'] = this.profileImagePath;
-    if (this.quotaSizeInBytes.unwrapOrNull() != null) {
+    if (this.quotaSizeInBytes?.isSome ?? false) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-      if(this.quotaSizeInBytes.isSome) {
+      if(this.quotaSizeInBytes?.isNone ?? false) {
         json[r'quotaSizeInBytes'] = null;
       }
     }
-    if (this.quotaUsageInBytes.unwrapOrNull() != null) {
+    if (this.quotaUsageInBytes?.isSome ?? false) {
       json[r'quotaUsageInBytes'] = this.quotaUsageInBytes;
     } else {
-      if(this.quotaUsageInBytes.isSome) {
+      if(this.quotaUsageInBytes?.isNone ?? false) {
         json[r'quotaUsageInBytes'] = null;
       }
     }
       json[r'shouldChangePassword'] = this.shouldChangePassword;
       json[r'status'] = this.status;
-    if (this.storageLabel.unwrapOrNull() != null) {
+    if (this.storageLabel?.isSome ?? false) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-      if(this.storageLabel.isSome) {
+      if(this.storageLabel?.isNone ?? false) {
         json[r'storageLabel'] = null;
       }
     }

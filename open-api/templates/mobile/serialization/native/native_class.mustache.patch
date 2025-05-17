@@ -1,5 +1,5 @@
 diff --git a/native_class.mustache b/native_class.mustache
-index 3a6c457..e321056 100644
+index 3a6c457..b1c8c5b 100644
 --- a/native_class.mustache
 +++ b/native_class.mustache
 @@ -32,7 +32,7 @@ class {{{classname}}} {
@@ -7,25 +7,16 @@ index 3a6c457..e321056 100644
      {{/isNullable}}
    {{/isEnum}}
 -  {{{datatypeWithEnum}}}{{#isNullable}}?{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}?{{/defaultValue}}{{/required}}{{/isNullable}} {{{name}}};
-+  {{#isNullable}}Option<{{/isNullable}}{{{datatypeWithEnum}}}{{#isNullable}}>{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}?{{/defaultValue}}{{/required}}{{/isNullable}} {{{name}}};
++  {{#isNullable}}Option<{{/isNullable}}{{{datatypeWithEnum}}}{{#isNullable}}>?{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}?{{/defaultValue}}{{/required}}{{/isNullable}} {{{name}}};
  
  {{/vars}}
-   @override
-@@ -45,7 +45,7 @@ class {{{classname}}} {
-   int get hashCode =>
-     // ignore: unnecessary_parenthesis
-   {{#vars}}
--    ({{#isNullable}}{{{name}}} == null ? 0 : {{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}{{{name}}} == null ? 0 : {{/defaultValue}}{{/required}}{{/isNullable}}{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.hashCode){{^-last}} +{{/-last}}{{#-last}};{{/-last}}
-+    ({{^isNullable}}{{^required}}{{^defaultValue}}{{{name}}} == null ? 0 : {{/defaultValue}}{{/required}}{{/isNullable}}{{{name}}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.hashCode){{^-last}} +{{/-last}}{{#-last}};{{/-last}}
-   {{/vars}}
- 
    @override
 @@ -55,7 +55,7 @@ class {{{classname}}} {
      final json = <String, dynamic>{};
    {{#vars}}
      {{#isNullable}}
 -    if (this.{{{name}}} != null) {
-+    if (this.{{{name}}}.unwrapOrNull() != null) {
++    if (this.{{{name}}}?.isSome ?? false) {
      {{/isNullable}}
      {{^isNullable}}
        {{^required}}
@@ -35,12 +26,12 @@ index 3a6c457..e321056 100644
        json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
 -        ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
 -        : this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
-+        ? this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
-+        : this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
++        ? this.{{{name}}}{{#isNullable}}!.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
++        : this.{{{name}}}{{#isNullable}}!.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
        {{/pattern}}
        {{^pattern}}
 -      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
-+      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
++      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isNullable}}!.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc().toIso8601String();
        {{/pattern}}
      {{/isDateTime}}
      {{#isDate}}
@@ -48,24 +39,24 @@ index 3a6c457..e321056 100644
        json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
 -        ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
 -        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
-+        ? this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
-+        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
++        ? this.{{{name}}}{{#isNullable}}!.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
++        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
        {{/pattern}}
        {{^pattern}}
 -      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
-+      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
++      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}!.unwrap(){{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
        {{/pattern}}
      {{/isDate}}
      {{^isDateTime}}
        {{^isDate}}
 -      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isArray}}{{#uniqueItems}}{{#isNullable}}!{{/isNullable}}.toList(growable: false){{/uniqueItems}}{{/isArray}};
-+      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isArray}}{{#uniqueItems}}{{#isNullable}}.unwrap(){{/isNullable}}.toList(growable: false){{/uniqueItems}}{{/isArray}};
++      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isArray}}{{#uniqueItems}}{{#isNullable}}!.unwrap(){{/isNullable}}.toList(growable: false){{/uniqueItems}}{{/isArray}};
        {{/isDate}}
      {{/isDateTime}}
      {{#isNullable}}
      } else {
 -      json[r'{{{baseName}}}'] = null;
-+      if(this.{{{name}}}.isSome) {
++      if(this.{{{name}}}?.isNone ?? false) {
 +        json[r'{{{baseName}}}'] = null;
 +      }
      }

@@ -29,7 +29,7 @@ class PersonApiRepository extends ApiRepository
   }
 
   static Person _toPerson(PersonResponseDto dto) => Person(
-        birthDate: dto.birthDate.unwrapOrNull(),
+        birthDate: dto.birthDate?.unwrapOrNull(),
         id: dto.id,
         isHidden: dto.isHidden,
         name: dto.name,

@@ -20,7 +20,7 @@ class LibraryResponseDto {
     this.importPaths = const [],
     required this.name,
     required this.ownerId,
-    this.refreshedAt = const None(),
+    required this.refreshedAt,
     required this.updatedAt,
   });
 
@@ -38,7 +38,7 @@ class LibraryResponseDto {
 
   String ownerId;
 
-  Option<DateTime> refreshedAt;
+  Option<DateTime>? refreshedAt;
 
   DateTime updatedAt;
 
@@ -64,7 +64,7 @@ class LibraryResponseDto {
     (importPaths.hashCode) +
     (name.hashCode) +
     (ownerId.hashCode) +
-    (refreshedAt.hashCode) +
+    (refreshedAt == null ? 0 : refreshedAt!.hashCode) +
     (updatedAt.hashCode);
 
   @override
@@ -79,10 +79,10 @@ class LibraryResponseDto {
       json[r'importPaths'] = this.importPaths;
       json[r'name'] = this.name;
       json[r'ownerId'] = this.ownerId;
-    if (this.refreshedAt.unwrapOrNull() != null) {
-      json[r'refreshedAt'] = this.refreshedAt.unwrap().toUtc().toIso8601String();
+    if (this.refreshedAt?.isSome ?? false) {
+      json[r'refreshedAt'] = this.refreshedAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.refreshedAt.isSome) {
+      if(this.refreshedAt?.isNone ?? false) {
         json[r'refreshedAt'] = null;
       }
     }

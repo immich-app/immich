@@ -13,17 +13,17 @@ part of openapi.api;
 class UserAdminCreateDto {
   /// Returns a new [UserAdminCreateDto] instance.
   UserAdminCreateDto({
-    this.avatarColor = const None(),
+    this.avatarColor,
     required this.email,
     required this.name,
     this.notify,
     required this.password,
-    this.quotaSizeInBytes = const None(),
+    this.quotaSizeInBytes,
     this.shouldChangePassword,
-    this.storageLabel = const None(),
+    this.storageLabel,
   });
 
-  Option<UserAvatarColor> avatarColor;
+  Option<UserAvatarColor>? avatarColor;
 
   String email;
 
@@ -40,7 +40,7 @@ class UserAdminCreateDto {
   String password;
 
   /// Minimum value: 0
-  Option<int> quotaSizeInBytes;
+  Option<int>? quotaSizeInBytes;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -50,7 +50,7 @@ class UserAdminCreateDto {
   ///
   bool? shouldChangePassword;
 
-  Option<String> storageLabel;
+  Option<String>? storageLabel;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminCreateDto &&
@@ -66,24 +66,24 @@ class UserAdminCreateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatarColor.hashCode) +
+    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email.hashCode) +
     (name.hashCode) +
     (notify == null ? 0 : notify!.hashCode) +
     (password.hashCode) +
-    (quotaSizeInBytes.hashCode) +
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
-    (storageLabel.hashCode);
+    (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
   String toString() => 'UserAdminCreateDto[avatarColor=$avatarColor, email=$email, name=$name, notify=$notify, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor.unwrapOrNull() != null) {
+    if (this.avatarColor?.isSome ?? false) {
       json[r'avatarColor'] = this.avatarColor;
     } else {
-      if(this.avatarColor.isSome) {
+      if(this.avatarColor?.isNone ?? false) {
         json[r'avatarColor'] = null;
       }
     }
@@ -95,10 +95,10 @@ class UserAdminCreateDto {
     //  json[r'notify'] = null;
     }
       json[r'password'] = this.password;
-    if (this.quotaSizeInBytes.unwrapOrNull() != null) {
+    if (this.quotaSizeInBytes?.isSome ?? false) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-      if(this.quotaSizeInBytes.isSome) {
+      if(this.quotaSizeInBytes?.isNone ?? false) {
         json[r'quotaSizeInBytes'] = null;
       }
     }
@@ -107,10 +107,10 @@ class UserAdminCreateDto {
     } else {
     //  json[r'shouldChangePassword'] = null;
     }
-    if (this.storageLabel.unwrapOrNull() != null) {
+    if (this.storageLabel?.isSome ?? false) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-      if(this.storageLabel.isSome) {
+      if(this.storageLabel?.isNone ?? false) {
         json[r'storageLabel'] = null;
       }
     }

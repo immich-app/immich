@@ -16,7 +16,7 @@ class AssetResponseDto {
     required this.checksum,
     required this.deviceAssetId,
     required this.deviceId,
-    this.duplicateId = const None(),
+    this.duplicateId,
     required this.duration,
     this.exifInfo,
     required this.fileCreatedAt,
@@ -27,8 +27,8 @@ class AssetResponseDto {
     required this.isFavorite,
     required this.isOffline,
     required this.isTrashed,
-    this.libraryId = const None(),
-    this.livePhotoVideoId = const None(),
+    this.libraryId,
+    this.livePhotoVideoId,
     required this.localDateTime,
     required this.originalFileName,
     this.originalMimeType,
@@ -37,9 +37,9 @@ class AssetResponseDto {
     required this.ownerId,
     this.people = const [],
     this.resized,
-    this.stack = const None(),
+    this.stack,
     this.tags = const [],
-    this.thumbhash = const None(),
+    required this.thumbhash,
     required this.type,
     this.unassignedFaces = const [],
     required this.updatedAt,
@@ -53,7 +53,7 @@ class AssetResponseDto {
 
   String deviceId;
 
-  Option<String> duplicateId;
+  Option<String>? duplicateId;
 
   String duration;
 
@@ -82,9 +82,9 @@ class AssetResponseDto {
   bool isTrashed;
 
   /// This property was deprecated in v1.106.0
-  Option<String> libraryId;
+  Option<String>? libraryId;
 
-  Option<String> livePhotoVideoId;
+  Option<String>? livePhotoVideoId;
 
   DateTime localDateTime;
 
@@ -121,11 +121,11 @@ class AssetResponseDto {
   ///
   bool? resized;
 
-  Option<AssetStackResponseDto> stack;
+  Option<AssetStackResponseDto>? stack;
 
   List<TagResponseDto> tags;
 
-  Option<String> thumbhash;
+  Option<String>? thumbhash;
 
   AssetTypeEnum type;
 
@@ -175,7 +175,7 @@ class AssetResponseDto {
     (checksum.hashCode) +
     (deviceAssetId.hashCode) +
     (deviceId.hashCode) +
-    (duplicateId.hashCode) +
+    (duplicateId == null ? 0 : duplicateId!.hashCode) +
     (duration.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
     (fileCreatedAt.hashCode) +
@@ -186,8 +186,8 @@ class AssetResponseDto {
     (isFavorite.hashCode) +
     (isOffline.hashCode) +
     (isTrashed.hashCode) +
-    (libraryId.hashCode) +
-    (livePhotoVideoId.hashCode) +
+    (libraryId == null ? 0 : libraryId!.hashCode) +
+    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (localDateTime.hashCode) +
     (originalFileName.hashCode) +
     (originalMimeType == null ? 0 : originalMimeType!.hashCode) +
@@ -196,9 +196,9 @@ class AssetResponseDto {
     (ownerId.hashCode) +
     (people.hashCode) +
     (resized == null ? 0 : resized!.hashCode) +
-    (stack.hashCode) +
+    (stack == null ? 0 : stack!.hashCode) +
     (tags.hashCode) +
-    (thumbhash.hashCode) +
+    (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
     (unassignedFaces.hashCode) +
     (updatedAt.hashCode) +
@@ -212,10 +212,10 @@ class AssetResponseDto {
       json[r'checksum'] = this.checksum;
       json[r'deviceAssetId'] = this.deviceAssetId;
       json[r'deviceId'] = this.deviceId;
-    if (this.duplicateId.unwrapOrNull() != null) {
+    if (this.duplicateId?.isSome ?? false) {
       json[r'duplicateId'] = this.duplicateId;
     } else {
-      if(this.duplicateId.isSome) {
+      if(this.duplicateId?.isNone ?? false) {
         json[r'duplicateId'] = null;
       }
     }
@@ -233,17 +233,17 @@ class AssetResponseDto {
       json[r'isFavorite'] = this.isFavorite;
       json[r'isOffline'] = this.isOffline;
       json[r'isTrashed'] = this.isTrashed;
-    if (this.libraryId.unwrapOrNull() != null) {
+    if (this.libraryId?.isSome ?? false) {
       json[r'libraryId'] = this.libraryId;
     } else {
-      if(this.libraryId.isSome) {
+      if(this.libraryId?.isNone ?? false) {
         json[r'libraryId'] = null;
       }
     }
-    if (this.livePhotoVideoId.unwrapOrNull() != null) {
+    if (this.livePhotoVideoId?.isSome ?? false) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
-      if(this.livePhotoVideoId.isSome) {
+      if(this.livePhotoVideoId?.isNone ?? false) {
         json[r'livePhotoVideoId'] = null;
       }
     }
@@ -267,18 +267,18 @@ class AssetResponseDto {
     } else {
     //  json[r'resized'] = null;
     }
-    if (this.stack.unwrapOrNull() != null) {
+    if (this.stack?.isSome ?? false) {
       json[r'stack'] = this.stack;
     } else {
-      if(this.stack.isSome) {
+      if(this.stack?.isNone ?? false) {
         json[r'stack'] = null;
       }
     }
       json[r'tags'] = this.tags;
-    if (this.thumbhash.unwrapOrNull() != null) {
+    if (this.thumbhash?.isSome ?? false) {
       json[r'thumbhash'] = this.thumbhash;
     } else {
-      if(this.thumbhash.isSome) {
+      if(this.thumbhash?.isNone ?? false) {
         json[r'thumbhash'] = null;
       }
     }

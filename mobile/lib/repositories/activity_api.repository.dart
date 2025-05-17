@@ -61,7 +61,7 @@ class ActivityApiRepository extends ApiRepository
             ? ActivityType.comment
             : ActivityType.like,
         user: UserConverter.fromSimpleUserDto(dto.user),
-        assetId: dto.assetId.unwrapOrNull(),
-        comment: dto.comment.unwrapOrNull(),
+        assetId: dto.assetId?.unwrapOrNull(),
+        comment: dto.comment?.unwrapOrNull(),
       );
 }

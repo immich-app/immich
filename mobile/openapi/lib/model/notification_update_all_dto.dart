@@ -14,12 +14,12 @@ class NotificationUpdateAllDto {
   /// Returns a new [NotificationUpdateAllDto] instance.
   NotificationUpdateAllDto({
     this.ids = const [],
-    this.readAt = const None(),
+    this.readAt,
   });
 
   List<String> ids;
 
-  Option<DateTime> readAt;
+  Option<DateTime>? readAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is NotificationUpdateAllDto &&
@@ -30,7 +30,7 @@ class NotificationUpdateAllDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (ids.hashCode) +
-    (readAt.hashCode);
+    (readAt == null ? 0 : readAt!.hashCode);
 
   @override
   String toString() => 'NotificationUpdateAllDto[ids=$ids, readAt=$readAt]';
@@ -38,10 +38,10 @@ class NotificationUpdateAllDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'ids'] = this.ids;
-    if (this.readAt.unwrapOrNull() != null) {
-      json[r'readAt'] = this.readAt.unwrap().toUtc().toIso8601String();
+    if (this.readAt?.isSome ?? false) {
+      json[r'readAt'] = this.readAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.readAt.isSome) {
+      if(this.readAt?.isNone ?? false) {
         json[r'readAt'] = null;
       }
     }

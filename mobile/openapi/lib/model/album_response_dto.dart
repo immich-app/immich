@@ -14,7 +14,7 @@ class AlbumResponseDto {
   /// Returns a new [AlbumResponseDto] instance.
   AlbumResponseDto({
     required this.albumName,
-    this.albumThumbnailAssetId = const None(),
+    required this.albumThumbnailAssetId,
     this.albumUsers = const [],
     required this.assetCount,
     this.assets = const [],
@@ -35,7 +35,7 @@ class AlbumResponseDto {
 
   String albumName;
 
-  Option<String> albumThumbnailAssetId;
+  Option<String>? albumThumbnailAssetId;
 
   List<AlbumUserResponseDto> albumUsers;
 
@@ -118,7 +118,7 @@ class AlbumResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumName.hashCode) +
-    (albumThumbnailAssetId.hashCode) +
+    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (albumUsers.hashCode) +
     (assetCount.hashCode) +
     (assets.hashCode) +
@@ -142,10 +142,10 @@ class AlbumResponseDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumName'] = this.albumName;
-    if (this.albumThumbnailAssetId.unwrapOrNull() != null) {
+    if (this.albumThumbnailAssetId?.isSome ?? false) {
       json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
-      if(this.albumThumbnailAssetId.isSome) {
+      if(this.albumThumbnailAssetId?.isNone ?? false) {
         json[r'albumThumbnailAssetId'] = null;
       }
     }

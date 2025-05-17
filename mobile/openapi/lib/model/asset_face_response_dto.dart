@@ -20,7 +20,7 @@ class AssetFaceResponseDto {
     required this.id,
     required this.imageHeight,
     required this.imageWidth,
-    this.person = const None(),
+    required this.person,
     this.sourceType,
   });
 
@@ -38,7 +38,7 @@ class AssetFaceResponseDto {
 
   int imageWidth;
 
-  Option<PersonResponseDto> person;
+  Option<PersonResponseDto>? person;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -70,7 +70,7 @@ class AssetFaceResponseDto {
     (id.hashCode) +
     (imageHeight.hashCode) +
     (imageWidth.hashCode) +
-    (person.hashCode) +
+    (person == null ? 0 : person!.hashCode) +
     (sourceType == null ? 0 : sourceType!.hashCode);
 
   @override
@@ -85,10 +85,10 @@ class AssetFaceResponseDto {
       json[r'id'] = this.id;
       json[r'imageHeight'] = this.imageHeight;
       json[r'imageWidth'] = this.imageWidth;
-    if (this.person.unwrapOrNull() != null) {
+    if (this.person?.isSome ?? false) {
       json[r'person'] = this.person;
     } else {
-      if(this.person.isSome) {
+      if(this.person?.isNone ?? false) {
         json[r'person'] = null;
       }
     }

@@ -119,7 +119,7 @@ class SearchService {
         assets: await _assetRepository.getAllByRemoteId(
           response.assets.items.map((e) => e.id),
         ),
-        nextPage: response.assets.nextPage.unwrapOrNull()?.toInt(),
+        nextPage: response.assets.nextPage?.unwrapOrNull()?.toInt(),
       );
     } catch (error, stackTrace) {
       _log.severe("Failed to search for assets", error, stackTrace);

@@ -13,13 +13,13 @@ part of openapi.api;
 class ReverseGeocodingStateResponseDto {
   /// Returns a new [ReverseGeocodingStateResponseDto] instance.
   ReverseGeocodingStateResponseDto({
-    this.lastImportFileName = const None(),
-    this.lastUpdate = const None(),
+    required this.lastImportFileName,
+    required this.lastUpdate,
   });
 
-  Option<String> lastImportFileName;
+  Option<String>? lastImportFileName;
 
-  Option<String> lastUpdate;
+  Option<String>? lastUpdate;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ReverseGeocodingStateResponseDto &&
@@ -29,25 +29,25 @@ class ReverseGeocodingStateResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (lastImportFileName.hashCode) +
-    (lastUpdate.hashCode);
+    (lastImportFileName == null ? 0 : lastImportFileName!.hashCode) +
+    (lastUpdate == null ? 0 : lastUpdate!.hashCode);
 
   @override
   String toString() => 'ReverseGeocodingStateResponseDto[lastImportFileName=$lastImportFileName, lastUpdate=$lastUpdate]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.lastImportFileName.unwrapOrNull() != null) {
+    if (this.lastImportFileName?.isSome ?? false) {
       json[r'lastImportFileName'] = this.lastImportFileName;
     } else {
-      if(this.lastImportFileName.isSome) {
+      if(this.lastImportFileName?.isNone ?? false) {
         json[r'lastImportFileName'] = null;
       }
     }
-    if (this.lastUpdate.unwrapOrNull() != null) {
+    if (this.lastUpdate?.isSome ?? false) {
       json[r'lastUpdate'] = this.lastUpdate;
     } else {
-      if(this.lastUpdate.isSome) {
+      if(this.lastUpdate?.isNone ?? false) {
         json[r'lastUpdate'] = null;
       }
     }

@@ -13,8 +13,8 @@ part of openapi.api;
 class PeopleUpdateItem {
   /// Returns a new [PeopleUpdateItem] instance.
   PeopleUpdateItem({
-    this.birthDate = const None(),
-    this.color = const None(),
+    this.birthDate,
+    this.color,
     this.featureFaceAssetId,
     required this.id,
     this.isFavorite,
@@ -23,9 +23,9 @@ class PeopleUpdateItem {
   });
 
   /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
-  Option<DateTime> birthDate;
+  Option<DateTime>? birthDate;
 
-  Option<String> color;
+  Option<String>? color;
 
   /// Asset is used to get the feature face thumbnail.
   ///
@@ -78,8 +78,8 @@ class PeopleUpdateItem {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (birthDate.hashCode) +
-    (color.hashCode) +
+    (birthDate == null ? 0 : birthDate!.hashCode) +
+    (color == null ? 0 : color!.hashCode) +
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
     (id.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
@@ -91,17 +91,17 @@ class PeopleUpdateItem {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate.unwrapOrNull() != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate.unwrap().toUtc());
+    if (this.birthDate?.isSome ?? false) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.unwrap().toUtc());
     } else {
-      if(this.birthDate.isSome) {
+      if(this.birthDate?.isNone ?? false) {
         json[r'birthDate'] = null;
       }
     }
-    if (this.color.unwrapOrNull() != null) {
+    if (this.color?.isSome ?? false) {
       json[r'color'] = this.color;
     } else {
-      if(this.color.isSome) {
+      if(this.color?.isNone ?? false) {
         json[r'color'] = null;
       }
     }

@@ -13,10 +13,10 @@ part of openapi.api;
 class TagUpdateDto {
   /// Returns a new [TagUpdateDto] instance.
   TagUpdateDto({
-    this.color = const None(),
+    this.color,
   });
 
-  Option<String> color;
+  Option<String>? color;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagUpdateDto &&
@@ -25,17 +25,17 @@ class TagUpdateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (color.hashCode);
+    (color == null ? 0 : color!.hashCode);
 
   @override
   String toString() => 'TagUpdateDto[color=$color]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.color.unwrapOrNull() != null) {
+    if (this.color?.isSome ?? false) {
       json[r'color'] = this.color;
     } else {
-      if(this.color.isSome) {
+      if(this.color?.isNone ?? false) {
         json[r'color'] = null;
       }
     }

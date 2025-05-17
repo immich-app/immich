@@ -14,7 +14,7 @@ class UsageByUserDto {
   /// Returns a new [UsageByUserDto] instance.
   UsageByUserDto({
     required this.photos,
-    this.quotaSizeInBytes = const None(),
+    required this.quotaSizeInBytes,
     required this.usage,
     required this.usagePhotos,
     required this.usageVideos,
@@ -25,7 +25,7 @@ class UsageByUserDto {
 
   int photos;
 
-  Option<int> quotaSizeInBytes;
+  Option<int>? quotaSizeInBytes;
 
   int usage;
 
@@ -54,7 +54,7 @@ class UsageByUserDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (photos.hashCode) +
-    (quotaSizeInBytes.hashCode) +
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (usage.hashCode) +
     (usagePhotos.hashCode) +
     (usageVideos.hashCode) +
@@ -68,10 +68,10 @@ class UsageByUserDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'photos'] = this.photos;
-    if (this.quotaSizeInBytes.unwrapOrNull() != null) {
+    if (this.quotaSizeInBytes?.isSome ?? false) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-      if(this.quotaSizeInBytes.isSome) {
+      if(this.quotaSizeInBytes?.isNone ?? false) {
         json[r'quotaSizeInBytes'] = null;
       }
     }

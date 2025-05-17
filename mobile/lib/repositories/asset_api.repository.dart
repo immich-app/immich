@@ -43,7 +43,7 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
         ),
       );
       result.addAll(response.assets.items.map(Asset.remote));
-      hasNext = response.assets.nextPage.unwrapOrNull() != null;
+      hasNext = response.assets.nextPage?.unwrapOrNull() != null;
       currentPage++;
     }
     return result;

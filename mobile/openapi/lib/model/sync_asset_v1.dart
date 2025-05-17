@@ -14,35 +14,35 @@ class SyncAssetV1 {
   /// Returns a new [SyncAssetV1] instance.
   SyncAssetV1({
     required this.checksum,
-    this.deletedAt = const None(),
-    this.fileCreatedAt = const None(),
-    this.fileModifiedAt = const None(),
+    required this.deletedAt,
+    required this.fileCreatedAt,
+    required this.fileModifiedAt,
     required this.id,
     required this.isFavorite,
-    this.localDateTime = const None(),
+    required this.localDateTime,
     required this.ownerId,
-    this.thumbhash = const None(),
+    required this.thumbhash,
     required this.type,
     required this.visibility,
   });
 
   String checksum;
 
-  Option<DateTime> deletedAt;
+  Option<DateTime>? deletedAt;
 
-  Option<DateTime> fileCreatedAt;
+  Option<DateTime>? fileCreatedAt;
 
-  Option<DateTime> fileModifiedAt;
+  Option<DateTime>? fileModifiedAt;
 
   String id;
 
   bool isFavorite;
 
-  Option<DateTime> localDateTime;
+  Option<DateTime>? localDateTime;
 
   String ownerId;
 
-  Option<String> thumbhash;
+  Option<String>? thumbhash;
 
   SyncAssetV1TypeEnum type;
 
@@ -66,14 +66,14 @@ class SyncAssetV1 {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (checksum.hashCode) +
-    (deletedAt.hashCode) +
-    (fileCreatedAt.hashCode) +
-    (fileModifiedAt.hashCode) +
+    (deletedAt == null ? 0 : deletedAt!.hashCode) +
+    (fileCreatedAt == null ? 0 : fileCreatedAt!.hashCode) +
+    (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
     (id.hashCode) +
     (isFavorite.hashCode) +
-    (localDateTime.hashCode) +
+    (localDateTime == null ? 0 : localDateTime!.hashCode) +
     (ownerId.hashCode) +
-    (thumbhash.hashCode) +
+    (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
     (visibility.hashCode);
 
@@ -83,41 +83,41 @@ class SyncAssetV1 {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum'] = this.checksum;
-    if (this.deletedAt.unwrapOrNull() != null) {
-      json[r'deletedAt'] = this.deletedAt.unwrap().toUtc().toIso8601String();
+    if (this.deletedAt?.isSome ?? false) {
+      json[r'deletedAt'] = this.deletedAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.deletedAt.isSome) {
+      if(this.deletedAt?.isNone ?? false) {
         json[r'deletedAt'] = null;
       }
     }
-    if (this.fileCreatedAt.unwrapOrNull() != null) {
-      json[r'fileCreatedAt'] = this.fileCreatedAt.unwrap().toUtc().toIso8601String();
+    if (this.fileCreatedAt?.isSome ?? false) {
+      json[r'fileCreatedAt'] = this.fileCreatedAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.fileCreatedAt.isSome) {
+      if(this.fileCreatedAt?.isNone ?? false) {
         json[r'fileCreatedAt'] = null;
       }
     }
-    if (this.fileModifiedAt.unwrapOrNull() != null) {
-      json[r'fileModifiedAt'] = this.fileModifiedAt.unwrap().toUtc().toIso8601String();
+    if (this.fileModifiedAt?.isSome ?? false) {
+      json[r'fileModifiedAt'] = this.fileModifiedAt!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.fileModifiedAt.isSome) {
+      if(this.fileModifiedAt?.isNone ?? false) {
         json[r'fileModifiedAt'] = null;
       }
     }
       json[r'id'] = this.id;
       json[r'isFavorite'] = this.isFavorite;
-    if (this.localDateTime.unwrapOrNull() != null) {
-      json[r'localDateTime'] = this.localDateTime.unwrap().toUtc().toIso8601String();
+    if (this.localDateTime?.isSome ?? false) {
+      json[r'localDateTime'] = this.localDateTime!.unwrap().toUtc().toIso8601String();
     } else {
-      if(this.localDateTime.isSome) {
+      if(this.localDateTime?.isNone ?? false) {
         json[r'localDateTime'] = null;
       }
     }
       json[r'ownerId'] = this.ownerId;
-    if (this.thumbhash.unwrapOrNull() != null) {
+    if (this.thumbhash?.isSome ?? false) {
       json[r'thumbhash'] = this.thumbhash;
     } else {
-      if(this.thumbhash.isSome) {
+      if(this.thumbhash?.isNone ?? false) {
         json[r'thumbhash'] = null;
       }
     }
