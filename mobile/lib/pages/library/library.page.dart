@@ -142,6 +142,19 @@ class QuickAccessButtons extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(
+              Icons.lock_outline_rounded,
+              size: 26,
+            ),
+            title: Text(
+              'locked_folder'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onTap: () => context.pushRoute(const LockedRoute()),
+          ),
+          ListTile(
+            leading: const Icon(
               Icons.group_outlined,
               size: 26,
             ),

@@ -20,7 +20,7 @@ import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 10;
+const int targetVersion = 11;
 
 Future<void> migrateDatabaseIfNeeded(Isar db) async {
   final int version = Store.get(StoreKey.version, targetVersion);

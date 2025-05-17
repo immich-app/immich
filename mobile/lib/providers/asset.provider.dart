@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -169,6 +170,10 @@ class AssetNotifier extends StateNotifier<bool> {
   Future<void> toggleArchive(List<Asset> assets, [bool? status]) {
     status ??= !assets.every((a) => a.isArchived);
     return _assetService.changeArchiveStatus(assets, status);
+  }
+
+  toggleLockedView(List<Asset> selection, AssetVisibilityEnum visibility) {
+    return _assetService.setVisibility(selection, visibility);
   }
 }
 

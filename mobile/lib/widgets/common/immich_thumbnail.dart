@@ -77,15 +77,29 @@ class ImmichThumbnail extends HookConsumerWidget {
       );
     }
 
+    final thumbnailProviderInstance = ImmichThumbnail.imageProvider(
+      asset: asset,
+      userId: userId,
+    );
+
+    customErrorBuilder(BuildContext ctx, Object error, StackTrace? stackTrace) {
+      thumbnailProviderInstance.evict();
+
+      final originalErrorWidgetBuilder =
+          blurHashErrorBuilder(blurhash, fit: fit);
+
+      return originalErrorWidgetBuilder(ctx, error, stackTrace);
+    }
+
     return OctoImage.fromSet(
       placeholderFadeInDuration: Duration.zero,
       fadeInDuration: Duration.zero,
       fadeOutDuration: const Duration(milliseconds: 100),
-      octoSet: blurHashOrPlaceholder(blurhash),
-      image: ImmichThumbnail.imageProvider(
-        asset: asset,
-        userId: userId,
+      octoSet: OctoSet(
+        placeholderBuilder: blurHashPlaceholderBuilder(blurhash, fit: fit),
+        errorBuilder: customErrorBuilder, // Use our custom error builder
       ),
+      image: thumbnailProviderInstance,
       width: width,
       height: height,
       fit: fit,
