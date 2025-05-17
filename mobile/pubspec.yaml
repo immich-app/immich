@@ -19,6 +19,7 @@ dependencies:
   background_downloader: ^9.2.0
   cached_network_image: ^3.4.1
   cancellation_token_http: ^2.1.0
+  cast: ^2.1.0
   collection: ^1.18.0
   connectivity_plus: ^6.1.3
   crop_image: ^1.0.16
