@@ -22,6 +22,7 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { castManager } from '$lib/managers/cast-manager.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -144,6 +145,20 @@
 
     return AssetMediaSize.Preview;
   });
+
+  $effect(() => {
+    if (assetFileUrl) {
+      void cast(assetFileUrl);
+    }
+  });
+
+  const cast = async (url: string) => {
+    if (!url) {
+      return;
+    }
+    const fullUrl = new URL(url, globalThis.location.href);
+    await castManager.loadMedia(fullUrl.href);
+  };
 
   const onload = () => {
     imageLoaded = true;
