@@ -8605,6 +8605,9 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "description": {
+            "type": "string"
+          },
           "duplicateId": {
             "nullable": true,
             "type": "string"

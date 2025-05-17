@@ -9,6 +9,7 @@
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -358,6 +359,7 @@
           <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
             <DownloadAction menuItem />
             <ChangeDate menuItem />
+            <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
             {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}

@@ -1394,7 +1394,7 @@ class PinAuthRoute extends PageRouteInfo<PinAuthRouteArgs> {
           initialChildren: children,
         );
 
-  static const String name = 'PinCodeRoute';
+  static const String name = 'PinAuthRoute';
 
   static PageInfo page = PageInfo(
     name,
