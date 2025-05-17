@@ -1,0 +1,51 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Immich API Server (Nest)",
+      "type": "shell",
+      "command": "[ -f /immich-devcontainer/startNestApiServer.sh ] && /immich-devcontainer/startNestApiServer.sh || exit 0",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false,
+        "group": "Devcontainer tasks",
+        "close": true
+      },
+      "runOptions": {
+        "runOn": "default"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Immich Web Server (Vite)",
+      "type": "shell",
+      "command": "[ -f /immich-devcontainer/startViteWebServer.sh ] && /immich-devcontainer/startViteWebServer.sh || exit 0",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false,
+        "group": "Devcontainer tasks",
+        "close": true
+      },
+      "runOptions": {
+        "runOn": "default"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Immich Server and Web",
+      "dependsOn": ["Immich Web Server (Vite)", "Immich API Server (Nest)"],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

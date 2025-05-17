@@ -1,0 +1,15 @@
+services:
+  immich-machine-learning:
+    image: immich-machine-learning-dev:latest
+    build:
+      context: ../../machine-learning
+      dockerfile: Dockerfile
+      target: devcontainer
+    hostname: immich-machine-learning
+    volumes:
+      # bind mount host to /workspaces/immich
+      - ../..:/workspaces/immich
+      - model-cache:/cache
+
+volumes:
+  model-cache:
