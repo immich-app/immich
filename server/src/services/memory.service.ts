@@ -4,9 +4,8 @@ import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
-import { JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
+import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { OnThisDayData } from 'src/types';
 import { addAssets, getMyPartnerIds, removeAssets } from 'src/utils/asset.util';
 
 const DAYS = 3;
@@ -16,55 +15,61 @@ export class MemoryService extends BaseService {
   @OnJob({ name: JobName.MEMORIES_CREATE, queue: QueueName.BACKGROUND_TASK })
   async onMemoriesCreate() {
     const users = await this.userRepository.getList({ withDeleted: false });
-    const userMap: Record<string, string[]> = {};
-    for (const user of users) {
-      const partnerIds = await getMyPartnerIds({
-        userId: user.id,
-        repository: this.partnerRepository,
-        timelineEnabled: true,
-      });
-      userMap[user.id] = [user.id, ...partnerIds];
-    }
+    const usersIds = await Promise.all(
+      users.map((user) =>
+        getMyPartnerIds({
+          userId: user.id,
+          repository: this.partnerRepository,
+          timelineEnabled: true,
+        }),
+      ),
+    );
 
-    const start = DateTime.utc().startOf('day').minus({ days: DAYS });
+    await this.databaseRepository.withLock(DatabaseLock.MemoryCreation, async () => {
+      const state = await this.systemMetadataRepository.get(SystemMetadataKey.MEMORIES_STATE);
+      const start = DateTime.utc().startOf('day').minus({ days: DAYS });
+      const lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state.lastOnThisDayDate) : start;
 
-    const state = await this.systemMetadataRepository.get(SystemMetadataKey.MEMORIES_STATE);
-    const lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state.lastOnThisDayDate) : start;
-
-    // generate a memory +/- X days from today
-    for (let i = 0; i <= DAYS * 2; i++) {
-      const target = start.plus({ days: i });
-      if (lastOnThisDayDate >= target) {
-        continue;
-      }
-
-      const showAt = target.startOf('day').toISO();
-      const hideAt = target.endOf('day').toISO();
-
-      for (const [userId, userIds] of Object.entries(userMap)) {
-        const memories = await this.assetRepository.getByDayOfYear(userIds, target);
-
-        for (const { year, assets } of memories) {
-          const data: OnThisDayData = { year };
-          await this.memoryRepository.create(
-            {
-              ownerId: userId,
-              type: MemoryType.ON_THIS_DAY,
-              data,
-              memoryAt: target.set({ year }).toISO(),
-              showAt,
-              hideAt,
-            },
-            new Set(assets.map(({ id }) => id)),
-          );
+      // generate a memory +/- X days from today
+      for (let i = 0; i <= DAYS * 2; i++) {
+        const target = start.plus({ days: i });
+        if (lastOnThisDayDate >= target) {
+          continue;
         }
-      }
 
-      await this.systemMetadataRepository.set(SystemMetadataKey.MEMORIES_STATE, {
-        ...state,
-        lastOnThisDayDate: target.toISO(),
-      });
-    }
+        try {
+          await Promise.all(users.map((owner, i) => this.createOnThisDayMemories(owner.id, usersIds[i], target)));
+        } catch (error) {
+          this.logger.error(`Failed to create memories for ${target.toISO()}`, error);
+        }
+        // update system metadata even when there is an error to minimize the chance of duplicates
+        await this.systemMetadataRepository.set(SystemMetadataKey.MEMORIES_STATE, {
+          ...state,
+          lastOnThisDayDate: target.toISO(),
+        });
+      }
+    });
+  }
+
+  private async createOnThisDayMemories(ownerId: string, userIds: string[], target: DateTime) {
+    const showAt = target.startOf('day').toISO();
+    const hideAt = target.endOf('day').toISO();
+    const memories = await this.assetRepository.getByDayOfYear([ownerId, ...userIds], target);
+    await Promise.all(
+      memories.map(({ year, assets }) =>
+        this.memoryRepository.create(
+          {
+            ownerId,
+            type: MemoryType.ON_THIS_DAY,
+            data: { year },
+            memoryAt: target.set({ year }).toISO()!,
+            showAt,
+            hideAt,
+          },
+          new Set(assets.map(({ id }) => id)),
+        ),
+      ),
+    );
   }
 
   @OnJob({ name: JobName.MEMORIES_CLEANUP, queue: QueueName.BACKGROUND_TASK })
