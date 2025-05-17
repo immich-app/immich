@@ -87,6 +87,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       );
       return localAsset.id.isInQuery(subQuery);
     });
+    await deleteSmt.go();
   }
 
   @override
