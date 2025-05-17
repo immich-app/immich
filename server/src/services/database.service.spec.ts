@@ -1,5 +1,5 @@
 import { EXTENSION_NAMES } from 'src/constants';
-import { DatabaseExtension } from 'src/enum';
+import { DatabaseExtension, VectorIndex } from 'src/enum';
 import { DatabaseService } from 'src/services/database.service';
 import { VectorExtension } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
@@ -47,8 +47,10 @@ describe(DatabaseService.name, () => {
     describe.each(<Array<{ extension: VectorExtension; extensionName: string }>>[
       { extension: DatabaseExtension.VECTOR, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTOR] },
       { extension: DatabaseExtension.VECTORS, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTORS] },
+      { extension: DatabaseExtension.VECTORCHORD, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTORCHORD] },
     ])('should work with $extensionName', ({ extension, extensionName }) => {
       beforeEach(() => {
+        mocks.database.getVectorExtension.mockResolvedValue(extension);
         mocks.config.getEnv.mockReturnValue(
           mockEnvData({
             database: {
@@ -240,40 +242,31 @@ describe(DatabaseService.name, () => {
       });
 
       it(`should reindex ${extension} indices if needed`, async () => {
-        mocks.database.shouldReindex.mockResolvedValue(true);
-
         await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-        expect(mocks.database.shouldReindex).toHaveBeenCalledTimes(2);
-        expect(mocks.database.reindex).toHaveBeenCalledTimes(2);
+        expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledExactlyOnceWith([
+          VectorIndex.CLIP,
+          VectorIndex.FACE,
+        ]);
+        expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledTimes(1);
         expect(mocks.database.runMigrations).toHaveBeenCalledTimes(1);
         expect(mocks.logger.fatal).not.toHaveBeenCalled();
       });
 
       it(`should throw an error if reindexing fails`, async () => {
-        mocks.database.shouldReindex.mockResolvedValue(true);
-        mocks.database.reindex.mockRejectedValue(new Error('Error reindexing'));
+        mocks.database.reindexVectorsIfNeeded.mockRejectedValue(new Error('Error reindexing'));
 
         await expect(sut.onBootstrap()).rejects.toBeDefined();
 
-        expect(mocks.database.shouldReindex).toHaveBeenCalledTimes(1);
-        expect(mocks.database.reindex).toHaveBeenCalledTimes(1);
+        expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledExactlyOnceWith([
+          VectorIndex.CLIP,
+          VectorIndex.FACE,
+        ]);
         expect(mocks.database.runMigrations).not.toHaveBeenCalled();
         expect(mocks.logger.fatal).not.toHaveBeenCalled();
         expect(mocks.logger.warn).toHaveBeenCalledWith(
           expect.stringContaining('Could not run vector reindexing checks.'),
         );
-      });
-
-      it(`should not reindex ${extension} indices if not needed`, async () => {
-        mocks.database.shouldReindex.mockResolvedValue(false);
-
-        await expect(sut.onBootstrap()).resolves.toBeUndefined();
-
-        expect(mocks.database.shouldReindex).toHaveBeenCalledTimes(2);
-        expect(mocks.database.reindex).toHaveBeenCalledTimes(0);
-        expect(mocks.database.runMigrations).toHaveBeenCalledTimes(1);
-        expect(mocks.logger.fatal).not.toHaveBeenCalled();
       });
     });
 
@@ -300,23 +293,7 @@ describe(DatabaseService.name, () => {
       expect(mocks.database.runMigrations).not.toHaveBeenCalled();
     });
 
-    it(`should throw error if pgvector extension could not be created`, async () => {
-      mocks.config.getEnv.mockReturnValue(
-        mockEnvData({
-          database: {
-            config: {
-              connectionType: 'parts',
-              host: 'database',
-              port: 5432,
-              username: 'postgres',
-              password: 'postgres',
-              database: 'immich',
-            },
-            skipMigrations: true,
-            vectorExtension: DatabaseExtension.VECTOR,
-          },
-        }),
-      );
+    it(`should throw error if extension could not be created`, async () => {
       mocks.database.getExtensionVersion.mockResolvedValue({
         installedVersion: null,
         availableVersion: minVersionInRange,
@@ -328,26 +305,7 @@ describe(DatabaseService.name, () => {
 
       expect(mocks.logger.fatal).toHaveBeenCalledTimes(1);
       expect(mocks.logger.fatal.mock.calls[0][0]).toContain(
-        `Alternatively, if your Postgres instance has pgvecto.rs, you may use this instead`,
-      );
-      expect(mocks.database.createExtension).toHaveBeenCalledTimes(1);
-      expect(mocks.database.updateVectorExtension).not.toHaveBeenCalled();
-      expect(mocks.database.runMigrations).not.toHaveBeenCalled();
-    });
-
-    it(`should throw error if pgvecto.rs extension could not be created`, async () => {
-      mocks.database.getExtensionVersion.mockResolvedValue({
-        installedVersion: null,
-        availableVersion: minVersionInRange,
-      });
-      mocks.database.updateVectorExtension.mockResolvedValue({ restartRequired: false });
-      mocks.database.createExtension.mockRejectedValue(new Error('Failed to create extension'));
-
-      await expect(sut.onBootstrap()).rejects.toThrow('Failed to create extension');
-
-      expect(mocks.logger.fatal).toHaveBeenCalledTimes(1);
-      expect(mocks.logger.fatal.mock.calls[0][0]).toContain(
-        `Alternatively, if your Postgres instance has pgvector, you may use this instead`,
+        `Alternatively, if your Postgres instance has any of vector, vectors, vchord, you may use one of them instead by setting the environment variable 'DB_VECTOR_EXTENSION=<extension name>'`,
       );
       expect(mocks.database.createExtension).toHaveBeenCalledTimes(1);
       expect(mocks.database.updateVectorExtension).not.toHaveBeenCalled();

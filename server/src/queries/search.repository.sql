@@ -64,6 +64,9 @@ limit
   $15
 
 -- SearchRepository.searchSmart
+begin
+set
+  local vchordrq.probes = 1
 select
   "assets".*
 from
@@ -83,8 +86,12 @@ limit
   $7
 offset
   $8
+commit
 
 -- SearchRepository.searchDuplicates
+begin
+set
+  local vchordrq.probes = 1
 with
   "cte" as (
     select
@@ -102,18 +109,22 @@ with
       and "assets"."id" != $5::uuid
       and "assets"."stackId" is null
     order by
-      smart_search.embedding <=> $6
+      "distance"
     limit
-      $7
+      $6
   )
 select
   *
 from
   "cte"
 where
-  "cte"."distance" <= $8
+  "cte"."distance" <= $7
+commit
 
 -- SearchRepository.searchFaces
+begin
+set
+  local vchordrq.probes = 1
 with
   "cte" as (
     select
@@ -129,16 +140,17 @@ with
       "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
     order by
-      face_search.embedding <=> $3
+      "distance"
     limit
-      $4
+      $3
   )
 select
   *
 from
   "cte"
 where
-  "cte"."distance" <= $5
+  "cte"."distance" <= $4
+commit
 
 -- SearchRepository.searchPlaces
 select
