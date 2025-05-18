@@ -126,13 +126,19 @@ export class AssetService extends BaseService {
 
       const entries: JobItem[] = dateTimes
         ? dateTimes.map((entry) => ({
-          name: JobName.SIDECAR_WRITE,
-          data: { id: entry.assetId, description, dateTimeOriginal: entry.dateTimeOriginal?.toISOString(), latitude, longitude },
-        }))
+            name: JobName.SIDECAR_WRITE,
+            data: {
+              id: entry.assetId,
+              description,
+              dateTimeOriginal: entry.dateTimeOriginal?.toISOString(),
+              latitude,
+              longitude,
+            },
+          }))
         : ids.map((id) => ({
-          name: JobName.SIDECAR_WRITE,
-          data: { id, description, dateTimeOriginal, latitude, longitude },
-        }));
+            name: JobName.SIDECAR_WRITE,
+            data: { id, description, dateTimeOriginal, latitude, longitude },
+          }));
       await this.jobRepository.queueAll(entries);
     }
 
