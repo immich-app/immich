@@ -1307,7 +1307,9 @@ describe(MetadataService.name, () => {
         IntrinsicMatrix: [1, 2, 3, 4, 5, 6, 7, 8, 9],
         ExtrinsicMatrix: [1, 2, 3, 4, 5, 6, 7, 8, 9],
         LensDistortionCoefficients: [1, 2, 3],
-        PhotosAppFeatureFlags: 1
+        PhotosAppFeatureFlags: 1,
+        AuxiliaryImageType: 'auxid:2',
+        CompatibleBrands: ['unif']
       });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
