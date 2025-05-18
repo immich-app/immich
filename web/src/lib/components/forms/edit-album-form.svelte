@@ -1,9 +1,8 @@
 <script lang="ts">
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -47,29 +46,35 @@
   };
 </script>
 
-<FullScreenModal icon={mdiRenameOutline} title={$t('edit_album')} width="wide" {onClose}>
-  <form {onsubmit} autocomplete="off" id="edit-album-form">
-    <div class="flex items-center">
-      <div class="hidden sm:flex">
-        <AlbumCover {album} class="h-[200px] w-[200px] m-4 shadow-lg" />
-      </div>
-
-      <div class="grow">
-        <div class="m-4 flex flex-col gap-2">
-          <label class="immich-form-label" for="name">{$t('name')}</label>
-          <input class="immich-form-input" id="name" type="text" bind:value={albumName} />
+<Modal icon={mdiRenameOutline} title={$t('edit_album')} size="medium" {onClose}>
+  <ModalBody>
+    <form {onsubmit} autocomplete="off" id="edit-album-form">
+      <div class="flex items-center">
+        <div class="hidden sm:flex">
+          <AlbumCover {album} class="h-[200px] w-[200px] m-4 shadow-lg" />
         </div>
 
-        <div class="m-4 flex flex-col gap-2">
-          <label class="immich-form-label" for="description">{$t('description')}</label>
-          <textarea class="immich-form-input" id="description" bind:value={description}></textarea>
+        <div class="grow">
+          <div class="m-4 flex flex-col gap-2">
+            <label class="immich-form-label" for="name">{$t('name')}</label>
+            <input class="immich-form-input" id="name" type="text" bind:value={albumName} />
+          </div>
+
+          <div class="m-4 flex flex-col gap-2">
+            <label class="immich-form-label" for="description">{$t('description')}</label>
+            <textarea class="immich-form-input" id="description" bind:value={description}></textarea>
+          </div>
         </div>
       </div>
-    </div>
-  </form>
+    </form>
 
-  {#snippet stickyBottom()}
-    <Button shape="round" color="secondary" fullWidth onclick={() => onCancel?.()}>{$t('cancel')}</Button>
-    <Button shape="round" type="submit" fullWidth disabled={isSubmitting} form="edit-album-form">{$t('save')}</Button>
-  {/snippet}
-</FullScreenModal>
+    <ModalFooter>
+      <div class="flex gap-2 w-full">
+        <Button shape="round" color="secondary" fullWidth onclick={() => onCancel?.()}>{$t('cancel')}</Button>
+        <Button shape="round" type="submit" fullWidth disabled={isSubmitting} form="edit-album-form"
+          >{$t('save')}</Button
+        >
+      </div>
+    </ModalFooter>
+  </ModalBody>
+</Modal>
