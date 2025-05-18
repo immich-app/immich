@@ -108,13 +108,21 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, description, dateTimeOriginal, latitude, longitude, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
-    if (dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined) {
-      await this.assetRepository.updateAllExif(ids, { dateTimeOriginal, latitude, longitude });
+    if (
+      description !== undefined ||
+      dateTimeOriginal !== undefined ||
+      latitude !== undefined ||
+      longitude !== undefined
+    ) {
+      await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
       await this.jobRepository.queueAll(
-        ids.map((id) => ({ name: JobName.SIDECAR_WRITE, data: { id, dateTimeOriginal, latitude, longitude } })),
+        ids.map((id) => ({
+          name: JobName.SIDECAR_WRITE,
+          data: { id, description, dateTimeOriginal, latitude, longitude },
+        })),
       );
     }
 

@@ -72,6 +72,11 @@ export const dateFormats = {
     day: 'numeric',
     year: 'numeric',
   },
+  settings: <Intl.DateTimeFormatOptions>{
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  },
 };
 
 export enum QueryParameter {

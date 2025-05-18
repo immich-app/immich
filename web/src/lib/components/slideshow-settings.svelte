@@ -25,6 +25,13 @@
 
   let { onClose = () => {} }: Props = $props();
 
+  // Temporary variables to hold the settings - marked as reactive with $state() but initialized with store values
+  let tempSlideshowDelay = $state($slideshowDelay);
+  let tempShowProgressBar = $state($showProgressBar);
+  let tempSlideshowNavigation = $state($slideshowNavigation);
+  let tempSlideshowLook = $state($slideshowLook);
+  let tempSlideshowTransition = $state($slideshowTransition);
+
   const navigationOptions: Record<SlideshowNavigation, RenderedOption> = {
     [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: $t('shuffle') },
     [SlideshowNavigation.AscendingOrder]: { icon: mdiArrowUpThin, title: $t('backward') },
@@ -47,6 +54,15 @@
       }
     }
   };
+
+  const applyChanges = () => {
+    $slideshowDelay = tempSlideshowDelay;
+    $showProgressBar = tempShowProgressBar;
+    $slideshowNavigation = tempSlideshowNavigation;
+    $slideshowLook = tempSlideshowLook;
+    $slideshowTransition = tempSlideshowTransition;
+    onClose();
+  };
 </script>
 
 <FullScreenModal title={$t('slideshow_settings')} onClose={() => onClose()}>
@@ -54,31 +70,32 @@
     <SettingDropdown
       title={$t('direction')}
       options={Object.values(navigationOptions)}
-      selectedOption={navigationOptions[$slideshowNavigation]}
+      selectedOption={navigationOptions[tempSlideshowNavigation]}
       onToggle={(option) => {
-        $slideshowNavigation = handleToggle(option, navigationOptions) || $slideshowNavigation;
+        tempSlideshowNavigation = handleToggle(option, navigationOptions) || tempSlideshowNavigation;
       }}
     />
     <SettingDropdown
       title={$t('look')}
       options={Object.values(lookOptions)}
-      selectedOption={lookOptions[$slideshowLook]}
+      selectedOption={lookOptions[tempSlideshowLook]}
       onToggle={(option) => {
-        $slideshowLook = handleToggle(option, lookOptions) || $slideshowLook;
+        tempSlideshowLook = handleToggle(option, lookOptions) || tempSlideshowLook;
       }}
     />
-    <SettingSwitch title={$t('show_progress_bar')} bind:checked={$showProgressBar} />
-    <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={$slideshowTransition} />
+    <SettingSwitch title={$t('show_progress_bar')} bind:checked={tempShowProgressBar} />
+    <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={tempSlideshowTransition} />
     <SettingInputField
       inputType={SettingInputFieldType.NUMBER}
       label={$t('duration')}
       description={$t('admin.slideshow_duration_description')}
       min={1}
-      bind:value={$slideshowDelay}
+      bind:value={tempSlideshowDelay}
     />
   </div>
 
   {#snippet stickyBottom()}
-    <Button fullWidth shape="round" color="primary" onclick={() => onClose()}>{$t('done')}</Button>
+    <Button color="secondary" shape="round" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
+    <Button fullWidth color="primary" shape="round" onclick={applyChanges}>{$t('confirm')}</Button>
   {/snippet}
 </FullScreenModal>
