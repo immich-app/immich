@@ -66,6 +66,10 @@ jobs:
         run: make build
         working-directory: ./mobile
 
+      - name: Generate platform API
+        run: make platform; dart format lib/platform/messages.g.dart
+        working-directory: ./mobile
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
         id: verify-changed-files
