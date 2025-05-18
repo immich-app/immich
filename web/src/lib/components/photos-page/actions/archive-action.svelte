@@ -1,11 +1,12 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import type { OnArchive } from '$lib/utils/actions';
+  import { archiveAssets } from '$lib/utils/asset-utils';
+  import { AssetVisibility, Visibility } from '@immich/sdk';
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { archiveAssets } from '$lib/utils/asset-utils';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     onArchive?: OnArchive;
@@ -23,10 +24,10 @@
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleArchive = async () => {
-    const isArchived = !unarchive;
-    const assets = [...getOwnedAssets()].filter((asset) => asset.isArchived !== isArchived);
+    const isArchived = unarchive ? Visibility.Timeline : Visibility.Archive;
+    const assets = [...getOwnedAssets()].filter((asset) => asset.visibility !== isArchived);
     loading = true;
-    const ids = await archiveAssets(assets, isArchived);
+    const ids = await archiveAssets(assets, isArchived as unknown as AssetVisibility);
     if (ids) {
       onArchive?.(ids, isArchived);
       clearSelect();

@@ -31,7 +31,7 @@
   let { data }: Props = $props();
 
   const assetStore = new AssetStore();
-  void assetStore.updateOptions({ isFavorite: true });
+  void assetStore.updateOptions({ isFavorite: true, withStacked: true });
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
@@ -78,6 +78,7 @@
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
   <AssetGrid
     enableRouting={true}
+    withStacked={true}
     {assetStore}
     {assetInteraction}
     removeAction={AssetAction.UNFAVORITE}
