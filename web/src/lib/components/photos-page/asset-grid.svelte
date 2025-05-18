@@ -30,7 +30,7 @@
   import { focusNext } from '$lib/utils/focus-util';
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
-  import { getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
@@ -365,7 +365,10 @@
   };
 
   const toggleArchive = async () => {
-    await archiveAssets(assetInteraction.selectedAssets, !assetInteraction.isAllArchived);
+    await archiveAssets(
+      assetInteraction.selectedAssets,
+      assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
+    );
     assetStore.updateAssets(assetInteraction.selectedAssets);
     deselectAllAssets();
   };
