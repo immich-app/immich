@@ -35,7 +35,7 @@
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -47,7 +47,6 @@
     getPersonStatistics,
     searchPerson,
     updatePerson,
-    type AssetResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
   import {
@@ -204,7 +203,7 @@
     data = { ...data, person };
   };
 
-  const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
+  const handleSelectFeaturePhoto = async (asset: TimelineAsset) => {
     if (viewMode !== PersonPageViewMode.SELECT_PERSON) {
       return;
     }
@@ -363,7 +362,7 @@
 </script>
 
 <main
-  class="relative z-0 h-dvh overflow-hidden tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]"
+  class="relative z-0 h-dvh overflow-hidden tall:ms-4 md:pt-(--navbar-height-md) pt-(--navbar-height)"
   use:scrollMemoryClearer={{
     routeStartsWith: AppRoute.PEOPLE,
     beforeClear: () => {

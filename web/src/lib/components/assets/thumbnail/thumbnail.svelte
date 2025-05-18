@@ -5,7 +5,7 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, Visibility } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -18,6 +18,7 @@
 
   import { thumbhash } from '$lib/actions/thumbhash';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { focusNext } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
@@ -29,11 +30,11 @@
   import VideoThumbnail from './video-thumbnail.svelte';
 
   interface Props {
-    asset: AssetResponseDto;
+    asset: TimelineAsset;
     groupIndex?: number;
-    thumbnailSize?: number | undefined;
-    thumbnailWidth?: number | undefined;
-    thumbnailHeight?: number | undefined;
+    thumbnailSize?: number;
+    thumbnailWidth?: number;
+    thumbnailHeight?: number;
     selected?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
@@ -44,10 +45,10 @@
     imageClass?: ClassValue;
     brokenAssetClass?: ClassValue;
     dimmed?: boolean;
-    onClick?: ((asset: AssetResponseDto) => void) | undefined;
-    onSelect?: ((asset: AssetResponseDto) => void) | undefined;
-    onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
-    handleFocus?: (() => void) | undefined;
+    onClick?: (asset: TimelineAsset) => void;
+    onSelect?: (asset: TimelineAsset) => void;
+    onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
+    handleFocus?: () => void;
   }
 
   let {
@@ -215,7 +216,7 @@
       slow: ??ms
       -->
   <div
-    class={['group absolute top-[0px] bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    class={['group absolute -top-[0px] -bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
     onmouseenter={onMouseEnter}
@@ -265,7 +266,7 @@
         {#if !usingMobileDevice && !disabled}
           <div
             class={[
-              'absolute h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100',
+              'absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100',
               { 'rounded-xl': selected },
             ]}
           ></div>
@@ -278,7 +279,7 @@
         <!-- Outline on focus -->
         <div
           class={[
-            'absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary',
+            'absolute size-full group-focus-visible:outline-immich-primary focus:outline-4 -outline-offset-4 outline-immich-primary',
             { 'rounded-xl': selected },
           ]}
         ></div>
@@ -290,13 +291,13 @@
           </div>
         {/if}
 
-        {#if !authManager.key && showArchiveIcon && asset.isArchived}
+        {#if !authManager.key && showArchiveIcon && asset.visibility === Visibility.Archive}
           <div class={['absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
-        {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
+        {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
           <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
               <Icon path={mdiRotate360} size="24" />
@@ -309,7 +310,7 @@
           <div
             class={[
               'absolute flex place-items-center gap-1 text-xs font-medium text-white',
-              asset.type == AssetTypeEnum.Image && !asset.livePhotoVideoId ? 'top-0 end-0' : 'top-7 end-1',
+              asset.isImage && !asset.livePhotoVideoId ? 'top-0 end-0' : 'top-7 end-1',
             ]}
           >
             <span class="pe-2 pt-2 flex place-items-center gap-1">
@@ -329,17 +330,17 @@
         curve={selected}
         onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
-      {#if asset.type === AssetTypeEnum.Video}
+      {#if asset.isVideo}
         <div class="absolute top-0 h-full w-full">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
             curve={selected}
-            durationInSeconds={timeToSeconds(asset.duration)}
+            durationInSeconds={timeToSeconds(asset.duration!)}
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
-      {:else if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
+      {:else if asset.isImage && asset.livePhotoVideoId}
         <div class="absolute top-0 h-full w-full">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}

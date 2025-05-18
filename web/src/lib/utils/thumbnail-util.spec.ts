@@ -1,11 +1,16 @@
+import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { getAltText } from '$lib/utils/thumbnail-util';
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { Visibility } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
 
-const onePerson = [{ name: 'person' }];
-const twoPeople = [{ name: 'person1' }, { name: 'person2' }];
-const threePeople = [{ name: 'person1' }, { name: 'person2' }, { name: 'person3' }];
-const fourPeople = [{ name: 'person1' }, { name: 'person2' }, { name: 'person3' }, { name: 'person4' }];
+interface Person {
+  name: string;
+}
+
+const onePerson: Person[] = [{ name: 'person' }];
+const twoPeople: Person[] = [{ name: 'person1' }, { name: 'person2' }];
+const threePeople: Person[] = [{ name: 'person1' }, { name: 'person2' }, { name: 'person3' }];
+const fourPeople: Person[] = [{ name: 'person1' }, { name: 'person2' }, { name: 'person3' }, { name: 'person4' }];
 
 describe('getAltText', () => {
   beforeAll(async () => {
@@ -38,27 +43,44 @@ describe('getAltText', () => {
     ${true}  | ${'city'}    | ${'country'} | ${fourPeople}  | ${'Video taken in city, country with person1, person2, and 2 others on January 1, 2024'}
   `(
     'generates correctly formatted alt text when isVideo=$isVideo, city=$city, country=$country, people=$people.length',
-    ({ isVideo, city, country, people, expected }) => {
-      const asset = {
-        exifInfo: { city, country },
+    ({
+      isVideo,
+      city,
+      country,
+      people,
+      expected,
+    }: {
+      isVideo: boolean;
+      city?: string;
+      country?: string;
+      people?: Person[];
+      expected: string;
+    }) => {
+      const asset: TimelineAsset = {
+        id: 'test-id',
+        ownerId: 'test-owner',
+        ratio: 1,
+        thumbhash: null,
         localDateTime: '2024-01-01T12:00:00.000Z',
-        people,
-        type: isVideo ? AssetTypeEnum.Video : AssetTypeEnum.Image,
-      } as AssetResponseDto;
+        visibility: Visibility.Timeline,
+        isFavorite: false,
+        isTrashed: false,
+        isVideo,
+        isImage: !isVideo,
+        stack: null,
+        duration: null,
+        projectionType: null,
+        livePhotoVideoId: null,
+        text: {
+          city: city ?? null,
+          country: country ?? null,
+          people: people?.map((person: Person) => person.name) ?? [],
+        },
+      };
 
       getAltText.subscribe((fn) => {
         expect(fn(asset)).toEqual(expected);
       });
     },
   );
-
-  it('defaults to the description, if available', () => {
-    const asset = {
-      exifInfo: { description: 'description' },
-    } as AssetResponseDto;
-
-    getAltText.subscribe((fn) => {
-      expect(fn(asset)).toEqual('description');
-    });
-  });
 });

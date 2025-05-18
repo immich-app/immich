@@ -28,11 +28,7 @@
       class="w-fit mt-2 pt-2 pe-2 mb-2 dark:text-immich-dark-fg"
       aria-expanded={!isCollapsed}
     >
-      <Icon
-        path={mdiChevronRight}
-        size="24"
-        class="inline-block -mt-2.5 transition-all duration-[250ms] {iconRotation}"
-      />
+      <Icon path={mdiChevronRight} size="24" class="inline-block -mt-2.5 transition-all duration-250 {iconRotation}" />
       <span class="font-bold text-3xl text-black dark:text-white">{group.name}</span>
       <span class="ms-1.5">({$t('places_count', { values: { count: places.length } })})</span>
     </button>
