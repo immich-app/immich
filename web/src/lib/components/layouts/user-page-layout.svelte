@@ -36,7 +36,7 @@
   }: Props = $props();
 
   let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar p-2' : 'scrollbar-hidden');
-  let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full');
+  let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-(--spacing(16)))]' : 'top-0 h-full');
 </script>
 
 <header>
@@ -48,10 +48,10 @@
 </header>
 <div
   tabindex="-1"
-  class="relative z-0 grid grid-cols-[theme(spacing.0)_auto] overflow-hidden sidebar:grid-cols-[theme(spacing.64)_auto]
+  class="relative z-0 grid grid-cols-[--spacing(0)_auto] overflow-hidden sidebar:grid-cols-[--spacing(64)_auto]
     {hideNavbar ? 'h-dvh' : 'h-[calc(100dvh-var(--navbar-height))]'}
-    {hideNavbar ? 'pt-[var(--navbar-height)]' : ''}
-    {hideNavbar ? 'max-md:pt-[var(--navbar-height-md)]' : ''}"
+    {hideNavbar ? 'pt-(--navbar-height)' : ''}
+    {hideNavbar ? 'max-md:pt-(--navbar-height-md)' : ''}"
 >
   {#if sidebar}
     {@render sidebar()}

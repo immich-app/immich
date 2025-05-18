@@ -34,7 +34,7 @@
 {#if queryType === 'smart'}
   <label for="context-input" class="immich-form-label">{$t('search_by_context')}</label>
   <input
-    class="immich-form-input hover:cursor-text w-full !mt-1"
+    class="immich-form-input hover:cursor-text w-full mt-1!"
     type="text"
     id="context-input"
     name="context"
@@ -44,7 +44,7 @@
 {:else if queryType === 'metadata'}
   <label for="file-name-input" class="immich-form-label">{$t('search_by_filename')}</label>
   <input
-    class="immich-form-input hover:cursor-text w-full !mt-1"
+    class="immich-form-input hover:cursor-text w-full mt-1!"
     type="text"
     id="file-name-input"
     name="file-name"
@@ -55,7 +55,7 @@
 {:else if queryType === 'description'}
   <label for="description-input" class="immich-form-label">{$t('search_by_description')}</label>
   <input
-    class="immich-form-input hover:cursor-text w-full !mt-1"
+    class="immich-form-input hover:cursor-text w-full mt-1!"
     type="text"
     id="description-input"
     name="description"
