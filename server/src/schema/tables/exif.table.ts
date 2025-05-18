@@ -1,4 +1,6 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { type ProjectionType } from 'src/enum';
+import { projection_type_enum } from 'src/schema/enums';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { Column, ForeignKeyColumn, Table, UpdateDateColumn } from 'src/sql-tools';
 
@@ -74,8 +76,8 @@ export class ExifTable {
   @Column({ type: 'character varying', nullable: true })
   timeZone!: string | null;
 
-  @Column({ type: 'character varying', nullable: true })
-  projectionType!: string | null;
+  @Column({ enum: projection_type_enum, nullable: true })
+  projectionType!: ProjectionType | null;
 
   @Column({ type: 'character varying', nullable: true })
   profileDescription!: string | null;

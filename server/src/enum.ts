@@ -628,3 +628,10 @@ export enum AssetVisibility {
    */
   HIDDEN = 'hidden',
 }
+
+export enum ProjectionType {
+  SPHERICAL = 'SPHERICAL',
+  EQUIRECTANGULAR = 'EQUIRECTANGULAR',
+  SPATIAL_APPLE_PHOTO = 'SPATIAL_APPLE_PHOTO',
+  SPATIAL_APPLE_VIDEO = 'SPATIAL_APPLE_VIDEO',
+}
