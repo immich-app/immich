@@ -15,9 +15,8 @@
   import { fly, scale } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
-  import { flip } from 'svelte/animate';
-
   import { uploadAssetsStore } from '$lib/stores/upload';
+  import { flip } from 'svelte/animate';
 
   let { isUploading } = uploadAssetsStore;
 

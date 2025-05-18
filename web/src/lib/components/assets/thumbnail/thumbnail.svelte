@@ -19,7 +19,7 @@
   import { thumbhash } from '$lib/actions/thumbhash';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { focusNext } from '$lib/utils/focus-util';
+  import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
   import { onMount } from 'svelte';
@@ -47,7 +47,6 @@
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
-    handleFocus?: (() => void) | undefined;
   }
 
   let {
@@ -66,7 +65,6 @@
     onClick = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
-    handleFocus = undefined,
     imageClass = '',
     brokenAssetClass = '',
     dimmed = false,
@@ -137,12 +135,14 @@
 
   let startX: number = 0;
   let startY: number = 0;
+
   function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
     let didPress = false;
     const start = (evt: PointerEvent) => {
       startX = evt.clientX;
       startY = evt.clientY;
       didPress = false;
+      // 350ms for longpress. For reference: iOS uses 500ms for default long press, or 200ms for fast long press.
       timer = setTimeout(() => {
         onLongPress();
         element.addEventListener('contextmenu', preventContextMenu, { once: true });
@@ -190,14 +190,41 @@
 </script>
 
 <div
-  data-asset={asset.id}
   class={[
     'focus-visible:outline-none flex overflow-hidden',
     disabled ? 'bg-gray-300' : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20',
   ]}
   style:width="{width}px"
   style:height="{height}px"
+  onmouseenter={onMouseEnter}
+  onmouseleave={onMouseLeave}
+  use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
+  onkeydown={(evt) => {
+    if (evt.key === 'Enter') {
+      callClickHandlers();
+    }
+    if (evt.key === 'x') {
+      onSelect?.(asset);
+    }
+    if (document.activeElement === element && evt.key === 'Escape') {
+      moveFocus((element) => element.dataset.thumbnailFocusContainer === undefined, 'next');
+    }
+  }}
+  onclick={handleClick}
+  bind:this={element}
+  data-asset={asset.id}
+  data-thumbnail-focus-container
+  tabindex={0}
+  role="link"
 >
+  <!-- Outline on focus -->
+  <div
+    class={[
+      'pointer-events-none absolute z-40 size-full outline-4 -outline-offset-4 outline-immich-primary',
+      { 'rounded-xl': selected },
+    ]}
+    data-outline
+  ></div>
   {#if (!loaded || thumbError) && asset.thumbhash}
     <canvas
       use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
@@ -208,36 +235,10 @@
     ></canvas>
   {/if}
 
-  <!-- as of iOS17, there is a preference for long press speed, which is not available for mobile web.
-      The defaults are as follows:
-      fast: 200ms
-      default: 500ms
-      slow: ??ms
-      -->
   <div
     class={['group absolute top-[0px] bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
-    onmouseenter={onMouseEnter}
-    onmouseleave={onMouseLeave}
-    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
-    onkeydown={(evt) => {
-      if (evt.key === 'Enter') {
-        callClickHandlers();
-      }
-      if (evt.key === 'x') {
-        onSelect?.(asset);
-      }
-      if (document.activeElement === element && evt.key === 'Escape') {
-        focusNext((element) => element.dataset.thumbnailFocusContainer === undefined, true);
-      }
-    }}
-    onclick={handleClick}
-    bind:this={element}
-    onfocus={handleFocus}
-    data-thumbnail-focus-container
-    tabindex={0}
-    role="link"
   >
     <div
       class={[
@@ -275,13 +276,6 @@
         {#if dimmed && !mouseOver}
           <div id="a" class={['absolute h-full w-full bg-gray-700/40', { 'rounded-xl': selected }]}></div>
         {/if}
-        <!-- Outline on focus -->
-        <div
-          class={[
-            'absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary',
-            { 'rounded-xl': selected },
-          ]}
-        ></div>
 
         <!-- Favorite asset star -->
         {#if !authManager.key && asset.isFavorite}
@@ -368,7 +362,6 @@
         class={['absolute p-2 focus:outline-none', { 'cursor-not-allowed': disabled }]}
         role="checkbox"
         tabindex={-1}
-        onfocus={handleFocus}
         aria-checked={selected}
         {disabled}
       >
@@ -385,3 +378,9 @@
     {/if}
   </div>
 </div>
+
+<style>
+  [data-asset]:focus > [data-outline] {
+    outline-style: solid;
+  }
+</style>

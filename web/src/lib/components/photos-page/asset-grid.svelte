@@ -4,7 +4,12 @@
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import {
+    setFocusToAsset as setFocusAssetInit,
+    setFocusTo as setFocusToInit,
+  } from '$lib/components/photos-page/actions/focus-actions';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
@@ -20,10 +25,11 @@
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
-  import { focusNext } from '$lib/utils/focus-util';
+  import { moveFocus } from '$lib/utils/focus-util';
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
+  import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
@@ -83,6 +89,7 @@
 
   let timelineElement: HTMLElement | undefined = $state();
   let showSkeleton = $state(true);
+  let isShowSelectDate = $state(false);
   let scrubBucketPercent = $state(0);
   let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
   let scrubOverallPercent: number = $state(0);
@@ -117,26 +124,37 @@
     scrollTo(0);
   };
 
+  const scrollToAsset = async (assetId: string) => {
+    try {
+      const bucket = await assetStore.findBucketForAsset(assetId);
+      if (bucket) {
+        const height = bucket.findAssetAbsolutePosition(assetId);
+        if (height) {
+          scrollTo(height);
+          assetStore.updateIntersections();
+          return true;
+        }
+      }
+    } catch {
+      // ignore errors - asset may not be in the store
+    }
+    return false;
+  };
+
   const completeNav = async () => {
     const scrollTarget = $gridScrollTarget?.at;
+    let scrolled = false;
     if (scrollTarget) {
-      try {
-        const bucket = await assetStore.findBucketForAsset(scrollTarget);
-        if (bucket) {
-          const height = bucket.findAssetAbsolutePosition(scrollTarget);
-          if (height) {
-            scrollTo(height);
-            assetStore.updateIntersections();
-            return;
-          }
-        }
-      } catch {
-        // ignore errors - asset may not be in the store
-      }
+      scrolled = await scrollToAsset(scrollTarget);
     }
-    scrollToTop();
+    if (!scrolled) {
+      // if the asset is not found, scroll to the top
+      scrollToTop();
+    }
   };
+
   beforeNavigate(() => (assetStore.suspendTransitions = true));
+
   afterNavigate((nav) => {
     const { complete } = nav;
     complete.then(completeNav, completeNav);
@@ -363,12 +381,6 @@
     deselectAllAssets();
   };
 
-  const focusElement = () => {
-    if (document.activeElement === document.body) {
-      element?.focus();
-    }
-  };
-
   const handleSelectAsset = (asset: AssetResponseDto) => {
     if (!assetStore.albumAssets.has(asset.id)) {
       assetInteraction.selectAsset(asset);
@@ -376,26 +388,26 @@
   };
 
   const handlePrevious = async () => {
-    const previousAsset = await assetStore.getPreviousAsset($viewingAsset);
+    const laterAsset = await assetStore.getLaterAsset($viewingAsset);
 
-    if (previousAsset) {
-      const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
-      assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
-      await navigate({ targetRoute: 'current', assetId: previousAsset.id });
+    if (laterAsset) {
+      const preloadAsset = await assetStore.getLaterAsset(laterAsset);
+      assetViewingStore.setAsset(laterAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: laterAsset.id });
     }
 
-    return !!previousAsset;
+    return !!laterAsset;
   };
 
   const handleNext = async () => {
-    const nextAsset = await assetStore.getNextAsset($viewingAsset);
-    if (nextAsset) {
-      const preloadAsset = await assetStore.getNextAsset(nextAsset);
-      assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
-      await navigate({ targetRoute: 'current', assetId: nextAsset.id });
+    const earlierAsset = await assetStore.getEarlierAsset($viewingAsset);
+    if (earlierAsset) {
+      const preloadAsset = await assetStore.getEarlierAsset(earlierAsset);
+      assetViewingStore.setAsset(earlierAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
     }
 
-    return !!nextAsset;
+    return !!earlierAsset;
   };
 
   const handleRandom = async () => {
@@ -626,8 +638,9 @@
     }
   };
 
-  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
-  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
+  const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
+  const focusPreviousAsset = () =>
+    moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
@@ -650,6 +663,9 @@
     }
   });
 
+  const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, assetStore);
+  const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
+
   let shortcutList = $derived(
     (() => {
       if (searchStore.isSearchEnabled || $showAssetViewer) {
@@ -661,10 +677,15 @@
         { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteraction) },
-        { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
-        { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
-        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
-        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
+        { shortcut: { key: 'ArrowRight' }, onShortcut: focusNextAsset },
+        { shortcut: { key: 'ArrowLeft' }, onShortcut: focusPreviousAsset },
+        { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('earlier', 'day') },
+        { shortcut: { key: 'D', shift: true }, onShortcut: () => setFocusTo('later', 'day') },
+        { shortcut: { key: 'M' }, onShortcut: () => setFocusTo('earlier', 'month') },
+        { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
+        { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
+        { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
+        { shortcut: { key: 'G' }, onShortcut: () => (isShowSelectDate = true) },
       ];
 
       if (assetInteraction.selectionActive) {
@@ -707,6 +728,23 @@
     size={idsSelectedAssets.length}
     onCancel={() => (isShowDeleteConfirmation = false)}
     onConfirm={() => handlePromiseError(trashOrDelete(true))}
+  />
+{/if}
+
+{#if isShowSelectDate}
+  <ChangeDate
+    title="Navigate to Time"
+    initialDate={DateTime.now()}
+    timezoneInput={false}
+    onConfirm={async (dateString: string) => {
+      isShowSelectDate = false;
+      const date = DateTime.fromISO(dateString).toUTC();
+      const asset = await assetStore.getClosestAssetToDate(date);
+      if (asset) {
+        await setFocusAsset(asset);
+      }
+    }}
+    onCancel={() => (isShowSelectDate = false)}
   />
 {/if}
 
