@@ -489,8 +489,7 @@ export class MetadataService extends BaseService {
     const photoFlags = tags.PhotosAppFeatureFlags === 1 || tags.PhotosAppFeatureFlags === 3;
     const brandSpatial =
       Array.isArray(tags.CompatibleBrands) && tags.CompatibleBrands.some((b) => /unif|miv1|spat/i.test(String(b)));
-
-    return (hasDepth && hasCalib && photoFlags) || auxSpatial || brandSpatial;
+    return (hasDepth && hasCalib && photoFlags && brandSpatial && auxSpatial);
   }
   
   /**
