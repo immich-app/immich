@@ -8604,6 +8604,9 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "description": {
+            "type": "string"
+          },
           "duplicateId": {
             "nullable": true,
             "type": "string"
@@ -11074,6 +11077,7 @@
           },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
+            "format": "uuid",
             "type": "string"
           },
           "id": {
@@ -11279,6 +11283,7 @@
           },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
+            "format": "uuid",
             "type": "string"
           },
           "isFavorite": {

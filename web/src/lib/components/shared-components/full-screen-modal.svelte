@@ -52,17 +52,17 @@
   $effect(() => {
     switch (width) {
       case 'extra-wide': {
-        modalWidth = 'w-[56rem]';
+        modalWidth = 'w-4xl';
         break;
       }
 
       case 'wide': {
-        modalWidth = 'w-[48rem]';
+        modalWidth = 'w-3xl';
         break;
       }
 
       case 'narrow': {
-        modalWidth = 'w-[28rem]';
+        modalWidth = 'w-md';
         break;
       }
 

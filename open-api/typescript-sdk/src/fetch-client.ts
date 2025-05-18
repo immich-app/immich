@@ -431,6 +431,7 @@ export type AssetMediaResponseDto = {
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
+    description?: string;
     duplicateId?: string | null;
     ids: string[];
     isFavorite?: boolean;

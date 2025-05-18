@@ -56,7 +56,7 @@
             <Icon
               path={mdiChevronRight}
               size="20"
-              class="inline-block -mt-2 transition-all duration-[250ms] {iconRotation}"
+              class="inline-block -mt-2 transition-all duration-250 {iconRotation}"
             />
             <span class="font-bold text-2xl">{albumGroup.name}</span>
             <span class="ms-1.5">

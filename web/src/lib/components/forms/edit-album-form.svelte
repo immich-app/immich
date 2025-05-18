@@ -54,7 +54,7 @@
         <AlbumCover {album} class="h-[200px] w-[200px] m-4 shadow-lg" />
       </div>
 
-      <div class="flex-grow">
+      <div class="grow">
         <div class="m-4 flex flex-col gap-2">
           <label class="immich-form-label" for="name">{$t('name')}</label>
           <input class="immich-form-input" id="name" type="text" bind:value={albumName} />

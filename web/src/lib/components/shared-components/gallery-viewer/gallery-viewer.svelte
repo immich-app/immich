@@ -497,7 +497,7 @@
           />
           {#if showAssetName && !isTimelineAsset(currentAsset)}
             <div
-              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
+              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
             >
               {currentAsset.originalFileName}
             </div>

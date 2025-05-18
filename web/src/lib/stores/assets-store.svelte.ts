@@ -1,4 +1,5 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
+
 import { locale } from '$lib/stores/preferences.store';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
@@ -25,7 +26,6 @@ import { SvelteSet } from 'svelte/reactivity';
 import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
-
 const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
 } = TUNABLES;
@@ -112,7 +112,7 @@ class IntersectingAsset {
   });
 
   position: CommonPosition | undefined = $state();
-  asset: TimelineAsset | undefined = $state();
+  asset: TimelineAsset = <TimelineAsset>$state();
   id: string | undefined = $derived(this.asset?.id);
 
   constructor(group: AssetDateGroup, asset: TimelineAsset) {
@@ -292,6 +292,15 @@ class AddContext {
     }
     return updated;
   }
+
+  sort(sortOrder: AssetOrder = AssetOrder.Desc) {
+    for (const group of this.changedDateGroups) {
+      group.sortAssets(sortOrder);
+    }
+    for (const group of this.newDateGroups) {
+      group.sortAssets(sortOrder);
+    }
+  }
 }
 
 export class AssetBucket {
@@ -450,7 +459,6 @@ export class AssetBucket {
     };
   }
 
-  // note - if the assets are not part of this bucket, they will not be added
   addAssets(bucketAssets: TimeBucketAssetResponseDto) {
     const addContext = new AddContext();
     const people: string[] = [];
@@ -1231,6 +1239,7 @@ export class AssetStore {
         bucket = new AssetBucket(this, utc, 1, this.#options.order);
         this.buckets.push(bucket);
       }
+      const addContext = new AddContext();
       bucket.addTimelineAsset(asset, addContext);
     }
 
@@ -1473,7 +1482,7 @@ export class AssetStore {
 
   isExcluded(asset: TimelineAsset) {
     return (
-      (this.#options.visibility === undefined ? false : this.#options.visibility !== asset.visibility) ||
+      isMismatched(this.#options.visibility, asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );

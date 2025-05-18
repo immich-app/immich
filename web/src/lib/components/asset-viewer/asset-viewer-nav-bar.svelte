@@ -108,7 +108,7 @@
 </script>
 
 <div
-  class="flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
+  class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
     {#if showCloseButton}

@@ -24,10 +24,10 @@
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleArchive = async () => {
-    const isArchived = !unarchive;
-    const assets = [...getOwnedAssets()].filter((asset) => asset.visibility !== AssetVisibility.Archive);
+    const isArchived = unarchive ? AssetVisibility.Timeline : AssetVisibility.Archive;
+    const assets = [...getOwnedAssets()].filter((asset) => asset.visibility !== isArchived);
     loading = true;
-    const ids = await archiveAssets(assets, isArchived as unknown as AssetVisibility);
+    const ids = await archiveAssets(assets, isArchived as AssetVisibility);
     if (ids) {
       onArchive?.(ids, isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline);
       clearSelect();
