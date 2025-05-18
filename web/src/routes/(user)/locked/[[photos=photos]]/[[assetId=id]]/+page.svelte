@@ -70,7 +70,7 @@
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
   {#snippet buttons()}
-    <Button size="small" variant="filled" color="warning" leadingIcon={mdiLockOutline} onclick={handleLock}>
+    <Button size="small" variant="ghost" color="primary" leadingIcon={mdiLockOutline} onclick={handleLock}>
       {$t('lock')}
     </Button>
   {/snippet}

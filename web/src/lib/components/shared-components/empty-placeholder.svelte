@@ -29,5 +29,5 @@
   {#if title}
     <h2 class="text-xl font-medium my-4">{title}</h2>
   {/if}
-  <p class="text-immich-text-gray-500 dark:text-immich-dark-fg font-light">{text}</p>
+  <p class="text-immich-text-gray-500 dark:text-immich-dark-fg font-light text-center">{text}</p>
 </svelte:element>
