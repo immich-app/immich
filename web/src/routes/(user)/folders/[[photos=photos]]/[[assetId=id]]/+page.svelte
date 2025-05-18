@@ -151,7 +151,7 @@
     </Sidebar>
   {/snippet}
 
-  <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} getLink=getLink={getLinkForPathForPath} />
+  <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
     <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigateToFolder} />
