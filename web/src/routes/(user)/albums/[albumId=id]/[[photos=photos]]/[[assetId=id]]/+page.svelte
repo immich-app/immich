@@ -13,6 +13,7 @@
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -91,7 +92,7 @@
 
   let { data = $bindable() }: Props = $props();
 
-  let { isViewing: showAssetViewer, setAsset, gridScrollTarget } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAssetId, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
@@ -173,8 +174,7 @@
         ? await assetStore.getRandomAsset()
         : assetStore.buckets[0]?.dateGroups[0]?.intersetingAssets[0]?.asset;
     if (asset) {
-      setAsset(asset);
-      $slideshowState = SlideshowState.PlaySlideshow;
+      handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
     }
   };
 
@@ -478,6 +478,7 @@
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if assetInteraction.isAllUserOwned}
             <ChangeDate menuItem />
+            <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             {#if assetInteraction.selectedAssets.length === 1}
               <MenuOption
@@ -596,7 +597,7 @@
       {/if}
     {/if}
 
-    <main class="relative h-dvh overflow-hidden px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]">
+    <main class="relative h-dvh overflow-hidden px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
       <AssetGrid
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
@@ -698,7 +699,7 @@
       </AssetGrid>
 
       {#if showActivityStatus}
-        <div class="absolute z-[2] bottom-0 end-0 mb-6 me-6 justify-self-end">
+        <div class="absolute z-2 bottom-0 end-0 mb-6 me-6 justify-self-end">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
             isLiked={activityManager.isLiked}
@@ -715,7 +716,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+        class="z-2 w-[360px] md:w-[460px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
         translate="yes"
       >
         <ActivityViewer

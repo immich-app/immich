@@ -3,6 +3,7 @@
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -30,7 +31,7 @@
   let { data }: Props = $props();
 
   const assetStore = new AssetStore();
-  void assetStore.updateOptions({ isFavorite: true });
+  void assetStore.updateOptions({ isFavorite: true, withStacked: true });
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
@@ -59,6 +60,7 @@
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       <ChangeDate menuItem />
+      <ChangeDescription menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction
         menuItem
@@ -76,6 +78,7 @@
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
   <AssetGrid
     enableRouting={true}
+    withStacked={true}
     {assetStore}
     {assetInteraction}
     removeAction={AssetAction.UNFAVORITE}
