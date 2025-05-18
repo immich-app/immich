@@ -55,6 +55,10 @@ export class UpdateAssetBase {
   @Max(5)
   @Min(-1)
   rating?: number;
+
+  @Optional()
+  @IsString()
+  description?: string;
 }
 
 export class AssetBulkUpdateDto extends UpdateAssetBase {
@@ -71,10 +75,6 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
 }
 
 export class UpdateAssetDto extends UpdateAssetBase {
-  @Optional()
-  @IsString()
-  description?: string;
-
   @ValidateUUID({ optional: true, nullable: true })
   livePhotoVideoId?: string | null;
 }

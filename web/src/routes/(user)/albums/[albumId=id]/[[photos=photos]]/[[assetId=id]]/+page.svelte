@@ -13,6 +13,7 @@
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -91,7 +92,7 @@
 
   let { data = $bindable() }: Props = $props();
 
-  let { isViewing: showAssetViewer, setAsset, gridScrollTarget } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAssetId, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
@@ -173,8 +174,7 @@
         ? await assetStore.getRandomAsset()
         : assetStore.buckets[0]?.dateGroups[0]?.intersetingAssets[0]?.asset;
     if (asset) {
-      setAsset(asset);
-      $slideshowState = SlideshowState.PlaySlideshow;
+      handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
     }
   };
 
@@ -478,6 +478,7 @@
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if assetInteraction.isAllUserOwned}
             <ChangeDate menuItem />
+            <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             {#if assetInteraction.selectedAssets.length === 1}
               <MenuOption

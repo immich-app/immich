@@ -8,6 +8,7 @@
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -24,16 +25,18 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { type Viewport } from '$lib/stores/assets-store.svelte';
+  import { type TimelineAsset, type Viewport } from '$lib/stores/assets-store.svelte';
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
+  import { getAltText } from '$lib/utils/thumbnail-util';
+  import { fromLocalDateTime, toTimelineAsset } from '$lib/utils/timeline-util';
+  import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import {
     mdiCardsOutline,
@@ -66,6 +69,11 @@
   let playerInitialized = $state(false);
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
+  let currentMemoryAssetFull = $derived.by(async () =>
+    current?.asset ? await getAssetInfo({ id: current.asset.id, key: authManager.key }) : undefined,
+  );
+  let currentTimelineAssets = $derived(current?.memory.assets.map((asset) => toTimelineAsset(asset)) || []);
+
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
 
@@ -76,8 +84,8 @@
   const assetInteraction = new AssetInteraction();
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
-  const asHref = (asset: AssetResponseDto) => `?${QueryParameter.ID}=${asset.id}`;
-  const handleNavigate = async (asset?: AssetResponseDto) => {
+  const asHref = (asset: { id: string }) => `?${QueryParameter.ID}=${asset.id}`;
+  const handleNavigate = async (asset?: { id: string }) => {
     if ($isViewing) {
       return asset;
     }
@@ -88,9 +96,9 @@
 
     await goto(asHref(asset));
   };
-  const setProgressDuration = (asset: AssetResponseDto) => {
-    if (asset.type === AssetTypeEnum.Video) {
-      const timeParts = asset.duration.split(':').map(Number);
+  const setProgressDuration = (asset: TimelineAsset) => {
+    if (asset.isVideo) {
+      const timeParts = asset.duration!.split(':').map(Number);
       const durationInMilliseconds = (timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]) * 1000;
       progressBarController = new Tween<number>(0, {
         duration: (from: number, to: number) => (to ? durationInMilliseconds * (to - from) : 0),
@@ -106,7 +114,8 @@
   const handleNextMemory = () => handleNavigate(current?.nextMemory?.assets[0]);
   const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
   const handleEscape = async () => goto(AppRoute.PHOTOS);
-  const handleSelectAll = () => assetInteraction.selectAssets(current?.memory.assets || []);
+  const handleSelectAll = () =>
+    assetInteraction.selectAssets(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
   const handleAction = async (callingContext: string, action: 'reset' | 'pause' | 'play') => {
     // leaving these log statements here as comments. Very useful to figure out what's going on during dev!
     // console.log(`handleAction[${callingContext}] called with: ${action}`);
@@ -239,7 +248,7 @@
   };
 
   const initPlayer = () => {
-    const isVideoAssetButPlayerHasNotLoadedYet = current && current.asset.type === AssetTypeEnum.Video && !videoPlayer;
+    const isVideoAssetButPlayerHasNotLoadedYet = current && current.asset.isVideo && !videoPlayer;
     if (playerInitialized || isVideoAssetButPlayerHasNotLoadedYet) {
       return;
     }
@@ -323,6 +332,7 @@
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
         <ChangeDate menuItem />
+        <ChangeDescription menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={handleDeleteOrArchiveAssets} />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
@@ -439,7 +449,7 @@
           <div class="relative h-full w-full rounded-2xl bg-black">
             {#key current.asset.id}
               <div transition:fade class="h-full w-full">
-                {#if current.asset.type === AssetTypeEnum.Video}
+                {#if current.asset.isVideo}
                   <video
                     bind:this={videoPlayer}
                     autoplay
@@ -456,7 +466,7 @@
                   <img
                     class="h-full w-full rounded-2xl object-contain transition-all"
                     src={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
-                    alt={current.asset.exifInfo?.description}
+                    alt={$getAltText(current.asset)}
                     draggable="false"
                     transition:fade
                   />
@@ -549,8 +559,10 @@
                 })}
               </p>
               <p>
-                {current.asset.exifInfo?.city || ''}
-                {current.asset.exifInfo?.country || ''}
+                {#await currentMemoryAssetFull then asset}
+                  {asset?.exifInfo?.city || ''}
+                  {asset?.exifInfo?.country || ''}
+                {/await}
               </p>
             </div>
           </div>
@@ -621,7 +633,7 @@
       <GalleryViewer
         onNext={handleNextAsset}
         onPrevious={handlePreviousAsset}
-        assets={current.memory.assets}
+        assets={currentTimelineAssets}
         viewport={galleryViewport}
         {assetInteraction}
         slidingWindowOffset={viewerHeight}

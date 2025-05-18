@@ -84,8 +84,8 @@
     },
     display: {
       isArchive: searchQuery.visibility === AssetVisibility.Archive,
-      isFavorite: searchQuery.isFavorite,
-      isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
+      isFavorite: searchQuery.isFavorite ?? false,
+      isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
     },
     mediaType:
       searchQuery.type === AssetTypeEnum.Image
@@ -105,7 +105,11 @@
       location: {},
       camera: {},
       date: {},
-      display: {},
+      display: {
+        isArchive: false,
+        isFavorite: false,
+        isNotInAlbum: false,
+      },
       mediaType: MediaType.All,
       rating: undefined,
     };

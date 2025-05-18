@@ -8608,6 +8608,9 @@
           "dateTimeRelative": {
             "type": "number"
           },
+          "description": {
+            "type": "string"
+          },
           "duplicateId": {
             "nullable": true,
             "type": "string"

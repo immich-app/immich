@@ -9,6 +9,7 @@
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -24,7 +25,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { Viewport } from '$lib/stores/assets-store.svelte';
+  import type { TimelineAsset, Viewport } from '$lib/stores/assets-store.svelte';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
@@ -33,9 +34,9 @@
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     type AlbumResponseDto,
-    type AssetResponseDto,
     getPerson,
     getTagById,
     type MetadataSearchDto,
@@ -58,7 +59,7 @@
 
   let nextPage = $state(1);
   let searchResultAlbums: AlbumResponseDto[] = $state([]);
-  let searchResultAssets: AssetResponseDto[] = $state([]);
+  let searchResultAssets: TimelineAsset[] = $state([]);
   let isLoading = $state(true);
   let scrollY = $state(0);
   let scrollYHistory = 0;
@@ -122,7 +123,7 @@
 
   const onAssetDelete = (assetIds: string[]) => {
     const assetIdSet = new Set(assetIds);
-    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
+    searchResultAssets = searchResultAssets.filter((asset: TimelineAsset) => !assetIdSet.has(asset.id));
   };
   const handleSelectAll = () => {
     assetInteraction.selectAssets(searchResultAssets);
@@ -160,7 +161,7 @@
           : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
-      searchResultAssets.push(...assets.items);
+      searchResultAssets.push(...assets.items.map((asset) => toTimelineAsset(asset)));
 
       nextPage = Number(assets.nextPage) || 0;
     } catch (error) {
@@ -238,7 +239,7 @@
 
     if (terms.isNotInAlbum.toString() == 'true') {
       const assetIdSet = new Set(assetIds);
-      searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
+      searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
     }
   };
 
@@ -264,9 +265,9 @@
         </ButtonContextMenu>
         <FavoriteAction
           removeFavorite={assetInteraction.isAllFavorite}
-          onFavorite={(ids, isFavorite) => {
-            for (const id of ids) {
-              const asset = searchResultAssets.find((asset) => asset.id === id);
+          onFavorite={(assetIds, isFavorite) => {
+            for (const assetId of assetIds) {
+              const asset = searchResultAssets.find((searchAsset) => searchAsset.id === assetId);
               if (asset) {
                 asset.isFavorite = isFavorite;
               }
@@ -305,25 +306,25 @@
     id="search-chips"
     class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
   >
-    {#each getObjectKeys(terms) as key (key)}
-      {@const value = terms[key]}
+    {#each getObjectKeys(terms) as searchKey (searchKey)}
+      {@const value = terms[searchKey]}
       <div class="flex place-content-center place-items-center text-xs">
         <div
           class="bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
           {value === true ? 'rounded-full' : 'rounded-s-full'}"
         >
-          {getHumanReadableSearchKey(key as keyof SearchTerms)}
+          {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
         </div>
 
         {#if value !== true}
           <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-e-full">
-            {#if (key === 'takenAfter' || key === 'takenBefore') && typeof value === 'string'}
+            {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
               {getHumanReadableDate(value)}
-            {:else if key === 'personIds' && Array.isArray(value)}
+            {:else if searchKey === 'personIds' && Array.isArray(value)}
               {#await getPersonName(value) then personName}
                 {personName}
               {/await}
-            {:else if key === 'tagIds' && Array.isArray(value)}
+            {:else if searchKey === 'tagIds' && Array.isArray(value)}
               {#await getTagNames(value) then tagNames}
                 {tagNames}
               {/await}
@@ -377,6 +378,58 @@
     {#if isLoading}
       <div class="flex justify-center py-16 items-center">
         <LoadingSpinner size="48" />
+      </div>
+    {/if}
+  </section>
+
+  <section>
+    {#if assetInteraction.selectionActive}
+      <div class="fixed top-0 start-0 w-full">
+        <AssetSelectControlBar
+          assets={assetInteraction.selectedAssets}
+          clearSelect={() => cancelMultiselect(assetInteraction)}
+        >
+          <CreateSharedLink />
+          <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+          <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
+            <AddToAlbum {onAddToAlbum} />
+            <AddToAlbum shared {onAddToAlbum} />
+          </ButtonContextMenu>
+          <FavoriteAction
+            removeFavorite={assetInteraction.isAllFavorite}
+            onFavorite={(ids, isFavorite) => {
+              for (const id of ids) {
+                const asset = searchResultAssets.find((asset) => asset.id === id);
+                if (asset) {
+                  asset.isFavorite = isFavorite;
+                }
+              }
+            }}
+          />
+
+          <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+            <DownloadAction menuItem />
+            <ChangeDate menuItem />
+            <ChangeDescription menuItem />
+            <ChangeLocation menuItem />
+            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+              <TagAction menuItem />
+            {/if}
+            <DeleteAssets menuItem {onAssetDelete} />
+            <hr />
+            <AssetJobActions />
+          </ButtonContextMenu>
+        </AssetSelectControlBar>
+      </div>
+    {:else}
+      <div class="fixed top-0 start-0 w-full">
+        <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
+          <div class="absolute bg-light"></div>
+          <div class="w-full flex-1 ps-4">
+            <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
+          </div>
+        </ControlAppBar>
       </div>
     {/if}
   </section>

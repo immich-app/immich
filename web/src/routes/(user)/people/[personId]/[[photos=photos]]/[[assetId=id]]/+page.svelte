@@ -11,6 +11,7 @@
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -34,7 +35,7 @@
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -46,7 +47,6 @@
     getPersonStatistics,
     searchPerson,
     updatePerson,
-    type AssetResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
   import {
@@ -203,7 +203,7 @@
     data = { ...data, person };
   };
 
-  const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
+  const handleSelectFeaturePhoto = async (asset: TimelineAsset) => {
     if (viewMode !== PersonPageViewMode.SELECT_PERSON) {
       return;
     }
@@ -515,6 +515,7 @@
           onClick={handleReassignAssets}
         />
         <ChangeDate menuItem />
+        <ChangeDescription menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction
           menuItem

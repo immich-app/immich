@@ -5,6 +5,7 @@
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -33,7 +34,8 @@
     type OnUnlink,
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { AssetTypeEnum, AssetVisibility } from '@immich/sdk';
+  import { AssetVisibility } from '@immich/sdk';
+
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -51,8 +53,8 @@
     const isLivePhoto = selectedAssets.length === 1 && !!selectedAssets[0].livePhotoVideoId;
     const isLivePhotoCandidate =
       selectedAssets.length === 2 &&
-      selectedAssets.some((asset) => asset.type === AssetTypeEnum.Image) &&
-      selectedAssets.some((asset) => asset.type === AssetTypeEnum.Video);
+      selectedAssets.some((asset) => asset.isImage) &&
+      selectedAssets.some((asset) => asset.isVideo);
 
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
@@ -142,6 +144,7 @@
         />
       {/if}
       <ChangeDate menuItem />
+      <ChangeDescription menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       {#if $preferences.tags.enabled}
