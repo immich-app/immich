@@ -221,7 +221,7 @@
   <!-- Outline on focus -->
   <div
     class={[
-      'pointer-events-none absolute z-40 size-full outline-4 -outline-offset-4 outline-immich-primary',
+      'pointer-events-none absolute z-1 size-full outline-hidden outline-4 -outline-offset-4 outline-immich-primary',
       { 'rounded-xl': selected },
     ]}
     data-outline
@@ -277,13 +277,6 @@
         {#if dimmed && !mouseOver}
           <div id="a" class={['absolute h-full w-full bg-gray-700/40', { 'rounded-xl': selected }]}></div>
         {/if}
-        <!-- Outline on focus -->
-        <div
-          class={[
-            'absolute size-full group-focus-visible:outline-immich-primary focus:outline-4 -outline-offset-4 outline-immich-primary',
-            { 'rounded-xl': selected },
-          ]}
-        ></div>
 
         <!-- Favorite asset star -->
         {#if !authManager.key && asset.isFavorite}
