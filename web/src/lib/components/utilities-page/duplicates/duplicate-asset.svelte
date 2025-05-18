@@ -3,6 +3,7 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -36,7 +37,7 @@
       <!-- THUMBNAIL-->
       <img
         src={getAssetThumbnailUrl(asset.id)}
-        alt={$getAltText(asset)}
+        alt={$getAltText(toTimelineAsset(asset))}
         title={assetData}
         class="h-60 object-cover rounded-t-xl w-full"
         draggable="false"

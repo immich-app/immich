@@ -35,7 +35,7 @@
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -47,7 +47,6 @@
     getPersonStatistics,
     searchPerson,
     updatePerson,
-    type AssetResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
   import {
@@ -204,7 +203,7 @@
     data = { ...data, person };
   };
 
-  const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
+  const handleSelectFeaturePhoto = async (asset: TimelineAsset) => {
     if (viewMode !== PersonPageViewMode.SELECT_PERSON) {
       return;
     }

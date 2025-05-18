@@ -3,7 +3,7 @@
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
+  import { photoViewerImgElement, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
@@ -13,9 +13,10 @@
   import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { cancelImageUrl, preloadImageUrl } from '$lib/utils/sw-messaging';
+  import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
   import { swipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
@@ -25,7 +26,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    preloadAssets?: AssetResponseDto[] | undefined;
+    preloadAssets?: TimelineAsset[] | undefined;
     element?: HTMLDivElement | undefined;
     haveFadeTransition?: boolean;
     sharedLink?: SharedLinkResponseDto | undefined;
@@ -69,10 +70,11 @@
     $boundingBoxesArray = [];
   });
 
-  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: AssetResponseDto[]) => {
+  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
     for (const preloadAsset of preloadAssets || []) {
-      if (preloadAsset.type === AssetTypeEnum.Image) {
-        preloadImageUrl(getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash));
+      if (preloadAsset.isImage) {
+        let img = new Image();
+        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
       }
     }
   };
@@ -197,7 +199,7 @@
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  <img style="display:none" src={imageLoaderUrl} alt={$getAltText(asset)} {onload} {onerror} />
+  <img style="display:none" src={imageLoaderUrl} alt="" {onload} {onerror} />
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
       <LoadingSpinner />
@@ -213,7 +215,7 @@
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img
           src={assetFileUrl}
-          alt={$getAltText(asset)}
+          alt=""
           class="absolute top-0 start-0 object-cover h-full w-full blur-lg"
           draggable="false"
         />
@@ -221,7 +223,7 @@
       <img
         bind:this={$photoViewerImgElement}
         src={assetFileUrl}
-        alt={$getAltText(asset)}
+        alt={$getAltText(toTimelineAsset(asset))}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"

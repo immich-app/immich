@@ -3,6 +3,7 @@
   import { AssetAction } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { keepThisDeleteOthers } from '$lib/utils/asset-utils';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto, StackResponseDto } from '@immich/sdk';
   import { mdiPinOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -29,7 +30,7 @@
 
     const keptAsset = await keepThisDeleteOthers(asset, stack);
     if (keptAsset) {
-      onAction({ type: AssetAction.UNSTACK, assets: [keptAsset] });
+      onAction({ type: AssetAction.UNSTACK, assets: [toTimelineAsset(keptAsset)] });
     }
   };
 </script>

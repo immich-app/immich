@@ -1,20 +1,21 @@
 import type { AssetAction } from '$lib/constants';
-import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
+import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import type { AlbumResponseDto } from '@immich/sdk';
 
 type ActionMap = {
-  [AssetAction.ARCHIVE]: { asset: AssetResponseDto };
-  [AssetAction.UNARCHIVE]: { asset: AssetResponseDto };
-  [AssetAction.FAVORITE]: { asset: AssetResponseDto };
-  [AssetAction.UNFAVORITE]: { asset: AssetResponseDto };
-  [AssetAction.TRASH]: { asset: AssetResponseDto };
-  [AssetAction.DELETE]: { asset: AssetResponseDto };
-  [AssetAction.RESTORE]: { asset: AssetResponseDto };
-  [AssetAction.ADD]: { asset: AssetResponseDto };
-  [AssetAction.ADD_TO_ALBUM]: { asset: AssetResponseDto; album: AlbumResponseDto };
-  [AssetAction.UNSTACK]: { assets: AssetResponseDto[] };
-  [AssetAction.KEEP_THIS_DELETE_OTHERS]: { asset: AssetResponseDto };
-  [AssetAction.SET_VISIBILITY_LOCKED]: { asset: AssetResponseDto };
-  [AssetAction.SET_VISIBILITY_TIMELINE]: { asset: AssetResponseDto };
+  [AssetAction.ARCHIVE]: { asset: TimelineAsset };
+  [AssetAction.UNARCHIVE]: { asset: TimelineAsset };
+  [AssetAction.FAVORITE]: { asset: TimelineAsset };
+  [AssetAction.UNFAVORITE]: { asset: TimelineAsset };
+  [AssetAction.TRASH]: { asset: TimelineAsset };
+  [AssetAction.DELETE]: { asset: TimelineAsset };
+  [AssetAction.RESTORE]: { asset: TimelineAsset };
+  [AssetAction.ADD]: { asset: TimelineAsset };
+  [AssetAction.ADD_TO_ALBUM]: { asset: TimelineAsset; album: AlbumResponseDto };
+  [AssetAction.UNSTACK]: { assets: TimelineAsset[] };
+  [AssetAction.KEEP_THIS_DELETE_OTHERS]: { asset: TimelineAsset };
+  [AssetAction.SET_VISIBILITY_LOCKED]: { asset: TimelineAsset };
+  [AssetAction.SET_VISIBILITY_TIMELINE]: { asset: TimelineAsset };
 };
 
 export type Action = {

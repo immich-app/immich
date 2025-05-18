@@ -3,14 +3,15 @@
 
   import { AssetAction } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetVisibility, updateAssets, Visibility, type AssetResponseDto } from '@immich/sdk';
+  import { AssetVisibility, updateAssets, Visibility } from '@immich/sdk';
   import { mdiEyeOffOutline, mdiFolderMoveOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction, PreAction } from './action';
 
   interface Props {
-    asset: AssetResponseDto;
+    asset: TimelineAsset;
     onAction: OnAction;
     preAction: PreAction;
   }

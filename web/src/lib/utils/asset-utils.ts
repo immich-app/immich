@@ -6,7 +6,12 @@ import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-import { assetsSnapshot, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
+import {
+  assetsSnapshot,
+  isSelectingAllAssets,
+  type AssetStore,
+  type TimelineAsset,
+} from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
@@ -366,7 +371,7 @@ export const getAssetType = (type: AssetTypeEnum) => {
   }
 };
 
-export const getSelectedAssets = (assets: AssetResponseDto[], user: UserResponseDto | null): string[] => {
+export const getSelectedAssets = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
 
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
@@ -385,7 +390,7 @@ export type StackResponse = {
   toDeleteIds: string[];
 };
 
-export const stackAssets = async (assets: AssetResponseDto[], showNotification = true): Promise<StackResponse> => {
+export const stackAssets = async (assets: { id: string }[], showNotification = true): Promise<StackResponse> => {
   if (assets.length < 2) {
     return { stack: undefined, toDeleteIds: [] };
   }
@@ -403,10 +408,6 @@ export const stackAssets = async (assets: AssetResponseDto[], showNotification =
           onClick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
         },
       });
-    }
-
-    for (const [index, asset] of assets.entries()) {
-      asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length, primaryAssetId: asset.id } : null;
     }
 
     return {
@@ -525,30 +526,29 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
   return asset;
 };
 
-export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean) => {
-  const isArchived = archive;
+export const archiveAssets = async (assets: { id: string }[], visibility: AssetVisibility) => {
   const ids = assets.map(({ id }) => id);
   const $t = get(t);
 
   try {
     if (ids.length > 0) {
       await updateAssets({
-        assetBulkUpdateDto: { ids, visibility: isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline },
+        assetBulkUpdateDto: { ids, visibility },
       });
     }
 
-    for (const asset of assets) {
-      asset.isArchived = isArchived;
-    }
-
     notificationController.show({
-      message: isArchived
-        ? $t('archived_count', { values: { count: ids.length } })
-        : $t('unarchived_count', { values: { count: ids.length } }),
+      message:
+        visibility === AssetVisibility.Archive
+          ? $t('archived_count', { values: { count: ids.length } })
+          : $t('unarchived_count', { values: { count: ids.length } }),
       type: NotificationType.Info,
     });
   } catch (error) {
-    handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: isArchived } }));
+    handleError(
+      error,
+      $t('errors.unable_to_archive_unarchive', { values: { archived: visibility === AssetVisibility.Archive } }),
+    );
   }
 
   return ids;
