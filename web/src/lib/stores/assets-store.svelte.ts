@@ -293,12 +293,15 @@ class AddContext {
     return updated;
   }
 
-  sort(sortOrder: AssetOrder = AssetOrder.Desc) {
+  sort(bucket: AssetBucket, sortOrder: AssetOrder = AssetOrder.Desc) {
     for (const group of this.changedDateGroups) {
       group.sortAssets(sortOrder);
     }
     for (const group of this.newDateGroups) {
       group.sortAssets(sortOrder);
+    }
+    if (this.newDateGroups.size > 0) {
+      bucket.sortDateGroups();
     }
   }
 }
@@ -498,6 +501,8 @@ export class AssetBucket {
     if (addContext.newDateGroups.size > 0) {
       this.sortDateGroups();
     }
+
+    addContext.sort(this, this.#sortOrder);
 
     return addContext.unprocessedAssets;
   }
@@ -1228,6 +1233,7 @@ export class AssetStore {
     }
 
     const addContext = new AddContext();
+    const updatedBuckets = new Set<AssetBucket>();
     const bucketCount = this.buckets.length;
     for (const asset of assets) {
       const utc = DateTime.fromISO(asset.localDateTime).toUTC().startOf('month');
@@ -1239,8 +1245,9 @@ export class AssetStore {
         bucket = new AssetBucket(this, utc, 1, this.#options.order);
         this.buckets.push(bucket);
       }
-      const addContext = new AddContext();
+
       bucket.addTimelineAsset(asset, addContext);
+      updatedBuckets.add(bucket);
     }
 
     if (this.buckets.length !== bucketCount) {
@@ -1258,6 +1265,7 @@ export class AssetStore {
     }
 
     for (const bucket of addContext.updatedBuckets) {
+      bucket.sortDateGroups();
       this.#updateGeometry(bucket, true);
     }
     this.updateIntersections();
