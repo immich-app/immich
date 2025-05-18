@@ -12,13 +12,7 @@
   const { onClose, newPassword }: Props = $props();
 </script>
 
-<Modal
-  title={$t('password_reset_success')}
-  icon={mdiCheck}
-  onClose={() => onClose()}
-  size="small"
-  class="bg-light text-dark"
->
+<Modal title={$t('password_reset_success')} icon={mdiCheck} onClose={() => onClose()} size="small">
   <ModalBody>
     <div class="flex flex-col gap-4">
       <Text>{$t('admin.user_password_has_been_reset')}</Text>
