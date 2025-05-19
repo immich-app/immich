@@ -14,6 +14,8 @@ class GCastRepository {
   void Function(CastSessionState)? onCastStatus;
   void Function(Map<String, dynamic>)? onCastMessage;
 
+  Map<String, dynamic>? _receiverStatus;
+
   GCastRepository();
 
   Future<void> connect(CastDevice device) async {
@@ -26,6 +28,9 @@ class GCastRepository {
 
     _castSession?.messageStream.listen((message) {
       onCastMessage?.call(message);
+      if (message['type'] == 'RECEIVER_STATUS') {
+        _receiverStatus = message;
+      }
     });
 
     // open the default receiver
@@ -38,6 +43,14 @@ class GCastRepository {
   }
 
   Future<void> disconnect() async {
+    final sessionID =
+        _receiverStatus?['status']['applications'][0]['sessionId'];
+
+    sendMessage(CastSession.kNamespaceReceiver, {
+      'type': "STOP",
+      "sessionId": sessionID,
+    });
+
     await _castSession?.close();
   }
 
