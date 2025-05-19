@@ -296,7 +296,11 @@ with
   "duplicates" as (
     select
       "assets"."duplicateId",
-      jsonb_agg("asset") as "assets"
+      json_agg(
+        "asset"
+        order by
+          "assets"."localDateTime" asc
+      ) as "assets"
     from
       "assets"
       left join lateral (
@@ -323,7 +327,7 @@ with
     from
       "duplicates"
     where
-      jsonb_array_length("assets") = $3
+      json_array_length("assets") = $3
   ),
   "removed_unique" as (
     update "assets"
