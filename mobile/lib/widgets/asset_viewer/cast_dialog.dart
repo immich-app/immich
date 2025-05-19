@@ -10,6 +10,8 @@ class CastDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final castManager = ref.watch(castProvider);
+
     return AlertDialog(
       title: const Text(
         "cast",
@@ -21,8 +23,6 @@ class CastDialog extends ConsumerWidget {
         child: FutureBuilder<List<(String, CastDestinationType, dynamic)>>(
           future: ref.read(castProvider.notifier).getDevices(),
           builder: (context, snapshot) {
-            final cast = ref.read(castProvider.notifier);
-
             if (snapshot.hasError) {
               return Text(
                 'Error: ${snapshot.error.toString()}',
@@ -50,14 +50,25 @@ class CastDialog extends ConsumerWidget {
                 final deviceObj = found.$3;
 
                 return ListTile(
-                  title: Text(deviceName),
+                  title: Text(
+                    deviceName,
+                    style: TextStyle(
+                      color: castManager.receiverName == deviceName
+                          ? context.colorScheme.primary
+                          : null,
+                    ),
+                  ),
                   leading: Icon(
                     type == CastDestinationType.googleCast
                         ? Icons.cast
                         : Icons.cast_connected,
                   ),
+                  trailing: castManager.isCasting &&
+                          castManager.receiverName == deviceName
+                      ? Icon(Icons.check, color: context.colorScheme.primary)
+                      : null,
                   onTap: () {
-                    cast.connect(type, deviceObj);
+                    ref.read(castProvider.notifier).connect(type, deviceObj);
                   },
                 );
               },
@@ -66,12 +77,23 @@ class CastDialog extends ConsumerWidget {
         ),
       ),
       actions: [
+        if (castManager.isCasting)
+          TextButton(
+            onPressed: () => ref.read(castProvider.notifier).disconnect(),
+            child: Text(
+              "stop_casting",
+              style: TextStyle(
+                color: context.colorScheme.secondary,
+                fontWeight: FontWeight.bold,
+              ),
+            ).tr(),
+          ),
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
             "close",
             style: TextStyle(
-              color: context.colorScheme.tertiary,
+              color: context.colorScheme.primary,
               fontWeight: FontWeight.bold,
             ),
           ).tr(),
