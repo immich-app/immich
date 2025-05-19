@@ -61,6 +61,13 @@ class TimelineService {
     yield* _timelineRepository.watchFavoriteTimeline(user.id);
   }
 
+  Stream<RenderList> watchTagTimeline(Album album) async* {
+    yield* _timelineRepository.watchAlbumTimeline(
+      album,
+      _getGroupByOption(),
+    );
+  }
+
   Stream<RenderList> watchAlbumTimeline(Album album) async* {
     yield* _timelineRepository.watchAlbumTimeline(
       album,

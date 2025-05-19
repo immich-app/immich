@@ -9,6 +9,7 @@ import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
+import 'package:immich_mobile/models/tags/recursive_tag.model.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/pages/album/album_additional_shared_user_selection.page.dart';
 import 'package:immich_mobile/pages/album/album_asset_selection.page.dart';
@@ -45,6 +46,7 @@ import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
 import 'package:immich_mobile/pages/library/places/places_collection.page.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link.page.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link_edit.page.dart';
+import 'package:immich_mobile/pages/library/tags/tags.page.dart';
 import 'package:immich_mobile/pages/library/trash.page.dart';
 import 'package:immich_mobile/pages/login/change_password.page.dart';
 import 'package:immich_mobile/pages/login/login.page.dart';
@@ -70,6 +72,7 @@ import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:openapi/api.dart';
 
 part 'router.gr.dart';
 
@@ -211,6 +214,11 @@ class AppRouter extends RootStackRouter {
     ),
     CustomRoute(
       page: FolderRoute.page,
+      guards: [_authGuard],
+      transitionsBuilder: TransitionsBuilders.fadeIn,
+    ),
+    CustomRoute(
+      page: TagsRoute.page,
       guards: [_authGuard],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
