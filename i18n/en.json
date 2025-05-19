@@ -564,6 +564,9 @@
   "backup_setting_subtitle": "Manage background and foreground upload settings",
   "backward": "Backward",
   "biometric_auth_enabled": "Biometric authentication enabled",
+  "biometric_locked_out": "You are locked out of biometric authentication",
+  "biometric_no_options": "No biometric options available",
+  "biometric_not_available": "Biometric authentication is not available on this device",
   "birthdate_saved": "Date of birth saved successfully",
   "birthdate_set_description": "Date of birth is used to calculate the age of this person at the time of a photo.",
   "blurred_background": "Blurred background",
@@ -1232,8 +1235,6 @@
   "memories_setting_description": "Manage what you see in your memories",
   "memories_start_over": "Start Over",
   "memories_swipe_to_close": "Swipe up to close",
-  "memories_year_ago": "A year ago",
-  "memories_years_ago": "{years, plural, other {# years}} ago",
   "memory": "Memory",
   "memory_lane_title": "Memory Lane {title}",
   "menu": "Menu",
@@ -1405,6 +1406,7 @@
   "play_memories": "Play memories",
   "play_motion_photo": "Play Motion Photo",
   "play_or_pause_video": "Play or pause video",
+  "please_auth_to_access": "Please authenticate to access",
   "port": "Port",
   "preferences_settings_subtitle": "Manage the app's preferences",
   "preferences_settings_title": "Preferences",
@@ -1954,6 +1956,5 @@
   "yes": "Yes",
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
-  "zoom_image": "Zoom Image",
-  "please_auth_to_access": "Please authenticate to access"
+  "zoom_image": "Zoom Image"
 }

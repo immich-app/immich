@@ -45,7 +45,6 @@ class TimelineRepository extends DatabaseRepository
         .where()
         .ownerIdEqualToAnyChecksum(fastHash(userId))
         .filter()
-        .isArchivedEqualTo(true)
         .isTrashedEqualTo(false)
         .visibilityEqualTo(AssetVisibilityEnum.archive)
         .sortByFileCreatedAtDesc();
@@ -97,7 +96,6 @@ class TimelineRepository extends DatabaseRepository
   Stream<RenderList> watchAllVideosTimeline() {
     final query = db.assets
         .filter()
-        .isArchivedEqualTo(false)
         .isTrashedEqualTo(false)
         .visibilityEqualTo(AssetVisibilityEnum.timeline)
         .typeEqualTo(AssetType.video)
@@ -115,7 +113,6 @@ class TimelineRepository extends DatabaseRepository
         .where()
         .ownerIdEqualToAnyChecksum(fastHash(userId))
         .filter()
-        .isArchivedEqualTo(false)
         .isTrashedEqualTo(false)
         .stackPrimaryAssetIdIsNull()
         .visibilityEqualTo(AssetVisibilityEnum.timeline)
@@ -134,7 +131,6 @@ class TimelineRepository extends DatabaseRepository
         .where()
         .anyOf(isarUserIds, (qb, id) => qb.ownerIdEqualToAnyChecksum(id))
         .filter()
-        .isArchivedEqualTo(false)
         .isTrashedEqualTo(false)
         .visibilityEqualTo(AssetVisibilityEnum.timeline)
         .stackPrimaryAssetIdIsNull()

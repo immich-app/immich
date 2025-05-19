@@ -109,7 +109,7 @@ class PinAuthPage extends HookConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      if (localAuthState.canUseBiometrics) ...[
+                      if (localAuthState.canAuthenticate) ...[
                         Padding(
                           padding: const EdgeInsets.only(right: 16.0),
                           child: TextButton.icon(

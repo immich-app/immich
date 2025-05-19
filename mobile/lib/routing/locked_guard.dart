@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/services.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 import 'package:immich_mobile/services/api.service.dart';
@@ -43,7 +44,7 @@ class LockedGuard extends AutoRouteGuard {
 
     /// Check if the user has the pincode saved in secure storage, meaning
     /// the user has enabled the biometric authentication
-    final securePinCode = await _secureStorageService.getPinCode();
+    final securePinCode = await _secureStorageService.read(kSecuredPinCode);
     if (securePinCode == null) {
       router.push(PinAuthRoute());
       return;
@@ -78,7 +79,7 @@ class LockedGuard extends AutoRouteGuard {
       resolver.next(false);
     } on ApiException {
       // PIN code has changed, need to re-enter to access
-      await _secureStorageService.deletePinCode();
+      await _secureStorageService.delete(kSecuredPinCode);
       router.push(PinAuthRoute());
     } catch (error) {
       _log.severe("Failed to access locked page", error);

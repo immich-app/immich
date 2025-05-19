@@ -1,5 +1,4 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/interfaces/secure_storage.interface.dart';
 import 'package:immich_mobile/repositories/secure_storage.repository.dart';
 
@@ -16,20 +15,15 @@ class SecureStorageService {
 
   SecureStorageService(this._secureStorageRepository);
 
-  get hasPinCode async {
-    final pinCode = await _secureStorageRepository.read(kSecuredPinCode);
-    return pinCode != null && pinCode.isNotEmpty;
+  Future<void> write(String key, String value) async {
+    await _secureStorageRepository.write(key, value);
   }
 
-  Future<void> setPinCode(String pinCode) async {
-    await _secureStorageRepository.write(kSecuredPinCode, pinCode);
+  Future<void> delete(String key) async {
+    await _secureStorageRepository.delete(key);
   }
 
-  Future<void> deletePinCode() async {
-    await _secureStorageRepository.delete(kSecuredPinCode);
-  }
-
-  Future<String?> getPinCode() async {
-    return _secureStorageRepository.read(kSecuredPinCode);
+  Future<String?> read(String key) async {
+    return _secureStorageRepository.read(key);
   }
 }
