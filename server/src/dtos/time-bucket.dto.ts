@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { IsEnum, IsInt, IsString, Min } from 'class-validator';
 import { AssetOrder, AssetVisibility } from 'src/enum';
-import { TimeBucketAssets, TimelineStack } from 'src/services/timeline.service.types';
 import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
@@ -54,13 +53,13 @@ export class TimeBucketAssetDto extends TimeBucketDto {
   pageSize?: number;
 }
 
-export class TimelineStackResponseDto implements TimelineStack {
+export class TimelineStackResponseDto {
   id!: string;
   primaryAssetId!: string;
   assetCount!: number;
 }
 
-export class TimeBucketAssetResponseDto implements TimeBucketAssets {
+export class TimeBucketAssetResponseDto {
   id!: string[];
 
   ownerId!: string[];
