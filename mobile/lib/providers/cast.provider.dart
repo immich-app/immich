@@ -1,6 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/cast_manager_state.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:openapi/api.dart';
 
 final castProvider = StateNotifierProvider<CastNotifier, CastManagerState>(
   (ref) => CastNotifier(ref.watch(gCastServiceProvider)),
@@ -46,8 +48,8 @@ class CastNotifier extends StateNotifier<CastManagerState> {
     state = state.copyWith(castState: castState);
   }
 
-  void loadMedia(String url, String sessionKey, bool reload) {
-    _gCastService.loadMedia(url, sessionKey, reload);
+  void loadMedia(Asset asset, bool reload) {
+    _gCastService.loadMedia(asset, reload);
   }
 
   Future<void> connect(CastDestinationType type, dynamic device) async {
@@ -59,16 +61,7 @@ class CastNotifier extends StateNotifier<CastManagerState> {
   }
 
   Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
-    // return _gCastService.getDevices();
-    // delay for 2 seconds to simulate loading
-    await Future.delayed(const Duration(seconds: 2));
-
-    return Future<List<(String, CastDestinationType, dynamic)>>.value([
-      ('Google Cast', CastDestinationType.googleCast, null),
-      ('Apple TV', CastDestinationType.googleCast, null),
-      ('Roku', CastDestinationType.googleCast, null),
-      ('Fire TV', CastDestinationType.googleCast, null),
-    ]);
+    return _gCastService.getDevices();
   }
 
   void play() {

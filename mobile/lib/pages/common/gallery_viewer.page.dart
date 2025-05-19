@@ -20,6 +20,7 @@ import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
@@ -356,6 +357,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                 Timer(const Duration(milliseconds: 400), () {
                   precacheNextImage(next);
                 });
+
+                // send image to casting if the server has it
+                if (newAsset.isRemote) {
+                  ref.read(castProvider.notifier).loadMedia(newAsset, false);
+                }
               },
               builder: buildAsset,
             ),

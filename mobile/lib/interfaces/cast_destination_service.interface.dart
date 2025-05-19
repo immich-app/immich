@@ -1,3 +1,4 @@
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/cast_manager_state.dart';
 
 abstract interface class ICastDestinationService {
@@ -14,7 +15,7 @@ abstract interface class ICastDestinationService {
   void Function(String)? onReceiverName;
   void Function(CastState)? onCastState;
 
-  void loadMedia(String url, String sessionKey, bool reload);
+  void loadMedia(Asset asset, bool reload);
 
   void play();
   void pause();

@@ -6,6 +6,7 @@ import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/asset_viewer/motion_photo_button.dart';
@@ -45,6 +46,7 @@ class TopControlAppBar extends HookConsumerWidget {
     const double iconSize = 22.0;
     final a = ref.watch(assetWatcher(asset)).value ?? asset;
     final album = ref.watch(currentAlbumProvider);
+    final castManager = ref.watch(castProvider);
     final comments = album != null &&
             album.remoteId != null &&
             asset.remoteId != null
@@ -174,10 +176,14 @@ class TopControlAppBar extends HookConsumerWidget {
       return IconButton(
         onPressed: () {
           showDialog(
-              context: context, builder: (context) => const CastDialog());
+            context: context,
+            builder: (context) => const CastDialog(),
+          );
         },
         icon: Icon(
-          Icons.cast,
+          castManager.isCasting
+              ? Icons.cast_connected_rounded
+              : Icons.cast_rounded,
           size: 20.0,
           color: Colors.grey[200],
         ),

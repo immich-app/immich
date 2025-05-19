@@ -1756,6 +1756,7 @@
   "start_date": "Start date",
   "state": "State",
   "status": "Status",
+  "stop_casting": "Stop casting",
   "stop_motion_photo": "Stop Motion Photo",
   "stop_photo_sharing": "Stop sharing your photos?",
   "stop_photo_sharing_description": "{partner} will no longer be able to access your photos.",
