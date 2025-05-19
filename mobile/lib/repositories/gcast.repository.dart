@@ -29,7 +29,7 @@ class GCastRepository {
     });
 
     // open the default receiver
-    sendMessage({
+    sendMessage(CastSession.kNamespaceReceiver, {
       'type': 'LAUNCH',
       'appId': 'CC1AD845',
     });
@@ -41,12 +41,12 @@ class GCastRepository {
     await _castSession?.close();
   }
 
-  void sendMessage(Map<String, dynamic> message) {
+  void sendMessage(String namespace, Map<String, dynamic> message) {
     if (_castSession == null) {
       throw Exception("Cast session is not established");
     }
 
-    _castSession!.sendMessage(CastSession.kNamespaceReceiver, message);
+    _castSession!.sendMessage(namespace, message);
   }
 
   Future<List<CastDevice>> listDestinations() async {
