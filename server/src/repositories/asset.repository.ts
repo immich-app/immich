@@ -632,57 +632,100 @@ export class AssetRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getDuplicates(userId: string) {
-    return (
-      this.db
-        .with('duplicates', (qb) =>
+    return this.db
+      .with('duplicates', (qb) =>
+        qb
+          .selectFrom('assets')
+          .innerJoin('exif', 'assets.id', 'exif.assetId')
+          .leftJoinLateral(
+            (qb) =>
+              qb
+                .selectFrom(sql`(select 1)`.as('dummy'))
+                .selectAll('assets')
+                .select((eb) => eb.table('exif').as('exifInfo'))
+                .as('asset'),
+            (join) => join.onTrue(),
+          )
+          .select('assets.duplicateId')
+          .select((eb) => eb.fn.jsonAgg('asset').$castTo<MapAsset[]>().as('assets'))
+          .where('assets.ownerId', '=', asUuid(userId))
+          .where('assets.duplicateId', 'is not', null)
+          .$narrowType<{ duplicateId: NotNull }>()
+          .where('assets.deletedAt', 'is', null)
+          .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
+          .where('assets.stackId', 'is', null)
+          .groupBy('assets.duplicateId'),
+      )
+      .with('unique', (qb) =>
+        qb
+          .selectFrom('duplicates')
+          .select('duplicateId')
+          .where((eb) => eb(eb.fn('json_array_length', ['assets']), '=', 1)),
+      )
+      .with('removed_unique', (qb) =>
+        qb
+          .updateTable('assets')
+          .set({ duplicateId: null })
+          .from('unique')
+          .whereRef('assets.duplicateId', '=', 'unique.duplicateId'),
+      )
+      .selectFrom('duplicates')
+      .selectAll()
+      .where(({ not, exists }) =>
+        not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
+      )
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  streamDuplicates(userId: string) {
+    return this.db
+      .selectFrom('assets')
+      .innerJoin('exif', 'assets.id', 'exif.assetId')
+      .innerJoinLateral(
+        (qb) =>
           qb
-            .selectFrom('assets')
-            .leftJoinLateral(
-              (qb) =>
-                qb
-                  .selectFrom('exif')
-                  .selectAll('assets')
-                  .select((eb) => eb.table('exif').as('exifInfo'))
-                  .whereRef('exif.assetId', '=', 'assets.id')
-                  .as('asset'),
-              (join) => join.onTrue(),
-            )
-            .select('assets.duplicateId')
-            .select((eb) =>
-              eb
-                .fn('jsonb_agg', [eb.table('asset')])
-                .$castTo<MapAsset[]>()
-                .as('assets'),
-            )
-            .where('assets.ownerId', '=', asUuid(userId))
-            .where('assets.duplicateId', 'is not', null)
-            .$narrowType<{ duplicateId: NotNull }>()
-            .where('assets.deletedAt', 'is', null)
-            .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
-            .where('assets.stackId', 'is', null)
-            .groupBy('assets.duplicateId'),
-        )
-        .with('unique', (qb) =>
-          qb
-            .selectFrom('duplicates')
-            .select('duplicateId')
-            .where((eb) => eb(eb.fn('jsonb_array_length', ['assets']), '=', 1)),
-        )
-        .with('removed_unique', (qb) =>
-          qb
-            .updateTable('assets')
-            .set({ duplicateId: null })
-            .from('unique')
-            .whereRef('assets.duplicateId', '=', 'unique.duplicateId'),
-        )
-        .selectFrom('duplicates')
-        .selectAll()
-        // TODO: compare with filtering by jsonb_array_length > 1
-        .where(({ not, exists }) =>
-          not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
-        )
-        .execute()
-    );
+            .selectFrom(sql`(select 1)`.as('dummy'))
+            .selectAll('assets')
+            .select((eb) => eb.table('exif').as('exifInfo'))
+            .as('asset'),
+        (join) => join.onTrue(),
+      )
+      .select('assets.duplicateId')
+      .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
+      .where('assets.ownerId', '=', asUuid(userId))
+      .where('assets.duplicateId', 'is not', null)
+      .$narrowType<{ duplicateId: NotNull }>()
+      .where('assets.deletedAt', 'is', null)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
+      .where('assets.stackId', 'is', null)
+      .groupBy('assets.duplicateId')
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  keepAllDuplicates(userId: string) {
+    return this.db
+      .updateTable('assets')
+      .set({ duplicateId: null })
+      .where('duplicateId', 'is not', null)
+      .where('ownerId', '=', userId)
+      .execute();
+  }
+
+  deduplicateAll(userId: string, keptAssetIds: string[], deduplicatedStatus: AssetStatus) {
+    return this.db
+      .with('kept', (qb) =>
+        // anyUuid ensures the array is passed as a single parameter, so no need to chunk
+        qb.updateTable('assets').set({ duplicateId: null }).where('id', '=', anyUuid(keptAssetIds)).returning('id'),
+      )
+      .updateTable('assets')
+      .from('kept')
+      .set({ duplicateId: null, status: deduplicatedStatus })
+      .whereRef('id', '!=', 'kept.id')
+      .where('duplicateId', 'is not', null)
+      .where('ownerId', '=', userId)
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })

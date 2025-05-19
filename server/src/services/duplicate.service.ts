@@ -3,8 +3,8 @@ import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
-import { AssetFileType, AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
+import { DeduplicateAllDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto';
+import { AssetFileType, AssetStatus, AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
@@ -21,6 +21,20 @@ export class DuplicateService extends BaseService {
     }));
   }
 
+  keepAll(auth: AuthDto) {
+    return this.assetRepository.keepAllDuplicates(auth.user.id);
+  }
+
+  async deduplicateAll(auth: AuthDto, dto: DeduplicateAllDto) {
+    if (dto.assetIdsToKeep.length === 0) {
+      return;
+    }
+
+    const { trash } = await this.getConfig({ withCache: false });
+    const deduplicatedStatus = trash.enabled ? AssetStatus.TRASHED : AssetStatus.DELETED;
+    return this.assetRepository.deduplicateAll(auth.user.id, dto.assetIdsToKeep, deduplicatedStatus);
+  }
+
   @OnJob({ name: JobName.QUEUE_DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
   async handleQueueSearchDuplicates({ force }: JobOf<JobName.QUEUE_DUPLICATE_DETECTION>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
@@ -29,20 +43,16 @@ export class DuplicateService extends BaseService {
     }
 
     let jobs: JobItem[] = [];
-    const queueAll = async () => {
-      await this.jobRepository.queueAll(jobs);
-      jobs = [];
-    };
-
     const assets = this.assetJobRepository.streamForSearchDuplicates(force);
     for await (const asset of assets) {
       jobs.push({ name: JobName.DUPLICATE_DETECTION, data: { id: asset.id } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
       }
     }
 
-    await queueAll();
+    await this.jobRepository.queueAll(jobs);
 
     return JobStatus.SUCCESS;
   }

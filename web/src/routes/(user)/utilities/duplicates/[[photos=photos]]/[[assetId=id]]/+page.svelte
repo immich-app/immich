@@ -15,7 +15,7 @@
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { deleteAssets, updateAssets } from '@immich/sdk';
+  import { deduplicateAll, deleteAssets, keepAll, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, Text } from '@immich/ui';
   import { mdiCheckOutline, mdiInformationOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -101,33 +101,30 @@
   };
 
   const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
-    const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
-    );
+    let assetCount = 0;
+    const assetIdsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)!.id);
+    for (const group of duplicates) {
+      assetCount += group.assets.length;
+      assetIdsToKeep.push(suggestDuplicate(group.assets)!.id);
+    }
+    const dedupedAssetCount = assetCount - assetIdsToKeep.length;
 
     let prompt, confirmText;
     if ($featureFlags.trash) {
-      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: idsToDelete.length } });
+      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: dedupedAssetCount } });
       confirmText = $t('confirm');
     } else {
-      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count: idsToDelete.length } });
+      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count: dedupedAssetCount } });
       confirmText = $t('permanently_delete');
     }
 
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
-        await updateAssets({
-          assetBulkUpdateDto: {
-            ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],
-            duplicateId: null,
-          },
-        });
+        await deduplicateAll({deduplicateAllDto: { assetIdsToKeep } });
 
         duplicates = [];
 
-        deletedNotification(idsToDelete.length);
+        deletedNotification(dedupedAssetCount);
       },
       prompt,
       confirmText,
@@ -135,10 +132,10 @@
   };
 
   const handleKeepAll = async () => {
-    const ids = duplicates.flatMap((group) => group.assets.map((asset) => asset.id));
+    const assetCount = duplicates.reduce((acc, cur) => acc + cur.assets.length, 0);
     return withConfirmation(
       async () => {
-        await updateAssets({ assetBulkUpdateDto: { ids, duplicateId: null } });
+        await keepAll();
 
         duplicates = [];
 
@@ -147,7 +144,7 @@
           type: NotificationType.Info,
         });
       },
-      $t('bulk_keep_duplicates_confirmation', { values: { count: ids.length } }),
+      $t('bulk_keep_duplicates_confirmation', { values: { count: assetCount } }),
       $t('confirm'),
     );
   };

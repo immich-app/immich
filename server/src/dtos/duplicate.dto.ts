@@ -12,3 +12,9 @@ export class ResolveDuplicatesDto {
   @ValidateUUID({ each: true })
   assetIds!: string[];
 }
+
+export class DeduplicateAllDto {
+  @IsNotEmpty()
+  @ValidateUUID({ each: true })
+  assetIdsToKeep!: string[];
+}
