@@ -1,6 +1,5 @@
-import { Controller, Get, Header, Query, Res } from '@nestjs/common';
+import { Controller, Get, Header, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TimeBucketAssetDto, TimeBucketAssetResponseDto, TimeBucketDto } from 'src/dtos/time-bucket.dto';
 import { Permission } from 'src/enum';
@@ -22,7 +21,7 @@ export class TimelineController {
   @Authenticated({ permission: Permission.ASSET_READ, sharedLink: true })
   @ApiOkResponse({ type: TimeBucketAssetResponseDto })
   @Header('Content-Type', 'application/json')
-  getTimeBucket(@Auth() auth: AuthDto, @Query() dto: TimeBucketAssetDto, @Res({ passthrough: true }) res: Response) {
+  getTimeBucket(@Auth() auth: AuthDto, @Query() dto: TimeBucketAssetDto) {
     return this.service.getTimeBucket(auth, dto);
   }
 }
