@@ -28,16 +28,7 @@ export class AssetJobRepository {
       .selectFrom('assets')
       .where('assets.id', '=', asUuid(id))
       .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
-      .select((eb) => [
-        'id',
-        'type',
-        'ownerId',
-        'duplicateId',
-        'stackId',
-        'visibility',
-        'smart_search.embedding',
-        withFiles(eb, AssetFileType.PREVIEW),
-      ])
+      .select(['id', 'type', 'ownerId', 'duplicateId', 'stackId', 'visibility', 'smart_search.embedding'])
       .limit(1)
       .executeTakeFirst();
   }
@@ -146,10 +137,17 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [], stream: true })
   streamForSearchDuplicates(force?: boolean) {
-    return this.assetsWithPreviews()
-      .where((eb) => eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))))
-      .$if(!force, (qb) => qb.where('job_status.duplicatesDetectedAt', 'is', null))
+    return this.db
+      .selectFrom('assets')
       .select(['assets.id'])
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
+      .where('assets.deletedAt', 'is', null)
+      .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
+      .$if(!force, (qb) =>
+        qb
+          .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
+          .where('job_status.duplicatesDetectedAt', 'is', null),
+      )
       .stream();
   }
 
