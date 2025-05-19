@@ -164,6 +164,7 @@ export type ConcurrentQueueName = Exclude<
   | QueueName.FACIAL_RECOGNITION
   | QueueName.DUPLICATE_DETECTION
   | QueueName.BACKUP_DATABASE
+  | QueueName.DATABASE_INTEGRITY_CHECK
 >;
 
 export type Jobs = { [K in JobItem['name']]: (JobItem & { name: K })['data'] };
@@ -363,9 +364,8 @@ export type JobItem =
   // Version check
   | { name: JobName.VERSION_CHECK; data: IBaseJob }
 
-  // Memories
-  | { name: JobName.MEMORIES_CLEANUP; data?: IBaseJob }
-  | { name: JobName.MEMORIES_CREATE; data?: IBaseJob };
+  // Integrity
+  | { name: JobName.DATABASE_INTEGRITY_CHECK; data?: IBaseJob };
 
 export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
 

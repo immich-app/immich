@@ -8532,6 +8532,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "integrityDatabaseCheck": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "library": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -8569,6 +8572,7 @@
           "duplicateDetection",
           "faceDetection",
           "facialRecognition",
+          "integrityDatabaseCheck",
           "library",
           "metadataExtraction",
           "migration",
@@ -10101,7 +10105,8 @@
           "sidecar",
           "library",
           "notifications",
-          "backupDatabase"
+          "backupDatabase",
+          "integrityDatabaseCheck"
         ],
         "type": "string"
       },
@@ -10336,7 +10341,8 @@
           "user-cleanup",
           "memory-cleanup",
           "memory-create",
-          "backup-database"
+          "backup-database",
+          "integrity-database-check"
         ],
         "type": "string"
       },

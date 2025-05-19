@@ -463,3 +463,12 @@ where
       and "libraryId" = $2::uuid
       and "isExternal" = $3
   )
+
+-- AssetRepository.integrityCheckExif
+select
+  "id"
+from
+  "assets"
+  left join "exif" on "assets"."id" = "exif"."assetId"
+where
+  "exif"."assetId" is null

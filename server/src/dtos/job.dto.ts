@@ -99,4 +99,7 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
 
   @ApiProperty({ type: JobStatusDto })
   [QueueName.BACKUP_DATABASE]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.DATABASE_INTEGRITY_CHECK]!: JobStatusDto;
 }

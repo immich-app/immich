@@ -622,6 +622,7 @@ export type AllJobStatusResponseDto = {
     duplicateDetection: JobStatusDto;
     faceDetection: JobStatusDto;
     facialRecognition: JobStatusDto;
+    integrityDatabaseCheck: JobStatusDto;
     library: JobStatusDto;
     metadataExtraction: JobStatusDto;
     migration: JobStatusDto;
@@ -3789,7 +3790,8 @@ export enum ManualJobName {
     UserCleanup = "user-cleanup",
     MemoryCleanup = "memory-cleanup",
     MemoryCreate = "memory-create",
-    BackupDatabase = "backup-database"
+    BackupDatabase = "backup-database",
+    IntegrityDatabaseCheck = "integrity-database-check"
 }
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",
@@ -3806,7 +3808,8 @@ export enum JobName {
     Sidecar = "sidecar",
     Library = "library",
     Notifications = "notifications",
-    BackupDatabase = "backupDatabase"
+    BackupDatabase = "backupDatabase",
+    IntegrityDatabaseCheck = "integrityDatabaseCheck"
 }
 export enum JobCommand {
     Start = "start",

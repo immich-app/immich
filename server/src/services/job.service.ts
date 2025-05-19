@@ -46,6 +46,10 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.BACKUP_DATABASE };
     }
 
+    case ManualJobName.INTEGRITY_DATABASE_CHECK: {
+      return { name: JobName.DATABASE_INTEGRITY_CHECK };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }
@@ -228,6 +232,7 @@ export class JobService extends BaseService {
       QueueName.STORAGE_TEMPLATE_MIGRATION,
       QueueName.DUPLICATE_DETECTION,
       QueueName.BACKUP_DATABASE,
+      QueueName.DATABASE_INTEGRITY_CHECK,
     ].includes(name);
   }
 

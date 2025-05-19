@@ -875,4 +875,16 @@ export class AssetRepository {
 
     return count;
   }
+
+  @GenerateSql()
+  async integrityCheckExif(): Promise<string[]> {
+    const result = await this.db
+      .selectFrom('assets')
+      .select('id')
+      .leftJoin('exif', 'assets.id', 'exif.assetId')
+      .where('exif.assetId', 'is', null)
+      .execute();
+
+    return result.map((row) => row.id);
+  }
 }

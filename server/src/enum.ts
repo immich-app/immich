@@ -251,6 +251,7 @@ export enum ManualJobName {
   MEMORY_CLEANUP = 'memory-cleanup',
   MEMORY_CREATE = 'memory-create',
   BACKUP_DATABASE = 'backup-database',
+  INTEGRITY_DATABASE_CHECK = 'integrity-database-check',
 }
 
 export enum AssetPathType {
@@ -441,6 +442,7 @@ export enum QueueName {
   LIBRARY = 'library',
   NOTIFICATION = 'notifications',
   BACKUP_DATABASE = 'backupDatabase',
+  DATABASE_INTEGRITY_CHECK = 'integrityDatabaseCheck',
 }
 
 export enum JobName {
@@ -532,6 +534,9 @@ export enum JobName {
 
   // Version check
   VERSION_CHECK = 'version-check',
+
+  // Integrity
+  DATABASE_INTEGRITY_CHECK = 'database-integrity-check',
 }
 
 export enum JobCommand {

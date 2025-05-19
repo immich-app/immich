@@ -18,6 +18,7 @@ class AllJobStatusResponseDto {
     required this.duplicateDetection,
     required this.faceDetection,
     required this.facialRecognition,
+    required this.integrityDatabaseCheck,
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
@@ -39,6 +40,8 @@ class AllJobStatusResponseDto {
   JobStatusDto faceDetection;
 
   JobStatusDto facialRecognition;
+
+  JobStatusDto integrityDatabaseCheck;
 
   JobStatusDto library_;
 
@@ -67,6 +70,7 @@ class AllJobStatusResponseDto {
     other.duplicateDetection == duplicateDetection &&
     other.faceDetection == faceDetection &&
     other.facialRecognition == facialRecognition &&
+    other.integrityDatabaseCheck == integrityDatabaseCheck &&
     other.library_ == library_ &&
     other.metadataExtraction == metadataExtraction &&
     other.migration == migration &&
@@ -86,6 +90,7 @@ class AllJobStatusResponseDto {
     (duplicateDetection.hashCode) +
     (faceDetection.hashCode) +
     (facialRecognition.hashCode) +
+    (integrityDatabaseCheck.hashCode) +
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
@@ -98,7 +103,7 @@ class AllJobStatusResponseDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, faceDetection=$faceDetection, facialRecognition=$facialRecognition, integrityDatabaseCheck=$integrityDatabaseCheck, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -107,6 +112,7 @@ class AllJobStatusResponseDto {
       json[r'duplicateDetection'] = this.duplicateDetection;
       json[r'faceDetection'] = this.faceDetection;
       json[r'facialRecognition'] = this.facialRecognition;
+      json[r'integrityDatabaseCheck'] = this.integrityDatabaseCheck;
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
@@ -134,6 +140,7 @@ class AllJobStatusResponseDto {
         duplicateDetection: JobStatusDto.fromJson(json[r'duplicateDetection'])!,
         faceDetection: JobStatusDto.fromJson(json[r'faceDetection'])!,
         facialRecognition: JobStatusDto.fromJson(json[r'facialRecognition'])!,
+        integrityDatabaseCheck: JobStatusDto.fromJson(json[r'integrityDatabaseCheck'])!,
         library_: JobStatusDto.fromJson(json[r'library'])!,
         metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobStatusDto.fromJson(json[r'migration'])!,
@@ -196,6 +203,7 @@ class AllJobStatusResponseDto {
     'duplicateDetection',
     'faceDetection',
     'facialRecognition',
+    'integrityDatabaseCheck',
     'library',
     'metadataExtraction',
     'migration',

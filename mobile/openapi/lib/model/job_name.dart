@@ -38,6 +38,7 @@ class JobName {
   static const library_ = JobName._(r'library');
   static const notifications = JobName._(r'notifications');
   static const backupDatabase = JobName._(r'backupDatabase');
+  static const integrityDatabaseCheck = JobName._(r'integrityDatabaseCheck');
 
   /// List of all possible values in this [enum][JobName].
   static const values = <JobName>[
@@ -56,6 +57,7 @@ class JobName {
     library_,
     notifications,
     backupDatabase,
+    integrityDatabaseCheck,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -109,6 +111,7 @@ class JobNameTypeTransformer {
         case r'library': return JobName.library_;
         case r'notifications': return JobName.notifications;
         case r'backupDatabase': return JobName.backupDatabase;
+        case r'integrityDatabaseCheck': return JobName.integrityDatabaseCheck;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
