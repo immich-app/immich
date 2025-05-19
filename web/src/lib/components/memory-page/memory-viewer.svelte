@@ -314,8 +314,9 @@
 />
 
 {#if assetInteraction.selectionActive}
-  <div class="sticky top-0">
+  <div class="sticky top-0 z-1">
     <AssetSelectControlBar
+      forceDark
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
     >
@@ -605,6 +606,7 @@
     </section>
   {/if}
 </section>
+
 {#if current}
   <!-- GALLERY VIEWER -->
   <section class="bg-immich-dark-gray p-4">

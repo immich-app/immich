@@ -51,23 +51,6 @@
   };
 </script>
 
-<!-- Multi-selection mode app bar -->
-{#if assetInteraction.selectionActive}
-  <AssetSelectControlBar
-    assets={assetInteraction.selectedAssets}
-    clearSelect={() => assetInteraction.clearMultiselect()}
-  >
-    <SelectAllAssets withText {assetStore} {assetInteraction} />
-    <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-      <DownloadAction menuItem />
-      <ChangeDate menuItem />
-      <ChangeLocation menuItem />
-      <DeleteAssets menuItem force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
-    </ButtonContextMenu>
-  </AssetSelectControlBar>
-{/if}
-
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
   {#snippet buttons()}
     <Button size="small" variant="ghost" color="primary" leadingIcon={mdiLockOutline} onclick={handleLock}>
@@ -87,3 +70,20 @@
     {/snippet}
   </AssetGrid>
 </UserPageLayout>
+
+<!-- Multi-selection mode app bar -->
+{#if assetInteraction.selectionActive}
+  <AssetSelectControlBar
+    assets={assetInteraction.selectedAssets}
+    clearSelect={() => assetInteraction.clearMultiselect()}
+  >
+    <SelectAllAssets withText {assetStore} {assetInteraction} />
+    <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+      <DownloadAction menuItem />
+      <ChangeDate menuItem />
+      <ChangeLocation menuItem />
+      <DeleteAssets menuItem force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+    </ButtonContextMenu>
+  </AssetSelectControlBar>
+{/if}
