@@ -58,6 +58,7 @@
 
     try {
       await castManager.loadMedia(fullUrl.href, force);
+      onVideoStarted();
     } catch (error) {
       handleError(error, 'Unable to cast');
       return;
