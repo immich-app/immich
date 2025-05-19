@@ -172,7 +172,10 @@ class AssetNotifier extends StateNotifier<bool> {
     return _assetService.changeArchiveStatus(assets, status);
   }
 
-  toggleLockedView(List<Asset> selection, AssetVisibilityEnum visibility) {
+  Future<void> setLockedView(
+    List<Asset> selection,
+    AssetVisibilityEnum visibility,
+  ) {
     return _assetService.setVisibility(selection, visibility);
   }
 }

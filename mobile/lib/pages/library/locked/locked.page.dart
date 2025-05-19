@@ -11,32 +11,9 @@ import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 @RoutePage()
 class LockedPage extends HookConsumerWidget {
   const LockedPage({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AppBar buildAppBar() {
-      return AppBar(
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'locked_folder',
-        ).tr(),
-        actions: [
-          IconButton(
-            onPressed: () {
-              ref.read(authProvider.notifier).lockPinCode();
-              context.pop();
-            },
-            icon: const Icon(Icons.lock_outline),
-            tooltip: 'lock'.tr(),
-          ),
-        ],
-      );
-    }
-
     Widget infoBlock() {
       return Padding(
         padding: const EdgeInsets.all(16.0),
@@ -50,7 +27,7 @@ class LockedPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: ref.watch(multiselectProvider) ? null : buildAppBar(),
+      appBar: ref.watch(multiselectProvider) ? null : const LockPageAppBar(),
       body: MultiselectGrid(
         renderListProvider: lockedTimelineProvider,
         topWidget: infoBlock(),
@@ -63,4 +40,36 @@ class LockedPage extends HookConsumerWidget {
       ),
     );
   }
+}
+
+class LockPageAppBar extends ConsumerWidget implements PreferredSizeWidget {
+  const LockPageAppBar({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return AppBar(
+      leading: IconButton(
+        onPressed: () => context.maybePop(),
+        icon: const Icon(Icons.arrow_back_ios_rounded),
+      ),
+      centerTitle: true,
+      automaticallyImplyLeading: false,
+      title: const Text(
+        'locked_folder',
+      ).tr(),
+      actions: [
+        IconButton(
+          onPressed: () {
+            ref.read(authProvider.notifier).lockPinCode();
+            context.pop();
+          },
+          icon: const Icon(Icons.lock_outline),
+          tooltip: 'lock'.tr(),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

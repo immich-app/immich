@@ -20,7 +20,7 @@ class LocalAuthService {
     return _biometricRepository.getStatus();
   }
 
-  Future<bool> authenticate(String? message) async {
+  Future<bool> authenticate([String? message]) async {
     return _biometricRepository.authenticate(message);
   }
 }

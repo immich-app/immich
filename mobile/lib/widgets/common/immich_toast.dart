@@ -40,7 +40,7 @@ class ImmichToast {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: const BorderRadius.all(Radius.circular(16.0)),
           color: context.colorScheme.surfaceContainer,
           border: Border.all(
             color: context.colorScheme.outline.withValues(alpha: .5),

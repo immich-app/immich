@@ -169,7 +169,7 @@ Future<void> handleSetAssetsVisibility(
   if (selection.isNotEmpty) {
     await ref
         .watch(assetProvider.notifier)
-        .toggleLockedView(selection, visibility);
+        .setLockedView(selection, visibility);
 
     final assetOrAssets = selection.length > 1 ? 'assets' : 'asset';
     final toastMessage = visibility == AssetVisibilityEnum.locked

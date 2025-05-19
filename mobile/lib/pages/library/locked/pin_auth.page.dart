@@ -84,64 +84,55 @@ class PinAuthPage extends HookConsumerWidget {
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('locked_folder'.tr()),
-          ),
-          body: ListView(
-            shrinkWrap: true,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 36.0),
-                child: showPinRegistrationForm.value
-                    ? Column(
-                        children: [
-                          Center(
-                            child: PinRegistrationForm(
-                              onDone: () =>
-                                  showPinRegistrationForm.value = false,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('locked_folder'.tr()),
+      ),
+      body: ListView(
+        shrinkWrap: true,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 36.0),
+            child: showPinRegistrationForm.value
+                ? Center(
+                    child: PinRegistrationForm(
+                      onDone: () => showPinRegistrationForm.value = false,
+                    ),
+                  )
+                : Column(
+                    children: [
+                      Center(
+                        child: PinVerificationForm(
+                          autoFocus: true,
+                          onSuccess: (_) =>
+                              context.replaceRoute(const LockedRoute()),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      if (localAuthState.canUseBiometrics) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: TextButton.icon(
+                            icon: const Icon(
+                              Icons.fingerprint,
+                              size: 28,
                             ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          Center(
-                            child: PinVerificationForm(
-                              autoFocus: true,
-                              onSuccess: (_) =>
-                                  context.replaceRoute(const LockedRoute()),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          if (localAuthState.canUseBiometrics) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16.0),
-                              child: TextButton.icon(
-                                icon: const Icon(
-                                  Icons.fingerprint,
-                                  size: 28,
-                                ),
-                                onPressed: enableBiometricAuth,
-                                label: Text(
-                                  'use_biometric'.tr(),
-                                  style: context.textTheme.labelLarge?.copyWith(
-                                    color: context.primaryColor,
-                                    fontSize: 18,
-                                  ),
-                                ),
+                            onPressed: enableBiometricAuth,
+                            label: Text(
+                              'use_biometric'.tr(),
+                              style: context.textTheme.labelLarge?.copyWith(
+                                color: context.primaryColor,
+                                fontSize: 18,
                               ),
                             ),
-                          ],
-                        ],
-                      ),
-              ),
-            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

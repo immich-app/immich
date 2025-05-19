@@ -31,6 +31,7 @@ class LockedGuard extends AutoRouteGuard {
       return;
     }
 
+    /// Check if a pincode has been created but this user. Show the form to create if not exist
     if (!authStatus.pinCode) {
       router.push(PinAuthRoute(createPinCode: true));
     }
@@ -40,6 +41,8 @@ class LockedGuard extends AutoRouteGuard {
       return;
     }
 
+    /// Check if the user has the pincode saved in secure storage, meaning
+    /// the user has enabled the biometric authentication
     final securePinCode = await _secureStorageService.getPinCode();
     if (securePinCode == null) {
       router.push(PinAuthRoute());
@@ -47,7 +50,7 @@ class LockedGuard extends AutoRouteGuard {
     }
 
     try {
-      final bool isAuth = await _localAuth.authenticate(null);
+      final bool isAuth = await _localAuth.authenticate();
 
       if (!isAuth) {
         resolver.next(false);

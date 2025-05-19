@@ -1,11 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
-import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class AppNavigationObserver extends AutoRouterObserver {
   /// Riverpod Instance
@@ -20,19 +17,6 @@ class AppNavigationObserver extends AutoRouterObserver {
     TabPageRoute route,
     TabPageRoute previousRoute,
   ) async {
-    if (route.name == 'HomeRoute') {
-      ref.invalidate(memoryFutureProvider);
-      Future(() => ref.read(assetProvider.notifier).getAllAsset());
-
-      // Update user info
-      try {
-        ref.read(userServiceProvider).refreshMyUser();
-        ref.read(serverInfoProvider.notifier).getServerVersion();
-      } catch (e) {
-        debugPrint("Error refreshing user info $e");
-      }
-    }
-
     Future(
       () => ref.read(inLockedViewProvider.notifier).state = false,
     );
@@ -46,14 +30,14 @@ class AppNavigationObserver extends AutoRouterObserver {
   _handleLockedViewState(Route route, Route? previousRoute) {
     final isInLockedView = ref.read(inLockedViewProvider);
     final isFromLockedViewToDetailView =
-        route.settings.name == "GalleryViewerRoute" &&
-            previousRoute?.settings.name == "LockedRoute";
+        route.settings.name == GalleryViewerRoute.name &&
+            previousRoute?.settings.name == LockedRoute.name;
 
     final isFromDetailViewToInfoPanelView = route.settings.name == null &&
-        previousRoute?.settings.name == "GalleryViewerRoute" &&
+        previousRoute?.settings.name == GalleryViewerRoute.name &&
         isInLockedView;
 
-    if (route.settings.name == "LockedRoute" ||
+    if (route.settings.name == LockedRoute.name ||
         isFromLockedViewToDetailView ||
         isFromDetailViewToInfoPanelView) {
       Future(

@@ -1954,5 +1954,6 @@
   "yes": "Yes",
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
-  "zoom_image": "Zoom Image"
+  "zoom_image": "Zoom Image",
+  "please_auth_to_access": "Please authenticate to access"
 }

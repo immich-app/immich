@@ -5,7 +5,7 @@ class LocalAuthState {
   final bool canUseBiometrics;
   final List<BiometricType> availableBiometrics;
 
-  LocalAuthState({
+  const LocalAuthState({
     required this.canUseBiometrics,
     this.availableBiometrics = const [],
   });

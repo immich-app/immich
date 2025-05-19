@@ -4,7 +4,7 @@ class BiometricStatus {
   final List<BiometricType> availableBiometrics;
   final bool canAuthenticate;
 
-  BiometricStatus({
+  const BiometricStatus({
     required this.availableBiometrics,
     required this.canAuthenticate,
   });
