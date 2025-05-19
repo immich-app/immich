@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@immich/ui/theme/default.css';
+/* @import '/usr/ui/dist/theme/default.css'; */
 
 @config '../tailwind.config.js';
 

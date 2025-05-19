@@ -90,17 +90,6 @@
   };
 </script>
 
-{#if assetInteraction.selectionActive}
-  <AssetSelectControlBar
-    assets={assetInteraction.selectedAssets}
-    clearSelect={() => assetInteraction.clearMultiselect()}
-  >
-    <SelectAllAssets {assetStore} {assetInteraction} />
-    <DeleteAssets force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
-    <RestoreAssets onRestore={(assetIds) => assetStore.removeAssets(assetIds)} />
-  </AssetSelectControlBar>
-{/if}
-
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
     {#snippet buttons()}
@@ -137,4 +126,15 @@
       {/snippet}
     </AssetGrid>
   </UserPageLayout>
+{/if}
+
+{#if assetInteraction.selectionActive}
+  <AssetSelectControlBar
+    assets={assetInteraction.selectedAssets}
+    clearSelect={() => assetInteraction.clearMultiselect()}
+  >
+    <SelectAllAssets {assetStore} {assetInteraction} />
+    <DeleteAssets force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+    <RestoreAssets onRestore={(assetIds) => assetStore.removeAssets(assetIds)} />
+  </AssetSelectControlBar>
 {/if}
