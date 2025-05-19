@@ -588,7 +588,7 @@
               })}
           ></FavoriteAction>
         {/if}
-        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if assetInteraction.isAllUserOwned}
             <ChangeDate menuItem />
@@ -648,7 +648,7 @@
             {/if}
 
             {#if isOwned}
-              <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+              <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')} offset={{ x: 175, y: 25 }}>
                 {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}
