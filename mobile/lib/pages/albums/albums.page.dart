@@ -269,6 +269,7 @@ class AlbumsPage extends HookConsumerWidget {
           ],
         ),
       ),
+      resizeToAvoidBottomInset: false,
     );
   }
 }
