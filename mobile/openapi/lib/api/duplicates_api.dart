@@ -16,6 +16,45 @@ class DuplicatesApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'POST /duplicates/bulk/deduplicate' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [DeduplicateAllDto] deduplicateAllDto (required):
+  Future<Response> deduplicateAllWithHttpInfo(DeduplicateAllDto deduplicateAllDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/bulk/deduplicate';
+
+    // ignore: prefer_final_locals
+    Object? postBody = deduplicateAllDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [DeduplicateAllDto] deduplicateAllDto (required):
+  Future<void> deduplicateAll(DeduplicateAllDto deduplicateAllDto,) async {
+    final response = await deduplicateAllWithHttpInfo(deduplicateAllDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /duplicates' operation and returns the [Response].
   Future<Response> getAssetDuplicatesWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -58,5 +97,38 @@ class DuplicatesApi {
 
     }
     return null;
+  }
+
+  /// Performs an HTTP 'POST /duplicates/bulk/keep' operation and returns the [Response].
+  Future<Response> keepAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/bulk/keep';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> keepAll() async {
+    final response = await keepAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 }

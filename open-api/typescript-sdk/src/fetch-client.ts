@@ -560,6 +560,9 @@ export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     duplicateId: string;
 };
+export type DeduplicateAllDto = {
+    assetIdsToKeep: string[];
+};
 export type PersonResponseDto = {
     birthDate: string | null;
     /** This property was added in v1.126.0 */
@@ -2174,6 +2177,21 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
         data: DuplicateResponseDto[];
     }>("/duplicates", {
         ...opts
+    }));
+}
+export function deduplicateAll({ deduplicateAllDto }: {
+    deduplicateAllDto: DeduplicateAllDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates/bulk/deduplicate", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: deduplicateAllDto
+    })));
+}
+export function keepAll(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates/bulk/keep", {
+        ...opts,
+        method: "POST"
     }));
 }
 export function getFaces({ id }: {

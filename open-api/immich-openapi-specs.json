@@ -2732,6 +2732,66 @@
         ]
       }
     },
+    "/duplicates/bulk/deduplicate": {
+      "post": {
+        "operationId": "deduplicateAll",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeduplicateAllDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ]
+      }
+    },
+    "/duplicates/bulk/keep": {
+      "post": {
+        "operationId": "keepAll",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ]
+      }
+    },
     "/faces": {
       "get": {
         "operationId": "getFaces",
@@ -9652,6 +9712,21 @@
           "cronExpression",
           "enabled",
           "keepLastAmount"
+        ],
+        "type": "object"
+      },
+      "DeduplicateAllDto": {
+        "properties": {
+          "assetIdsToKeep": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIdsToKeep"
         ],
         "type": "object"
       },

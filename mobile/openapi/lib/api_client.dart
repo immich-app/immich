@@ -300,6 +300,8 @@ class ApiClient {
           return CreateProfileImageResponseDto.fromJson(value);
         case 'DatabaseBackupConfig':
           return DatabaseBackupConfig.fromJson(value);
+        case 'DeduplicateAllDto':
+          return DeduplicateAllDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
