@@ -20,19 +20,19 @@
   };
 </script>
 
-<form {onsubmit} autocomplete="off">
-  <Modal icon={mdiRenameOutline} title={$t('rename')} onClose={onCancel} size="small">
-    <ModalBody>
+<Modal icon={mdiRenameOutline} title={$t('rename')} onClose={onCancel} size="small">
+  <ModalBody>
+    <form {onsubmit} autocomplete="off" id="rename-library-form">
       <Field label={$t('name')}>
         <Input bind:value={newName} />
       </Field>
-    </ModalBody>
+    </form>
+  </ModalBody>
 
-    <ModalFooter>
-      <div class="flex gap-2 w-full">
-        <Button shape="round" fullWidth color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
-        <Button shape="round" fullWidth type="submit">{$t('save')}</Button>
-      </div>
-    </ModalFooter>
-  </Modal>
-</form>
+  <ModalFooter>
+    <div class="flex gap-2 w-full">
+      <Button shape="round" fullWidth color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
+      <Button shape="round" fullWidth type="submit" form="rename-library-form">{$t('save')}</Button>
+    </div>
+  </ModalFooter>
+</Modal>

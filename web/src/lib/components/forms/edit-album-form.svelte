@@ -67,14 +67,12 @@
         </div>
       </div>
     </form>
-
-    <ModalFooter>
-      <div class="flex gap-2 w-full">
-        <Button shape="round" color="secondary" fullWidth onclick={() => onCancel?.()}>{$t('cancel')}</Button>
-        <Button shape="round" type="submit" fullWidth disabled={isSubmitting} form="edit-album-form"
-          >{$t('save')}</Button
-        >
-      </div>
-    </ModalFooter>
   </ModalBody>
+
+  <ModalFooter>
+    <div class="flex gap-2 w-full">
+      <Button shape="round" color="secondary" fullWidth onclick={() => onCancel?.()}>{$t('cancel')}</Button>
+      <Button shape="round" type="submit" fullWidth disabled={isSubmitting} form="edit-album-form">{$t('save')}</Button>
+    </div>
+  </ModalFooter>
 </Modal>
