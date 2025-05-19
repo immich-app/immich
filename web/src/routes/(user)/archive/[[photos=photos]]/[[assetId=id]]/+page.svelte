@@ -40,6 +40,20 @@
   };
 </script>
 
+<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
+  <AssetGrid
+    enableRouting={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.UNARCHIVE}
+    onEscape={handleEscape}
+  >
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
+    {/snippet}
+  </AssetGrid>
+</UserPageLayout>
+
 {#if assetInteraction.selectionActive}
   <AssetSelectControlBar
     assets={assetInteraction.selectedAssets}
@@ -73,17 +87,3 @@
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
-
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  <AssetGrid
-    enableRouting={true}
-    {assetStore}
-    {assetInteraction}
-    removeAction={AssetAction.UNARCHIVE}
-    onEscape={handleEscape}
-  >
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
-    {/snippet}
-  </AssetGrid>
-</UserPageLayout>

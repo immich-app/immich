@@ -75,18 +75,15 @@ class ImmichImage extends StatelessWidget {
       );
     }
 
-    final double requestWidth = width ?? context.width;
-    final double requestHeight = height ?? context.height;
-
     final imageProviderInstance = ImmichImage.imageProvider(
       asset: asset,
-      width: requestWidth,
-      height: requestHeight,
+      width: context.width,
+      height: context.height,
     );
 
     return OctoImage(
       fadeInDuration: const Duration(milliseconds: 0),
-      fadeOutDuration: const Duration(milliseconds: 200),
+      fadeOutDuration: const Duration(milliseconds: 100),
       placeholderBuilder: (context) {
         if (placeholder != null) {
           return placeholder!;
@@ -102,7 +99,8 @@ class ImmichImage extends StatelessWidget {
 
         return Icon(
           Icons.image_not_supported_outlined,
-          color: context.primaryColor,
+          size: 32,
+          color: Colors.red[200],
         );
       },
     );
