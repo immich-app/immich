@@ -57,8 +57,6 @@ export class GCastDestination implements CastDestination {
 
     this.isAvailable = await Promise.race([callbackPromise, timeoutPromise]);
 
-    console.debug('GCast API available:', this.isAvailable);
-
     if (!this.isAvailable) {
       return false;
     }
@@ -71,20 +69,17 @@ export class GCastDestination implements CastDestination {
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
     });
 
-    castContext.addEventListener(
-      cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-      this.onSessionStateChanged.bind(this),
+    castContext.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, (event) =>
+      this.onSessionStateChanged(event),
     );
 
-    castContext.addEventListener(
-      cast.framework.CastContextEventType.CAST_STATE_CHANGED,
-      this.onCastStateChanged.bind(this),
+    castContext.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, (event) =>
+      this.onCastStateChanged(event),
     );
 
     const remotePlayerController = new cast.framework.RemotePlayerController(this.remotePlayer);
-    remotePlayerController.addEventListener(
-      cast.framework.RemotePlayerEventType.ANY_CHANGE,
-      this.onRemotePlayerChange.bind(this),
+    remotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.ANY_CHANGE, (event) =>
+      this.onRemotePlayerChange(event),
     );
 
     return true;

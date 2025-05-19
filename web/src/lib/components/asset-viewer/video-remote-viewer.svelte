@@ -3,6 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { castManager, CastState } from '$lib/managers/cast-manager.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import { mdiCastConnected, mdiPause, mdiPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -17,28 +18,32 @@
 
   let previousPlayerState: CastState | null = $state(null);
 
-  const handlePlayPauseButton = () => {
-    if (castManager.castState === CastState.PLAYING) {
-      castManager.pause();
-    } else if (castManager.castState === CastState.IDLE) {
-      void cast(assetFileUrl, true);
-    } else {
-      castManager.play();
+  const handlePlayPauseButton = async () => {
+    switch (castManager.castState) {
+      case CastState.PLAYING: {
+        castManager.pause();
+        break;
+      }
+      case CastState.IDLE: {
+        await cast(assetFileUrl, true);
+        break;
+      }
+      default: {
+        castManager.play();
+        break;
+      }
     }
   };
 
   $effect(() => {
     if (assetFileUrl) {
+      // this can't be in an async context with $effect
       void cast(assetFileUrl);
     }
   });
 
   $effect(() => {
-    if (
-      castManager.castState !== previousPlayerState &&
-      castManager.castState === CastState.IDLE &&
-      previousPlayerState !== CastState.PAUSED
-    ) {
+    if (castManager.castState === CastState.IDLE && previousPlayerState !== CastState.PAUSED) {
       onVideoEnded();
     }
 
@@ -46,19 +51,21 @@
   });
 
   const cast = async (url: string, force: boolean = false) => {
-    if (!url) {
+    if (!url || !castManager.isCasting) {
       return;
     }
     const fullUrl = new URL(url, globalThis.location.href);
-    const didCast = await castManager.loadMedia(fullUrl.href, force);
 
-    if (didCast) {
-      onVideoStarted();
+    try {
+      await castManager.loadMedia(fullUrl.href, force);
+    } catch (error) {
+      handleError(error, 'Unable to cast');
+      return;
     }
   };
 
   function handleSeek(event: Event) {
-    const newTime: number = Number.parseFloat((event.target as HTMLInputElement).value);
+    const newTime = Number.parseFloat((event.target as HTMLInputElement).value);
     castManager.seekTo(newTime);
   }
 </script>

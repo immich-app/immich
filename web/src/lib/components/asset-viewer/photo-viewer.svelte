@@ -150,16 +150,23 @@
 
   $effect(() => {
     if (assetFileUrl) {
+      // this can't be in an async context with $effect
       void cast(assetFileUrl);
     }
   });
 
   const cast = async (url: string) => {
-    if (!url) {
+    if (!url || !castManager.isCasting) {
       return;
     }
     const fullUrl = new URL(url, globalThis.location.href);
-    await castManager.loadMedia(fullUrl.href);
+
+    try {
+      await castManager.loadMedia(fullUrl.href);
+    } catch (error) {
+      handleError(error, 'Unable to cast');
+      return;
+    }
   };
 
   const onload = () => {

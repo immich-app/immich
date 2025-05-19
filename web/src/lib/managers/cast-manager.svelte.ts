@@ -79,11 +79,10 @@ class CastManager {
   private monitorConnectedDestination(): CastDestination | null {
     // check if we have a connected destination
     const connectedDest = this.castDestinations.find((dest) => dest.isConnected);
-    console.log('Connected destination:', connectedDest);
     return connectedDest || null;
   }
 
-  private async getCastSessionKey() {
+  private async refreshSessionToken() {
     // get session token to authenticate the media url
     // TODO: check and make sure we have at least 60 seconds remaining in the session
     // before we send the media request, refresh the session if needed
@@ -98,53 +97,33 @@ class CastManager {
     }
   }
 
-  async loadMedia(mediaUrl: string, reload: boolean = false): Promise<boolean> {
+  async loadMedia(mediaUrl: string, reload: boolean = false) {
     if (!this.current) {
-      console.debug('No active cast destination');
-      return false;
+      throw new Error('No active cast destination');
     }
 
-    await this.getCastSessionKey();
+    await this.refreshSessionToken();
     if (!this.sessionKey) {
-      console.error('No session key available');
-      return false;
+      throw new Error('No session key available');
     }
 
     await this.current.loadMedia(mediaUrl, this.sessionKey.token, reload);
-
-    return true;
   }
 
   play() {
-    if (!this.current) {
-      console.debug('No active cast destination');
-      return;
-    }
-    this.current.play();
+    this.current?.play();
   }
 
   pause() {
-    if (!this.current) {
-      console.debug('No active cast destination');
-      return;
-    }
-    this.current.pause();
+    this.current?.pause();
   }
 
   seekTo(time: number) {
-    if (!this.current) {
-      console.debug('No active cast destination');
-      return;
-    }
-    this.current.seekTo(time);
+    this.current?.seekTo(time);
   }
 
   disconnect() {
-    if (!this.current) {
-      console.debug('No active cast destination');
-      return;
-    }
-    this.current.disconnect();
+    this.current?.disconnect();
   }
 }
 

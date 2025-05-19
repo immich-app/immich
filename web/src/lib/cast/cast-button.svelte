@@ -12,8 +12,8 @@
 
   let { isWhiteHover }: Props = $props();
 
-  onMount(() => {
-    void castManager.initialize();
+  onMount(async () => {
+    await castManager.initialize();
   });
 
   const getButtonColor = () => {
