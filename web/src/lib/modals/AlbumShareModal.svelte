@@ -91,7 +91,7 @@
                 </div>
 
                 <!-- <UserAvatar {user} size="md" /> -->
-                <div class="text-start flex-grow">
+                <div class="text-start grow">
                   <p class="text-immich-fg dark:text-immich-dark-fg">
                     {user.name}
                   </p>
@@ -133,7 +133,7 @@
                   class="flex w-full place-items-center gap-4 p-4"
                 >
                   <UserAvatar {user} size="md" />
-                  <div class="text-start flex-grow">
+                  <div class="text-start grow">
                     <p class="text-immich-fg dark:text-immich-dark-fg">
                       {user.name}
                     </p>

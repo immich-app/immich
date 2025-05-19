@@ -277,7 +277,7 @@
       class:!rounded-b-none={isOpen && dropdownDirection === 'bottom'}
       class:!rounded-t-none={isOpen && dropdownDirection === 'top'}
       class:cursor-pointer={!isActive}
-      class="immich-form-input text-sm w-full !pe-12 transition-all"
+      class="immich-form-input text-sm w-full pe-12! transition-all"
       id={inputId}
       onfocus={activate}
       oninput={onInput}
@@ -341,7 +341,7 @@
     role="listbox"
     id={listboxId}
     transition:fly={{ duration: 250 }}
-    class="fixed z-[1] text-start text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900"
+    class="fixed z-1 text-start text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900"
     class:rounded-b-xl={dropdownDirection === 'bottom'}
     class:rounded-t-xl={dropdownDirection === 'top'}
     class:shadow={dropdownDirection === 'bottom'}
