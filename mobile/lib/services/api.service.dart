@@ -148,7 +148,7 @@ class ApiService implements Authentication {
 
         if (endpoint.startsWith('/')) {
           // Full URL is relative to base
-          return '$baseUrl$endpoint';
+          return "$baseUrl$endpoint";
         }
         return endpoint;
       }
