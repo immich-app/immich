@@ -22,7 +22,7 @@ class SearchService {
   final ApiService _apiService;
   final IAssetRepository _assetRepository;
 
-  final _log = Logger('SearchService');
+  final _log = Logger("SearchService");
   SearchService(this._apiService, this._assetRepository);
 
   Future<List<String>?> getSearchSuggestions(
@@ -41,7 +41,7 @@ class SearchService {
         model: model,
       );
     } catch (e) {
-      debugPrint('[ERROR] [getSearchSuggestions] ${e.toString()}');
+      debugPrint("[ERROR] [getSearchSuggestions] ${e.toString()}");
       return [];
     }
   }
@@ -121,7 +121,7 @@ class SearchService {
         nextPage: response.assets.nextPage?.toInt(),
       );
     } catch (error, stackTrace) {
-      _log.severe('Failed to search for assets', error, stackTrace);
+      _log.severe("Failed to search for assets", error, stackTrace);
     }
     return null;
   }
@@ -130,7 +130,7 @@ class SearchService {
     try {
       return await _apiService.searchApi.getExploreData();
     } catch (error, stackTrace) {
-      _log.severe('Failed to getExploreData', error, stackTrace);
+      _log.severe("Failed to getExploreData", error, stackTrace);
     }
     return null;
   }
@@ -139,7 +139,7 @@ class SearchService {
     try {
       return await _apiService.searchApi.getAssetsByCity();
     } catch (error, stackTrace) {
-      _log.severe('Failed to getAllPlaces', error, stackTrace);
+      _log.severe("Failed to getAllPlaces", error, stackTrace);
     }
     return null;
   }

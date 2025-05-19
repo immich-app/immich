@@ -9,7 +9,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:logging/logging.dart';
 
 class UserService {
-  final Logger _log = Logger('UserService');
+  final Logger _log = Logger("UserService");
   final IUserRepository _userRepository;
   final IUserApiRepository _userApiRepository;
   final StoreService _storeService;
@@ -53,7 +53,7 @@ class UserService {
       await _userRepository.update(updatedUser);
       return path;
     } catch (e) {
-      _log.warning('Failed to upload profile image', e);
+      _log.warning("Failed to upload profile image", e);
       return null;
     }
   }

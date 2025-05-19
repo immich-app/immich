@@ -44,10 +44,10 @@ abstract final class ExifDtoConverter {
     if (value != null) {
       return value;
     }
-    final parts = s.split('/');
+    final parts = s.split("/");
     if (parts.length == 2) {
-      final numerator = double.tryParse(parts.firstOrNull ?? '-');
-      final denominator = double.tryParse(parts.lastOrNull ?? '-');
+      final numerator = double.tryParse(parts.firstOrNull ?? "-");
+      final denominator = double.tryParse(parts.lastOrNull ?? "-");
       if (numerator != null && denominator != null) {
         return numerator / denominator;
       }

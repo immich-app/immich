@@ -17,42 +17,42 @@ enum SettingSection {
   advanced(
     'advanced',
     Icons.build_outlined,
-    'advanced_settings_tile_subtitle',
+    "advanced_settings_tile_subtitle",
   ),
   assetViewer(
     'asset_viewer_settings_title',
     Icons.image_outlined,
-    'asset_viewer_settings_subtitle',
+    "asset_viewer_settings_subtitle",
   ),
   backup(
     'backup_controller_page_backup',
     Icons.cloud_upload_outlined,
-    'backup_setting_subtitle',
+    "backup_setting_subtitle",
   ),
   languages(
     'setting_languages_title',
     Icons.language,
-    'setting_languages_subtitle',
+    "setting_languages_subtitle",
   ),
   networking(
     'networking_settings',
     Icons.wifi,
-    'networking_subtitle',
+    "networking_subtitle",
   ),
   notifications(
     'notifications',
     Icons.notifications_none_rounded,
-    'setting_notifications_subtitle',
+    "setting_notifications_subtitle",
   ),
   preferences(
     'preferences_settings_title',
     Icons.interests_outlined,
-    'preferences_settings_subtitle',
+    "preferences_settings_subtitle",
   ),
   timeline(
     'asset_list_settings_title',
     Icons.auto_awesome_mosaic_outlined,
-    'asset_list_settings_subtitle',
+    "asset_list_settings_subtitle",
   );
 
   final String title;

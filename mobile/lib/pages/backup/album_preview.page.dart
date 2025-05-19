@@ -44,7 +44,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
               child: Text(
-                'ID ${album.id}',
+                "ID ${album.id}",
                 style: TextStyle(
                   fontSize: 10,
                   color: context.colorScheme.onSurfaceSecondary,

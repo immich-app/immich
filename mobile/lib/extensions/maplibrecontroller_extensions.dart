@@ -47,11 +47,11 @@ extension MapMarkers on MapLibreMapController {
         MapUtils.defaultHeatMapLayerId,
         const CircleLayerProperties(
           circleRadius: 10,
-          circleColor: 'rgba(150,86,34,0.7)',
+          circleColor: "rgba(150,86,34,0.7)",
           circleBlur: 1.0,
           circleOpacity: 0.7,
           circleStrokeWidth: 0.1,
-          circleStrokeColor: 'rgba(203,46,19,0.5)',
+          circleStrokeColor: "rgba(203,46,19,0.5)",
           circleStrokeOpacity: 0.7,
         ),
       );
@@ -71,14 +71,14 @@ extension MapMarkers on MapLibreMapController {
   Future<Symbol?> addMarkerAtLatLng(LatLng centre) async {
     // no marker is displayed if asset-path is incorrect
     try {
-      final ByteData bytes = await rootBundle.load('assets/location-pin.png');
-      await addImage('mapMarker', bytes.buffer.asUint8List());
+      final ByteData bytes = await rootBundle.load("assets/location-pin.png");
+      await addImage("mapMarker", bytes.buffer.asUint8List());
       return addSymbol(
         SymbolOptions(
           geometry: centre,
-          iconImage: 'mapMarker',
+          iconImage: "mapMarker",
           iconSize: 0.15,
-          iconAnchor: 'bottom',
+          iconAnchor: "bottom",
         ),
       );
     } finally {

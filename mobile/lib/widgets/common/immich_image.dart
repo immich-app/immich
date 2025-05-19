@@ -97,13 +97,13 @@ class ImmichImage extends StatelessWidget {
       fit: fit,
       errorBuilder: (context, error, stackTrace) {
         if (error is PlatformException &&
-            error.code == 'The asset not found!') {
+            error.code == "The asset not found!") {
           debugPrint(
-            'Asset ${asset?.localId} does not exist anymore on device!',
+            "Asset ${asset?.localId} does not exist anymore on device!",
           );
         } else {
           debugPrint(
-            'Error getting thumb for assetId=${asset?.localId}: $error',
+            "Error getting thumb for assetId=${asset?.localId}: $error",
           );
         }
         return Icon(

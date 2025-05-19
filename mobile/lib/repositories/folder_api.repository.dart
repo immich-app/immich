@@ -15,7 +15,7 @@ final folderApiRepositoryProvider = Provider(
 class FolderApiRepository extends ApiRepository
     implements IFolderApiRepository {
   final ViewApi _api;
-  final Logger _log = Logger('FolderApiRepository');
+  final Logger _log = Logger("FolderApiRepository");
 
   FolderApiRepository(this._api);
 
@@ -25,7 +25,7 @@ class FolderApiRepository extends ApiRepository
       final list = await _api.getUniqueOriginalPaths();
       return list ?? [];
     } catch (e, stack) {
-      _log.severe('Failed to fetch unique original links', e, stack);
+      _log.severe("Failed to fetch unique original links", e, stack);
       return [];
     }
   }
@@ -36,7 +36,7 @@ class FolderApiRepository extends ApiRepository
       final list = await _api.getAssetsByOriginalPath(path ?? '/');
       return list != null ? list.map(Asset.remote).toList() : [];
     } catch (e, stack) {
-      _log.severe('Failed to fetch Assets by original path', e, stack);
+      _log.severe("Failed to fetch Assets by original path", e, stack);
       return [];
     }
   }

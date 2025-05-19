@@ -27,7 +27,7 @@ class SyncApiRepository implements ISyncApiRepository {
   }) async {
     final stopwatch = Stopwatch()..start();
     final client = httpClient ?? http.Client();
-    final endpoint = '${_api.apiClient.basePath}/sync/stream';
+    final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
     final headers = {
       'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ class SyncApiRepository implements ISyncApiRepository {
     bool shouldAbort = false;
 
     void abort() {
-      _logger.warning('Abort requested, stopping sync stream');
+      _logger.warning("Abort requested, stopping sync stream");
       shouldAbort = true;
     }
 
@@ -97,14 +97,14 @@ class SyncApiRepository implements ISyncApiRepository {
         await onData(_parseLines(lines), abort);
       }
     } catch (error, stack) {
-      _logger.severe('error processing stream', error, stack);
+      _logger.severe("error processing stream", error, stack);
       return Future.error(error, stack);
     } finally {
       client.close();
     }
     stopwatch.stop();
     _logger
-        .info('Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms');
+        .info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 
   List<SyncEvent> _parseLines(List<String> lines) {
@@ -118,13 +118,13 @@ class SyncApiRepository implements ISyncApiRepository {
         final ack = jsonData['ack'];
         final converter = _kResponseMap[type];
         if (converter == null) {
-          _logger.warning('[_parseSyncResponse] Unknown type $type');
+          _logger.warning("[_parseSyncResponse] Unknown type $type");
           continue;
         }
 
         data.add(SyncEvent(type: type, data: converter(dataJson), ack: ack));
       } catch (error, stack) {
-        _logger.severe('[_parseSyncResponse] Error parsing json', error, stack);
+        _logger.severe("[_parseSyncResponse] Error parsing json", error, stack);
       }
     }
 

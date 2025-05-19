@@ -34,7 +34,7 @@ class AssetLocation extends HookConsumerWidget {
               contentPadding: const EdgeInsets.all(0),
               leading: const Icon(Icons.location_on),
               title: Text(
-                'add_a_location',
+                "add_a_location",
                 style: context.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: context.primaryColor,
@@ -57,7 +57,7 @@ class AssetLocation extends HookConsumerWidget {
 
       return hasLocationName
           ? Text(
-              '$cityName, $stateName',
+              "$cityName, $stateName",
               style: context.textTheme.labelLarge,
             )
           : const SizedBox.shrink();
@@ -72,7 +72,7 @@ class AssetLocation extends HookConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'exif_bottom_sheet_location',
+                "exif_bottom_sheet_location",
                 style: context.textTheme.labelMedium?.copyWith(
                   color: context.textTheme.labelMedium?.color?.withAlpha(200),
                   fontWeight: FontWeight.w600,
@@ -94,7 +94,7 @@ class AssetLocation extends HookConsumerWidget {
           const SizedBox(height: 16),
           getLocationName(),
           Text(
-            '${exifInfo.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}',
+            "${exifInfo.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
             style: context.textTheme.labelMedium?.copyWith(
               color: context.textTheme.labelMedium?.color?.withAlpha(150),
             ),

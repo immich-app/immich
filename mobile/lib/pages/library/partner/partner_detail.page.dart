@@ -43,7 +43,7 @@ class PartnerDetailPage extends HookConsumerWidget {
             .updatePartner(partner, inTimeline: !inTimeline.value);
         if (ok) {
           inTimeline.value = !inTimeline.value;
-          final action = inTimeline.value ? 'shown on' : 'hidden from';
+          final action = inTimeline.value ? "shown on" : "hidden from";
           ImmichToast.show(
             context: context,
             toastType: ToastType.success,
@@ -55,7 +55,7 @@ class PartnerDetailPage extends HookConsumerWidget {
             context: context,
             toastType: ToastType.error,
             durationInSecond: 1,
-            msg: 'Failed to toggle the timeline setting',
+            msg: "Failed to toggle the timeline setting",
           );
         }
       } finally {
@@ -94,13 +94,13 @@ class PartnerDetailPage extends HookConsumerWidget {
               padding: const EdgeInsets.all(8.0),
               child: ListTile(
                 title: Text(
-                  'Show in timeline',
+                  "Show in timeline",
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.primary,
                   ),
                 ),
                 subtitle: Text(
-                  'Show photos and videos from this user in your timeline',
+                  "Show photos and videos from this user in your timeline",
                   style: context.textTheme.bodyMedium,
                 ),
                 trailing: Switch(

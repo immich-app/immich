@@ -4,7 +4,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:logging/logging.dart';
 
 class HttpSSLCertOverride extends HttpOverrides {
-  static final Logger _log = Logger('HttpSSLCertOverride');
+  static final Logger _log = Logger("HttpSSLCertOverride");
   final bool _allowSelfSignedSSLCert;
   final String? _serverHost;
   final SSLClientCertStoreVal? _clientCert;
@@ -20,7 +20,7 @@ class HttpSSLCertOverride extends HttpOverrides {
       if (_ctxWithCert != null) {
         setClientCert(_ctxWithCert, _clientCert);
       } else {
-        _log.severe('Failed to create security context with client cert!');
+        _log.severe("Failed to create security context with client cert!");
       }
     } else {
       _ctxWithCert = null;
@@ -29,11 +29,11 @@ class HttpSSLCertOverride extends HttpOverrides {
 
   static bool setClientCert(SecurityContext ctx, SSLClientCertStoreVal cert) {
     try {
-      _log.info('Setting client certificate');
+      _log.info("Setting client certificate");
       ctx.usePrivateKeyBytes(cert.data, password: cert.password);
       ctx.useCertificateChainBytes(cert.data, password: cert.password);
     } catch (e) {
-      _log.severe('Failed to set SSL client cert: $e');
+      _log.severe("Failed to set SSL client cert: $e");
       return false;
     }
     return true;
@@ -58,7 +58,7 @@ class HttpSSLCertOverride extends HttpOverrides {
             return true;
           }
         }
-        _log.severe('Invalid SSL certificate for $host:$port');
+        _log.severe("Invalid SSL certificate for $host:$port");
         return false;
       };
   }

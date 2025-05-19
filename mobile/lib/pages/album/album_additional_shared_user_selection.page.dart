@@ -141,7 +141,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
             onPressed:
                 sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
             child: const Text(
-              'add',
+              "add",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ).tr(),
           ),

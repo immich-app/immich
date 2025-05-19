@@ -112,16 +112,16 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
         final headers = ApiService.getRequestHeaders();
         if (endpoint.userInfo.isNotEmpty) {
-          headers['Authorization'] =
-              'Basic ${base64.encode(utf8.encode(endpoint.userInfo))}';
+          headers["Authorization"] =
+              "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
         }
 
-        debugPrint('Attempting to connect to websocket');
+        debugPrint("Attempting to connect to websocket");
         // Configure socket transports must be specified
         Socket socket = io(
           endpoint.origin,
           OptionBuilder()
-              .setPath('${endpoint.path}/socket.io')
+              .setPath("${endpoint.path}/socket.io")
               .setTransports(['websocket'])
               .enableReconnection()
               .enableForceNew()
@@ -132,7 +132,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         );
 
         socket.onConnect((_) {
-          debugPrint('Established Websocket Connection');
+          debugPrint("Established Websocket Connection");
           state = WebsocketState(
             isConnected: true,
             socket: socket,
@@ -141,7 +141,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         });
 
         socket.onDisconnect((_) {
-          debugPrint('Disconnect to Websocket Connection');
+          debugPrint("Disconnect to Websocket Connection");
           state = WebsocketState(
             isConnected: false,
             socket: null,
@@ -150,7 +150,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         });
 
         socket.on('error', (errorMessage) {
-          _log.severe('Websocket Error - $errorMessage');
+          _log.severe("Websocket Error - $errorMessage");
           state = WebsocketState(
             isConnected: false,
             socket: null,
@@ -168,13 +168,13 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_asset_hidden', _handleOnAssetHidden);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
-        debugPrint('[WEBSOCKET] Catch Websocket Error - ${e.toString()}');
+        debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
     }
   }
 
   void disconnect() {
-    debugPrint('Attempting to disconnect from websocket');
+    debugPrint("Attempting to disconnect from websocket");
 
     var socket = state.socket?.disconnect();
 
@@ -188,12 +188,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void stopListenToEvent(String eventName) {
-    debugPrint('Stop listening to event $eventName');
+    debugPrint("Stop listening to event $eventName");
     state.socket?.off(eventName);
   }
 
   void listenUploadEvent() {
-    debugPrint('Start listening to event on_upload_success');
+    debugPrint("Start listening to event on_upload_success");
     state.socket?.on('on_upload_success', _handleOnUploadSuccess);
   }
 

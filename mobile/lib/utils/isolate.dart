@@ -15,7 +15,7 @@ class InvalidIsolateUsageException implements Exception {
 
   @override
   String toString() =>
-      'IsolateHelper should only be used from the root isolate';
+      "IsolateHelper should only be used from the root isolate";
 }
 
 // !! Should be used only from the root isolate
@@ -43,7 +43,7 @@ Cancelable<T?> runInIsolateGentle<T>({
       ],
     );
 
-    Logger log = Logger('IsolateLogger');
+    Logger log = Logger("IsolateLogger");
 
     try {
       return await computation(ref);

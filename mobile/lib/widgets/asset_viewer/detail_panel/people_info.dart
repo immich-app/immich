@@ -69,7 +69,7 @@ class PeopleInfo extends ConsumerWidget {
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  'exif_bottom_sheet_people',
+                  "exif_bottom_sheet_people",
                   style: context.textTheme.labelMedium?.copyWith(
                     color: context.textTheme.labelMedium?.color?.withAlpha(200),
                     fontWeight: FontWeight.w600,
@@ -108,13 +108,13 @@ class PeopleInfo extends ConsumerWidget {
     int ageInMonths = _calculateAgeInMonths(birthDate, referenceDate);
 
     if (ageInMonths <= 11) {
-      return 'exif_bottom_sheet_person_age_months'
+      return "exif_bottom_sheet_person_age_months"
           .tr(namedArgs: {'months': ageInMonths.toString()});
     } else if (ageInMonths > 12 && ageInMonths <= 23) {
-      return 'exif_bottom_sheet_person_age_year_months'
+      return "exif_bottom_sheet_person_age_year_months"
           .tr(namedArgs: {'months': (ageInMonths - 12).toString()});
     } else {
-      return 'exif_bottom_sheet_person_age_years'
+      return "exif_bottom_sheet_person_age_years"
           .tr(namedArgs: {'years': ageInYears.toString()});
     }
   }

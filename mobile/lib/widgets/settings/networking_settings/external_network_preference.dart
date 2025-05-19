@@ -130,7 +130,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     horizontal: 24,
                   ),
                   child: Text(
-                    'external_network_sheet_info'.tr(),
+                    "external_network_sheet_info".tr(),
                     style: context.textTheme.bodyMedium,
                   ),
                 ),

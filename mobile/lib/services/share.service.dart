@@ -15,7 +15,7 @@ final shareServiceProvider =
 
 class ShareService {
   final ApiService _apiService;
-  final Logger _log = Logger('ShareService');
+  final Logger _log = Logger("ShareService");
 
   ShareService(this._apiService);
 
@@ -42,7 +42,7 @@ class ShareService {
 
           if (res.statusCode != 200) {
             _log.severe(
-              'Asset download for ${asset.fileName} failed',
+              "Asset download for ${asset.fileName} failed",
               res.toLoggerString(),
             );
             continue;
@@ -54,13 +54,13 @@ class ShareService {
       }
 
       if (downloadedXFiles.isEmpty) {
-        _log.warning('No asset can be retrieved for share');
+        _log.warning("No asset can be retrieved for share");
         return false;
       }
 
       if (downloadedXFiles.length != assets.length) {
         _log.warning(
-          'Partial share - Requested: ${assets.length}, Sharing: ${downloadedXFiles.length}',
+          "Partial share - Requested: ${assets.length}, Sharing: ${downloadedXFiles.length}",
         );
       }
 
@@ -74,7 +74,7 @@ class ShareService {
       );
       return true;
     } catch (error) {
-      _log.severe('Share failed', error);
+      _log.severe("Share failed", error);
     }
     return false;
   }

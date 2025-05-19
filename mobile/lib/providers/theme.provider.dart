@@ -13,7 +13,7 @@ final immichThemeModeProvider = StateProvider<ThemeMode>((ref) {
       .watch(appSettingsServiceProvider)
       .getSetting(AppSettingsEnum.themeMode);
 
-  debugPrint('Current themeMode $themeMode');
+  debugPrint("Current themeMode $themeMode");
 
   if (themeMode == ThemeMode.light.name) {
     return ThemeMode.light;
@@ -29,14 +29,14 @@ final immichThemePresetProvider = StateProvider<ImmichColorPreset>((ref) {
   final primaryColorPreset =
       appSettingsProvider.getSetting(AppSettingsEnum.primaryColor);
 
-  debugPrint('Current theme preset $primaryColorPreset');
+  debugPrint("Current theme preset $primaryColorPreset");
 
   try {
     return ImmichColorPreset.values
         .firstWhere((e) => e.name == primaryColorPreset);
   } catch (e) {
     debugPrint(
-      'Theme preset $primaryColorPreset not found. Applying default preset.',
+      "Theme preset $primaryColorPreset not found. Applying default preset.",
     );
     appSettingsProvider.setSetting(
       AppSettingsEnum.primaryColor,

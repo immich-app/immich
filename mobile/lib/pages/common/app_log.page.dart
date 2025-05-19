@@ -57,7 +57,7 @@ class AppLogPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Logs',
+          "Logs",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16.0,
@@ -70,7 +70,7 @@ class AppLogPage extends HookConsumerWidget {
             icon: Icon(
               Icons.delete_outline_rounded,
               color: context.primaryColor,
-              semanticLabel: 'Clear logs',
+              semanticLabel: "Clear logs",
               size: 20.0,
             ),
             onPressed: () {
@@ -84,7 +84,7 @@ class AppLogPage extends HookConsumerWidget {
                 icon: Icon(
                   Icons.share_rounded,
                   color: context.primaryColor,
-                  semanticLabel: 'Share logs',
+                  semanticLabel: "Share logs",
                   size: 20.0,
                 ),
                 onPressed: () {
@@ -128,7 +128,7 @@ class AppLogPage extends HookConsumerWidget {
               style: TextStyle(
                 fontSize: 14.0,
                 color: context.colorScheme.onSurface,
-                fontFamily: 'Inconsolata',
+                fontFamily: "Inconsolata",
               ),
             ),
             subtitle: Text(
@@ -148,7 +148,7 @@ class AppLogPage extends HookConsumerWidget {
   /// Truncate the log message to a certain number of lines
   /// @param int maxLines - Max number of lines to truncate
   String truncateLogMessage(String message, int maxLines) {
-    List<String> messageLines = message.split('\n');
+    List<String> messageLines = message.split("\n");
     if (messageLines.length < maxLines) {
       return message;
     }

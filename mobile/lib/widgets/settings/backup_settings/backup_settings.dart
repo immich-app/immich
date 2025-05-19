@@ -78,7 +78,7 @@ class BackupSettings extends HookConsumerWidget {
           icon: Icons.photo_album_outlined,
           title: 'sync_albums'.tr(),
           subtitle: Text(
-            'sync_albums_manual_subtitle'.tr(),
+            "sync_albums_manual_subtitle".tr(),
           ),
           buttonText: 'sync_albums'.tr(),
           child: isAlbumSyncInProgress.value

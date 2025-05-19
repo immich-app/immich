@@ -67,7 +67,7 @@ class EditImagePage extends ConsumerWidget {
       final Uint8List imageData = await _imageToUint8List(image);
       await ref.read(fileMediaRepositoryProvider).saveImage(
             imageData,
-            title: '${p.withoutExtension(asset.fileName)}_edited.jpg',
+            title: "${p.withoutExtension(asset.fileName)}_edited.jpg",
           );
       await ref.read(albumProvider.notifier).refreshDeviceAlbums();
       context.navigator.popUntil((route) => route.isFirst);
@@ -81,7 +81,7 @@ class EditImagePage extends ConsumerWidget {
       ImmichToast.show(
         durationInSecond: 6,
         context: context,
-        msg: 'error_saving_image'.tr(namedArgs: {'error': e.toString()}),
+        msg: "error_saving_image".tr(namedArgs: {'error': e.toString()}),
         gravity: ToastGravity.CENTER,
       );
     }
@@ -91,7 +91,7 @@ class EditImagePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('edit'.tr()),
+        title: Text("edit".tr()),
         backgroundColor: context.scaffoldBackgroundColor,
         leading: IconButton(
           icon: Icon(
@@ -107,7 +107,7 @@ class EditImagePage extends ConsumerWidget {
                 ? () => _saveEditedImage(context, asset, image, ref)
                 : null,
             child: Text(
-              'save_to_gallery'.tr(),
+              "save_to_gallery".tr(),
               style: TextStyle(
                 color: isEdited ? context.primaryColor : Colors.grey,
               ),
@@ -169,7 +169,7 @@ class EditImagePage extends ConsumerWidget {
                     );
                   },
                 ),
-                Text('crop'.tr(), style: context.textTheme.displayMedium),
+                Text("crop".tr(), style: context.textTheme.displayMedium),
               ],
             ),
             Column(
@@ -190,7 +190,7 @@ class EditImagePage extends ConsumerWidget {
                     );
                   },
                 ),
-                Text('filter'.tr(), style: context.textTheme.displayMedium),
+                Text("filter".tr(), style: context.textTheme.displayMedium),
               ],
             ),
           ],

@@ -102,7 +102,7 @@ class IsarStoreRepository extends IsarDatabaseRepository
           (await IsarUserRepository(_db).update(value as UserDto)).id,
         ),
       _ => throw UnsupportedError(
-          'Unsupported primitive type: ${key.type} for key: ${key.name}',
+          "Unsupported primitive type: ${key.type} for key: ${key.name}",
         ),
     };
     return StoreValue(key.id, intValue: intValue, strValue: strValue);

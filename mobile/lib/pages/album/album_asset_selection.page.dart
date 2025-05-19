@@ -71,7 +71,7 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
                     .popForced<AssetSelectionPageResult>(payload);
               },
               child: Text(
-                canDeselect ? 'done' : 'add',
+                canDeselect ? "done" : "add",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: context.primaryColor,

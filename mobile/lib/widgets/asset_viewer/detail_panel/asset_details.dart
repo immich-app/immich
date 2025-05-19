@@ -29,7 +29,7 @@ class AssetDetails extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'exif_bottom_sheet_details',
+            "exif_bottom_sheet_details",
             style: context.textTheme.labelMedium?.copyWith(
               color: context.textTheme.labelMedium?.color?.withAlpha(200),
               fontWeight: FontWeight.w600,

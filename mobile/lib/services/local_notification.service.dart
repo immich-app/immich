@@ -136,7 +136,7 @@ class LocalNotificationService {
     switch (notificationResponse.actionId) {
       case cancelUploadActionID:
         {
-          debugPrint('User cancelled manual upload operation');
+          debugPrint("User cancelled manual upload operation");
           ref.read(manualUploadProvider.notifier).cancelBackup();
         }
     }

@@ -21,7 +21,7 @@ class CameraInfo extends StatelessWidget {
         color: textColor.withAlpha(200),
       ),
       title: Text(
-        '${exifInfo.make} ${exifInfo.model}',
+        "${exifInfo.make} ${exifInfo.model}",
         style: context.textTheme.labelLarge,
       ),
       subtitle: exifInfo.f != null ||

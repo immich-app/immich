@@ -29,7 +29,7 @@ class PersonNameEditForm extends HookConsumerWidget {
 
     return AlertDialog(
       title: const Text(
-        'add_a_name',
+        "add_a_name",
         style: TextStyle(fontWeight: FontWeight.bold),
       ).tr(),
       content: SingleChildScrollView(
@@ -49,7 +49,7 @@ class PersonNameEditForm extends HookConsumerWidget {
             PersonNameEditFormResult(false, ''),
           ),
           child: Text(
-            'cancel',
+            "cancel",
             style: TextStyle(
               color: Colors.red[300],
               fontWeight: FontWeight.bold,
@@ -68,7 +68,7 @@ class PersonNameEditForm extends HookConsumerWidget {
             }
           },
           child: Text(
-            'save',
+            "save",
             style: TextStyle(
               color: context.primaryColor,
               fontWeight: FontWeight.bold,

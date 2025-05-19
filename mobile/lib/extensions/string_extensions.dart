@@ -4,11 +4,11 @@ import 'package:uuid/parsing.dart';
 
 extension StringExtension on String {
   String capitalize() {
-    return split(' ')
+    return split(" ")
         .map(
           (str) => str.isEmpty ? str : str[0].toUpperCase() + str.substring(1),
         )
-        .join(' ');
+        .join(" ");
   }
 }
 

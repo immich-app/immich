@@ -21,7 +21,7 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: 'setting_image_viewer_title'.tr()),
+        SettingsSubTitle(title: "setting_image_viewer_title".tr()),
         ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
           title: Text(
@@ -31,14 +31,14 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
         ),
         SettingsSwitchListTile(
           valueNotifier: isPreview,
-          title: 'setting_image_viewer_preview_title'.tr(),
-          subtitle: 'setting_image_viewer_preview_subtitle'.tr(),
+          title: "setting_image_viewer_preview_title".tr(),
+          subtitle: "setting_image_viewer_preview_subtitle".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
         SettingsSwitchListTile(
           valueNotifier: isOriginal,
-          title: 'setting_image_viewer_original_title'.tr(),
-          subtitle: 'setting_image_viewer_original_subtitle'.tr(),
+          title: "setting_image_viewer_original_title".tr(),
+          subtitle: "setting_image_viewer_original_subtitle".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
       ],

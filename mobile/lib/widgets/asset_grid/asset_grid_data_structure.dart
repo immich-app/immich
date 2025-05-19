@@ -103,7 +103,7 @@ class RenderList {
       // return the requested slice from the buffer (we made sure before that the assets are loaded!)
       return _buf.slice(offset - _bufOffset, offset - _bufOffset + count);
     }
-    throw Exception('RenderList has neither assets nor query');
+    throw Exception("RenderList has neither assets nor query");
   }
 
   /// Returns the requested asset either from cached buffer or directly from the database
@@ -121,12 +121,12 @@ class RenderList {
       final asset = query!.offset(index).findFirstSync();
       if (asset == null) {
         throw Exception(
-          'Asset at index $index does no longer exist in database',
+          "Asset at index $index does no longer exist in database",
         );
       }
       return asset;
     }
-    throw Exception('RenderList has neither assets nor query');
+    throw Exception("RenderList has neither assets nor query");
   }
 
   static Future<RenderList> fromQuery(
@@ -206,9 +206,9 @@ class RenderList {
         // format range with time when both dates are on the same day
         final startTime = DateFormat.Hm().format(from);
         final endTime = DateFormat.Hm().format(to);
-        return '$startDate $startTime - $endTime';
+        return "$startDate $startTime - $endTime";
       }
-      return '$startDate - $endDate';
+      return "$startDate - $endDate";
     }
 
     void mergeMonth() {
@@ -309,7 +309,7 @@ class RenderList {
       addElems(current, prevDate);
       mergeMonth();
     }
-    assert(elements.every((e) => e.count <= sectionSize), 'too large section');
+    assert(elements.every((e) => e.count <= sectionSize), "too large section");
     return RenderList(elements, query, assets);
   }
 

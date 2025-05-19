@@ -26,8 +26,8 @@ class AppBarServerInfo extends HookConsumerWidget {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
       appInfo.value = {
-        'version': packageInfo.version,
-        'buildNumber': packageInfo.buildNumber,
+        "version": packageInfo.version,
+        "buildNumber": packageInfo.buildNumber,
       };
     }
 
@@ -59,7 +59,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                 child: Text(
                   serverInfoState.isVersionMismatch
                       ? serverInfoState.versionMismatchErrorMessage
-                      : 'profile_drawer_client_server_up_to_date'.tr(),
+                      : "profile_drawer_client_server_up_to_date".tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,
@@ -79,7 +79,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Text(
-                        'server_info_box_app_version'.tr(),
+                        "server_info_box_app_version".tr(),
                         style: TextStyle(
                           fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
@@ -115,7 +115,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Text(
-                        'server_version'.tr(),
+                        "server_version".tr(),
                         style: TextStyle(
                           fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
@@ -130,8 +130,8 @@ class AppBarServerInfo extends HookConsumerWidget {
                       padding: const EdgeInsets.only(right: 10.0),
                       child: Text(
                         serverInfoState.serverVersion.major > 0
-                            ? '${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}'
-                            : '--',
+                            ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
+                            : "--",
                         style: TextStyle(
                           fontSize: contentFontSize,
                           color: context.colorScheme.onSurfaceSecondary,
@@ -153,7 +153,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Text(
-                        'server_info_box_server_url'.tr(),
+                        "server_info_box_server_url".tr(),
                         style: TextStyle(
                           fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
@@ -218,7 +218,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                               ),
                             ),
                           Text(
-                            'latest_version'.tr(),
+                            "latest_version".tr(),
                             style: TextStyle(
                               fontSize: titleFontSize,
                               color: context.textTheme.labelSmall?.color,
@@ -235,8 +235,8 @@ class AppBarServerInfo extends HookConsumerWidget {
                       padding: const EdgeInsets.only(right: 10.0),
                       child: Text(
                         serverInfoState.latestVersion.major > 0
-                            ? '${serverInfoState.latestVersion.major}.${serverInfoState.latestVersion.minor}.${serverInfoState.latestVersion.patch}'
-                            : '--',
+                            ? "${serverInfoState.latestVersion.major}.${serverInfoState.latestVersion.minor}.${serverInfoState.latestVersion.patch}"
+                            : "--",
                         style: TextStyle(
                           fontSize: contentFontSize,
                           color: context.colorScheme.onSurfaceSecondary,

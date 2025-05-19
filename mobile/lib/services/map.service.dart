@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 class MapSerivce with ErrorLoggerMixin {
   final ApiService _apiService;
   @override
-  final logger = Logger('MapService');
+  final logger = Logger("MapService");
 
   MapSerivce(this._apiService);
 
@@ -30,7 +30,7 @@ class MapSerivce with ErrorLoggerMixin {
         return markers?.map(MapMarker.fromDto) ?? [];
       },
       defaultValue: [],
-      errorMessage: 'Failed to get map markers',
+      errorMessage: "Failed to get map markers",
     );
   }
 }

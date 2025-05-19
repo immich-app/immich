@@ -56,6 +56,6 @@ class AlbumDateRange extends ConsumerWidget {
             : DateFormat.yMMMd())
         .format(startDate);
     final String endDateText = DateFormat.yMMMd().format(endDate);
-    return '$startDateText - $endDateText';
+    return "$startDateText - $endDateText";
   }
 }

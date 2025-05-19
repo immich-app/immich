@@ -36,14 +36,14 @@ class AlbumControlButton extends ConsumerWidget {
               key: const ValueKey('add_photos_button'),
               iconData: Icons.add_photo_alternate_outlined,
               onPressed: onAddPhotosPressed,
-              labelText: 'add_photos'.tr(),
+              labelText: "add_photos".tr(),
             ),
             if (isOwner)
               AlbumActionFilledButton(
                 key: const ValueKey('add_users_button'),
                 iconData: Icons.person_add_alt_rounded,
                 onPressed: onAddUsersPressed,
-                labelText: 'album_viewer_page_share_add_users'.tr(),
+                labelText: "album_viewer_page_share_add_users".tr(),
               ),
           ],
         ),

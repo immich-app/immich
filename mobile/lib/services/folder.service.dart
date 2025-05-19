@@ -12,7 +12,7 @@ final folderServiceProvider = Provider(
 
 class FolderService {
   final FolderApiRepository _folderApiRepository;
-  final Logger _log = Logger('FolderService');
+  final Logger _log = Logger("FolderService");
 
   FolderService(this._folderApiRepository);
 

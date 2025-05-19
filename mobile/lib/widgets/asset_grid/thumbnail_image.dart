@@ -109,7 +109,7 @@ class ThumbnailImage extends ConsumerWidget {
           children: [
             if (asset.stackCount > 1)
               Text(
-                '${asset.stackCount}',
+                "${asset.stackCount}",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,

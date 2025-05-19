@@ -35,7 +35,7 @@ class AuthService {
   final NetworkService _networkService;
   final BackgroundSyncManager _backgroundSyncManager;
 
-  final _log = Logger('AuthService');
+  final _log = Logger("AuthService");
 
   AuthService(
     this._authApiRepository,
@@ -80,7 +80,7 @@ class AuthService {
         isValid = true;
       }
     } catch (error) {
-      _log.severe('Error validating auxiliary endpoint', error);
+      _log.severe("Error validating auxiliary endpoint", error);
     } finally {
       httpclient.close();
     }
@@ -103,10 +103,10 @@ class AuthService {
     try {
       await _authApiRepository.logout();
     } catch (error, stackTrace) {
-      _log.severe('Error logging out', error, stackTrace);
+      _log.severe("Error logging out", error, stackTrace);
     } finally {
       await clearLocalData().catchError((error, stackTrace) {
-        _log.severe('Error clearing local data', error, stackTrace);
+        _log.severe("Error clearing local data", error, stackTrace);
       });
     }
   }
@@ -139,7 +139,7 @@ class AuthService {
     try {
       return _authApiRepository.changePassword(newPassword);
     } catch (error, stackTrace) {
-      _log.severe('Error changing password', error, stackTrace);
+      _log.severe("Error changing password", error, stackTrace);
       rethrow;
     }
   }
@@ -171,7 +171,7 @@ class AuthService {
         return localEndpoint;
       }
     } catch (error, stackTrace) {
-      _log.severe('Cannot set local endpoint', error, stackTrace);
+      _log.severe("Cannot set local endpoint", error, stackTrace);
     }
 
     return null;
@@ -183,7 +183,7 @@ class AuthService {
     try {
       endpointList = _authRepository.getExternalEndpointList();
     } catch (error, stackTrace) {
-      _log.severe('Cannot get external endpoint', error, stackTrace);
+      _log.severe("Cannot get external endpoint", error, stackTrace);
       return null;
     }
 
@@ -191,10 +191,10 @@ class AuthService {
       try {
         return await _apiService.resolveAndSetEndpoint(endpoint.url);
       } on ApiException catch (error) {
-        _log.severe('Cannot resolve endpoint', error);
+        _log.severe("Cannot resolve endpoint", error);
         continue;
       } catch (_) {
-        _log.severe('Auxiliary server is not valid');
+        _log.severe("Auxiliary server is not valid");
         continue;
       }
     }

@@ -63,7 +63,7 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
         case AssetType.image:
           final File? file = await local.originFile;
           if (file == null) {
-            throw StateError('Opening file for asset ${asset.fileName} failed');
+            throw StateError("Opening file for asset ${asset.fileName} failed");
           }
           final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
           yield await decode(buffer);
@@ -72,7 +72,7 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
           final size = ThumbnailSize(width.ceil(), height.ceil());
           final thumbBytes = await local.thumbnailDataWithSize(size);
           if (thumbBytes == null) {
-            throw StateError('Failed to load preview for ${asset.fileName}');
+            throw StateError("Failed to load preview for ${asset.fileName}");
           }
           final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
           yield await decode(buffer);

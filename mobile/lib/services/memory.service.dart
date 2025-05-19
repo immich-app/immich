@@ -15,7 +15,7 @@ final memoryServiceProvider = StateProvider<MemoryService>((ref) {
 });
 
 class MemoryService {
-  final log = Logger('MemoryService');
+  final log = Logger("MemoryService");
 
   final ApiService _apiService;
   final IAssetRepository _assetRepository;
@@ -55,7 +55,7 @@ class MemoryService {
 
       return memories.isNotEmpty ? memories : null;
     } catch (error, stack) {
-      log.severe('Cannot get memories', error, stack);
+      log.severe("Cannot get memories", error, stack);
       return null;
     }
   }

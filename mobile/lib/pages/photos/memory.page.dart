@@ -34,7 +34,7 @@ class MemoryPage extends HookConsumerWidget {
     final currentAssetPage = useState(0);
     final currentMemoryIndex = useState(memoryIndex);
     final assetProgress = useState(
-      '${currentAssetPage.value + 1}|${currentMemory.value.assets.length}',
+      "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
     );
     const bgColor = Colors.black;
     final currentAsset = useState<Asset?>(null);
@@ -127,7 +127,7 @@ class MemoryPage extends HookConsumerWidget {
 
     updateProgressText() {
       assetProgress.value =
-          '${currentAssetPage.value + 1}|${currentMemory.value.assets.length}';
+          "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
     }
 
     /// Downloads and caches the image for the asset at this [currentMemory]'s index

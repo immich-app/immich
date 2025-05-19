@@ -36,11 +36,11 @@ class BackupUploadStats extends ConsumerWidget {
         children: [
           Text(
             uploadFileProgress,
-            style: const TextStyle(fontSize: 10, fontFamily: 'OverpassMono'),
+            style: const TextStyle(fontSize: 10, fontFamily: "OverpassMono"),
           ),
           Text(
             _formatUploadFileSpeed(uploadFileSpeed),
-            style: const TextStyle(fontSize: 10, fontFamily: 'OverpassMono'),
+            style: const TextStyle(fontSize: 10, fontFamily: "OverpassMono"),
           ),
         ],
       ),

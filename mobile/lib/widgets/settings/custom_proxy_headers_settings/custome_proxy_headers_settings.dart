@@ -14,13 +14,13 @@ class CustomeProxyHeaderSettings extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
       dense: true,
       title: Text(
-        'headers_settings_tile_title'.tr(),
+        "headers_settings_tile_title".tr(),
         style: context.textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w500,
         ),
       ),
       subtitle: Text(
-        'headers_settings_tile_subtitle'.tr(),
+        "headers_settings_tile_subtitle".tr(),
         style: context.textTheme.bodyMedium?.copyWith(
           color: context.colorScheme.onSurfaceSecondary,
         ),

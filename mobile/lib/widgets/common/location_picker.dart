@@ -71,7 +71,7 @@ class _LocationPicker extends HookWidget {
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
-            'cancel',
+            "cancel",
             style: context.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: context.colorScheme.error,
@@ -81,7 +81,7 @@ class _LocationPicker extends HookWidget {
         TextButton(
           onPressed: () => context.maybePop(latlng),
           child: Text(
-            'action_common_update',
+            "action_common_update",
             style: context.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: context.primaryColor,
@@ -191,21 +191,21 @@ class _ManualPicker extends HookWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         const Text(
-          'edit_location_dialog_title',
+          "edit_location_dialog_title",
           textAlign: TextAlign.center,
         ).tr(),
         const SizedBox(height: 12),
         TextButton.icon(
-          icon: const Text('location_picker_choose_on_map').tr(),
+          icon: const Text("location_picker_choose_on_map").tr(),
           label: const Icon(Icons.map_outlined, size: 16),
           onPressed: onModeSwitch,
         ),
         const SizedBox(height: 12),
         _ManualPickerInput(
           initialValue: latlng.latitude.toStringAsFixed(4),
-          decorationText: 'latitude',
-          hintText: 'location_picker_latitude_hint',
-          errorText: 'location_picker_latitude_error',
+          decorationText: "latitude",
+          hintText: "location_picker_latitude_hint",
+          errorText: "location_picker_latitude_error",
           focusNode: latitiudeFocusNode,
           validator: _validateLat,
           onUpdated: onLatitudeUpdated,
@@ -213,9 +213,9 @@ class _ManualPicker extends HookWidget {
         const SizedBox(height: 24),
         _ManualPickerInput(
           initialValue: latlng.longitude.toStringAsFixed(4),
-          decorationText: 'longitude',
-          hintText: 'location_picker_longitude_hint',
-          errorText: 'location_picker_longitude_error',
+          decorationText: "longitude",
+          hintText: "location_picker_longitude_hint",
+          errorText: "location_picker_longitude_error",
           focusNode: longitudeFocusNode,
           validator: _validateLong,
           onUpdated: onLongitudeEditingCompleted,
@@ -243,13 +243,13 @@ class _MapPicker extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         const Text(
-          'edit_location_dialog_title',
+          "edit_location_dialog_title",
           textAlign: TextAlign.center,
         ).tr(),
         const SizedBox(height: 12),
         TextButton.icon(
           icon: Text(
-            '${latlng.latitude.toStringAsFixed(4)}, ${latlng.longitude.toStringAsFixed(4)}',
+            "${latlng.latitude.toStringAsFixed(4)}, ${latlng.longitude.toStringAsFixed(4)}",
           ),
           label: const Icon(Icons.edit_outlined, size: 16),
           onPressed: onModeSwitch,

@@ -17,7 +17,7 @@ class StackService {
     try {
       return _api.stacksApi.getStack(stackId);
     } catch (error) {
-      debugPrint('Error while fetching stack: $error');
+      debugPrint("Error while fetching stack: $error");
     }
     return null;
   }
@@ -28,7 +28,7 @@ class StackService {
         StackCreateDto(assetIds: assetIds),
       );
     } catch (error) {
-      debugPrint('Error while creating stack: $error');
+      debugPrint("Error while creating stack: $error");
     }
     return null;
   }
@@ -43,7 +43,7 @@ class StackService {
         StackUpdateDto(primaryAssetId: primaryAssetId),
       );
     } catch (error) {
-      debugPrint('Error while updating stack children: $error');
+      debugPrint("Error while updating stack children: $error");
     }
     return null;
   }
@@ -64,7 +64,7 @@ class StackService {
       await _assetRepository
           .transaction(() => _assetRepository.updateAll(removeAssets));
     } catch (error) {
-      debugPrint('Error while deleting stack: $error');
+      debugPrint("Error while deleting stack: $error");
     }
   }
 }

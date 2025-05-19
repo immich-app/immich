@@ -21,17 +21,17 @@ class VideoViewerSettings extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: 'videos'.tr()),
+        SettingsSubTitle(title: "videos".tr()),
         SettingsSwitchListTile(
           valueNotifier: useLoopVideo,
-          title: 'setting_video_viewer_looping_title'.tr(),
-          subtitle: 'loop_videos_description'.tr(),
+          title: "setting_video_viewer_looping_title".tr(),
+          subtitle: "loop_videos_description".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
         SettingsSwitchListTile(
           valueNotifier: useOriginalVideo,
-          title: 'setting_video_viewer_original_video_title'.tr(),
-          subtitle: 'setting_video_viewer_original_video_subtitle'.tr(),
+          title: "setting_video_viewer_original_video_title".tr(),
+          subtitle: "setting_video_viewer_original_video_subtitle".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
       ],

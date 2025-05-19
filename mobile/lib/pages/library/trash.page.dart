@@ -57,9 +57,9 @@ class TrashPage extends HookConsumerWidget {
         context: context,
         builder: (context) => ConfirmDialog(
           onOk: () => onEmptyTrash(),
-          title: 'empty_trash'.tr(),
-          ok: 'ok'.tr(),
-          content: 'trash_page_empty_trash_dialog_content'.tr(),
+          title: "empty_trash".tr(),
+          ok: "ok".tr(),
+          content: "trash_page_empty_trash_dialog_content".tr(),
         ),
       );
     }
@@ -77,7 +77,7 @@ class TrashPage extends HookConsumerWidget {
               ImmichToast.show(
                 context: context,
                 msg: 'assets_deleted_permanently'
-                    .tr(namedArgs: {'count': '${selection.value.length}'}),
+                    .tr(namedArgs: {'count': "${selection.value.length}"}),
                 gravity: ToastGravity.BOTTOM,
               );
             }
@@ -93,7 +93,7 @@ class TrashPage extends HookConsumerWidget {
       await showDialog(
         context: context,
         builder: (context) => DeleteDialog(
-          alert: 'delete_dialog_alert_remote',
+          alert: "delete_dialog_alert_remote",
           onDelete: () => onPermanentlyDelete(),
         ),
       );
@@ -118,7 +118,7 @@ class TrashPage extends HookConsumerWidget {
             ImmichToast.show(
               context: context,
               msg: 'assets_restored_successfully'
-                  .tr(namedArgs: {'count': '${selection.value.length}'}),
+                  .tr(namedArgs: {'count': "${selection.value.length}"}),
               gravity: ToastGravity.BOTTOM,
             );
           }
@@ -132,8 +132,8 @@ class TrashPage extends HookConsumerWidget {
     String getAppBarTitle(String count) {
       if (selectionEnabledHook.value) {
         return selection.value.isNotEmpty
-            ? '${selection.value.length}'
-            : 'trash_page_select_assets_btn'.tr();
+            ? "${selection.value.length}"
+            : "trash_page_select_assets_btn".tr();
       }
       return 'trash_page_title'.tr(namedArgs: {'count': count});
     }
@@ -236,7 +236,7 @@ class TrashPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: trashRenderList.maybeWhen(
-        orElse: () => buildAppBar('?'),
+        orElse: () => buildAppBar("?"),
         data: (data) => buildAppBar(data.totalAssets.toString()),
       ),
       body: trashRenderList.widgetWhen(
@@ -259,8 +259,8 @@ class TrashPage extends HookConsumerWidget {
                           vertical: 24,
                         ),
                         child: const Text(
-                          'trash_page_info',
-                        ).tr(namedArgs: {'days': '$trashDays'}),
+                          "trash_page_info",
+                        ).tr(namedArgs: {"days": "$trashDays"}),
                       ),
                     ),
                   ),

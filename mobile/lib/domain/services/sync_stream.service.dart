@@ -29,7 +29,7 @@ class SyncStreamService {
     List<SyncEvent> items = [];
     for (final event in events) {
       if (isCancelled) {
-        _logger.warning('Sync stream cancelled');
+        _logger.warning("Sync stream cancelled");
         abort();
         return;
       }
@@ -59,7 +59,7 @@ class SyncStreamService {
     SyncEntityType type,
     Iterable<dynamic> data,
   ) async {
-    _logger.fine('Processing sync data for $type of length ${data.length}');
+    _logger.fine("Processing sync data for $type of length ${data.length}");
     switch (type) {
       case SyncEntityType.userV1:
         return _syncStreamRepository.updateUsersV1(data.cast());
@@ -82,7 +82,7 @@ class SyncStreamService {
       case SyncEntityType.partnerAssetExifV1:
         return _syncStreamRepository.updatePartnerAssetsExifV1(data.cast());
       default:
-        _logger.warning('Unknown sync data type: $type');
+        _logger.warning("Unknown sync data type: $type");
     }
   }
 }
