@@ -39,7 +39,7 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="notification-panel"
-  class="absolute right-[25px] top-[70px] z-1 w-[min(360px,100vw-50px)] rounded-3xl bg-gray-100 border border-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray text-light"
+  class="absolute right-[25px] top-[70px] z-1 w-[min(360px,100vw-50px)] rounded-3xl bg-gray-100 border border-gray-200 shadow-lg dark:border dark:border-light dark:bg-immich-dark-gray text-light px-2"
   use:focusTrap
 >
   <Stack class="max-h-[500px]">

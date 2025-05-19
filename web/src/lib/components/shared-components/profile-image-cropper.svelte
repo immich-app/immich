@@ -1,9 +1,8 @@
 <script lang="ts">
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import domtoimage from 'dom-to-image';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -89,16 +88,17 @@
   };
 </script>
 
-<FullScreenModal title={$t('set_profile_picture')} width="auto" {onClose}>
-  <div class="flex place-items-center items-center justify-center">
-    <div
-      class="relative flex aspect-square w-[250px] overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"
-    >
-      <PhotoViewer bind:element={imgElement} {asset} />
+<Modal size="small" title={$t('set_profile_picture')} {onClose}>
+  <ModalBody>
+    <div class="flex place-items-center items-center justify-center">
+      <div
+        class="relative flex aspect-square w-[250px] overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"
+      >
+        <PhotoViewer bind:element={imgElement} {asset} />
+      </div>
     </div>
-  </div>
-
-  {#snippet stickyBottom()}
+  </ModalBody>
+  <ModalFooter>
     <Button fullWidth shape="round" onclick={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
-  {/snippet}
-</FullScreenModal>
+  </ModalFooter>
+</Modal>

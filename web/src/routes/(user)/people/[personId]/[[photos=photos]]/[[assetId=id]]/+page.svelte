@@ -421,11 +421,11 @@
                     class="flex flex-col justify-center text-start px-4 text-immich-primary dark:text-immich-dark-primary"
                   >
                     <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
-                    <p class="text-sm text-gray-500 dark:text-immich-gray">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
                     {#if person.birthDate}
-                      <p class="text-sm text-gray-500 dark:text-immich-gray">
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
                         {$t('person_birthdate', {
                           values: {
                             date: DateTime.fromISO(person.birthDate).toLocaleString(

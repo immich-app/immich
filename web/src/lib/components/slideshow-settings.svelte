@@ -1,9 +1,8 @@
 <script lang="ts">
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import { Button } from '@immich/ui';
+  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
@@ -65,37 +64,40 @@
   };
 </script>
 
-<FullScreenModal title={$t('slideshow_settings')} onClose={() => onClose()}>
-  <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
-    <SettingDropdown
-      title={$t('direction')}
-      options={Object.values(navigationOptions)}
-      selectedOption={navigationOptions[tempSlideshowNavigation]}
-      onToggle={(option) => {
-        tempSlideshowNavigation = handleToggle(option, navigationOptions) || tempSlideshowNavigation;
-      }}
-    />
-    <SettingDropdown
-      title={$t('look')}
-      options={Object.values(lookOptions)}
-      selectedOption={lookOptions[tempSlideshowLook]}
-      onToggle={(option) => {
-        tempSlideshowLook = handleToggle(option, lookOptions) || tempSlideshowLook;
-      }}
-    />
-    <SettingSwitch title={$t('show_progress_bar')} bind:checked={tempShowProgressBar} />
-    <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={tempSlideshowTransition} />
-    <SettingInputField
-      inputType={SettingInputFieldType.NUMBER}
-      label={$t('duration')}
-      description={$t('admin.slideshow_duration_description')}
-      min={1}
-      bind:value={tempSlideshowDelay}
-    />
-  </div>
-
-  {#snippet stickyBottom()}
-    <Button color="secondary" shape="round" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
-    <Button fullWidth color="primary" shape="round" onclick={applyChanges}>{$t('confirm')}</Button>
-  {/snippet}
-</FullScreenModal>
+<Modal size="small" title={$t('slideshow_settings')} onClose={() => onClose()}>
+  <ModalBody>
+    <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
+      <SettingDropdown
+        title={$t('direction')}
+        options={Object.values(navigationOptions)}
+        selectedOption={navigationOptions[tempSlideshowNavigation]}
+        onToggle={(option) => {
+          tempSlideshowNavigation = handleToggle(option, navigationOptions) || tempSlideshowNavigation;
+        }}
+      />
+      <SettingDropdown
+        title={$t('look')}
+        options={Object.values(lookOptions)}
+        selectedOption={lookOptions[tempSlideshowLook]}
+        onToggle={(option) => {
+          tempSlideshowLook = handleToggle(option, lookOptions) || tempSlideshowLook;
+        }}
+      />
+      <SettingSwitch title={$t('show_progress_bar')} bind:checked={tempShowProgressBar} />
+      <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={tempSlideshowTransition} />
+      <SettingInputField
+        inputType={SettingInputFieldType.NUMBER}
+        label={$t('duration')}
+        description={$t('admin.slideshow_duration_description')}
+        min={1}
+        bind:value={tempSlideshowDelay}
+      />
+    </div>
+  </ModalBody>
+  <ModalFooter>
+    <div class="flex gap-2 w-full">
+      <Button color="secondary" shape="round" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
+      <Button fullWidth color="primary" shape="round" onclick={applyChanges}>{$t('confirm')}</Button>
+    </div>
+  </ModalFooter>
+</Modal>
