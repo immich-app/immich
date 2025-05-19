@@ -621,7 +621,7 @@
       {#if viewMode === AlbumPageViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
-            <CastButton isWhiteHover={true} />
+            <CastButton isWhiteHover />
 
             {#if isEditor}
               <CircleIconButton

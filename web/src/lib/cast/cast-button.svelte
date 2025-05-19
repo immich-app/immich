@@ -21,11 +21,11 @@
   };
 </script>
 
-{#if castManager.availableDestinations.length > 0 && castManager.availableDestinations[0].type == CastDestinationType.GCAST}
+{#if castManager.availableDestinations.length > 0 && castManager.availableDestinations[0].type === CastDestinationType.GCAST}
   <CircleIconButton
     color={getButtonColor()}
     icon={castManager.isCasting ? mdiCastConnected : mdiCast}
-    onclick={() => void GCastDestination.showCastDialog()}
+    onclick={GCastDestination.showCastDialog}
     title={$t('cast')}
   />
 {/if}

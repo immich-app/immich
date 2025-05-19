@@ -42,7 +42,7 @@ class CastManager {
   availableDestinations = $state<CastDestination[]>([]);
   initialized = $state(false);
 
-  isCasting = $derived<boolean>(this.current !== null && this.current.isConnected);
+  isCasting = $derived<boolean>(this.current?.isConnected ?? false);
   receiverName = $derived<string | null>(this.current?.receiverName ?? null);
   castState = $derived<CastState | null>(this.current?.castState ?? null);
   currentTime = $derived<number | null>(this.current?.currentTime ?? null);

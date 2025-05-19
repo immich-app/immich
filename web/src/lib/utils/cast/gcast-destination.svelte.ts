@@ -11,12 +11,12 @@ enum SESSION_DISCOVERY_CAUSE {
 
 export class GCastDestination implements CastDestination {
   type = CastDestinationType.GCAST;
-  isAvailable = $state(false);
-  isConnected = $state(false);
-  currentTime: number | null = $state(null);
-  duration: number | null = $state(null);
-  castState = $state(CastState.IDLE);
-  receiverName: string | null = $state(null);
+  isAvailable = $state<boolean>(false);
+  isConnected = $state<boolean>(false);
+  currentTime = $state<number | null>(null);
+  duration = $state<number | null>(null);
+  castState = $state<CastState>(CastState.IDLE);
+  receiverName = $state<string | null>(null);
 
   private remotePlayer: cast.framework.RemotePlayer | null = null;
   private session: chrome.cast.Session | null = null;
@@ -59,37 +59,35 @@ export class GCastDestination implements CastDestination {
 
     console.debug('GCast API available:', this.isAvailable);
 
-    if (this.isAvailable) {
-      const castContext = cast.framework.CastContext.getInstance();
-      this.remotePlayer = new cast.framework.RemotePlayer();
-
-      castContext.setOptions({
-        receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-        autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-      });
-
-      //
-      // setup the event listeners
-      //
-
-      castContext.addEventListener(
-        cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-        this.onSessionStateChanged.bind(this),
-      );
-
-      castContext.addEventListener(
-        cast.framework.CastContextEventType.CAST_STATE_CHANGED,
-        this.onCastStateChanged.bind(this),
-      );
-
-      const remotePlayerController = new cast.framework.RemotePlayerController(this.remotePlayer);
-      remotePlayerController.addEventListener(
-        cast.framework.RemotePlayerEventType.ANY_CHANGE,
-        this.onRemotePlayerChange.bind(this),
-      );
+    if (!this.isAvailable) {
+      return false;
     }
 
-    return this.isAvailable;
+    const castContext = cast.framework.CastContext.getInstance();
+    this.remotePlayer = new cast.framework.RemotePlayer();
+
+    castContext.setOptions({
+      receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+      autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+    });
+
+    castContext.addEventListener(
+      cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+      this.onSessionStateChanged.bind(this),
+    );
+
+    castContext.addEventListener(
+      cast.framework.CastContextEventType.CAST_STATE_CHANGED,
+      this.onCastStateChanged.bind(this),
+    );
+
+    const remotePlayerController = new cast.framework.RemotePlayerController(this.remotePlayer);
+    remotePlayerController.addEventListener(
+      cast.framework.RemotePlayerEventType.ANY_CHANGE,
+      this.onRemotePlayerChange.bind(this),
+    );
+
+    return true;
   }
 
   async loadMedia(mediaUrl: string, sessionKey: string, reload: boolean = false): Promise<void> {
@@ -109,12 +107,9 @@ export class GCastDestination implements CastDestination {
     }
 
     // we need to send content type in the request
-    let contentType: string | null = null;
-
     // in the future we can swap this out for an API call to get image metadata
-    await fetch(mediaUrl, { method: 'HEAD' }).then((response) => {
-      contentType = response.headers.get('content-type');
-    });
+    const assetHead = await fetch(mediaUrl, { method: 'HEAD' });
+    const contentType = assetHead.headers.get('content-type');
 
     if (!contentType) {
       console.error('Could not get content type for url ' + mediaUrl);
