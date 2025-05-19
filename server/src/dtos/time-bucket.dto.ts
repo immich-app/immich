@@ -83,7 +83,6 @@ export class TimeBucketAssetResponseDto {
   @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
   duration!: (string | null)[];
 
-  // id, count
   @ApiProperty({
     type: 'array',
     items: {
