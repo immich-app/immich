@@ -24,9 +24,9 @@ void main() {
     test('remote album with owner, thumbnail, sharedUsers and assets',
         () async {
       final Album album = Album(
-        name: 'album-with-two-assets-and-two-users',
-        localId: 'album-with-two-assets-and-two-users-local',
-        remoteId: 'album-with-two-assets-and-two-users-remote',
+        name: "album-with-two-assets-and-two-users",
+        localId: "album-with-two-assets-and-two-users-local",
+        remoteId: "album-with-two-assets-and-two-users-remote",
         createdAt: DateTime(2001),
         modifiedAt: DateTime(2010),
         shared: true,
@@ -67,9 +67,9 @@ void main() {
 
     test('remote album without any info', () async {
       makeEmptyAlbum() => Album(
-            name: 'album-without-info',
-            localId: 'album-without-info-local',
-            remoteId: 'album-without-info-remote',
+            name: "album-without-info",
+            localId: "album-without-info-local",
+            remoteId: "album-without-info-remote",
             createdAt: DateTime(2001),
             modifiedAt: DateTime(2010),
             shared: false,

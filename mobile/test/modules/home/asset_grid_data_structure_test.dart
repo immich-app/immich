@@ -13,7 +13,7 @@ void main() {
 
     testAssets.add(
       Asset(
-        checksum: '',
+        checksum: "",
         localId: '$i',
         ownerId: 1,
         fileCreatedAt: date,

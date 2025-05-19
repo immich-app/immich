@@ -107,9 +107,9 @@ void main() {
     expect(db.users.countSync(), 1);
   });
 
-  group('App bar', () {
+  group("App bar", () {
     testWidgets(
-      'No title when currentAsset != null',
+      "No title when currentAsset != null",
       (tester) async {
         await tester.pumpConsumerWidget(
           const ActivitiesPage(),
@@ -122,7 +122,7 @@ void main() {
     );
 
     testWidgets(
-      'Album name as title when currentAsset == null',
+      "Album name as title when currentAsset == null",
       (tester) async {
         await tester.pumpConsumerWidget(
           const ActivitiesPage(),
@@ -140,9 +140,9 @@ void main() {
     );
   });
 
-  group('Body', () {
+  group("Body", () {
     testWidgets(
-      'Contains a stack with Activity List and Activity Input',
+      "Contains a stack with Activity List and Activity Input",
       (tester) async {
         await tester.pumpConsumerWidget(
           const ActivitiesPage(),
@@ -169,7 +169,7 @@ void main() {
     );
 
     testWidgets(
-      'List Contains all dismissible activities',
+      "List Contains all dismissible activities",
       (tester) async {
         await tester.pumpConsumerWidget(
           const ActivitiesPage(),
@@ -190,7 +190,7 @@ void main() {
     );
 
     testWidgets(
-      'Submitting text input adds a comment with the text',
+      "Submitting text input adds a comment with the text",
       (tester) async {
         await tester.pumpConsumerWidget(
           const ActivitiesPage(),
@@ -210,7 +210,7 @@ void main() {
     );
 
     testWidgets(
-      'Owner can remove all activities',
+      "Owner can remove all activities",
       (tester) async {
         await tester.pumpConsumerWidget(
           const ActivitiesPage(),
@@ -226,7 +226,7 @@ void main() {
     );
 
     testWidgets(
-      'Non-Owner can remove only their activities',
+      "Non-Owner can remove only their activities",
       (tester) async {
         final mockCurrentUser = MockCurrentUserProvider();
 

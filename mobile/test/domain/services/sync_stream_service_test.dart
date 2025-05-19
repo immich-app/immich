@@ -84,9 +84,9 @@ void main() {
     await handleEventsCallback(events, mockAbortCallbackWrapper.call);
   }
 
-  group('SyncStreamService - _handleEvents', () {
+  group("SyncStreamService - _handleEvents", () {
     test(
-      'processes events and acks successfully when handlers succeed',
+      "processes events and acks successfully when handlers succeed",
       () async {
         final events = [
           SyncStreamStub.userDeleteV1,
@@ -100,19 +100,19 @@ void main() {
 
         verifyInOrder([
           () => mockSyncStreamRepo.deleteUsersV1(any()),
-          () => mockSyncApiRepo.ack(['2']),
+          () => mockSyncApiRepo.ack(["2"]),
           () => mockSyncStreamRepo.updateUsersV1(any()),
-          () => mockSyncApiRepo.ack(['5']),
+          () => mockSyncApiRepo.ack(["5"]),
           () => mockSyncStreamRepo.deletePartnerV1(any()),
-          () => mockSyncApiRepo.ack(['4']),
+          () => mockSyncApiRepo.ack(["4"]),
           () => mockSyncStreamRepo.updatePartnerV1(any()),
-          () => mockSyncApiRepo.ack(['3']),
+          () => mockSyncApiRepo.ack(["3"]),
         ]);
         verifyNever(() => mockAbortCallbackWrapper());
       },
     );
 
-    test('processes final batch correctly', () async {
+    test("processes final batch correctly", () async {
       final events = [
         SyncStreamStub.userDeleteV1,
         SyncStreamStub.userV1Admin,
@@ -122,14 +122,14 @@ void main() {
 
       verifyInOrder([
         () => mockSyncStreamRepo.deleteUsersV1(any()),
-        () => mockSyncApiRepo.ack(['2']),
+        () => mockSyncApiRepo.ack(["2"]),
         () => mockSyncStreamRepo.updateUsersV1(any()),
-        () => mockSyncApiRepo.ack(['1']),
+        () => mockSyncApiRepo.ack(["1"]),
       ]);
       verifyNever(() => mockAbortCallbackWrapper());
     });
 
-    test('does not process or ack when event list is empty', () async {
+    test("does not process or ack when event list is empty", () async {
       await simulateEvents([]);
 
       verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
@@ -140,7 +140,7 @@ void main() {
       verifyNever(() => mockSyncApiRepo.ack(any()));
     });
 
-    test('aborts and stops processing if cancelled during iteration', () async {
+    test("aborts and stops processing if cancelled during iteration", () async {
       final cancellationChecker = _MockCancellationWrapper();
       when(() => cancellationChecker()).thenReturn(false);
 
@@ -169,11 +169,11 @@ void main() {
 
       verify(() => mockAbortCallbackWrapper()).called(1);
 
-      verify(() => mockSyncApiRepo.ack(['2'])).called(1);
+      verify(() => mockSyncApiRepo.ack(["2"])).called(1);
     });
 
     test(
-      'aborts and stops processing if cancelled before processing batch',
+      "aborts and stops processing if cancelled before processing batch",
       () async {
         final cancellationChecker = _MockCancellationWrapper();
         when(() => cancellationChecker()).thenReturn(false);
@@ -215,7 +215,7 @@ void main() {
 
         verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
 
-        verify(() => mockSyncApiRepo.ack(['2'])).called(1);
+        verify(() => mockSyncApiRepo.ack(["2"])).called(1);
       },
     );
   });

@@ -11,7 +11,7 @@ import 'package:isar/isar.dart';
 import '../../fixtures/user.stub.dart';
 import '../../test_utils.dart';
 
-const _kTestAccessToken = '#TestToken';
+const _kTestAccessToken = "#TestToken";
 final _kTestBackupFailed = DateTime(2025, 2, 20, 11, 45);
 const _kTestVersion = 10;
 const _kTestColorfulInterface = false;

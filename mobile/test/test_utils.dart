@@ -55,7 +55,7 @@ abstract final class TestUtils {
         IOSDeviceAssetSchema,
         DeviceAssetEntitySchema,
       ],
-      directory: 'test/',
+      directory: "test/",
       maxSizeMiB: 1024,
       inspector: false,
     );

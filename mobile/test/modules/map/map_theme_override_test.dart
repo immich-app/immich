@@ -33,56 +33,56 @@ void main() {
     await StoreService.init(storeRepository: IsarStoreRepository(db));
     overrides = [
       mapStateNotifierProvider.overrideWith(() => mapStateNotifier),
-      localeProvider.overrideWithValue(const Locale('en')),
+      localeProvider.overrideWithValue(const Locale("en")),
     ];
   });
 
-  testWidgets('Return dark theme style when theme mode is dark',
+  testWidgets("Return dark theme style when theme mode is dark",
       (tester) async {
     AsyncValue<String>? mapStyle;
     await tester.pumpConsumerWidget(
       MapThemeOverride(
         mapBuilder: (AsyncValue<String> style) {
           mapStyle = style;
-          return const Text('Mock');
+          return const Text("Mock");
         },
       ),
       overrides: overrides,
     );
 
     mapStateNotifier.state =
-        mapState.copyWith(darkStyleFetched: const AsyncData('dark'));
+        mapState.copyWith(darkStyleFetched: const AsyncData("dark"));
     await tester.pumpAndSettle();
-    expect(mapStyle?.valueOrNull, 'dark');
+    expect(mapStyle?.valueOrNull, "dark");
   });
 
-  testWidgets('Return error when style is not fetched', (tester) async {
+  testWidgets("Return error when style is not fetched", (tester) async {
     AsyncValue<String>? mapStyle;
     await tester.pumpConsumerWidget(
       MapThemeOverride(
         mapBuilder: (AsyncValue<String> style) {
           mapStyle = style;
-          return const Text('Mock');
+          return const Text("Mock");
         },
       ),
       overrides: overrides,
     );
 
     mapStateNotifier.state = mapState.copyWith(
-      darkStyleFetched: const AsyncError('Error', StackTrace.empty),
+      darkStyleFetched: const AsyncError("Error", StackTrace.empty),
     );
     await tester.pumpAndSettle();
     expect(mapStyle?.hasError, isTrue);
   });
 
-  testWidgets('Return light theme style when theme mode is light',
+  testWidgets("Return light theme style when theme mode is light",
       (tester) async {
     AsyncValue<String>? mapStyle;
     await tester.pumpConsumerWidget(
       MapThemeOverride(
         mapBuilder: (AsyncValue<String> style) {
           mapStyle = style;
-          return const Text('Mock');
+          return const Text("Mock");
         },
       ),
       overrides: overrides,
@@ -90,20 +90,20 @@ void main() {
 
     mapStateNotifier.state = mapState.copyWith(
       themeMode: ThemeMode.light,
-      lightStyleFetched: const AsyncData('light'),
+      lightStyleFetched: const AsyncData("light"),
     );
     await tester.pumpAndSettle();
-    expect(mapStyle?.valueOrNull, 'light');
+    expect(mapStyle?.valueOrNull, "light");
   });
 
-  group('System mode', () {
-    testWidgets('Return dark theme style when system is dark', (tester) async {
+  group("System mode", () {
+    testWidgets("Return dark theme style when system is dark", (tester) async {
       AsyncValue<String>? mapStyle;
       await tester.pumpConsumerWidget(
         MapThemeOverride(
           mapBuilder: (AsyncValue<String> style) {
             mapStyle = style;
-            return const Text('Mock');
+            return const Text("Mock");
           },
         ),
         overrides: overrides,
@@ -113,21 +113,21 @@ void main() {
           Brightness.dark;
       mapStateNotifier.state = mapState.copyWith(
         themeMode: ThemeMode.system,
-        darkStyleFetched: const AsyncData('dark'),
+        darkStyleFetched: const AsyncData("dark"),
       );
       await tester.pumpAndSettle();
 
-      expect(mapStyle?.valueOrNull, 'dark');
+      expect(mapStyle?.valueOrNull, "dark");
     });
 
-    testWidgets('Return light theme style when system is light',
+    testWidgets("Return light theme style when system is light",
         (tester) async {
       AsyncValue<String>? mapStyle;
       await tester.pumpConsumerWidget(
         MapThemeOverride(
           mapBuilder: (AsyncValue<String> style) {
             mapStyle = style;
-            return const Text('Mock');
+            return const Text("Mock");
           },
         ),
         overrides: overrides,
@@ -137,21 +137,21 @@ void main() {
           Brightness.light;
       mapStateNotifier.state = mapState.copyWith(
         themeMode: ThemeMode.system,
-        lightStyleFetched: const AsyncData('light'),
+        lightStyleFetched: const AsyncData("light"),
       );
       await tester.pumpAndSettle();
 
-      expect(mapStyle?.valueOrNull, 'light');
+      expect(mapStyle?.valueOrNull, "light");
     });
 
-    testWidgets('Switches style when system brightness changes',
+    testWidgets("Switches style when system brightness changes",
         (tester) async {
       AsyncValue<String>? mapStyle;
       await tester.pumpConsumerWidget(
         MapThemeOverride(
           mapBuilder: (AsyncValue<String> style) {
             mapStyle = style;
-            return const Text('Mock');
+            return const Text("Mock");
           },
         ),
         overrides: overrides,
@@ -161,16 +161,16 @@ void main() {
           Brightness.light;
       mapStateNotifier.state = mapState.copyWith(
         themeMode: ThemeMode.system,
-        lightStyleFetched: const AsyncData('light'),
-        darkStyleFetched: const AsyncData('dark'),
+        lightStyleFetched: const AsyncData("light"),
+        darkStyleFetched: const AsyncData("dark"),
       );
       await tester.pumpAndSettle();
-      expect(mapStyle?.valueOrNull, 'light');
+      expect(mapStyle?.valueOrNull, "light");
 
       tester.binding.platformDispatcher.platformBrightnessTestValue =
           Brightness.dark;
       await tester.pumpAndSettle();
-      expect(mapStyle?.valueOrNull, 'dark');
+      expect(mapStyle?.valueOrNull, "dark");
     });
   });
 }

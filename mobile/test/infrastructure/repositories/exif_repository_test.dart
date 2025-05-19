@@ -27,22 +27,22 @@ void main() {
     sut = IsarExifRepository(db);
   });
 
-  group('Return with proper orientation', () {
+  group("Return with proper orientation", () {
     setUp(() async {
       await _populateExifTable(db);
     });
 
-    test('isFlipped true for 90CW', () async {
+    test("isFlipped true for 90CW", () async {
       final exif = await sut.get(ExifStub.rotated90CW.assetId!);
       expect(exif!.isFlipped, true);
     });
 
-    test('isFlipped true for 270CW', () async {
+    test("isFlipped true for 270CW", () async {
       final exif = await sut.get(ExifStub.rotated270CW.assetId!);
       expect(exif!.isFlipped, true);
     });
 
-    test('isFlipped false for the original non-rotated image', () async {
+    test("isFlipped false for the original non-rotated image", () async {
       final exif = await sut.get(ExifStub.size.assetId!);
       expect(exif!.isFlipped, false);
     });

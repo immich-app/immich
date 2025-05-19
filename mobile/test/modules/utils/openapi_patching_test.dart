@@ -11,14 +11,14 @@ void main() {
       String targetType;
 
       targetType = 'UserPreferencesResponseDto';
-      value = jsonDecode('''
+      value = jsonDecode("""
 {
   "download": {
     "archiveSize": 4294967296,
     "includeEmbeddedVideos": false
   }
 }
-''');
+""");
 
       upgradeDto(value, targetType);
       expect(value['tags'], TagsResponse().toJson());
@@ -26,14 +26,14 @@ void main() {
     });
 
     test('addDefault', () {
-      dynamic value = jsonDecode('''
+      dynamic value = jsonDecode("""
 {
   "download": {
     "archiveSize": 4294967296,
     "includeEmbeddedVideos": false
   }
 }
-''');
+""");
       String keys = 'download.unknownKey';
       dynamic defaultValue = 69420;
 

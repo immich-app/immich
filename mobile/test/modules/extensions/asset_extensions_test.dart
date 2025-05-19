@@ -42,7 +42,7 @@ void main() {
   // Init Timezone DB
   initializeTimeZones();
 
-  group('Returns local time and offset if no exifInfo', () {
+  group("Returns local time and offset if no exifInfo", () {
     test('returns createdAt directly if in local', () {
       final createdAt = DateTime(2023, 12, 12, 12, 12, 12);
       final a = makeAsset(id: '1', createdAt: createdAt);
@@ -63,10 +63,10 @@ void main() {
     });
   });
 
-  group('Returns dateTimeOriginal', () {
+  group("Returns dateTimeOriginal", () {
     test('Returns dateTimeOriginal in UTC from exifInfo without timezone', () {
-      final createdAt = DateTime.parse('2023-01-27T14:00:00-0500');
-      final dateTimeOriginal = DateTime.parse('2022-01-27T14:00:00+0530');
+      final createdAt = DateTime.parse("2023-01-27T14:00:00-0500");
+      final dateTimeOriginal = DateTime.parse("2022-01-27T14:00:00+0530");
       final e = makeExif(dateTimeOriginal: dateTimeOriginal);
       final a = makeAsset(id: '1', createdAt: createdAt, exifInfo: e);
       final (dt, tz) = a.getTZAdjustedTimeAndOffset();
@@ -78,11 +78,11 @@ void main() {
 
     test('Returns dateTimeOriginal in UTC from exifInfo with invalid timezone',
         () {
-      final createdAt = DateTime.parse('2023-01-27T14:00:00-0500');
-      final dateTimeOriginal = DateTime.parse('2022-01-27T14:00:00+0530');
+      final createdAt = DateTime.parse("2023-01-27T14:00:00-0500");
+      final dateTimeOriginal = DateTime.parse("2022-01-27T14:00:00+0530");
       final e = makeExif(
         dateTimeOriginal: dateTimeOriginal,
-        timeZone: '#_#',
+        timeZone: "#_#",
       ); // Invalid timezone
       final a = makeAsset(id: '1', createdAt: createdAt, exifInfo: e);
       final (dt, tz) = a.getTZAdjustedTimeAndOffset();
@@ -93,11 +93,11 @@ void main() {
     });
   });
 
-  group('Returns adjusted time if timezone available', () {
+  group("Returns adjusted time if timezone available", () {
     test('With timezone as location', () {
-      final createdAt = DateTime.parse('2023-01-27T14:00:00-0500');
-      final dateTimeOriginal = DateTime.parse('2022-01-27T14:00:00+0530');
-      const location = 'Asia/Hong_Kong';
+      final createdAt = DateTime.parse("2023-01-27T14:00:00-0500");
+      final dateTimeOriginal = DateTime.parse("2022-01-27T14:00:00+0530");
+      const location = "Asia/Hong_Kong";
       final e =
           makeExif(dateTimeOriginal: dateTimeOriginal, timeZone: location);
       final a = makeAsset(id: '1', createdAt: createdAt, exifInfo: e);
@@ -110,14 +110,14 @@ void main() {
     });
 
     test('With timezone as offset', () {
-      final createdAt = DateTime.parse('2023-01-27T14:00:00-0500');
-      final dateTimeOriginal = DateTime.parse('2022-01-27T14:00:00+0530');
-      const offset = 'utc+08:00';
+      final createdAt = DateTime.parse("2023-01-27T14:00:00-0500");
+      final dateTimeOriginal = DateTime.parse("2022-01-27T14:00:00+0530");
+      const offset = "utc+08:00";
       final e = makeExif(dateTimeOriginal: dateTimeOriginal, timeZone: offset);
       final a = makeAsset(id: '1', createdAt: createdAt, exifInfo: e);
       final (dt, tz) = a.getTZAdjustedTimeAndOffset();
 
-      final location = getLocation('Asia/Hong_Kong');
+      final location = getLocation("Asia/Hong_Kong");
       final offsetFromLocation =
           Duration(milliseconds: location.currentTimeZone.offset);
       final adjustedTime = dateTimeOriginal.toUtc().add(offsetFromLocation);

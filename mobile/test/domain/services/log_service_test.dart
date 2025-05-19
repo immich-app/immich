@@ -55,7 +55,7 @@ void main() {
     await sut.dispose();
   });
 
-  group('Log Service Init:', () {
+  group("Log Service Init:", () {
     test('Truncates the existing logs on init', () {
       final limit =
           verify(() => mockLogRepo.truncate(limit: captureAny(named: 'limit')))
@@ -70,7 +70,7 @@ void main() {
     });
   });
 
-  group('Log Service Set Level:', () {
+  group("Log Service Set Level:", () {
     setUp(() async {
       when(() => mockStoreRepo.insert<int>(StoreKey.logLevel, any()))
           .thenAnswer((_) async => true);
@@ -89,7 +89,7 @@ void main() {
     });
   });
 
-  group('Log Service Buffer:', () {
+  group("Log Service Buffer:", () {
     test('Buffers logs until timer elapses', () {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
@@ -154,7 +154,7 @@ void main() {
     });
   });
 
-  group('Log Service Get messages:', () {
+  group("Log Service Get messages:", () {
     setUp(() {
       when(() => mockLogRepo.getAll()).thenAnswer((_) async => [_kInfoLog]);
     });

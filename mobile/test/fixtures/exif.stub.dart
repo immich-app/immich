@@ -12,7 +12,7 @@ abstract final class ExifStub {
     country: 'country',
   );
 
-  static final rotated90CW = const ExifInfo(assetId: 3, orientation: '90');
+  static final rotated90CW = const ExifInfo(assetId: 3, orientation: "90");
 
-  static final rotated270CW = const ExifInfo(assetId: 4, orientation: '-90');
+  static final rotated270CW = const ExifInfo(assetId: 4, orientation: "-90");
 }
