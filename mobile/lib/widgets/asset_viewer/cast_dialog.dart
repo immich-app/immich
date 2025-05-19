@@ -12,6 +12,14 @@ class CastDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final castManager = ref.watch(castProvider);
 
+    bool isCurrentDevice(String deviceName) {
+      return castManager.receiverName == deviceName && castManager.isCasting;
+    }
+
+    bool isDeviceConnecting(String deviceName) {
+      return castManager.receiverName == deviceName && !castManager.isCasting;
+    }
+
     return AlertDialog(
       title: const Text(
         "cast",
@@ -53,7 +61,7 @@ class CastDialog extends ConsumerWidget {
                   title: Text(
                     deviceName,
                     style: TextStyle(
-                      color: castManager.receiverName == deviceName
+                      color: isCurrentDevice(deviceName)
                           ? context.colorScheme.primary
                           : null,
                     ),
@@ -62,12 +70,22 @@ class CastDialog extends ConsumerWidget {
                     type == CastDestinationType.googleCast
                         ? Icons.cast
                         : Icons.cast_connected,
+                    color: isCurrentDevice(deviceName)
+                        ? context.colorScheme.primary
+                        : null,
                   ),
-                  trailing: castManager.isCasting &&
-                          castManager.receiverName == deviceName
+                  trailing: isCurrentDevice(deviceName)
                       ? Icon(Icons.check, color: context.colorScheme.primary)
-                      : null,
+                      : isDeviceConnecting(deviceName)
+                          ? const CircularProgressIndicator()
+                          : null,
                   onTap: () {
+                    // dont accept taps if the device is already connected or is connecting now
+                    if (isDeviceConnecting(deviceName) ||
+                        castManager.isCasting) {
+                      return;
+                    }
+
                     ref.read(castProvider.notifier).connect(type, deviceObj);
                   },
                 );

@@ -1,5 +1,6 @@
 import 'package:cast/device.dart';
 import 'package:cast/session.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -55,12 +56,6 @@ class GCastService implements ICastDestinationService {
 
   void _onCastMessageCallback(Map<String, dynamic> message) {
     final msgType = message['type'];
-
-    print(message);
-
-    if (msgType == 'RECEIVER_STATUS') {
-      print("Got receiver status");
-    }
   }
 
   Future<void> connect(CastDevice device) async {
@@ -99,8 +94,6 @@ class GCastService implements ICastDestinationService {
 
   @override
   void loadMedia(Asset asset, bool reload) async {
-    print("Casting media: ${asset.remoteId}");
-
     if (!isConnected) {
       return;
     } else if (asset.remoteId == null) {
@@ -119,7 +112,7 @@ class GCastService implements ICastDestinationService {
     );
 
     final unauthenticatedUrl = asset.isVideo
-        ? getOriginalUrlForRemoteId(
+        ? getPlaybackUrlForRemoteId(
             asset.remoteId!,
           )
         : getThumbnailUrlForRemoteId(
@@ -142,14 +135,12 @@ class GCastService implements ICastDestinationService {
       "type": "LOAD",
       "media": {
         "contentId": authenticatedURL,
-        "streamType": "LIVE",
+        "streamType": "BUFFERED",
         "contentType": mimeType,
         "contentUrl": authenticatedURL,
       },
       "autoplay": true,
     });
-
-    print("Sending message: $authenticatedURL");
   }
 
   @override
