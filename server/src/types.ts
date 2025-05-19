@@ -89,7 +89,7 @@ export interface VideoStreamInfo {
 export interface AudioStreamInfo {
   index: number;
   codecName?: string;
-  frameCount: number;
+  bitrate: number;
 }
 
 export interface VideoFormat {
