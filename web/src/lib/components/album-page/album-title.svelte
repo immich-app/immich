@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { updateAlbumInfo } from '@immich/sdk';
-  import { handleError } from '$lib/utils/handle-error';
   import { shortcut } from '$lib/actions/shortcut';
+  import { handleError } from '$lib/utils/handle-error';
+  import { updateAlbumInfo } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -40,7 +40,7 @@
   onblur={handleUpdateName}
   class="w-[99%] mb-2 border-b-2 border-transparent text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
     ? 'hover:border-gray-400'
-    : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
+    : 'hover:border-transparent'} focus:border-b-2 focus:border-immich-primary focus:outline-none bg-light dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray placeholder:text-primary/90"
   type="text"
   bind:value={newAlbumName}
   disabled={!isOwned}

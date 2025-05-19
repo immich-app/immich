@@ -18,7 +18,6 @@ export class VersionHistoryRepository {
     return this.db.selectFrom('version_history').selectAll().orderBy('createdAt', 'desc').executeTakeFirst();
   }
 
-  @GenerateSql({ params: [{ version: 'v1.123.0' }] })
   create(version: Insertable<VersionHistory>) {
     return this.db.insertInto('version_history').values(version).returningAll().executeTakeFirstOrThrow();
   }

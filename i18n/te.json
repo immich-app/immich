@@ -1006,7 +1006,7 @@
   "public_share": "పబ్లిక్ షేర్",
   "purchase_account_info": "మద్దతుదారు",
   "purchase_activated_subtitle": "Immich మరియు ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్‌లకు మద్దతు ఇచ్చినందుకు ధన్యవాదాలు",
-  "purchase_activated_time": "{date, date}న యాక్టివేట్ చేయబడింది",
+  "purchase_activated_time": "{date}న యాక్టివేట్ చేయబడింది",
   "purchase_activated_title": "మీ కీ విజయవంతంగా యాక్టివేట్ చేయబడింది",
   "purchase_button_activate": "యాక్టివేట్ చేయండి",
   "purchase_button_buy": "కొను",

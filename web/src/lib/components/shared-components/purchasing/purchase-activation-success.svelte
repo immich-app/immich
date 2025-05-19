@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
+  import { Button } from '@immich/ui';
   import { mdiPartyPopper } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -29,6 +29,6 @@
   </div>
 
   <div class="mt-6 w-full">
-    <Button fullwidth onclick={onDone}>{$t('ok')}</Button>
+    <Button fullWidth shape="round" onclick={onDone}>{$t('ok')}</Button>
   </div>
 </div>

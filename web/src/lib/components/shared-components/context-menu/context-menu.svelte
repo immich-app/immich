@@ -59,7 +59,7 @@
 
 <div
   bind:clientHeight={height}
-  class="fixed z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
+  class="fixed min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
   style:left="{left}px"
   style:top="{top}px"
   transition:slide={{ duration: 250, easing: quintOut }}
@@ -73,7 +73,7 @@
     bind:this={menuElement}
     class="{isVisible
       ? 'max-h-dvh'
-      : 'max-h-0'} flex flex-col transition-all duration-[250ms] ease-in-out outline-none overflow-auto"
+      : 'max-h-0'} flex flex-col transition-all duration-250 ease-in-out outline-none overflow-auto"
     role="menu"
     tabindex="-1"
   >

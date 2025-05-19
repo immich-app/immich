@@ -10,6 +10,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
@@ -17,6 +18,7 @@
   import { getAssetJobMessage, getSharedLink, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetJobName,
     AssetTypeEnum,
@@ -47,7 +49,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    preloadAssets?: AssetResponseDto[];
+    preloadAssets?: TimelineAsset[];
     showNavigation?: boolean;
     withStacked?: boolean;
     isShared?: boolean;
@@ -56,10 +58,10 @@
     preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
     showCloseButton?: boolean;
-    onClose: (dto: { asset: AssetResponseDto }) => void;
+    onClose: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
-    onRandom: () => Promise<AssetResponseDto | undefined>;
+    onRandom: () => Promise<{ id: string } | undefined>;
     copyImage?: () => Promise<void>;
   }
 
@@ -81,7 +83,7 @@
     copyImage = $bindable(),
   }: Props = $props();
 
-  const { setAsset } = assetViewingStore;
+  const { setAssetId } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
@@ -121,7 +123,7 @@
 
     untrack(() => {
       if (stack && stack?.assets.length > 1) {
-        preloadAssets.push(stack.assets[1]);
+        preloadAssets.push(toTimelineAsset(stack.assets[1]));
       }
     });
   };
@@ -161,7 +163,7 @@
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
-        slideshowHistory.queue(asset);
+        slideshowHistory.queue(toTimelineAsset(asset));
         handlePromiseError(handlePlaySlideshow());
       } else if (value === SlideshowState.StopSlideshow) {
         handlePromiseError(handleStopSlideshow());
@@ -171,7 +173,7 @@
     shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
       if (value === SlideshowNavigation.Shuffle) {
         slideshowHistory.reset();
-        slideshowHistory.queue(asset);
+        slideshowHistory.queue(toTimelineAsset(asset));
       }
     });
 
@@ -225,7 +227,7 @@
   };
 
   const closeViewer = () => {
-    onClose({ asset });
+    onClose(asset);
   };
 
   const closeEditor = () => {
@@ -292,8 +294,7 @@
   let assetViewerHtmlElement = $state<HTMLElement>();
 
   const slideshowHistory = new SlideshowHistory((asset) => {
-    setAsset(asset);
-    $restartSlideshowProgress = true;
+    handlePromiseError(setAssetId(asset.id).then(() => ($restartSlideshowProgress = true)));
   });
 
   const handleVideoStarted = () => {
@@ -529,7 +530,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
+      class="row-start-1 row-span-4 w-[360px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
       translate="yes"
     >
       <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
@@ -540,7 +541,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="editor-panel"
-      class="row-start-1 row-span-4 w-[400px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
+      class="row-start-1 row-span-4 w-[400px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
       translate="yes"
     >
       <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
@@ -563,8 +564,8 @@
               imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
               brokenAssetClass="text-xs"
               dimmed={stackedAsset.id !== asset.id}
-              asset={stackedAsset}
-              onClick={(stackedAsset) => {
+              asset={toTimelineAsset(stackedAsset)}
+              onClick={() => {
                 asset = stackedAsset;
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
@@ -589,7 +590,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
-      class="row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
+      class="row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
       translate="yes"
     >
       <ActivityViewer

@@ -220,8 +220,10 @@ export class AlbumRepository {
     await this.db.deleteFrom('albums').where('ownerId', '=', userId).execute();
   }
 
-  async removeAsset(assetId: string): Promise<void> {
-    await this.db.deleteFrom('albums_assets_assets').where('albums_assets_assets.assetsId', '=', assetId).execute();
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @Chunked()
+  async removeAssetsFromAll(assetIds: string[]): Promise<void> {
+    await this.db.deleteFrom('albums_assets_assets').where('albums_assets_assets.assetsId', 'in', assetIds).execute();
   }
 
   @Chunked({ paramIndex: 1 })

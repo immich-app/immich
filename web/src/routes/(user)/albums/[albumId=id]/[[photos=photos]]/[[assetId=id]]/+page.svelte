@@ -6,15 +6,14 @@
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
-  import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -37,6 +36,7 @@
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
+  import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -67,6 +67,7 @@
     updateAlbumInfo,
     type AlbumUserAddDto,
   } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCogOutline,
@@ -91,7 +92,7 @@
 
   let { data = $bindable() }: Props = $props();
 
-  let { isViewing: showAssetViewer, setAsset, gridScrollTarget } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAssetId, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
@@ -173,8 +174,7 @@
         ? await assetStore.getRandomAsset()
         : assetStore.buckets[0]?.dateGroups[0]?.intersetingAssets[0]?.asset;
     if (asset) {
-      setAsset(asset);
-      $slideshowState = SlideshowState.PlaySlideshow;
+      handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
     }
   };
 
@@ -441,10 +441,132 @@
       await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
     }
   };
+
+  const handleEditUsers = async () => {
+    const changed = await modalManager.show(AlbumUsersModal, { album });
+
+    if (changed) {
+      album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    }
+  };
 </script>
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
   <div class="relative w-full shrink">
+    <main class="relative h-dvh overflow-hidden px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
+      <AssetGrid
+        enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
+        {album}
+        {assetStore}
+        assetInteraction={currentAssetIntersection}
+        {isShared}
+        {isSelectionMode}
+        {singleSelect}
+        {showArchiveIcon}
+        {onSelect}
+        onEscape={handleEscape}
+      >
+        {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
+          {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
+            <!-- ALBUM TITLE -->
+            <section class="pt-8 md:pt-24">
+              <AlbumTitle
+                id={album.id}
+                albumName={album.albumName}
+                {isOwned}
+                onUpdate={(albumName) => (album.albumName = albumName)}
+              />
+
+              {#if album.assetCount > 0}
+                <AlbumSummary {album} />
+              {/if}
+
+              <!-- ALBUM SHARING -->
+              {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned)}
+                <div class="my-3 flex gap-x-1">
+                  <!-- link -->
+                  {#if album.hasSharedLink && isOwned}
+                    <CircleIconButton
+                      title={$t('create_link_to_share')}
+                      color="gray"
+                      size="20"
+                      icon={mdiLink}
+                      onclick={handleShareLink}
+                    />
+                  {/if}
+
+                  <!-- owner -->
+                  <button type="button" onclick={handleEditUsers}>
+                    <UserAvatar user={album.owner} size="md" />
+                  </button>
+
+                  <!-- users with write access (collaborators) -->
+                  {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
+                    <button type="button" onclick={handleEditUsers}>
+                      <UserAvatar {user} size="md" />
+                    </button>
+                  {/each}
+
+                  <!-- display ellipsis if there are readonly users too -->
+                  {#if albumHasViewers}
+                    <CircleIconButton
+                      title={$t('view_all_users')}
+                      color="gray"
+                      size="20"
+                      icon={mdiDotsVertical}
+                      onclick={handleEditUsers}
+                    />
+                  {/if}
+
+                  {#if isOwned}
+                    <CircleIconButton
+                      color="gray"
+                      size="20"
+                      icon={mdiPlus}
+                      onclick={handleShare}
+                      title={$t('add_more_users')}
+                    />
+                  {/if}
+                </div>
+              {/if}
+              <!-- ALBUM DESCRIPTION -->
+              <AlbumDescription id={album.id} bind:description={album.description} {isOwned} />
+            </section>
+          {/if}
+
+          {#if album.assetCount === 0}
+            <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
+              <div class="w-[300px]">
+                <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos').toUpperCase()}</p>
+                <button
+                  type="button"
+                  onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
+                  class="mt-5 bg-subtle flex w-full place-items-center gap-6 rounded-2xl border px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 dark:hover:bg-gray-500/20 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                >
+                  <span class="text-text-immich-primary dark:text-immich-dark-primary"
+                    ><Icon path={mdiPlus} size="24" />
+                  </span>
+                  <span class="text-lg">{$t('select_photos')}</span>
+                </button>
+              </div>
+            </section>
+          {/if}
+        {/if}
+      </AssetGrid>
+
+      {#if showActivityStatus}
+        <div class="absolute z-2 bottom-0 end-0 mb-6 me-6 justify-self-end">
+          <ActivityStatus
+            disabled={!album.isActivityEnabled}
+            isLiked={activityManager.isLiked}
+            numberOfComments={activityManager.commentCount}
+            onFavorite={handleFavorite}
+            onOpenActivityTab={handleOpenAndCloseActivityTab}
+          />
+        </div>
+      {/if}
+    </main>
+
     {#if assetInteraction.selectionActive}
       <AssetSelectControlBar
         assets={assetInteraction.selectedAssets}
@@ -466,10 +588,11 @@
               })}
           ></FavoriteAction>
         {/if}
-        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if assetInteraction.isAllUserOwned}
             <ChangeDate menuItem />
+            <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             {#if assetInteraction.selectedAssets.length === 1}
               <MenuOption
@@ -525,7 +648,7 @@
             {/if}
 
             {#if isOwned}
-              <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+              <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')} offset={{ x: 175, y: 25 }}>
                 {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}
@@ -544,7 +667,7 @@
             {/if}
 
             {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
-              <Button size="sm" rounded="lg" disabled={album.assetCount === 0} onclick={handleShare}>
+              <Button size="small" disabled={album.assetCount === 0} onclick={handleShare}>
                 {$t('share')}
               </Button>
             {/if}
@@ -572,7 +695,7 @@
             >
               {$t('select_from_computer')}
             </button>
-            <Button size="sm" rounded="lg" disabled={!timelineInteraction.selectionActive} onclick={handleAddAssets}
+            <Button size="small" disabled={!timelineInteraction.selectionActive} onclick={handleAddAssets}
               >{$t('done')}</Button
             >
           {/snippet}
@@ -587,129 +710,13 @@
         </ControlAppBar>
       {/if}
     {/if}
-
-    <main
-      class="relative h-dvh overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
-    >
-      <AssetGrid
-        enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
-        {album}
-        {assetStore}
-        assetInteraction={currentAssetIntersection}
-        {isShared}
-        {isSelectionMode}
-        {singleSelect}
-        {showArchiveIcon}
-        {onSelect}
-        onEscape={handleEscape}
-      >
-        {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
-          {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
-            <!-- ALBUM TITLE -->
-            <section class="pt-8 md:pt-24">
-              <AlbumTitle
-                id={album.id}
-                albumName={album.albumName}
-                {isOwned}
-                onUpdate={(albumName) => (album.albumName = albumName)}
-              />
-
-              {#if album.assetCount > 0}
-                <AlbumSummary {album} />
-              {/if}
-
-              <!-- ALBUM SHARING -->
-              {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned)}
-                <div class="my-3 flex gap-x-1">
-                  <!-- link -->
-                  {#if album.hasSharedLink && isOwned}
-                    <CircleIconButton
-                      title={$t('create_link_to_share')}
-                      color="gray"
-                      size="20"
-                      icon={mdiLink}
-                      onclick={handleShareLink}
-                    />
-                  {/if}
-
-                  <!-- owner -->
-                  <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
-                    <UserAvatar user={album.owner} size="md" />
-                  </button>
-
-                  <!-- users with write access (collaborators) -->
-                  {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                    <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
-                      <UserAvatar {user} size="md" />
-                    </button>
-                  {/each}
-
-                  <!-- display ellipsis if there are readonly users too -->
-                  {#if albumHasViewers}
-                    <CircleIconButton
-                      title={$t('view_all_users')}
-                      color="gray"
-                      size="20"
-                      icon={mdiDotsVertical}
-                      onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}
-                    />
-                  {/if}
-
-                  {#if isOwned}
-                    <CircleIconButton
-                      color="gray"
-                      size="20"
-                      icon={mdiPlus}
-                      onclick={handleShare}
-                      title={$t('add_more_users')}
-                    />
-                  {/if}
-                </div>
-              {/if}
-              <!-- ALBUM DESCRIPTION -->
-              <AlbumDescription id={album.id} bind:description={album.description} {isOwned} />
-            </section>
-          {/if}
-
-          {#if album.assetCount === 0}
-            <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
-              <div class="w-[300px]">
-                <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos').toUpperCase()}</p>
-                <button
-                  type="button"
-                  onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
-                  class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-                >
-                  <span class="text-text-immich-primary dark:text-immich-dark-primary"
-                    ><Icon path={mdiPlus} size="24" />
-                  </span>
-                  <span class="text-lg">{$t('select_photos')}</span>
-                </button>
-              </div>
-            </section>
-          {/if}
-        {/if}
-      </AssetGrid>
-
-      {#if showActivityStatus}
-        <div class="absolute z-[2] bottom-0 end-0 mb-6 me-6 justify-self-end">
-          <ActivityStatus
-            disabled={!album.isActivityEnabled}
-            isLiked={activityManager.isLiked}
-            numberOfComments={activityManager.commentCount}
-            onFavorite={handleFavorite}
-            onOpenActivityTab={handleOpenAndCloseActivityTab}
-          />
-        </div>
-      {/if}
-    </main>
   </div>
   {#if album.albumUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg"
+        class="z-2 w-[360px] md:w-[460px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
         translate="yes"
       >
         <ActivityViewer
@@ -723,15 +730,6 @@
     </div>
   {/if}
 </div>
-
-{#if viewMode === AlbumPageViewMode.VIEW_USERS}
-  <ShareInfoModal
-    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
-    {album}
-    onRemove={(userId) => handleRemoveUser(userId, AlbumPageViewMode.VIEW_USERS)}
-    onRefreshAlbum={refreshAlbum}
-  />
-{/if}
 
 {#if viewMode === AlbumPageViewMode.OPTIONS && $user}
   <AlbumOptions

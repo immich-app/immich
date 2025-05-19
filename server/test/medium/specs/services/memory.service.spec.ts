@@ -15,6 +15,7 @@ describe(MemoryService.name, () => {
       database: db || defaultDatabase,
       repos: {
         asset: 'real',
+        database: 'real',
         memory: 'real',
         user: 'real',
         systemMetadata: 'real',

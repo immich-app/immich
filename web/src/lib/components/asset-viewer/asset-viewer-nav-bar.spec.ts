@@ -13,6 +13,7 @@ describe('AssetViewerNavBar component', () => {
     showDownloadButton: false,
     showMotionPlayButton: false,
     showShareButton: false,
+    preAction: () => {},
     onZoomImage: () => {},
     onCopyImage: () => {},
     onAction: () => {},

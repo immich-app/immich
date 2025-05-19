@@ -5,6 +5,7 @@
   import { memoryStore } from '$lib/stores/memory.store.svelte';
   import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -44,9 +45,9 @@
     onscroll={onScroll}
   >
     {#if canScrollLeft || canScrollRight}
-      <div class="sticky start-0 z-20">
+      <div class="sticky start-0">
         {#if canScrollLeft}
-          <div class="absolute start-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
+          <div class="absolute start-4 top-24" transition:fade={{ duration: 200 }}>
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
@@ -59,7 +60,7 @@
           </div>
         {/if}
         {#if canScrollRight}
-          <div class="absolute end-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
+          <div class="absolute end-4 top-24" transition:fade={{ duration: 200 }}>
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
@@ -76,21 +77,21 @@
     <div class="inline-block" use:resizeObserver={({ width }) => (innerWidth = width)}>
       {#each memoryStore.memories as memory (memory.id)}
         <a
-          class="memory-card relative me-2 md:me-4 last:me-0 inline-block aspect-[3/4] md:aspect-[4/3] max-md:h-[150px] xl:aspect-video h-[215px] rounded-xl"
+          class="memory-card relative me-2 md:me-4 last:me-0 inline-block aspect-3/4 md:aspect-4/3 max-md:h-[150px] xl:aspect-video h-[215px] rounded-xl"
           href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
         >
           <img
             class="h-full w-full rounded-xl object-cover"
             src={getAssetThumbnailUrl(memory.assets[0].id)}
-            alt={$t('memory_lane_title', { values: { title: $getAltText(memory.assets[0]) } })}
+            alt={$t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } })}
             draggable="false"
           />
-          <p class="absolute bottom-2 start-4 z-10 text-lg text-white max-md:text-sm">
+          <div
+            class="absolute start-0 top-0 h-full w-full rounded-xl bg-linear-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
+          ></div>
+          <p class="absolute bottom-2 start-4 text-lg text-white max-md:text-sm">
             {$memoryLaneTitle(memory)}
           </p>
-          <div
-            class="absolute start-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
-          ></div>
         </a>
       {/each}
     </div>

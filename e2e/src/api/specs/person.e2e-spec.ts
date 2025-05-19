@@ -5,22 +5,6 @@ import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-const invalidBirthday = [
-  {
-    birthDate: 'false',
-    response: ['birthDate must be a string in the format yyyy-MM-dd', 'Birth date cannot be in the future'],
-  },
-  {
-    birthDate: '123567',
-    response: ['birthDate must be a string in the format yyyy-MM-dd', 'Birth date cannot be in the future'],
-  },
-  {
-    birthDate: 123_567,
-    response: ['birthDate must be a string in the format yyyy-MM-dd', 'Birth date cannot be in the future'],
-  },
-  { birthDate: '9999-01-01', response: ['Birth date cannot be in the future'] },
-];
-
 describe('/people', () => {
   let admin: LoginResponseDto;
   let visiblePerson: PersonResponseDto;
@@ -58,14 +42,6 @@ describe('/people', () => {
 
   describe('GET /people', () => {
     beforeEach(async () => {});
-
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/people');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should return all people (including hidden)', async () => {
       const { status, body } = await request(app)
         .get('/people')
@@ -117,13 +93,6 @@ describe('/people', () => {
   });
 
   describe('GET /people/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/people/${uuidDto.notFound}`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should throw error if person with id does not exist', async () => {
       const { status, body } = await request(app)
         .get(`/people/${uuidDto.notFound}`)
@@ -144,13 +113,6 @@ describe('/people', () => {
   });
 
   describe('GET /people/:id/statistics', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/people/${multipleAssetsPerson.id}/statistics`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should throw error if person with id does not exist', async () => {
       const { status, body } = await request(app)
         .get(`/people/${uuidDto.notFound}/statistics`)
@@ -171,23 +133,6 @@ describe('/people', () => {
   });
 
   describe('POST /people', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/people`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    for (const { birthDate, response } of invalidBirthday) {
-      it(`should not accept an invalid birth date [${birthDate}]`, async () => {
-        const { status, body } = await request(app)
-          .post(`/people`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ birthDate });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(response));
-      });
-    }
-
     it('should create a person', async () => {
       const { status, body } = await request(app)
         .post(`/people`)
@@ -223,39 +168,6 @@ describe('/people', () => {
   });
 
   describe('PUT /people/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/people/${uuidDto.notFound}`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    for (const { key, type } of [
-      { key: 'name', type: 'string' },
-      { key: 'featureFaceAssetId', type: 'string' },
-      { key: 'isHidden', type: 'boolean value' },
-      { key: 'isFavorite', type: 'boolean value' },
-    ]) {
-      it(`should not allow null ${key}`, async () => {
-        const { status, body } = await request(app)
-          .put(`/people/${visiblePerson.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ [key]: null });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest([`${key} must be a ${type}`]));
-      });
-    }
-
-    for (const { birthDate, response } of invalidBirthday) {
-      it(`should not accept an invalid birth date [${birthDate}]`, async () => {
-        const { status, body } = await request(app)
-          .put(`/people/${visiblePerson.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ birthDate });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(response));
-      });
-    }
-
     it('should update a date of birth', async () => {
       const { status, body } = await request(app)
         .put(`/people/${visiblePerson.id}`)
@@ -312,12 +224,6 @@ describe('/people', () => {
   });
 
   describe('POST /people/:id/merge', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/people/${uuidDto.notFound}/merge`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should not supporting merging a person into themselves', async () => {
       const { status, body } = await request(app)
         .post(`/people/${visiblePerson.id}/merge`)

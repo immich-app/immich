@@ -259,6 +259,7 @@ export class PersonService extends BaseService {
     if (force) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
+      await this.personRepository.vacuum({ reindexVectors: true });
     }
 
     let jobs: JobItem[] = [];
@@ -409,6 +410,7 @@ export class PersonService extends BaseService {
     if (force) {
       await this.personRepository.unassignFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
+      await this.personRepository.vacuum({ reindexVectors: false });
     } else if (waiting) {
       this.logger.debug(
         `Skipping facial recognition queueing because ${waiting} job${waiting > 1 ? 's are' : ' is'} already queued`,

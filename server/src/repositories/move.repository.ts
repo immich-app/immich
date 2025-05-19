@@ -37,7 +37,6 @@ export class MoveRepository {
     return this.db.deleteFrom('move_history').where('id', '=', id).returningAll().executeTakeFirstOrThrow();
   }
 
-  @GenerateSql()
   async cleanMoveHistory(): Promise<void> {
     await this.db
       .deleteFrom('move_history')
@@ -52,7 +51,7 @@ export class MoveRepository {
       .execute();
   }
 
-  @GenerateSql()
+  @GenerateSql({ params: [DummyValue.UUID] })
   async cleanMoveHistorySingle(assetId: string): Promise<void> {
     await this.db
       .deleteFrom('move_history')

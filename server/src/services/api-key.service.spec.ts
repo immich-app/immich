@@ -18,7 +18,7 @@ describe(ApiKeyService.name, () => {
       const apiKey = factory.apiKey({ userId: auth.user.id, permissions: [Permission.ALL] });
       const key = 'super-secret';
 
-      mocks.crypto.newPassword.mockReturnValue(key);
+      mocks.crypto.randomBytesAsText.mockReturnValue(key);
       mocks.apiKey.create.mockResolvedValue(apiKey);
 
       await sut.create(auth, { name: apiKey.name, permissions: apiKey.permissions });
@@ -29,7 +29,7 @@ describe(ApiKeyService.name, () => {
         permissions: apiKey.permissions,
         userId: apiKey.userId,
       });
-      expect(mocks.crypto.newPassword).toHaveBeenCalled();
+      expect(mocks.crypto.randomBytesAsText).toHaveBeenCalled();
       expect(mocks.crypto.hashSha256).toHaveBeenCalled();
     });
 
@@ -38,7 +38,7 @@ describe(ApiKeyService.name, () => {
       const apiKey = factory.apiKey({ userId: auth.user.id });
       const key = 'super-secret';
 
-      mocks.crypto.newPassword.mockReturnValue(key);
+      mocks.crypto.randomBytesAsText.mockReturnValue(key);
       mocks.apiKey.create.mockResolvedValue(apiKey);
 
       await sut.create(auth, { permissions: [Permission.ALL] });
@@ -49,7 +49,7 @@ describe(ApiKeyService.name, () => {
         permissions: [Permission.ALL],
         userId: auth.user.id,
       });
-      expect(mocks.crypto.newPassword).toHaveBeenCalled();
+      expect(mocks.crypto.randomBytesAsText).toHaveBeenCalled();
       expect(mocks.crypto.hashSha256).toHaveBeenCalled();
     });
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { removeSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiDeleteOutline } from '@mdi/js';
@@ -18,7 +18,7 @@
   const { getAssets, clearSelect } = getAssetControlContext();
 
   const handleRemove = async () => {
-    const isConfirmed = await dialogController.show({
+    const isConfirmed = await modalManager.showDialog({
       title: $t('remove_assets_title'),
       prompt: $t('remove_assets_shared_link_confirmation', { values: { count: getAssets().length } }),
       confirmText: $t('remove'),

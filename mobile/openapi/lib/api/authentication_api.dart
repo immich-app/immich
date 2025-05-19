@@ -143,6 +143,39 @@ class AuthenticationApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /auth/session/lock' operation and returns the [Response].
+  Future<Response> lockAuthSessionWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/session/lock';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> lockAuthSession() async {
+    final response = await lockAuthSessionWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'POST /auth/login' operation and returns the [Response].
   /// Parameters:
   ///
@@ -234,13 +267,13 @@ class AuthenticationApi {
   /// Performs an HTTP 'DELETE /auth/pin-code' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
-  Future<Response> resetPinCodeWithHttpInfo(PinCodeChangeDto pinCodeChangeDto,) async {
+  /// * [PinCodeResetDto] pinCodeResetDto (required):
+  Future<Response> resetPinCodeWithHttpInfo(PinCodeResetDto pinCodeResetDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/pin-code';
 
     // ignore: prefer_final_locals
-    Object? postBody = pinCodeChangeDto;
+    Object? postBody = pinCodeResetDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -262,9 +295,9 @@ class AuthenticationApi {
 
   /// Parameters:
   ///
-  /// * [PinCodeChangeDto] pinCodeChangeDto (required):
-  Future<void> resetPinCode(PinCodeChangeDto pinCodeChangeDto,) async {
-    final response = await resetPinCodeWithHttpInfo(pinCodeChangeDto,);
+  /// * [PinCodeResetDto] pinCodeResetDto (required):
+  Future<void> resetPinCode(PinCodeResetDto pinCodeResetDto,) async {
+    final response = await resetPinCodeWithHttpInfo(pinCodeResetDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -354,6 +387,45 @@ class AuthenticationApi {
     
     }
     return null;
+  }
+
+  /// Performs an HTTP 'POST /auth/session/unlock' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [SessionUnlockDto] sessionUnlockDto (required):
+  Future<Response> unlockAuthSessionWithHttpInfo(SessionUnlockDto sessionUnlockDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/session/unlock';
+
+    // ignore: prefer_final_locals
+    Object? postBody = sessionUnlockDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [SessionUnlockDto] sessionUnlockDto (required):
+  Future<void> unlockAuthSession(SessionUnlockDto sessionUnlockDto,) async {
+    final response = await unlockAuthSessionWithHttpInfo(sessionUnlockDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Performs an HTTP 'POST /auth/validateToken' operation and returns the [Response].

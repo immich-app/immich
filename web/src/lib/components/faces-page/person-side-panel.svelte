@@ -1,34 +1,34 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { zoomImageToBase64 } from '$lib/utils/people-utils';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import {
+    AssetTypeEnum,
     createPerson,
+    deleteFace,
     getFaces,
     reassignFacesById,
-    AssetTypeEnum,
     type AssetFaceResponseDto,
     type PersonResponseDto,
-    deleteFace,
   } from '@immich/sdk';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { zoomImageToBase64 } from '$lib/utils/people-utils';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
-  import { t } from 'svelte-i18n';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   interface Props {
     assetId: string;
@@ -173,10 +173,9 @@
         return;
       }
 
-      const isConfirmed = await dialogController.show({
+      const isConfirmed = await modalManager.showDialog({
         prompt: $t('confirm_delete_face', { values: { name: face.person.name } }),
       });
-
       if (!isConfirmed) {
         return;
       }
@@ -194,7 +193,7 @@
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 z-[2000] h-full w-[360px] overflow-x-hidden p-2 bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
+  class="absolute top-0 h-full w-[360px] overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
@@ -223,7 +222,7 @@
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
           {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
-          <div class="relative z-[20001] h-[115px] w-[95px]">
+          <div class="relative h-[115px] w-[95px]">
             <div
               role="button"
               tabindex={index}

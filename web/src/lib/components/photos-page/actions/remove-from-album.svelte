@@ -4,12 +4,12 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     album: AlbumResponseDto;
@@ -22,7 +22,7 @@
   const { getAssets, clearSelect } = getAssetControlContext();
 
   const removeFromAlbum = async () => {
-    const isConfirmed = await dialogController.show({
+    const isConfirmed = await modalManager.showDialog({
       prompt: $t('remove_assets_album_confirmation', { values: { count: getAssets().length } }),
     });
 

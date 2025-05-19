@@ -167,6 +167,7 @@ class TabControllerPage extends HookConsumerWidget {
           onPopInvokedWithResult: (didPop, _) =>
               !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: Scaffold(
+            resizeToAvoidBottomInset: false,
             body: isScreenLandscape
                 ? Row(
                     children: [

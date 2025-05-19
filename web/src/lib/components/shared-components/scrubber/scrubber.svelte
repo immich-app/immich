@@ -446,7 +446,7 @@
   aria-valuemax={toScrollY(1)}
   aria-valuemin={toScrollY(0)}
   data-id="immich-scrubbable-scrollbar"
-  class="absolute end-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
+  class="absolute end-0 z-1 select-none hover:cursor-row-resize"
   style:padding-top={PADDING_TOP + 'px'}
   style:padding-bottom={PADDING_BOTTOM + 'px'}
   style:width
@@ -464,7 +464,7 @@
       class={[
         { 'border-b-2': isDragging },
         { 'rounded-bl-md': !isDragging },
-        'truncate opacity-85 pointer-events-none absolute end-0 z-[100] min-w-20 max-w-64 w-fit rounded-ss-md  border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg',
+        'bg-light truncate opacity-85 pointer-events-none absolute end-0 min-w-20 max-w-64 w-fit rounded-ss-md  border-immich-primary py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:text-immich-dark-fg z-1',
       ]}
       style:top="{hoverY + 2}px"
     >
@@ -483,7 +483,7 @@
       out:fade={{ duration: 200 }}
     >
       <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -end-[2px]" />
-      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-[1px] -end-[2px]" />
+      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-px -end-[2px]" />
       {#if (assetStore.scrolling && scrollHoverLabel) || isHover || isDragging}
         <p
           transition:fade={{ duration: 200 }}
@@ -506,7 +506,7 @@
       {#if assetStore.scrolling && scrollHoverLabel && !isHover}
         <p
           transition:fade={{ duration: 200 }}
-          class="truncate pointer-events-none absolute end-0 bottom-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg/80 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray/80 dark:text-immich-dark-fg"
+          class="truncate pointer-events-none absolute end-0 bottom-0 min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-subtle/90 z-1 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:text-immich-dark-fg"
         >
           {scrollHoverLabel}
         </p>
@@ -514,14 +514,14 @@
     </div>
   {/if}
   <div
-    class="relative z-10"
+    class="relative"
     style:height={relativeTopOffset + 'px'}
     data-id="lead-in"
     data-time-segment-bucket-date={segments.at(0)?.date}
     data-label={segments.at(0)?.dateFormatted}
   >
     {#if relativeTopOffset > 6}
-      <div class="absolute end-[0.75rem] h-[4px] w-[4px] rounded-full bg-gray-300"></div>
+      <div class="absolute end-3 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
     {/if}
   </div>
   <!-- Time Segment -->
@@ -535,18 +535,15 @@
     >
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
-          <div class="absolute end-[1.25rem] top-[-16px] z-10 text-[12px] dark:text-immich-dark-fg font-immich-mono">
+          <div class="absolute end-5 top-[-16px] text-[12px] dark:text-immich-dark-fg font-immich-mono">
             {segment.date.year}
           </div>
         {/if}
         {#if segment.hasDot}
-          <div class="absolute end-[0.75rem] bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
+          <div class="absolute end-3 bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
         {/if}
       {/if}
     </div>
   {/each}
   <div data-id="lead-out" class="relative" style:height={relativeBottomOffset + 'px'}></div>
 </div>
-
-<style>
-</style>

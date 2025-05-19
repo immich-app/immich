@@ -7,6 +7,7 @@
     mdiAndroid,
     mdiApple,
     mdiAppleSafari,
+    mdiCast,
     mdiGoogleChrome,
     mdiHelp,
     mdiLinux,
@@ -46,6 +47,8 @@
       <Icon path={mdiUbuntu} size="40" />
     {:else if device.deviceOS === 'Chrome OS' || device.deviceType === 'Chrome' || device.deviceType === 'Chromium' || device.deviceType === 'Mobile Chrome'}
       <Icon path={mdiGoogleChrome} size="40" />
+    {:else if device.deviceOS === 'Google Cast'}
+      <Icon path={mdiCast} size="40" />
     {:else}
       <Icon path={mdiHelp} size="40" />
     {/if}

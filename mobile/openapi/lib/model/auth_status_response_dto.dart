@@ -13,32 +13,70 @@ part of openapi.api;
 class AuthStatusResponseDto {
   /// Returns a new [AuthStatusResponseDto] instance.
   AuthStatusResponseDto({
+    this.expiresAt,
+    required this.isElevated,
     required this.password,
     required this.pinCode,
+    this.pinExpiresAt,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? expiresAt;
+
+  bool isElevated;
 
   bool password;
 
   bool pinCode;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? pinExpiresAt;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AuthStatusResponseDto &&
+    other.expiresAt == expiresAt &&
+    other.isElevated == isElevated &&
     other.password == password &&
-    other.pinCode == pinCode;
+    other.pinCode == pinCode &&
+    other.pinExpiresAt == pinExpiresAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (expiresAt == null ? 0 : expiresAt!.hashCode) +
+    (isElevated.hashCode) +
     (password.hashCode) +
-    (pinCode.hashCode);
+    (pinCode.hashCode) +
+    (pinExpiresAt == null ? 0 : pinExpiresAt!.hashCode);
 
   @override
-  String toString() => 'AuthStatusResponseDto[password=$password, pinCode=$pinCode]';
+  String toString() => 'AuthStatusResponseDto[expiresAt=$expiresAt, isElevated=$isElevated, password=$password, pinCode=$pinCode, pinExpiresAt=$pinExpiresAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.expiresAt != null) {
+      json[r'expiresAt'] = this.expiresAt;
+    } else {
+    //  json[r'expiresAt'] = null;
+    }
+      json[r'isElevated'] = this.isElevated;
       json[r'password'] = this.password;
       json[r'pinCode'] = this.pinCode;
+    if (this.pinExpiresAt != null) {
+      json[r'pinExpiresAt'] = this.pinExpiresAt;
+    } else {
+    //  json[r'pinExpiresAt'] = null;
+    }
     return json;
   }
 
@@ -51,8 +89,11 @@ class AuthStatusResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AuthStatusResponseDto(
+        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
+        isElevated: mapValueOfType<bool>(json, r'isElevated')!,
         password: mapValueOfType<bool>(json, r'password')!,
         pinCode: mapValueOfType<bool>(json, r'pinCode')!,
+        pinExpiresAt: mapValueOfType<String>(json, r'pinExpiresAt'),
       );
     }
     return null;
@@ -100,6 +141,7 @@ class AuthStatusResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'isElevated',
     'password',
     'pinCode',
   };

@@ -11,7 +11,8 @@
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { addSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -33,7 +34,7 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
 
-  let assets = $derived(sharedLink.assets);
+  let assets = $derived(sharedLink.assets.map((a) => toTimelineAsset(a)));
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -87,7 +88,7 @@
   };
 </script>
 
-<section class="bg-immich-bg dark:bg-immich-dark-bg">
+<section>
   {#if sharedLink?.allowUpload || assets.length > 1}
     {#if assetInteraction.selectionActive}
       <AssetSelectControlBar
@@ -126,15 +127,17 @@
     <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
       <GalleryViewer {assets} {assetInteraction} {viewport} />
     </section>
-  {:else}
-    <AssetViewer
-      asset={assets[0]}
-      showCloseButton={false}
-      onAction={handleAction}
-      onPrevious={() => Promise.resolve(false)}
-      onNext={() => Promise.resolve(false)}
-      onRandom={() => Promise.resolve(undefined)}
-      onClose={() => {}}
-    />
+  {:else if assets.length === 1}
+    {#await getAssetInfo({ id: assets[0].id, key: authManager.key }) then asset}
+      <AssetViewer
+        {asset}
+        showCloseButton={false}
+        onAction={handleAction}
+        onPrevious={() => Promise.resolve(false)}
+        onNext={() => Promise.resolve(false)}
+        onRandom={() => Promise.resolve(undefined)}
+        onClose={() => {}}
+      />
+    {/await}
   {/if}
 </section>

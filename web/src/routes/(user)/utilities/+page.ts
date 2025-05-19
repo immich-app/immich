@@ -3,8 +3,8 @@ import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params }) => {
-  await authenticate();
+export const load = (async ({ params, url }) => {
+  await authenticate(url);
   const asset = await getAssetInfoFromParam(params);
   const $t = await getFormatter();
 

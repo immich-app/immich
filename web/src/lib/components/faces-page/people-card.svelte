@@ -62,7 +62,7 @@
   </a>
 
   {#if showVerticalDots}
-    <div class="absolute top-2 end-2">
+    <div class="absolute top-2 end-2 z-1">
       <ButtonContextMenu
         buttonClass="icon-white-drop-shadow focus:opacity-100 {showVerticalDots ? 'opacity-100' : 'opacity-0'}"
         color="opaque"

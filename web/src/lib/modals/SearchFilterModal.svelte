@@ -84,8 +84,8 @@
     },
     display: {
       isArchive: searchQuery.visibility === AssetVisibility.Archive,
-      isFavorite: searchQuery.isFavorite,
-      isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
+      isFavorite: searchQuery.isFavorite ?? false,
+      isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
     },
     mediaType:
       searchQuery.type === AssetTypeEnum.Image
@@ -105,7 +105,11 @@
       location: {},
       camera: {},
       date: {},
-      display: {},
+      display: {
+        isArchive: false,
+        isFavorite: false,
+        isNotInAlbum: false,
+      },
       mediaType: MediaType.All,
       rating: undefined,
     };
@@ -164,7 +168,7 @@
 <Modal icon={mdiTune} size="giant" title={$t('search_options')} {onClose}>
   <ModalBody>
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
-      <div class="space-y-10 pb-10" tabindex="-1">
+      <div class="flex flex-col gap-4 pb-10" tabindex="-1">
         <!-- PEOPLE -->
         <SearchPeopleSection bind:selectedPeople={filter.personIds} />
 

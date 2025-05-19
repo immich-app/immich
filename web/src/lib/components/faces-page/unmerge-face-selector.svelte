@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -9,17 +8,16 @@
     type AssetFaceUpdateItem,
     type PersonResponseDto,
   } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiMerge, mdiPlus } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import Button from '../elements/buttons/button.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     assetIds: string[];
@@ -120,7 +118,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute start-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
+  class="absolute start-0 top-0 h-full w-full bg-light"
 >
   <ControlAppBar {onClose}>
     {#snippet leading()}
@@ -130,38 +128,32 @@
     {#snippet trailing()}
       <div class="flex gap-4">
         <Button
+          shape="round"
           title={$t('create_new_person_hint')}
-          size="sm"
+          leadingIcon={mdiPlus}
+          loading={showLoadingSpinnerCreate}
+          size="small"
           disabled={disableButtons || hasSelection}
           onclick={handleCreate}
         >
-          {#if !showLoadingSpinnerCreate}
-            <Icon path={mdiPlus} size={18} />
-          {:else}
-            <LoadingSpinner />
-          {/if}
-          <span class="ms-2"> {$t('create_new_person')}</span></Button
+          {$t('create_new_person')}</Button
         >
         <Button
-          size="sm"
+          size="small"
+          shape="round"
           title={$t('reassing_hint')}
+          leadingIcon={mdiMerge}
+          loading={showLoadingSpinnerReassign}
           disabled={disableButtons || !hasSelection}
           onclick={handleReassign}
         >
-          {#if !showLoadingSpinnerReassign}
-            <div>
-              <Icon path={mdiMerge} size={18} class="rotate-180" />
-            </div>
-          {:else}
-            <LoadingSpinner />
-          {/if}
-          <span class="ms-2"> {$t('reassign')}</span></Button
-        >
+          {$t('reassign')}
+        </Button>
       </div>
     {/snippet}
   </ControlAppBar>
   {@render merge?.()}
-  <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
+  <section class="px-[70px] pt-[100px]">
     <section id="merge-face-selector relative">
       {#if selectedPerson !== null}
         <div class="mb-10 h-[200px] place-content-center place-items-center">
