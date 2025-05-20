@@ -301,11 +301,31 @@ class ControlBottomAppBar extends HookConsumerWidget {
       ];
     }
 
+    getInitialSize() {
+      if (isInLockedView) {
+        return 0.20;
+      }
+      if (hasRemote) {
+        return 0.35;
+      }
+      return bottomPadding;
+    }
+
+    getMaxChildSize() {
+      if (isInLockedView) {
+        return 0.20;
+      }
+      if (hasRemote) {
+        return 0.65;
+      }
+      return bottomPadding;
+    }
+
     return DraggableScrollableSheet(
       controller: scrollController,
-      initialChildSize: hasRemote ? 0.35 : bottomPadding,
+      initialChildSize: getInitialSize(),
       minChildSize: bottomPadding,
-      maxChildSize: hasRemote ? 0.65 : bottomPadding,
+      maxChildSize: getMaxChildSize(),
       snap: true,
       builder: (
         BuildContext context,
