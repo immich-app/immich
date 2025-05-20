@@ -132,6 +132,7 @@ export class DatabaseRepository {
     if (!Object.values(DatabaseExtension).includes(extension)) {
       throw new Error(`Cannot drop extension '${extension}'`);
     }
+    this.logger.log(`Dropping ${EXTENSION_NAMES[extension]} extension`);
     await sql`DROP EXTENSION IF EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
   }
 
