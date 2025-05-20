@@ -28,6 +28,7 @@
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -49,15 +50,15 @@
 
   const assetInteraction = new AssetInteraction();
 
-  onMount(async () => {
+  onMount(async function initializeFolders() {
     await foldersStore.fetchUniquePaths();
   });
 
-  const handleNavigation = async (folderName: string) => {
+  const handleNavigateToFolder = async function handleNavigateToFolder(folderName: string) {
     await navigateToView(normalizeTreePath(`${data.path || ''}/${folderName}`));
   };
 
-  const getLink = (path: string) => {
+  const getLinkForPath = function getLinkForPath(path: string) {
     const url = new URL(AppRoute.FOLDERS, globalThis.location.href);
     if (path) {
       url.searchParams.set(QueryParameter.PATH, path);
@@ -65,27 +66,67 @@
     return url.href;
   };
 
-  afterNavigate(() => {
+  afterNavigate(function clearAssetSelection() {
     // Clear the asset selection when we navigate (like going to another folder)
     cancelMultiselect(assetInteraction);
   });
 
-  const navigateToView = (path: string) => goto(getLink(path));
+  const navigateToView = function navigateToView(path: string) {
+    return goto(getLinkForPath(path));
+  };
 
-  const triggerAssetUpdate = async () => {
+  const triggerAssetUpdate = async function updateAssets() {
     cancelMultiselect(assetInteraction);
     await foldersStore.refreshAssetsByPath(data.path);
     await invalidateAll();
   };
 
-  const handleSelectAll = () => {
+  const handleSelectAllAssets = function handleSelectAllAssets() {
     if (!data.pathAssets) {
       return;
     }
 
-    assetInteraction.selectAssets(data.pathAssets);
+    assetInteraction.selectAssets(data.pathAssets.map((asset) => toTimelineAsset(asset)));
   };
 </script>
+
+<UserPageLayout title={data.meta.title}>
+  {#snippet sidebar()}
+    <Sidebar>
+      <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
+      <section>
+        <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
+        <div class="h-full">
+          <TreeItems
+            icons={{ default: mdiFolderOutline, active: mdiFolder }}
+            items={tree}
+            active={currentPath}
+            getLink={getLinkForPath}
+          />
+        </div>
+      </section>
+    </Sidebar>
+  {/snippet}
+
+  <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
+
+  <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
+    <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigateToFolder} />
+
+    <!-- Assets -->
+    {#if data.pathAssets && data.pathAssets.length > 0}
+      <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
+        <GalleryViewer
+          assets={data.pathAssets}
+          {assetInteraction}
+          {viewport}
+          showAssetName={true}
+          pageHeaderOffset={54}
+        />
+      </div>
+    {/if}
+  </section>
+</UserPageLayout>
 
 {#if assetInteraction.selectionActive}
   <div class="fixed top-0 start-0 w-full">
@@ -94,14 +135,14 @@
       clearSelect={() => cancelMultiselect(assetInteraction)}
     >
       <CreateSharedLink />
-      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAllAssets} />
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
       </ButtonContextMenu>
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
-        onFavorite={(ids, isFavorite) => {
+        onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
           if (data.pathAssets && data.pathAssets.length > 0) {
             for (const id of ids) {
               const asset = data.pathAssets.find((asset) => asset.id === id);
@@ -129,41 +170,3 @@
     </AssetSelectControlBar>
   </div>
 {/if}
-
-<UserPageLayout title={data.meta.title}>
-  {#snippet sidebar()}
-    <Sidebar>
-      <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
-      <section>
-        <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
-        <div class="h-full">
-          <TreeItems
-            icons={{ default: mdiFolderOutline, active: mdiFolder }}
-            items={tree}
-            active={currentPath}
-            {getLink}
-          />
-        </div>
-      </section>
-    </Sidebar>
-  {/snippet}
-
-  <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />
-
-  <section class="mt-2 h-[calc(100%-theme(spacing.20))] overflow-auto immich-scrollbar">
-    <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigation} />
-
-    <!-- Assets -->
-    {#if data.pathAssets && data.pathAssets.length > 0}
-      <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
-        <GalleryViewer
-          assets={data.pathAssets}
-          {assetInteraction}
-          {viewport}
-          showAssetName={true}
-          pageHeaderOffset={54}
-        />
-      </div>
-    {/if}
-  </section>
-</UserPageLayout>

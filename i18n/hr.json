@@ -1380,7 +1380,7 @@
   "public_share": "Javno dijeljenje",
   "purchase_account_info": "Podržava softver",
   "purchase_activated_subtitle": "Hvala što podržavate Immich i softver otvorenog koda",
-  "purchase_activated_time": "Aktivirano {date, date}",
+  "purchase_activated_time": "Aktivirano {date}",
   "purchase_activated_title": "Vaš ključ je uspješno aktiviran",
   "purchase_button_activate": "Aktiviraj",
   "purchase_button_buy": "Kupi",

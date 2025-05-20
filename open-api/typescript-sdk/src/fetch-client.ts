@@ -1424,7 +1424,25 @@ export type TagBulkAssetsResponseDto = {
 export type TagUpdateDto = {
     color?: string | null;
 };
-export type TimeBucketResponseDto = {
+export type TimeBucketAssetResponseDto = {
+    city: (string | null)[];
+    country: (string | null)[];
+    duration: (string | null)[];
+    id: string[];
+    isFavorite: boolean[];
+    isImage: boolean[];
+    isTrashed: boolean[];
+    livePhotoVideoId: (string | null)[];
+    localDateTime: string[];
+    ownerId: string[];
+    projectionType: (string | null)[];
+    ratio: number[];
+    /** (stack ID, stack asset count) tuple */
+    stack?: (string[] | null)[];
+    thumbhash: (string | null)[];
+    visibility: AssetVisibility[];
+};
+export type TimeBucketsResponseDto = {
     count: number;
     timeBucket: string;
 };
@@ -3389,14 +3407,15 @@ export function tagAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, size, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, page, pageSize, personId, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
+    page?: number;
+    pageSize?: number;
     personId?: string;
-    size: TimeBucketSize;
     tagId?: string;
     timeBucket: string;
     userId?: string;
@@ -3406,15 +3425,16 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AssetResponseDto[];
+        data: TimeBucketAssetResponseDto;
     }>(`/timeline/bucket${QS.query(QS.explode({
         albumId,
         isFavorite,
         isTrashed,
         key,
         order,
+        page,
+        pageSize,
         personId,
-        size,
         tagId,
         timeBucket,
         userId,
@@ -3425,14 +3445,13 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, size, tagId, userId, visibility, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, tagId, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
     personId?: string;
-    size: TimeBucketSize;
     tagId?: string;
     userId?: string;
     visibility?: AssetVisibility;
@@ -3441,7 +3460,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: TimeBucketResponseDto[];
+        data: TimeBucketsResponseDto[];
     }>(`/timeline/buckets${QS.query(QS.explode({
         albumId,
         isFavorite,
@@ -3449,7 +3468,6 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         key,
         order,
         personId,
-        size,
         tagId,
         userId,
         visibility,
@@ -3942,8 +3960,4 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
-}
-export enum TimeBucketSize {
-    Day = "DAY",
-    Month = "MONTH"
 }

@@ -31,7 +31,7 @@
   let { data }: Props = $props();
 
   const assetStore = new AssetStore();
-  void assetStore.updateOptions({ isFavorite: true });
+  void assetStore.updateOptions({ isFavorite: true, withStacked: true });
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
@@ -43,6 +43,21 @@
     }
   };
 </script>
+
+<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
+  <AssetGrid
+    enableRouting={true}
+    withStacked={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.UNFAVORITE}
+    onEscape={handleEscape}
+  >
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_favorites_message')} />
+    {/snippet}
+  </AssetGrid>
+</UserPageLayout>
 
 <!-- Multiselection mode app bar -->
 {#if assetInteraction.selectionActive}
@@ -74,17 +89,3 @@
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
-
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  <AssetGrid
-    enableRouting={true}
-    {assetStore}
-    {assetInteraction}
-    removeAction={AssetAction.UNFAVORITE}
-    onEscape={handleEscape}
-  >
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_favorites_message')} />
-    {/snippet}
-  </AssetGrid>
-</UserPageLayout>

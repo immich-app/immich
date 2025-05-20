@@ -7362,20 +7362,30 @@
             }
           },
           {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
             "schema": {
               "format": "uuid",
               "type": "string"
-            }
-          },
-          {
-            "name": "size",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/TimeBucketSize"
             }
           },
           {
@@ -7434,10 +7444,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/TimeBucketAssetResponseDto"
                 }
               }
             },
@@ -7515,14 +7522,6 @@
             }
           },
           {
-            "name": "size",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/TimeBucketSize"
-            }
-          },
-          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -7571,7 +7570,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/TimeBucketResponseDto"
+                    "$ref": "#/components/schemas/TimeBucketsResponseDto"
                   },
                   "type": "array"
                 }
@@ -14161,7 +14160,131 @@
         ],
         "type": "object"
       },
-      "TimeBucketResponseDto": {
+      "TimeBucketAssetResponseDto": {
+        "properties": {
+          "city": {
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "country": {
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "duration": {
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isFavorite": {
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
+          "isImage": {
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
+          "isTrashed": {
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
+          "livePhotoVideoId": {
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "localDateTime": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ownerId": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "projectionType": {
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ratio": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "stack": {
+            "description": "(stack ID, stack asset count) tuple",
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "nullable": true,
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "thumbhash": {
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "visibility": {
+            "items": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "city",
+          "country",
+          "duration",
+          "id",
+          "isFavorite",
+          "isImage",
+          "isTrashed",
+          "livePhotoVideoId",
+          "localDateTime",
+          "ownerId",
+          "projectionType",
+          "ratio",
+          "thumbhash",
+          "visibility"
+        ],
+        "type": "object"
+      },
+      "TimeBucketsResponseDto": {
         "properties": {
           "count": {
             "type": "integer"
@@ -14175,13 +14298,6 @@
           "timeBucket"
         ],
         "type": "object"
-      },
-      "TimeBucketSize": {
-        "enum": [
-          "DAY",
-          "MONTH"
-        ],
-        "type": "string"
       },
       "ToneMapping": {
         "enum": [
