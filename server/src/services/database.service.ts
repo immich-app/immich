@@ -109,7 +109,8 @@ export class DatabaseService extends BaseService {
       }
 
       for (const { name: dbName, installedVersion } of extensionVersions) {
-        if (dbName !== extension && installedVersion) {
+        const isDepended = dbName === DatabaseExtension.VECTOR && extension === DatabaseExtension.VECTORCHORD;
+        if (dbName !== extension && installedVersion && !isDepended) {
           try {
             await this.databaseRepository.dropExtension(dbName);
           } catch (error) {

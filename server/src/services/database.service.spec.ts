@@ -352,5 +352,68 @@ describe(DatabaseService.name, () => {
       expect(mocks.database.updateVectorExtension).not.toHaveBeenCalled();
       expect(mocks.database.runMigrations).not.toHaveBeenCalled();
     });
+
+    it(`should drop unused extension`, async () => {
+      mocks.database.getExtensionVersions.mockResolvedValue([
+        {
+          name: DatabaseExtension.VECTORS,
+          installedVersion: minVersionInRange,
+          availableVersion: minVersionInRange,
+        },
+        {
+          name: DatabaseExtension.VECTORCHORD,
+          installedVersion: null,
+          availableVersion: minVersionInRange,
+        },
+      ]);
+
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+      expect(mocks.database.createExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORCHORD);
+      expect(mocks.database.dropExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORS);
+    });
+
+    it(`should warn if unused extension could not be dropped`, async () => {
+      mocks.database.getExtensionVersions.mockResolvedValue([
+        {
+          name: DatabaseExtension.VECTORS,
+          installedVersion: minVersionInRange,
+          availableVersion: minVersionInRange,
+        },
+        {
+          name: DatabaseExtension.VECTORCHORD,
+          installedVersion: null,
+          availableVersion: minVersionInRange,
+        },
+      ]);
+      mocks.database.dropExtension.mockRejectedValue(new Error('Failed to drop extension'));
+
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+      expect(mocks.database.createExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORCHORD);
+      expect(mocks.database.dropExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORS);
+      expect(mocks.logger.warn).toHaveBeenCalledTimes(1);
+      expect(mocks.logger.warn.mock.calls[0][0]).toContain('DROP EXTENSION vchord CASCADE');
+    });
+
+    it(`should not try to drop pgvector when using vectorchord`, async () => {
+      mocks.database.getExtensionVersions.mockResolvedValue([
+        {
+          name: DatabaseExtension.VECTOR,
+          installedVersion: minVersionInRange,
+          availableVersion: minVersionInRange,
+        },
+        {
+          name: DatabaseExtension.VECTORCHORD,
+          installedVersion: minVersionInRange,
+          availableVersion: minVersionInRange,
+        },
+      ]);
+      mocks.database.dropExtension.mockRejectedValue(new Error('Failed to drop extension'));
+
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+      expect(mocks.database.dropExtension).not.toHaveBeenCalled();
+    });
   });
 });
