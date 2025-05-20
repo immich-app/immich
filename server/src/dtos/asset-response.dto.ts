@@ -13,6 +13,7 @@ import {
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 
 export class SanitizedAssetResponseDto {
@@ -43,6 +44,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
+  visibility!: AssetVisibility;
   exifInfo?: ExifResponseDto;
   tags?: TagResponseDto[];
   people?: PersonWithFacesResponseDto[];
@@ -139,15 +141,6 @@ const mapStack = (entity: { stack?: Stack | null }) => {
   };
 };
 
-// if an asset is jsonified in the DB before being returned, its buffer fields will be hex-encoded strings
-export const hexOrBufferToBase64 = (encoded: string | Buffer) => {
-  if (typeof encoded === 'string') {
-    return Buffer.from(encoded.slice(2), 'hex').toString('base64');
-  }
-
-  return encoded.toString('base64');
-};
-
 export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
 
@@ -184,13 +177,14 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
     isArchived: entity.visibility === AssetVisibility.ARCHIVE,
     isTrashed: !!entity.deletedAt,
+    visibility: entity.visibility,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
-    checksum: hexOrBufferToBase64(entity.checksum),
+    checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
     hasMetadata: true,

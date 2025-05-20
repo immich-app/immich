@@ -329,6 +329,7 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     updatedAt: string;
+    visibility: Visibility;
 };
 export type AlbumResponseDto = {
     albumName: string;
@@ -430,6 +431,7 @@ export type AssetMediaResponseDto = {
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
+    description?: string;
     duplicateId?: string | null;
     ids: string[];
     isFavorite?: boolean;
@@ -511,17 +513,28 @@ export type LogoutResponseDto = {
     redirectUri: string;
     successful: boolean;
 };
-export type PinCodeChangeDto = {
-    newPinCode: string;
+export type PinCodeResetDto = {
     password?: string;
     pinCode?: string;
 };
 export type PinCodeSetupDto = {
     pinCode: string;
 };
+export type PinCodeChangeDto = {
+    newPinCode: string;
+    password?: string;
+    pinCode?: string;
+};
+export type SessionUnlockDto = {
+    password?: string;
+    pinCode?: string;
+};
 export type AuthStatusResponseDto = {
+    expiresAt?: string;
+    isElevated: boolean;
     password: boolean;
     pinCode: boolean;
+    pinExpiresAt?: string;
 };
 export type ValidateAccessTokenResponseDto = {
     authStatus: boolean;
@@ -1073,7 +1086,24 @@ export type SessionResponseDto = {
     current: boolean;
     deviceOS: string;
     deviceType: string;
+    expiresAt?: string;
     id: string;
+    updatedAt: string;
+};
+export type SessionCreateDto = {
+    deviceOS?: string;
+    deviceType?: string;
+    /** session duration, in seconds */
+    duration?: number;
+};
+export type SessionCreateResponseDto = {
+    createdAt: string;
+    current: boolean;
+    deviceOS: string;
+    deviceType: string;
+    expiresAt?: string;
+    id: string;
+    token: string;
     updatedAt: string;
 };
 export type SharedLinkResponseDto = {
@@ -1390,7 +1420,25 @@ export type TagBulkAssetsResponseDto = {
 export type TagUpdateDto = {
     color?: string | null;
 };
-export type TimeBucketResponseDto = {
+export type TimeBucketAssetResponseDto = {
+    city: (string | null)[];
+    country: (string | null)[];
+    duration: (string | null)[];
+    id: string[];
+    isFavorite: boolean[];
+    isImage: boolean[];
+    isTrashed: boolean[];
+    livePhotoVideoId: (string | null)[];
+    localDateTime: string[];
+    ownerId: string[];
+    projectionType: (string | null)[];
+    ratio: number[];
+    /** (stack ID, stack asset count) tuple */
+    stack?: (string[] | null)[];
+    thumbhash: (string | null)[];
+    visibility: AssetVisibility[];
+};
+export type TimeBucketsResponseDto = {
     count: number;
     timeBucket: string;
 };
@@ -2049,13 +2097,13 @@ export function logout(opts?: Oazapfts.RequestOpts) {
         method: "POST"
     }));
 }
-export function resetPinCode({ pinCodeChangeDto }: {
-    pinCodeChangeDto: PinCodeChangeDto;
+export function resetPinCode({ pinCodeResetDto }: {
+    pinCodeResetDto: PinCodeResetDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
         ...opts,
         method: "DELETE",
-        body: pinCodeChangeDto
+        body: pinCodeResetDto
     })));
 }
 export function setupPinCode({ pinCodeSetupDto }: {
@@ -2074,6 +2122,21 @@ export function changePinCode({ pinCodeChangeDto }: {
         ...opts,
         method: "PUT",
         body: pinCodeChangeDto
+    })));
+}
+export function lockAuthSession(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/session/lock", {
+        ...opts,
+        method: "POST"
+    }));
+}
+export function unlockAuthSession({ sessionUnlockDto }: {
+    sessionUnlockDto: SessionUnlockDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/session/unlock", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: sessionUnlockDto
     })));
 }
 export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
@@ -2906,12 +2969,32 @@ export function getSessions(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function createSession({ sessionCreateDto }: {
+    sessionCreateDto: SessionCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SessionCreateResponseDto;
+    }>("/sessions", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: sessionCreateDto
+    })));
+}
 export function deleteSession({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/sessions/${encodeURIComponent(id)}`, {
         ...opts,
         method: "DELETE"
+    }));
+}
+export function lockSession({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/sessions/${encodeURIComponent(id)}/lock`, {
+        ...opts,
+        method: "POST"
     }));
 }
 export function getAllSharedLinks({ albumId }: {
@@ -3302,14 +3385,15 @@ export function tagAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, size, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, page, pageSize, personId, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
+    page?: number;
+    pageSize?: number;
     personId?: string;
-    size: TimeBucketSize;
     tagId?: string;
     timeBucket: string;
     userId?: string;
@@ -3319,15 +3403,16 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AssetResponseDto[];
+        data: TimeBucketAssetResponseDto;
     }>(`/timeline/bucket${QS.query(QS.explode({
         albumId,
         isFavorite,
         isTrashed,
         key,
         order,
+        page,
+        pageSize,
         personId,
-        size,
         tagId,
         timeBucket,
         userId,
@@ -3338,14 +3423,13 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, size, tagId, userId, visibility, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, tagId, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
     personId?: string;
-    size: TimeBucketSize;
     tagId?: string;
     userId?: string;
     visibility?: AssetVisibility;
@@ -3354,7 +3438,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: TimeBucketResponseDto[];
+        data: TimeBucketsResponseDto[];
     }>(`/timeline/buckets${QS.query(QS.explode({
         albumId,
         isFavorite,
@@ -3362,7 +3446,6 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         key,
         order,
         personId,
-        size,
         tagId,
         userId,
         visibility,
@@ -3574,7 +3657,8 @@ export enum UserStatus {
 export enum AssetVisibility {
     Archive = "archive",
     Timeline = "timeline",
-    Hidden = "hidden"
+    Hidden = "hidden",
+    Locked = "locked"
 }
 export enum AlbumUserRole {
     Editor = "editor",
@@ -3590,6 +3674,12 @@ export enum AssetTypeEnum {
     Video = "VIDEO",
     Audio = "AUDIO",
     Other = "OTHER"
+}
+export enum Visibility {
+    Archive = "archive",
+    Timeline = "timeline",
+    Hidden = "hidden",
+    Locked = "locked"
 }
 export enum AssetOrder {
     Asc = "asc",
@@ -3660,9 +3750,11 @@ export enum Permission {
     PersonStatistics = "person.statistics",
     PersonMerge = "person.merge",
     PersonReassign = "person.reassign",
+    SessionCreate = "session.create",
     SessionRead = "session.read",
     SessionUpdate = "session.update",
     SessionDelete = "session.delete",
+    SessionLock = "session.lock",
     SharedLinkCreate = "sharedLink.create",
     SharedLinkRead = "sharedLink.read",
     SharedLinkUpdate = "sharedLink.update",
@@ -3846,8 +3938,4 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
-}
-export enum TimeBucketSize {
-    Day = "DAY",
-    Month = "MONTH"
 }

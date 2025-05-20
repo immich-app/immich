@@ -111,11 +111,13 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**changePinCode**](doc//AuthenticationApi.md#changepincode) | **PUT** /auth/pin-code | 
 *AuthenticationApi* | [**getAuthStatus**](doc//AuthenticationApi.md#getauthstatus) | **GET** /auth/status | 
+*AuthenticationApi* | [**lockAuthSession**](doc//AuthenticationApi.md#lockauthsession) | **POST** /auth/session/lock | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**resetPinCode**](doc//AuthenticationApi.md#resetpincode) | **DELETE** /auth/pin-code | 
 *AuthenticationApi* | [**setupPinCode**](doc//AuthenticationApi.md#setuppincode) | **POST** /auth/pin-code | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
+*AuthenticationApi* | [**unlockAuthSession**](doc//AuthenticationApi.md#unlockauthsession) | **POST** /auth/session/unlock | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeprecatedApi* | [**getRandom**](doc//DeprecatedApi.md#getrandom) | **GET** /assets/random | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
@@ -193,9 +195,11 @@ Class | Method | HTTP request | Description
 *ServerApi* | [**getVersionHistory**](doc//ServerApi.md#getversionhistory) | **GET** /server/version-history | 
 *ServerApi* | [**pingServer**](doc//ServerApi.md#pingserver) | **GET** /server/ping | 
 *ServerApi* | [**setServerLicense**](doc//ServerApi.md#setserverlicense) | **PUT** /server/license | 
+*SessionsApi* | [**createSession**](doc//SessionsApi.md#createsession) | **POST** /sessions | 
 *SessionsApi* | [**deleteAllSessions**](doc//SessionsApi.md#deleteallsessions) | **DELETE** /sessions | 
 *SessionsApi* | [**deleteSession**](doc//SessionsApi.md#deletesession) | **DELETE** /sessions/{id} | 
 *SessionsApi* | [**getSessions**](doc//SessionsApi.md#getsessions) | **GET** /sessions | 
+*SessionsApi* | [**lockSession**](doc//SessionsApi.md#locksession) | **POST** /sessions/{id}/lock | 
 *SharedLinksApi* | [**addSharedLinkAssets**](doc//SharedLinksApi.md#addsharedlinkassets) | **PUT** /shared-links/{id}/assets | 
 *SharedLinksApi* | [**createSharedLink**](doc//SharedLinksApi.md#createsharedlink) | **POST** /shared-links | 
 *SharedLinksApi* | [**getAllSharedLinks**](doc//SharedLinksApi.md#getallsharedlinks) | **GET** /shared-links | 
@@ -390,6 +394,7 @@ Class | Method | HTTP request | Description
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [PersonWithFacesResponseDto](doc//PersonWithFacesResponseDto.md)
  - [PinCodeChangeDto](doc//PinCodeChangeDto.md)
+ - [PinCodeResetDto](doc//PinCodeResetDto.md)
  - [PinCodeSetupDto](doc//PinCodeSetupDto.md)
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
@@ -419,7 +424,10 @@ Class | Method | HTTP request | Description
  - [ServerThemeDto](doc//ServerThemeDto.md)
  - [ServerVersionHistoryResponseDto](doc//ServerVersionHistoryResponseDto.md)
  - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
+ - [SessionCreateDto](doc//SessionCreateDto.md)
+ - [SessionCreateResponseDto](doc//SessionCreateResponseDto.md)
  - [SessionResponseDto](doc//SessionResponseDto.md)
+ - [SessionUnlockDto](doc//SessionUnlockDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
@@ -486,8 +494,8 @@ Class | Method | HTTP request | Description
  - [TemplateDto](doc//TemplateDto.md)
  - [TemplateResponseDto](doc//TemplateResponseDto.md)
  - [TestEmailResponseDto](doc//TestEmailResponseDto.md)
- - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
- - [TimeBucketSize](doc//TimeBucketSize.md)
+ - [TimeBucketAssetResponseDto](doc//TimeBucketAssetResponseDto.md)
+ - [TimeBucketsResponseDto](doc//TimeBucketsResponseDto.md)
  - [ToneMapping](doc//ToneMapping.md)
  - [TranscodeHWAccel](doc//TranscodeHWAccel.md)
  - [TranscodePolicy](doc//TranscodePolicy.md)

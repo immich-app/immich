@@ -19,6 +19,8 @@
     mdiImageMultiple,
     mdiImageMultipleOutline,
     mdiLink,
+    mdiLock,
+    mdiLockOutline,
     mdiMagnify,
     mdiMap,
     mdiMapOutline,
@@ -40,6 +42,7 @@
   let isSharingSelected: boolean = $state(false);
   let isTrashSelected: boolean = $state(false);
   let isUtilitiesSelected: boolean = $state(false);
+  let isLockedFolderSelected: boolean = $state(false);
 </script>
 
 <Sidebar ariaLabel={$t('primary')}>
@@ -126,6 +129,13 @@
     routeId="/(user)/archive"
     bind:isSelected={isArchiveSelected}
     icon={isArchiveSelected ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
+  ></SideBarLink>
+
+  <SideBarLink
+    title={$t('locked_folder')}
+    routeId="/(user)/locked"
+    bind:isSelected={isLockedFolderSelected}
+    icon={isLockedFolderSelected ? mdiLock : mdiLockOutline}
   ></SideBarLink>
 
   {#if $featureFlags.trash}

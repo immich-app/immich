@@ -17,6 +17,7 @@ jobs:
     permissions:
       contents: read
     outputs:
+      should_run_i18n: ${{ steps.found_paths.outputs.i18n == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_web: ${{ steps.found_paths.outputs.web == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_cli: ${{ steps.found_paths.outputs.cli == 'true' || steps.should_force.outputs.should_force == 'true' }}
@@ -36,6 +37,8 @@ jobs:
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         with:
           filters: |
+            i18n:
+              - 'i18n/**'
             web:
               - 'web/**'
               - 'i18n/**'
@@ -261,6 +264,46 @@ jobs:
       - name: Run unit tests & coverage
         run: npm run test:cov
         if: ${{ !cancelled() }}
+
+  i18n-tests:
+    name: Test i18n
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_i18n == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: './web/.nvmrc'
+
+      - name: Install dependencies
+        run: npm --prefix=web ci
+
+      - name: Format
+        run: npm --prefix=web run format:i18n
+
+      - name: Find file changes
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
+        id: verify-changed-files
+        with:
+          files: |
+            i18n/**
+
+      - name: Verify files have not changed
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
+        run: |
+          echo "ERROR: i18n files not up to date!"
+          echo "Changed files: ${CHANGED_FILES}"
+          exit 1
 
   e2e-tests-lint:
     name: End-to-End Lint

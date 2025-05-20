@@ -51,7 +51,7 @@
   };
 </script>
 
-<Modal title={$t('edit_user')} size="small" icon={mdiAccountEditOutline} {onClose} class="text-dark bg-light">
+<Modal title={$t('edit_user')} size="small" icon={mdiAccountEditOutline} {onClose}>
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
       <div class="mb-4 flex flex-col gap-2">

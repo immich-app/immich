@@ -434,6 +434,8 @@ class ApiClient {
           return PersonWithFacesResponseDto.fromJson(value);
         case 'PinCodeChangeDto':
           return PinCodeChangeDto.fromJson(value);
+        case 'PinCodeResetDto':
+          return PinCodeResetDto.fromJson(value);
         case 'PinCodeSetupDto':
           return PinCodeSetupDto.fromJson(value);
         case 'PlacesResponseDto':
@@ -492,8 +494,14 @@ class ApiClient {
           return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':
           return ServerVersionResponseDto.fromJson(value);
+        case 'SessionCreateDto':
+          return SessionCreateDto.fromJson(value);
+        case 'SessionCreateResponseDto':
+          return SessionCreateResponseDto.fromJson(value);
         case 'SessionResponseDto':
           return SessionResponseDto.fromJson(value);
+        case 'SessionUnlockDto':
+          return SessionUnlockDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
@@ -626,10 +634,10 @@ class ApiClient {
           return TemplateResponseDto.fromJson(value);
         case 'TestEmailResponseDto':
           return TestEmailResponseDto.fromJson(value);
-        case 'TimeBucketResponseDto':
-          return TimeBucketResponseDto.fromJson(value);
-        case 'TimeBucketSize':
-          return TimeBucketSizeTypeTransformer().decode(value);
+        case 'TimeBucketAssetResponseDto':
+          return TimeBucketAssetResponseDto.fromJson(value);
+        case 'TimeBucketsResponseDto':
+          return TimeBucketsResponseDto.fromJson(value);
         case 'ToneMapping':
           return ToneMappingTypeTransformer().decode(value);
         case 'TranscodeHWAccel':

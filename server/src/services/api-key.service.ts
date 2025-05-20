@@ -9,20 +9,21 @@ import { isGranted } from 'src/utils/access';
 @Injectable()
 export class ApiKeyService extends BaseService {
   async create(auth: AuthDto, dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
-    const secret = this.cryptoRepository.newPassword(32);
+    const token = this.cryptoRepository.randomBytesAsText(32);
+    const tokenHashed = this.cryptoRepository.hashSha256(token);
 
     if (auth.apiKey && !isGranted({ requested: dto.permissions, current: auth.apiKey.permissions })) {
       throw new BadRequestException('Cannot grant permissions you do not have');
     }
 
     const entity = await this.apiKeyRepository.create({
-      key: this.cryptoRepository.hashSha256(secret),
+      key: tokenHashed,
       name: dto.name || 'API Key',
       userId: auth.user.id,
       permissions: dto.permissions,
     });
 
-    return { secret, apiKey: this.map(entity) };
+    return { secret: token, apiKey: this.map(entity) };
   }
 
   async update(auth: AuthDto, id: string, dto: APIKeyUpdateDto): Promise<APIKeyResponseDto> {

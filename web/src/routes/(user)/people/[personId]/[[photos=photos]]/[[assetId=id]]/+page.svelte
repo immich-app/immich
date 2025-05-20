@@ -11,6 +11,7 @@
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -34,7 +35,7 @@
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -46,7 +47,6 @@
     getPersonStatistics,
     searchPerson,
     updatePerson,
-    type AssetResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
   import {
@@ -203,7 +203,7 @@
     data = { ...data, person };
   };
 
-  const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
+  const handleSelectFeaturePhoto = async (asset: TimelineAsset) => {
     if (viewMode !== PersonPageViewMode.SELECT_PERSON) {
       return;
     }
@@ -328,6 +328,7 @@
       return;
     }
 
+    person = updatedPerson;
     people = people.map((person: PersonResponseDto) => {
       if (person.id === updatedPerson.id) {
         return updatedPerson;
@@ -361,7 +362,7 @@
 </script>
 
 <main
-  class="relative h-dvh overflow-hidden tall:ms-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]"
+  class="relative z-0 h-dvh overflow-hidden tall:ms-4 md:pt-(--navbar-height-md) pt-(--navbar-height)"
   use:scrollMemoryClearer={{
     routeStartsWith: AppRoute.PEOPLE,
     beforeClear: () => {
@@ -420,11 +421,11 @@
                     class="flex flex-col justify-center text-start px-4 text-immich-primary dark:text-immich-dark-primary"
                   >
                     <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
-                    <p class="text-sm text-gray-500 dark:text-immich-gray">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
                     {#if person.birthDate}
-                      <p class="text-sm text-gray-500 dark:text-immich-gray">
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
                         {$t('person_birthdate', {
                           values: {
                             date: DateTime.fromISO(person.birthDate).toLocaleString(
@@ -486,19 +487,6 @@
   {/key}
 </main>
 
-{#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
-  <UnMergeFaceSelector
-    assetIds={assetInteraction.selectedAssets.map((a) => a.id)}
-    personAssets={person}
-    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
-    onConfirm={handleUnmerge}
-  />
-{/if}
-
-{#if viewMode === PersonPageViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
-{/if}
-
 <header>
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
@@ -527,6 +515,7 @@
           onClick={handleReassignAssets}
         />
         <ChangeDate menuItem />
+        <ChangeDescription menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction
           menuItem
@@ -579,3 +568,16 @@
     {/if}
   {/if}
 </header>
+
+{#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
+  <UnMergeFaceSelector
+    assetIds={assetInteraction.selectedAssets.map((a) => a.id)}
+    personAssets={person}
+    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
+    onConfirm={handleUnmerge}
+  />
+{/if}
+
+{#if viewMode === PersonPageViewMode.MERGE_PEOPLE}
+  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
+{/if}

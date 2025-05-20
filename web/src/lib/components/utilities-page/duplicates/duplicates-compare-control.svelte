@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
+  import { shortcuts } from '$lib/actions/shortcut';
   import Icon from '$lib/components/elements/icon.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
@@ -7,9 +7,9 @@
   import { handlePromiseError } from '$lib/utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { shortcuts } from '$lib/actions/shortcut';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { mdiCheck, mdiTrashCanOutline, mdiImageMultipleOutline } from '@mdi/js';
+  import { Button } from '@immich/ui';
+  import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -113,7 +113,7 @@
   ]}
 />
 
-<div class="pt-4 rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-[54rem] mx-auto mb-16">
+<div class="pt-4 rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-216 mx-auto mb-16">
   <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
@@ -132,18 +132,28 @@
     <!-- CONFIRM BUTTONS -->
     <div class="flex text-xs text-black">
       {#if trashCount === 0}
-        <Button size="sm" color="primary" class="flex place-items-center rounded-s-full gap-2" onclick={handleResolve}>
+        <Button
+          size="small"
+          color="primary"
+          class="flex place-items-center rounded-s-full gap-2"
+          onclick={handleResolve}
+        >
           <Icon path={mdiCheck} size="20" />{$t('keep_all')}
         </Button>
       {:else}
-        <Button size="sm" color="red" class="flex place-items-center rounded-s-full gap-2 py-3" onclick={handleResolve}>
+        <Button
+          size="small"
+          color="danger"
+          class="flex place-items-center rounded-s-full gap-2 py-3"
+          onclick={handleResolve}
+        >
           <Icon path={mdiTrashCanOutline} size="20" />{trashCount === assets.length
             ? $t('trash_all')
             : $t('trash_count', { values: { count: trashCount } })}
         </Button>
       {/if}
       <Button
-        size="sm"
+        size="small"
         color="primary"
         class="flex place-items-center rounded-e-full  gap-2"
         onclick={handleStack}

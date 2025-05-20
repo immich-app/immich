@@ -1,13 +1,13 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import { user } from '$lib/stores/user.store';
+  import { Button } from '@immich/ui';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -25,7 +25,7 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute z-[1] end-[25px] top-[75px] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute z-1 end-[25px] top-[75px] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   use:focusTrap
 >
   <div
@@ -53,7 +53,15 @@
     </div>
 
     <div class="flex flex-col gap-1">
-      <Button href={AppRoute.USER_SETTINGS} onclick={onClose} color="dark-gray" size="sm" shadow={false} border>
+      <Button
+        href={AppRoute.USER_SETTINGS}
+        onclick={onClose}
+        size="small"
+        color="secondary"
+        variant="ghost"
+        shape="round"
+        class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
+      >
         <div class="flex place-content-center place-items-center text-center gap-2 px-2">
           <Icon path={mdiCog} size="18" ariaHidden />
           {$t('account_settings')}
@@ -63,11 +71,12 @@
         <Button
           href={AppRoute.ADMIN_USERS}
           onclick={onClose}
-          color="dark-gray"
-          size="sm"
-          shadow={false}
-          border
+          shape="round"
+          variant="ghost"
+          size="small"
+          color="secondary"
           aria-current={page.url.pathname.includes('/admin') ? 'page' : undefined}
+          class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
         >
           <div class="flex place-content-center place-items-center text-center gap-2 px-2">
             <Icon path={mdiWrench} size="18" ariaHidden />

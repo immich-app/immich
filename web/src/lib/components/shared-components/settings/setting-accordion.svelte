@@ -64,8 +64,8 @@
 </script>
 
 <div
-  class="border rounded-2xl my-4 px-6 py-4 transition-all {isOpen
-    ? 'border-primary/40 dark:border-primary/50 shadow-md'
+  class="border-2 rounded-2xl border-primary/20 my-4 px-6 py-4 transition-all {isOpen
+    ? 'border-primary/60 shadow-md'
     : ''}"
   bind:this={accordionElement}
 >
