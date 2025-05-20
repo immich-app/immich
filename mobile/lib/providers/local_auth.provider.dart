@@ -43,16 +43,6 @@ class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
         await authenticate(context, 'Authenticate to enable biometrics');
 
     if (!isAuthenticated) {
-      context.showSnackBar(
-        SnackBar(
-          content: Text(
-            'failed_to_authenticate'.tr(),
-            style: context.textTheme.labelLarge,
-          ),
-          duration: const Duration(seconds: 3),
-          backgroundColor: context.colorScheme.errorContainer,
-        ),
-      );
       return false;
     }
 
@@ -81,23 +71,27 @@ class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
           errorMessage = "biometric_locked_out".tr();
           break;
         default:
-          _log.warning("Unknown error during authentication: $error");
+          _log.warning("Failed to authenticate with unknown reason");
+          errorMessage = 'failed_to_authenticate'.tr();
       }
-
-      context.showSnackBar(
-        SnackBar(
-          content: Text(
-            errorMessage,
-            style: context.textTheme.labelLarge,
-          ),
-          duration: const Duration(seconds: 3),
-          backgroundColor: context.colorScheme.errorContainer,
-        ),
-      );
-      return false;
     } catch (error) {
       _log.warning("Error during authentication: $error");
-      return false;
+      errorMessage = 'failed_to_authenticate'.tr();
+    } finally {
+      if (errorMessage.isNotEmpty) {
+        context.showSnackBar(
+          SnackBar(
+            content: Text(
+              errorMessage,
+              style: context.textTheme.labelLarge,
+            ),
+            duration: const Duration(seconds: 3),
+            backgroundColor: context.colorScheme.errorContainer,
+          ),
+        );
+      }
     }
+
+    return false;
   }
 }

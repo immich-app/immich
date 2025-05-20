@@ -40,17 +40,6 @@ class PinAuthPage extends HookConsumerWidget {
         );
 
         context.replaceRoute(const LockedRoute());
-      } else {
-        context.showSnackBar(
-          SnackBar(
-            content: Text(
-              'failed_to_authenticate'.tr(),
-              style: context.textTheme.labelLarge,
-            ),
-            duration: const Duration(seconds: 3),
-            backgroundColor: context.colorScheme.errorContainer,
-          ),
-        );
       }
     }
 
