@@ -7,7 +7,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { AssetVisibility, updateAssets } from '@immich/sdk';
   import { Button } from '@immich/ui';
-  import { mdiEyeOffOutline, mdiFolderMoveOutline } from '@mdi/js';
+  import { mdiLockOpenVariantOutline, mdiLockOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -56,11 +56,11 @@
   <MenuOption
     onClick={setLockedVisibility}
     text={unlock ? $t('move_off_locked_folder') : $t('add_to_locked_folder')}
-    icon={unlock ? mdiFolderMoveOutline : mdiEyeOffOutline}
+    icon={unlock ? mdiLockOpenVariantOutline : mdiLockOutline}
   />
 {:else}
   <Button
-    leadingIcon={unlock ? mdiFolderMoveOutline : mdiEyeOffOutline}
+    leadingIcon={unlock ? mdiLockOpenVariantOutline : mdiLockOutline}
     disabled={loading}
     size="medium"
     color="secondary"

@@ -2,7 +2,7 @@ import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 
-import { AssetTypeEnum, AssetVisibility, type AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility, Visibility, type AssetResponseDto } from '@immich/sdk';
 
 import { memoize } from 'lodash-es';
 import { DateTime, type LocaleOptions } from 'luxon';
@@ -72,6 +72,23 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   const city = assetResponse.exifInfo?.city;
   const country = assetResponse.exifInfo?.country;
   const people = assetResponse.people?.map((person) => person.name) || [];
+
+  const getVisibility = (visibility: Visibility): AssetVisibility => {
+    switch (visibility) {
+      case Visibility.Archive: {
+        return AssetVisibility.Archive;
+      }
+      case Visibility.Hidden: {
+        return AssetVisibility.Hidden;
+      }
+      case Visibility.Locked: {
+        return AssetVisibility.Locked;
+      }
+      case Visibility.Timeline: {
+        return AssetVisibility.Timeline;
+      }
+    }
+  };
   return {
     id: assetResponse.id,
     ownerId: assetResponse.ownerId,
@@ -79,7 +96,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     thumbhash: assetResponse.thumbhash,
     localDateTime: assetResponse.localDateTime,
     isFavorite: assetResponse.isFavorite,
-    visibility: assetResponse.isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline,
+    visibility: getVisibility(assetResponse.visibility),
     isTrashed: assetResponse.isTrashed,
     isVideo: assetResponse.type == AssetTypeEnum.Video,
     isImage: assetResponse.type == AssetTypeEnum.Image,
