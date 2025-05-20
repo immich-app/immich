@@ -126,7 +126,7 @@
         maxlength="1"
         bind:this={pinCodeInputElements[index]}
         id="pin-code-{index}"
-        class="h-12 w-10 rounded-xl border-2 border-suble dark:border-gray-700 bg-transparent text-center text-lg font-medium focus:border-immich-primary focus:ring-primary dark:focus:border-primary font-mono bg-white dark:bg-light"
+        class="h-12 w-10 rounded-xl border-2 border-suble dark:border-gray-700 text-center text-lg font-medium focus:border-immich-primary focus:ring-primary dark:focus:border-primary font-mono bg-white dark:bg-light"
         bind:value={pinValues[index]}
         onkeydown={handleKeydown}
         oninput={(event) => handleInput(event, index)}

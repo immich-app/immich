@@ -1,6 +1,6 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { getAltText } from '$lib/utils/thumbnail-util';
-import { Visibility } from '@immich/sdk';
+import { AssetVisibility } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
 
 interface Person {
@@ -62,7 +62,7 @@ describe('getAltText', () => {
         ratio: 1,
         thumbhash: null,
         localDateTime: '2024-01-01T12:00:00.000Z',
-        visibility: Visibility.Timeline,
+        visibility: AssetVisibility.Timeline,
         isFavorite: false,
         isTrashed: false,
         isVideo,
@@ -71,11 +71,9 @@ describe('getAltText', () => {
         duration: null,
         projectionType: null,
         livePhotoVideoId: null,
-        text: {
-          city: city ?? null,
-          country: country ?? null,
-          people: people?.map((person: Person) => person.name) ?? [],
-        },
+        city: city ?? null,
+        country: country ?? null,
+        people: people?.map((person: Person) => person.name) ?? [],
       };
 
       getAltText.subscribe((fn) => {

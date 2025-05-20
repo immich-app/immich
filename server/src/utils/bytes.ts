@@ -22,3 +22,12 @@ export function asHumanReadable(bytes: number, precision = 1): string {
 
   return `${remainder.toFixed(magnitude == 0 ? 0 : precision)} ${units[magnitude]}`;
 }
+
+// if an asset is jsonified in the DB before being returned, its buffer fields will be hex-encoded strings
+export const hexOrBufferToBase64 = (encoded: string | Buffer) => {
+  if (typeof encoded === 'string') {
+    return Buffer.from(encoded.slice(2), 'hex').toString('base64');
+  }
+
+  return encoded.toString('base64');
+};

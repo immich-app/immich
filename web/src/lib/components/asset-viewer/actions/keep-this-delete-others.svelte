@@ -1,5 +1,6 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+
   import { AssetAction } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { keepThisDeleteOthers } from '$lib/utils/asset-utils';

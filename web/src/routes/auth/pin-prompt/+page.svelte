@@ -3,9 +3,10 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import PinCodeCreateForm from '$lib/components/user-settings-page/PinCodeCreateForm.svelte';
   import PincodeInput from '$lib/components/user-settings-page/PinCodeInput.svelte';
+  import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { unlockAuthSession } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
+  import { Button, Icon } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline, mdiLockSmart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -63,6 +64,8 @@
           pinLength={6}
           onFilled={handleUnlockSession}
         />
+
+        <Button type="button" color="secondary" onclick={() => goto(AppRoute.PHOTOS)}>Back</Button>
       </div>
     </div>
   {:else}

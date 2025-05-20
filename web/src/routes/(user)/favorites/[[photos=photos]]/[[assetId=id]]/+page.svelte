@@ -44,6 +44,21 @@
   };
 </script>
 
+<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
+  <AssetGrid
+    enableRouting={true}
+    withStacked={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.UNFAVORITE}
+    onEscape={handleEscape}
+  >
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_favorites_message')} />
+    {/snippet}
+  </AssetGrid>
+</UserPageLayout>
+
 <!-- Multiselection mode app bar -->
 {#if assetInteraction.selectionActive}
   <AssetSelectControlBar
@@ -74,18 +89,3 @@
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
-
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  <AssetGrid
-    enableRouting={true}
-    withStacked={true}
-    {assetStore}
-    {assetInteraction}
-    removeAction={AssetAction.UNFAVORITE}
-    onEscape={handleEscape}
-  >
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_favorites_message')} />
-    {/snippet}
-  </AssetGrid>
-</UserPageLayout>

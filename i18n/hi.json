@@ -689,7 +689,6 @@
   "edit_title": "शीर्षक संपादित करें",
   "edit_user": "यूजर को संपादित करो",
   "edited": "संपादित",
-  "editor": "",
   "email": "ईमेल",
   "empty_folder": "This folder is empty",
   "empty_trash": "कूड़ेदान खाली करें",
@@ -922,7 +921,6 @@
   "info": "जानकारी",
   "interval": {
     "day_at_onepm": "हर दिन दोपहर 1 बजे",
-    "hours": "",
     "night_at_midnight": "हर रात आधी रात को",
     "night_at_twoam": "हर रात 2 बजे"
   },
@@ -1142,11 +1140,6 @@
   "password_does_not_match": "पासवर्ड मैच नहीं कर रहा है",
   "password_required": "पासवर्ड आवश्यक",
   "password_reset_success": "पासवर्ड रीसेट सफल",
-  "past_durations": {
-    "days": "",
-    "hours": "",
-    "years": ""
-  },
   "path": "पथ",
   "pattern": "नमूना",
   "pause": "विराम",

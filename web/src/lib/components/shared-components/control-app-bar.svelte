@@ -66,7 +66,7 @@
   let buttonClass = $derived(forceDark ? 'hover:text-immich-dark-gray' : undefined);
 </script>
 
-<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full bg-transparent z-1">
+<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full bg-transparent">
   <nav
     id="asset-selection-app-bar"
     class={[
@@ -77,7 +77,7 @@
       appBarBorder,
       'mx-2 my-2 place-items-center rounded-lg p-2 max-md:p-0 transition-all',
       tailwindClasses,
-      forceDark ? 'bg-immich-dark-gray text-white' : 'bg-subtle dark:bg-immich-dark-gray',
+      forceDark ? 'bg-immich-dark-gray! text-white' : 'bg-subtle dark:bg-immich-dark-gray',
     ]}
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
