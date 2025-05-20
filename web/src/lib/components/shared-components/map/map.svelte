@@ -57,7 +57,7 @@
   }
 
   let {
-    mapMarkers = $bindable([]),
+    mapMarkers = $bindable(),
     showSettings = true,
     zoom = undefined,
     center = $bindable(undefined),
@@ -210,11 +210,13 @@
   };
 
   onMount(async () => {
-    mapMarkers = await loadMapMarkers();
+    if (!mapMarkers) {
+      mapMarkers = await loadMapMarkers();
+    }
   });
 
   onDestroy(() => {
-    abortController.abort();
+    abortController?.abort();
   });
 
   $effect(() => {
@@ -296,7 +298,7 @@
     <GeoJSON
       data={{
         type: 'FeatureCollection',
-        features: mapMarkers.map((marker) => asFeature(marker)),
+        features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
       }}
       id="geojson"
       cluster={{ radius: 35, maxZoom: 17 }}
