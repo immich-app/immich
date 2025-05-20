@@ -44,7 +44,7 @@ const messages = {
     `The ${name} extension is no longer needed, but could not be dropped.
     This may be because Immich does not have the necessary permissions to drop the extension.
 
-    Please run 'DROP EXTENSION ${extension} CASCADE;' manually as a superuser.
+    Please run 'DROP EXTENSION ${extension};' manually as a superuser.
     See https://immich.app/docs/guides/database-queries for how to query the database.`,
   restartRequired: ({ name, availableVersion }: RestartRequiredArgs) =>
     `The ${name} extension has been updated to ${availableVersion}.

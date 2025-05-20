@@ -128,7 +128,7 @@ export class DatabaseRepository {
 
   async dropExtension(extension: DatabaseExtension): Promise<void> {
     this.logger.log(`Dropping ${EXTENSION_NAMES[extension]} extension`);
-    await sql`DROP EXTENSION IF EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
+    await sql`DROP EXTENSION IF EXISTS ${sql.raw(extension)}`.execute(this.db);
   }
 
   async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {

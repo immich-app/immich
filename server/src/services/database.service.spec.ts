@@ -393,7 +393,7 @@ describe(DatabaseService.name, () => {
       expect(mocks.database.createExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORCHORD);
       expect(mocks.database.dropExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORS);
       expect(mocks.logger.warn).toHaveBeenCalledTimes(1);
-      expect(mocks.logger.warn.mock.calls[0][0]).toContain('DROP EXTENSION vectors CASCADE');
+      expect(mocks.logger.warn.mock.calls[0][0]).toContain('DROP EXTENSION vectors');
     });
 
     it(`should not try to drop pgvector when using vectorchord`, async () => {
