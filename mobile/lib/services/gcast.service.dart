@@ -98,6 +98,23 @@ class GCastService implements ICastDestinationService {
     return serverUrl?.startsWith("https://") ?? false;
   }
 
+  bool isSessionValid() {
+    // check if we already have a session token
+    // we should always have a expiration date
+    if (sessionKey == null || sessionKey?.expiresAt == null) {
+      return false;
+    }
+
+    final tokenExpiration = DateTime.parse(sessionKey!.expiresAt!);
+
+    // we want to make sure we have at least 10 seconds remaining in the session
+    // this is to account for network latency and other delays when sending the request
+    final bufferedExpiration =
+        tokenExpiration.subtract(const Duration(seconds: 10));
+
+    return bufferedExpiration.isAfter(DateTime.now());
+  }
+
   @override
   void loadMedia(Asset asset, bool reload) async {
     if (!isConnected) {
@@ -109,11 +126,13 @@ class GCastService implements ICastDestinationService {
     }
 
     // create a session key
-    sessionKey ??= await _sessionsApiService.createSession(
-      "Cast",
-      "Google Cast",
-      duration: const Duration(minutes: 15).inSeconds,
-    );
+    if (!isSessionValid()) {
+      sessionKey = await _sessionsApiService.createSession(
+        "Cast",
+        "Google Cast",
+        duration: const Duration(minutes: 15).inSeconds,
+      );
+    }
 
     final unauthenticatedUrl = asset.isVideo
         ? getPlaybackUrlForRemoteId(
@@ -171,6 +190,6 @@ class GCastService implements ICastDestinationService {
             device
           ),
         )
-        .toList(growable: false);
+        .toList(growable: true);
   }
 }
