@@ -329,7 +329,7 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     updatedAt: string;
-    visibility: Visibility;
+    visibility: AssetVisibility;
 };
 export type AlbumResponseDto = {
     albumName: string;
@@ -3674,12 +3674,6 @@ export enum AssetTypeEnum {
     Video = "VIDEO",
     Audio = "AUDIO",
     Other = "OTHER"
-}
-export enum Visibility {
-    Archive = "archive",
-    Timeline = "timeline",
-    Hidden = "hidden",
-    Locked = "locked"
 }
 export enum AssetOrder {
     Asc = "asc",

@@ -554,15 +554,15 @@ class Asset {
 }""";
   }
 
-  static getVisibility(AssetResponseDtoVisibilityEnum visibility) {
+  static getVisibility(AssetVisibility visibility) {
     switch (visibility) {
-      case AssetResponseDtoVisibilityEnum.timeline:
+      case AssetVisibility.timeline:
         return AssetVisibilityEnum.timeline;
-      case AssetResponseDtoVisibilityEnum.archive:
+      case AssetVisibility.archive:
         return AssetVisibilityEnum.archive;
-      case AssetResponseDtoVisibilityEnum.hidden:
+      case AssetVisibility.hidden:
         return AssetVisibilityEnum.hidden;
-      case AssetResponseDtoVisibilityEnum.locked:
+      case AssetVisibility.locked:
         return AssetVisibilityEnum.locked;
     }
   }
