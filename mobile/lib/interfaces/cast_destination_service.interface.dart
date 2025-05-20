@@ -1,5 +1,5 @@
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/models/cast_manager_state.dart';
+import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 
 abstract interface class ICastDestinationService {
   Future<bool> initialize();

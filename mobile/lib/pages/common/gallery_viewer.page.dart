@@ -122,6 +122,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     useEffect(() {
       final asset = loadAsset(currentIndex.value);
       ref.read(castProvider.notifier).loadMedia(asset, false);
+
+      return null;
     }, [
       ref.watch(castProvider).isCasting,
     ]);

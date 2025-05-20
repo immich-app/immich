@@ -1,30 +1,32 @@
 import 'package:cast/device.dart';
 import 'package:cast/session.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/cast_destination_service.interface.dart';
-import 'package:immich_mobile/models/cast_manager_state.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/models/cast/cast_manager_state.dart';
+import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/gcast.repository.dart';
-import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/repositories/sessions_api.repository.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
-import 'package:openapi/api.dart' as api;
-import 'package:uuid/uuid.dart';
 
 final gCastServiceProvider = Provider(
   (ref) => GCastService(
-      ref.watch(gCastRepositoryProvider), ref.watch(apiServiceProvider)),
+    ref.watch(gCastRepositoryProvider),
+    ref.watch(sessionsAPIRepositoryProvider),
+    ref.watch(assetApiRepositoryProvider),
+  ),
 );
 
 class GCastService implements ICastDestinationService {
   final GCastRepository _gCastRepository;
-  final ApiService _apiService;
+  final SessionsAPIRepository _sessionsApiService;
+  final AssetApiRepository _assetApiRepository;
 
-  api.SessionCreateResponseDto? sessionKey;
+  SessionCreateResponse? sessionKey;
   String? currentAssetId;
   bool isConnected = false;
 
@@ -39,7 +41,11 @@ class GCastService implements ICastDestinationService {
   @override
   void Function(CastState)? onCastState;
 
-  GCastService(this._gCastRepository, this._apiService) {
+  GCastService(
+    this._gCastRepository,
+    this._sessionsApiService,
+    this._assetApiRepository,
+  ) {
     _gCastRepository.onCastStatus = _onCastStatusCallback;
     _gCastRepository.onCastMessage = _onCastMessageCallback;
   }
@@ -103,29 +109,24 @@ class GCastService implements ICastDestinationService {
     }
 
     // create a session key
-    sessionKey ??= await _apiService.sessionsApi.createSession(
-      api.SessionCreateDto(
-        deviceOS: "Google Cast",
-        deviceType: "Google Cast",
-        duration: const Duration(minutes: 15).inSeconds,
-      ),
+    sessionKey ??= await _sessionsApiService.createSession(
+      "Cast",
+      "Google Cast",
+      duration: const Duration(minutes: 15).inSeconds,
     );
 
     final unauthenticatedUrl = asset.isVideo
         ? getPlaybackUrlForRemoteId(
             asset.remoteId!,
           )
-        : getThumbnailUrlForRemoteId(
-            asset.remoteId!,
-            type: api.AssetMediaSize.thumbnail,
-          );
+        : getThumbnailUrlForRemoteId(asset.remoteId!);
 
     final authenticatedURL =
         "$unauthenticatedUrl&sessionKey=${sessionKey?.token}";
 
     // get image mime type
-    final info = await _apiService.assetsApi.getAssetInfo(asset.remoteId!);
-    final mimeType = info?.originalMimeType;
+    final mimeType =
+        await _assetApiRepository.getAssetMIMEType(asset.remoteId!);
 
     if (mimeType == null) {
       return;
