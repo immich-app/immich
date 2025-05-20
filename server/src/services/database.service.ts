@@ -154,7 +154,7 @@ export class DatabaseService extends BaseService {
       await this.databaseRepository.dropExtension(extension);
     } catch (error) {
       const name = EXTENSION_NAMES[extension];
-      this.logger.warn(messages.dropFailed({ name, extension }));
+      this.logger.warn(messages.dropFailed({ name, extension }), error);
     }
   }
 }
