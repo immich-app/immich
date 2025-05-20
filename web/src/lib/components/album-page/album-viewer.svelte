@@ -104,7 +104,7 @@
       {/snippet}
 
       {#snippet trailing()}
-        <CastButton isWhiteHover={true} />
+        <CastButton whiteHover />
 
         {#if sharedLink.allowUpload}
           <CircleIconButton
