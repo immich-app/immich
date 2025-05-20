@@ -1,8 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/models/cast_manager_state.dart';
+import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
-import 'package:openapi/api.dart';
 
 final castProvider = StateNotifierProvider<CastNotifier, CastManagerState>(
   (ref) => CastNotifier(ref.watch(gCastServiceProvider)),
