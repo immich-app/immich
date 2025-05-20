@@ -2,7 +2,6 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
   import type { DuplicateResponseDto } from '@immich/sdk';
   import { mdiImageMultipleOutline } from '@mdi/js';
   import { IsInViewport } from 'runed';
@@ -47,13 +46,7 @@
   {#if asPlaceholder}
     <div class="h-60 bg-gray-200 dark:bg-gray-800 rounded-xl w-full animate-pulse"></div>
   {:else}
-    <img
-      alt={$getAltText(assetToDisplay)}
-      {title}
-      class="h-60 object-cover rounded-xl w-full"
-      draggable="false"
-      bind:this={imgElement}
-    />
+    <img alt={title} {title} class="h-60 object-cover rounded-xl w-full" draggable="false" bind:this={imgElement} />
   {/if}
 
   <div class="absolute top-2 right-3">
