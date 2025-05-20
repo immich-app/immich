@@ -48,47 +48,77 @@ class CastDialog extends ConsumerWidget {
               ).tr();
             }
 
+            final devices = snapshot.data!;
+            final connected =
+                devices.where((d) => isCurrentDevice(d.$1)).toList();
+            final others =
+                devices.where((d) => !isCurrentDevice(d.$1)).toList();
+
+            final List<dynamic> sectionedList = [];
+
+            if (connected.isNotEmpty) {
+              sectionedList.add("connected_device".tr());
+              sectionedList.addAll(connected);
+            }
+
+            if (others.isNotEmpty) {
+              sectionedList.add("discovered_devices".tr());
+              sectionedList.addAll(others);
+            }
+
             return ListView.builder(
               shrinkWrap: true,
-              itemCount: snapshot.data!.length,
+              itemCount: sectionedList.length,
               itemBuilder: (context, index) {
-                final found = snapshot.data![index];
-                final deviceName = found.$1;
-                final type = found.$2;
-                final deviceObj = found.$3;
+                final item = sectionedList[index];
 
-                return ListTile(
-                  title: Text(
-                    deviceName,
-                    style: TextStyle(
+                if (item is String) {
+                  // It's a section header
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      item,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ).tr(),
+                  );
+                } else {
+                  final (deviceName, type, deviceObj) =
+                      item as (String, CastDestinationType, dynamic);
+
+                  return ListTile(
+                    title: Text(
+                      deviceName,
+                      style: TextStyle(
+                        color: isCurrentDevice(deviceName)
+                            ? context.colorScheme.primary
+                            : null,
+                      ),
+                    ),
+                    leading: Icon(
+                      type == CastDestinationType.googleCast
+                          ? Icons.cast
+                          : Icons.cast_connected,
                       color: isCurrentDevice(deviceName)
                           ? context.colorScheme.primary
                           : null,
                     ),
-                  ),
-                  leading: Icon(
-                    type == CastDestinationType.googleCast
-                        ? Icons.cast
-                        : Icons.cast_connected,
-                    color: isCurrentDevice(deviceName)
-                        ? context.colorScheme.primary
-                        : null,
-                  ),
-                  trailing: isCurrentDevice(deviceName)
-                      ? Icon(Icons.check, color: context.colorScheme.primary)
-                      : isDeviceConnecting(deviceName)
-                          ? const CircularProgressIndicator()
-                          : null,
-                  onTap: () {
-                    // dont accept taps if the device is already connected or is connecting now
-                    if (isDeviceConnecting(deviceName) ||
-                        castManager.isCasting) {
-                      return;
-                    }
-
-                    ref.read(castProvider.notifier).connect(type, deviceObj);
-                  },
-                );
+                    trailing: isCurrentDevice(deviceName)
+                        ? Icon(Icons.check, color: context.colorScheme.primary)
+                        : isDeviceConnecting(deviceName)
+                            ? const CircularProgressIndicator()
+                            : null,
+                    onTap: () {
+                      if (isDeviceConnecting(deviceName)) {
+                        return;
+                      }
+                      ref.read(castProvider.notifier).disconnect();
+                      ref.read(castProvider.notifier).connect(type, deviceObj);
+                    },
+                  );
+                }
               },
             );
           },

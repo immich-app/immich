@@ -10,6 +10,8 @@ final castProvider = StateNotifierProvider<CastNotifier, CastManagerState>(
 class CastNotifier extends StateNotifier<CastManagerState> {
   final GCastService _gCastService;
 
+  List<(String, CastDestinationType, dynamic)> discovered = List.empty();
+
   CastNotifier(this._gCastService)
       : super(
           CastManagerState(
@@ -60,7 +62,11 @@ class CastNotifier extends StateNotifier<CastManagerState> {
   }
 
   Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
-    return _gCastService.getDevices();
+    if (discovered.isEmpty) {
+      discovered = await _gCastService.getDevices();
+    }
+
+    return discovered;
   }
 
   void play() {
