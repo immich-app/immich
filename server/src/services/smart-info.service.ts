@@ -38,7 +38,7 @@ export class SmartInfoService extends BaseService {
 
     await this.databaseRepository.withLock(DatabaseLock.CLIPDimSize, async () => {
       const { dimSize } = getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
-      const dbDimSize = await this.searchRepository.getDimensionSize();
+      const dbDimSize = await this.databaseRepository.getDimensionSize('smart_search');
       this.logger.verbose(`Current database CLIP dimension size is ${dbDimSize}`);
 
       const modelChange =
@@ -53,10 +53,10 @@ export class SmartInfoService extends BaseService {
           `Dimension size of model ${newConfig.machineLearning.clip.modelName} is ${dimSize}, but database expects ${dbDimSize}.`,
         );
         this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
-        await this.searchRepository.setDimensionSize(dimSize);
+        await this.databaseRepository.setDimensionSize(dimSize);
         this.logger.log(`Successfully updated database CLIP dimension size from ${dbDimSize} to ${dimSize}.`);
       } else {
-        await this.searchRepository.deleteAllSearchEmbeddings();
+        await this.databaseRepository.deleteAllSearchEmbeddings();
       }
 
       // TODO: A job to reindex all assets should be scheduled, though user
@@ -74,7 +74,7 @@ export class SmartInfoService extends BaseService {
     if (force) {
       const { dimSize } = getCLIPModelInfo(machineLearning.clip.modelName);
       // in addition to deleting embeddings, update the dimension size in case it failed earlier
-      await this.searchRepository.setDimensionSize(dimSize);
+      await this.databaseRepository.setDimensionSize(dimSize);
     }
 
     let queue: JobItem[] = [];

@@ -19,7 +19,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/routing/tab_navigation_observer.dart';
+import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
@@ -219,7 +219,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
           ),
           routeInformationParser: router.defaultRouteParser(),
           routerDelegate: router.delegate(
-            navigatorObservers: () => [TabNavigationObserver(ref: ref)],
+            navigatorObservers: () => [AppNavigationObserver(ref: ref)],
           ),
         ),
       ),

@@ -33,6 +33,7 @@ import {
   QueueName,
   SourceType,
   SystemMetadataKey,
+  VectorIndex,
 } from 'src/enum';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
@@ -417,6 +418,8 @@ export class PersonService extends BaseService {
       );
       return JobStatus.SKIPPED;
     }
+
+    await this.databaseRepository.prewarm(VectorIndex.FACE);
 
     const lastRun = new Date().toISOString();
     const facePagination = this.personRepository.getAllFaces(

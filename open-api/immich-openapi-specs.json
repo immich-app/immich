@@ -9366,13 +9366,11 @@
             "type": "string"
           },
           "visibility": {
-            "enum": [
-              "archive",
-              "timeline",
-              "hidden",
-              "locked"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [

@@ -29,7 +29,7 @@
   import {
     AssetJobName,
     AssetTypeEnum,
-    Visibility,
+    AssetVisibility,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -94,7 +94,7 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
-  let isLocked = $derived(asset.visibility === Visibility.Locked);
+  let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
 
   // $: showEditorButton =
   //   isOwner &&
