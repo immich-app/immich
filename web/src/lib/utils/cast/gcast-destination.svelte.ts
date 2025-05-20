@@ -29,8 +29,8 @@ export class GCastDestination implements CastDestination {
     // or we will mark the destination as unavailable
 
     const callbackPromise: Promise<boolean> = new Promise((resolve) => {
+      // check if the cast framework is already loaded
       if (this.isAvailable) {
-        console.debug('GCast API already available');
         resolve(true);
         return;
       }
@@ -107,10 +107,9 @@ export class GCastDestination implements CastDestination {
     // build the authenticated media request and send it to the cast device
     const authenticatedUrl = `${mediaUrl}&sessionKey=${sessionKey}`;
     const mediaInfo = new chrome.cast.media.MediaInfo(authenticatedUrl, contentType);
-
     const request = new chrome.cast.media.LoadRequest(mediaInfo);
-
     const successCallback = this.onMediaDiscovered.bind(this, SESSION_DISCOVERY_CAUSE.LOAD_MEDIA);
+
     this.currentUrl = mediaUrl;
 
     return this.session.loadMedia(request, successCallback, this.onError.bind(this));
