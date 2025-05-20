@@ -216,7 +216,7 @@
         <img
           src={assetFileUrl}
           alt=""
-          class="absolute top-0 start-0 object-cover h-full w-full blur-lg"
+          class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
           draggable="false"
         />
       {/if}
