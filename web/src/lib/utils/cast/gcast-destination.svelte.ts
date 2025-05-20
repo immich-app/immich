@@ -86,18 +86,12 @@ export class GCastDestination implements CastDestination {
   }
 
   async loadMedia(mediaUrl: string, sessionKey: string, reload: boolean = false): Promise<void> {
-    if (!this.isAvailable || !this.isConnected) {
-      console.debug('Cannot load media, cast destination is not available or not connected');
+    if (!this.isAvailable || !this.isConnected || !this.session) {
       return;
     }
 
-    if (!this.session) {
-      console.debug('No active session, cannot load media');
-      return;
-    }
-
+    // already playing the same media
     if (this.currentUrl === mediaUrl && !reload) {
-      console.debug('Already casting this media, skipping load');
       return;
     }
 
@@ -107,8 +101,7 @@ export class GCastDestination implements CastDestination {
     const contentType = assetHead.headers.get('content-type');
 
     if (!contentType) {
-      console.error('Could not get content type for url ' + mediaUrl);
-      return;
+      throw new Error('No content type found for media url');
     }
 
     // build the authenticated media request and send it to the cast device
@@ -120,8 +113,6 @@ export class GCastDestination implements CastDestination {
     const successCallback = this.onMediaDiscovered.bind(this, SESSION_DISCOVERY_CAUSE.LOAD_MEDIA);
     this.currentUrl = mediaUrl;
 
-    console.debug('Casting new media:', authenticatedUrl);
-
     return this.session.loadMedia(request, successCallback, this.onError.bind(this));
   }
 
@@ -131,7 +122,6 @@ export class GCastDestination implements CastDestination {
 
   play(): void {
     if (!this.currentMedia) {
-      console.error("Can't play: No media loaded");
       return;
     }
 
@@ -142,7 +132,6 @@ export class GCastDestination implements CastDestination {
 
   pause(): void {
     if (!this.currentMedia) {
-      console.error("Can't play: No media loaded");
       return;
     }
 
@@ -186,6 +175,12 @@ export class GCastDestination implements CastDestination {
 
   private onCastStateChanged(event: cast.framework.CastStateEventData) {
     this.isConnected = event.castState === cast.framework.CastState.CONNECTED;
+    this.receiverName = this.session?.receiver.friendlyName ?? null;
+
+    if (event.castState === cast.framework.CastState.NOT_CONNECTED) {
+      this.currentMedia = null;
+      this.currentUrl = null;
+    }
   }
 
   private onRemotePlayerChange(event: cast.framework.RemotePlayerChangedEvent) {
@@ -217,7 +212,7 @@ export class GCastDestination implements CastDestination {
     console.error('Google Cast Error:', error);
   }
 
-  onMediaDiscovered(cause: SESSION_DISCOVERY_CAUSE, currentMedia: chrome.cast.media.Media) {
+  private onMediaDiscovered(cause: SESSION_DISCOVERY_CAUSE, currentMedia: chrome.cast.media.Media) {
     this.currentMedia = currentMedia;
 
     if (cause === SESSION_DISCOVERY_CAUSE.LOAD_MEDIA) {
@@ -226,29 +221,15 @@ export class GCastDestination implements CastDestination {
       // CastState and PlayerState are identical enums
       this.castState = currentMedia.playerState as unknown as CastState;
     }
-
-    this.currentMedia.addUpdateListener(this.onMediaStatusUpdate.bind(this));
-  }
-
-  onMediaStatusUpdate(mediaStillAlive: boolean) {
-    if (mediaStillAlive) {
-      const friendlyName = this.session?.receiver.friendlyName;
-      this.receiverName = friendlyName ?? null;
-    } else {
-      this.castState = CastState.IDLE;
-    }
-  }
-
-  sessionMediaListener(currentMedia: chrome.cast.media.Media) {
-    this.currentMedia = currentMedia;
-    this.currentMedia.addUpdateListener(this.onMediaStatusUpdate.bind(this));
   }
 
   static async showCastDialog() {
     try {
       await cast.framework.CastContext.getInstance().requestSession();
-    } catch (error) {
-      console.debug('Error from cast dialog:', error);
+    } catch {
+      // the cast dialog throws an error if the user closes it
+      // we don't care about this error
+      return;
     }
   }
 }
