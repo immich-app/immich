@@ -65,7 +65,7 @@
           onFilled={handleUnlockSession}
         />
 
-        <Button type="button" color="secondary" onclick={() => goto(AppRoute.PHOTOS)}>Back</Button>
+        <Button type="button" color="secondary" onclick={() => goto(AppRoute.PHOTOS)}>{$t('cancel')}</Button>
       </div>
     </div>
   {:else}
