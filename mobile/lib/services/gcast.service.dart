@@ -190,6 +190,6 @@ class GCastService implements ICastDestinationService {
             device
           ),
         )
-        .toList(growable: true);
+        .toList(growable: false);
   }
 }
