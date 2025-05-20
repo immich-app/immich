@@ -77,13 +77,12 @@ export class DatabaseRepository {
     return getVectorExtension(this.db);
   }
 
-  @GenerateSql({ params: [DatabaseExtension.VECTORS] })
+  @GenerateSql({ params: [[DatabaseExtension.VECTORS]] })
   async getExtensionVersions(extensions: readonly DatabaseExtension[]): Promise<ExtensionVersion[]> {
     const { rows } = await sql<ExtensionVersion>`
       SELECT name, default_version as "availableVersion", installed_version as "installedVersion"
       FROM pg_available_extensions
       WHERE name in (${sql.join(extensions)})
-      ORDER BY name DESC
     `.execute(this.db);
     return rows;
   }
