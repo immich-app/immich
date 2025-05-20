@@ -82,9 +82,6 @@
     "job_not_concurrency_safe": "Hierdie taak kan nie gelyktydig uitgevoer word nie.",
     "job_settings": "Agtergrondtaakinstellings"
   },
-  "errors": {},
-  "interval": {},
-  "past_durations": {},
   "search_by_description": "Soek by beskrywing",
   "search_by_description_example": "Stapdag in Sapa"
 }

@@ -87,8 +87,5 @@
     "machine_learning_facial_recognition": "Üz Tanıma",
     "machine_learning_facial_recognition_description": "Şəkillərdəki üzləri aşkarla, tanı və qruplaşdır",
     "machine_learning_facial_recognition_model": "Üz tanıma modeli"
-  },
-  "errors": {},
-  "interval": {},
-  "past_durations": {}
+  }
 }

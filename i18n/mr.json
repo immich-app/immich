@@ -58,8 +58,5 @@
     "external_library_created_at": "बाह्य संग्रहालय ({date} रोजी बनवले गेले)",
     "external_library_management": "बाह्य संग्रहालय व्यवस्थापन",
     "face_detection": "मुख संशोधन"
-  },
-  "errors": {},
-  "interval": {},
-  "past_durations": {}
+  }
 }
