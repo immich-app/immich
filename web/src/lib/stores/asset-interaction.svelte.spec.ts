@@ -1,6 +1,6 @@
 import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { resetSavedUser, user } from '$lib/stores/user.store';
-import { Visibility } from '@immich/sdk';
+import { AssetVisibility } from '@immich/sdk';
 import { timelineAssetFactory } from '@test-data/factories/asset-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 
@@ -13,10 +13,10 @@ describe('AssetInteraction', () => {
 
   it('calculates derived values from selection', () => {
     assetInteraction.selectAsset(
-      timelineAssetFactory.build({ isFavorite: true, visibility: Visibility.Archive, isTrashed: true }),
+      timelineAssetFactory.build({ isFavorite: true, visibility: AssetVisibility.Archive, isTrashed: true }),
     );
     assetInteraction.selectAsset(
-      timelineAssetFactory.build({ isFavorite: true, visibility: Visibility.Timeline, isTrashed: false }),
+      timelineAssetFactory.build({ isFavorite: true, visibility: AssetVisibility.Timeline, isTrashed: false }),
     );
 
     expect(assetInteraction.selectionActive).toBe(true);

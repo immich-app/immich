@@ -5,7 +5,7 @@
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetVisibility, updateAssets, Visibility } from '@immich/sdk';
+  import { AssetVisibility, updateAssets } from '@immich/sdk';
   import { mdiEyeOffOutline, mdiFolderMoveOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction, PreAction } from './action';
@@ -17,7 +17,7 @@
   }
 
   let { asset, onAction, preAction }: Props = $props();
-  const isLocked = asset.visibility === Visibility.Locked;
+  const isLocked = asset.visibility === AssetVisibility.Locked;
 
   const toggleLockedVisibility = async () => {
     const isConfirmed = await modalManager.showDialog({

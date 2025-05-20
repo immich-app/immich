@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import { Writable } from 'node:stream';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { SessionSyncCheckpoints } from 'src/db';
-import { AssetResponseDto, hexOrBufferToBase64, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetDeltaSyncDto,
@@ -18,6 +18,7 @@ import { AssetVisibility, DatabaseAction, EntityType, Permission, SyncEntityType
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
 import { getMyPartnerIds } from 'src/utils/asset.util';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { setIsEqual } from 'src/utils/set';
 import { fromAck, serialize } from 'src/utils/sync';
 
