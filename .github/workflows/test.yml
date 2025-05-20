@@ -524,7 +524,7 @@ jobs:
           persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
         # with:
@@ -643,7 +643,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: ghcr.io/immich-app/postgres:14
+        image: ghcr.io/immich-app/postgres:17@sha256:ddb20496fd8e7f55d1abcfa9729ed856d40eaa2a08c38524f4688c2a9776f73e
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
