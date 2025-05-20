@@ -1867,7 +1867,6 @@
   "use_current_connection": "користи тренутну везу",
   "use_custom_date_range": "Уместо тога користите прилагођени период",
   "user": "Корисник",
-  "user_has_been_deleted": "",
   "user_id": "ИД корисника",
   "user_liked": "{user} је лајковао {type, select, photo {ову фотографију} video {овај видео запис} asset {ову датотеку} other {ово}}",
   "user_pin_code_settings": "ПИН код",

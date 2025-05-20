@@ -1867,7 +1867,6 @@
   "use_current_connection": "usar conexão atual",
   "use_custom_date_range": "Utilizar um intervalo de datas personalizado",
   "user": "Utilizador",
-  "user_has_been_deleted": "",
   "user_id": "ID do utilizador",
   "user_liked": "{user} gostou {type, select, photo {desta fotografia} video {deste video} asset {deste ficheiro} other {disto}}",
   "user_pin_code_settings": "Código PIN",
