@@ -111,11 +111,7 @@ export class DatabaseService extends BaseService {
       for (const { name: dbName, installedVersion } of extensionVersions) {
         const isDepended = dbName === DatabaseExtension.VECTOR && extension === DatabaseExtension.VECTORCHORD;
         if (dbName !== extension && installedVersion && !isDepended) {
-          try {
-            await this.databaseRepository.dropExtension(dbName);
-          } catch (error) {
-            this.logger.warn(messages.dropFailed({ name, extension }), error);
-          }
+          await this.dropExtension(dbName);
         }
       }
 
@@ -150,6 +146,15 @@ export class DatabaseService extends BaseService {
     } catch (error) {
       this.logger.warn(messages.updateFailed({ name: EXTENSION_NAMES[extension], extension, availableVersion }));
       throw error;
+    }
+  }
+
+  private async dropExtension(extension: DatabaseExtension) {
+    try {
+      await this.databaseRepository.dropExtension(extension);
+    } catch (error) {
+      const name = EXTENSION_NAMES[extension];
+      this.logger.warn(messages.dropFailed({ name, extension }));
     }
   }
 }
