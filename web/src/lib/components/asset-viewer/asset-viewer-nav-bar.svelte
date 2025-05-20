@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import CastButton from '$lib/cast/cast-button.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
@@ -116,6 +117,8 @@
     {/if}
   </div>
   <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
+    <CastButton />
+
     {#if !asset.isTrashed && $user && !isLocked}
       <ShareAction {asset} />
     {/if}

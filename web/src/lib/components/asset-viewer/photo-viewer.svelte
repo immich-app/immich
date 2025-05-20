@@ -23,6 +23,7 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { castManager } from '$lib/managers/cast-manager.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -146,6 +147,27 @@
 
     return AssetMediaSize.Preview;
   });
+
+  $effect(() => {
+    if (assetFileUrl) {
+      // this can't be in an async context with $effect
+      void cast(assetFileUrl);
+    }
+  });
+
+  const cast = async (url: string) => {
+    if (!url || !castManager.isCasting) {
+      return;
+    }
+    const fullUrl = new URL(url, globalThis.location.href);
+
+    try {
+      await castManager.loadMedia(fullUrl.href);
+    } catch (error) {
+      handleError(error, 'Unable to cast');
+      return;
+    }
+  };
 
   const onload = () => {
     imageLoaded = true;
