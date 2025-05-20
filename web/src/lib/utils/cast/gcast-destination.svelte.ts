@@ -1,4 +1,4 @@
-import { CastDestinationType, CastState, type CastDestination } from '$lib/managers/cast-manager.svelte';
+import { CastDestinationType, CastState, type ICastDestination } from '$lib/managers/cast-manager.svelte';
 import 'chromecast-caf-sender';
 import { Duration } from 'luxon';
 
@@ -9,7 +9,7 @@ enum SESSION_DISCOVERY_CAUSE {
   ACTIVE_SESSION,
 }
 
-export class GCastDestination implements CastDestination {
+export class GCastDestination implements ICastDestination {
   type = CastDestinationType.GCAST;
   isAvailable = $state<boolean>(false);
   isConnected = $state<boolean>(false);

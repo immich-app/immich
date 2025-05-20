@@ -14,7 +14,7 @@ export enum CastDestinationType {
   GCAST = 'GCAST',
 }
 
-export interface CastDestination {
+export interface ICastDestination {
   initialize(): Promise<boolean>; // returns if the cast destination can be used
   type: CastDestinationType; // type of cast destination
 
@@ -37,10 +37,10 @@ export interface CastDestination {
 }
 
 class CastManager {
-  private castDestinations = $state<CastDestination[]>([]);
-  private current = $derived<CastDestination | null>(this.monitorConnectedDestination());
+  private castDestinations = $state<ICastDestination[]>([]);
+  private current = $derived<ICastDestination | null>(this.monitorConnectedDestination());
 
-  availableDestinations = $state<CastDestination[]>([]);
+  availableDestinations = $state<ICastDestination[]>([]);
   initialized = $state(false);
 
   isCasting = $derived<boolean>(this.current?.isConnected ?? false);
@@ -77,7 +77,7 @@ class CastManager {
 
   // monitor all cast destinations for changes
   // we want to make sure only one session is active at a time
-  private monitorConnectedDestination(): CastDestination | null {
+  private monitorConnectedDestination(): ICastDestination | null {
     // check if we have a connected destination
     const connectedDest = this.castDestinations.find((dest) => dest.isConnected);
     return connectedDest || null;
