@@ -51,7 +51,6 @@
     "svelte-gestures": "^5.1.3",
     "svelte-i18n": "^4.0.1",
     "svelte-maplibre": "^1.0.0",
-    "svelte-virtual": "^1.0.0-next.22",
     "svelte-persisted-store": "^0.12.0",
     "thumbhash": "^0.1.1"
   },

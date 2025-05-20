@@ -5,6 +5,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import DuplicateGrid from '$lib/components/utilities-page/duplicates/duplicate-grid.svelte';
   import DuplicateThumbnail from '$lib/components/utilities-page/duplicates/duplicate-thumbnail.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
@@ -16,7 +17,6 @@
   import { Button, HStack, Text } from '@immich/ui';
   import { mdiCheckOutline, mdiInformationOutline, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { Grid } from 'svelte-virtual';
   import type { PageData } from './$types';
 
   interface Props {
@@ -27,7 +27,6 @@
 
   let duplicates = $state(data.duplicates);
   let hasDuplicates = $derived(duplicates.length > 0);
-  let isShowingDuplicateInfo = $state(false);
 
   let virtualGridContainer = $state<HTMLElement>();
 
@@ -122,7 +121,7 @@
   };
 </script>
 
-<UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={false}>
+<UserPageLayout title="{data.meta.title} ({duplicates.length.toLocaleString($locale)})" scrollbar={false}>
   {#snippet buttons()}
     <HStack gap={0}>
       <Button
@@ -156,22 +155,26 @@
       title={$t('deduplication_info')}
       size="16"
       padding="2"
-      onclick={() => (isShowingDuplicateInfo = true)}
+      onclick={async () => {
+        await modalManager.show(DuplicatesInformationModal, {});
+      }}
     />
   </div>
   <section
     bind:this={virtualGridContainer}
     class="mt-2 h-[calc(100%-theme(spacing.20))] overflow-auto immich-scrollbar"
   >
-    <Grid itemCount={duplicates.length} itemHeight={256} itemWidth={176} height={virtualGridHeight}>
-      {#snippet item({ index, style })}
-        <div class="p-1 flex items-center justify-center" {style}>
-          <DuplicateThumbnail duplicate={duplicates[index]} />
+    <DuplicateGrid items={duplicates} itemHeight={256} itemWidth={176} containerHeight={virtualGridHeight}>
+      {#snippet item(item)}
+        <div class="p-1 flex items-center justify-center">
+          <DuplicateThumbnail duplicate={item} />
         </div>
       {/snippet}
-    </Grid>
+      {#snippet placeholder(item)}
+        <div class="p-1 flex items-center justify-center">
+          <DuplicateThumbnail asPlaceholder duplicate={item} />
+        </div>
+      {/snippet}
+    </DuplicateGrid>
   </section>
 </UserPageLayout>
-{#if isShowingDuplicateInfo}
-  <DuplicatesInformationModal onClose={() => (isShowingDuplicateInfo = false)} />
-{/if}
