@@ -78,13 +78,14 @@ export class DatabaseRepository {
   }
 
   @GenerateSql({ params: [DatabaseExtension.VECTORS] })
-  async getExtensionVersion(extension: DatabaseExtension): Promise<ExtensionVersion> {
+  async getExtensionVersions(extensions: readonly DatabaseExtension[]): Promise<ExtensionVersion[]> {
     const { rows } = await sql<ExtensionVersion>`
-      SELECT default_version as "availableVersion", installed_version as "installedVersion"
+      SELECT name, default_version as "availableVersion", installed_version as "installedVersion"
       FROM pg_available_extensions
-      WHERE name = ${extension}
+      WHERE name in (${sql.join(extensions)})
+      ORDER BY name DESC
     `.execute(this.db);
-    return rows[0] ?? { availableVersion: null, installedVersion: null };
+    return rows;
   }
 
   getExtensionVersionRange(extension: VectorExtension): string {
@@ -115,6 +116,7 @@ export class DatabaseRepository {
   }
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
+    this.logger.log(`Creating ${EXTENSION_NAMES[extension]} extension`);
     await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
     if (extension === DatabaseExtension.VECTORCHORD) {
       const dbName = sql.table(await this.getDatabaseName());
@@ -125,8 +127,16 @@ export class DatabaseRepository {
     }
   }
 
+  async dropExtension(extension: DatabaseExtension): Promise<void> {
+    // extra check for safety
+    if (!Object.values(DatabaseExtension).includes(extension)) {
+      throw new Error(`Cannot drop extension '${extension}'`);
+    }
+    await sql`DROP EXTENSION IF EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
+  }
+
   async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {
-    const { availableVersion, installedVersion } = await this.getExtensionVersion(extension);
+    const [{ availableVersion, installedVersion }] = await this.getExtensionVersions([extension]);
     if (!installedVersion) {
       throw new Error(`${EXTENSION_NAMES[extension]} extension is not installed`);
     }

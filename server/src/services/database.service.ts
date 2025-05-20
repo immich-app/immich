@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import semver from 'semver';
-import { EXTENSION_NAMES } from 'src/constants';
+import { EXTENSION_NAMES, VECTOR_EXTENSIONS } from 'src/constants';
 import { OnEvent } from 'src/decorators';
 import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { VectorExtension } from 'src/types';
 
-type CreateFailedArgs = { name: string; extension: string; otherExtensions: string[] };
+type CreateFailedArgs = { name: string; extension: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
+type DropFailedArgs = { name: string; extension: string };
 type RestartRequiredArgs = { name: string; availableVersion: string };
 type NightlyVersionArgs = { name: string; extension: string; version: string };
 type OutOfRangeArgs = { name: string; extension: string; version: string; range: string };
@@ -25,21 +26,25 @@ const messages = {
   outOfRange: ({ name, version, range }: OutOfRangeArgs) =>
     `The ${name} extension version is ${version}, but Immich only supports ${range}.
     Please change ${name} to a compatible version in the Postgres instance.`,
-  createFailed: ({ name, extension, otherExtensions }: CreateFailedArgs) =>
+  createFailed: ({ name, extension }: CreateFailedArgs) =>
     `Failed to activate ${name} extension.
     Please ensure the Postgres instance has ${name} installed.
 
     If the Postgres instance already has ${name} installed, Immich may not have the necessary permissions to activate it.
     In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${extension} CASCADE' manually as a superuser.
-    See https://immich.app/docs/guides/database-queries for how to query the database.
-
-    Alternatively, if your Postgres instance has any of ${otherExtensions.join(', ')}, you may use one of them instead by setting the environment variable 'DB_VECTOR_EXTENSION=<extension name>'.`,
+    See https://immich.app/docs/guides/database-queries for how to query the database.`,
   updateFailed: ({ name, extension, availableVersion }: UpdateFailedArgs) =>
     `The ${name} extension can be updated to ${availableVersion}.
     Immich attempted to update the extension, but failed to do so.
     This may be because Immich does not have the necessary permissions to update the extension.
 
     Please run 'ALTER EXTENSION ${extension} UPDATE' manually as a superuser.
+    See https://immich.app/docs/guides/database-queries for how to query the database.`,
+  dropFailed: ({ name, extension }: DropFailedArgs) =>
+    `The ${name} extension is no longer needed, but could not be dropped.
+    This may be because Immich does not have the necessary permissions to drop the extension.
+
+    Please run 'DROP EXTENSION ${extension} CASCADE;' manually as a superuser.
     See https://immich.app/docs/guides/database-queries for how to query the database.`,
   restartRequired: ({ name, availableVersion }: RestartRequiredArgs) =>
     `The ${name} extension has been updated to ${availableVersion}.
@@ -68,7 +73,8 @@ export class DatabaseService extends BaseService {
       const name = EXTENSION_NAMES[extension];
       const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 
-      const { availableVersion, installedVersion } = await this.databaseRepository.getExtensionVersion(extension);
+      const extensionVersions = await this.databaseRepository.getExtensionVersions(VECTOR_EXTENSIONS);
+      const { installedVersion, availableVersion } = extensionVersions.find((v) => v.name === extension) ?? {};
       if (!availableVersion) {
         throw new Error(messages.notInstalled(name));
       }
@@ -102,6 +108,16 @@ export class DatabaseService extends BaseService {
         throw error;
       }
 
+      for (const { name: dbName, installedVersion } of extensionVersions) {
+        if (dbName !== extension && installedVersion) {
+          try {
+            await this.databaseRepository.dropExtension(dbName);
+          } catch (error) {
+            this.logger.warn(messages.dropFailed({ name, extension }), error);
+          }
+        }
+      }
+
       const { database } = this.configRepository.getEnv();
       if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
@@ -117,13 +133,8 @@ export class DatabaseService extends BaseService {
     try {
       await this.databaseRepository.createExtension(extension);
     } catch (error) {
-      const otherExtensions = [
-        DatabaseExtension.VECTOR,
-        DatabaseExtension.VECTORS,
-        DatabaseExtension.VECTORCHORD,
-      ].filter((ext) => ext !== extension);
       const name = EXTENSION_NAMES[extension];
-      this.logger.fatal(messages.createFailed({ name, extension, otherExtensions }));
+      this.logger.fatal(messages.createFailed({ name, extension }));
       throw error;
     }
   }

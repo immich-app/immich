@@ -383,6 +383,7 @@ export type DatabaseConnectionParts = {
 export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;
 
 export interface ExtensionVersion {
+  name: VectorExtension;
   availableVersion: string | null;
   installedVersion: string | null;
 }
