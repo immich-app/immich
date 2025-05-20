@@ -1,5 +1,6 @@
 import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 import { createSession, type SessionCreateResponseDto } from '@immich/sdk';
+import { DateTime, Duration } from 'luxon';
 
 // follows chrome.cast.media.PlayerState
 export enum CastState {
@@ -82,14 +83,30 @@ class CastManager {
     return connectedDest || null;
   }
 
+  private isTokenValid() {
+    // check if we already have a session token
+    // we should always have a expiration date
+    if (!this.sessionKey || !this.sessionKey.expiresAt) {
+      return false;
+    }
+
+    const tokenExpiration = DateTime.fromISO(this.sessionKey.expiresAt);
+
+    // we want to make sure we have at least 10 seconds remaining in the session
+    // this is to account for network latency and other delays when sending the request
+    const bufferedExpiration = tokenExpiration.minus({ seconds: 10 });
+
+    return bufferedExpiration > DateTime.now();
+  }
+
   private async refreshSessionToken() {
     // get session token to authenticate the media url
-    // TODO: check and make sure we have at least 60 seconds remaining in the session
+    // check and make sure we have at least 10 seconds remaining in the session
     // before we send the media request, refresh the session if needed
-    if (!this.sessionKey) {
+    if (!this.isTokenValid()) {
       this.sessionKey = await createSession({
         sessionCreateDto: {
-          // duration: Duration.fromObject({ minutes: 15 }).as('seconds'),
+          duration: Duration.fromObject({ minutes: 15 }).as('seconds'),
           deviceOS: 'Google Cast',
           deviceType: 'Cast',
         },
