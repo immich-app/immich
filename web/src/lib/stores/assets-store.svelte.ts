@@ -49,7 +49,8 @@ function updateObject(target: any, source: any): boolean {
     if (!source.hasOwnProperty(key)) {
       continue;
     }
-    if (typeof target[key] === 'object') {
+    const isDate = target[key] instanceof Date;
+    if (typeof target[key] === 'object' && !isDate) {
       updated = updated || updateObject(target[key], source[key]);
     } else {
       // Otherwise, directly copy the value
@@ -204,7 +205,7 @@ export class AssetDateGroup {
       const newTime = asset.localDateTime;
       if (oldTime.valueOf() !== newTime.valueOf()) {
         const year = newTime.getUTCFullYear();
-        const month = newTime.getUTCMonth();
+        const month = newTime.getUTCMonth() + 1;
         if (this.bucket.year !== year || this.bucket.month !== month) {
           remove = true;
           moveAssets.push({ asset, year, month });
@@ -337,24 +338,27 @@ export class AssetBucket {
   isBucketHeightActual: boolean = $state(false);
 
   readonly bucketDateFormatted: string;
-  readonly bucketDate: string;
   readonly month: number;
   readonly year: number;
 
-  constructor(store: AssetStore, date: Date, initialCount: number, order: AssetOrder = AssetOrder.Desc) {
+  constructor(
+    store: AssetStore,
+    { year, month }: { year: number; month: number },
+    initialCount: number,
+    order: AssetOrder = AssetOrder.Desc,
+  ) {
     this.store = store;
     this.#initialCount = initialCount;
     this.#sortOrder = order;
 
-    const bucketDateFormatted = date.toLocaleString(get(locale), {
+    this.month = month;
+    this.year = year;
+    const date = new Date(Date.UTC(year, month - 1));
+    this.bucketDateFormatted = date.toLocaleString(get(locale), {
       month: 'short',
       year: 'numeric',
       timeZone: 'UTC',
     });
-    this.bucketDate = date.toISOString();
-    this.bucketDateFormatted = bucketDateFormatted;
-    this.month = date.getUTCMonth();
-    this.year = date.getUTCFullYear();
 
     this.loader = new CancellableTask(
       () => {
@@ -373,7 +377,7 @@ export class AssetBucket {
     if (old !== newValue) {
       this.#intersecting = newValue;
       if (newValue) {
-        void this.store.loadBucket(this.bucketDate);
+        void this.store.loadBucket({ year: this.year, month: this.month });
       } else {
         this.cancel();
       }
@@ -454,7 +458,6 @@ export class AssetBucket {
   }
 
   addAssets(bucketAssets: TimeBucketAssetResponseDto) {
-    const time1 = performance.now();
     const addContext = new AddContext();
     const people: string[] = [];
     for (let i = 0; i < bucketAssets.id.length; i++) {
@@ -496,16 +499,13 @@ export class AssetBucket {
 
     addContext.sort(this, this.#sortOrder);
 
-    const time2 = performance.now();
-    const time = time2 - time1;
-    console.log(`AssetBucket.addAssets took ${time}ms`);
     return addContext.unprocessedAssets;
   }
 
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: AddContext) {
     const { localDateTime } = timelineAsset;
 
-    const month = localDateTime.getUTCMonth();
+    const month = localDateTime.getUTCMonth() + 1;
     const year = localDateTime.getUTCFullYear();
 
     if (this.month !== month || this.year !== year) {
@@ -541,7 +541,7 @@ export class AssetBucket {
 
   /** The svelte key for this view model object */
   get viewId() {
-    return this.bucketDate;
+    return this.year + '-' + this.month;
   }
 
   set bucketHeight(height: number) {
@@ -675,7 +675,8 @@ type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets | Update
 export type LiteBucket = {
   bucketHeight: number;
   assetCount: number;
-  bucketDate: string;
+  year: number;
+  month: number;
   bucketDateFormattted: string;
 };
 
@@ -914,8 +915,9 @@ export class AssetStore {
   }
 
   #findBucketForDate(date: Date) {
+    const targetMonth = date.getUTCMonth() + 1;
     for (const bucket of this.buckets) {
-      if (bucket.month === date.getUTCMonth() && bucket.year === date.getUTCFullYear()) {
+      if (bucket.month === targetMonth && bucket.year === date.getUTCFullYear()) {
         return bucket;
       }
     }
@@ -1018,7 +1020,13 @@ export class AssetStore {
     });
 
     this.buckets = timebuckets.map((bucket) => {
-      return new AssetBucket(this, new Date(bucket.timeBucket), bucket.count, this.#options.order);
+      const date = new Date(bucket.timeBucket);
+      return new AssetBucket(
+        this,
+        { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 },
+        bucket.count,
+        this.#options.order,
+      );
     });
     this.albumAssets.clear();
     this.#updateViewportGeometry(false);
@@ -1103,7 +1111,8 @@ export class AssetStore {
   #createScrubBuckets() {
     this.scrubberBuckets = this.buckets.map((bucket) => ({
       assetCount: bucket.bucketCount,
-      bucketDate: bucket.bucketDate,
+      year: bucket.year,
+      month: bucket.month,
       bucketDateFormattted: bucket.bucketDateFormatted,
       bucketHeight: bucket.bucketHeight,
     }));
@@ -1195,15 +1204,13 @@ export class AssetStore {
     bucket.isBucketHeightActual = true;
   }
 
-  async loadBucket(bucketDate: string, options?: { cancelable: boolean }): Promise<void> {
+  // Month is 1-indexed
+  async loadBucket({ year, month }: { year: number; month: number }, options?: { cancelable: boolean }): Promise<void> {
     let cancelable = true;
     if (options) {
       cancelable = options.cancelable;
     }
 
-    const date = new Date(bucketDate);
-    const year = date.getUTCFullYear();
-    const month = date.getUTCMonth();
     const bucket = this.getBucketByDate(year, month);
     if (!bucket) {
       return;
@@ -1222,8 +1229,7 @@ export class AssetStore {
       const bucketResponse = await getTimeBucket(
         {
           ...this.#options,
-          timeBucket: bucketDate,
-
+          timeBucket: new Date(Date.UTC(year, month - 1)).toISOString(),
           key: authManager.key,
         },
         { signal },
@@ -1233,7 +1239,7 @@ export class AssetStore {
           const albumAssets = await getTimeBucket(
             {
               albumId: this.#options.timelineAlbumId,
-              timeBucket: bucketDate,
+              timeBucket: new Date(Date.UTC(year, month - 1)).toISOString(),
               key: authManager.key,
             },
             { signal },
@@ -1245,7 +1251,7 @@ export class AssetStore {
         const unprocessed = bucket.addAssets(bucketResponse);
         if (unprocessed.length > 0) {
           console.error(
-            `Warning: getTimeBucket API returning assets not in requested month: ${bucket.bucketDate}, ${JSON.stringify(unprocessed.map((a) => ({ id: a.id, localDateTime: a.localDateTime })))}`,
+            `Warning: getTimeBucket API returning assets not in requested month: ${bucket.month}, ${JSON.stringify(unprocessed.map((a) => ({ id: a.id, localDateTime: a.localDateTime })))}`,
           );
         }
         this.#layoutBucket(bucket);
@@ -1280,11 +1286,11 @@ export class AssetStore {
     const bucketCount = this.buckets.length;
     for (const asset of assets) {
       const year = asset.localDateTime.getUTCFullYear();
-      const month = asset.localDateTime.getUTCMonth();
+      const month = asset.localDateTime.getUTCMonth() + 1;
       let bucket = this.getBucketByDate(year, month);
 
       if (!bucket) {
-        bucket = new AssetBucket(this, asset.localDateTime, 1, this.#options.order);
+        bucket = new AssetBucket(this, { year, month }, 1, this.#options.order);
         this.buckets.push(bucket);
       }
 
@@ -1325,7 +1331,10 @@ export class AssetStore {
       if (!asset || this.isExcluded(asset)) {
         return;
       }
-      bucket = await this.#loadBucketAtTime(asset.localDateTime, { cancelable: false });
+      const { localDateTime } = asset;
+      const year = localDateTime.getUTCFullYear();
+      const month = localDateTime.getUTCMonth() + 1;
+      bucket = await this.#loadBucketAtTime({ year, month }, { cancelable: false });
     }
 
     if (bucket && bucket?.containsAssetId(id)) {
@@ -1333,12 +1342,9 @@ export class AssetStore {
     }
   }
 
-  async #loadBucketAtTime(localDateTime: Date, options?: { cancelable: boolean }) {
+  async #loadBucketAtTime({ year, month }: { year: number; month: number }, options?: { cancelable: boolean }) {
     // Only support TimeBucketSize.Month
-    const year = localDateTime.getUTCFullYear();
-    const month = localDateTime.getUTCMonth();
-    localDateTime = new Date(year, month);
-    await this.loadBucket(localDateTime.toISOString(), options);
+    await this.loadBucket({ year, month }, options);
     return this.getBucketByDate(year, month);
   }
 
@@ -1349,7 +1355,7 @@ export class AssetStore {
   async getRandomBucket() {
     const random = Math.floor(Math.random() * this.buckets.length);
     const bucket = this.buckets[random];
-    await this.loadBucket(bucket.bucketDate, { cancelable: false });
+    await this.loadBucket({ year: bucket.year, month: bucket.month }, { cancelable: false });
     return bucket;
   }
 
@@ -1456,7 +1462,7 @@ export class AssetStore {
     if (!bucket) {
       return;
     }
-    await this.loadBucket(bucket.bucketDate, { cancelable: false });
+    await this.loadBucket({ year: bucket.year, month: bucket.month }, { cancelable: false });
     const asset = bucket.findClosest(date);
     if (asset) {
       return asset;
@@ -1465,7 +1471,7 @@ export class AssetStore {
     const startIndex = this.buckets.indexOf(bucket);
     for (let currentIndex = startIndex + 1; currentIndex < this.buckets.length; currentIndex++) {
       bucket = this.buckets[currentIndex];
-      await this.loadBucket(bucket.bucketDate);
+      await this.loadBucket({ year: bucket.year, month: bucket.month }, { cancelable: false });
       const next = bucket.dateGroups[0]?.intersetingAssets[0]?.asset;
       if (next) {
         return next;
@@ -1525,7 +1531,7 @@ export class AssetStore {
 
     for (let currentIndex = startIndex + increment; endCondition(currentIndex); currentIndex += increment) {
       const targetBucket = this.buckets[currentIndex];
-      await this.loadBucket(targetBucket.bucketDate, { cancelable: false });
+      await this.loadBucket({ year: targetBucket.year, month: targetBucket.month }, { cancelable: false });
       if (targetBucket.dateGroups.length > 0) {
         return targetBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
       }
@@ -1539,7 +1545,7 @@ export class AssetStore {
     const targetBucket = this.buckets[targetBucketIndex];
 
     if (targetBucket) {
-      await this.loadBucket(targetBucket.bucketDate, { cancelable: false });
+      await this.loadBucket({ year: targetBucket.year, month: targetBucket.month }, { cancelable: false });
       return targetBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
     }
     return;
@@ -1558,7 +1564,7 @@ export class AssetStore {
 
     for (let currentIndex = startIndex; endCondition(currentIndex); currentIndex += increment) {
       const otherBucket = this.buckets[currentIndex];
-      const otherBucketYear = DateTime.fromISO(otherBucket.bucketDate).toUTC().get('year');
+      const otherBucketYear = otherBucket.year;
 
       const yearCondition =
         direction === 'forward'
@@ -1566,7 +1572,7 @@ export class AssetStore {
           : otherBucketYear <= targetYear; // Looking for older years
 
       if (yearCondition) {
-        await this.loadBucket(otherBucket.bucketDate, { cancelable: false });
+        await this.loadBucket({ year: otherBucket.year, month: otherBucket.month }, { cancelable: false });
         return otherBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
       }
     }
@@ -1608,7 +1614,7 @@ export class AssetStore {
 
     for (let currentIndex = startIndex + increment; endCondition(currentIndex); currentIndex += increment) {
       const adjacentBucket = this.buckets[currentIndex];
-      await this.loadBucket(adjacentBucket.bucketDate);
+      await this.loadBucket({ year: adjacentBucket.year, month: adjacentBucket.month }, { cancelable: false });
 
       if (adjacentBucket.dateGroups.length > 0) {
         return direction === 'forward'

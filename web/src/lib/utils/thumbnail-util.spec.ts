@@ -61,7 +61,7 @@ describe('getAltText', () => {
         ownerId: 'test-owner',
         ratio: 1,
         thumbhash: null,
-        localDateTime: '2024-01-01T12:00:00.000Z',
+        localDateTime: new Date('2024-01-01T12:00:00.000Z'),
         visibility: AssetVisibility.Timeline,
         isFavorite: false,
         isTrashed: false,

@@ -9,7 +9,7 @@ import { DateTime, type LocaleOptions } from 'luxon';
 import { get } from 'svelte/store';
 
 export type ScrubberListener = (
-  bucketDate: string | undefined,
+  bucketDate: { year: number; month: number },
   overallScrollPercent: number,
   bucketScrollPercent: number,
 ) => void | Promise<void>;

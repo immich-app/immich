@@ -98,7 +98,7 @@
   let showSkeleton = $state(true);
   let isShowSelectDate = $state(false);
   let scrubBucketPercent = $state(0);
-  let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
+  let scrubBucket: { year: number; month: number } | undefined = $state();
   let scrubOverallPercent: number = $state(0);
   let scrubberWidth = $state(0);
 
@@ -256,7 +256,7 @@
 
   // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
   const onScrub: ScrubberListener = (
-    bucketDate: string | undefined,
+    bucketDate: { year: number; month: number } | undefined,
     scrollPercent: number,
     bucketScrollPercent: number,
   ) => {
@@ -269,7 +269,9 @@
       }
       element.scrollTop = offset;
     } else {
-      const bucket = assetStore.buckets.find((b) => b.bucketDate === bucketDate);
+      const bucket = assetStore.buckets.find(
+        (bucket) => bucket.year === bucketDate.year && bucket.month === bucketDate.month,
+      );
       if (!bucket) {
         return;
       }
@@ -309,7 +311,7 @@
 
       const bucketsLength = assetStore.buckets.length;
       for (let i = -1; i < bucketsLength + 1; i++) {
-        let bucket: { bucketDate: string | undefined } | undefined;
+        let bucket: { year: number; month: number } | undefined;
         let bucketHeight = 0;
         if (i === -1) {
           // lead-in
@@ -585,7 +587,7 @@
           break;
         }
         if (started) {
-          await assetStore.loadBucket(bucket.bucketDate);
+          await assetStore.loadBucket({ year: bucket.year, month: bucket.month });
           for (const asset of bucket.getAssets()) {
             if (deselect) {
               assetInteraction.removeAssetFromMultiselectGroup(asset.id);

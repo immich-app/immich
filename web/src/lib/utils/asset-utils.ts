@@ -479,7 +479,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: 
 
   try {
     for (const bucket of assetStore.buckets) {
-      await assetStore.loadBucket(bucket.bucketDate);
+      await assetStore.loadBucket({ year: bucket.year, month: bucket.month });
 
       if (!get(isSelectingAllAssets)) {
         assetInteraction.clearMultiselect();
