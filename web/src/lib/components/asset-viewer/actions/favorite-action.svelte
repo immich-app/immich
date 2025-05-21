@@ -1,6 +1,5 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import {
     NotificationType,
     notificationController,

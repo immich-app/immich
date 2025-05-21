@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';

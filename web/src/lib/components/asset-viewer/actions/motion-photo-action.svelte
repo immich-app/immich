@@ -1,5 +1,4 @@
-<script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+<script lang="ts"></script>
   import { mdiMotionPauseOutline, mdiPlaySpeed } from '@mdi/js';
   import { t } from 'svelte-i18n';
 

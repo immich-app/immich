@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import {
     NotificationType,

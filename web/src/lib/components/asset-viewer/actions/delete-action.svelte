@@ -1,6 +1,5 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import {
     NotificationType,

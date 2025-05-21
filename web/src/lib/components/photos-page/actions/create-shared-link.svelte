@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';

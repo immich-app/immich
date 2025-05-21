@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import {
     NotificationType,
@@ -9,8 +8,8 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { t } from 'svelte-i18n';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     onFavorite?: OnFavorite;

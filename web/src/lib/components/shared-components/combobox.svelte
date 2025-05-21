@@ -22,7 +22,6 @@
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
   import { mdiClose, mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';

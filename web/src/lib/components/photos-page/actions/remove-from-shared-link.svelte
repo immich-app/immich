@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';

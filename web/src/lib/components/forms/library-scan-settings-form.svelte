@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import LibraryExclusionPatternModal from '$lib/modals/LibraryExclusionPatternModal.svelte';
   import { type LibraryResponseDto } from '@immich/sdk';

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';

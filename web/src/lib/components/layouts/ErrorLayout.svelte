@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import { copyToClipboard } from '$lib/utils';
