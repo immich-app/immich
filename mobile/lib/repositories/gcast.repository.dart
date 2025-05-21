@@ -19,7 +19,6 @@ class GCastRepository {
   GCastRepository();
 
   Future<void> connect(CastDevice device) async {
-    print("Connecting to ${device.name}");
     _castSession = await CastSessionManager().startSession(device);
 
     _castSession?.stateStream.listen((state) {
@@ -38,8 +37,6 @@ class GCastRepository {
       'type': 'LAUNCH',
       'appId': 'CC1AD845',
     });
-
-    print("Connected to ${device.name}");
   }
 
   Future<void> disconnect() async {
