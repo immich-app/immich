@@ -248,7 +248,8 @@
   }
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} bind:scrollY />
+<svelte:window bind:scrollY />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
 
 <section>
   {#if assetInteraction.selectionActive}
