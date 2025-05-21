@@ -65,6 +65,10 @@ jobs:
       - name: Run Build Runner
         run: make build
         working-directory: ./mobile
+      
+      - name: Generate platform API
+        run: make pigeon; dart format ib/platform/native_sync_api.g.dart
+        working-directory: ./mobile
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4

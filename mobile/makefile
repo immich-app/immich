@@ -1,7 +1,10 @@
-.PHONY: build watch create_app_icon create_splash build_release_android
+.PHONY: build watch create_app_icon create_splash build_release_android pigeon
 
 build:
 	dart run build_runner build --delete-conflicting-outputs
+
+pigeon:
+	dart run pigeon --input pigeon/native_sync_api.dart
 
 watch:
 	dart run build_runner watch --delete-conflicting-outputs
