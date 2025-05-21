@@ -57,12 +57,12 @@ class CastDialog extends ConsumerWidget {
             final List<dynamic> sectionedList = [];
 
             if (connected.isNotEmpty) {
-              sectionedList.add("connected_device".tr());
+              sectionedList.add("connected_device");
               sectionedList.addAll(connected);
             }
 
             if (others.isNotEmpty) {
-              sectionedList.add("discovered_devices".tr());
+              sectionedList.add("discovered_devices");
               sectionedList.addAll(others);
             }
 
