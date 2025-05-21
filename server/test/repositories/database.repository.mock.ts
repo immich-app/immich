@@ -5,12 +5,13 @@ import { Mocked, vitest } from 'vitest';
 export const newDatabaseRepositoryMock = (): Mocked<RepositoryInterface<DatabaseRepository>> => {
   return {
     shutdown: vitest.fn(),
-    getExtensionVersion: vitest.fn(),
+    getExtensionVersions: vitest.fn(),
     getVectorExtension: vitest.fn(),
     getExtensionVersionRange: vitest.fn(),
     getPostgresVersion: vitest.fn().mockResolvedValue('14.10 (Debian 14.10-1.pgdg120+1)'),
     getPostgresVersionRange: vitest.fn().mockReturnValue('>=14.0.0'),
     createExtension: vitest.fn().mockResolvedValue(void 0),
+    dropExtension: vitest.fn(),
     updateVectorExtension: vitest.fn(),
     reindexVectorsIfNeeded: vitest.fn(),
     getDimensionSize: vitest.fn(),
