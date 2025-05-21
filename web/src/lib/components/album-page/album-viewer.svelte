@@ -48,7 +48,7 @@
   });
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {

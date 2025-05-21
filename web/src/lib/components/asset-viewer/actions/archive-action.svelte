@@ -28,7 +28,7 @@
   };
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'a', shift: true }, onShortcut: onArchive }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'a', shift: true }, onShortcut: onArchive }} />
 
 <MenuOption
   icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}

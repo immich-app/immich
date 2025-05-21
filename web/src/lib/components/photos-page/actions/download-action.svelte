@@ -35,7 +35,7 @@
   let menuItemIcon = $derived(getAssets().length === 1 ? mdiFileDownloadOutline : mdiFolderDownloadOutline);
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: handleDownloadFiles }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: handleDownloadFiles }} />
 
 {#if menuItem}
   <MenuOption text={$t('download')} icon={menuItemIcon} onClick={handleDownloadFiles} />
