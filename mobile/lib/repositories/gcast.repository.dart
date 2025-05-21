@@ -43,8 +43,7 @@ class GCastRepository {
   }
 
   Future<void> disconnect() async {
-    final sessionID =
-        _receiverStatus?['status']['applications'][0]['sessionId'];
+    final sessionID = getSessionId();
 
     sendMessage(CastSession.kNamespaceReceiver, {
       'type': "STOP",
@@ -52,6 +51,13 @@ class GCastRepository {
     });
 
     await _castSession?.close();
+  }
+
+  String? getSessionId() {
+    if (_receiverStatus == null) {
+      return null;
+    }
+    return _receiverStatus!['status']['applications'][0]['sessionId'];
   }
 
   void sendMessage(String namespace, Map<String, dynamic> message) {
