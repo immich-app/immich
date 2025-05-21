@@ -184,7 +184,7 @@ select
 from
   "assets"
   inner join "smart_search" on "assets"."id" = "smart_search"."assetId"
-  inner join "asset_job_status" as "job_status" on "assetId" = "assets"."id"
+  inner join "asset_job_status" as "job_status" on "job_status"."assetId" = "assets"."id"
 where
   "assets"."visibility" != $1
   and "assets"."deletedAt" is null
