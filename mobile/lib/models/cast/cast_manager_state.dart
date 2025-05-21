@@ -53,7 +53,7 @@ class CastManagerState {
         receiverName: map['receiverName'] ?? '',
         castState: map['castState'] ?? CastState.idle,
         currentTime: Duration(seconds: map['currentTime']?.toInt() ?? 0),
-        duration: Duration(seconds: map['duration']?.toInt() ?? 0));
+        duration: Duration(seconds: map['duration']?.toInt() ?? 0),);
   }
 
   String toJson() => json.encode(toMap());
