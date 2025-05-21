@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';

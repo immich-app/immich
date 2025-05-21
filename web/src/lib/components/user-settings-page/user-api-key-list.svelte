@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { dateFormats } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import ApiKeyModal from '$lib/modals/ApiKeyModal.svelte';
   import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
@@ -18,7 +18,6 @@
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import { dateFormats } from '$lib/constants';
 
   interface Props {
     keys: ApiKeyResponseDto[];

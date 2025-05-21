@@ -1,10 +1,9 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
-  import { mdiMagnify, mdiClose } from '@mdi/js';
-  import { fly } from 'svelte/transition';
+  import { mdiClose, mdiMagnify } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { fly } from 'svelte/transition';
 
   interface Props {
     id: string;

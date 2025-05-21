@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
   import type { SharedLinkResponseDto } from '@immich/sdk';

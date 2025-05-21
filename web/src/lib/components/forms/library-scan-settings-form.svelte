@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { type LibraryResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';

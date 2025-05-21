@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { type PersonResponseDto } from '@immich/sdk';
-  import FaceThumbnail from './face-thumbnail.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
+  import { type PersonResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import FaceThumbnail from './face-thumbnail.svelte';
   import { mdiSwapVertical } from '@mdi/js';
 
   interface Props {

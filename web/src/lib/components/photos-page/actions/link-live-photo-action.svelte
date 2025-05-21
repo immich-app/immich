@@ -1,8 +1,6 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
-
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { OnLink, OnUnlink } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';

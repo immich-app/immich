@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { type AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { cancelMultiselect, selectAllAssets } from '$lib/utils/asset-utils';
