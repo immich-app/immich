@@ -14,6 +14,7 @@ import 'package:immich_mobile/repositories/gcast.repository.dart';
 import 'package:immich_mobile/repositories/sessions_api.repository.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:openapi/api.dart';
 
 final gCastServiceProvider = Provider(
   (ref) => GCastService(
@@ -191,7 +192,10 @@ class GCastService implements ICastDestinationService {
         ? getPlaybackUrlForRemoteId(
             asset.remoteId!,
           )
-        : getThumbnailUrlForRemoteId(asset.remoteId!);
+        : getThumbnailUrlForRemoteId(
+            asset.remoteId!,
+            type: AssetMediaSize.fullsize,
+          );
 
     final authenticatedURL =
         "$unauthenticatedUrl&sessionKey=${sessionKey?.token}";
