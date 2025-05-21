@@ -19,7 +19,7 @@
   const onDownloadFile = async () => downloadFile(await getAssetInfo({ id: asset.id, key: authManager.key }));
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: onDownloadFile }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: onDownloadFile }} />
 
 {#if !menuItem}
   <CircleIconButton color="opaque" icon={mdiFolderDownloadOutline} title={$t('download')} onclick={onDownloadFile} />
