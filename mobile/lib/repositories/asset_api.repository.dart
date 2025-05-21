@@ -73,6 +73,7 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
     }
   }
 
+  @override
   Future<String?> getAssetMIMEType(String assetId) async {
     final response = await checkNull(_api.getAssetInfo(assetId));
 
