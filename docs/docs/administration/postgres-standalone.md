@@ -10,8 +10,8 @@ Running with a pre-existing Postgres server can unlock powerful administrative f
 
 ## Prerequisites
 
-You must install `pgvector`, as it is a prerequisite for `vchord`.
-The easiest way to do this is by adding the [PostgreSQL Apt repository][pg-apt] and then
+You must install `pgvector` (`>= 0.7.0, < 1.0.0`), as it is a prerequisite for `vchord`.
+The easiest way to do this on Debian/Ubuntu is by adding the [PostgreSQL Apt repository][pg-apt] and then
 running `apt install postgresql-NN-pgvector`, where `NN` is your Postgres version (e.g., `16`).
 
 You must install VectorChord into your instance of Postgres using their [instructions][vchord-install]. After installation, add `shared_preload_libraries = 'vchord.so'` to your `postgresql.conf`. If you already have some `shared_preload_libraries` set, you can separate each extension with a comma. For example, `shared_preload_libraries = 'pg_stat_statements, vchord.so'`.
@@ -77,7 +77,7 @@ Support for pgvecto.rs will be dropped in a later release, hence we recommend al
 The easiest option is to have both extensions installed during the migration:
 
 1. Ensure you still have pgvecto.rs installed
-2. Install `pgvector`. The easiest way to do this is by adding the [PostgreSQL Apt repository][pg-apt] and then running `apt install postgresql-NN-pgvector`, where `NN` is your Postgres version (e.g., `16`)
+2. Install `pgvector` (`>= 0.7.0, < 1.0.0`). The easiest way to do this is on Debian/Ubuntu by adding the [PostgreSQL Apt repository][pg-apt] and then running `apt install postgresql-NN-pgvector`, where `NN` is your Postgres version (e.g., `16`)
 3. [Install VectorChord][vchord-install]
 4. Add `shared_preload_libraries= 'vchord.so, vectors.so'` to your `postgresql.conf`, making sure to include _both_ `vchord.so` and `vectors.so`. You may include other libraries here as well if needed
 5. If Immich does not have superuser permissions, run the SQL command `CREATE EXTENSION vchord CASCADE;` using psql or your choice of database client
