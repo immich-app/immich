@@ -4,13 +4,14 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import ApiKeyGrid from '$lib/components/user-settings-page/user-api-key-grid.svelte';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { Permission } from '@immich/sdk';
+  import { Button, Checkbox, Label, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiKeyVariant } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    apiKey: { name: string };
+    apiKey: { name: string; permissions: Permission[] };
     title: string;
     cancelText?: string;
     submitText?: string;
@@ -19,7 +20,8 @@
 
   let { apiKey = $bindable(), title, cancelText = $t('cancel'), submitText = $t('save'), onClose }: Props = $props();
 
-  let selectedItems: Permission[] = $state([]);
+  let selectedItems: Permission[] = $state(apiKey.permissions);
+  let selectAllItems = $derived(selectedItems.length === Object.keys(Permission).length - 1);
 
   const permissions: Map<string, Permission[]> = new Map();
 
@@ -151,6 +153,14 @@
     selectedItems = selectedItems.filter((item) => !permissions.includes(item));
   };
 
+  const handleSelectAllItems = () => {
+    if (selectAllItems) {
+      selectedItems = [];
+    } else {
+      selectedItems = Object.values(Permission).filter((item) => item !== Permission.All);
+    }
+  };
+
   const handleSubmit = () => {
     if (!apiKey.name) {
       notificationController.show({
@@ -163,7 +173,11 @@
         type: NotificationType.Warning,
       });
     } else {
-      onClose({ name: apiKey.name, permissions: selectedItems });
+      if (selectAllItems) {
+        onClose({ name: apiKey.name, permissions: [Permission.All] });
+      } else {
+        onClose({ name: apiKey.name, permissions: selectedItems });
+      }
     }
   };
 
@@ -171,6 +185,12 @@
     event.preventDefault();
     handleSubmit();
   };
+
+  onMount(() => {
+    if (apiKey.permissions.includes(Permission.All)) {
+      handleSelectAllItems();
+    }
+  });
 </script>
 
 <Modal {title} icon={mdiKeyVariant} {onClose} size="large">
@@ -180,7 +200,17 @@
         <label class="immich-form-label" for="name">{$t('name')}</label>
         <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKey.name} />
       </div>
+      <div class="flex items-center gap-2 m-4">
+        <Checkbox
+          id="select-all-permissions"
+          size="tiny"
+          checked={selectAllItems}
+          onCheckedChange={handleSelectAllItems}
+        />
+        <Label label={$t('select_all')} for="select-all-permissions" />
+      </div>
       {#each permissions as [title, subItems] (title)}
+        <hr />
         <ApiKeyGrid {title} {subItems} {selectedItems} {handleSelectItems} {handleDeselectItems} />
       {/each}
     </form>

@@ -8230,10 +8230,18 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "minItems": 1,
+            "type": "array"
           }
         },
         "required": [
-          "name"
+          "name",
+          "permissions"
         ],
         "type": "object"
       },

@@ -26,7 +26,7 @@
   const handleCreate = async () => {
     const result = await modalManager.show(ApiKeyModal, {
       title: $t('new_api_key'),
-      apiKey: { name: 'API Key' },
+      apiKey: { name: 'API Key', permissions: [] },
       submitText: $t('create'),
     });
 
@@ -62,7 +62,7 @@
     }
 
     try {
-      await updateApiKey({ id: key.id, apiKeyUpdateDto: { name: result.name } });
+      await updateApiKey({ id: key.id, apiKeyUpdateDto: { name: result.name, permissions: result.permissions } });
       notificationController.show({
         message: $t('saved_api_key'),
         type: NotificationType.Info,

@@ -408,6 +408,7 @@ export type ApiKeyCreateResponseDto = {
 };
 export type ApiKeyUpdateDto = {
     name: string;
+    permissions: Permission[];
 };
 export type AssetBulkDeleteDto = {
     force?: boolean;
