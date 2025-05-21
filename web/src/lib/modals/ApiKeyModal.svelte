@@ -196,7 +196,8 @@
         <label class="immich-form-label" for="name">{$t('name')}</label>
         <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKey.name} />
       </div>
-      <div class="flex items-center gap-2 m-4">
+      <label class="immich-form-label" for="permission">{$t('permission')}</label>
+      <div class="flex items-center gap-2 m-4" id="permission">
         <Checkbox
           id="select-all-permissions"
           size="tiny"
