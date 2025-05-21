@@ -130,11 +130,12 @@ export const fallbackLocale = {
 
 export enum QueryType {
   SMART = 'smart',
-  METADATA = 'metadata',
+  FILENAME = 'fileName',
+  FILEPATH = 'filePath',
   DESCRIPTION = 'description',
 }
 
-export const validQueryTypes = new Set([QueryType.SMART, QueryType.METADATA, QueryType.DESCRIPTION]);
+export const validQueryTypes = new Set([QueryType.SMART, QueryType.FILENAME, QueryType.FILEPATH, QueryType.DESCRIPTION]);
 
 export const locales = [
   { code: 'af-ZA', name: 'Afrikaans (South Africa)' },
