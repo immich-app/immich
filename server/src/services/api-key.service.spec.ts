@@ -69,7 +69,9 @@ describe(ApiKeyService.name, () => {
 
       mocks.apiKey.getById.mockResolvedValue(void 0);
 
-      await expect(sut.update(auth, id, { name: 'New Name', permissions: [Permission.ALL] })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(auth, id, { name: 'New Name', permissions: [Permission.ALL] })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(mocks.apiKey.update).not.toHaveBeenCalledWith(id);
     });
@@ -84,7 +86,10 @@ describe(ApiKeyService.name, () => {
 
       await sut.update(auth, apiKey.id, { name: newName, permissions: [Permission.ALL] });
 
-      expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, { name: newName });
+      expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, {
+        name: newName,
+        permissions: [Permission.ALL],
+      });
     });
 
     it('should update permissions', async () => {
@@ -97,8 +102,11 @@ describe(ApiKeyService.name, () => {
 
       await sut.update(auth, apiKey.id, { name: apiKey.name, permissions: newPermissions });
 
-      expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, { permission: newPermissions });
-    })
+      expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, {
+        name: apiKey.name,
+        permissions: newPermissions,
+      });
+    });
   });
 
   describe('delete', () => {
