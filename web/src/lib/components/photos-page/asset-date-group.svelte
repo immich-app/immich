@@ -10,7 +10,6 @@
     type TimelineAsset,
   } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { getDateLocaleString } from '$lib/utils/timeline-util';
 
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { fly, scale } from 'svelte/transition';
@@ -145,7 +144,7 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize ms-2.5" title={getDateLocaleString(dateGroup.date)}>
+      <span class="w-full truncate first-letter:capitalize ms-2.5">
         {dateGroup.groupTitle}
       </span>
     </div>
