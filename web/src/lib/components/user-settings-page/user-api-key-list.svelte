@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { dateFormats } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import ApiKeyModal from '$lib/modals/ApiKeyModal.svelte';

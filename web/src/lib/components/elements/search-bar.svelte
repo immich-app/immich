@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { mdiClose, mdiMagnify } from '@mdi/js';
   import type { SearchOptions } from '$lib/utils/dipatch';
+  import { mdiClose, mdiMagnify } from '@mdi/js';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {

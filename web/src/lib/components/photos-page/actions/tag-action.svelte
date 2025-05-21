@@ -1,6 +1,5 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
   import { tagAssets } from '$lib/utils/asset-utils';
   import { mdiTagMultipleOutline, mdiTimerSand } from '@mdi/js';
