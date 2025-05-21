@@ -154,11 +154,7 @@
   };
 
   const handleSelectAllItems = () => {
-    if (selectAllItems) {
-      selectedItems = [];
-    } else {
-      selectedItems = Object.values(Permission).filter((item) => item !== Permission.All);
-    }
+    selectedItems = selectAllItems ? [] : Object.values(Permission).filter((item) => item !== Permission.All);
   };
 
   const handleSubmit = () => {
