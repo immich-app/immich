@@ -48,7 +48,7 @@
     "@opentelemetry/context-async-hooks": "^2.0.0",
     "@opentelemetry/exporter-prometheus": "^0.200.0",
     "@opentelemetry/sdk-node": "^0.200.0",
-    "@react-email/components": "^0.0.38",
+    "@react-email/components": "^0.0.41",
     "@socket.io/redis-adapter": "^8.3.0",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
