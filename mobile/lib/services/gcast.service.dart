@@ -102,7 +102,8 @@ class GCastService implements ICastDestinationService {
 
       if (status["media"] != null && status["media"]["duration"] != null) {
         final duration = Duration(
-            milliseconds: (status["media"]["duration"] * 1000 ?? 0).toInt());
+          milliseconds: (status["media"]["duration"] * 1000 ?? 0).toInt(),
+        );
         onDuration?.call(duration);
       }
 
