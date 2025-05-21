@@ -243,7 +243,7 @@ const milestones: Item[] = [
     icon: mdiCast,
     iconColor: 'aqua',
     title: 'Google Cast (web)',
-    description: 'Cast assets to a Google Cast/Chromecast compatible devices',
+    description: 'Cast assets to Google Cast/Chromecast compatible devices',
     release: 'v1.133.0',
   }),
   withRelease({
