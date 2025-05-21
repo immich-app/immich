@@ -5,6 +5,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
+  import CastButton from '$lib/cast/cast-button.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import NotificationPanel from '$lib/components/shared-components/navigation-bar/notification-panel.svelte';
@@ -27,7 +28,6 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import CastButton from '$lib/cast/cast-button.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -183,7 +183,10 @@
           </button>
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel onLogout={() => authManager.logout()} />
+            <AccountInfoPanel
+              onLogout={() => authManager.logout()}
+              onClose={() => (shouldShowAccountInfoPanel = false)}
+            />
           {/if}
         </div>
       </section>
