@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cast/device.dart';
 import 'package:cast/session.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -29,6 +31,9 @@ class GCastService implements ICastDestinationService {
   SessionCreateResponse? sessionKey;
   String? currentAssetId;
   bool isConnected = false;
+  int? _sessionId;
+  Timer? _mediaStatusPollingTimer;
+  CastState? castState;
 
   @override
   void Function(bool)? onConnectionState;
@@ -62,6 +67,54 @@ class GCastService implements ICastDestinationService {
 
   void _onCastMessageCallback(Map<String, dynamic> message) {
     final msgType = message['type'];
+
+    if (msgType == "MEDIA_STATUS") {
+      final statusList = (message['status'] as List)
+          .whereType<Map<String, dynamic>>()
+          .toList();
+
+      if (statusList.isEmpty) {
+        return;
+      }
+
+      final status = statusList[0];
+      switch (status['playerState']) {
+        case "PLAYING":
+          onCastState?.call(CastState.playing);
+          break;
+        case "PAUSED":
+          onCastState?.call(CastState.paused);
+          break;
+        case "BUFFERING":
+          onCastState?.call(CastState.buffering);
+          break;
+        case "IDLE":
+          onCastState?.call(CastState.idle);
+
+          // stop polling for media status if the video finished playing
+          if (status["idleReason"] == "FINISHED") {
+            _mediaStatusPollingTimer?.cancel();
+          }
+
+          break;
+      }
+
+      if (status["media"] != null && status["media"]["duration"] != null) {
+        final duration = Duration(
+            milliseconds: (status["media"]["duration"] * 1000 ?? 0).toInt());
+        onDuration?.call(duration);
+      }
+
+      if (status["mediaSessionId"] != null) {
+        _sessionId = status["mediaSessionId"];
+      }
+
+      if (status["currentTime"] != null) {
+        final currentTime =
+            Duration(milliseconds: (status["currentTime"] * 1000 ?? 0).toInt());
+        onCurrentTime?.call(currentTime);
+      }
+    }
   }
 
   Future<void> connect(CastDevice device) async {
@@ -161,21 +214,50 @@ class GCastService implements ICastDestinationService {
       },
       "autoplay": true,
     });
+
+    // we need to poll for media status since the cast device does not
+    // send a message when the media is loaded for whatever reason
+    // only do this on videos
+    _mediaStatusPollingTimer?.cancel();
+
+    if (asset.isVideo) {
+      _mediaStatusPollingTimer =
+          Timer.periodic(const Duration(milliseconds: 500), (timer) {
+        if (isConnected) {
+          _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
+            "type": "GET_STATUS",
+            "mediaSessionId": _sessionId,
+          });
+        } else {
+          timer.cancel();
+        }
+      });
+    }
   }
 
   @override
   void play() {
-    // TODO: implement play
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
+      "type": "PLAY",
+      "mediaSessionId": _sessionId,
+    });
   }
 
   @override
   void pause() {
-    // TODO: implement pause
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
+      "type": "PAUSE",
+      "mediaSessionId": _sessionId,
+    });
   }
 
   @override
   void seekTo(Duration position) {
-    // TODO: implement seekTo
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
+      "type": "SEEK",
+      "mediaSessionId": _sessionId,
+      "currentTime": position.inSeconds,
+    });
   }
 
   @override
