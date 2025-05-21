@@ -87,7 +87,7 @@ The easiest option is to have both extensions installed during the migration:
 9. Drop the old schema by running `DROP SCHEMA vectors;`
 10. Remove the `vectors.so` entry from the `shared_preload_libraries` setting
 11. Restart the Postgres database
-12. Uninstall pgvecto.rs (e.g. `apt-get purge vectors-pg14` on Debian-based environments, replacing `pg14` as appropriate). `pgvector` must remain install as it provides the data types used by `vchord`
+12. Uninstall pgvecto.rs (e.g. `apt-get purge vectors-pg14` on Debian-based environments, replacing `pg14` as appropriate). `pgvector` must remain installed as it provides the data types used by `vchord`
 
 If it is not possible to have both VectorChord and pgvecto.rs installed at the same time, you can perform the migration with more manual steps:
 
