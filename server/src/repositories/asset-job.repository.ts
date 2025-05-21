@@ -145,7 +145,7 @@ export class AssetJobRepository {
       .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
       .$if(!force, (qb) =>
         qb
-          .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
+          .innerJoin('asset_job_status as job_status', 'job_status.assetId', 'assets.id')
           .where('job_status.duplicatesDetectedAt', 'is', null),
       )
       .stream();
