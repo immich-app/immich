@@ -44,6 +44,7 @@
     searchSmart,
     type SmartSearchDto,
   } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -268,7 +269,14 @@
         clearSelect={() => cancelMultiselect(assetInteraction)}
       >
         <CreateSharedLink />
-        <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          aria-label={$t('select_all')}
+          icon={mdiSelectAll}
+          onclick={handleSelectAll}
+        />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum {onAddToAlbum} />
           <AddToAlbum shared {onAddToAlbum} />
@@ -400,7 +408,14 @@
           clearSelect={() => cancelMultiselect(assetInteraction)}
         >
           <CreateSharedLink />
-          <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('select_all')}
+            icon={mdiSelectAll}
+            onclick={handleSelectAll}
+          />
           <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
             <AddToAlbum {onAddToAlbum} />
             <AddToAlbum shared {onAddToAlbum} />

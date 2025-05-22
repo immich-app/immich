@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
+  import { IconButton } from '@immich/ui';
   import { mdiArrowUpLeft, mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -18,12 +19,14 @@
 <nav class="flex items-center py-2">
   {#if !isRoot}
     <div>
-      <CircleIconButton
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
         icon={mdiArrowUpLeft}
-        title={$t('to_parent')}
+        aria-label={$t('to_parent')}
         href={getLink(pathSegments.slice(0, -1).join('/'))}
         class="me-2"
-        padding="2"
         onclick={() => {}}
       />
     </div>
@@ -34,12 +37,14 @@
   >
     <ol class="flex gap-2 items-center">
       <li>
-        <CircleIconButton
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
           {icon}
           href={getLink('')}
-          {title}
-          size="1.25em"
-          padding="2"
+          aria-label={title}
+          size="medium"
           aria-current={isRoot ? 'page' : undefined}
           onclick={() => {}}
         />

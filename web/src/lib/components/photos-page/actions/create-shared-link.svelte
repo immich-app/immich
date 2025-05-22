@@ -6,6 +6,7 @@
   import { makeSharedLinkUrl } from '$lib/utils';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { IconButton } from '@immich/ui';
 
   const { getAssets } = getAssetControlContext();
 
@@ -20,4 +21,11 @@
   };
 </script>
 
-<CircleIconButton title={$t('share')} icon={mdiShareVariantOutline} onclick={handleClick} />
+<IconButton
+  shape="round"
+  color="secondary"
+  variant="ghost"
+  aria-label={$t('share')}
+  icon={mdiShareVariantOutline}
+  onclick={handleClick}
+/>

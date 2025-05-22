@@ -17,6 +17,7 @@
   import { t } from 'svelte-i18n';
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     title: string;
@@ -75,12 +76,12 @@
                 <span class="text-sm">
                   {$t('admin.jobs_failed', { values: { jobCount: jobCounts.failed.toLocaleString($locale) } })}
                 </span>
-                <CircleIconButton
+                <IconButton
                   color="primary"
                   icon={mdiClose}
-                  title={$t('clear_message')}
-                  size="12"
-                  padding="1"
+                  aria-label={$t('clear_message')}
+                  size="tiny"
+                  shape="round"
                   onclick={() => onCommand({ command: JobCommand.ClearFailed, force: false })}
                 />
               </div>

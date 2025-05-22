@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import { IconButton } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -12,4 +13,11 @@
 
 <svelte:document use:shortcut={{ shortcut: { key: 'i' }, onShortcut: onShowDetail }} />
 
-<CircleIconButton color="opaque" icon={mdiInformationOutline} onclick={onShowDetail} title={$t('info')} />
+<IconButton
+  color="secondary"
+  shape="round"
+  variant="ghost"
+  icon={mdiInformationOutline}
+  onclick={onShowDetail}
+  aria-label={$t('info')}
+/>

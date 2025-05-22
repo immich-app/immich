@@ -5,6 +5,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
@@ -60,5 +61,12 @@
 {#if menuItem}
   <MenuOption text={$t('remove_from_album')} icon={mdiImageRemoveOutline} onClick={removeFromAlbum} />
 {:else}
-  <CircleIconButton title={$t('remove_from_album')} icon={mdiDeleteOutline} onclick={removeFromAlbum} />
+  <IconButton
+    shape="round"
+    color="secondary"
+    variant="ghost"
+    aria-label={$t('remove_from_album')}
+    icon={mdiDeleteOutline}
+    onclick={removeFromAlbum}
+  />
 {/if}

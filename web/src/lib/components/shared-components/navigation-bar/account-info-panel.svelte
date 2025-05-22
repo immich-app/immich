@@ -9,7 +9,7 @@
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -43,13 +43,12 @@
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
       <div class="absolute bottom-0 end-0 rounded-full w-6 h-6">
-        <CircleIconButton
+        <IconButton
           color="primary"
           icon={mdiPencil}
-          title={$t('edit_avatar')}
-          class="border"
-          size="12"
-          padding="2"
+          aria-label={$t('edit_avatar')}
+          size="tiny"
+          shape="round"
           onclick={async () => {
             onClose();
             await modalManager.show(AvatarEditModal, {});

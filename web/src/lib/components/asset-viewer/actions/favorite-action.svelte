@@ -11,6 +11,7 @@
   import { mdiHeart, mdiHeartOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     asset: AssetResponseDto;
@@ -47,9 +48,11 @@
 
 <svelte:document use:shortcut={{ shortcut: { key: 'f' }, onShortcut: toggleFavorite }} />
 
-<CircleIconButton
-  color="opaque"
+<IconButton
+  color="secondary"
+  shape="round"
+  variant="ghost"
   icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
-  title={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
+  aria-label={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
   onclick={toggleFavorite}
 />
