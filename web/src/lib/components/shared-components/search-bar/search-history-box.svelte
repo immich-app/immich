@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
+  import { IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -132,11 +133,13 @@
               {savedSearchTerm}
             </div>
             <div aria-hidden={true} class="absolute end-5 top-0 items-center justify-center py-3">
-              <CircleIconButton
+              <IconButton
+                shape="round"
+                color="secondary"
+                variant="ghost"
                 icon={mdiClose}
-                title={$t('remove')}
-                size="18"
-                padding="1"
+                aria-label={$t('remove')}
+                size="medium"
                 tabindex={-1}
                 onclick={() => handleClearSingle(savedSearchTerm)}
               />

@@ -14,7 +14,6 @@
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import AssetGrid from '../photos-page/asset-grid.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
@@ -22,6 +21,7 @@
   import ThemeButton from '../shared-components/theme-button.svelte';
   import AlbumSummary from './album-summary.svelte';
   import CastButton from '$lib/cast/cast-button.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -104,19 +104,25 @@
       {/snippet}
 
       {#snippet trailing()}
-        <CastButton whiteHover />
+        <CastButton />
 
         {#if sharedLink.allowUpload}
-          <CircleIconButton
-            title={$t('add_photos')}
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('add_photos')}
             onclick={() => openFileUploadDialog({ albumId: album.id })}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton
-            title={$t('download')}
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('download')}
             onclick={() => downloadAlbum(album)}
             icon={mdiFolderDownloadOutline}
           />

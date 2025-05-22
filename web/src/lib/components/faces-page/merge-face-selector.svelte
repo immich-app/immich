@@ -6,14 +6,13 @@
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import FaceThumbnail from './face-thumbnail.svelte';
@@ -133,10 +132,13 @@
                 </div>
                 {#if selectedPeople.length === 1}
                   <div class="absolute bottom-2">
-                    <CircleIconButton
-                      title={$t('swap_merge_direction')}
+                    <IconButton
+                      shape="round"
+                      color="secondary"
+                      variant="ghost"
+                      aria-label={$t('swap_merge_direction')}
                       icon={mdiSwapHorizontal}
-                      size="24"
+                      size="large"
                       onclick={handleSwapPeople}
                     />
                   </div>

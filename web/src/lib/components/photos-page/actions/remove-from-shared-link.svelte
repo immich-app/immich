@@ -7,6 +7,7 @@
   import { t } from 'svelte-i18n';
   import { NotificationType, notificationController } from '../../shared-components/notification/notification';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -58,4 +59,11 @@
   };
 </script>
 
-<CircleIconButton title={$t('remove_from_shared_link')} onclick={handleRemove} icon={mdiDeleteOutline} />
+<IconButton
+  shape="round"
+  color="secondary"
+  variant="ghost"
+  aria-label={$t('remove_from_shared_link')}
+  onclick={handleRemove}
+  icon={mdiDeleteOutline}
+/>

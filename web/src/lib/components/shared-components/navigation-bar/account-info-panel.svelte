@@ -6,7 +6,7 @@
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import { user } from '$lib/stores/user.store';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -33,13 +33,12 @@
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
       <div class="absolute bottom-0 end-0 rounded-full w-6 h-6">
-        <CircleIconButton
+        <IconButton
           color="primary"
           icon={mdiPencil}
-          title={$t('edit_avatar')}
-          class="border"
-          size="12"
-          padding="2"
+          aria-label={$t('edit_avatar')}
+          size="tiny"
+          shape="round"
           onclick={async () => {
             onClose();
             await modalManager.show(AvatarEditModal, {});

@@ -7,12 +7,11 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { mergePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, IconButton, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiArrowLeft, mdiMerge } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import ImageThumbnail from '../components/assets/thumbnail/image-thumbnail.svelte';
-  import CircleIconButton from '../components/elements/buttons/circle-icon-button.svelte';
 
   interface Props {
     personToMerge: PersonResponseDto;
@@ -75,8 +74,11 @@
           />
         </div>
         <div class="mx-0.5 flex md:mx-2">
-          <CircleIconButton
-            title={$t('swap_merge_direction')}
+          <IconButton
+            shape="round"
+            variant="ghost"
+            color="secondary"
+            aria-label={$t('swap_merge_direction')}
             icon={mdiMerge}
             onclick={() => ([personToMerge, personToBeMergedInto] = [personToBeMergedInto, personToMerge])}
           />

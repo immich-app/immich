@@ -11,10 +11,9 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updatePeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   interface Props {
     people: PersonResponseDto[];
@@ -114,7 +113,14 @@
   class="fixed top-0 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
 >
   <div class="flex items-center">
-    <CircleIconButton title={$t('close')} icon={mdiClose} onclick={onClose} />
+    <IconButton
+      shape="round"
+      color="secondary"
+      variant="ghost"
+      aria-label={$t('close')}
+      icon={mdiClose}
+      onclick={onClose}
+    />
     <div class="flex gap-2 items-center">
       <p id={titleId} class="ms-2">{$t('show_and_hide_people')}</p>
       <p class="text-sm text-gray-400 dark:text-gray-600">({totalPeopleCount.toLocaleString($locale)})</p>
@@ -122,8 +128,22 @@
   </div>
   <div class="flex items-center justify-end">
     <div class="flex items-center md:me-4">
-      <CircleIconButton title={$t('reset_people_visibility')} icon={mdiRestart} onclick={handleResetVisibility} />
-      <CircleIconButton title={toggleButton.label} icon={toggleButton.icon} onclick={handleToggleVisibility} />
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        aria-label={$t('reset_people_visibility')}
+        icon={mdiRestart}
+        onclick={handleResetVisibility}
+      />
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        aria-label={toggleButton.label}
+        icon={toggleButton.icon}
+        onclick={handleToggleVisibility}
+      />
     </div>
     <Button loading={showLoadingSpinner} onclick={handleSaveVisibility} size="small">{$t('done')}</Button>
   </div>

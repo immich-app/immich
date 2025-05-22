@@ -1,5 +1,6 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { IconButton } from '@immich/ui';
   import { mdiDelete } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -14,5 +15,12 @@
 {#if menuItem}
   <MenuOption text={$t('delete_link')} icon={mdiDelete} onClick={onDelete} />
 {:else}
-  <CircleIconButton title={$t('delete_link')} icon={mdiDelete} onclick={onDelete} />
+  <IconButton
+    color="secondary"
+    shape="round"
+    variant="ghost"
+    aria-label={$t('delete_link')}
+    icon={mdiDelete}
+    onclick={onDelete}
+  />
 {/if}
