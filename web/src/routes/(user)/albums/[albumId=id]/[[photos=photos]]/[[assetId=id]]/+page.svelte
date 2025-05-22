@@ -22,6 +22,7 @@
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
@@ -304,6 +305,11 @@
     } finally {
       viewMode = AlbumPageViewMode.VIEW;
     }
+  };
+
+  const handleSetVisibility = (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
   };
 
   const handleRemoveAssets = async (assetIds: string[]) => {
@@ -603,6 +609,7 @@
               />
             {/if}
             <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
 
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
