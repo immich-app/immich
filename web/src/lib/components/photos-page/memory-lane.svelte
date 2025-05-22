@@ -45,7 +45,7 @@
     onscroll={onScroll}
   >
     {#if canScrollLeft || canScrollRight}
-      <div class="sticky start-0">
+      <div class="sticky start-0 z-1">
         {#if canScrollLeft}
           <div class="absolute start-4 top-24" transition:fade={{ duration: 200 }}>
             <button
@@ -60,7 +60,7 @@
           </div>
         {/if}
         {#if canScrollRight}
-          <div class="absolute end-4 top-24" transition:fade={{ duration: 200 }}>
+          <div class="absolute end-4 top-24 z-1" transition:fade={{ duration: 200 }}>
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
