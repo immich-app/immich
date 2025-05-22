@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
@@ -41,14 +42,19 @@ class DeviceSyncService {
     try {
       if (await _nativeSyncApi.shouldFullSync()) {
         _log.fine("Cannot use partial sync. Performing full sync");
+        DLog.log("Cannot use partial sync. Performing full sync");
         return await fullSync();
       }
 
       final delta = await _nativeSyncApi.getMediaChanges();
       if (!delta.hasChanges) {
         _log.fine("No media changes detected. Skipping sync");
+        DLog.log("No media changes detected. Skipping sync");
         return;
       }
+
+      DLog.log("Delta updated: ${delta.updates.length}");
+      DLog.log("Delta deleted: ${delta.deletes.length}");
 
       final deviceAlbums = await _nativeSyncApi.getAlbums();
       await _localAlbumRepository.updateAll(deviceAlbums.toLocalAlbums());
