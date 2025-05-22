@@ -6,6 +6,8 @@ import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
@@ -14,19 +16,25 @@ import 'package:platform/platform.dart';
 class DeviceSyncService {
   final IAlbumMediaRepository _albumMediaRepository;
   final ILocalAlbumRepository _localAlbumRepository;
-  final Platform _platform;
   final NativeSyncApi _nativeSyncApi;
+  final Platform _platform;
+  final StoreService _storeService;
   final Logger _log = Logger("DeviceSyncService");
 
   DeviceSyncService({
     required IAlbumMediaRepository albumMediaRepository,
     required ILocalAlbumRepository localAlbumRepository,
     required NativeSyncApi nativeSyncApi,
+    required StoreService storeService,
     Platform? platform,
   })  : _albumMediaRepository = albumMediaRepository,
         _localAlbumRepository = localAlbumRepository,
-        _platform = platform ?? const LocalPlatform(),
-        _nativeSyncApi = nativeSyncApi;
+        _nativeSyncApi = nativeSyncApi,
+        _storeService = storeService,
+        _platform = platform ?? const LocalPlatform();
+
+  bool get _ignoreIcloudAssets =>
+      _storeService.get(StoreKey.ignoreIcloudAssets, false) == true;
 
   Future<void> sync() async {
     final Stopwatch stopwatch = Stopwatch()..start();
@@ -46,11 +54,35 @@ class DeviceSyncService {
       await _localAlbumRepository.updateAll(deviceAlbums.toLocalAlbums());
       await _localAlbumRepository.processDelta(delta);
 
+      final dbAlbums = await _localAlbumRepository.getAll();
+      // On Android, we need to sync all albums since it is not possible to
+      // detect album deletions from the native side
       if (_platform.isAndroid) {
-        final dbAlbums = await _localAlbumRepository.getAll();
         for (final album in dbAlbums) {
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncAlbumDeletes(album.id, deviceIds);
+        }
+      }
+
+      if (_platform.isIOS) {
+        // On iOS, we need to full sync albums that are marked as cloud as the delta sync
+        // does not include changes for cloud albums. If ignoreIcloudAssets is enabled,
+        // remove the albums from the local database from the previous sync
+        final cloudAlbums =
+            deviceAlbums.where((a) => a.isCloud).toLocalAlbums();
+        for (final album in cloudAlbums) {
+          final dbAlbum = dbAlbums.firstWhereOrNull((a) => a.id == album.id);
+          if (dbAlbum == null) {
+            _log.warning(
+              "Cloud album ${album.name} not found in local database. Skipping sync.",
+            );
+            continue;
+          }
+          if (_ignoreIcloudAssets) {
+            await removeAlbum(dbAlbum);
+          } else {
+            await updateAlbum(dbAlbum, album);
+          }
         }
       }
 
@@ -67,14 +99,17 @@ class DeviceSyncService {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
 
-      final deviceAlbums = (await _nativeSyncApi.getAlbums()).toLocalAlbums();
+      List<ImAlbum> deviceAlbums = List.of(await _nativeSyncApi.getAlbums());
+      if (_platform.isIOS && _ignoreIcloudAssets) {
+        deviceAlbums.removeWhere((album) => album.isCloud);
+      }
 
       final dbAlbums =
           await _localAlbumRepository.getAll(sortBy: SortLocalAlbumsBy.id);
 
       await diffSortedLists(
         dbAlbums,
-        deviceAlbums,
+        deviceAlbums.toLocalAlbums(),
         compare: (a, b) => a.id.compareTo(b.id),
         both: updateAlbum,
         onlyFirst: removeAlbum,

@@ -8,6 +8,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 
 final syncStreamServiceProvider = Provider(
   (ref) => SyncStreamService(
@@ -30,5 +31,6 @@ final deviceSyncServiceProvider = Provider(
     albumMediaRepository: ref.watch(albumMediaRepositoryProvider),
     localAlbumRepository: ref.watch(localAlbumRepository),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
+    storeService: ref.watch(storeServiceProvider),
   ),
 );

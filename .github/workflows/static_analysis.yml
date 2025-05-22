@@ -65,7 +65,7 @@ jobs:
       - name: Run Build Runner
         run: make build
         working-directory: ./mobile
-      
+
       - name: Generate platform API
         run: make pigeon; dart format ib/platform/native_sync_api.g.dart
         working-directory: ./mobile
