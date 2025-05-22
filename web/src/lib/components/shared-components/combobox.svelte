@@ -24,12 +24,12 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import Icon from '$lib/components/elements/icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
+  import { IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { FormEventHandler } from 'svelte/elements';
   import { fly } from 'svelte/transition';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     label: string;
@@ -330,7 +330,15 @@
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
-        <IconButton shape="round" color="secondary" variant="ghost" onclick={onClear} aria-label={$t('clear_value')} icon={mdiClose} size="small" />
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          onclick={onClear}
+          aria-label={$t('clear_value')}
+          icon={mdiClose}
+          size="small"
+        />
       {:else if !isOpen}
         <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
       {/if}
