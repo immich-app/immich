@@ -5,12 +5,12 @@ import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:immich_mobile/utils/user_agent.dart';
 
-class MapSerivce with ErrorLoggerMixin {
+class MapService with ErrorLoggerMixin {
   final ApiService _apiService;
   @override
   final logger = Logger("MapService");
 
-  MapSerivce(this._apiService) {
+  MapService(this._apiService) {
     _setMapUserAgentHeader();
   }
 
