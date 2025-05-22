@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
@@ -45,7 +46,8 @@ class Asset {
             : remote.stack?.primaryAssetId,
         stackCount = remote.stack?.assetCount ?? 0,
         stackId = remote.stack?.id,
-        thumbhash = remote.thumbhash;
+        thumbhash = remote.thumbhash,
+        visibility = getVisibility(remote.visibility);
 
   Asset({
     this.id = Isar.autoIncrement,
@@ -71,6 +73,7 @@ class Asset {
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
+    this.visibility = AssetVisibilityEnum.timeline,
   });
 
   @ignore
@@ -172,6 +175,9 @@ class Asset {
   String? stackPrimaryAssetId;
 
   int stackCount;
+
+  @Enumerated(EnumType.ordinal)
+  AssetVisibilityEnum visibility;
 
   /// Returns null if the asset has no sync access to the exif info
   @ignore
@@ -349,7 +355,8 @@ class Asset {
         a.thumbhash != thumbhash ||
         stackId != a.stackId ||
         stackCount != a.stackCount ||
-        stackPrimaryAssetId == null && a.stackPrimaryAssetId != null;
+        stackPrimaryAssetId == null && a.stackPrimaryAssetId != null ||
+        visibility != a.visibility;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -452,6 +459,7 @@ class Asset {
     String? stackPrimaryAssetId,
     int? stackCount,
     String? thumbhash,
+    AssetVisibilityEnum? visibility,
   }) =>
       Asset(
         id: id ?? this.id,
@@ -477,6 +485,7 @@ class Asset {
         stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
         stackCount: stackCount ?? this.stackCount,
         thumbhash: thumbhash ?? this.thumbhash,
+        visibility: visibility ?? this.visibility,
       );
 
   Future<void> put(Isar db) async {
@@ -541,7 +550,21 @@ class Asset {
   "isArchived": $isArchived,
   "isTrashed": $isTrashed,
   "isOffline": $isOffline,
+  "visibility": "$visibility",
 }""";
+  }
+
+  static getVisibility(AssetVisibility visibility) {
+    switch (visibility) {
+      case AssetVisibility.timeline:
+        return AssetVisibilityEnum.timeline;
+      case AssetVisibility.archive:
+        return AssetVisibilityEnum.archive;
+      case AssetVisibility.hidden:
+        return AssetVisibilityEnum.hidden;
+      case AssetVisibility.locked:
+        return AssetVisibilityEnum.locked;
+    }
   }
 }
 

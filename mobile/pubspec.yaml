@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.132.3+197
+version: 1.133.0+198
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -64,6 +64,9 @@ dependencies:
   uuid: ^4.5.1
   wakelock_plus: ^1.2.10
   worker_manager: ^7.2.3
+  local_auth: ^2.3.0
+  pinput: ^5.0.1
+  flutter_secure_storage: ^9.2.4
 
   native_video_player:
     git:

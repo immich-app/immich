@@ -54,28 +54,28 @@ describe(SmartInfoService.name, () => {
     it('should return if machine learning is disabled', async () => {
       await sut.onConfigInit({ newConfig: systemConfigStub.machineLearningDisabled as SystemConfig });
 
-      expect(mocks.search.getDimensionSize).not.toHaveBeenCalled();
-      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
-      expect(mocks.search.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
+      expect(mocks.database.getDimensionSize).not.toHaveBeenCalled();
+      expect(mocks.database.setDimensionSize).not.toHaveBeenCalled();
+      expect(mocks.database.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
     });
 
     it('should return if model and DB dimension size are equal', async () => {
-      mocks.search.getDimensionSize.mockResolvedValue(512);
+      mocks.database.getDimensionSize.mockResolvedValue(512);
 
       await sut.onConfigInit({ newConfig: systemConfigStub.machineLearningEnabled as SystemConfig });
 
-      expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
-      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
-      expect(mocks.search.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
+      expect(mocks.database.getDimensionSize).toHaveBeenCalledTimes(1);
+      expect(mocks.database.setDimensionSize).not.toHaveBeenCalled();
+      expect(mocks.database.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
     });
 
     it('should update DB dimension size if model and DB have different values', async () => {
-      mocks.search.getDimensionSize.mockResolvedValue(768);
+      mocks.database.getDimensionSize.mockResolvedValue(768);
 
       await sut.onConfigInit({ newConfig: systemConfigStub.machineLearningEnabled as SystemConfig });
 
-      expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
-      expect(mocks.search.setDimensionSize).toHaveBeenCalledWith(512);
+      expect(mocks.database.getDimensionSize).toHaveBeenCalledTimes(1);
+      expect(mocks.database.setDimensionSize).toHaveBeenCalledWith(512);
     });
   });
 
@@ -89,13 +89,13 @@ describe(SmartInfoService.name, () => {
       });
 
       expect(mocks.systemMetadata.get).not.toHaveBeenCalled();
-      expect(mocks.search.getDimensionSize).not.toHaveBeenCalled();
-      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
-      expect(mocks.search.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
+      expect(mocks.database.getDimensionSize).not.toHaveBeenCalled();
+      expect(mocks.database.setDimensionSize).not.toHaveBeenCalled();
+      expect(mocks.database.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
     });
 
     it('should return if model and DB dimension size are equal', async () => {
-      mocks.search.getDimensionSize.mockResolvedValue(512);
+      mocks.database.getDimensionSize.mockResolvedValue(512);
 
       await sut.onConfigUpdate({
         newConfig: {
@@ -106,13 +106,13 @@ describe(SmartInfoService.name, () => {
         } as SystemConfig,
       });
 
-      expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
-      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
-      expect(mocks.search.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
+      expect(mocks.database.getDimensionSize).toHaveBeenCalledTimes(1);
+      expect(mocks.database.setDimensionSize).not.toHaveBeenCalled();
+      expect(mocks.database.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
     });
 
     it('should update DB dimension size if model and DB have different values', async () => {
-      mocks.search.getDimensionSize.mockResolvedValue(512);
+      mocks.database.getDimensionSize.mockResolvedValue(512);
 
       await sut.onConfigUpdate({
         newConfig: {
@@ -123,12 +123,12 @@ describe(SmartInfoService.name, () => {
         } as SystemConfig,
       });
 
-      expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
-      expect(mocks.search.setDimensionSize).toHaveBeenCalledWith(768);
+      expect(mocks.database.getDimensionSize).toHaveBeenCalledTimes(1);
+      expect(mocks.database.setDimensionSize).toHaveBeenCalledWith(768);
     });
 
     it('should clear embeddings if old and new models are different', async () => {
-      mocks.search.getDimensionSize.mockResolvedValue(512);
+      mocks.database.getDimensionSize.mockResolvedValue(512);
 
       await sut.onConfigUpdate({
         newConfig: {
@@ -139,9 +139,9 @@ describe(SmartInfoService.name, () => {
         } as SystemConfig,
       });
 
-      expect(mocks.search.deleteAllSearchEmbeddings).toHaveBeenCalled();
-      expect(mocks.search.getDimensionSize).toHaveBeenCalledTimes(1);
-      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
+      expect(mocks.database.deleteAllSearchEmbeddings).toHaveBeenCalled();
+      expect(mocks.database.getDimensionSize).toHaveBeenCalledTimes(1);
+      expect(mocks.database.setDimensionSize).not.toHaveBeenCalled();
     });
   });
 
@@ -151,7 +151,7 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({});
 
-      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
+      expect(mocks.database.setDimensionSize).not.toHaveBeenCalled();
     });
 
     it('should queue the assets without clip embeddings', async () => {
@@ -163,7 +163,7 @@ describe(SmartInfoService.name, () => {
         { name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } },
       ]);
       expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(false);
-      expect(mocks.search.setDimensionSize).not.toHaveBeenCalled();
+      expect(mocks.database.setDimensionSize).not.toHaveBeenCalled();
     });
 
     it('should queue all the assets', async () => {
@@ -175,7 +175,7 @@ describe(SmartInfoService.name, () => {
         { name: JobName.SMART_SEARCH, data: { id: assetStub.image.id } },
       ]);
       expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(true);
-      expect(mocks.search.setDimensionSize).toHaveBeenCalledExactlyOnceWith(512);
+      expect(mocks.database.setDimensionSize).toHaveBeenCalledExactlyOnceWith(512);
     });
   });
 

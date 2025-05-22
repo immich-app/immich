@@ -74,6 +74,20 @@ export interface Albums {
   updateId: Generated<string>;
 }
 
+export interface AlbumsAudit {
+  deletedAt: Generated<Timestamp>;
+  id: Generated<string>;
+  albumId: string;
+  userId: string;
+}
+
+export interface AlbumUsersAudit {
+  deletedAt: Generated<Timestamp>;
+  id: Generated<string>;
+  albumId: string;
+  userId: string;
+}
+
 export interface AlbumsAssetsAssets {
   albumsId: string;
   assetsId: string;
@@ -84,6 +98,8 @@ export interface AlbumsSharedUsersUsers {
   albumsId: string;
   role: Generated<AlbumUserRole>;
   usersId: string;
+  updatedAt: Generated<Timestamp>;
+  updateId: Generated<string>;
 }
 
 export interface ApiKeys {
@@ -466,8 +482,10 @@ export interface VersionHistory {
 export interface DB {
   activity: Activity;
   albums: Albums;
+  albums_audit: AlbumsAudit;
   albums_assets_assets: AlbumsAssetsAssets;
   albums_shared_users_users: AlbumsSharedUsersUsers;
+  album_users_audit: AlbumUsersAudit;
   api_keys: ApiKeys;
   asset_faces: AssetFaces;
   asset_files: AssetFiles;

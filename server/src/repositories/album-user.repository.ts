@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Selectable, Updateable } from 'kysely';
+import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { AlbumsSharedUsersUsers, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -15,8 +15,12 @@ export class AlbumUserRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }] })
-  create(albumUser: Insertable<AlbumsSharedUsersUsers>): Promise<Selectable<AlbumsSharedUsersUsers>> {
-    return this.db.insertInto('albums_shared_users_users').values(albumUser).returningAll().executeTakeFirstOrThrow();
+  create(albumUser: Insertable<AlbumsSharedUsersUsers>) {
+    return this.db
+      .insertInto('albums_shared_users_users')
+      .values(albumUser)
+      .returning(['usersId', 'albumsId', 'role'])
+      .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }, { role: AlbumUserRole.VIEWER }] })

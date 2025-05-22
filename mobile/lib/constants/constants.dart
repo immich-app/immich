@@ -11,3 +11,6 @@ const int kSyncEventBatchSize = 5000;
 // Hash batch limits
 const int kBatchHashFileLimit = 128;
 const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
+
+// Secure storage keys
+const String kSecuredPinCode = "secured_pin_code";
