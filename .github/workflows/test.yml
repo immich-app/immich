@@ -504,6 +504,11 @@ jobs:
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
+
+      - name: Generate translation file
+        run: make translation
+        working-directory: ./mobile
+
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
