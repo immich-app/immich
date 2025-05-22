@@ -7,34 +7,10 @@ set
 where
   "asset_faces"."personId" = $2
 
--- PersonRepository.unassignFaces
-update "asset_faces"
-set
-  "personId" = $1
-where
-  "asset_faces"."sourceType" = $2
-VACUUM
-ANALYZE asset_faces,
-face_search,
-person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
-
 -- PersonRepository.delete
 delete from "person"
 where
-  "person"."id" in $1
-
--- PersonRepository.deleteFaces
-delete from "asset_faces"
-where
-  "asset_faces"."sourceType" = $1
-VACUUM
-ANALYZE asset_faces,
-face_search,
-person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
+  "person"."id" in ($1)
 
 -- PersonRepository.getAllWithoutFaces
 select
@@ -107,7 +83,7 @@ select
       (
         select
           "assets"."ownerId",
-          "assets"."isArchived",
+          "assets"."visibility",
           "assets"."fileCreatedAt"
         from
           "assets"
@@ -143,23 +119,26 @@ select
   "asset_faces"."boundingBoxY2" as "y2",
   "asset_faces"."imageWidth" as "oldWidth",
   "asset_faces"."imageHeight" as "oldHeight",
-  "exif"."exifImageWidth",
-  "exif"."exifImageHeight",
   "assets"."type",
   "assets"."originalPath",
-  "asset_files"."path" as "previewPath"
+  "exif"."orientation" as "exifOrientation",
+  (
+    select
+      "asset_files"."path"
+    from
+      "asset_files"
+    where
+      "asset_files"."assetId" = "assets"."id"
+      and "asset_files"."type" = 'preview'
+  ) as "previewPath"
 from
   "person"
   inner join "asset_faces" on "asset_faces"."id" = "person"."faceAssetId"
   inner join "assets" on "asset_faces"."assetId" = "assets"."id"
-  inner join "exif" on "exif"."assetId" = "assets"."id"
-  inner join "asset_files" on "asset_files"."assetId" = "assets"."id"
+  left join "exif" on "exif"."assetId" = "assets"."id"
 where
   "person"."id" = $1
   and "asset_faces"."deletedAt" is null
-  and "asset_files"."type" = $2
-  and "exif"."exifImageWidth" > $3
-  and "exif"."exifImageHeight" > $4
 
 -- PersonRepository.reassignFace
 update "asset_faces"
@@ -203,7 +182,7 @@ from
   "asset_faces"
   left join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "asset_faces"."personId" = $1
-  and "assets"."isArchived" = $2
+  and "assets"."visibility" != $2
   and "assets"."deletedAt" is null
 where
   "asset_faces"."deletedAt" is null
@@ -220,7 +199,7 @@ from
   inner join "asset_faces" on "asset_faces"."personId" = "person"."id"
   inner join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "assets"."deletedAt" is null
-  and "assets"."isArchived" = $2
+  and "assets"."visibility" != $2
 where
   "person"."ownerId" = $3
   and "asset_faces"."deletedAt" is null

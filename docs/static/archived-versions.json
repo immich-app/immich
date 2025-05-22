@@ -1,51 +1,19 @@
 [
   {
+    "label": "v1.133.0",
+    "url": "https://v1.133.0.archive.immich.app"
+  },
+  {
     "label": "v1.132.3",
     "url": "https://v1.132.3.archive.immich.app"
-  },
-  {
-    "label": "v1.132.2",
-    "url": "https://v1.132.2.archive.immich.app"
-  },
-  {
-    "label": "v1.132.1",
-    "url": "https://v1.132.1.archive.immich.app"
-  },
-  {
-    "label": "v1.132.0",
-    "url": "https://v1.132.0.archive.immich.app"
   },
   {
     "label": "v1.131.3",
     "url": "https://v1.131.3.archive.immich.app"
   },
   {
-    "label": "v1.131.2",
-    "url": "https://v1.131.2.archive.immich.app"
-  },
-  {
-    "label": "v1.131.1",
-    "url": "https://v1.131.1.archive.immich.app"
-  },
-  {
-    "label": "v1.131.0",
-    "url": "https://v1.131.0.archive.immich.app"
-  },
-  {
     "label": "v1.130.3",
     "url": "https://v1.130.3.archive.immich.app"
-  },
-  {
-    "label": "v1.130.2",
-    "url": "https://v1.130.2.archive.immich.app"
-  },
-  {
-    "label": "v1.130.1",
-    "url": "https://v1.130.1.archive.immich.app"
-  },
-  {
-    "label": "v1.130.0",
-    "url": "https://v1.130.0.archive.immich.app"
   },
   {
     "label": "v1.129.0",
@@ -64,44 +32,12 @@
     "url": "https://v1.126.1.archive.immich.app"
   },
   {
-    "label": "v1.126.0",
-    "url": "https://v1.126.0.archive.immich.app"
-  },
-  {
     "label": "v1.125.7",
     "url": "https://v1.125.7.archive.immich.app"
   },
   {
-    "label": "v1.125.6",
-    "url": "https://v1.125.6.archive.immich.app"
-  },
-  {
-    "label": "v1.125.5",
-    "url": "https://v1.125.5.archive.immich.app"
-  },
-  {
-    "label": "v1.125.3",
-    "url": "https://v1.125.3.archive.immich.app"
-  },
-  {
-    "label": "v1.125.2",
-    "url": "https://v1.125.2.archive.immich.app"
-  },
-  {
-    "label": "v1.125.1",
-    "url": "https://v1.125.1.archive.immich.app"
-  },
-  {
     "label": "v1.124.2",
     "url": "https://v1.124.2.archive.immich.app"
-  },
-  {
-    "label": "v1.124.1",
-    "url": "https://v1.124.1.archive.immich.app"
-  },
-  {
-    "label": "v1.124.0",
-    "url": "https://v1.124.0.archive.immich.app"
   },
   {
     "label": "v1.123.0",
@@ -112,18 +48,6 @@
     "url": "https://v1.122.3.archive.immich.app"
   },
   {
-    "label": "v1.122.2",
-    "url": "https://v1.122.2.archive.immich.app"
-  },
-  {
-    "label": "v1.122.1",
-    "url": "https://v1.122.1.archive.immich.app"
-  },
-  {
-    "label": "v1.122.0",
-    "url": "https://v1.122.0.archive.immich.app"
-  },
-  {
     "label": "v1.121.0",
     "url": "https://v1.121.0.archive.immich.app"
   },
@@ -132,32 +56,12 @@
     "url": "https://v1.120.2.archive.immich.app"
   },
   {
-    "label": "v1.120.1",
-    "url": "https://v1.120.1.archive.immich.app"
-  },
-  {
-    "label": "v1.120.0",
-    "url": "https://v1.120.0.archive.immich.app"
-  },
-  {
     "label": "v1.119.1",
     "url": "https://v1.119.1.archive.immich.app"
   },
   {
-    "label": "v1.119.0",
-    "url": "https://v1.119.0.archive.immich.app"
-  },
-  {
     "label": "v1.118.2",
     "url": "https://v1.118.2.archive.immich.app"
-  },
-  {
-    "label": "v1.118.1",
-    "url": "https://v1.118.1.archive.immich.app"
-  },
-  {
-    "label": "v1.118.0",
-    "url": "https://v1.118.0.archive.immich.app"
   },
   {
     "label": "v1.117.0",
@@ -166,14 +70,6 @@
   {
     "label": "v1.116.2",
     "url": "https://v1.116.2.archive.immich.app"
-  },
-  {
-    "label": "v1.116.1",
-    "url": "https://v1.116.1.archive.immich.app"
-  },
-  {
-    "label": "v1.116.0",
-    "url": "https://v1.116.0.archive.immich.app"
   },
   {
     "label": "v1.115.0",
@@ -188,16 +84,8 @@
     "url": "https://v1.113.1.archive.immich.app"
   },
   {
-    "label": "v1.113.0",
-    "url": "https://v1.113.0.archive.immich.app"
-  },
-  {
     "label": "v1.112.1",
     "url": "https://v1.112.1.archive.immich.app"
-  },
-  {
-    "label": "v1.112.0",
-    "url": "https://v1.112.0.archive.immich.app"
   },
   {
     "label": "v1.111.0",
@@ -212,14 +100,6 @@
     "url": "https://v1.109.2.archive.immich.app"
   },
   {
-    "label": "v1.109.1",
-    "url": "https://v1.109.1.archive.immich.app"
-  },
-  {
-    "label": "v1.109.0",
-    "url": "https://v1.109.0.archive.immich.app"
-  },
-  {
     "label": "v1.108.0",
     "url": "https://v1.108.0.archive.immich.app"
   },
@@ -228,36 +108,12 @@
     "url": "https://v1.107.2.archive.immich.app"
   },
   {
-    "label": "v1.107.1",
-    "url": "https://v1.107.1.archive.immich.app"
-  },
-  {
-    "label": "v1.107.0",
-    "url": "https://v1.107.0.archive.immich.app"
-  },
-  {
     "label": "v1.106.4",
     "url": "https://v1.106.4.archive.immich.app"
   },
   {
-    "label": "v1.106.3",
-    "url": "https://v1.106.3.archive.immich.app"
-  },
-  {
-    "label": "v1.106.2",
-    "url": "https://v1.106.2.archive.immich.app"
-  },
-  {
-    "label": "v1.106.1",
-    "url": "https://v1.106.1.archive.immich.app"
-  },
-  {
     "label": "v1.105.1",
     "url": "https://v1.105.1.archive.immich.app"
-  },
-  {
-    "label": "v1.105.0",
-    "url": "https://v1.105.0.archive.immich.app"
   },
   {
     "label": "v1.104.0",
@@ -268,24 +124,8 @@
     "url": "https://v1.103.1.archive.immich.app"
   },
   {
-    "label": "v1.103.0",
-    "url": "https://v1.103.0.archive.immich.app"
-  },
-  {
     "label": "v1.102.3",
     "url": "https://v1.102.3.archive.immich.app"
-  },
-  {
-    "label": "v1.102.2",
-    "url": "https://v1.102.2.archive.immich.app"
-  },
-  {
-    "label": "v1.102.1",
-    "url": "https://v1.102.1.archive.immich.app"
-  },
-  {
-    "label": "v1.102.0",
-    "url": "https://v1.102.0.archive.immich.app"
   },
   {
     "label": "v1.101.0",

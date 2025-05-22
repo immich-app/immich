@@ -1,5 +1,8 @@
-import { asset_face_source_type, assets_status_enum } from 'src/schema/enums';
+import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
+  album_user_after_insert,
+  album_users_delete_audit,
+  albums_delete_audit,
   assets_delete_audit,
   f_concat_ws,
   f_unaccent,
@@ -11,6 +14,8 @@ import {
 } from 'src/schema/functions';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AlbumAssetTable } from 'src/schema/tables/album-asset.table';
+import { AlbumAuditTable } from 'src/schema/tables/album-audit.table';
+import { AlbumUserAuditTable } from 'src/schema/tables/album-user-audit.table';
 import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { APIKeyTable } from 'src/schema/tables/api-key.table';
@@ -45,15 +50,16 @@ import { UserAuditTable } from 'src/schema/tables/user-audit.table';
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
-import { ConfigurationParameter, Database, Extensions } from 'src/sql-tools';
+import { Database, Extensions } from 'src/sql-tools';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
-@ConfigurationParameter({ name: 'search_path', value: () => '"$user", public, vectors', scope: 'database' })
 @Database({ name: 'immich' })
 export class ImmichDatabase {
   tables = [
     ActivityTable,
     AlbumAssetTable,
+    AlbumAuditTable,
+    AlbumUserAuditTable,
     AlbumUserTable,
     AlbumTable,
     APIKeyTable,
@@ -99,7 +105,10 @@ export class ImmichDatabase {
     users_delete_audit,
     partners_delete_audit,
     assets_delete_audit,
+    albums_delete_audit,
+    album_user_after_insert,
+    album_users_delete_audit,
   ];
 
-  enum = [assets_status_enum, asset_face_source_type];
+  enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
 }

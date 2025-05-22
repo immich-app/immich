@@ -1,21 +1,20 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { ToggleVisibility } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updatePeople, type PersonResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { ToggleVisibility } from '$lib/constants';
 
   interface Props {
     people: PersonResponseDto[];
@@ -109,10 +108,10 @@
   let toggleButton = $derived(toggleButtonOptions[getNextVisibility(toggleVisibility)]);
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
 <div
-  class="fixed top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
+  class="fixed top-0 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
 >
   <div class="flex items-center">
     <CircleIconButton title={$t('close')} icon={mdiClose} onclick={onClose} />
@@ -126,15 +125,11 @@
       <CircleIconButton title={$t('reset_people_visibility')} icon={mdiRestart} onclick={handleResetVisibility} />
       <CircleIconButton title={toggleButton.label} icon={toggleButton.icon} onclick={handleToggleVisibility} />
     </div>
-    {#if !showLoadingSpinner}
-      <Button onclick={handleSaveVisibility} size="sm" rounded="lg">{$t('done')}</Button>
-    {:else}
-      <LoadingSpinner />
-    {/if}
+    <Button loading={showLoadingSpinner} onclick={handleSaveVisibility} size="small">{$t('done')}</Button>
   </div>
 </div>
 
-<div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
+<div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8 mt-16">
   <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
     {#snippet children({ person })}
       {@const hidden = personIsHidden[person.id]}

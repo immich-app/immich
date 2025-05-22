@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     isComponentNotification,
@@ -8,10 +8,10 @@
     type ComponentNotification,
     type Notification,
   } from '$lib/components/shared-components/notification/notification';
-  import { onMount } from 'svelte';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
 
   interface Props {
     notification: Notification | ComponentNotification;
@@ -75,7 +75,7 @@
   transition:fade={{ duration: 250 }}
   style:background-color={backgroundColor[notification.type]}
   style:border-color={borderColor[notification.type]}
-  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {hoverStyle}"
+  class="border mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {hoverStyle}"
   onclick={handleClick}
   onkeydown={handleClick}
 >
@@ -100,7 +100,7 @@
     />
   </div>
 
-  <p class="whitespace-pre-wrap ps-[28px] pe-[16px] text-sm" data-testid="message">
+  <p class="whitespace-pre-wrap ps-[28px] pe-[16px] text-sm text-black/80" data-testid="message">
     {#if isComponentNotification(notification)}
       <notification.component.type {...notification.component.props} />
     {:else}

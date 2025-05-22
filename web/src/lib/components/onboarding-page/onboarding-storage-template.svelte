@@ -1,16 +1,15 @@
 <script lang="ts">
+  import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
+  import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { getConfig, type SystemConfigDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiArrowLeft, mdiCheck, mdiHarddisk } from '@mdi/js';
   import { onMount } from 'svelte';
-  import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
-  import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import OnboardingCard from './onboarding-card.svelte';
   import { t } from 'svelte-i18n';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import OnboardingCard from './onboarding-card.svelte';
 
   interface Props {
     onDone: () => void;
@@ -52,13 +51,19 @@
           >
             <div class="flex pt-4">
               <div class="w-full flex place-content-start">
-                <Button class="flex gap-2 place-content-center" onclick={() => onPrevious()}>
-                  <Icon path={mdiArrowLeft} size="18" />
+                <Button
+                  shape="round"
+                  leadingIcon={mdiArrowLeft}
+                  class="flex gap-2 place-content-center"
+                  onclick={() => onPrevious()}
+                >
                   <p>{$t('privacy')}</p>
                 </Button>
               </div>
               <div class="flex w-full place-content-end">
                 <Button
+                  shape="round"
+                  trailingIcon={mdiCheck}
                   onclick={() => {
                     adminSettingsComponent?.handleSave({ storageTemplate: config?.storageTemplate });
                     onDone();
@@ -66,7 +71,6 @@
                 >
                   <span class="flex place-content-center place-items-center gap-2">
                     {$t('done')}
-                    <Icon path={mdiCheck} size="18" />
                   </span>
                 </Button>
               </div>

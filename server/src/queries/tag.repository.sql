@@ -71,7 +71,7 @@ from
 where
   "userId" = $1
 order by
-  "value" asc
+  "value"
 
 -- TagRepository.create
 begin
@@ -125,6 +125,15 @@ delete from "tag_asset"
 where
   "tagsId" = $1
   and "assetsId" in ($2)
+
+-- TagRepository.upsertAssetIds
+insert into
+  "tag_asset" ("assetId", "tagsIds")
+values
+  ($1, $2)
+on conflict do nothing
+returning
+  *
 
 -- TagRepository.replaceAssetTags
 begin

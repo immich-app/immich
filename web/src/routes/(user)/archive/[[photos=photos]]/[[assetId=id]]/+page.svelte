@@ -8,17 +8,18 @@
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
 
-  import type { PageData } from './$types';
-  import { mdiPlus, mdiDotsVertical } from '@mdi/js';
-  import { t } from 'svelte-i18n';
-  import { onDestroy } from 'svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetVisibility } from '@immich/sdk';
+  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -26,7 +27,7 @@
 
   let { data }: Props = $props();
   const assetStore = new AssetStore();
-  void assetStore.updateOptions({ isArchived: true });
+  void assetStore.updateOptions({ visibility: AssetVisibility.Archive });
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
@@ -39,6 +40,20 @@
   };
 </script>
 
+<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
+  <AssetGrid
+    enableRouting={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.UNARCHIVE}
+    onEscape={handleEscape}
+  >
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
+    {/snippet}
+  </AssetGrid>
+</UserPageLayout>
+
 {#if assetInteraction.selectionActive}
   <AssetSelectControlBar
     assets={assetInteraction.selectedAssets}
@@ -46,9 +61,9 @@
   >
     <ArchiveAction
       unarchive
-      onArchive={(ids, isArchived) =>
+      onArchive={(ids, visibility) =>
         assetStore.updateAssetOperation(ids, (asset) => {
-          asset.isArchived = isArchived;
+          asset.visibility = visibility;
           return { remove: false };
         })}
     />
@@ -72,17 +87,3 @@
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
-
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  <AssetGrid
-    enableRouting={true}
-    {assetStore}
-    {assetInteraction}
-    removeAction={AssetAction.UNARCHIVE}
-    onEscape={handleEscape}
-  >
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
-    {/snippet}
-  </AssetGrid>
-</UserPageLayout>

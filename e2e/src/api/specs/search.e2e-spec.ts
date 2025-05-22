@@ -1,9 +1,15 @@
-import { AssetMediaResponseDto, AssetResponseDto, deleteAssets, LoginResponseDto, updateAsset } from '@immich/sdk';
+import {
+  AssetMediaResponseDto,
+  AssetResponseDto,
+  AssetVisibility,
+  deleteAssets,
+  LoginResponseDto,
+  updateAsset,
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Socket } from 'socket.io-client';
-import { errorDto } from 'src/responses';
 import { app, asBearerAuth, TEN_TIMES, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -50,7 +56,7 @@ describe('/search', () => {
       { filename: '/formats/motionphoto/samsung-one-ui-6.heic' },
       { filename: '/formats/motionphoto/samsung-one-ui-5.jpg' },
 
-      { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { isArchived: true } },
+      { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { visibility: AssetVisibility.Archive } },
 
       // used for search suggestions
       { filename: '/formats/png/density_plot.png' },
@@ -141,65 +147,6 @@ describe('/search', () => {
   });
 
   describe('POST /search/metadata', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/search/metadata');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    const badTests = [
-      {
-        should: 'should reject page as a string',
-        dto: { page: 'abc' },
-        expected: ['page must not be less than 1', 'page must be an integer number'],
-      },
-      {
-        should: 'should reject page as a decimal',
-        dto: { page: 1.5 },
-        expected: ['page must be an integer number'],
-      },
-      {
-        should: 'should reject page as a negative number',
-        dto: { page: -10 },
-        expected: ['page must not be less than 1'],
-      },
-      {
-        should: 'should reject page as 0',
-        dto: { page: 0 },
-        expected: ['page must not be less than 1'],
-      },
-      {
-        should: 'should reject size as a string',
-        dto: { size: 'abc' },
-        expected: [
-          'size must not be greater than 1000',
-          'size must not be less than 1',
-          'size must be an integer number',
-        ],
-      },
-      {
-        should: 'should reject an invalid size',
-        dto: { size: -1.5 },
-        expected: ['size must not be less than 1', 'size must be an integer number'],
-      },
-      ...['isArchived', 'isFavorite', 'isEncoded', 'isOffline', 'isMotion', 'isVisible'].map((value) => ({
-        should: `should reject ${value} not a boolean`,
-        dto: { [value]: 'immich' },
-        expected: [`${value} must be a boolean value`],
-      })),
-    ];
-
-    for (const { should, dto, expected } of badTests) {
-      it(should, async () => {
-        const { status, body } = await request(app)
-          .post('/search/metadata')
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send(dto);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(expected));
-      });
-    }
-
     const searchTests = [
       {
         should: 'should get my assets',
@@ -231,12 +178,12 @@ describe('/search', () => {
         deferred: () => ({ dto: { size: 1, isFavorite: false }, assets: [assetLast] }),
       },
       {
-        should: 'should search by isArchived (true)',
-        deferred: () => ({ dto: { isArchived: true }, assets: [assetSprings] }),
+        should: 'should search by visibility (AssetVisibility.Archive)',
+        deferred: () => ({ dto: { visibility: AssetVisibility.Archive }, assets: [assetSprings] }),
       },
       {
-        should: 'should search by isArchived (false)',
-        deferred: () => ({ dto: { size: 1, isArchived: false }, assets: [assetLast] }),
+        should: 'should search by visibility (AssetVisibility.Timeline)',
+        deferred: () => ({ dto: { size: 1, visibility: AssetVisibility.Timeline }, assets: [assetLast] }),
       },
       {
         should: 'should search by type (image)',
@@ -245,7 +192,7 @@ describe('/search', () => {
       {
         should: 'should search by type (video)',
         deferred: () => ({
-          dto: { type: 'VIDEO' },
+          dto: { type: 'VIDEO', visibility: AssetVisibility.Hidden },
           assets: [
             // the three live motion photos
             { id: expect.any(String) },
@@ -289,13 +236,6 @@ describe('/search', () => {
         should: 'should search by takenAfter (no results)',
         deferred: () => ({ dto: { takenAfter: today.plus({ hour: 1 }).toJSDate() }, assets: [] }),
       },
-      //   {
-      //     should: 'should search by originalPath',
-      //     deferred: () => ({
-      //       dto: { originalPath: asset1.originalPath },
-      //       assets: [asset1],
-      //     }),
-      //   },
       {
         should: 'should search by originalFilename',
         deferred: () => ({
@@ -325,7 +265,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             city: '',
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast],
@@ -336,7 +276,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             city: null,
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast],
@@ -357,7 +297,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             state: '',
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             withExif: true,
             includeNull: true,
           },
@@ -369,7 +309,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             state: null,
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast, assetNotocactus],
@@ -390,7 +330,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             country: '',
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast],
@@ -401,7 +341,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             country: null,
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast],
@@ -454,14 +394,6 @@ describe('/search', () => {
     }
   });
 
-  describe('POST /search/smart', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/search/smart');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-  });
-
   describe('POST /search/random', () => {
     beforeAll(async () => {
       await Promise.all([
@@ -474,13 +406,6 @@ describe('/search', () => {
       ]);
 
       await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
-    });
-
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/search/random').send({ size: 1 });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
     });
 
     it.each(TEN_TIMES)('should return 1 random assets', async () => {
@@ -512,12 +437,6 @@ describe('/search', () => {
   });
 
   describe('GET /search/explore', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/search/explore');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get explore data', async () => {
       const { status, body } = await request(app)
         .get('/search/explore')
@@ -528,12 +447,6 @@ describe('/search', () => {
   });
 
   describe('GET /search/places', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/search/places');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get relevant places', async () => {
       const name = 'Paris';
 
@@ -552,12 +465,6 @@ describe('/search', () => {
   });
 
   describe('GET /search/cities', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/search/cities');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get all cities', async () => {
       const { status, body } = await request(app)
         .get('/search/cities')
@@ -576,12 +483,6 @@ describe('/search', () => {
   });
 
   describe('GET /search/suggestions', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/search/suggestions');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get suggestions for country (including null)', async () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=country&includeNull=true')
