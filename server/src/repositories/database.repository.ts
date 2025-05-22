@@ -247,8 +247,8 @@ export class DatabaseRepository {
       return;
     }
     const dimSize = await this.getDimensionSize(table);
+    await sql`DROP INDEX IF EXISTS ${sql.raw(indexName)}`.execute(this.db);
     await this.db.transaction().execute(async (tx) => {
-      await sql`DROP INDEX IF EXISTS ${sql.raw(indexName)}`.execute(tx);
       if (!rows.some((row) => row.columnName === 'embedding')) {
         this.logger.warn(`Column 'embedding' does not exist in table '${table}', truncating and adding column.`);
         await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(tx);
@@ -262,6 +262,11 @@ export class DatabaseRepository {
         SET DATA TYPE ${sql.raw(schema)}vector(${sql.raw(String(dimSize))})`.execute(tx);
       await sql.raw(vectorIndexQuery({ vectorExtension, table, indexName, lists })).execute(tx);
     });
+    try {
+      await sql`VACUUM ANALYZE ${sql.raw(table)}`.execute(this.db);
+    } catch (error: any) {
+      this.logger.warn(`Failed to vacuum table '${table}'. The DB will temporarily use more disk space: ${error}`);
+    }
     this.logger.log(`Reindexed ${indexName}`);
   }
 
