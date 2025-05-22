@@ -218,7 +218,7 @@ const roadmap: Item[] = [
     iconColor: 'indianred',
     title: 'Stable release',
     description: 'Immich goes stable',
-    getDateLabel: () => 'Planned for early 2025',
+    getDateLabel: () => 'Planned for 2025',
   },
   {
     done: false,
