@@ -307,7 +307,7 @@
     }
   };
 
-  const handleSetVisibility = async (assetIds: string[]) => {
+  const handleSetVisibility = (assetIds: string[]) => {
     assetStore.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
   };
