@@ -7,7 +7,7 @@
   import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
-  import { LoadingSpinner, Modal, ModalBody } from '@immich/ui';
+  import { IconButton, LoadingSpinner, Modal, ModalBody } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -103,7 +103,14 @@
   }
 </script>
 
-<CircleIconButton title={$t('map')} onclick={openMap} icon={mdiMapOutline} />
+<IconButton
+  variant="ghost"
+  shape="round"
+  color="secondary"
+  icon={mdiMapOutline}
+  onclick={openMap}
+  aria-label={$t('map')}
+/>
 
 {#if albumMapViewManager.isInMapView}
   <Modal title={$t('map')} size="medium" onClose={closeMap}>

@@ -4,6 +4,7 @@
   import { t } from 'svelte-i18n';
   import FaceThumbnail from './face-thumbnail.svelte';
   import { mdiSwapVertical } from '@mdi/js';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     screenHeight: number;
@@ -31,15 +32,17 @@
   </div>
 
   {#if handleSearch}
-    <CircleIconButton
+    <IconButton
+      shape="round"
+      color="secondary"
+      variant="ghost"
       icon={mdiSwapVertical}
       onclick={() => {
         sortBySimilarirty = !sortBySimilarirty;
         handleSearch(sortBySimilarirty);
       }}
-      color="neutral"
-      title={$t('sort_people_by_similarity')}
-    ></CircleIconButton>
+      aria-label={$t('sort_people_by_similarity')}
+    />
   {/if}
 </div>
 

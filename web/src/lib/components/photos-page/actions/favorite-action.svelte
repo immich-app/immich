@@ -10,6 +10,7 @@
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     onFavorite?: OnFavorite;
@@ -67,8 +68,15 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
+    <IconButton
+      shape="round"
+      color="secondary"
+      variant="ghost"
+      aria-label={$t('loading')}
+      icon={mdiTimerSand}
+      onclick={() => {}}
+    />
   {:else}
-    <CircleIconButton title={text} {icon} onclick={handleFavorite} />
+    <IconButton shape="round" color="secondary" variant="ghost" aria-label={text} {icon} onclick={handleFavorite} />
   {/if}
 {/if}

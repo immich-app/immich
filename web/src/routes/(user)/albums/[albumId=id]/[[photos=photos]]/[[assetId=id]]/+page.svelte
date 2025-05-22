@@ -69,7 +69,7 @@
     updateAlbumInfo,
     type AlbumUserAddDto,
   } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCogOutline,
@@ -493,10 +493,11 @@
                 <div class="my-3 flex gap-x-1">
                   <!-- link -->
                   {#if album.hasSharedLink && isOwned}
-                    <CircleIconButton
-                      title={$t('create_link_to_share')}
-                      color="gray"
-                      size="20"
+                    <IconButton
+                      aria-label={$t('create_link_to_share')}
+                      color="secondary"
+                      size="medium"
+                      shape="round"
                       icon={mdiLink}
                       onclick={handleShareLink}
                     />
@@ -516,22 +517,24 @@
 
                   <!-- display ellipsis if there are readonly users too -->
                   {#if albumHasViewers}
-                    <CircleIconButton
-                      title={$t('view_all_users')}
-                      color="gray"
-                      size="20"
+                    <IconButton
+                      shape="round"
+                      aria-label={$t('view_all_users')}
+                      color="secondary"
+                      size="medium"
                       icon={mdiDotsVertical}
                       onclick={handleEditUsers}
                     />
                   {/if}
 
                   {#if isOwned}
-                    <CircleIconButton
-                      color="gray"
-                      size="20"
+                    <IconButton
+                      shape="round"
+                      color="secondary"
+                      size="medium"
                       icon={mdiPlus}
                       onclick={handleShare}
-                      title={$t('add_more_users')}
+                      aria-label={$t('add_more_users')}
                     />
                   {/if}
                 </div>
@@ -628,11 +631,14 @@
       {#if viewMode === AlbumPageViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
-            <CastButton whiteHover />
+            <CastButton />
 
             {#if isEditor}
-              <CircleIconButton
-                title={$t('add_photos')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label={$t('add_photos')}
                 onclick={async () => {
                   assetStore.suspendTransitions = true;
                   viewMode = AlbumPageViewMode.SELECT_ASSETS;
@@ -647,7 +653,14 @@
             {/if}
 
             {#if isOwned}
-              <CircleIconButton title={$t('share')} onclick={handleShare} icon={mdiShareVariantOutline} />
+              <IconButton
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                aria-label={$t('share')}
+                onclick={handleShare}
+                icon={mdiShareVariantOutline}
+              />
             {/if}
 
             {#if $featureFlags.loaded && $featureFlags.map}
@@ -655,12 +668,31 @@
             {/if}
 
             {#if album.assetCount > 0}
-              <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />
-              <CircleIconButton title={$t('download')} onclick={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+              <IconButton
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                aria-label={$t('slideshow')}
+                onclick={handleStartSlideshow}
+                icon={mdiPresentationPlay}
+              />
+              <IconButton
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                aria-label={$t('download')}
+                onclick={handleDownloadAlbum}
+                icon={mdiFolderDownloadOutline}
+              />
             {/if}
 
             {#if isOwned}
-              <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')} offset={{ x: 175, y: 25 }}>
+              <ButtonContextMenu
+                icon={mdiDotsVertical}
+                title={$t('album_options')}
+                color="secondary"
+                offset={{ x: 175, y: 25 }}
+              >
                 {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}

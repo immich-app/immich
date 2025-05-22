@@ -35,6 +35,7 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import {
     mdiAlertOutline,
     mdiCogRefreshOutline,
@@ -122,22 +123,37 @@
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
-      <CircleIconButton color="alert" icon={mdiAlertOutline} onclick={onShowDetail} title={$t('asset_offline')} />
+      <IconButton
+        shape="round"
+        color="danger"
+        icon={mdiAlertOutline}
+        onclick={onShowDetail}
+        aria-label={$t('asset_offline')}
+      />
     {/if}
     {#if asset.livePhotoVideoId}
       {@render motionPhoto?.()}
     {/if}
     {#if asset.type === AssetTypeEnum.Image}
-      <CircleIconButton
-        color="opaque"
-        hideMobile={true}
+      <IconButton
+        class="hidden sm:flex"
+        color="secondary"
+        variant="ghost"
+        shape="round"
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
-        title={$t('zoom_image')}
+        aria-label={$t('zoom_image')}
         onclick={onZoomImage}
       />
     {/if}
     {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
-      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} onclick={() => onCopyImage?.()} />
+      <IconButton
+        color="secondary"
+        variant="ghost"
+        shape="round"
+        icon={mdiContentCopy}
+        aria-label={$t('copy_image')}
+        onclick={() => onCopyImage?.()}
+      />
     {/if}
 
     {#if !isOwner && showDownloadButton}
@@ -151,20 +167,11 @@
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
     {/if}
-    <!-- {#if showEditorButton}
-      <CircleIconButton
-        color="opaque"
-        hideMobile={true}
-        icon={mdiImageEditOutline}
-        onclick={showEditorHandler}
-        title={$t('editor')}
-      />
-    {/if} -->
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} />
 
-      <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
+      <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
         {#if showSlideshow && !isLocked}
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}

@@ -8,7 +8,7 @@
   import { SettingInputFieldType } from '$lib/constants';
   import { featureFlags } from '$lib/stores/server-config.store';
   import type { SystemConfigDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiMinusCircle } from '@mdi/js';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -48,12 +48,11 @@
           {#each config.machineLearning.urls as _, i (i)}
             {#snippet removeButton()}
               {#if config.machineLearning.urls.length > 1}
-                <CircleIconButton
-                  size="24"
-                  class="ms-2"
-                  padding="2"
-                  color="red"
-                  title=""
+                <IconButton
+                  size="large"
+                  shape="round"
+                  color="danger"
+                  aria-label=""
                   onclick={() => config.machineLearning.urls.splice(i, 1)}
                   icon={mdiMinusCircle}
                 />

@@ -8,6 +8,7 @@
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     filename?: string;
@@ -39,5 +40,12 @@
 {#if menuItem}
   <MenuOption text={$t('download')} icon={menuItemIcon} onClick={handleDownloadFiles} />
 {:else}
-  <CircleIconButton title={$t('download')} icon={mdiCloudDownloadOutline} onclick={handleDownloadFiles} />
+  <IconButton
+    shape="round"
+    color="secondary"
+    variant="ghost"
+    aria-label={$t('download')}
+    icon={mdiCloudDownloadOutline}
+    onclick={handleDownloadFiles}
+  />
 {/if}

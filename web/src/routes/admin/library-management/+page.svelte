@@ -329,9 +329,10 @@
                     align="top-right"
                     direction="left"
                     color="primary"
-                    size="16"
+                    size="medium"
                     icon={mdiDotsVertical}
                     title={$t('library_options')}
+                    variant="filled"
                   >
                     <MenuOption onClick={() => onScanClicked(library)} text={$t('scan_library')} />
                     <hr />

@@ -9,6 +9,7 @@
   import { mdiLinkOff, mdiMotionPlayOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     onLink: OnLink;
@@ -75,8 +76,15 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
+    <IconButton
+      shape="round"
+      color="secondary"
+      variant="ghost"
+      aria-label={$t('loading')}
+      icon={mdiTimerSand}
+      onclick={() => {}}
+    />
   {:else}
-    <CircleIconButton title={text} {icon} onclick={onClick} />
+    <IconButton shape="round" color="secondary" variant="ghost" aria-label={text} {icon} onclick={onClick} />
   {/if}
 {/if}

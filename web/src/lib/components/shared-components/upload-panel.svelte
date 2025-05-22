@@ -3,11 +3,11 @@
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { uploadExecutionQueue } from '$lib/utils/file-uploader';
+  import { IconButton } from '@immich/ui';
   import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { quartInOut } from 'svelte/easing';
   import { fade, scale } from 'svelte/transition';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
 
@@ -79,27 +79,33 @@
           </div>
           <div class="flex flex-col items-end">
             <div class="flex flex-row">
-              <CircleIconButton
-                title={$t('toggle_settings')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
                 icon={mdiCog}
-                size="14"
-                padding="1"
+                size="small"
                 onclick={() => (showOptions = !showOptions)}
+                aria-label={$t('toggle_settings')}
               />
-              <CircleIconButton
-                title={$t('minimize')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label={$t('minimize')}
                 icon={mdiWindowMinimize}
-                size="14"
-                padding="1"
+                size="small"
                 onclick={() => (showDetail = false)}
               />
             </div>
             {#if $isDismissible}
-              <CircleIconButton
-                title={$t('dismiss_all_errors')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label={$t('dismiss_all_errors')}
                 icon={mdiCancel}
-                size="14"
-                padding="1"
+                size="small"
                 onclick={() => uploadAssetsStore.dismissErrors()}
               />
             {/if}
