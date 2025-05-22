@@ -23,13 +23,14 @@ class BackgroundSyncManager {
   }
 
   // No need to cancel the task, as it can also be run when the user logs out
-  Future<void> syncLocal() {
+  Future<void> syncLocal({bool full = false}) {
     if (_deviceAlbumSyncTask != null) {
       return _deviceAlbumSyncTask!.future;
     }
 
     _deviceAlbumSyncTask = runInIsolateGentle(
-      computation: (ref) => ref.read(deviceSyncServiceProvider).sync(),
+      computation: (ref) =>
+          ref.read(deviceSyncServiceProvider).sync(full: full),
     );
 
     return _deviceAlbumSyncTask!.whenComplete(() {

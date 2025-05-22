@@ -137,6 +137,6 @@ open class NativeSyncApiImplBase(context: Context) {
         return albums.map { album ->
             val count = albumsCount[album.id] ?: 0
             album.copy(assetCount = count.toLong())
-        }
+        }.sortedBy { it.id }
     }
 }

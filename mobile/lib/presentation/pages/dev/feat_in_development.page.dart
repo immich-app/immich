@@ -22,6 +22,11 @@ final _features = [
     onTap: (_, ref) => ref.read(backgroundSyncProvider).syncLocal(),
   ),
   _Feature(
+    name: 'Sync Local Full',
+    icon: Icons.photo_library_rounded,
+    onTap: (_, ref) => ref.read(backgroundSyncProvider).syncLocal(full: true),
+  ),
+  _Feature(
     name: 'Sync Remote',
     icon: Icons.refresh_rounded,
     onTap: (_, ref) => ref.read(backgroundSyncProvider).syncRemote(),
@@ -69,6 +74,7 @@ class FeatInDevPage extends StatelessWidget {
       body: Column(
         children: [
           Flexible(
+            flex: 1,
             child: ListView.builder(
               itemBuilder: (_, index) {
                 final feat = _features[index];
@@ -76,6 +82,7 @@ class FeatInDevPage extends StatelessWidget {
                   builder: (ctx, ref, _) => ListTile(
                     title: Text(feat.name),
                     trailing: Icon(feat.icon),
+                    visualDensity: VisualDensity.compact,
                     onTap: () => unawaited(feat.onTap(ctx, ref)),
                   ),
                 );

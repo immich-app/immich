@@ -37,12 +37,12 @@ class DeviceSyncService {
   bool get _ignoreIcloudAssets =>
       _storeService.get(StoreKey.ignoreIcloudAssets, false) == true;
 
-  Future<void> sync() async {
+  Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
-      if (await _nativeSyncApi.shouldFullSync()) {
-        _log.fine("Cannot use partial sync. Performing full sync");
-        DLog.log("Cannot use partial sync. Performing full sync");
+      if (full || await _nativeSyncApi.shouldFullSync()) {
+        _log.fine("Full sync request from ${full ? "user" : "native"}");
+        DLog.log("Full sync request from ${full ? "user" : "native"}");
         return await fullSync();
       }
 
