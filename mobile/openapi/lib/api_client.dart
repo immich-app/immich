@@ -286,6 +286,8 @@ class ApiClient {
           return CQModeTypeTransformer().decode(value);
         case 'CastResponse':
           return CastResponse.fromJson(value);
+        case 'CastUpdate':
+          return CastUpdate.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
         case 'CheckExistingAssetsDto':

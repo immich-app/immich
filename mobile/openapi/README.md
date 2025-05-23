@@ -320,6 +320,7 @@ Class | Method | HTTP request | Description
  - [CLIPConfig](doc//CLIPConfig.md)
  - [CQMode](doc//CQMode.md)
  - [CastResponse](doc//CastResponse.md)
+ - [CastUpdate](doc//CastUpdate.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
