@@ -168,6 +168,13 @@
           bind:checked={$showDeleteModal}
         />
       </div>
+      <div class="ms-4">
+        <SettingSwitch
+          title={$t('enable_gcast')}
+          subtitle={$t('enable_gcast_description')}
+          bind:checked={$gcastEnabled}
+        />
+      </div>
     </div>
   </div>
 </section>

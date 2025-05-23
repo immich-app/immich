@@ -829,6 +829,8 @@
   "empty_trash_confirmation": "Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.\nYou cannot undo this action!",
   "enable": "Enable",
   "enable_biometric_auth_description": "Enter your PIN code to enable biometric authentication",
+  "enable_gcast": "Enable Google Cast",
+  "enable_gcast_description": "Stream your images and video to a Google Cast enabled device. This feature loads external resources from Google in order to work.",
   "enabled": "Enabled",
   "end_date": "End date",
   "enqueued": "Enqueued",
