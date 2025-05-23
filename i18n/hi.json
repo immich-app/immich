@@ -690,7 +690,7 @@
   "hide_unnamed_people": "अनाम लोगों को छुपाएं",
   "home_page_add_to_album_success": "{added} एसेट्स को एल्बम {album} में डाल दिया",
   "home_page_album_err_partner": "अभी पार्टनर एसेट्स को एल्बम में डाल नहीं सकते, स्किप कर रहे हैं",
- "home_page_archive_err_partner": "पार्टनर एसेट्स को आर्काइव नहीं कर सकते, स्किप कर रहे हैं",
+  "home_page_archive_err_partner": "पार्टनर एसेट्स को आर्काइव नहीं कर सकते, स्किप कर रहे हैं",
   "home_page_delete_err_partner": "पार्टनर एसेट्स को डिलीट नहीं कर सकते, स्किप कर रहे हैं",
   "home_page_favorite_err_partner": "अब तक पार्टनर एसेट्स को फेवरेट नहीं कर सकते, स्किप कर रहे हैं",
   "home_page_first_time_notice": "If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).",
