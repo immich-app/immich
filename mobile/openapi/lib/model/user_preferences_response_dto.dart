@@ -13,6 +13,7 @@ part of openapi.api;
 class UserPreferencesResponseDto {
   /// Returns a new [UserPreferencesResponseDto] instance.
   UserPreferencesResponseDto({
+    required this.cast,
     required this.download,
     required this.emailNotifications,
     required this.folders,
@@ -23,6 +24,8 @@ class UserPreferencesResponseDto {
     required this.sharedLinks,
     required this.tags,
   });
+
+  CastResponse cast;
 
   DownloadResponse download;
 
@@ -44,6 +47,7 @@ class UserPreferencesResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
+    other.cast == cast &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
     other.folders == folders &&
@@ -57,6 +61,7 @@ class UserPreferencesResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (cast.hashCode) +
     (download.hashCode) +
     (emailNotifications.hashCode) +
     (folders.hashCode) +
@@ -68,10 +73,11 @@ class UserPreferencesResponseDto {
     (tags.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
+  String toString() => 'UserPreferencesResponseDto[cast=$cast, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'cast'] = this.cast;
       json[r'download'] = this.download;
       json[r'emailNotifications'] = this.emailNotifications;
       json[r'folders'] = this.folders;
@@ -93,6 +99,7 @@ class UserPreferencesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return UserPreferencesResponseDto(
+        cast: CastResponse.fromJson(json[r'cast'])!,
         download: DownloadResponse.fromJson(json[r'download'])!,
         emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
         folders: FoldersResponse.fromJson(json[r'folders'])!,
@@ -149,6 +156,7 @@ class UserPreferencesResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'cast',
     'download',
     'emailNotifications',
     'folders',

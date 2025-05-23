@@ -9484,6 +9484,26 @@
         ],
         "type": "string"
       },
+      "CastResponse": {
+        "properties": {
+          "gCastEnabled": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gCastEnabled"
+        ],
+        "type": "object"
+      },
+      "CastUpdate": {
+        "properties": {
+          "gCastEnabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "ChangePasswordDto": {
         "properties": {
           "newPassword": {
@@ -14734,6 +14754,9 @@
       },
       "UserPreferencesResponseDto": {
         "properties": {
+          "cast": {
+            "$ref": "#/components/schemas/CastResponse"
+          },
           "download": {
             "$ref": "#/components/schemas/DownloadResponse"
           },
@@ -14763,6 +14786,7 @@
           }
         },
         "required": [
+          "cast",
           "download",
           "emailNotifications",
           "folders",
@@ -14779,6 +14803,9 @@
         "properties": {
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "cast": {
+            "$ref": "#/components/schemas/CastUpdate"
           },
           "download": {
             "$ref": "#/components/schemas/DownloadUpdate"
