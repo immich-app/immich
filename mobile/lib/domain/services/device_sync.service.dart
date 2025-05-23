@@ -175,6 +175,7 @@ class DeviceSyncService {
       // Faster path - only new assets added
       if (await checkAddition(dbAlbum, deviceAlbum)) {
         _log.fine("Fast synced device album ${dbAlbum.name}");
+        DLog.log("Fast synced device album ${dbAlbum.name}");
         return true;
       }
 

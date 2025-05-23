@@ -28,10 +28,17 @@ class BackgroundSyncManager {
       return _deviceAlbumSyncTask!.future;
     }
 
-    _deviceAlbumSyncTask = runInIsolateGentle(
-      computation: (ref) =>
-          ref.read(deviceSyncServiceProvider).sync(full: full),
-    );
+    // We use a ternary operator to avoid [_deviceAlbumSyncTask] from being
+    // captured by the closure passed to [runInIsolateGentle].
+    _deviceAlbumSyncTask = full
+        ? runInIsolateGentle(
+            computation: (ref) =>
+                ref.read(deviceSyncServiceProvider).sync(full: true),
+          )
+        : runInIsolateGentle(
+            computation: (ref) =>
+                ref.read(deviceSyncServiceProvider).sync(full: false),
+          );
 
     return _deviceAlbumSyncTask!.whenComplete(() {
       _deviceAlbumSyncTask = null;
