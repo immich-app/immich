@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-dynamic
-
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -18,10 +16,10 @@ final _kBackupFailedSince = DateTime.utc(2023);
 void main() {
   late StoreService sut;
   late IStoreRepository mockStoreRepo;
-  late StreamController<StoreUpdateEvent> controller;
+  late StreamController<StoreDto<Object>> controller;
 
   setUp(() async {
-    controller = StreamController<StoreUpdateEvent>.broadcast();
+    controller = StreamController<StoreDto<Object>>.broadcast();
     mockStoreRepo = MockStoreRepository();
     // For generics, we need to provide fallback to each concrete type to avoid runtime errors
     registerFallbackValue(StoreKey.accessToken);
@@ -29,18 +27,14 @@ void main() {
     registerFallbackValue(StoreKey.backgroundBackup);
     registerFallbackValue(StoreKey.backupFailedSince);
 
-    when(() => mockStoreRepo.tryGet(any<StoreKey<dynamic>>()))
-        .thenAnswer((invocation) async {
-      final key = invocation.positionalArguments.firstOrNull as StoreKey;
-      return switch (key) {
-        StoreKey.accessToken => _kAccessToken,
-        StoreKey.backgroundBackup => _kBackgroundBackup,
-        StoreKey.groupAssetsBy => _kGroupAssetsBy,
-        StoreKey.backupFailedSince => _kBackupFailedSince,
-        // ignore: avoid-wildcard-cases-with-enums
-        _ => null,
-      };
-    });
+    when(() => mockStoreRepo.getAll()).thenAnswer(
+      (_) async => [
+        const StoreDto(StoreKey.accessToken, _kAccessToken),
+        const StoreDto(StoreKey.backgroundBackup, _kBackgroundBackup),
+        const StoreDto(StoreKey.groupAssetsBy, _kGroupAssetsBy),
+        StoreDto(StoreKey.backupFailedSince, _kBackupFailedSince),
+      ],
+    );
     when(() => mockStoreRepo.watchAll()).thenAnswer((_) => controller.stream);
 
     sut = await StoreService.create(storeRepository: mockStoreRepo);
@@ -53,8 +47,7 @@ void main() {
 
   group("Store Service Init:", () {
     test('Populates the internal cache on init', () {
-      verify(() => mockStoreRepo.tryGet(any<StoreKey<dynamic>>()))
-          .called(equals(StoreKey.values.length));
+      verify(() => mockStoreRepo.getAll()).called(1);
       expect(sut.tryGet(StoreKey.accessToken), _kAccessToken);
       expect(sut.tryGet(StoreKey.backgroundBackup), _kBackgroundBackup);
       expect(sut.tryGet(StoreKey.groupAssetsBy), _kGroupAssetsBy);
@@ -64,8 +57,7 @@ void main() {
     });
 
     test('Listens to stream of store updates', () async {
-      final event =
-          StoreUpdateEvent(StoreKey.accessToken, _kAccessToken.toUpperCase());
+      final event = StoreDto(StoreKey.accessToken, _kAccessToken.toUpperCase());
       controller.add(event);
 
       await pumpEventQueue();

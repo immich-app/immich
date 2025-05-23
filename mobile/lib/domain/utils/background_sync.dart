@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-passing-async-when-sync-expected
-
 import 'dart:async';
 
 import 'package:immich_mobile/providers/infrastructure/sync_stream.provider.dart';
@@ -31,9 +29,9 @@ class BackgroundSyncManager {
     _syncTask = runInIsolateGentle(
       computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
     );
-    _syncTask!.whenComplete(() {
+
+    return _syncTask!.whenComplete(() {
       _syncTask = null;
     });
-    return _syncTask!.future;
   }
 }
