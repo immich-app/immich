@@ -2,7 +2,7 @@ import { Kysely, sql } from 'kysely';
 
 export async function up(db: Kysely<any>): Promise<void> {
   const { rows } = await sql<{ db: string }>`SELECT current_database() as db`.execute(db);
-  const databaseName = rows[0].db;
+  const databaseName = sql.raw(rows[0].db);
   await sql.raw(`ALTER DATABASE "${databaseName}" SET search_path TO "$user", public, vectors`).execute(db);
   const naturalearth_pkey = await sql<{ constraint_name: string }>`SELECT constraint_name
                          FROM information_schema.table_constraints
@@ -24,6 +24,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 export async function down(db: Kysely<any>): Promise<void> {
   const { rows } = await sql<{ db: string }>`SELECT current_database() as db`.execute(db);
-  const databaseName = rows[0].db;
+  const databaseName = sql.raw(rows[0].db);
   await sql.raw(`ALTER DATABASE "${databaseName}" RESET "search_path"`).execute(db);
 }

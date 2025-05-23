@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { SqlTransformer } from 'src/sql-tools/to-sql/transformers/types';
 import { DatabaseParameter, SchemaDiff } from 'src/sql-tools/types';
 
@@ -18,16 +19,16 @@ export const transformParameters: SqlTransformer = (item: SchemaDiff) => {
 };
 
 const asParameterSet = (parameter: DatabaseParameter): string => {
-  let sql = '';
+  let sql_str = '';
   if (parameter.scope === 'database') {
-    sql += `ALTER DATABASE "${parameter.databaseName}" `;
+    sql_str += `ALTER DATABASE "${sql.raw(parameter.databaseName)}" `;
   }
 
-  sql += `SET ${parameter.name} TO ${parameter.value}`;
+  sql_str += `SET ${parameter.name} TO ${parameter.value}`;
 
-  return sql;
+  return sql_str;
 };
 
 const asParameterReset = (databaseName: string, parameterName: string): string => {
-  return `ALTER DATABASE "${databaseName}" RESET "${parameterName}"`;
+  return `ALTER DATABASE "${sql.raw(databaseName)}" RESET "${parameterName}"`;
 };
