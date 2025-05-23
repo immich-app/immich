@@ -38,6 +38,7 @@ const Map<String, Locale> locales = {
   'Slovak (sk)': Locale('sk'),
   'Slovenian (sl)': Locale('sl'),
   'Spanish (es)': Locale('es'),
+  'Swedish (sv)': Locale('sv'),
   'Thai (th)': Locale('th'),
   'Turkish (tr)': Locale('tr'),
   'Ukrainian (uk)': Locale('uk'),

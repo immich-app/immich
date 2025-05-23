@@ -18,6 +18,7 @@
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
@@ -359,6 +360,11 @@
       handlePromiseError(updateAssetCount());
     }
   });
+
+  const handleSetVisibility = (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+  };
 </script>
 
 <main
@@ -384,7 +390,7 @@
       {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
         <!-- Person information block -->
         <div
-          class="relative w-fit p-4 sm:px-6"
+          class="relative w-fit p-4 sm:px-6 pt-12"
           use:clickOutside={{
             onOutclick: handleCancelEditName,
             onEscape: handleCancelEditName,
@@ -446,7 +452,7 @@
             {/if}
           </section>
           {#if isEditingName}
-            <div class="absolute w-64 sm:w-96">
+            <div class="absolute w-64 sm:w-96 z-1">
               {#if isSearchingPeople}
                 <div
                   class="flex border h-14 rounded-b-lg border-gray-400 dark:border-immich-dark-gray place-items-center bg-gray-200 p-2 dark:bg-gray-700"
@@ -525,6 +531,7 @@
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
         {/if}
+        <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         <DeleteAssets menuItem onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)} />
       </ButtonContextMenu>
     </AssetSelectControlBar>

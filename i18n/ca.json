@@ -1205,8 +1205,6 @@
   "memories_setting_description": "Gestiona el que veus als teus records",
   "memories_start_over": "Torna a començar",
   "memories_swipe_to_close": "Llisca per tancar",
-  "memories_year_ago": "Fa un any",
-  "memories_years_ago": "Fa {years, plural, other {# years}} anys",
   "memory": "Record",
   "memory_lane_title": "Línia de records {title}",
   "menu": "Menú",

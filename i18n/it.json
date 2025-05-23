@@ -1199,8 +1199,6 @@
   "memories_setting_description": "Gestisci cosa vedi nei tuoi ricordi",
   "memories_start_over": "Ricomincia",
   "memories_swipe_to_close": "Scorri sopra per chiudere",
-  "memories_year_ago": "Una anno fa",
-  "memories_years_ago": "{years, plural, other {# years}} anni fa",
   "memory": "Memoria",
   "memory_lane_title": "Sentiero dei Ricordi {title}",
   "merge": "Unisci",

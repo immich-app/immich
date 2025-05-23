@@ -1205,8 +1205,6 @@
   "memories_setting_description": "Hallitse mitä näet muistoissasi",
   "memories_start_over": "Aloita alusta",
   "memories_swipe_to_close": "Pyyhkäise ylös sulkeaksesi",
-  "memories_year_ago": "Vuosi sitten",
-  "memories_years_ago": "{years, plural, other {# vuotta}} sitten",
   "memory": "Muisto",
   "memory_lane_title": "Muistojen polku {title}",
   "menu": "Valikko",
