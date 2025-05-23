@@ -4,7 +4,7 @@ Immich supports the Google's Cast protocol so that photos and videos can be cast
 
 ## Enable Google Cast Support
 
-Google Cast support is disabled by default. The web UI uses Google-provided scripts and must retreive them from Google servers when the page loads. This is a privacy concern for some and is thus opt-in. 
+Google Cast support is disabled by default. The web UI uses Google-provided scripts and must retreive them from Google servers when the page loads. This is a privacy concern for some and is thus opt-in.
 
 You can enable Google Cast support through `Account Settings > Features > Cast > Google Cast`
 
