@@ -124,26 +124,38 @@
     scrollTo(0);
   };
 
+  const scrollToAsset = async (assetId: string) => {
+    try {
+      const bucket = await assetStore.findBucketForAsset(assetId);
+      if (bucket) {
+        const height = bucket.findAssetAbsolutePosition(assetId);
+        if (height) {
+          scrollTo(height);
+          assetStore.updateIntersections();
+          return true;
+        }
+      }
+    } catch {
+      // ignore errors - asset may not be in the store
+    }
+    return false;
+  };
+
   const completeNav = async () => {
     const scrollTarget = $gridScrollTarget?.at;
+    let scrolled = false;
     if (scrollTarget) {
-      try {
-        const bucket = await assetStore.findBucketForAsset(scrollTarget);
-        if (bucket) {
-          const height = bucket.findAssetAbsolutePosition(scrollTarget);
-          if (height) {
-            scrollTo(height);
-            assetStore.updateIntersections();
-            return;
-          }
-        }
-      } catch {
-        // ignore errors - asset may not be in the store
-      }
+      scrolled = await scrollToAsset(scrollTarget);
     }
-    scrollToTop();
+
+    if (!scrolled) {
+      // if the asset is not found, scroll to the top
+      scrollToTop();
+    }
   };
+
   beforeNavigate(() => (assetStore.suspendTransitions = true));
+
   afterNavigate((nav) => {
     const { complete } = nav;
     complete.then(completeNav, completeNav);

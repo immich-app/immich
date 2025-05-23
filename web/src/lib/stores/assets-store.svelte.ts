@@ -217,8 +217,8 @@ export class AssetDateGroup {
     return { moveAssets, processedIds, unprocessedIds, changedGeometry };
   }
 
-  layout(options: CommonLayoutOptions) {
-    if (!this.bucket.intersecting) {
+  layout(options: CommonLayoutOptions, noDefer: boolean) {
+    if (!noDefer && !this.bucket.intersecting) {
       this.deferredLayout = true;
       return;
     }
@@ -602,6 +602,8 @@ export class AssetBucket {
   }
 
   findAssetAbsolutePosition(assetId: string) {
+    this.store.clearDeferredLayout(this);
+
     for (const group of this.dateGroups) {
       const intersectingAsset = group.intersetingAssets.find((asset) => asset.id === assetId);
       if (intersectingAsset) {
@@ -658,6 +660,12 @@ type AssetStoreLayoutOptions = {
   headerHeight?: number;
   gap?: number;
 };
+
+interface UpdateGeometryOptions {
+  invalidateHeight: boolean;
+  noDefer?: boolean;
+}
+
 export class AssetStore {
   // --- public ----
   isInitialized = $state(false);
@@ -932,6 +940,16 @@ export class AssetStore {
     );
   }
 
+  clearDeferredLayout(bucket: AssetBucket) {
+    const hasDeferred = bucket.dateGroups.some((group) => group.deferredLayout);
+    if (hasDeferred) {
+      this.#updateGeometry(bucket, { invalidateHeight: true, noDefer: true });
+      for (const group of bucket.dateGroups) {
+        group.deferredLayout = false;
+      }
+    }
+  }
+
   #updateIntersection(bucket: AssetBucket) {
     const actuallyIntersecting = this.#calculateIntersecting(bucket, 0, 0);
     let preIntersecting = false;
@@ -941,13 +959,7 @@ export class AssetStore {
     bucket.intersecting = actuallyIntersecting || preIntersecting;
     bucket.actuallyIntersecting = actuallyIntersecting;
     if (preIntersecting || actuallyIntersecting) {
-      const hasDeferred = bucket.dateGroups.some((group) => group.deferredLayout);
-      if (hasDeferred) {
-        this.#updateGeometry(bucket, true);
-        for (const group of bucket.dateGroups) {
-          group.deferredLayout = false;
-        }
-      }
+      this.clearDeferredLayout(bucket);
     }
   }
 
@@ -1052,7 +1064,7 @@ export class AssetStore {
       return;
     }
     for (const bucket of this.buckets) {
-      this.#updateGeometry(bucket, changedWidth);
+      this.#updateGeometry(bucket, { invalidateHeight: changedWidth });
     }
     this.updateIntersections();
     this.#createScrubBuckets();
@@ -1079,7 +1091,8 @@ export class AssetStore {
     };
   }
 
-  #updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
+  #updateGeometry(bucket: AssetBucket, options: UpdateGeometryOptions) {
+    const { invalidateHeight, noDefer = false } = options;
     if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
     }
@@ -1094,10 +1107,10 @@ export class AssetStore {
       }
       return;
     }
-    this.#layoutBucket(bucket);
+    this.#layoutBucket(bucket, noDefer);
   }
 
-  #layoutBucket(bucket: AssetBucket) {
+  #layoutBucket(bucket: AssetBucket, noDefer: boolean = false) {
     // these are top offsets, for each row
     let cummulativeHeight = 0;
     // these are left offsets of each group, for each row
@@ -1112,7 +1125,7 @@ export class AssetStore {
     rowSpaceRemaining.fill(this.viewportWidth, 0, bucket.dateGroups.length);
     const options = this.createLayoutOptions();
     for (const assetGroup of bucket.dateGroups) {
-      assetGroup.layout(options);
+      assetGroup.layout(options, noDefer);
       rowSpaceRemaining[dateGroupRow] -= assetGroup.width - 1;
       if (dateGroupCol > 0) {
         rowSpaceRemaining[dateGroupRow] -= this.gap;
@@ -1266,7 +1279,7 @@ export class AssetStore {
 
     for (const bucket of addContext.updatedBuckets) {
       bucket.sortDateGroups();
-      this.#updateGeometry(bucket, true);
+      this.#updateGeometry(bucket, { invalidateHeight: true });
     }
     this.updateIntersections();
   }
@@ -1357,7 +1370,7 @@ export class AssetStore {
     }
     const changedGeometry = changedBuckets.size > 0;
     for (const bucket of changedBuckets) {
-      this.#updateGeometry(bucket, true);
+      this.#updateGeometry(bucket, { invalidateHeight: true });
     }
     if (changedGeometry) {
       this.updateIntersections();
@@ -1397,7 +1410,7 @@ export class AssetStore {
 
   refreshLayout() {
     for (const bucket of this.buckets) {
-      this.#updateGeometry(bucket, true);
+      this.#updateGeometry(bucket, { invalidateHeight: true });
     }
     this.updateIntersections();
   }
