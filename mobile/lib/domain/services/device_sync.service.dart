@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
-import 'package:immich_mobile/domain/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
@@ -15,7 +14,6 @@ import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
 
 class DeviceSyncService {
-  final IAlbumMediaRepository _albumMediaRepository;
   final ILocalAlbumRepository _localAlbumRepository;
   final NativeSyncApi _nativeSyncApi;
   final Platform _platform;
@@ -23,13 +21,11 @@ class DeviceSyncService {
   final Logger _log = Logger("DeviceSyncService");
 
   DeviceSyncService({
-    required IAlbumMediaRepository albumMediaRepository,
     required ILocalAlbumRepository localAlbumRepository,
     required NativeSyncApi nativeSyncApi,
     required StoreService storeService,
     Platform? platform,
-  })  : _albumMediaRepository = albumMediaRepository,
-        _localAlbumRepository = localAlbumRepository,
+  })  : _localAlbumRepository = localAlbumRepository,
         _nativeSyncApi = nativeSyncApi,
         _storeService = storeService,
         _platform = platform ?? const LocalPlatform();
@@ -58,7 +54,11 @@ class DeviceSyncService {
 
       final deviceAlbums = await _nativeSyncApi.getAlbums();
       await _localAlbumRepository.updateAll(deviceAlbums.toLocalAlbums());
-      await _localAlbumRepository.processDelta(delta);
+      await _localAlbumRepository.processDelta(
+        updates: delta.updates.toLocalAssets(),
+        deletes: delta.deletes,
+        assetAlbums: delta.assetAlbums,
+      );
 
       final dbAlbums = await _localAlbumRepository.getAll();
       // On Android, we need to sync all albums since it is not possible to
@@ -135,10 +135,13 @@ class DeviceSyncService {
       _log.fine("Adding device album ${album.name}");
 
       final assets = album.assetCount > 0
-          ? await _albumMediaRepository.getAssetsForAlbum(album.id)
-          : <LocalAsset>[];
+          ? await _nativeSyncApi.getAssetsForAlbum(album.id)
+          : <ImAsset>[];
 
-      await _localAlbumRepository.upsert(album, toUpsert: assets);
+      await _localAlbumRepository.upsert(
+        album,
+        toUpsert: assets.toLocalAssets(),
+      );
       _log.fine("Successfully added device album ${album.name}");
     } catch (e, s) {
       _log.warning("Error while adding device album", e, s);
@@ -198,17 +201,13 @@ class DeviceSyncService {
         return false;
       }
 
-      // Get all assets that are modified after the last known modifiedTime
-      final newAssets = await _albumMediaRepository.getAssetsForAlbum(
-        deviceAlbum.id,
-        updateTimeCond: DateTimeFilter(
-          min: dbAlbum.updatedAt.add(const Duration(seconds: 1)),
-          max: deviceAlbum.updatedAt,
-        ),
-      );
+      final updatedTime =
+          (dbAlbum.updatedAt.millisecondsSinceEpoch ~/ 1000) + 1;
+      final newAssetsCount =
+          await _nativeSyncApi.getAssetsCountSince(deviceAlbum.id, updatedTime);
 
       // Early return if no new assets were found
-      if (newAssets.isEmpty) {
+      if (newAssetsCount == 0) {
         _log.fine(
           "No new assets found despite album having changes. Proceeding to full sync for ${dbAlbum.name}",
         );
@@ -216,14 +215,19 @@ class DeviceSyncService {
       }
 
       // Check whether there is only addition or if there has been deletions
-      if (deviceAlbum.assetCount != dbAlbum.assetCount + newAssets.length) {
+      if (deviceAlbum.assetCount != dbAlbum.assetCount + newAssetsCount) {
         _log.fine("Local album has modifications. Proceeding to full sync");
         return false;
       }
 
+      final newAssets = await _nativeSyncApi.getAssetsForAlbum(
+        deviceAlbum.id,
+        updatedTimeCond: updatedTime,
+      );
+
       await _localAlbumRepository.upsert(
         deviceAlbum.copyWith(backupSelection: dbAlbum.backupSelection),
-        toUpsert: newAssets,
+        toUpsert: newAssets.toLocalAssets(),
       );
 
       return true;
@@ -239,7 +243,9 @@ class DeviceSyncService {
   Future<bool> fullDiff(LocalAlbum dbAlbum, LocalAlbum deviceAlbum) async {
     try {
       final assetsInDevice = deviceAlbum.assetCount > 0
-          ? await _albumMediaRepository.getAssetsForAlbum(deviceAlbum.id)
+          ? await _nativeSyncApi
+              .getAssetsForAlbum(deviceAlbum.id)
+              .then((a) => a.toLocalAssets())
           : <LocalAsset>[];
       final assetsInDb = dbAlbum.assetCount > 0
           ? await _localAlbumRepository.getAssetsForAlbum(dbAlbum.id)
@@ -344,6 +350,25 @@ extension on Iterable<ImAlbum> {
             ? DateTime.now()
             : DateTime.fromMillisecondsSinceEpoch(e.updatedAt! * 1000),
         assetCount: e.assetCount,
+      ),
+    ).toList();
+  }
+}
+
+extension on Iterable<ImAsset> {
+  List<LocalAsset> toLocalAssets() {
+    return map(
+      (e) => LocalAsset(
+        id: e.id,
+        name: e.name,
+        type: AssetType.values.elementAtOrNull(e.type) ?? AssetType.other,
+        createdAt: e.createdAt == null
+            ? DateTime.now()
+            : DateTime.fromMillisecondsSinceEpoch(e.createdAt! * 1000),
+        updatedAt: e.updatedAt == null
+            ? DateTime.now()
+            : DateTime.fromMillisecondsSinceEpoch(e.updatedAt! * 1000),
+        durationInSeconds: e.durationInSeconds,
       ),
     ).toList();
   }

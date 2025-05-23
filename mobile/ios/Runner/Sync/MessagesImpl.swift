@@ -199,4 +199,36 @@ class NativeSyncApiImpl: NativeSyncApi {
     }
     return ids
   }
+  
+  func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64 {
+    let collections = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil)
+    guard let album = collections.firstObject else {
+      return 0
+    }
+    
+    let date = NSDate(timeIntervalSince1970: TimeInterval(timestamp))
+    let options = PHFetchOptions()
+    options.predicate = NSPredicate(format: "creationDate > %@ OR modificationDate > %@", date, date)
+    let assets = PHAsset.fetchAssets(in: album, options: options)
+    return Int64(assets.count)
+  }
+  
+  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [ImAsset] {
+    let collections = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil)
+    guard let album = collections.firstObject else {
+      return []
+    }
+    
+    let options = PHFetchOptions()
+    if(updatedTimeCond != nil) {
+      let date = NSDate(timeIntervalSince1970: TimeInterval(updatedTimeCond!))
+      options.predicate = NSPredicate(format: "creationDate > %@ OR modificationDate > %@", date, date)
+    }
+    let result = PHAsset.fetchAssets(in: album, options: options)
+    var assets: [ImAsset] = []
+    result.enumerateObjects { (asset, _, _) in
+      assets.append(asset.toImAsset())
+    }
+    return assets
+  }
 }

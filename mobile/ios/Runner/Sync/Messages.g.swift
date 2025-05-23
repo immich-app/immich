@@ -305,6 +305,8 @@ protocol NativeSyncApi {
   func clearSyncCheckpoint() throws
   func getAssetIdsForAlbum(albumId: String) throws -> [String]
   func getAlbums() throws -> [ImAlbum]
+  func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
+  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [ImAsset]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -403,6 +405,42 @@ class NativeSyncApiSetup {
       }
     } else {
       getAlbumsChannel.setMessageHandler(nil)
+    }
+    let getAssetsCountSinceChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsCountSince\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsCountSince\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getAssetsCountSinceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let albumIdArg = args[0] as! String
+        let timestampArg = args[1] as! Int64
+        do {
+          let result = try api.getAssetsCountSince(albumId: albumIdArg, timestamp: timestampArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getAssetsCountSinceChannel.setMessageHandler(nil)
+    }
+    let getAssetsForAlbumChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getAssetsForAlbumChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let albumIdArg = args[0] as! String
+        let updatedTimeCondArg: Int64? = nilOrValue(args[1])
+        do {
+          let result = try api.getAssetsForAlbum(albumId: albumIdArg, updatedTimeCond: updatedTimeCondArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getAssetsForAlbumChannel.setMessageHandler(nil)
     }
   }
 }

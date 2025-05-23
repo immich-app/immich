@@ -18,10 +18,6 @@ class NativeSyncApiImpl26(context: Context) : NativeSyncApiImplBase(context), Na
     // No-op for Android 10 and below
   }
 
-  override fun getAssetIdsForAlbum(albumId: String): List<String> {
-    throw IllegalStateException("Method not supported on this Android version.")
-  }
-
   override fun getMediaChanges(): SyncDelta {
     throw IllegalStateException("Method not supported on this Android version.")
   }

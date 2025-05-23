@@ -47,12 +47,6 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
   }
 
-  override fun getAssetIdsForAlbum(albumId: String): List<String> = getAssets(
-    MediaStore.VOLUME_EXTERNAL,
-    "${MediaStore.Files.FileColumns.BUCKET_ID} = ? AND $MEDIA_SELECTION",
-    arrayOf(albumId, *MEDIA_SELECTION_ARGS)
-  ).mapNotNull { (it as? AssetResult.ValidAsset)?.asset?.id }.toList()
-
   override fun getMediaChanges(): SyncDelta {
     val genMap = getSavedGenerationMap()
     val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
@@ -78,7 +72,7 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
         storedGen.toString()
       )
 
-      getAssets(volume, selection, selectionArgs).forEach {
+      getAssets(getCursor(volume, selection, selectionArgs)).forEach {
         when (it) {
           is AssetResult.ValidAsset -> {
             changed.add(it.asset)

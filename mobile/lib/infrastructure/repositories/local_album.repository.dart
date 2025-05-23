@@ -6,7 +6,6 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:platform/platform.dart';
 
 class DriftLocalAlbumRepository extends DriftDatabaseRepository
@@ -187,19 +186,21 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<void> processDelta(SyncDelta delta) {
+  Future<void> processDelta({
+    required List<LocalAsset> updates,
+    required List<String> deletes,
+    required Map<String, List<String>> assetAlbums,
+  }) {
     return _db.transaction(() async {
-      await _deleteAssets(delta.deletes);
+      await _deleteAssets(deletes);
 
-      await _upsertAssets(delta.updates.map((a) => a.toLocalAsset()));
+      await _upsertAssets(updates);
       // The ugly casting below is required for now because the generated code
       // casts the returned values from the platform during decoding them
       // and iterating over them causes the type to be List<Object?> instead of
       // List<String>
       await _db.batch((batch) async {
-        delta.assetAlbums
-            .cast<String, List<Object?>>()
-            .forEach((assetId, albumIds) {
+        assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
           batch.deleteWhere(
             _db.localAlbumAssetEntity,
             (f) =>
@@ -209,9 +210,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         });
       });
       await _db.batch((batch) async {
-        delta.assetAlbums
-            .cast<String, List<Object?>>()
-            .forEach((assetId, albumIds) {
+        assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
           batch.insertAll(
             _db.localAlbumAssetEntity,
             albumIds.cast<String?>().nonNulls.map(
@@ -339,24 +338,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
   }
 }
 
-extension on ImAsset {
-  LocalAsset toLocalAsset() {
-    return LocalAsset(
-      id: id,
-      name: name,
-      type: AssetType.values.elementAtOrNull(type) ?? AssetType.other,
-      createdAt: createdAt == null
-          ? DateTime.now()
-          : DateTime.fromMillisecondsSinceEpoch(createdAt! * 1000),
-      updatedAt: updatedAt == null
-          ? DateTime.now()
-          : DateTime.fromMillisecondsSinceEpoch(updatedAt! * 1000),
-      durationInSeconds: durationInSeconds,
-    );
-  }
-}
-
-extension LocalAlbumEntityX on LocalAlbumEntityData {
+extension on LocalAlbumEntityData {
   LocalAlbum toDto({int assetCount = 0}) {
     return LocalAlbum(
       id: id,

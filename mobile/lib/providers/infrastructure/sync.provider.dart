@@ -28,7 +28,6 @@ final syncStreamRepositoryProvider = Provider(
 
 final deviceSyncServiceProvider = Provider(
   (ref) => DeviceSyncService(
-    albumMediaRepository: ref.watch(albumMediaRepositoryProvider),
     localAlbumRepository: ref.watch(localAlbumRepository),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
     storeService: ref.watch(storeServiceProvider),

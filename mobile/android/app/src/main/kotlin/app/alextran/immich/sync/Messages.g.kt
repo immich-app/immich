@@ -245,6 +245,8 @@ interface NativeSyncApi {
   fun clearSyncCheckpoint()
   fun getAssetIdsForAlbum(albumId: String): List<String>
   fun getAlbums(): List<ImAlbum>
+  fun getAssetsCountSince(albumId: String, timestamp: Long): Long
+  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<ImAsset>
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -341,6 +343,42 @@ interface NativeSyncApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getAlbums())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsCountSince$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val albumIdArg = args[0] as String
+            val timestampArg = args[1] as Long
+            val wrapped: List<Any?> = try {
+              listOf(api.getAssetsCountSince(albumIdArg, timestampArg))
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsForAlbum$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val albumIdArg = args[0] as String
+            val updatedTimeCondArg = args[1] as Long?
+            val wrapped: List<Any?> = try {
+              listOf(api.getAssetsForAlbum(albumIdArg, updatedTimeCondArg))
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

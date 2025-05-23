@@ -80,4 +80,10 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<ImAlbum> getAlbums();
+
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  int getAssetsCountSince(String albumId, int timestamp);
+
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  List<ImAsset> getAssetsForAlbum(String albumId, {int? updatedTimeCond});
 }

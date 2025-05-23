@@ -1,7 +1,6 @@
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
-import 'package:immich_mobile/platform/native_sync_api.g.dart';
 
 abstract interface class ILocalAlbumRepository implements IDatabaseRepository {
   Future<List<LocalAlbum>> getAll({SortLocalAlbumsBy? sortBy});
@@ -20,7 +19,11 @@ abstract interface class ILocalAlbumRepository implements IDatabaseRepository {
 
   Future<void> delete(String albumId);
 
-  Future<void> processDelta(SyncDelta delta);
+  Future<void> processDelta({
+    required List<LocalAsset> updates,
+    required List<String> deletes,
+    required Map<String, List<String>> assetAlbums,
+  });
 
   Future<void> syncAlbumDeletes(
     String albumId,
