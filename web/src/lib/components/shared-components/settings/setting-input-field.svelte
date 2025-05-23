@@ -56,7 +56,7 @@
       if (newValue > max) {
         newValue = max;
       }
-      value = newValue;
+      value = value === '' ? undefined : newValue;
     }
   };
 
