@@ -1,10 +1,10 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ProgressBar from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
   import SlideshowSettings from '$lib/components/slideshow-settings.svelte';
   import { ProgressBarStatus } from '$lib/constants';
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
+  import { IconButton } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { swipe } from 'svelte-gestures';
@@ -98,9 +98,16 @@
     }
     onNext();
   };
+
+  const onSettingToggled = async () => {
+    showSettings = !showSettings;
+    if (document.fullscreenElement && showSettings) {
+      await document.exitFullscreen();
+    }
+  };
 </script>
 
-<svelte:window
+<svelte:document
   onmousemove={showControlBar}
   use:shortcuts={[
     { shortcut: { key: 'Escape' }, onShortcut: onClose },
@@ -119,28 +126,61 @@
     transition:fly={{ duration: 150 }}
     role="navigation"
   >
-    <CircleIconButton buttonSize="50" icon={mdiClose} onclick={onClose} title={$t('exit_slideshow')} />
+    <IconButton
+      variant="ghost"
+      shape="round"
+      color="secondary"
+      icon={mdiClose}
+      onclick={onClose}
+      aria-label={$t('exit_slideshow')}
+      class="text-white"
+    />
 
-    <CircleIconButton
-      buttonSize="50"
+    <IconButton
+      variant="ghost"
+      shape="round"
+      color="secondary"
       icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
       onclick={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar?.play() : progressBar?.pause())}
-      title={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
+      aria-label={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
+      class="text-white"
     />
-    <CircleIconButton buttonSize="50" icon={mdiChevronLeft} onclick={onPrevious} title={$t('previous')} />
-    <CircleIconButton buttonSize="50" icon={mdiChevronRight} onclick={onNext} title={$t('next')} />
-    <CircleIconButton
-      buttonSize="50"
+    <IconButton
+      variant="ghost"
+      shape="round"
+      color="secondary"
+      icon={mdiChevronLeft}
+      onclick={onPrevious}
+      aria-label={$t('previous')}
+      class="text-white"
+    />
+    <IconButton
+      variant="ghost"
+      shape="round"
+      color="secondary"
+      icon={mdiChevronRight}
+      onclick={onNext}
+      aria-label={$t('next')}
+      class="text-white"
+    />
+    <IconButton
+      variant="ghost"
+      shape="round"
+      color="secondary"
       icon={mdiCog}
-      onclick={() => (showSettings = !showSettings)}
-      title={$t('slideshow_settings')}
+      onclick={onSettingToggled}
+      aria-label={$t('slideshow_settings')}
+      class="text-white"
     />
     {#if !isFullScreen}
-      <CircleIconButton
-        buttonSize="50"
+      <IconButton
+        variant="ghost"
+        shape="round"
+        color="secondary"
         icon={mdiFullscreen}
         onclick={onSetToFullScreen}
-        title={$t('set_slideshow_to_fullscreen')}
+        aria-label={$t('set_slideshow_to_fullscreen')}
+        class="text-white"
       />
     {/if}
   </div>

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.132.3
+ * 1.133.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -329,7 +329,7 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     updatedAt: string;
-    visibility: Visibility;
+    visibility: AssetVisibility;
 };
 export type AlbumResponseDto = {
     albumName: string;
@@ -3675,12 +3675,6 @@ export enum AssetTypeEnum {
     Audio = "AUDIO",
     Other = "OTHER"
 }
-export enum Visibility {
-    Archive = "archive",
-    Timeline = "timeline",
-    Hidden = "hidden",
-    Locked = "locked"
-}
 export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
@@ -3866,7 +3860,11 @@ export enum SyncEntityType {
     AssetExifV1 = "AssetExifV1",
     PartnerAssetV1 = "PartnerAssetV1",
     PartnerAssetDeleteV1 = "PartnerAssetDeleteV1",
-    PartnerAssetExifV1 = "PartnerAssetExifV1"
+    PartnerAssetExifV1 = "PartnerAssetExifV1",
+    AlbumV1 = "AlbumV1",
+    AlbumDeleteV1 = "AlbumDeleteV1",
+    AlbumUserV1 = "AlbumUserV1",
+    AlbumUserDeleteV1 = "AlbumUserDeleteV1"
 }
 export enum SyncRequestType {
     UsersV1 = "UsersV1",
@@ -3874,7 +3872,9 @@ export enum SyncRequestType {
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
     PartnerAssetsV1 = "PartnerAssetsV1",
-    PartnerAssetExifsV1 = "PartnerAssetExifsV1"
+    PartnerAssetExifsV1 = "PartnerAssetExifsV1",
+    AlbumsV1 = "AlbumsV1",
+    AlbumUsersV1 = "AlbumUsersV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

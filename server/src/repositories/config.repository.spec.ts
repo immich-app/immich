@@ -89,7 +89,7 @@ describe('getEnv', () => {
           password: 'postgres',
         },
         skipMigrations: false,
-        vectorExtension: 'vectors',
+        vectorExtension: undefined,
       });
     });
 

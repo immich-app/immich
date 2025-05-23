@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import CastButton from '$lib/cast/cast-button.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
@@ -29,7 +30,7 @@
   import {
     AssetJobName,
     AssetTypeEnum,
-    Visibility,
+    AssetVisibility,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -94,7 +95,7 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
-  let isLocked = $derived(asset.visibility === Visibility.Locked);
+  let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
 
   // $: showEditorButton =
   //   isOwner &&
@@ -116,6 +117,8 @@
     {/if}
   </div>
   <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
+    <CastButton />
+
     {#if !asset.isTrashed && $user && !isLocked}
       <ShareAction {asset} />
     {/if}

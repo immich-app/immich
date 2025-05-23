@@ -35,7 +35,9 @@ class ControlBoxButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialButton(
       padding: const EdgeInsets.all(10),
-      shape: const CircleBorder(),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
       onPressed: onPressed,
       onLongPress: onLongPressed,
       minWidth: 75.0,
@@ -47,8 +49,8 @@ class ControlBoxButton extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(fontSize: 12.0),
-            maxLines: 2,
+            style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
+            maxLines: 3,
             textAlign: TextAlign.center,
           ),
         ],

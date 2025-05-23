@@ -564,12 +564,9 @@
         return;
       }
 
-      // Select/deselect assets in range (start,end]
+      // Select/deselect assets in range (start,end)
       let started = false;
       for (const bucket of assetStore.buckets) {
-        if (bucket === startBucket) {
-          started = true;
-        }
         if (bucket === endBucket) {
           break;
         }
@@ -583,26 +580,30 @@
             }
           }
         }
+        if (bucket === startBucket) {
+          started = true;
+        }
       }
 
-      // Update date group selection
+      // Update date group selection in range [start,end]
       started = false;
       for (const bucket of assetStore.buckets) {
         if (bucket === startBucket) {
           started = true;
         }
+        if (started) {
+          // Split bucket into date groups and check each group
+          for (const dateGroup of bucket.dateGroups) {
+            const dateGroupTitle = dateGroup.groupTitle;
+            if (dateGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
+              assetInteraction.addGroupToMultiselectGroup(dateGroupTitle);
+            } else {
+              assetInteraction.removeGroupFromMultiselectGroup(dateGroupTitle);
+            }
+          }
+        }
         if (bucket === endBucket) {
           break;
-        }
-
-        // Split bucket into date groups and check each group
-        for (const dateGroup of bucket.dateGroups) {
-          const dateGroupTitle = dateGroup.groupTitle;
-          if (dateGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-            assetInteraction.addGroupToMultiselectGroup(dateGroupTitle);
-          } else {
-            assetInteraction.removeGroupFromMultiselectGroup(dateGroupTitle);
-          }
         }
       }
     }
@@ -712,7 +713,7 @@
   });
 </script>
 
-<svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
+<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
