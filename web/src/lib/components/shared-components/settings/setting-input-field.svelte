@@ -56,7 +56,11 @@
       if (newValue > max) {
         newValue = max;
       }
-      value = value === '' ? undefined : newValue;
+      if (!required && value === '') {
+        value = undefined;
+      } else {
+        value = newValue;
+      }
     }
   };
 
