@@ -957,6 +957,25 @@ class LocalAlbumsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LockedPage]
+class LockedRoute extends PageRouteInfo<void> {
+  const LockedRoute({List<PageRouteInfo>? children})
+      : super(
+          LockedRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'LockedRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LockedPage();
+    },
+  );
+}
+
+/// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<void> {
   const LoginRoute({List<PageRouteInfo>? children})
@@ -1357,6 +1376,53 @@ class PhotosRoute extends PageRouteInfo<void> {
       return const PhotosPage();
     },
   );
+}
+
+/// generated route for
+/// [PinAuthPage]
+class PinAuthRoute extends PageRouteInfo<PinAuthRouteArgs> {
+  PinAuthRoute({
+    Key? key,
+    bool createPinCode = false,
+    List<PageRouteInfo>? children,
+  }) : super(
+          PinAuthRoute.name,
+          args: PinAuthRouteArgs(
+            key: key,
+            createPinCode: createPinCode,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'PinAuthRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args =
+          data.argsAs<PinAuthRouteArgs>(orElse: () => const PinAuthRouteArgs());
+      return PinAuthPage(
+        key: args.key,
+        createPinCode: args.createPinCode,
+      );
+    },
+  );
+}
+
+class PinAuthRouteArgs {
+  const PinAuthRouteArgs({
+    this.key,
+    this.createPinCode = false,
+  });
+
+  final Key? key;
+
+  final bool createPinCode;
+
+  @override
+  String toString() {
+    return 'PinAuthRouteArgs{key: $key, createPinCode: $createPinCode}';
+  }
 }
 
 /// generated route for

@@ -33,6 +33,7 @@ import {
   QueueName,
   SourceType,
   SystemMetadataKey,
+  VectorIndex,
 } from 'src/enum';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
@@ -259,6 +260,7 @@ export class PersonService extends BaseService {
     if (force) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
+      await this.personRepository.vacuum({ reindexVectors: true });
     }
 
     let jobs: JobItem[] = [];
@@ -409,12 +411,15 @@ export class PersonService extends BaseService {
     if (force) {
       await this.personRepository.unassignFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
+      await this.personRepository.vacuum({ reindexVectors: false });
     } else if (waiting) {
       this.logger.debug(
         `Skipping facial recognition queueing because ${waiting} job${waiting > 1 ? 's are' : ' is'} already queued`,
       );
       return JobStatus.SKIPPED;
     }
+
+    await this.databaseRepository.prewarm(VectorIndex.FACE);
 
     const lastRun = new Date().toISOString();
     const facePagination = this.personRepository.getAllFaces(

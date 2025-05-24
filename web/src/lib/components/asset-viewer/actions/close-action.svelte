@@ -11,6 +11,6 @@
   let { onClose }: Props = $props();
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
 <CircleIconButton color="opaque" icon={mdiArrowLeft} title={$t('go_back')} onclick={onClose} />

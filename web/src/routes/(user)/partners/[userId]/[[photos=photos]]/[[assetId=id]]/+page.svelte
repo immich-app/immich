@@ -42,7 +42,9 @@
   };
 </script>
 
-<main class="grid h-dvh bg-immich-bg pt-18 dark:bg-immich-dark-bg">
+<main class="grid h-dvh pt-18">
+  <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={handleEscape} />
+
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
       assets={assetInteraction.selectedAssets}
@@ -64,5 +66,4 @@
       {/snippet}
     </ControlAppBar>
   {/if}
-  <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={handleEscape} />
 </main>

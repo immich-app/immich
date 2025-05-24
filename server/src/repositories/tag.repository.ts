@@ -68,7 +68,7 @@ export class TagRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getAll(userId: string) {
-    return this.db.selectFrom('tags').select(columns.tag).where('userId', '=', userId).orderBy('value asc').execute();
+    return this.db.selectFrom('tags').select(columns.tag).where('userId', '=', userId).orderBy('value').execute();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })
@@ -126,7 +126,7 @@ export class TagRepository {
     await this.db.deleteFrom('tag_asset').where('tagsId', '=', tagId).where('assetsId', 'in', assetIds).execute();
   }
 
-  @GenerateSql({ params: [{ assetId: DummyValue.UUID, tagsIds: [DummyValue.UUID] }] })
+  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagsIds: [DummyValue.UUID] }]] })
   @Chunked()
   upsertAssetIds(items: Insertable<TagAsset>[]) {
     if (items.length === 0) {
@@ -160,7 +160,6 @@ export class TagRepository {
     });
   }
 
-  @GenerateSql()
   async deleteEmptyTags() {
     // TODO rewrite as a single statement
     await this.db.transaction().execute(async (tx) => {

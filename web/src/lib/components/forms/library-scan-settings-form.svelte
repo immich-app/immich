@@ -1,11 +1,11 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { type LibraryResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
-  import Button from '../elements/buttons/button.svelte';
   import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
 
   interface Props {
@@ -127,9 +127,7 @@
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each exclusionPatterns as exclusionPattern, listIndex (exclusionPattern)}
         <tr
-          class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-            listIndex % 2 == 0 ? 'bg-subtle' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-          }`}
+          class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
         >
           <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPattern}</td>
           <td class="w-1/4 text-ellipsis flex justify-center">
@@ -147,29 +145,28 @@
         </tr>
       {/each}
       <tr
-        class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-          exclusionPatterns.length % 2 == 0 ? 'bg-subtle' : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-        }`}
+        class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
       >
         <td class="w-3/4 text-ellipsis px-4 text-sm">
           {#if exclusionPatterns.length === 0}
             {$t('admin.no_pattern_added')}
           {/if}
         </td>
-        <td class="w-1/4 text-ellipsis px-4 text-sm"
-          ><Button
-            size="sm"
+        <td class="w-1/4 text-ellipsis px-4 text-sm flex justify-center">
+          <Button
+            size="small"
+            shape="round"
             onclick={() => {
               addExclusionPattern = true;
             }}>{$t('add_exclusion_pattern')}</Button
-          ></td
-        ></tr
-      >
+          >
+        </td>
+      </tr>
     </tbody>
   </table>
 
-  <div class="flex w-full justify-end gap-4">
-    <Button size="sm" color="gray" onclick={onCancel}>{$t('cancel')}</Button>
-    <Button size="sm" type="submit">{$t('save')}</Button>
+  <div class="flex w-full justify-end gap-2">
+    <Button size="small" shape="round" color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
+    <Button size="small" shape="round" type="submit">{$t('save')}</Button>
   </div>
 </form>

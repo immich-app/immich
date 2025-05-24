@@ -20,6 +20,7 @@
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
 
   interface Props {
     data: PageData;
@@ -38,7 +39,26 @@
       return;
     }
   };
+
+  const handleSetVisibility = (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+  };
 </script>
+
+<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
+  <AssetGrid
+    enableRouting={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.UNARCHIVE}
+    onEscape={handleEscape}
+  >
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
+    {/snippet}
+  </AssetGrid>
+</UserPageLayout>
 
 {#if assetInteraction.selectionActive}
   <AssetSelectControlBar
@@ -47,9 +67,9 @@
   >
     <ArchiveAction
       unarchive
-      onArchive={(ids, isArchived) =>
+      onArchive={(ids, visibility) =>
         assetStore.updateAssetOperation(ids, (asset) => {
-          asset.isArchived = isArchived;
+          asset.visibility = visibility;
           return { remove: false };
         })}
     />
@@ -69,21 +89,8 @@
     />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
+      <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
-
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  <AssetGrid
-    enableRouting={true}
-    {assetStore}
-    {assetInteraction}
-    removeAction={AssetAction.UNARCHIVE}
-    onEscape={handleEscape}
-  >
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
-    {/snippet}
-  </AssetGrid>
-</UserPageLayout>

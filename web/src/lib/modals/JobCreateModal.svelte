@@ -1,10 +1,10 @@
 <script lang="ts">
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { createJob, ManualJobName } from '@immich/sdk';
   import { t } from 'svelte-i18n';
@@ -44,7 +44,7 @@
   };
 </script>
 
-<ConfirmDialog
+<ConfirmModal
   confirmColor="primary"
   title={$t('admin.create_job')}
   disabled={!selectedJob}
@@ -62,4 +62,4 @@
       </div>
     </form>
   {/snippet}
-</ConfirmDialog>
+</ConfirmModal>

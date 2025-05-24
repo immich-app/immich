@@ -55,4 +55,26 @@ class AuthApiRepository extends ApiRepository implements IAuthApiRepository {
       userId: dto.userId,
     );
   }
+
+  @override
+  Future<bool> unlockPinCode(String pinCode) async {
+    try {
+      await _apiService.authenticationApi
+          .unlockAuthSession(SessionUnlockDto(pinCode: pinCode));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<void> setupPinCode(String pinCode) {
+    return _apiService.authenticationApi
+        .setupPinCode(PinCodeSetupDto(pinCode: pinCode));
+  }
+
+  @override
+  Future<void> lockPinCode() {
+    return _apiService.authenticationApi.lockAuthSession();
+  }
 }

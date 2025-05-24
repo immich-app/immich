@@ -53,10 +53,12 @@
     onSelect?: (assetIds: string[]) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
+    rounded?: boolean;
+    showSimpleControls?: boolean;
   }
 
   let {
-    mapMarkers = $bindable([]),
+    mapMarkers = $bindable(),
     showSettings = true,
     zoom = undefined,
     center = $bindable(undefined),
@@ -68,6 +70,8 @@
     onSelect = () => {},
     onClickPoint = () => {},
     popup,
+    rounded = false,
+    showSimpleControls = true,
   }: Props = $props();
 
   let map: maplibregl.Map | undefined = $state();
@@ -208,11 +212,13 @@
   };
 
   onMount(async () => {
-    mapMarkers = await loadMapMarkers();
+    if (!mapMarkers) {
+      mapMarkers = await loadMapMarkers();
+    }
   });
 
   onDestroy(() => {
-    abortController.abort();
+    abortController?.abort();
   });
 
   $effect(() => {
@@ -247,7 +253,7 @@
 <MapLibre
   {hash}
   style=""
-  class="h-full rounded-2xl"
+  class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
   {center}
   {zoom}
   attributionControl={false}
@@ -262,28 +268,32 @@
   bind:map
 >
   {#snippet children({ map }: { map: maplibregl.Map })}
-    <NavigationControl position="top-left" showCompass={!simplified} />
+    {#if showSimpleControls}
+      <NavigationControl position="top-left" showCompass={!simplified} />
 
-    {#if !simplified}
-      <GeolocateControl position="top-left" />
-      <FullscreenControl position="top-left" />
-      <ScaleControl />
-      <AttributionControl compact={false} />
+      {#if !simplified}
+        <GeolocateControl position="top-left" />
+        <FullscreenControl position="top-left" />
+        <ScaleControl />
+        <AttributionControl compact={false} />
+      {/if}
     {/if}
 
     {#if showSettings}
       <Control>
         <ControlGroup>
-          <ControlButton onclick={handleSettingsClick}><Icon path={mdiCog} size="100%" /></ControlButton>
+          <ControlButton onclick={handleSettingsClick}
+            ><Icon path={mdiCog} size="100%" class="text-black/80" /></ControlButton
+          >
         </ControlGroup>
       </Control>
     {/if}
 
-    {#if onOpenInMapView}
+    {#if onOpenInMapView && showSimpleControls}
       <Control position="top-right">
         <ControlGroup>
           <ControlButton onclick={() => onOpenInMapView()}>
-            <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" />
+            <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" class="text-black/80" />
           </ControlButton>
         </ControlGroup>
       </Control>
@@ -292,7 +302,7 @@
     <GeoJSON
       data={{
         type: 'FeatureCollection',
-        features: mapMarkers.map((marker) => asFeature(marker)),
+        features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
       }}
       id="geojson"
       cluster={{ radius: 35, maxZoom: 17 }}

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Duration } from 'luxon';
+  import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { Duration } from 'luxon';
 
   interface Props {
     url: string;
@@ -55,7 +55,7 @@
   };
 </script>
 
-<div class="absolute end-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
+<div class="absolute end-0 top-0 z-1 flex place-items-center gap-1 text-xs font-medium text-white">
   {#if showTime}
     <span class="pt-2">
       {#if remainingSeconds < 60}

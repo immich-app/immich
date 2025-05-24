@@ -158,7 +158,7 @@ export class MetadataService extends BaseService {
     await Promise.all([
       this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id }),
       this.assetRepository.update({ id: motionAsset.id, visibility: AssetVisibility.HIDDEN }),
-      this.albumRepository.removeAsset(motionAsset.id),
+      this.albumRepository.removeAssetsFromAll([motionAsset.id]),
     ]);
 
     await this.eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
