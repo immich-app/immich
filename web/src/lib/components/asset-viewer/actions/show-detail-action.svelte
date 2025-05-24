@@ -11,6 +11,6 @@
   let { onShowDetail }: Props = $props();
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'i' }, onShortcut: onShowDetail }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'i' }, onShortcut: onShowDetail }} />
 
 <CircleIconButton color="opaque" icon={mdiInformationOutline} onclick={onShowDetail} title={$t('info')} />

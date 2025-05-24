@@ -21,6 +21,7 @@
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import AlbumSummary from './album-summary.svelte';
+  import CastButton from '$lib/cast/cast-button.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -47,7 +48,7 @@
   });
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
@@ -103,6 +104,8 @@
       {/snippet}
 
       {#snippet trailing()}
+        <CastButton whiteHover />
+
         {#if sharedLink.allowUpload}
           <CircleIconButton
             title={$t('add_photos')}

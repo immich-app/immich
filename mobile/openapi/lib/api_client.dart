@@ -534,6 +534,14 @@ class ApiClient {
           return SyncAckDto.fromJson(value);
         case 'SyncAckSetDto':
           return SyncAckSetDto.fromJson(value);
+        case 'SyncAlbumDeleteV1':
+          return SyncAlbumDeleteV1.fromJson(value);
+        case 'SyncAlbumUserDeleteV1':
+          return SyncAlbumUserDeleteV1.fromJson(value);
+        case 'SyncAlbumUserV1':
+          return SyncAlbumUserV1.fromJson(value);
+        case 'SyncAlbumV1':
+          return SyncAlbumV1.fromJson(value);
         case 'SyncAssetDeleteV1':
           return SyncAssetDeleteV1.fromJson(value);
         case 'SyncAssetExifV1':

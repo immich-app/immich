@@ -107,7 +107,7 @@
   };
 </script>
 
-<svelte:window
+<svelte:document
   onmousemove={showControlBar}
   use:shortcuts={[
     { shortcut: { key: 'Escape' }, onShortcut: onClose },

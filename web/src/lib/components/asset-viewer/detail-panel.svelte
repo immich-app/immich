@@ -519,6 +519,7 @@
         zoom={12.5}
         simplified
         useLocationPin
+        showSimpleControls={!showEditFaces}
         onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
         {#snippet popup({ marker })}
