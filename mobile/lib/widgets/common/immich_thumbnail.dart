@@ -77,7 +77,7 @@ class ImmichThumbnail extends HookConsumerWidget {
         ),
       );
     }
-    
+
     final assetAltText = getAltText(
       asset!.exifInfo,
       asset!.fileCreatedAt,
@@ -97,7 +97,6 @@ class ImmichThumbnail extends HookConsumerWidget {
           blurHashErrorBuilder(blurhash, fit: fit);
       return originalErrorWidgetBuilder(ctx, error, stackTrace);
     }
-
 
     return Semantics(
       label: assetAltText,
