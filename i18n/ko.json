@@ -81,7 +81,7 @@
     "image_prefer_embedded_preview_setting_description": "RAW 사진에서 내장 미리보기가 있을 경우 이를 이미지 처리에 우선 사용합니다. 색상 정확도가 향상될 수 있지만, 미리보기 품질은 카메라에 따라 달라지며 압축 아티팩트가 생길 수 있습니다.",
     "image_prefer_wide_gamut": "광색역 우선 사용",
     "image_prefer_wide_gamut_setting_description": "섬네일에 Display P3 색역을 사용합니다. 광색역 이미지를 생생하게 표현할 수 있지만, 구형 브라우저나 장치에서는 다르게 보일 수 있습니다. sRGB 이미지는 색상 왜곡 방지를 위해 그대로 유지됩니다.",
-    "image_preview_description": "단일 항목 보기 또는 기계 학습 시 사용되는 메타데이터 제거된 중간 크기 이미지",
+    "image_preview_description": "단일 항목 보기 또는 기계 학습 시 사용되는 메타데이터가 제거된 중간 크기 이미지",
     "image_preview_quality_description": "미리보기 품질 (1~100). 높을수록 품질은 좋지만 앱 반응 속도가 저하될 수 있습니다. 너무 낮게 설정하면 기계 학습 품질에 영향을 줄 수 있습니다.",
     "image_preview_title": "미리보기 설정",
     "image_quality": "품질",
