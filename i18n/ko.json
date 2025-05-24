@@ -1483,7 +1483,7 @@
   "refresh_encoded_videos": "인코딩된 영상 새로고침",
   "refresh_faces": "인물 새로고침",
   "refresh_metadata": "메타데이터 새로고침",
-  "refresh_thumbnails": "취소됨 새로고침",
+  "refresh_thumbnails": "썸네일 새로고침",
   "refreshed": "새로고침 완료",
   "refreshes_every_file": "모든 기존 및 신규 파일 다시 읽기",
   "refreshing_encoded_video": "인코딩된 영상 새로고침 중",
