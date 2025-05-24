@@ -314,7 +314,7 @@
     "transcoding_optimal_description": "목표 해상도를 초과하거나 허용되지 않은 포맷의 비디오",
     "transcoding_policy": "트랜스코딩 정책",
     "transcoding_policy_description": "비디오를 트랜스코딩할 조건을 설정합니다.",
-    "transcoding_preferred_hardware_device": "우선 하드웨어 장치",
+    "transcoding_preferred_hardware_device": "선호하는 하드웨어 장치",
     "transcoding_preferred_hardware_device_description": "VAAPI 및 QSV 전용. 트랜스코딩에 사용할 dri 노드를 지정합니다.",
     "transcoding_preset_preset": "프리셋 (-preset)",
     "transcoding_preset_preset_description": "압축 속도 설정. 느릴수록 품질과 압축률이 향상됩니다. VP9은 'faster' 이상 속도 무시",
