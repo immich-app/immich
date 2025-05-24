@@ -324,7 +324,7 @@
     "transcoding_settings": "영상 트랜스코딩 설정",
     "transcoding_settings_description": "트랜스코딩할 영상과 처리 방식 관리",
     "transcoding_target_resolution": "목표 해상도",
-    "transcoding_target_resolution_description": "해상도가 높을수록 디테일은 보존되지만 인코딩 시간 증가, 파일 크기 증가, 앱 반응 저하 가능",
+    "transcoding_target_resolution_description": "해상도가 높을수록 디테일은 보존되지만 인코딩 시간과 파일 크기가 증가하여 앱의 반응 속도가 느려질 수 있습니다.",
     "transcoding_temporal_aq": "Temporal AQ",
     "transcoding_temporal_aq_description": "NVENC 전용. 정적인 고디테일 장면의 품질을 향상시킵니다. 구형 장치에서는 호환되지 않을 수 있습니다.",
     "transcoding_threads": "스레드 수",
