@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { dateFormats } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import ApiKeyModal from '$lib/modals/ApiKeyModal.svelte';
   import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
@@ -12,13 +12,12 @@
     updateApiKey,
     type ApiKeyResponseDto,
   } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import { dateFormats } from '$lib/constants';
 
   interface Props {
     keys: ApiKeyResponseDto[];
@@ -128,18 +127,20 @@
                 >{new Date(key.createdAt).toLocaleDateString($locale, dateFormats.settings)}
               </td>
               <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3">
-                <CircleIconButton
+                <IconButton
+                  shape="round"
                   color="primary"
                   icon={mdiPencilOutline}
-                  title={$t('edit_key')}
-                  size="16"
+                  aria-label={$t('edit_key')}
+                  size="small"
                   onclick={() => handleUpdate(key)}
                 />
-                <CircleIconButton
+                <IconButton
+                  shape="round"
                   color="primary"
                   icon={mdiTrashCanOutline}
-                  title={$t('delete_key')}
-                  size="16"
+                  aria-label={$t('delete_key')}
+                  size="small"
                   onclick={() => handleDelete(key)}
                 />
               </td>

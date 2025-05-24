@@ -128,7 +128,7 @@
           />
         {/if}
 
-        <ThemeButton padding="2" />
+        <ThemeButton />
 
         <div>
           <IconButton
@@ -163,7 +163,7 @@
           {/if}
         </div>
 
-        <CastButton navBar />
+        <CastButton />
 
         <div
           use:clickOutside={{

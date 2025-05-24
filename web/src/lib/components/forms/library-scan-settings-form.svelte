@@ -1,7 +1,6 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { type LibraryResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -131,11 +130,12 @@
         >
           <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPattern}</td>
           <td class="w-1/4 text-ellipsis flex justify-center">
-            <CircleIconButton
+            <IconButton
+              shape="round"
               color="primary"
               icon={mdiPencilOutline}
-              title={$t('edit_exclusion_pattern')}
-              size="16"
+              aria-label={$t('edit_exclusion_pattern')}
+              size="small"
               onclick={() => {
                 editExclusionPattern = listIndex;
                 editedExclusionPattern = exclusionPattern;

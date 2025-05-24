@@ -2,11 +2,11 @@
   import { browser } from '$app/environment';
 
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import { IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   interface Props {
     showBackButton?: boolean;
@@ -82,7 +82,16 @@
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
-        <CircleIconButton title={$t('close')} onclick={handleClose} icon={backIcon} size="24" class={buttonClass} />
+        <IconButton
+          aria-label={$t('close')}
+          onclick={handleClose}
+          color="secondary"
+          shape="round"
+          variant="ghost"
+          icon={backIcon}
+          size="large"
+          class={buttonClass}
+        />
       {/if}
       {@render leading?.()}
     </div>

@@ -12,10 +12,10 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
@@ -125,7 +125,14 @@
       bind:clientHeight={activityHeight}
     >
       <div class="flex place-items-center gap-2">
-        <CircleIconButton onclick={onClose} icon={mdiClose} title={$t('close')} />
+        <IconButton
+          shape="round"
+          variant="ghost"
+          color="secondary"
+          onclick={onClose}
+          icon={mdiClose}
+          aria-label={$t('close')}
+        />
 
         <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('activity')}</p>
       </div>
@@ -159,7 +166,7 @@
                     title={$t('comment_options')}
                     align="top-right"
                     direction="left"
-                    size="16"
+                    size="small"
                   >
                     <MenuOption
                       activeColor="bg-red-200"
@@ -212,7 +219,7 @@
                       title={$t('reaction_options')}
                       align="top-right"
                       direction="left"
-                      size="16"
+                      size="small"
                     >
                       <MenuOption
                         activeColor="bg-red-200"
@@ -269,9 +276,11 @@
             </div>
           {:else if message}
             <div class="flex items-end w-fit ms-0">
-              <CircleIconButton
-                title={$t('send_message')}
-                size="15"
+              <IconButton
+                shape="round"
+                aria-label={$t('send_message')}
+                size="small"
+                variant="ghost"
                 icon={mdiSend}
                 class="dark:text-immich-dark-gray"
                 onclick={() => handleSendComment()}

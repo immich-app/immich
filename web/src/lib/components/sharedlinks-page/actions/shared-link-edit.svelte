@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
   import type { SharedLinkResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiCircleEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -22,5 +22,12 @@
 {#if menuItem}
   <MenuOption text={$t('edit_link')} icon={mdiCircleEditOutline} onClick={onEdit} />
 {:else}
-  <CircleIconButton title={$t('edit_link')} icon={mdiCircleEditOutline} onclick={onEdit} />
+  <IconButton
+    shape="round"
+    color="secondary"
+    variant="ghost"
+    aria-label={$t('edit_link')}
+    icon={mdiCircleEditOutline}
+    onclick={onEdit}
+  />
 {/if}

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { castManager, CastState } from '$lib/managers/cast-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
+  import { IconButton } from '@immich/ui';
   import { mdiCastConnected, mdiPause, mdiPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -84,11 +84,13 @@
       <LoadingSpinner />
     </div>
   {:else}
-    <CircleIconButton
-      color="opaque"
+    <IconButton
+      color="primary"
+      shape="round"
+      variant="ghost"
       icon={castManager.castState == CastState.PLAYING ? mdiPause : mdiPlay}
       onclick={() => handlePlayPauseButton()}
-      title={castManager.castState == CastState.PLAYING ? 'Pause' : 'Play'}
+      aria-label={castManager.castState == CastState.PLAYING ? 'Pause' : 'Play'}
     />
   {/if}
 

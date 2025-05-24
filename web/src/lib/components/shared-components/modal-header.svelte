@@ -1,7 +1,7 @@
 <script lang="ts">
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import { IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -37,5 +37,13 @@
     </h1>
   </div>
 
-  <CircleIconButton onclick={onClose} icon={mdiClose} size="20" title={$t('close')} />
+  <IconButton
+    shape="round"
+    color="secondary"
+    variant="ghost"
+    onclick={onClose}
+    icon={mdiClose}
+    size="medium"
+    aria-label={$t('close')}
+  />
 </div>
