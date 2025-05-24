@@ -33,8 +33,10 @@
     mdiClose,
     mdiEye,
     mdiEyeOff,
+    mdiImageMultipleOutline,
     mdiImageOutline,
     mdiInformationOutline,
+    mdiOpenInNew,
     mdiPencil,
     mdiPlus,
   } from '@mdi/js';
@@ -463,6 +465,28 @@
           </div>
         </div>
       </div>
+    {/if}
+
+    {#if asset.duplicateId}
+      <a
+        href="{AppRoute.DUPLICATES}/{asset.duplicateId}"
+        target="_blank"
+        class="flex relative w-full justify-between items-center gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+      >
+        <div class="flex gap-4">
+          <Icon path={mdiImageMultipleOutline} size="24" />
+
+          <div>
+            <p>
+              {$t('has_duplicates')}
+            </p>
+            <p class="text-xs opacity-50 break-all">
+              {$t('asset_view_duplicates')}
+            </p>
+          </div>
+        </div>
+        <Icon path={mdiOpenInNew} size="20" />
+      </a>
     {/if}
 
     <DetailPanelLocation {isOwner} {asset} />
