@@ -72,4 +72,12 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
         return AssetVisibility.archive;
     }
   }
+
+  @override
+  Future<String?> getAssetMIMEType(String assetId) async {
+    final response = await checkNull(_api.getAssetInfo(assetId));
+
+    // we need to get the MIME of the thumbnail once that gets added to the API
+    return response.originalMimeType;
+  }
 }
