@@ -7,6 +7,7 @@ const int kLogTruncateLimit = 250;
 
 // Sync
 const int kSyncEventBatchSize = 5000;
+const int kFetchLocalAssetsBatchSize = 40000;
 
 // Hash batch limits
 const int kBatchHashFileLimit = 128;
