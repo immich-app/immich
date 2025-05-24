@@ -235,7 +235,6 @@ export class DatabaseRepository {
     this.logger.log(`Reindexing ${indexName}`);
     const table = VECTOR_INDEX_TABLES[indexName];
     const vectorExtension = await getVectorExtension(this.db);
-    lists ||= this.targetListCount(await this.getRowCount(table));
 
     const { rows } = await sql<{
       columnName: string;
@@ -260,6 +259,7 @@ export class DatabaseRepository {
         ALTER TABLE ${sql.raw(table)}
         ALTER COLUMN embedding
         SET DATA TYPE ${sql.raw(schema)}vector(${sql.raw(String(dimSize))})`.execute(tx);
+      lists ||= this.targetListCount(await this.getRowCount(table));
       await sql.raw(vectorIndexQuery({ vectorExtension, table, indexName, lists })).execute(tx);
     });
     try {
