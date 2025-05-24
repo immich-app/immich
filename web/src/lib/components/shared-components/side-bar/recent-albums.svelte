@@ -8,7 +8,7 @@
 
   let albums: AlbumResponseDto[] = $state([]);
 
-  onMount(async () => {
+  async function loadRecentAlbums() {
     if (userInteraction.recentAlbums) {
       albums = userInteraction.recentAlbums;
       return;
@@ -20,7 +20,11 @@
     } catch (error) {
       handleError(error, $t('failed_to_load_assets'));
     }
-  });
+  }
+
+  onMount(loadRecentAlbums);
+
+  window.addEventListener('immich:reloadRecentAlbums', loadRecentAlbums);
 </script>
 
 {#each albums as album (album.id)}
