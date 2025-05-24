@@ -246,4 +246,17 @@ export const personThumbnailStub = {
     exifOrientation: '1',
     previewPath: previewFile.path,
   }),
+  videoThumbnail: Object.freeze({
+    ownerId: userStub.admin.id,
+    x1: 100,
+    y1: 100,
+    x2: 200,
+    y2: 200,
+    oldHeight: 500,
+    oldWidth: 400,
+    type: AssetType.VIDEO,
+    originalPath: '/original/path.mp4',
+    exifOrientation: '1',
+    previewPath: previewFile.path,
+  }),
 };

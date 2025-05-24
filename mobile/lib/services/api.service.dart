@@ -10,6 +10,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
+import 'package:immich_mobile/utils/user_agent.dart';
 
 class ApiService implements Authentication {
   late ApiClient _apiClient;
@@ -48,6 +49,7 @@ class ApiService implements Authentication {
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint, authentication: this);
+    _setUserAgentHeader();
     if (_accessToken != null) {
       setAccessToken(_accessToken!);
     }
@@ -70,6 +72,11 @@ class ApiService implements Authentication {
     stacksApi = StacksApi(_apiClient);
     viewApi = ViewApi(_apiClient);
     memoriesApi = MemoriesApi(_apiClient);
+  }
+
+  Future<void> _setUserAgentHeader() async {
+    final userAgent = await getUserAgentString();
+    _apiClient.addDefaultHeader('User-Agent', userAgent);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {

@@ -1,12 +1,11 @@
 import { DatabaseExtension } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
+import { getVectorExtension } from 'src/repositories/database.repository';
 import { vectorIndexQuery } from 'src/utils/database';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
-
 export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const vectorExtension = await getVectorExtension(queryRunner);
     if (vectorExtension === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
     }
@@ -48,11 +47,11 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512)`);
 
     await queryRunner.query(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: 'clip_index' }));
-
     await queryRunner.query(vectorIndexQuery({ vectorExtension, table: 'face_search', indexName: 'face_index' }));
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    const vectorExtension = await getVectorExtension(queryRunner);
     if (vectorExtension === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
     }

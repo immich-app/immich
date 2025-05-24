@@ -73,7 +73,7 @@
   };
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcuts={[
     { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },

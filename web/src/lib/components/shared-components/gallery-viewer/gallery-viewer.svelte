@@ -446,7 +446,7 @@
   });
 </script>
 
-<svelte:window
+<svelte:document
   onkeydown={onKeyDown}
   onkeyup={onKeyUp}
   onselectstart={onSelectStart}

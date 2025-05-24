@@ -76,7 +76,6 @@
     "library_watching_settings_description": "Dəyişdirilən faylları avtomatik olaraq yoxla",
     "logging_enable_description": "Jurnalı aktivləşdir",
     "logging_level_description": "Aktiv edildikdə hansı jurnal səviyyəsi istifadə olunur.",
-    "logging_settings": "",
     "machine_learning_clip_model": "CLIP modeli",
     "machine_learning_clip_model_description": "<link>Burada</link>qeyd olunan CLIP modelinin adı. Modeli dəyişdirdikdən sonra bütün şəkillər üçün 'Ağıllı Axtarış' funksiyasını yenidən işə salmalısınız.",
     "machine_learning_duplicate_detection": "Dublikat Aşkarlama",

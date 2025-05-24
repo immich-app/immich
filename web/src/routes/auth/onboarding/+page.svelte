@@ -58,13 +58,13 @@
 
 <section id="onboarding-page" class="min-w-dvw flex min-h-dvh p-4">
   <div class="flex flex-col w-full">
-    <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-md h-2">
+    <div class=" bg-gray-300 dark:bg-gray-600 rounded-md h-2">
       <div
         class="progress-bar bg-immich-primary dark:bg-immich-dark-primary h-2 rounded-md transition-all duration-200 ease-out"
         style="width: {(index / (onboardingSteps.length - 1)) * 100}%"
       ></div>
     </div>
-    <div class="w-full min-w-dvw py-8 flex h-full place-content-center place-items-center">
+    <div class="py-8 flex place-content-center place-items-center m-auto">
       <SvelteComponent onDone={handleDoneClicked} onPrevious={handlePrevious} />
     </div>
   </div>

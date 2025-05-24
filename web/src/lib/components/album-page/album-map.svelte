@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from '$lib/actions/click-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import type Map from '$lib/components/shared-components/map/map.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { timeToLoadTheMap } from '$lib/constants';
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
@@ -24,8 +22,6 @@
   let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
   let viewingAssets: string[] = $state([]);
   let viewingAssetCursor = 0;
-
-  let mapElement = $state<ReturnType<typeof Map>>();
 
   let zoom = $derived(1);
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
@@ -77,6 +73,7 @@
   async function onViewAssets(assetIds: string[]) {
     viewingAssets = assetIds;
     viewingAssetCursor = 0;
+    closeMap();
 
     await setAssetId(assetIds[0]);
   }
@@ -110,35 +107,32 @@
 <CircleIconButton title={$t('map')} onclick={openMap} icon={mdiMapOutline} />
 
 {#if albumMapViewManager.isInMapView}
-  <div use:clickOutside={{ onOutclick: closeMap }}>
-    <Modal title={$t('map')} size="medium" onClose={closeMap}>
-      <ModalBody>
-        <div class="flex flex-col w-full h-full gap-2 border border-gray-300 dark:border-light rounded-2xl">
-          <div class="h-[500px] min-h-[300px] w-full">
-            {#await import('../shared-components/map/map.svelte')}
-              {#await delay(timeToLoadTheMap) then}
-                <!-- show the loading spinner only if loading the map takes too much time -->
-                <div class="flex items-center justify-center h-full w-full">
-                  <LoadingSpinner />
-                </div>
-              {/await}
-            {:then { default: Map }}
-              <Map
-                bind:this={mapElement}
-                center={undefined}
-                {zoom}
-                clickable={false}
-                bind:mapMarkers
-                onSelect={onViewAssets}
-                showSettings={false}
-                rounded
-              />
+  <Modal title={$t('map')} size="medium" onClose={closeMap}>
+    <ModalBody>
+      <div class="flex flex-col w-full h-full gap-2 border border-gray-300 dark:border-light rounded-2xl">
+        <div class="h-[500px] min-h-[300px] w-full">
+          {#await import('../shared-components/map/map.svelte')}
+            {#await delay(timeToLoadTheMap) then}
+              <!-- show the loading spinner only if loading the map takes too much time -->
+              <div class="flex items-center justify-center h-full w-full">
+                <LoadingSpinner />
+              </div>
             {/await}
-          </div>
+          {:then { default: Map }}
+            <Map
+              center={undefined}
+              {zoom}
+              clickable={false}
+              bind:mapMarkers
+              onSelect={onViewAssets}
+              showSettings={false}
+              rounded
+            />
+          {/await}
         </div>
-      </ModalBody>
-    </Modal>
-  </div>
+      </div>
+    </ModalBody>
+  </Modal>
 
   <Portal target="body">
     {#if $showAssetViewer}

@@ -40,7 +40,7 @@
   const onConfirm = () => (typeof $showCancelConfirmDialog === 'boolean' ? null : $showCancelConfirmDialog());
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">

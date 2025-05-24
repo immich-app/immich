@@ -1,8 +1,7 @@
 @import 'tailwindcss';
 @import '@immich/ui/theme/default.css';
+@source "../node_modules/@immich/ui";
 /* @import '/usr/ui/dist/theme/default.css'; */
-
-@config '../tailwind.config.js';
 
 @utility immich-form-input {
   @apply rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-100 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800 dark:disabled:text-gray-200;
@@ -27,7 +26,47 @@
   scrollbar-gutter: stable both-edges;
 }
 
+@utility grid-auto-fit-* {
+  grid-template-columns: repeat(auto-fit, minmax(min(calc(var(--spacing) * --value(number)), 100%), 1fr));
+}
+
+@utility grid-auto-fill-* {
+  grid-template-columns: repeat(auto-fill, minmax(min(calc(var(--spacing) * --value(number)), 100%), 1fr));
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-immich-primary: rgb(var(--immich-primary));
+  --color-immich-bg: rgb(var(--immich-bg));
+  --color-immich-fg: rgb(var(--immich-fg));
+  --color-immich-gray: rgb(var(--immich-gray));
+  --color-immich-error: rgb(var(--immich-error));
+  --color-immich-success: rgb(var(--immich-success));
+  --color-immich-warning: rgb(var(--immich-warning));
+
+  --color-immich-dark-primary: rgb(var(--immich-dark-primary));
+  --color-immich-dark-bg: rgb(var(--immich-dark-bg));
+  --color-immich-dark-fg: rgb(var(--immich-dark-fg));
+  --color-immich-dark-gray: rgb(var(--immich-dark-gray));
+  --color-immich-dark-error: rgb(var(--immich-dark-error));
+  --color-immich-dark-success: rgb(var(--immich-dark-success));
+  --color-immich-dark-warning: rgb(var(--immich-dark-warning));
+}
+
+@theme {
+  --font-immich-mono: Overpass Mono, monospace;
+
+  --spacing-18: 4.5rem;
+
+  --breakpoint-tall: 800px;
+  --breakpoint-2xl: 1535px;
+  --breakpoint-xl: 1279px;
+  --breakpoint-lg: 1023px;
+  --breakpoint-md: 767px;
+  --breakpoint-sm: 639px;
+  --breakpoint-sidebar: 850px;
+}
 
 @layer base {
   :root {

@@ -20,6 +20,7 @@
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
 
   interface Props {
     data: PageData;
@@ -37,6 +38,11 @@
       assetInteraction.clearMultiselect();
       return;
     }
+  };
+
+  const handleSetVisibility = (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
   };
 </script>
 
@@ -83,6 +89,7 @@
     />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
+      <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </ButtonContextMenu>
   </AssetSelectControlBar>

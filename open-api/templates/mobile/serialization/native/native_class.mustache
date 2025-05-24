@@ -32,7 +32,7 @@ class {{{classname}}} {
       {{/required}}
     {{/isNullable}}
   {{/isEnum}}
-  {{{datatypeWithEnum}}}{{#isNullable}}?{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}?{{/defaultValue}}{{/required}}{{/isNullable}} {{{name}}};
+  {{#isArray}}{{#uniqueItems}}Set{{/uniqueItems}}{{^uniqueItems}}List{{/uniqueItems}}<{{{items.dataType}}}{{#items.isNullable}}?{{/items.isNullable}}>{{/isArray}}{{^isArray}}{{{datatypeWithEnum}}}{{/isArray}}{{#isNullable}}?{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}?{{/defaultValue}}{{/required}}{{/isNullable}} {{{name}}};
 
 {{/vars}}
   @override

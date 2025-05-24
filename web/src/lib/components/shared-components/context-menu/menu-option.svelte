@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { generateId } from '$lib/utils/generate-id';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import type { Shortcut } from '$lib/actions/shortcut';
-  import { shortcutLabel as computeShortcutLabel, shortcut as bindShortcut } from '$lib/actions/shortcut';
+  import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '$lib/actions/shortcut';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
+  import { generateId } from '$lib/utils/generate-id';
 
   interface Props {
     text: string;
@@ -44,7 +44,7 @@
     : () => {};
 </script>
 
-<svelte:window use:bindShortcutIfSet />
+<svelte:document use:bindShortcutIfSet />
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->

@@ -98,7 +98,7 @@
   };
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcuts={[
     { shortcut: { key: 'a' }, onShortcut: onSelectAll },
     {

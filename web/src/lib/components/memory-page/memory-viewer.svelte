@@ -301,7 +301,7 @@
   });
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcuts={$isViewing
     ? []
     : [

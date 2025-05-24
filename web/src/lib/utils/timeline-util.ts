@@ -3,6 +3,7 @@ import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+
 import { memoize } from 'lodash-es';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { get } from 'svelte/store';
@@ -65,17 +66,13 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   if (isTimelineAsset(unknownAsset)) {
     return unknownAsset;
   }
-  const assetResponse = unknownAsset as AssetResponseDto;
+  const assetResponse = unknownAsset;
   const { width, height } = getAssetRatio(assetResponse);
   const ratio = width / height;
   const city = assetResponse.exifInfo?.city;
   const country = assetResponse.exifInfo?.country;
   const people = assetResponse.people?.map((person) => person.name) || [];
-  const text = {
-    city: city || null,
-    country: country || null,
-    people,
-  };
+
   return {
     id: assetResponse.id,
     ownerId: assetResponse.ownerId,
@@ -91,8 +88,10 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     duration: assetResponse.duration || null,
     projectionType: assetResponse.exifInfo?.projectionType || null,
     livePhotoVideoId: assetResponse.livePhotoVideoId || null,
-    text,
+    city: city || null,
+    country: country || null,
+    people,
   };
 };
-export const isTimelineAsset = (asset: AssetResponseDto | TimelineAsset): asset is TimelineAsset =>
-  (asset as TimelineAsset).ratio !== undefined;
+export const isTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): unknownAsset is TimelineAsset =>
+  (unknownAsset as TimelineAsset).ratio !== undefined;

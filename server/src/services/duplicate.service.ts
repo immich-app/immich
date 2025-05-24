@@ -4,11 +4,10 @@ import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
-import { AssetFileType, AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 
 @Injectable()
@@ -65,15 +64,9 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    if (asset.visibility == AssetVisibility.HIDDEN) {
+    if (asset.visibility === AssetVisibility.HIDDEN) {
       this.logger.debug(`Asset ${id} is not visible, skipping`);
       return JobStatus.SKIPPED;
-    }
-
-    const previewFile = getAssetFile(asset.files || [], AssetFileType.PREVIEW);
-    if (!previewFile) {
-      this.logger.warn(`Asset ${id} is missing preview image`);
-      return JobStatus.FAILED;
     }
 
     if (!asset.embedding) {

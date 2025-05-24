@@ -41,7 +41,10 @@
           class="border"
           size="12"
           padding="2"
-          onclick={() => modalManager.show(AvatarEditModal, {})}
+          onclick={async () => {
+            onClose();
+            await modalManager.show(AvatarEditModal, {});
+          }}
         />
       </div>
     </div>

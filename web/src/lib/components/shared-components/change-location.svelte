@@ -118,7 +118,7 @@
 >
   {#snippet promptSnippet()}
     <div class="flex flex-col w-full h-full gap-2">
-      <div class="relative w-64 sm:w-96">
+      <div class="relative w-64 sm:w-96 z-1">
         {#if suggestionContainer}
           <div use:listNavigation={suggestionContainer}>
             <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
@@ -160,7 +160,7 @@
       </div>
 
       <span>{$t('pick_a_location')}</span>
-      <div class="h-[500px] min-h-[300px] w-full">
+      <div class="h-[500px] min-h-[300px] w-full z-0">
         {#await import('../shared-components/map/map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->

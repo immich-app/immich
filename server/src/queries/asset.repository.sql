@@ -235,14 +235,14 @@ limit
 with
   "assets" as (
     select
-      date_trunc($1, "localDateTime" at time zone 'UTC') at time zone 'UTC' as "timeBucket"
+      date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' as "timeBucket"
     from
       "assets"
     where
       "assets"."deletedAt" is null
       and (
-        "assets"."visibility" = $2
-        or "assets"."visibility" = $3
+        "assets"."visibility" = $1
+        or "assets"."visibility" = $2
       )
   )
 select
@@ -256,47 +256,112 @@ order by
   "timeBucket" desc
 
 -- AssetRepository.getTimeBucket
-select
-  "assets".*,
-  to_json("exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
-from
-  "assets"
-  left join "exif" on "assets"."id" = "exif"."assetId"
-  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
-  left join lateral (
+with
+  "cte" as (
     select
-      "asset_stack".*,
-      count("stacked") as "assetCount"
+      "assets"."duration",
+      "assets"."id",
+      "assets"."visibility",
+      "assets"."isFavorite",
+      assets.type = 'IMAGE' as "isImage",
+      assets."deletedAt" is null as "isTrashed",
+      "assets"."livePhotoVideoId",
+      "assets"."localDateTime",
+      "assets"."ownerId",
+      "assets"."status",
+      encode("assets"."thumbhash", 'base64') as "thumbhash",
+      "exif"."city",
+      "exif"."country",
+      "exif"."projectionType",
+      coalesce(
+        case
+          when exif."exifImageHeight" = 0
+          or exif."exifImageWidth" = 0 then 1
+          when "exif"."orientation" in ('5', '6', '7', '8', '-90', '90') then round(
+            exif."exifImageHeight"::numeric / exif."exifImageWidth"::numeric,
+            3
+          )
+          else round(
+            exif."exifImageWidth"::numeric / exif."exifImageHeight"::numeric,
+            3
+          )
+        end,
+        1
+      ) as "ratio",
+      "stack"
     from
-      "assets" as "stacked"
+      "assets"
+      inner join "exif" on "assets"."id" = "exif"."assetId"
+      left join lateral (
+        select
+          array[stacked."stackId"::text, count('stacked')::text] as "stack"
+        from
+          "assets" as "stacked"
+        where
+          "stacked"."stackId" = "assets"."stackId"
+          and "stacked"."deletedAt" is null
+          and "stacked"."visibility" != $1
+        group by
+          "stacked"."stackId"
+      ) as "stacked_assets" on true
     where
-      "stacked"."stackId" = "asset_stack"."id"
-      and "stacked"."deletedAt" is null
-      and "stacked"."visibility" != $1
-    group by
-      "asset_stack"."id"
-  ) as "stacked_assets" on "asset_stack"."id" is not null
-where
-  (
-    "asset_stack"."primaryAssetId" = "assets"."id"
-    or "assets"."stackId" is null
+      "assets"."deletedAt" is null
+      and (
+        "assets"."visibility" = $2
+        or "assets"."visibility" = $3
+      )
+      and date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
+      and (
+        "assets"."visibility" = $5
+        or "assets"."visibility" = $6
+      )
+      and not exists (
+        select
+        from
+          "asset_stack"
+        where
+          "asset_stack"."id" = "assets"."stackId"
+          and "asset_stack"."primaryAssetId" != "assets"."id"
+      )
+    order by
+      "assets"."localDateTime" desc
+  ),
+  "agg" as (
+    select
+      coalesce(array_agg("city"), '{}') as "city",
+      coalesce(array_agg("country"), '{}') as "country",
+      coalesce(array_agg("duration"), '{}') as "duration",
+      coalesce(array_agg("id"), '{}') as "id",
+      coalesce(array_agg("visibility"), '{}') as "visibility",
+      coalesce(array_agg("isFavorite"), '{}') as "isFavorite",
+      coalesce(array_agg("isImage"), '{}') as "isImage",
+      coalesce(array_agg("isTrashed"), '{}') as "isTrashed",
+      coalesce(array_agg("livePhotoVideoId"), '{}') as "livePhotoVideoId",
+      coalesce(array_agg("localDateTime"), '{}') as "localDateTime",
+      coalesce(array_agg("ownerId"), '{}') as "ownerId",
+      coalesce(array_agg("projectionType"), '{}') as "projectionType",
+      coalesce(array_agg("ratio"), '{}') as "ratio",
+      coalesce(array_agg("status"), '{}') as "status",
+      coalesce(array_agg("thumbhash"), '{}') as "thumbhash",
+      coalesce(json_agg("stack"), '[]') as "stack"
+    from
+      "cte"
   )
-  and "assets"."deletedAt" is null
-  and (
-    "assets"."visibility" = $2
-    or "assets"."visibility" = $3
-  )
-  and date_trunc($4, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $5
-order by
-  "assets"."localDateTime" desc
+select
+  to_json(agg)::text as "assets"
+from
+  "agg"
 
 -- AssetRepository.getDuplicates
 with
   "duplicates" as (
     select
       "assets"."duplicateId",
-      jsonb_agg("asset") as "assets"
+      json_agg(
+        "asset"
+        order by
+          "assets"."localDateTime" asc
+      ) as "assets"
     from
       "assets"
       left join lateral (
@@ -323,7 +388,7 @@ with
     from
       "duplicates"
     where
-      jsonb_array_length("assets") = $3
+      json_array_length("assets") = $3
   ),
   "removed_unique" as (
     update "assets"

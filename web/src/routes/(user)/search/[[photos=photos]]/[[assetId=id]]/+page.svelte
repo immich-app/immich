@@ -15,6 +15,7 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -25,7 +26,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { TimelineAsset, Viewport } from '$lib/stores/assets-store.svelte';
+  import { AssetStore, type TimelineAsset, type Viewport } from '$lib/stores/assets-store.svelte';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
@@ -79,6 +80,8 @@
     });
   });
 
+  let assetStore = new AssetStore();
+
   const onEscape = () => {
     if ($showAssetViewer) {
       return;
@@ -125,6 +128,13 @@
     const assetIdSet = new Set(assetIds);
     searchResultAssets = searchResultAssets.filter((asset: TimelineAsset) => !assetIdSet.has(asset.id));
   };
+
+  const handleSetVisibility = (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+    onAssetDelete(assetIds);
+  };
+
   const handleSelectAll = () => {
     assetInteraction.selectAssets(searchResultAssets);
   };
@@ -248,7 +258,8 @@
   }
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} bind:scrollY />
+<svelte:window bind:scrollY />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
 
 <section>
   {#if assetInteraction.selectionActive}
@@ -413,6 +424,9 @@
             <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            {#if assetInteraction.isAllUserOwned}
+              <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+            {/if}
             {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
               <TagAction menuItem />
             {/if}

@@ -46,7 +46,7 @@
   };
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'f' }, onShortcut: toggleFavorite }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'f' }, onShortcut: toggleFavorite }} />
 
 <CircleIconButton
   color="opaque"

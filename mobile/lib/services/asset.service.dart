@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -239,6 +240,9 @@ class AssetService {
 
       for (var element in assets) {
         element.isArchived = isArchived;
+        element.visibility = isArchived
+            ? AssetVisibilityEnum.archive
+            : AssetVisibilityEnum.timeline;
       }
 
       await _syncService.upsertAssetsWithExif(assets);
@@ -458,6 +462,7 @@ class AssetService {
     bool shouldDeletePermanently = false,
   }) async {
     final candidates = assets.where((a) => a.isRemote);
+
     if (candidates.isEmpty) {
       return;
     }
@@ -475,6 +480,7 @@ class AssetService {
             .where((asset) => asset.storage == AssetState.merged)
             .map((asset) {
             asset.remoteId = null;
+            asset.visibility = AssetVisibilityEnum.timeline;
             return asset;
           })
         : assets.where((asset) => asset.isRemote).map((asset) {
@@ -528,5 +534,22 @@ class AssetService {
   Future<List<Asset>> getMotionAssets() {
     final me = _userService.getMyUser();
     return _assetRepository.getMotionAssets(me.id);
+  }
+
+  Future<void> setVisibility(
+    List<Asset> assets,
+    AssetVisibilityEnum visibility,
+  ) async {
+    await _assetApiRepository.updateVisibility(
+      assets.map((asset) => asset.remoteId!).toList(),
+      visibility,
+    );
+
+    final updatedAssets = assets.map((asset) {
+      asset.visibility = visibility;
+      return asset;
+    }).toList();
+
+    await _assetRepository.updateAll(updatedAssets);
   }
 }

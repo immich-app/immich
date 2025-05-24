@@ -97,7 +97,7 @@ class SyncApiRepository implements ISyncApiRepository {
         await onData(_parseLines(lines), abort);
       }
     } catch (error, stack) {
-      _logger.severe("error processing stream", error, stack);
+      _logger.severe("Error processing stream", error, stack);
       return Future.error(error, stack);
     } finally {
       client.close();
@@ -111,21 +111,17 @@ class SyncApiRepository implements ISyncApiRepository {
     final List<SyncEvent> data = [];
 
     for (final line in lines) {
-      try {
-        final jsonData = jsonDecode(line);
-        final type = SyncEntityType.fromJson(jsonData['type'])!;
-        final dataJson = jsonData['data'];
-        final ack = jsonData['ack'];
-        final converter = _kResponseMap[type];
-        if (converter == null) {
-          _logger.warning("[_parseSyncResponse] Unknown type $type");
-          continue;
-        }
-
-        data.add(SyncEvent(type: type, data: converter(dataJson), ack: ack));
-      } catch (error, stack) {
-        _logger.severe("[_parseSyncResponse] Error parsing json", error, stack);
+      final jsonData = jsonDecode(line);
+      final type = SyncEntityType.fromJson(jsonData['type'])!;
+      final dataJson = jsonData['data'];
+      final ack = jsonData['ack'];
+      final converter = _kResponseMap[type];
+      if (converter == null) {
+        _logger.warning("Unknown type $type");
+        continue;
       }
+
+      data.add(SyncEvent(type: type, data: converter(dataJson), ack: ack));
     }
 
     return data;

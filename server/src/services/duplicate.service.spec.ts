@@ -1,4 +1,4 @@
-import { AssetFileType, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
+import { AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -11,17 +11,6 @@ vitest.useFakeTimers();
 const hasEmbedding = {
   id: 'asset-1',
   ownerId: 'user-id',
-  files: [
-    {
-      assetId: 'asset-1',
-      createdAt: new Date(),
-      id: 'file-1',
-      path: 'preview.jpg',
-      type: AssetFileType.PREVIEW,
-      updatedAt: new Date(),
-      updateId: 'update-1',
-    },
-  ],
   stackId: null,
   type: AssetType.IMAGE,
   duplicateId: null,
@@ -216,15 +205,6 @@ describe(SearchService.name, () => {
 
       expect(result).toBe(JobStatus.SKIPPED);
       expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${id} is not visible, skipping`);
-    });
-
-    it('should fail if asset is missing preview image', async () => {
-      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, files: [] });
-
-      const result = await sut.handleSearchDuplicates({ id: assetStub.noResizePath.id });
-
-      expect(result).toBe(JobStatus.FAILED);
-      expect(mocks.logger.warn).toHaveBeenCalledWith(`Asset ${assetStub.noResizePath.id} is missing preview image`);
     });
 
     it('should fail if asset is missing embedding', async () => {
