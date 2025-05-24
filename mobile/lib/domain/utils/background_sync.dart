@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-passing-async-when-sync-expected
-
 import 'dart:async';
 
 import 'package:immich_mobile/providers/infrastructure/sync_stream.provider.dart';
