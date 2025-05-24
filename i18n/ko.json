@@ -270,7 +270,7 @@
     "template_settings": "알림 템플릿",
     "template_settings_description": "사용자 정의 알림 템플릿 관리",
     "theme_custom_css_settings": "사용자 정의 CSS",
-    "theme_custom_css_settings_description": "CSS를 통해 Immich의 디자인을 커스터마이즈할 수 있습니다.",
+    "theme_custom_css_settings_description": "CSS를 통해 Immich의 디자인을 커스터마이징할 수 있습니다.",
     "theme_settings": "테마 설정",
     "theme_settings_description": "Immich 웹 인터페이스의 사용자 정의 관리",
     "these_files_matched_by_checksum": "이 파일들은 체크섬 기준으로 일치합니다.",
