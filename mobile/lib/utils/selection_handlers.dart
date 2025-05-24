@@ -159,13 +159,8 @@ Future<void> handleEditLocation(
   ref.read(assetServiceProvider).changeLocation(selection.toList(), location);
 }
 
-Future<void> handleSetAssetsVisibility(
-  WidgetRef ref,
-  BuildContext context,
-  AssetVisibilityEnum visibility,
-  List<Asset> selection, {
-  ToastGravity toastGravity = ToastGravity.BOTTOM,
-}) async {
+Future<void> handleSetAssetsVisibility(WidgetRef ref, BuildContext context,
+    AssetVisibilityEnum visibility, List<Asset> selection) async {
   if (selection.isNotEmpty) {
     await ref
         .watch(assetProvider.notifier)
