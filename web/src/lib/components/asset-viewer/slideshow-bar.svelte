@@ -100,10 +100,10 @@
   };
 
   const onShowSettings = async () => {
-    modalManager.open(SlideshowSettings, {});
     if (document.fullscreenElement) {
       await document.exitFullscreen();
     }
+    await modalManager.show(SlideshowSettings, {});
   };
 </script>
 
