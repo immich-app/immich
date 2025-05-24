@@ -1,0 +1,17 @@
+{
+  "name": "Immich - Machine Learning",
+  "service": "immich-machine-learning",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python","ms-python.debugpy","KevinRose.vsc-python-indent"
+      ]
+    }
+  },
+  "forwardPorts": [],
+  "overrideCommand": true,
+  "workspaceFolder": "/workspaces/immich",
+  "remoteUser": "node"
+
+}
