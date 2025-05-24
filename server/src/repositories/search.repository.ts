@@ -83,6 +83,11 @@ export interface SearchEmbeddingOptions {
   userIds: string[];
 }
 
+export interface SearchAlbumOptions {
+  isInAlbumIds?: string[];
+  isNotInAlbumIds?: string[];
+}
+
 export interface SearchPeopleOptions {
   personIds?: string[];
 }
@@ -108,6 +113,7 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
+  SearchAlbumOptions &
   SearchTagOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;

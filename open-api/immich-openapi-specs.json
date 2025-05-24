@@ -10602,11 +10602,27 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isInAlbumIds": {
+            "description": "List of album IDs the assets must belong to (any of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "isMotion": {
             "type": "boolean"
           },
           "isNotInAlbum": {
             "type": "boolean"
+          },
+          "isNotInAlbumIds": {
+            "description": "List of album IDs the assets must not belong to (none of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           },
           "isOffline": {
             "type": "boolean"
@@ -11483,11 +11499,27 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isInAlbumIds": {
+            "description": "List of album IDs the assets must belong to (any of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "isMotion": {
             "type": "boolean"
           },
           "isNotInAlbum": {
             "type": "boolean"
+          },
+          "isNotInAlbumIds": {
+            "description": "List of album IDs the assets must not belong to (none of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           },
           "isOffline": {
             "type": "boolean"
@@ -12497,11 +12529,27 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isInAlbumIds": {
+            "description": "List of album IDs the assets must belong to (any of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "isMotion": {
             "type": "boolean"
           },
           "isNotInAlbum": {
             "type": "boolean"
+          },
+          "isNotInAlbumIds": {
+            "description": "List of album IDs the assets must not belong to (none of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           },
           "isOffline": {
             "type": "boolean"

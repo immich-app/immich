@@ -102,6 +102,18 @@ class BaseSearchDto {
   @ValidateBoolean({ optional: true })
   isNotInAlbum?: boolean;
 
+  /**
+   * List of album IDs the assets must belong to (any of)
+   */
+  @ValidateUUID({ each: true, optional: true })
+  isInAlbumIds?: string[];
+
+  /**
+   * List of album IDs the assets must not belong to (none of)
+   */
+  @ValidateUUID({ each: true, optional: true })
+  isNotInAlbumIds?: string[];
+
   @ValidateUUID({ each: true, optional: true })
   personIds?: string[];
 
