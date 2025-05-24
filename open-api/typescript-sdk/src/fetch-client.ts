@@ -1402,6 +1402,10 @@ export type ReverseGeocodingStateResponseDto = {
     lastImportFileName: string | null;
     lastUpdate: string | null;
 };
+export type VersionCheckStateResponseDto = {
+    checkedAt: string | null;
+    releaseVersion: string | null;
+};
 export type TagCreateDto = {
     color?: string;
     name: string;
@@ -3281,6 +3285,14 @@ export function getReverseGeocodingState(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ReverseGeocodingStateResponseDto;
     }>("/system-metadata/reverse-geocoding-state", {
+        ...opts
+    }));
+}
+export function getVersionCheckState(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VersionCheckStateResponseDto;
+    }>("/system-metadata/version-check-state", {
         ...opts
     }));
 }
