@@ -4,7 +4,7 @@ import { SemVer } from 'semver';
 import { DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
-export const VECTORCHORD_VERSION_RANGE = '>=0.3 <0.4';
+export const VECTORCHORD_VERSION_RANGE = '>=0.3 <0.5';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
