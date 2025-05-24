@@ -59,9 +59,6 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
   const properties: string[] = [];
   for (const key of Object.keys(obj as object)) {
     const value = obj[key as keyof object];
-    if (value === undefined) {
-      continue;
-    }
 
     if (_.isObject(value) && !_.isArray(value) && !_.isDate(value)) {
       properties.push(...getKeysDeep(value, [...path, key]));

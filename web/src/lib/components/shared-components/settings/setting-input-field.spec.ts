@@ -34,6 +34,7 @@ describe('SettingInputField component', () => {
         label: 'test-number-input',
         inputType: SettingInputFieldType.NUMBER,
         value: 5,
+        required: true,
       },
     });
     const user = userEvent.setup();

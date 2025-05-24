@@ -112,7 +112,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     buttonText: 'Login with OAuth',
     clientId: '',
     clientSecret: '',
-    defaultStorageQuota: 0,
     enabled: false,
     issuerUrl: '',
     mobileOverrideEnabled: false,
