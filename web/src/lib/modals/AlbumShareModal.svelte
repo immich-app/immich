@@ -101,7 +101,6 @@
                   </div>
 
                   <Dropdown
-                    fullWidthButton={false}
                     title={$t('role')}
                     options={roleOptions}
                     render={({ title, icon }) => ({ title, icon })}

@@ -11,9 +11,9 @@
 </script>
 
 <script lang="ts" generics="T">
+  import { clickOutside } from '$lib/actions/click-outside';
   import { Button, Text } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
-  import { Popover } from 'bits-ui';
   import { isEqual } from 'lodash-es';
   import { fly } from 'svelte/transition';
   import Icon from './icon.svelte';
@@ -30,7 +30,6 @@
     onSelect: (option: T) => void;
     onClickOutside?: () => void;
     render?: (item: T) => string | RenderedOption;
-    fullWidthButton?: boolean;
   }
 
   let {
@@ -45,7 +44,6 @@
     onSelect,
     onClickOutside = () => {},
     render = String,
-    fullWidthButton = true,
   }: Props = $props();
 
   const handleClickOutside = () => {
@@ -80,69 +78,64 @@
   };
 
   let renderedSelectedOption = $derived(renderOption(selectedOption));
+
+  const getAlignClass = (position: 'bottom-left' | 'bottom-right') => {
+    switch (position) {
+      case 'bottom-left': {
+        return 'start-0';
+      }
+      case 'bottom-right': {
+        return 'end-0';
+      }
+
+      default: {
+        return '';
+      }
+    }
+  };
 </script>
 
-<!-- BUTTON TITLE -->
-<Popover.Root bind:open={showMenu}>
-  <Popover.Trigger>
-    {#snippet child({ props })}
-      <Button {...props} fullWidth={fullWidthButton} {title} variant="ghost" color="secondary" size="small">
-        {#if renderedSelectedOption?.icon}
-          <Icon path={renderedSelectedOption.icon} />
-        {/if}
-        <Text class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</Text>
-      </Button>
-    {/snippet}
-  </Popover.Trigger>
-  <Popover.Portal>
-    <Popover.Content
-      align={position === 'bottom-left' ? 'start' : 'end'}
-      forceMount
-      onInteractOutside={handleClickOutside}
+<div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }} class="relative">
+  <!-- BUTTON TITLE -->
+  <Button onclick={() => (showMenu = true)} fullWidth {title} variant="ghost" color="secondary" size="small">
+    {#if renderedSelectedOption?.icon}
+      <Icon path={renderedSelectedOption.icon} />
+    {/if}
+    <Text class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</Text>
+  </Button>
+
+  <!-- DROP DOWN MENU -->
+  {#if showMenu}
+    <div
+      transition:fly={{ y: -30, duration: 250 }}
+      class="text-sm font-medium z-1 absolute flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className} {getAlignClass(
+        position,
+      )}"
     >
-      {#snippet child({ props, wrapperProps, open })}
-        <!-- DROP DOWN MENU -->
-        {#if open}
-          <div {...wrapperProps}>
-            <div
-              {...props}
-              class={[
-                'text-sm font-medium flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white',
-                className,
-                props.class,
-              ]}
-              transition:fly={{ y: -30, duration: 250 }}
-            >
-              {#each options as option (option)}
-                {@const renderedOption = renderOption(option)}
-                {@const buttonStyle = renderedOption.disabled
-                  ? ''
-                  : 'transition-all hover:bg-gray-300 dark:hover:bg-gray-800'}
-                <button
-                  type="button"
-                  class="grid grid-cols-[36px_1fr] place-items-center p-2 disabled:opacity-40 {buttonStyle}"
-                  disabled={renderedOption.disabled}
-                  onclick={() => !renderedOption.disabled && handleSelectOption(option)}
-                >
-                  {#if isEqual(selectedOption, option)}
-                    <div class="text-immich-primary dark:text-immich-dark-primary">
-                      <Icon path={mdiCheck} />
-                    </div>
-                    <p class="justify-self-start text-immich-primary dark:text-immich-dark-primary">
-                      {renderedOption.title}
-                    </p>
-                  {:else}
-                    <div></div>
-                    <p class="justify-self-start">
-                      {renderedOption.title}
-                    </p>
-                  {/if}
-                </button>
-              {/each}
+      {#each options as option (option)}
+        {@const renderedOption = renderOption(option)}
+        {@const buttonStyle = renderedOption.disabled ? '' : 'transition-all hover:bg-gray-300 dark:hover:bg-gray-800'}
+        <button
+          type="button"
+          class="grid grid-cols-[36px_1fr] place-items-center p-2 disabled:opacity-40 {buttonStyle}"
+          disabled={renderedOption.disabled}
+          onclick={() => !renderedOption.disabled && handleSelectOption(option)}
+        >
+          {#if isEqual(selectedOption, option)}
+            <div class="text-immich-primary dark:text-immich-dark-primary">
+              <Icon path={mdiCheck} />
             </div>
-          </div>
-        {/if}
-      {/snippet}
-    </Popover.Content>
-  </Popover.Portal>
-</Popover.Root>
+            <p class="justify-self-start text-immich-primary dark:text-immich-dark-primary">
+              {renderedOption.title}
+            </p>
+          {:else}
+            <div></div>
+            <p class="justify-self-start">
+              {renderedOption.title}
+            </p>
+          {/if}
+        </button>
+      {/each}
+    </div>
+  {/if}
+</div>
