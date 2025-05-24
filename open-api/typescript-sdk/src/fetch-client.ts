@@ -128,6 +128,9 @@ export type UserAdminUpdateDto = {
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
 };
+export type CastResponse = {
+    gCastEnabled: boolean;
+};
 export type DownloadResponse = {
     archiveSize: number;
     includeEmbeddedVideos: boolean;
@@ -164,6 +167,7 @@ export type TagsResponse = {
     sidebarWeb: boolean;
 };
 export type UserPreferencesResponseDto = {
+    cast: CastResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     folders: FoldersResponse;
@@ -176,6 +180,9 @@ export type UserPreferencesResponseDto = {
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
+};
+export type CastUpdate = {
+    gCastEnabled?: boolean;
 };
 export type DownloadUpdate = {
     archiveSize?: number;
@@ -214,6 +221,7 @@ export type TagsUpdate = {
 };
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
+    cast?: CastUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     folders?: FoldersUpdate;

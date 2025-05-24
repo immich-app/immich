@@ -1,6 +1,8 @@
 import { CastDestinationType, CastState, type ICastDestination } from '$lib/managers/cast-manager.svelte';
+import { preferences } from '$lib/stores/user.store';
 import 'chromecast-caf-sender';
 import { Duration } from 'luxon';
+import { get } from 'svelte/store';
 
 const FRAMEWORK_LINK = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
 
@@ -24,6 +26,12 @@ export class GCastDestination implements ICastDestination {
   private currentUrl: string | null = null;
 
   async initialize(): Promise<boolean> {
+    const preferencesStore = get(preferences);
+    if (!preferencesStore.cast.gCastEnabled) {
+      this.isAvailable = false;
+      return false;
+    }
+
     // this is a really messy way since google does a pseudo-callbak
     // in the form of a global window event. We will give Chrome 3 seconds to respond
     // or we will mark the destination as unavailable

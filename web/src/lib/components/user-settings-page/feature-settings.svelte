@@ -34,6 +34,9 @@
   let tagsEnabled = $state($preferences?.tags?.enabled ?? false);
   let tagsSidebar = $state($preferences?.tags?.sidebarWeb ?? false);
 
+  // Cast
+  let gCastEnabled = $state($preferences?.cast?.gCastEnabled ?? false);
+
   const handleSave = async () => {
     try {
       const data = await updateMyPreferences({
@@ -44,6 +47,7 @@
           ratings: { enabled: ratingsEnabled },
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
+          cast: { gCastEnabled },
         },
       });
 
@@ -136,6 +140,16 @@
               />
             </div>
           {/if}
+        </SettingAccordion>
+
+        <SettingAccordion key="cast" title={$t('cast')} subtitle={$t('cast_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSwitch
+              title={$t('gcast_enabled')}
+              subtitle={$t('gcast_enabled_description')}
+              bind:checked={gCastEnabled}
+            />
+          </div>
         </SettingAccordion>
 
         <div class="flex justify-end">

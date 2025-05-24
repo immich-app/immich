@@ -502,6 +502,9 @@ export interface UserPreferences {
     showSupportBadge: boolean;
     hideBuyButtonUntil: string;
   };
+  cast: {
+    gCastEnabled: boolean;
+  };
 }
 
 export interface UserMetadata extends Record<UserMetadataKey, Record<string, any>> {

@@ -85,6 +85,11 @@ class PurchaseUpdate {
   hideBuyButtonUntil?: string;
 }
 
+class CastUpdate {
+  @ValidateBoolean({ optional: true })
+  gCastEnabled?: boolean;
+}
+
 export class UserPreferencesUpdateDto {
   @Optional()
   @ValidateNested()
@@ -135,6 +140,11 @@ export class UserPreferencesUpdateDto {
   @ValidateNested()
   @Type(() => PurchaseUpdate)
   purchase?: PurchaseUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => CastUpdate)
+  cast?: CastUpdate;
 }
 
 class RatingsResponse {
@@ -183,6 +193,10 @@ class PurchaseResponse {
   hideBuyButtonUntil!: string;
 }
 
+class CastResponse {
+  gCastEnabled: boolean = false;
+}
+
 export class UserPreferencesResponseDto implements UserPreferences {
   folders!: FoldersResponse;
   memories!: MemoriesResponse;
@@ -193,6 +207,7 @@ export class UserPreferencesResponseDto implements UserPreferences {
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;
   purchase!: PurchaseResponse;
+  cast!: CastResponse;
 }
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {
