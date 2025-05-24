@@ -18,6 +18,11 @@ export class APIKeyUpdateDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
+
+  @IsEnum(Permission, { each: true })
+  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
+  @ArrayMinSize(1)
+  permissions!: Permission[];
 }
 
 export class APIKeyCreateResponseDto {

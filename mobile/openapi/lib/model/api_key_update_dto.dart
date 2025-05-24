@@ -14,25 +14,31 @@ class APIKeyUpdateDto {
   /// Returns a new [APIKeyUpdateDto] instance.
   APIKeyUpdateDto({
     required this.name,
+    this.permissions = const [],
   });
 
   String name;
 
+  List<Permission> permissions;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyUpdateDto &&
-    other.name == name;
+    other.name == name &&
+    _deepEquality.equals(other.permissions, permissions);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (name.hashCode);
+    (name.hashCode) +
+    (permissions.hashCode);
 
   @override
-  String toString() => 'APIKeyUpdateDto[name=$name]';
+  String toString() => 'APIKeyUpdateDto[name=$name, permissions=$permissions]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'name'] = this.name;
+      json[r'permissions'] = this.permissions;
     return json;
   }
 
@@ -46,6 +52,7 @@ class APIKeyUpdateDto {
 
       return APIKeyUpdateDto(
         name: mapValueOfType<String>(json, r'name')!,
+        permissions: Permission.listFromJson(json[r'permissions']),
       );
     }
     return null;
@@ -94,6 +101,7 @@ class APIKeyUpdateDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'name',
+    'permissions',
   };
 }
 
