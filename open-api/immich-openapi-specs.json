@@ -6846,6 +6846,38 @@
         ]
       }
     },
+    "/system-metadata/version-check-state": {
+      "get": {
+        "operationId": "getVersionCheckState",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionCheckStateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
+        ]
+      }
+    },
     "/tags": {
       "get": {
         "operationId": "getAllTags",
@@ -14937,6 +14969,23 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "VersionCheckStateResponseDto": {
+        "properties": {
+          "checkedAt": {
+            "nullable": true,
+            "type": "string"
+          },
+          "releaseVersion": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "checkedAt",
+          "releaseVersion"
+        ],
         "type": "object"
       },
       "VideoCodec": {

@@ -13,3 +13,8 @@ export class ReverseGeocodingStateResponseDto {
   lastUpdate!: string | null;
   lastImportFileName!: string | null;
 }
+
+export class VersionCheckStateResponseDto {
+  checkedAt!: string | null;
+  releaseVersion!: string | null;
+}

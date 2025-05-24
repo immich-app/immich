@@ -226,6 +226,7 @@ Class | Method | HTTP request | Description
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *SystemMetadataApi* | [**getAdminOnboarding**](doc//SystemMetadataApi.md#getadminonboarding) | **GET** /system-metadata/admin-onboarding | 
 *SystemMetadataApi* | [**getReverseGeocodingState**](doc//SystemMetadataApi.md#getreversegeocodingstate) | **GET** /system-metadata/reverse-geocoding-state | 
+*SystemMetadataApi* | [**getVersionCheckState**](doc//SystemMetadataApi.md#getversioncheckstate) | **GET** /system-metadata/version-check-state | 
 *SystemMetadataApi* | [**updateAdminOnboarding**](doc//SystemMetadataApi.md#updateadminonboarding) | **POST** /system-metadata/admin-onboarding | 
 *TagsApi* | [**bulkTagAssets**](doc//TagsApi.md#bulktagassets) | **PUT** /tags/assets | 
 *TagsApi* | [**createTag**](doc//TagsApi.md#createtag) | **POST** /tags | 
@@ -525,6 +526,7 @@ Class | Method | HTTP request | Description
  - [ValidateLibraryDto](doc//ValidateLibraryDto.md)
  - [ValidateLibraryImportPathResponseDto](doc//ValidateLibraryImportPathResponseDto.md)
  - [ValidateLibraryResponseDto](doc//ValidateLibraryResponseDto.md)
+ - [VersionCheckStateResponseDto](doc//VersionCheckStateResponseDto.md)
  - [VideoCodec](doc//VideoCodec.md)
  - [VideoContainer](doc//VideoContainer.md)
 
