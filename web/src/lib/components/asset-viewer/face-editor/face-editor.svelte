@@ -284,10 +284,10 @@
         return;
       }
 
-      const isConfirmed = await modalManager.showDialog({ 
-        prompt: person.name 
+      const isConfirmed = await modalManager.showDialog({
+        prompt: person.name
           ? $t('confirm_tag_face', { values: { name: person.name } })
-          : $t('confirm_tag_face_unnamed')
+          : $t('confirm_tag_face_unnamed'),
       });
 
       if (!isConfirmed) {
