@@ -390,7 +390,7 @@
       {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
         <!-- Person information block -->
         <div
-          class="relative w-fit p-4 sm:px-6"
+          class="relative w-fit p-4 sm:px-6 pt-12"
           use:clickOutside={{
             onOutclick: handleCancelEditName,
             onEscape: handleCancelEditName,

@@ -236,6 +236,8 @@ export class AssetDateGroup {
 
   layout(options: CommonLayoutOptions, noDefer: boolean) {
     if (!noDefer && !this.bucket.intersecting) {
+  layout(options: CommonLayoutOptions, noDefer: boolean) {
+    if (!noDefer && !this.bucket.intersecting) {
       this.deferredLayout = true;
       return;
     }
