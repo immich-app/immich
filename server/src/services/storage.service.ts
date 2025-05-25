@@ -60,6 +60,10 @@ export class StorageService extends BaseService {
         }
       }
     });
+
+    for (const folder of [StorageFolder.UPLOAD, StorageFolder.LIBRARY]) {
+      await this.createReadmeFile(folder);
+    }
   }
 
   @OnJob({ name: JobName.DELETE_FILES, queue: QueueName.BACKGROUND_TASK })
@@ -80,6 +84,34 @@ export class StorageService extends BaseService {
     }
 
     return JobStatus.SUCCESS;
+  }
+
+  async createReadmeFile(folder: StorageFolder) {
+    const { folderPath } = this.getMountFilePaths(folder);
+    const readmePath = join(folderPath, 'README.TXT');
+    const warningMessage =
+      `WARNING: Do not modify/delete the contents of the Upload/Library folders as it may cause unexpected errors and database incompatibilities.\n\n` +
+      `Please refer to the documentation for more information:\n` +
+      `https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations`;
+
+    try {
+      await this.storageRepository.stat(readmePath);
+      this.logger.log('README.TXT already exists, skipping creation');
+      return;
+    } catch (error: any) {
+      if (error?.code === 'ENOENT') {
+        try {
+          await this.storageRepository.createFile(readmePath, Buffer.from(warningMessage));
+          this.logger.log(`README.TXT file created at ${readmePath}`);
+        } catch (createError) {
+          this.logger.error(`Failed to create README.TXT in ${folderPath}: ${createError}`);
+          throw new ImmichStartupError(`Failed to create README.TXT in "${folderPath} - ${docsMessage}"`);
+        }
+      } else {
+        this.logger.error(`Error checking for README.TXT in ${folderPath}: ${error}`);
+        throw new ImmichStartupError(`Failed to check existence of README.TXT in "${folderPath} - ${docsMessage}"`);
+      }
+    }
   }
 
   private async verifyReadAccess(folder: StorageFolder) {
