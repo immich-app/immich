@@ -214,7 +214,7 @@
   ]}
 />
 
-<div class="w-full relative" use:focusOutside={{ onFocusOut }} tabindex="-1">
+<div class="w-full relative z-2" use:focusOutside={{ onFocusOut }} tabindex="-1">
   <form
     draggable="false"
     autocomplete="off"
