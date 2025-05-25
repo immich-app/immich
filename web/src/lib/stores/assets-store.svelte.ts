@@ -1186,12 +1186,9 @@ export class AssetStore {
         const rows = Math.ceil(unwrappedWidth / viewportWidth);
         const height = 51 + Math.max(1, rows) * this.#rowHeight;
         bucket.bucketHeight = height;
-        console.log('estimtated');
       }
-      console.log('u geo aa', bucket.yearMonth, bucket.bucketHeight, bucket.bucketCount);
       return;
     }
-    console.log('u geo', bucket.yearMonth, bucket.bucketHeight, bucket.bucketCount);
     this.#layoutBucket(bucket, noDefer);
   }
 
