@@ -137,6 +137,7 @@
         const height = bucket.findAssetAbsolutePosition(assetId);
         if (height) {
           scrollTo(height);
+          updateSlidingWindow();
           assetStore.updateIntersections();
           return true;
         }
@@ -224,13 +225,11 @@
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
 
   onMount(() => {
-    assetStore.setCompensateScrollCallback(compensateScrollCallback);
     if (!enableRouting) {
       showSkeleton = false;
     }
     const disposeHmr = hmrSupport();
     return () => {
-      assetStore.setCompensateScrollCallback();
       disposeHmr();
     };
   });
@@ -846,6 +845,7 @@
             onSelect={({ title, assets }) => handleGroupSelect(assetStore, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
+            onScrollCompensate={compensateScrollCallback}
           />
         </div>
       {/if}

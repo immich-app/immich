@@ -16,6 +16,7 @@
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
   import { uploadAssetsStore } from '$lib/stores/upload';
+  import { onMount } from 'svelte';
   import { flip } from 'svelte/animate';
 
   let { isUploading } = uploadAssetsStore;
@@ -32,6 +33,7 @@
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
     onSelectAssets: (asset: TimelineAsset) => void;
     onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
+    onScrollCompensate: ({ delta, top }: { delta?: number; top?: number }) => void;
   }
 
   let {
@@ -45,6 +47,7 @@
     onSelect,
     onSelectAssets,
     onSelectAssetCandidates,
+    onScrollCompensate,
   }: Props = $props();
 
   let isMouseOverGroup = $state(false);
@@ -101,6 +104,12 @@
   function filterIntersecting<R extends { intersecting: boolean }>(intersectable: R[]) {
     return intersectable.filter((int) => int.intersecting);
   }
+
+  onMount(() => {
+    onScrollCompensate({ delta: bucket.compensateDelta, top: bucket.compensateTop });
+    bucket.compensateDelta = 0;
+    bucket.compensateTop = 0;
+  });
 </script>
 
 {#each filterIntersecting(bucket.dateGroups) as dateGroup, groupIndex (dateGroup.day)}

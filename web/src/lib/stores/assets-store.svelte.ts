@@ -322,6 +322,8 @@ export class AssetBucket {
   actuallyIntersecting: boolean = $state(false);
   isLoaded: boolean = $state(false);
   dateGroups: AssetDateGroup[] = $state([]);
+  compensateDelta: number = $state(0);
+  compensateTop: number = $state(0);
   readonly store: AssetStore;
 
   // --- private ---
@@ -567,10 +569,10 @@ export class AssetBucket {
       // size adjustment
       if (currentIndex > 0) {
         if (index < currentIndex) {
-          store.compensateScrollCallback?.({ delta: bucketHeightDelta });
-        } else if (currentIndex == currentIndex && percent > 0) {
+          this.compensateDelta += bucketHeightDelta;
+        } else if (percent > 0) {
           const top = this.top + height * percent;
-          store.compensateScrollCallback?.({ top });
+          this.compensateTop += top;
         }
       }
     }
@@ -724,7 +726,6 @@ export class AssetStore {
   scrubberTimelineHeight: number = $state(0);
 
   // -- should be private, but used by AssetBucket
-  compensateScrollCallback: (({ delta, top }: { delta?: number; top?: number }) => void) | undefined;
   topIntersectingBucket: AssetBucket | undefined = $state();
 
   visibleWindow = $derived.by(() => ({
@@ -981,11 +982,11 @@ export class AssetStore {
     let topIntersectingBucket = undefined;
     for (const bucket of this.buckets) {
       this.#updateIntersection(bucket);
-      if (!topIntersectingBucket && bucket.actuallyIntersecting && bucket.isLoaded) {
+      if (!topIntersectingBucket && bucket.actuallyIntersecting) {
         topIntersectingBucket = bucket;
       }
     }
-    if (this.topIntersectingBucket !== topIntersectingBucket) {
+    if (topIntersectingBucket !== undefined && this.topIntersectingBucket !== topIntersectingBucket) {
       this.topIntersectingBucket = topIntersectingBucket;
     }
     for (const bucket of this.buckets) {
@@ -1054,10 +1055,6 @@ export class AssetStore {
     }
     this.#pendingChanges = [];
   }, 2500);
-
-  setCompensateScrollCallback(compensateScrollCallback?: ({ delta, top }: { delta?: number; top?: number }) => void) {
-    this.compensateScrollCallback = compensateScrollCallback;
-  }
 
   async #initialiazeTimeBuckets() {
     const timebuckets = await getTimeBuckets({
@@ -1189,9 +1186,12 @@ export class AssetStore {
         const rows = Math.ceil(unwrappedWidth / viewportWidth);
         const height = 51 + Math.max(1, rows) * this.#rowHeight;
         bucket.bucketHeight = height;
+        console.log('estimtated');
       }
+      console.log('u geo aa', bucket.yearMonth, bucket.bucketHeight, bucket.bucketCount);
       return;
     }
+    console.log('u geo', bucket.yearMonth, bucket.bucketHeight, bucket.bucketCount);
     this.#layoutBucket(bucket, noDefer);
   }
 
