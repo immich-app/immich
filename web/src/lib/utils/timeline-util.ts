@@ -38,8 +38,6 @@ export const fromDateTimeOriginal = (dateTimeOriginal: string, timeZone: string)
 export const toISOLocalDateTime = (timelineYearMonth: TimelinePlainYearMonth): string =>
   (fromTimelinePlainYearMonth(timelineYearMonth).setZone('UTC', { keepLocalTime: true }) as DateTime<true>).toISO();
 
-export const startOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth());
-
 export function formatBucketTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();

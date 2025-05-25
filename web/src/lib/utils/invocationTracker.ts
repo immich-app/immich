@@ -13,7 +13,7 @@ export class InvocationTracker {
 
   /**
    * Starts a new invocation and returns an object with utilities to manage the invocation lifecycle.
-   * @returns {Object} An object containing methods to manage the invocation:
+   * @returns  An object containing methods to manage the invocation:
    *   - isInvalidInvocationError: Checks if an error is an invalid invocation error
    *   - checkStillValid: Throws an error if the invocation is no longer valid
    *   - endInvocation: Marks the invocation as complete
@@ -24,22 +24,14 @@ export class InvocationTracker {
 
     return {
       /**
-       * Checks if an error is an invalid invocation error
-       * @param {unknown} error - The error to check
-       * @returns {boolean} True if the error is an invalid invocation error
-       */
-      isInvalidInvocationError(error: unknown) {
-        return error instanceof Error && error.message === 'Invocation not valid';
-      },
-
-      /**
        * Throws an error if this invocation is no longer valid
        * @throws {Error} If the invocation is no longer valid
        */
-      checkStillValid: () => {
+      isStillValid: () => {
         if (invocation !== this.invocationsStarted) {
-          throw new Error('Invocation not valid');
+          return false;
         }
+        return true;
       },
 
       /**
@@ -53,7 +45,7 @@ export class InvocationTracker {
 
   /**
    * Checks if there are any active invocations
-   * @returns {boolean} True if there are active invocations, false otherwise
+   * @returns True if there are active invocations, false otherwise
    */
   isActive() {
     return this.invocationsStarted !== this.invocationsEnded;
