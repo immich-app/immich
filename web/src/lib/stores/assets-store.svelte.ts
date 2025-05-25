@@ -132,7 +132,7 @@ class IntersectingAsset {
 
 type AssetOperation = (asset: TimelineAsset) => { remove: boolean };
 
-type MoveAsset = { asset: TimelineAsset; yearMonth: TimelinePlainYearMonth };
+type MoveAsset = { asset: TimelineAsset; date: TimelinePlainDate };
 
 export class AssetDateGroup {
   // --- public
@@ -213,16 +213,13 @@ export class AssetDateGroup {
       }
 
       const asset = this.intersetingAssets[index].asset!;
-      const oldTime = asset.localDateTime;
+      const oldTime = { ...asset.localDateTime };
       let { remove } = operation(asset);
       const newTime = asset.localDateTime;
-      if (oldTime.valueOf() !== newTime.valueOf()) {
-        const year = newTime.year;
-        const month = newTime.month;
-        if (this.bucket.yearMonth.year !== year || this.bucket.yearMonth.month !== month) {
-          remove = true;
-          moveAssets.push({ asset, yearMonth: { year, month } });
-        }
+      if (oldTime.year !== newTime.year || oldTime.month !== newTime.month || oldTime.day !== newTime.day) {
+        const { year, month, day } = newTime;
+        remove = true;
+        moveAssets.push({ asset, date: { year, month, day } });
       }
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);
@@ -1343,6 +1340,7 @@ export class AssetStore {
 
       if (!bucket) {
         bucket = new AssetBucket(this, asset.localDateTime, 1, this.#options.order);
+        bucket.isLoaded = true;
         this.buckets.push(bucket);
       }
 
@@ -1426,7 +1424,7 @@ export class AssetStore {
     const changedBuckets = new Set<AssetBucket>();
     let idsToProcess = new Set(ids);
     const idsProcessed = new Set<string>();
-    const combinedMoveAssets: { asset: TimelineAsset; yearMonth: TimelinePlainYearMonth }[][] = [];
+    const combinedMoveAssets: { asset: TimelineAsset; date: TimelinePlainDate }[][] = [];
     for (const bucket of this.buckets) {
       if (idsToProcess.size > 0) {
         const { moveAssets, processedIds, changedGeometry } = bucket.runAssetOperation(idsToProcess, operation);

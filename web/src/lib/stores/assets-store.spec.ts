@@ -253,7 +253,7 @@ describe('AssetStore', () => {
       const assetStore = new AssetStore();
       await assetStore.updateOptions({ isTrashed: true });
       assetStore.addAssets([asset, trashedAsset]);
-      expect(getAssets(assetStore)).toEqual([trashedAsset]);
+      expect(await getAssets(assetStore)).toEqual([trashedAsset]);
     });
   });
 
@@ -434,15 +434,16 @@ describe('AssetStore', () => {
 
     it('loads previous bucket', async () => {
       await assetStore.loadBucket({ year: 2024, month: 2 });
-
-      const loadBucketSpy = vi.spyOn(assetStore, 'loadBucket');
       const bucket = assetStore.getBucketByDate({ year: 2024, month: 2 });
       const previousBucket = assetStore.getBucketByDate({ year: 2024, month: 3 });
-      const a = bucket!.getAssets()[0];
-      const b = previousBucket!.getAssets()[0];
+      const a = bucket!.getFirstAsset();
+      const b = previousBucket!.getFirstAsset();
+      const loadBucketSpy = vi.spyOn(bucket!.loader!, 'execute');
+      const previousBucketSpy = vi.spyOn(previousBucket!.loader!, 'execute');
       const previous = await assetStore.getLaterAsset(a);
       expect(previous).toEqual(b);
-      expect(loadBucketSpy).toBeCalledTimes(1);
+      expect(loadBucketSpy).toBeCalledTimes(0);
+      expect(previousBucketSpy).toBeCalledTimes(0);
     });
 
     it('skips removed assets', async () => {
