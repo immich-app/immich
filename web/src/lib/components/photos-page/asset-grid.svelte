@@ -4,7 +4,12 @@
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import {
+    setFocusToAsset as setFocusAssetInit,
+    setFocusTo as setFocusToInit,
+  } from '$lib/components/photos-page/actions/focus-actions';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
@@ -27,10 +32,10 @@
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
-  import { focusNext } from '$lib/utils/focus-util';
   import { navigate } from '$lib/utils/navigation';
-  import { type ScrubberListener } from '$lib/utils/timeline-util';
+  import { type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
@@ -90,8 +95,9 @@
 
   let timelineElement: HTMLElement | undefined = $state();
   let showSkeleton = $state(true);
+  let isShowSelectDate = $state(false);
   let scrubBucketPercent = $state(0);
-  let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
+  let scrubBucket: TimelinePlainYearMonth | undefined = $state();
   let scrubOverallPercent: number = $state(0);
   let scrubberWidth = $state(0);
 
@@ -147,7 +153,6 @@
     if (scrollTarget) {
       scrolled = await scrollToAsset(scrollTarget);
     }
-
     if (!scrolled) {
       // if the asset is not found, scroll to the top
       scrollToTop();
@@ -205,11 +210,16 @@
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
   const compensateScrollCallback = ({ delta, top }: { delta?: number; top?: number }) => {
-    if (delta) {
+    if (delta !== undefined) {
       element?.scrollBy(0, delta);
-    } else if (top) {
+    } else if (top !== undefined) {
       element?.scrollTo({ top });
     }
+    // Yes, updateSlideWindow() is called by the onScroll event triggered as a result of
+    // the above calls. However, this delay is enough time to set the intersecting property
+    // of the bucket to false, then true, which causes the DOM nodes to be recreated,
+    // causing bad perf, and also, disrupting focus of those elements.
+    updateSlidingWindow();
   };
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
 
@@ -250,7 +260,7 @@
 
   // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
   const onScrub: ScrubberListener = (
-    bucketDate: string | undefined,
+    bucketDate: { year: number; month: number } | undefined,
     scrollPercent: number,
     bucketScrollPercent: number,
   ) => {
@@ -263,7 +273,9 @@
       }
       element.scrollTop = offset;
     } else {
-      const bucket = assetStore.buckets.find((b) => b.bucketDate === bucketDate);
+      const bucket = assetStore.buckets.find(
+        (bucket) => bucket.yearMonth.year === bucketDate.year && bucket.yearMonth.month === bucketDate.month,
+      );
       if (!bucket) {
         return;
       }
@@ -303,7 +315,7 @@
 
       const bucketsLength = assetStore.buckets.length;
       for (let i = -1; i < bucketsLength + 1; i++) {
-        let bucket: { bucketDate: string | undefined } | undefined;
+        let bucket: TimelinePlainYearMonth | undefined;
         let bucketHeight = 0;
         if (i === -1) {
           // lead-in
@@ -312,7 +324,7 @@
           // lead-out
           bucketHeight = bottomSectionHeight;
         } else {
-          bucket = assetStore.buckets[i];
+          bucket = assetStore.buckets[i].yearMonth;
           bucketHeight = assetStore.buckets[i].bucketHeight;
         }
 
@@ -326,7 +338,7 @@
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
           if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
-            scrubBucket = assetStore.buckets[i + 1];
+            scrubBucket = assetStore.buckets[i + 1].yearMonth;
             scrubBucketPercent = 0;
           }
 
@@ -385,12 +397,6 @@
     deselectAllAssets();
   };
 
-  const focusElement = () => {
-    if (document.activeElement === document.body) {
-      element?.focus();
-    }
-  };
-
   const handleSelectAsset = (asset: TimelineAsset) => {
     if (!assetStore.albumAssets.has(asset.id)) {
       assetInteraction.selectAsset(asset);
@@ -398,37 +404,36 @@
   };
 
   const handlePrevious = async () => {
-    const previousAsset = await assetStore.getPreviousAsset($viewingAsset);
+    const laterAsset = await assetStore.getLaterAsset($viewingAsset);
 
-    if (previousAsset) {
-      const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
-      const asset = await getAssetInfo({ id: previousAsset.id, key: authManager.key });
+    if (laterAsset) {
+      const preloadAsset = await assetStore.getLaterAsset(laterAsset);
+      const asset = await getAssetInfo({ id: laterAsset.id, key: authManager.key });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
-      await navigate({ targetRoute: 'current', assetId: previousAsset.id });
+      await navigate({ targetRoute: 'current', assetId: laterAsset.id });
     }
 
-    return !!previousAsset;
+    return !!laterAsset;
   };
 
   const handleNext = async () => {
-    const nextAsset = await assetStore.getNextAsset($viewingAsset);
-    if (nextAsset) {
-      const preloadAsset = await assetStore.getNextAsset(nextAsset);
-      const asset = await getAssetInfo({ id: nextAsset.id, key: authManager.key });
+    const earlierAsset = await assetStore.getEarlierAsset($viewingAsset);
+    if (earlierAsset) {
+      const preloadAsset = await assetStore.getEarlierAsset(earlierAsset);
+      const asset = await getAssetInfo({ id: earlierAsset.id, key: authManager.key });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
-      await navigate({ targetRoute: 'current', assetId: nextAsset.id });
+      await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
     }
 
-    return !!nextAsset;
+    return !!earlierAsset;
   };
 
   const handleRandom = async () => {
     const randomAsset = await assetStore.getRandomAsset();
 
     if (randomAsset) {
-      const preloadAsset = await assetStore.getNextAsset(randomAsset);
       const asset = await getAssetInfo({ id: randomAsset.id, key: authManager.key });
-      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
+      assetViewingStore.setAsset(asset);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
       return asset;
     }
@@ -514,7 +519,7 @@
 
   const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
     if (asset) {
-      selectAssetCandidates(asset);
+      void selectAssetCandidates(asset);
     }
     lastAssetMouseEvent = asset;
   };
@@ -532,7 +537,7 @@
       }
     }
 
-    if (assetStore.getAssets().length == assetInteraction.selectedAssets.length) {
+    if (assetStore.count == assetInteraction.selectedAssets.length) {
       isSelectingAllAssets.set(true);
     } else {
       isSelectingAllAssets.set(false);
@@ -583,8 +588,8 @@
           break;
         }
         if (started) {
-          await assetStore.loadBucket(bucket.bucketDate);
-          for (const asset of bucket.getAssets()) {
+          await assetStore.loadBucket(bucket.yearMonth);
+          for (const asset of bucket.assetsIterator()) {
             if (deselect) {
               assetInteraction.removeAssetFromMultiselectGroup(asset.id);
             } else {
@@ -623,7 +628,7 @@
     assetInteraction.setAssetSelectionStart(deselect ? null : asset);
   };
 
-  const selectAssetCandidates = (endAsset: TimelineAsset) => {
+  const selectAssetCandidates = async (endAsset: TimelineAsset) => {
     if (!shiftKeyIsDown) {
       return;
     }
@@ -633,16 +638,8 @@
       return;
     }
 
-    const assets = assetsSnapshot(assetStore.getAssets());
-
-    let start = assets.findIndex((a) => a.id === startAsset.id);
-    let end = assets.findIndex((a) => a.id === endAsset.id);
-
-    if (start > end) {
-      [start, end] = [end, start];
-    }
-
-    assetInteraction.setAssetSelectionCandidates(assets.slice(start, end + 1));
+    const assets = assetsSnapshot(await assetStore.retrieveRange(startAsset, endAsset));
+    assetInteraction.setAssetSelectionCandidates(assets);
   };
 
   const onSelectStart = (e: Event) => {
@@ -650,9 +647,6 @@
       e.preventDefault();
     }
   };
-
-  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
-  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
@@ -675,6 +669,9 @@
     }
   });
 
+  const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, assetStore);
+  const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
+
   let shortcutList = $derived(
     (() => {
       if (searchStore.isSearchEnabled || $showAssetViewer) {
@@ -686,10 +683,15 @@
         { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteraction) },
-        { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
-        { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
-        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
-        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
+        { shortcut: { key: 'ArrowRight' }, onShortcut: () => setFocusTo('earlier', 'asset') },
+        { shortcut: { key: 'ArrowLeft' }, onShortcut: () => setFocusTo('later', 'asset') },
+        { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('earlier', 'day') },
+        { shortcut: { key: 'D', shift: true }, onShortcut: () => setFocusTo('later', 'day') },
+        { shortcut: { key: 'M' }, onShortcut: () => setFocusTo('earlier', 'month') },
+        { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
+        { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
+        { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
+        { shortcut: { key: 'G' }, onShortcut: () => (isShowSelectDate = true) },
       ];
 
       if (assetInteraction.selectionActive) {
@@ -720,7 +722,7 @@
 
   $effect(() => {
     if (shiftKeyIsDown && lastAssetMouseEvent) {
-      selectAssetCandidates(lastAssetMouseEvent);
+      void selectAssetCandidates(lastAssetMouseEvent);
     }
   });
 </script>
@@ -732,6 +734,22 @@
     size={idsSelectedAssets.length}
     onCancel={() => (isShowDeleteConfirmation = false)}
     onConfirm={() => handlePromiseError(trashOrDelete(true))}
+  />
+{/if}
+
+{#if isShowSelectDate}
+  <ChangeDate
+    title="Navigate to Time"
+    initialDate={DateTime.now()}
+    timezoneInput={false}
+    onConfirm={async (dateString: string) => {
+      isShowSelectDate = false;
+      const asset = await assetStore.getClosestAssetToDate((DateTime.fromISO(dateString) as DateTime<true>).toObject());
+      if (asset) {
+        await setFocusAsset(asset);
+      }
+    }}
+    onCancel={() => (isShowSelectDate = false)}
   />
 {/if}
 

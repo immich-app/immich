@@ -8,9 +8,11 @@
     id?: string;
     name?: string;
     placeholder?: string;
+    autofocus?: boolean;
+    onkeydown?: (e: KeyboardEvent) => void;
   }
 
-  let { type, value = $bindable(), max = undefined, ...rest }: Props = $props();
+  let { type, value = $bindable(), max = undefined, onkeydown, ...rest }: Props = $props();
 
   let fallbackMax = $derived(type === 'date' ? '9999-12-31' : '9999-12-31T23:59');
 
@@ -30,5 +32,6 @@
     if (e.key === 'Enter') {
       value = updatedValue;
     }
+    onkeydown?.(e);
   }}
 />

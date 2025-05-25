@@ -14,7 +14,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
-  import { focusNext } from '$lib/utils/focus-util';
+  import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
   import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -271,8 +271,9 @@
     }
   };
 
-  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
-  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
+  const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
+  const focusPreviousAsset = () =>
+    moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
 
   let isShortcutModalOpen = false;
 

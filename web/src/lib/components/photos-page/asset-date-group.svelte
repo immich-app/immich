@@ -10,15 +10,13 @@
     type TimelineAsset,
   } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { getDateLocaleString } from '$lib/utils/timeline-util';
 
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { fly, scale } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
-  import { flip } from 'svelte/animate';
-
   import { uploadAssetsStore } from '$lib/stores/upload';
+  import { flip } from 'svelte/animate';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -84,7 +82,7 @@
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
 
-    if (assetStore.getAssets().length == assetInteraction.selectedAssets.length) {
+    if (assetStore.count == assetInteraction.selectedAssets.length) {
       isSelectingAllAssets.set(true);
     } else {
       isSelectingAllAssets.set(false);
@@ -105,7 +103,7 @@
   }
 </script>
 
-{#each filterIntersecting(bucket.dateGroups) as dateGroup, groupIndex (dateGroup.date)}
+{#each filterIntersecting(bucket.dateGroups) as dateGroup, groupIndex (dateGroup.day)}
   {@const absoluteWidth = dateGroup.left}
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -146,7 +144,7 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize ms-2.5" title={getDateLocaleString(dateGroup.date)}>
+      <span class="w-full truncate first-letter:capitalize ms-2.5" title={dateGroup.groupTitle}>
         {dateGroup.groupTitle}
       </span>
     </div>

@@ -25,6 +25,9 @@
     shortcuts = {
       general: [
         { key: ['←', '→'], action: $t('previous_or_next_photo') },
+        { key: ['D', 'd'], action: $t('previous_or_next_day') },
+        { key: ['M', 'm'], action: $t('previous_or_next_month') },
+        { key: ['Y', 'y'], action: $t('previous_or_next_year') },
         { key: ['x'], action: $t('select') },
         { key: ['Esc'], action: $t('back_close_deselect') },
         { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
