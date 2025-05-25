@@ -169,7 +169,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       scale: newScale,
       position: widget.enablePanAlways
           ? delta
-          : clampPosition(position: delta * details.scale),
+          : clampPosition(position: delta, scale: details.scale),
       rotation:
           widget.enableRotation ? _rotationBefore! + details.rotation : null,
       rotationFocusPoint: widget.enableRotation ? details.focalPoint : null,
