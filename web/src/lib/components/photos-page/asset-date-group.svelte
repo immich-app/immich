@@ -82,7 +82,7 @@
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
 
-    if (assetStore.getAssets().length == assetInteraction.selectedAssets.length) {
+    if (assetStore.count == assetInteraction.selectedAssets.length) {
       isSelectingAllAssets.set(true);
     } else {
       isSelectingAllAssets.set(false);
@@ -103,7 +103,7 @@
   }
 </script>
 
-{#each filterIntersecting(bucket.dateGroups) as dateGroup, groupIndex (dateGroup.date)}
+{#each filterIntersecting(bucket.dateGroups) as dateGroup, groupIndex (dateGroup.day)}
   {@const absoluteWidth = dateGroup.left}
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->

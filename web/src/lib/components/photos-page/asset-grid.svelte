@@ -32,9 +32,8 @@
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
-  import { moveFocus } from '$lib/utils/focus-util';
   import { navigate } from '$lib/utils/navigation';
-  import { type ScrubberListener } from '$lib/utils/timeline-util';
+  import { type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
@@ -98,7 +97,7 @@
   let showSkeleton = $state(true);
   let isShowSelectDate = $state(false);
   let scrubBucketPercent = $state(0);
-  let scrubBucket: { year: number; month: number } | undefined = $state();
+  let scrubBucket: TimelinePlainYearMonth | undefined = $state();
   let scrubOverallPercent: number = $state(0);
   let scrubberWidth = $state(0);
 
@@ -211,11 +210,16 @@
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
   const compensateScrollCallback = ({ delta, top }: { delta?: number; top?: number }) => {
-    if (delta) {
+    if (delta !== undefined) {
       element?.scrollBy(0, delta);
-    } else if (top) {
+    } else if (top !== undefined) {
       element?.scrollTo({ top });
     }
+    // Yes, updateSlideWindow() is called by the onScroll event triggered as a result of
+    // the above calls. However, this delay is enough time to set the intersecting property
+    // of the bucket to false, then true, which causes the DOM nodes to be recreated,
+    // causing bad perf, and also, disrupting focus of those elements.
+    updateSlidingWindow();
   };
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
 
@@ -270,7 +274,7 @@
       element.scrollTop = offset;
     } else {
       const bucket = assetStore.buckets.find(
-        (bucket) => bucket.year === bucketDate.year && bucket.month === bucketDate.month,
+        (bucket) => bucket.yearMonth.year === bucketDate.year && bucket.yearMonth.month === bucketDate.month,
       );
       if (!bucket) {
         return;
@@ -311,7 +315,7 @@
 
       const bucketsLength = assetStore.buckets.length;
       for (let i = -1; i < bucketsLength + 1; i++) {
-        let bucket: { year: number; month: number } | undefined;
+        let bucket: TimelinePlainYearMonth | undefined;
         let bucketHeight = 0;
         if (i === -1) {
           // lead-in
@@ -320,7 +324,7 @@
           // lead-out
           bucketHeight = bottomSectionHeight;
         } else {
-          bucket = assetStore.buckets[i];
+          bucket = assetStore.buckets[i].yearMonth;
           bucketHeight = assetStore.buckets[i].bucketHeight;
         }
 
@@ -334,7 +338,7 @@
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
           if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
-            scrubBucket = assetStore.buckets[i + 1];
+            scrubBucket = assetStore.buckets[i + 1].yearMonth;
             scrubBucketPercent = 0;
           }
 
@@ -515,7 +519,7 @@
 
   const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
     if (asset) {
-      selectAssetCandidates(asset);
+      void selectAssetCandidates(asset);
     }
     lastAssetMouseEvent = asset;
   };
@@ -533,7 +537,7 @@
       }
     }
 
-    if (assetStore.getAssets().length == assetInteraction.selectedAssets.length) {
+    if (assetStore.count == assetInteraction.selectedAssets.length) {
       isSelectingAllAssets.set(true);
     } else {
       isSelectingAllAssets.set(false);
@@ -584,8 +588,8 @@
           break;
         }
         if (started) {
-          await assetStore.loadBucket({ year: bucket.year, month: bucket.month });
-          for (const asset of bucket.getAssets()) {
+          await assetStore.loadBucket(bucket.yearMonth);
+          for (const asset of bucket.assetsIterator()) {
             if (deselect) {
               assetInteraction.removeAssetFromMultiselectGroup(asset.id);
             } else {
@@ -624,7 +628,7 @@
     assetInteraction.setAssetSelectionStart(deselect ? null : asset);
   };
 
-  const selectAssetCandidates = (endAsset: TimelineAsset) => {
+  const selectAssetCandidates = async (endAsset: TimelineAsset) => {
     if (!shiftKeyIsDown) {
       return;
     }
@@ -634,16 +638,8 @@
       return;
     }
 
-    const assets = assetsSnapshot(assetStore.getAssets());
-
-    let start = assets.findIndex((a) => a.id === startAsset.id);
-    let end = assets.findIndex((a) => a.id === endAsset.id);
-
-    if (start > end) {
-      [start, end] = [end, start];
-    }
-
-    assetInteraction.setAssetSelectionCandidates(assets.slice(start, end + 1));
+    const assets = assetsSnapshot(await assetStore.retrieveRange(startAsset, endAsset));
+    assetInteraction.setAssetSelectionCandidates(assets);
   };
 
   const onSelectStart = (e: Event) => {
@@ -651,10 +647,6 @@
       e.preventDefault();
     }
   };
-
-  const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
-  const focusPreviousAsset = () =>
-    moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
@@ -691,8 +683,8 @@
         { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteraction) },
-        { shortcut: { key: 'ArrowRight' }, onShortcut: focusNextAsset },
-        { shortcut: { key: 'ArrowLeft' }, onShortcut: focusPreviousAsset },
+        { shortcut: { key: 'ArrowRight' }, onShortcut: () => setFocusTo('earlier', 'asset') },
+        { shortcut: { key: 'ArrowLeft' }, onShortcut: () => setFocusTo('later', 'asset') },
         { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('earlier', 'day') },
         { shortcut: { key: 'D', shift: true }, onShortcut: () => setFocusTo('later', 'day') },
         { shortcut: { key: 'M' }, onShortcut: () => setFocusTo('earlier', 'month') },
@@ -730,7 +722,7 @@
 
   $effect(() => {
     if (shiftKeyIsDown && lastAssetMouseEvent) {
-      selectAssetCandidates(lastAssetMouseEvent);
+      void selectAssetCandidates(lastAssetMouseEvent);
     }
   });
 </script>
@@ -752,8 +744,7 @@
     timezoneInput={false}
     onConfirm={async (dateString: string) => {
       isShowSelectDate = false;
-
-      const asset = await assetStore.getClosestAssetToDate(new Date(dateString));
+      const asset = await assetStore.getClosestAssetToDate((DateTime.fromISO(dateString) as DateTime<true>).toObject());
       if (asset) {
         await setFocusAsset(asset);
       }

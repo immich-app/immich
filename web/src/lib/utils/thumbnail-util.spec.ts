@@ -56,12 +56,21 @@ describe('getAltText', () => {
       people?: Person[];
       expected: string;
     }) => {
+      const testDate = new Date('2024-01-01T12:00:00.000Z');
       const asset: TimelineAsset = {
         id: 'test-id',
         ownerId: 'test-owner',
         ratio: 1,
         thumbhash: null,
-        localDateTime: new Date('2024-01-01T12:00:00.000Z'),
+        localDateTime: {
+          year: testDate.getUTCFullYear(),
+          month: testDate.getUTCMonth() + 1, // Note: getMonth() is 0-based
+          day: testDate.getUTCDate(),
+          hour: testDate.getUTCHours(),
+          minute: testDate.getUTCMinutes(),
+          second: testDate.getUTCSeconds(),
+          millisecond: testDate.getUTCMilliseconds(),
+        },
         visibility: AssetVisibility.Timeline,
         isFavorite: false,
         isTrashed: false,

@@ -479,13 +479,13 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: 
 
   try {
     for (const bucket of assetStore.buckets) {
-      await assetStore.loadBucket({ year: bucket.year, month: bucket.month });
+      await assetStore.loadBucket(bucket.yearMonth);
 
       if (!get(isSelectingAllAssets)) {
         assetInteraction.clearMultiselect();
         break; // Cancelled
       }
-      assetInteraction.selectAssets(assetsSnapshot(bucket.getAssets()));
+      assetInteraction.selectAssets(assetsSnapshot([...bucket.assetsIterator()]));
 
       for (const dateGroup of bucket.dateGroups) {
         assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);

@@ -1,9 +1,7 @@
 import type { AssetStore } from '$lib/stores/assets-store.svelte';
 import { moveFocus } from '$lib/utils/focus-util';
 import { InvocationTracker } from '$lib/utils/invocationTracker';
-import { retry } from '$lib/utils/retry';
 
-const waitForElement = retry((query: string) => document.querySelector(query) as HTMLElement, 10, 100);
 const tracker = new InvocationTracker();
 const getFocusedThumb = () => {
   const current = document.activeElement as HTMLElement;
@@ -17,10 +15,12 @@ export const focusNextAsset = () =>
 export const focusPreviousAsset = () =>
   moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
 
+const queryHTMLElement = (query: string) => document.querySelector(query) as HTMLElement;
+
 export const setFocusToAsset = async (scrollToAsset: (id: string) => Promise<boolean>, asset: { id: string }) => {
   const scrolled = await scrollToAsset(asset.id);
   if (scrolled) {
-    const element = await waitForElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
+    const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
     element?.focus();
   }
 };
@@ -29,14 +29,14 @@ export const setFocusTo = async (
   scrollToAsset: (id: string) => Promise<boolean>,
   store: AssetStore,
   direction: 'earlier' | 'later',
-  magnitude: 'day' | 'month' | 'year',
+  magnitude: 'day' | 'month' | 'year' | 'asset',
 ) => {
+  if (tracker.isActive()) {
+    // there are unfinished running invocations, so return early
+    return;
+  }
   const thumb = getFocusedThumb();
   if (!thumb) {
-    if (tracker.isActive()) {
-      // there are unfinished running invocations, so return early
-      return;
-    }
     return direction === 'earlier' ? focusNextAsset() : focusPreviousAsset();
   }
 
@@ -62,8 +62,7 @@ export const setFocusTo = async (
     invocation.checkStillValid();
 
     if (scrolled) {
-      const element = await waitForElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
-      invocation.checkStillValid();
+      const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
       element?.focus();
     }
 
