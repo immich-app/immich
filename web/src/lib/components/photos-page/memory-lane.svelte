@@ -47,7 +47,10 @@
     {#if canScrollLeft || canScrollRight}
       <div class="sticky start-0 z-1">
         {#if canScrollLeft}
-          <div class="absolute start-4 max-md:top-[75px] top-[108px] -translate-y-1/2" transition:fade={{ duration: 200 }}>
+          <div
+            class="absolute start-4 max-md:top-[75px] top-[108px] -translate-y-1/2"
+            transition:fade={{ duration: 200 }}
+          >
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
@@ -60,7 +63,10 @@
           </div>
         {/if}
         {#if canScrollRight}
-          <div class="absolute end-4 max-md:top-[75px] top-[108px] -translate-y-1/2 z-1" transition:fade={{ duration: 200 }}>
+          <div
+            class="absolute end-4 max-md:top-[75px] top-[108px] -translate-y-1/2 z-1"
+            transition:fade={{ duration: 200 }}
+          >
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
