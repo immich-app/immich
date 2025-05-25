@@ -38,6 +38,10 @@
     buttonClass?: string | undefined;
     hideContent?: boolean;
     children?: Snippet;
+    offset?: {
+      x: number;
+      y: number;
+    };
   } & HTMLAttributes<HTMLDivElement>;
 
   let {
@@ -51,6 +55,7 @@
     buttonClass = undefined,
     hideContent = false,
     children,
+    offset,
     ...restProps
   }: Props = $props();
 
@@ -186,13 +191,14 @@
       ]}
     >
       <ContextMenu
-        {...contextMenuPosition}
         {direction}
         ariaActiveDescendant={$selectedIdStore}
         ariaLabelledBy={buttonId}
         bind:menuElement={menuContainer}
         id={menuId}
         isVisible={isOpen}
+        x={contextMenuPosition.x - (offset?.x ?? 0)}
+        y={contextMenuPosition.y + (offset?.y ?? 0)}
       >
         {@render children?.()}
       </ContextMenu>

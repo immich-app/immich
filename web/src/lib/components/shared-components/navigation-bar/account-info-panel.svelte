@@ -25,7 +25,7 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute z-[1] end-[25px] top-[75px] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute z-1 end-[25px] top-[75px] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   use:focusTrap
 >
   <div
@@ -41,7 +41,10 @@
           class="border"
           size="12"
           padding="2"
-          onclick={() => modalManager.show(AvatarEditModal, {})}
+          onclick={async () => {
+            onClose();
+            await modalManager.show(AvatarEditModal, {});
+          }}
         />
       </div>
     </div>

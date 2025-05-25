@@ -1,9 +1,10 @@
 import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { SemVer } from 'semver';
-import { DatabaseExtension, ExifOrientation } from 'src/enum';
+import { DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
+export const VECTORCHORD_VERSION_RANGE = '>=0.3 <0.4';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
@@ -20,7 +21,21 @@ export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   earthdistance: 'earthdistance',
   vector: 'pgvector',
   vectors: 'pgvecto.rs',
+  vchord: 'VectorChord',
 } as const;
+
+export const VECTOR_EXTENSIONS = [
+  DatabaseExtension.VECTORCHORD,
+  DatabaseExtension.VECTORS,
+  DatabaseExtension.VECTOR,
+] as const;
+
+export const VECTOR_INDEX_TABLES = {
+  [VectorIndex.CLIP]: 'smart_search',
+  [VectorIndex.FACE]: 'face_search',
+} as const;
+
+export const VECTORCHORD_LIST_SLACK_FACTOR = 1.2;
 
 export const SALT_ROUNDS = 10;
 

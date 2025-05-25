@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import CastButton from '$lib/cast/cast-button.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
@@ -29,7 +30,7 @@
   import {
     AssetJobName,
     AssetTypeEnum,
-    Visibility,
+    AssetVisibility,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -94,7 +95,7 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
-  let isLocked = $derived(asset.visibility === Visibility.Locked);
+  let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
 
   // $: showEditorButton =
   //   isOwner &&
@@ -108,7 +109,7 @@
 </script>
 
 <div
-  class="flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
+  class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
     {#if showCloseButton}
@@ -116,6 +117,8 @@
     {/if}
   </div>
   <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
+    <CastButton />
+
     {#if !asset.isTrashed && $user && !isLocked}
       <ShareAction {asset} />
     {/if}

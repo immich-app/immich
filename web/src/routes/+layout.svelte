@@ -16,7 +16,6 @@
   import { copyToClipboard } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { setTranslations } from '@immich/ui';
-  import '@immich/ui/theme/default.css';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
@@ -102,7 +101,7 @@
   {/if}
 </svelte:head>
 
-<svelte:window
+<svelte:document
   use:shortcut={{
     shortcut: { ctrl: true, shift: true, key: 'm' },
     onShortcut: () => copyToClipboard(getMyImmichLink().toString()),

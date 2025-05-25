@@ -90,6 +90,44 @@
   };
 </script>
 
+<UserPageLayout title={data.meta.title}>
+  {#snippet sidebar()}
+    <Sidebar>
+      <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
+      <section>
+        <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
+        <div class="h-full">
+          <TreeItems
+            icons={{ default: mdiFolderOutline, active: mdiFolder }}
+            items={tree}
+            active={currentPath}
+            getLink={getLinkForPath}
+          />
+        </div>
+      </section>
+    </Sidebar>
+  {/snippet}
+
+  <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
+
+  <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
+    <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigateToFolder} />
+
+    <!-- Assets -->
+    {#if data.pathAssets && data.pathAssets.length > 0}
+      <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
+        <GalleryViewer
+          assets={data.pathAssets}
+          {assetInteraction}
+          {viewport}
+          showAssetName={true}
+          pageHeaderOffset={54}
+        />
+      </div>
+    {/if}
+  </section>
+</UserPageLayout>
+
 {#if assetInteraction.selectionActive}
   <div class="fixed top-0 start-0 w-full">
     <AssetSelectControlBar
@@ -132,41 +170,3 @@
     </AssetSelectControlBar>
   </div>
 {/if}
-
-<UserPageLayout title={data.meta.title}>
-  {#snippet sidebar()}
-    <Sidebar>
-      <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
-      <section>
-        <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
-        <div class="h-full">
-          <TreeItems
-            icons={{ default: mdiFolderOutline, active: mdiFolder }}
-            items={tree}
-            active={currentPath}
-            getLink={getLinkForPath}
-          />
-        </div>
-      </section>
-    </Sidebar>
-  {/snippet}
-
-  <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
-
-  <section class="mt-2 h-[calc(100%-theme(spacing.20))] overflow-auto immich-scrollbar">
-    <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigateToFolder} />
-
-    <!-- Assets -->
-    {#if data.pathAssets && data.pathAssets.length > 0}
-      <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
-        <GalleryViewer
-          assets={data.pathAssets}
-          {assetInteraction}
-          {viewport}
-          showAssetName={true}
-          pageHeaderOffset={54}
-        />
-      </div>
-    {/if}
-  </section>
-</UserPageLayout>

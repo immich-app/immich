@@ -523,7 +523,7 @@ class SearchPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         automaticallyImplyLeading: true,
         actions: [

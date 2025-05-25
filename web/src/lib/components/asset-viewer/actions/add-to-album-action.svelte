@@ -36,7 +36,7 @@
   };
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcut={{ shortcut: { key: 'l', shift: shared }, onShortcut: () => (showSelectionModal = true) }}
 />
 

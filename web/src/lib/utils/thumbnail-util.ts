@@ -41,19 +41,18 @@ export function getThumbnailSize(assetCount: number, viewWidth: number): number 
 export const getAltText = derived(t, ($t) => {
   return (asset: TimelineAsset) => {
     const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' }, { locale: get(locale) });
-    const { city, country, people: names } = asset.text;
-    const hasPlace = city && country;
+    const hasPlace = asset.city && asset.country;
 
-    const peopleCount = names.length;
+    const peopleCount = asset.people.length;
     const isVideo = asset.isVideo;
 
     const values = {
       date,
-      city,
-      country,
-      person1: names[0],
-      person2: names[1],
-      person3: names[2],
+      city: asset.city,
+      country: asset.country,
+      person1: asset.people[0],
+      person2: asset.people[1],
+      person3: asset.people[2],
       isVideo,
       additionalCount: peopleCount > 3 ? peopleCount - 2 : 0,
     };

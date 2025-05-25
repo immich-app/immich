@@ -1,6 +1,6 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { faker } from '@faker-js/faker';
-import { AssetTypeEnum, Visibility, type AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const assetFactory = Sync.makeFactory<AssetResponseDto>({
@@ -25,7 +25,7 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   checksum: Sync.each(() => faker.string.alphanumeric(28)),
   isOffline: Sync.each(() => faker.datatype.boolean()),
   hasMetadata: Sync.each(() => faker.datatype.boolean()),
-  visibility: Visibility.Timeline,
+  visibility: AssetVisibility.Timeline,
 });
 
 export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
@@ -35,7 +35,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
   localDateTime: Sync.each(() => faker.date.past().toISOString()),
   isFavorite: Sync.each(() => faker.datatype.boolean()),
-  visibility: Visibility.Timeline,
+  visibility: AssetVisibility.Timeline,
   isTrashed: false,
   isImage: true,
   isVideo: false,
@@ -43,9 +43,46 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   stack: null,
   projectionType: null,
   livePhotoVideoId: Sync.each(() => faker.string.uuid()),
-  text: Sync.each(() => ({
-    city: faker.location.city(),
-    country: faker.location.country(),
-    people: [faker.person.fullName()],
-  })),
+  city: faker.location.city(),
+  country: faker.location.country(),
+  people: [faker.person.fullName()],
 });
+
+export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
+  const bucketAssets: TimeBucketAssetResponseDto = {
+    city: [],
+    country: [],
+    duration: [],
+    id: [],
+    visibility: [],
+    isFavorite: [],
+    isImage: [],
+    isTrashed: [],
+    livePhotoVideoId: [],
+    localDateTime: [],
+    ownerId: [],
+    projectionType: [],
+    ratio: [],
+    stack: [],
+    thumbhash: [],
+  };
+  for (const asset of timelineAsset) {
+    bucketAssets.city.push(asset.city);
+    bucketAssets.country.push(asset.country);
+    bucketAssets.duration.push(asset.duration!);
+    bucketAssets.id.push(asset.id);
+    bucketAssets.visibility.push(asset.visibility);
+    bucketAssets.isFavorite.push(asset.isFavorite);
+    bucketAssets.isImage.push(asset.isImage);
+    bucketAssets.isTrashed.push(asset.isTrashed);
+    bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
+    bucketAssets.localDateTime.push(asset.localDateTime);
+    bucketAssets.ownerId.push(asset.ownerId);
+    bucketAssets.projectionType.push(asset.projectionType!);
+    bucketAssets.ratio.push(asset.ratio);
+    bucketAssets.stack?.push(asset.stack ? [asset.stack.id, asset.stack.assetCount.toString()] : null);
+    bucketAssets.thumbhash.push(asset.thumbhash!);
+  }
+
+  return bucketAssets;
+};

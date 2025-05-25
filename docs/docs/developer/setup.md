@@ -75,11 +75,12 @@ npm run dev
 To see local changes to `@immich/ui` in Immich, do the following:
 
 1. Install `@immich/ui` as a sibling to `immich/`, for example `/home/user/immich` and `/home/user/ui`
-1. Build the `@immich/ui` project via `npm run build`
-1. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yaml` file (`../../ui:/usr/ui`)
-1. Uncomment the corresponding alias in the `web/vite.config.js` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui')`)
-1. Start up the stack via `make dev`
-1. After making changes in `@immich/ui`, rebuild it (`npm run build`)
+2. Build the `@immich/ui` project via `npm run build`
+3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yaml` file (`../../ui:/usr/ui`)
+4. Uncomment the corresponding alias in the `web/vite.config.js` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui')`)
+5. Uncomment the import statement in `web/src/app.css` file `@import '/usr/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`
+6. Start up the stack via `make dev`
+7. After making changes in `@immich/ui`, rebuild it (`npm run build`)
 
 ### Mobile app
 

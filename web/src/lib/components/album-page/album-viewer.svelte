@@ -21,6 +21,7 @@
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import AlbumSummary from './album-summary.svelte';
+  import CastButton from '$lib/cast/cast-button.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -47,7 +48,7 @@
   });
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
@@ -58,7 +59,7 @@
   }}
 />
 
-<main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)]">
+<main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
   <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
@@ -103,6 +104,8 @@
       {/snippet}
 
       {#snippet trailing()}
+        <CastButton whiteHover />
+
         {#if sharedLink.allowUpload}
           <CircleIconButton
             title={$t('add_photos')}
