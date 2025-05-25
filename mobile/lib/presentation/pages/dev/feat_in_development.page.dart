@@ -90,6 +90,11 @@ final _features = [
       }
     },
   ),
+  _Feature(
+    name: 'Local Timeline',
+    icon: Icons.browse_gallery_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const LocalTimelineRoute()),
+  ),
 ];
 
 @RoutePage()

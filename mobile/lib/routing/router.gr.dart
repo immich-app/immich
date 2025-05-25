@@ -872,6 +872,22 @@ class LocalMediaSummaryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LocalTimelinePage]
+class LocalTimelineRoute extends PageRouteInfo<void> {
+  const LocalTimelineRoute({List<PageRouteInfo>? children})
+      : super(LocalTimelineRoute.name, initialChildren: children);
+
+  static const String name = 'LocalTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LocalTimelinePage();
+    },
+  );
+}
+
+/// generated route for
 /// [LockedPage]
 class LockedRoute extends PageRouteInfo<void> {
   const LockedRoute({List<PageRouteInfo>? children})
