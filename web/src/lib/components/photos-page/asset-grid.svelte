@@ -122,10 +122,20 @@
   });
 
   const scrollTo = (top: number) => {
-    element?.scrollTo({ top });
-    showSkeleton = false;
+    if (element) {
+      element.scrollTo({ top });
+    }
   };
-
+  const scrollTop = (top: number) => {
+    if (element) {
+      element.scrollTop = top;
+    }
+  };
+  const scrollBy = (y: number) => {
+    if (element) {
+      element.scrollBy(0, y);
+    }
+  };
   const scrollToTop = () => {
     scrollTo(0);
   };
@@ -158,6 +168,7 @@
       // if the asset is not found, scroll to the top
       scrollToTop();
     }
+    showSkeleton = false;
   };
 
   beforeNavigate(() => (assetStore.suspendTransitions = true));
@@ -191,6 +202,7 @@
             } else {
               scrollToTop();
             }
+            showSkeleton = false;
           }, 500);
         }
       };
@@ -212,9 +224,9 @@
   const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
   const compensateScrollCallback = ({ delta, top }: { delta?: number; top?: number }) => {
     if (delta !== undefined) {
-      element?.scrollBy(0, delta);
+      scrollBy(delta);
     } else if (top !== undefined) {
-      element?.scrollTo({ top });
+      scrollTo(top);
     }
     // Yes, updateSlideWindow() is called by the onScroll event triggered as a result of
     // the above calls. However, this delay is enough time to set the intersecting property
@@ -250,11 +262,9 @@
     const topOffset = bucket.top;
     const maxScrollPercent = getMaxScrollPercent();
     const delta = bucket.bucketHeight * bucketScrollPercent;
-    const scrollTop = (topOffset + delta) * maxScrollPercent;
+    const scrollToTop = (topOffset + delta) * maxScrollPercent;
 
-    if (element) {
-      element.scrollTop = scrollTop;
-    }
+    scrollTop(scrollToTop);
   };
 
   // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
@@ -267,10 +277,7 @@
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = getMaxScroll();
       const offset = maxScroll * scrollPercent;
-      if (!element) {
-        return;
-      }
-      element.scrollTop = offset;
+      scrollTop(offset);
     } else {
       const bucket = assetStore.buckets.find(
         (bucket) => bucket.yearMonth.year === bucketDate.year && bucket.yearMonth.month === bucketDate.month,
@@ -549,8 +556,8 @@
     }
     onSelect(asset);
 
-    if (singleSelect && element) {
-      element.scrollTop = 0;
+    if (singleSelect) {
+      scrollTop(0);
       return;
     }
 
