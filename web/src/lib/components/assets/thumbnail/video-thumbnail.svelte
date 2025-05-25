@@ -55,7 +55,7 @@
   };
 </script>
 
-<div class="absolute end-0 top-0 z-1 flex place-items-center gap-1 text-xs font-medium text-white">
+<div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
   {#if showTime}
     <span class="pt-2">
       {#if remainingSeconds < 60}
