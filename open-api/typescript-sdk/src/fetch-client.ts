@@ -839,15 +839,15 @@ export type MetadataSearchDto = {
     deviceAssetId?: string;
     deviceId?: string;
     encodedVideoPath?: string;
+    /** List of album IDs the assets must not belong to (none of) */
+    excludeAlbumIds?: string[];
     id?: string;
+    /** List of album IDs the assets must belong to (any of) */
+    includeAlbumIds?: string[];
     isEncoded?: boolean;
     isFavorite?: boolean;
-    /** List of album IDs the assets must belong to (any of) */
-    isInAlbumIds?: string[];
     isMotion?: boolean;
     isNotInAlbum?: boolean;
-    /** List of album IDs the assets must not belong to (none of) */
-    isNotInAlbumIds?: string[];
     isOffline?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
@@ -915,14 +915,14 @@ export type RandomSearchDto = {
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
+    /** List of album IDs the assets must not belong to (none of) */
+    excludeAlbumIds?: string[];
+    /** List of album IDs the assets must belong to (any of) */
+    includeAlbumIds?: string[];
     isEncoded?: boolean;
     isFavorite?: boolean;
-    /** List of album IDs the assets must belong to (any of) */
-    isInAlbumIds?: string[];
     isMotion?: boolean;
     isNotInAlbum?: boolean;
-    /** List of album IDs the assets must not belong to (none of) */
-    isNotInAlbumIds?: string[];
     isOffline?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
@@ -952,14 +952,14 @@ export type SmartSearchDto = {
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
+    /** List of album IDs the assets must not belong to (none of) */
+    excludeAlbumIds?: string[];
+    /** List of album IDs the assets must belong to (any of) */
+    includeAlbumIds?: string[];
     isEncoded?: boolean;
     isFavorite?: boolean;
-    /** List of album IDs the assets must belong to (any of) */
-    isInAlbumIds?: string[];
     isMotion?: boolean;
     isNotInAlbum?: boolean;
-    /** List of album IDs the assets must not belong to (none of) */
-    isNotInAlbumIds?: string[];
     isOffline?: boolean;
     language?: string;
     lensModel?: string | null;

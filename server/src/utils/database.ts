@@ -379,24 +379,24 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         eb.not(eb.exists((eb) => eb.selectFrom('albums_assets_assets').whereRef('assetsId', '=', 'assets.id'))),
       ),
     )
-    .$if(!!options.isInAlbumIds, (qb) =>
+    .$if(!!options.includeAlbumIds, (qb) =>
       qb.where((eb) =>
         eb.exists((eb) =>
           eb
             .selectFrom('albums_assets_assets')
             .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
-            .where('albums_assets_assets.albumsId', '=', anyUuid(options.isInAlbumIds!)),
+            .where('albums_assets_assets.albumsId', '=', anyUuid(options.includeAlbumIds!)),
         ),
       ),
     )
-    .$if(!!options.isNotInAlbumIds, (qb) =>
+    .$if(!!options.excludeAlbumIds, (qb) =>
       qb.where((eb) =>
         eb.not(
           eb.exists((eb) =>
             eb
               .selectFrom('albums_assets_assets')
               .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
-              .where('albums_assets_assets.albumsId', '=', anyUuid(options.isNotInAlbumIds!)),
+              .where('albums_assets_assets.albumsId', '=', anyUuid(options.excludeAlbumIds!)),
           ),
         ),
       ),

@@ -18,12 +18,12 @@ class RandomSearchDto {
     this.createdAfter,
     this.createdBefore,
     this.deviceId,
+    this.excludeAlbumIds = const [],
+    this.includeAlbumIds = const [],
     this.isEncoded,
     this.isFavorite,
-    this.isInAlbumIds = const [],
     this.isMotion,
     this.isNotInAlbum,
-    this.isNotInAlbumIds = const [],
     this.isOffline,
     this.lensModel,
     this.libraryId,
@@ -76,6 +76,12 @@ class RandomSearchDto {
   ///
   String? deviceId;
 
+  /// List of album IDs the assets must not belong to (none of)
+  List<String> excludeAlbumIds;
+
+  /// List of album IDs the assets must belong to (any of)
+  List<String> includeAlbumIds;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -92,9 +98,6 @@ class RandomSearchDto {
   ///
   bool? isFavorite;
 
-  /// List of album IDs the assets must belong to (any of)
-  List<String> isInAlbumIds;
-
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -110,9 +113,6 @@ class RandomSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? isNotInAlbum;
-
-  /// List of album IDs the assets must not belong to (none of)
-  List<String> isNotInAlbumIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -265,12 +265,12 @@ class RandomSearchDto {
     other.createdAfter == createdAfter &&
     other.createdBefore == createdBefore &&
     other.deviceId == deviceId &&
+    _deepEquality.equals(other.excludeAlbumIds, excludeAlbumIds) &&
+    _deepEquality.equals(other.includeAlbumIds, includeAlbumIds) &&
     other.isEncoded == isEncoded &&
     other.isFavorite == isFavorite &&
-    _deepEquality.equals(other.isInAlbumIds, isInAlbumIds) &&
     other.isMotion == isMotion &&
     other.isNotInAlbum == isNotInAlbum &&
-    _deepEquality.equals(other.isNotInAlbumIds, isNotInAlbumIds) &&
     other.isOffline == isOffline &&
     other.lensModel == lensModel &&
     other.libraryId == libraryId &&
@@ -302,12 +302,12 @@ class RandomSearchDto {
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
     (deviceId == null ? 0 : deviceId!.hashCode) +
+    (excludeAlbumIds.hashCode) +
+    (includeAlbumIds.hashCode) +
     (isEncoded == null ? 0 : isEncoded!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (isInAlbumIds.hashCode) +
     (isMotion == null ? 0 : isMotion!.hashCode) +
     (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
-    (isNotInAlbumIds.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
@@ -332,7 +332,7 @@ class RandomSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'RandomSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isInAlbumIds=$isInAlbumIds, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isNotInAlbumIds=$isNotInAlbumIds, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'RandomSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, excludeAlbumIds=$excludeAlbumIds, includeAlbumIds=$includeAlbumIds, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -361,6 +361,8 @@ class RandomSearchDto {
     } else {
     //  json[r'deviceId'] = null;
     }
+      json[r'excludeAlbumIds'] = this.excludeAlbumIds;
+      json[r'includeAlbumIds'] = this.includeAlbumIds;
     if (this.isEncoded != null) {
       json[r'isEncoded'] = this.isEncoded;
     } else {
@@ -371,7 +373,6 @@ class RandomSearchDto {
     } else {
     //  json[r'isFavorite'] = null;
     }
-      json[r'isInAlbumIds'] = this.isInAlbumIds;
     if (this.isMotion != null) {
       json[r'isMotion'] = this.isMotion;
     } else {
@@ -382,7 +383,6 @@ class RandomSearchDto {
     } else {
     //  json[r'isNotInAlbum'] = null;
     }
-      json[r'isNotInAlbumIds'] = this.isNotInAlbumIds;
     if (this.isOffline != null) {
       json[r'isOffline'] = this.isOffline;
     } else {
@@ -502,16 +502,16 @@ class RandomSearchDto {
         createdAfter: mapDateTime(json, r'createdAfter', r''),
         createdBefore: mapDateTime(json, r'createdBefore', r''),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
+        excludeAlbumIds: json[r'excludeAlbumIds'] is Iterable
+            ? (json[r'excludeAlbumIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        includeAlbumIds: json[r'includeAlbumIds'] is Iterable
+            ? (json[r'includeAlbumIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         isEncoded: mapValueOfType<bool>(json, r'isEncoded'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        isInAlbumIds: json[r'isInAlbumIds'] is Iterable
-            ? (json[r'isInAlbumIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
-        isNotInAlbumIds: json[r'isNotInAlbumIds'] is Iterable
-            ? (json[r'isNotInAlbumIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         libraryId: mapValueOfType<String>(json, r'libraryId'),

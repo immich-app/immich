@@ -84,8 +84,8 @@ export interface SearchEmbeddingOptions {
 }
 
 export interface SearchAlbumOptions {
-  isInAlbumIds?: string[];
-  isNotInAlbumIds?: string[];
+  includeAlbumIds?: string[];
+  excludeAlbumIds?: string[];
 }
 
 export interface SearchPeopleOptions {

@@ -22,13 +22,13 @@ class MetadataSearchDto {
     this.deviceAssetId,
     this.deviceId,
     this.encodedVideoPath,
+    this.excludeAlbumIds = const [],
     this.id,
+    this.includeAlbumIds = const [],
     this.isEncoded,
     this.isFavorite,
-    this.isInAlbumIds = const [],
     this.isMotion,
     this.isNotInAlbum,
-    this.isNotInAlbumIds = const [],
     this.isOffline,
     this.lensModel,
     this.libraryId,
@@ -119,6 +119,9 @@ class MetadataSearchDto {
   ///
   String? encodedVideoPath;
 
+  /// List of album IDs the assets must not belong to (none of)
+  List<String> excludeAlbumIds;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -126,6 +129,9 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? id;
+
+  /// List of album IDs the assets must belong to (any of)
+  List<String> includeAlbumIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -143,9 +149,6 @@ class MetadataSearchDto {
   ///
   bool? isFavorite;
 
-  /// List of album IDs the assets must belong to (any of)
-  List<String> isInAlbumIds;
-
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -161,9 +164,6 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? isNotInAlbum;
-
-  /// List of album IDs the assets must not belong to (none of)
-  List<String> isNotInAlbumIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -363,13 +363,13 @@ class MetadataSearchDto {
     other.deviceAssetId == deviceAssetId &&
     other.deviceId == deviceId &&
     other.encodedVideoPath == encodedVideoPath &&
+    _deepEquality.equals(other.excludeAlbumIds, excludeAlbumIds) &&
     other.id == id &&
+    _deepEquality.equals(other.includeAlbumIds, includeAlbumIds) &&
     other.isEncoded == isEncoded &&
     other.isFavorite == isFavorite &&
-    _deepEquality.equals(other.isInAlbumIds, isInAlbumIds) &&
     other.isMotion == isMotion &&
     other.isNotInAlbum == isNotInAlbum &&
-    _deepEquality.equals(other.isNotInAlbumIds, isNotInAlbumIds) &&
     other.isOffline == isOffline &&
     other.lensModel == lensModel &&
     other.libraryId == libraryId &&
@@ -411,13 +411,13 @@ class MetadataSearchDto {
     (deviceAssetId == null ? 0 : deviceAssetId!.hashCode) +
     (deviceId == null ? 0 : deviceId!.hashCode) +
     (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
+    (excludeAlbumIds.hashCode) +
     (id == null ? 0 : id!.hashCode) +
+    (includeAlbumIds.hashCode) +
     (isEncoded == null ? 0 : isEncoded!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (isInAlbumIds.hashCode) +
     (isMotion == null ? 0 : isMotion!.hashCode) +
     (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
-    (isNotInAlbumIds.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
@@ -448,7 +448,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isInAlbumIds=$isInAlbumIds, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isNotInAlbumIds=$isNotInAlbumIds, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, excludeAlbumIds=$excludeAlbumIds, id=$id, includeAlbumIds=$includeAlbumIds, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -497,11 +497,13 @@ class MetadataSearchDto {
     } else {
     //  json[r'encodedVideoPath'] = null;
     }
+      json[r'excludeAlbumIds'] = this.excludeAlbumIds;
     if (this.id != null) {
       json[r'id'] = this.id;
     } else {
     //  json[r'id'] = null;
     }
+      json[r'includeAlbumIds'] = this.includeAlbumIds;
     if (this.isEncoded != null) {
       json[r'isEncoded'] = this.isEncoded;
     } else {
@@ -512,7 +514,6 @@ class MetadataSearchDto {
     } else {
     //  json[r'isFavorite'] = null;
     }
-      json[r'isInAlbumIds'] = this.isInAlbumIds;
     if (this.isMotion != null) {
       json[r'isMotion'] = this.isMotion;
     } else {
@@ -523,7 +524,6 @@ class MetadataSearchDto {
     } else {
     //  json[r'isNotInAlbum'] = null;
     }
-      json[r'isNotInAlbumIds'] = this.isNotInAlbumIds;
     if (this.isOffline != null) {
       json[r'isOffline'] = this.isOffline;
     } else {
@@ -673,17 +673,17 @@ class MetadataSearchDto {
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId'),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
         encodedVideoPath: mapValueOfType<String>(json, r'encodedVideoPath'),
+        excludeAlbumIds: json[r'excludeAlbumIds'] is Iterable
+            ? (json[r'excludeAlbumIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         id: mapValueOfType<String>(json, r'id'),
+        includeAlbumIds: json[r'includeAlbumIds'] is Iterable
+            ? (json[r'includeAlbumIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         isEncoded: mapValueOfType<bool>(json, r'isEncoded'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        isInAlbumIds: json[r'isInAlbumIds'] is Iterable
-            ? (json[r'isInAlbumIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
-        isNotInAlbumIds: json[r'isNotInAlbumIds'] is Iterable
-            ? (json[r'isNotInAlbumIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         libraryId: mapValueOfType<String>(json, r'libraryId'),
