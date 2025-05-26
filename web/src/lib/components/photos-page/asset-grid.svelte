@@ -146,10 +146,7 @@
     const height = bucket!.findAssetAbsolutePosition(assetId);
 
     while (assetStore.scrollCompensation.bucket) {
-      compensateScrollCallback({
-        delta: assetStore.scrollCompensation.heightDelta,
-        top: assetStore.scrollCompensation.scrollTop,
-      });
+      handleScrollCompensation(assetStore.scrollCompensation);
       assetStore.clearScrollCompensation();
     }
     return height;
@@ -241,11 +238,12 @@
   const updateIsScrolling = () => (assetStore.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
-  const compensateScrollCallback = ({ delta, top }: { delta?: number; top?: number }) => {
-    if (delta !== undefined) {
-      scrollBy(delta);
-    } else if (top !== undefined) {
-      scrollTo(top);
+
+  const handleScrollCompensation = ({ heightDelta, scrollTop }: { heightDelta?: number; scrollTop?: number }) => {
+    if (heightDelta !== undefined) {
+      scrollBy(heightDelta);
+    } else if (scrollTop !== undefined) {
+      scrollTo(scrollTop);
     }
     // Yes, updateSlideWindow() is called by the onScroll event triggered as a result of
     // the above calls. However, this delay is enough time to set the intersecting property
@@ -253,6 +251,7 @@
     // causing bad perf, and also, disrupting focus of those elements.
     updateSlidingWindow();
   };
+
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
 
   onMount(() => {
@@ -871,7 +870,7 @@
             onSelect={({ title, assets }) => handleGroupSelect(assetStore, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
-            onScrollCompensation={compensateScrollCallback}
+            onScrollCompensation={handleScrollCompensation}
           />
         </div>
       {/if}

@@ -32,7 +32,7 @@
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
     onSelectAssets: (asset: TimelineAsset) => void;
     onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
-    onScrollCompensation: (compensation: { delta: number; top: number }) => void;
+    onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
   }
 
   let {
@@ -106,10 +106,7 @@
 
   $effect.root(() => {
     if (assetStore.scrollCompensation.bucket === bucket) {
-      onScrollCompensation({
-        delta: assetStore.scrollCompensation.heightDelta,
-        top: assetStore.scrollCompensation.scrollTop,
-      });
+      onScrollCompensation(assetStore.scrollCompensation);
       assetStore.clearScrollCompensation();
     }
   });
