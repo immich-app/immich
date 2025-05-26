@@ -1,6 +1,7 @@
 import type { AssetStore, TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { moveFocus } from '$lib/utils/focus-util';
 import { InvocationTracker } from '$lib/utils/invocationTracker';
+import { tick } from 'svelte';
 
 const tracker = new InvocationTracker();
 
@@ -65,6 +66,10 @@ export const setFocusTo = async (
 
   const scrolled = scrollToAsset(asset);
   if (scrolled) {
+    await tick();
+    if (!invocation.isStillValid()) {
+      return;
+    }
     const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
     element?.focus();
   }

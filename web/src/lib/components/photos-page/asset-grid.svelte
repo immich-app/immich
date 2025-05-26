@@ -871,6 +871,7 @@
             onSelect={({ title, assets }) => handleGroupSelect(assetStore, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
+            onScrollCompensation={compensateScrollCallback}
           />
         </div>
       {/if}

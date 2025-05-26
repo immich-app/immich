@@ -32,6 +32,7 @@
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
     onSelectAssets: (asset: TimelineAsset) => void;
     onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
+    onScrollCompensation: (compensation: { delta: number; top: number }) => void;
   }
 
   let {
@@ -45,6 +46,7 @@
     onSelect,
     onSelectAssets,
     onSelectAssetCandidates,
+    onScrollCompensation,
   }: Props = $props();
 
   let isMouseOverGroup = $state(false);
@@ -101,6 +103,16 @@
   function filterIntersecting<R extends { intersecting: boolean }>(intersectable: R[]) {
     return intersectable.filter((int) => int.intersecting);
   }
+
+  $effect.root(() => {
+    if (assetStore.scrollCompensation.bucket === bucket) {
+      onScrollCompensation({
+        delta: assetStore.scrollCompensation.heightDelta,
+        top: assetStore.scrollCompensation.scrollTop,
+      });
+      assetStore.clearScrollCompensation();
+    }
+  });
 </script>
 
 {#each filterIntersecting(bucket.dateGroups) as dateGroup, groupIndex (dateGroup.day)}
