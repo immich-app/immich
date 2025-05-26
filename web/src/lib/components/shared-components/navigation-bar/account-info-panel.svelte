@@ -101,13 +101,8 @@
   </div>
 
   <div class="mb-4 flex flex-col">
-    <button
-      type="button"
-      class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
-      onclick={onLogout}
-    >
-      <Icon path={mdiLogout} size={24} />
-      {$t('sign_out')}</button
+    <Button class="m-2 mx-4" onclick={onLogout} leadingIcon={mdiLogout} variant="ghost" color="secondary"
+      >{$t('sign_out')}</Button
     >
 
     <button
