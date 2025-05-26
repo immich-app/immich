@@ -9,11 +9,10 @@
   interface Props {
     album: AlbumResponseDto;
     onEditSuccess?: ((album: AlbumResponseDto) => unknown) | undefined;
-    onCancel?: (() => unknown) | undefined;
     onClose: () => void;
   }
 
-  let { album = $bindable(), onEditSuccess = undefined, onCancel = undefined, onClose }: Props = $props();
+  let { album = $bindable(), onEditSuccess = undefined, onClose }: Props = $props();
 
   let albumName = $state(album.albumName);
   let description = $state(album.description);
@@ -71,7 +70,7 @@
 
   <ModalFooter>
     <div class="flex gap-2 w-full">
-      <Button shape="round" color="secondary" fullWidth onclick={() => onCancel?.()}>{$t('cancel')}</Button>
+      <Button shape="round" color="secondary" fullWidth onclick={onClose}>{$t('cancel')}</Button>
       <Button shape="round" type="submit" fullWidth disabled={isSubmitting} form="edit-album-form">{$t('save')}</Button>
     </div>
   </ModalFooter>
