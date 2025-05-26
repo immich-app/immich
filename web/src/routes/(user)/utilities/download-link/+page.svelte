@@ -10,6 +10,9 @@
     'app-release.apk',
     'app-x86_64-release.apk',
   ];
+  const docker_files = ['docker-compose.yml', 'example.env', 'hwaccel.ml.yml', 'hwaccel.transcoding.yml'];
+  const prometheus = 'prometheus.yml';
+  const temp = ['', '', '', ''];
 
   const downloadBaseURL = new URL('download/' + data.version + '/', baseURL);
 </script>
@@ -23,10 +26,10 @@
 <br />
 <div>
   <h1>Android APKs:</h1>
-  {#each APKs as apk (apk)}
-    <a href={downloadBaseURL + apk} class="underline text-sm immich-form-label" target="_blank" rel="noreferrer">
+  {#each APKs as file (file)}
+    <a href={downloadBaseURL + file} class="underline text-sm immich-form-label" target="_blank" rel="noreferrer">
       {data.version}
-      {apk}
+      {file}
     </a>
     <br />
   {/each}
@@ -34,12 +37,15 @@
 <br />
 <div>
   <h1>Docker Files:</h1>
-  <a
-    href={downloadBaseURL + '/docker-compose.yml'}
-    class="underline text-sm immich-form-label"
-    target="_blank"
-    rel="noreferrer"
-  >
-    {data.version} docker-compose
+  {#each docker_files as file (file)}
+    <a href={downloadBaseURL + file} class="underline text-sm immich-form-label" target="_blank" rel="noreferrer">
+      {data.version}
+      {file}
+    </a>
+    <br />
+  {/each}
+  <a href={downloadBaseURL + prometheus} class="underline text-sm immich-form-label" target="_blank" rel="noreferrer">
+    {data.version}
+    {prometheus}
   </a>
 </div>
