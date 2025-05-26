@@ -579,11 +579,13 @@ export class AssetBucket {
         if (index < currentIndex) {
           store.scrollCompensation = {
             heightDelta: bucketHeightDelta,
+            scrollTop: undefined,
             bucket: this,
           };
         } else if (percent > 0) {
           const top = this.top + height * percent;
           store.scrollCompensation = {
+            heightDelta: undefined,
             scrollTop: top,
             bucket: this,
           };
@@ -780,7 +782,15 @@ export class AssetStore {
   #suspendTransitions = $state(false);
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
-  scrollCompensation: { heightDelta?: number; scrollTop?: number; bucket: AssetBucket } | undefined = undefined;
+  scrollCompensation: {
+    heightDelta: number | undefined;
+    scrollTop: number | undefined;
+    bucket: AssetBucket | undefined;
+  } = $state({
+    heightDelta: 0,
+    scrollTop: 0,
+    bucket: undefined,
+  });
 
   constructor() {}
 
@@ -988,6 +998,14 @@ export class AssetStore {
       this.#scrollTop = scrollTop;
       this.updateIntersections();
     }
+  }
+
+  clearScrollCompensation() {
+    this.scrollCompensation = {
+      heightDelta: undefined,
+      scrollTop: undefined,
+      bucket: undefined,
+    };
   }
 
   updateIntersections() {

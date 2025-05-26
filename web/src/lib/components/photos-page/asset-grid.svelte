@@ -140,26 +140,40 @@
     scrollTo(0);
   };
 
+  const getAssetHeight = (assetId: string, bucket: AssetBucket) => {
+    // the following method may trigger any layouts, so need to
+    // handle any scroll compensation that may have been set
+    const height = bucket!.findAssetAbsolutePosition(assetId);
+
+    while (assetStore.scrollCompensation.bucket) {
+      compensateScrollCallback({
+        delta: assetStore.scrollCompensation.heightDelta,
+        top: assetStore.scrollCompensation.scrollTop,
+      });
+      assetStore.clearScrollCompensation();
+    }
+    return height;
+  };
+
   const scrollToAssetId = async (assetId: string) => {
     const bucket = await assetStore.findBucketForAsset(assetId);
-    if (bucket) {
-      const height = bucket.findAssetAbsolutePosition(assetId);
-      if (height) {
-        scrollTo(height);
-        updateSlidingWindow();
-        return true;
-      }
+    if (!bucket) {
+      return false;
     }
-    return false;
+    const height = getAssetHeight(assetId, bucket);
+    scrollTo(height);
+    updateSlidingWindow();
+    return true;
   };
 
   const scrollToAsset = (asset: TimelineAsset) => {
     const bucket = assetStore.getBucketIndexByAssetId(asset.id);
-    const height = bucket!.findAssetAbsolutePosition(asset.id);
-    if (height) {
-      scrollTo(height);
-      updateSlidingWindow();
+    if (!bucket) {
+      return false;
     }
+    const height = getAssetHeight(asset.id, bucket);
+    scrollTo(height);
+    updateSlidingWindow();
     return true;
   };
 
@@ -857,7 +871,6 @@
             onSelect={({ title, assets }) => handleGroupSelect(assetStore, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
-            onScrollCompensate={compensateScrollCallback}
           />
         </div>
       {/if}

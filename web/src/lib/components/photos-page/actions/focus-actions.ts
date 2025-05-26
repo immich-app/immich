@@ -19,7 +19,7 @@ export const focusPreviousAsset = () =>
 
 const queryHTMLElement = (query: string) => document.querySelector(query) as HTMLElement;
 
-export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean, asset: TimelineAsset) => {
+export const setFocusToAsset = async (scrollToAsset: (asset: TimelineAsset) => boolean, asset: TimelineAsset) => {
   const scrolled = scrollToAsset(asset);
   if (scrolled) {
     const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
@@ -28,7 +28,7 @@ export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean
 };
 
 export const setFocusTo = async (
-  scrollToAsset: (asset: TimelineAsset) => Promise<boolean>,
+  scrollToAsset: (asset: TimelineAsset) => boolean,
   store: AssetStore,
   direction: 'earlier' | 'later',
   magnitude: 'day' | 'month' | 'year' | 'asset',
@@ -63,11 +63,7 @@ export const setFocusTo = async (
     return;
   }
 
-  const scrolled = await scrollToAsset(asset);
-  if (!invocation.isStillValid()) {
-    return;
-  }
-
+  const scrolled = scrollToAsset(asset);
   if (scrolled) {
     const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
     element?.focus();
