@@ -19,7 +19,7 @@ export const focusPreviousAsset = () =>
 
 const queryHTMLElement = (query: string) => document.querySelector(query) as HTMLElement;
 
-export const setFocusToAsset = async (scrollToAsset: (asset: TimelineAsset) => boolean, asset: TimelineAsset) => {
+export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean, asset: TimelineAsset) => {
   const scrolled = scrollToAsset(asset);
   if (scrolled) {
     const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
