@@ -49,7 +49,7 @@ export enum AppRoute {
 
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
-  DOWNLOAD_LINKS = '/utilities/download-link',
+  DOWNLOAD_LINKS = '/utilities/download-links',
 
   FOLDERS = '/folders',
   TAGS = '/tags',
