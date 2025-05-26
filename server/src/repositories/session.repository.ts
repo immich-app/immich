@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
+import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB, Sessions } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { withUser } from 'src/entities/session.entity';
 import { asUuid } from 'src/utils/database';
 
 export type SessionSearchOptions = { updatedBefore: Date };
@@ -14,13 +14,26 @@ export type SessionSearchOptions = { updatedBefore: Date };
 export class SessionRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [{ updatedBefore: DummyValue.DATE }] })
-  search(options: SessionSearchOptions) {
+  cleanup() {
+    return this.db
+      .deleteFrom('sessions')
+      .where((eb) =>
+        eb.or([
+          eb('updatedAt', '<=', DateTime.now().minus({ days: 90 }).toJSDate()),
+          eb.and([eb('expiresAt', 'is not', null), eb('expiresAt', '<=', DateTime.now().toJSDate())]),
+        ]),
+      )
+      .returning(['id', 'deviceOS', 'deviceType'])
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  get(id: string) {
     return this.db
       .selectFrom('sessions')
-      .selectAll()
-      .where('sessions.updatedAt', '<=', options.updatedBefore)
-      .execute();
+      .select(['id', 'expiresAt', 'pinExpiresAt'])
+      .where('id', '=', id)
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
@@ -38,6 +51,9 @@ export class SessionRepository {
         ).as('user'),
       ])
       .where('sessions.token', '=', token)
+      .where((eb) =>
+        eb.or([eb('sessions.expiresAt', 'is', null), eb('sessions.expiresAt', '>', DateTime.now().toJSDate())]),
+      )
       .executeTakeFirst();
   }
 
@@ -45,10 +61,12 @@ export class SessionRepository {
   getByUserId(userId: string) {
     return this.db
       .selectFrom('sessions')
-      .innerJoinLateral(withUser, (join) => join.onTrue())
+      .innerJoin('users', (join) => join.onRef('users.id', '=', 'sessions.userId').on('users.deletedAt', 'is', null))
       .selectAll('sessions')
-      .select((eb) => eb.fn.toJson('user').as('user'))
       .where('sessions.userId', '=', userId)
+      .where((eb) =>
+        eb.or([eb('sessions.expiresAt', 'is', null), eb('sessions.expiresAt', '>', DateTime.now().toJSDate())]),
+      )
       .orderBy('sessions.updatedAt', 'desc')
       .orderBy('sessions.createdAt', 'desc')
       .execute();
@@ -70,5 +88,10 @@ export class SessionRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string) {
     await this.db.deleteFrom('sessions').where('id', '=', asUuid(id)).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async lockAll(userId: string) {
+    await this.db.updateTable('sessions').set({ pinExpiresAt: null }).where('userId', '=', userId).execute();
   }
 }

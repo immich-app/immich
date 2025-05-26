@@ -42,7 +42,7 @@ ThemeData getThemeData({
       titleTextStyle: TextStyle(
         color: colorScheme.primary,
         fontFamily: _getFontFamilyFromLocale(locale),
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
         fontSize: 18,
       ),
       backgroundColor:
@@ -54,28 +54,28 @@ ThemeData getThemeData({
     ),
     textTheme: const TextTheme(
       displayLarge: TextStyle(
-        fontSize: 26,
-        fontWeight: FontWeight.bold,
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
       ),
       displayMedium: TextStyle(
         fontSize: 14,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
       displaySmall: TextStyle(
         fontSize: 12,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
       titleSmall: TextStyle(
         fontSize: 16.0,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
       titleMedium: TextStyle(
         fontSize: 18.0,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
       titleLarge: TextStyle(
         fontSize: 26.0,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -163,6 +163,13 @@ ThemeData getThemeData({
       ),
     ),
     dialogTheme: DialogThemeData(backgroundColor: colorScheme.surfaceContainer),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      // ignore: deprecated_member_use
+      year2023: false,
+      // TODO: Uncommented after upgrade to version later than 3.29.2
+      // circularTrackColor: Colors.black12,
+      trackGap: 3,
+    ),
   );
 }
 

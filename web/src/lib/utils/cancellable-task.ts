@@ -61,12 +61,15 @@ export class CancellableTask {
 
     try {
       await f(cancelToken.signal);
+      if (cancelToken.signal.aborted) {
+        return 'CANCELED';
+      }
       this.#transitionToExecuted();
       return 'LOADED';
     } catch (error) {
       // eslint-disable-next-line  @typescript-eslint/no-explicit-any
       if ((error as any).name === 'AbortError') {
-        // abort error is not treated as an error, but as a cancelation.
+        // abort error is not treated as an error, but as a cancellation.
         return 'CANCELED';
       }
       this.#transitionToErrored(error);

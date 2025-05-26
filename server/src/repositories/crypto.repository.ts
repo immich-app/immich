@@ -54,7 +54,7 @@ export class CryptoRepository {
     });
   }
 
-  newPassword(bytes: number) {
+  randomBytesAsText(bytes: number) {
     return randomBytes(bytes).toString('base64').replaceAll(/\W/g, '');
   }
 }

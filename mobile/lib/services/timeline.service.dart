@@ -105,4 +105,13 @@ class TimelineService {
     return GroupAssetsBy
         .values[_appSettingsService.getSetting(AppSettingsEnum.groupAssetsBy)];
   }
+
+  Stream<RenderList> watchLockedTimelineProvider() async* {
+    final user = _userService.getMyUser();
+
+    yield* _timelineRepository.watchLockedTimeline(
+      user.id,
+      _getGroupByOption(),
+    );
+  }
 }

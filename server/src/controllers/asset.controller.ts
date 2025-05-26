@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EndpointLifecycle } from 'src/decorators';
-import { AssetResponseDto, MemoryLaneResponseDto } from 'src/dtos/asset-response.dto';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -13,7 +13,6 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
@@ -23,12 +22,6 @@ import { UUIDParamDto } from 'src/validation';
 @Controller(RouteKey.ASSET)
 export class AssetController {
   constructor(private service: AssetService) {}
-
-  @Get('memory-lane')
-  @Authenticated()
-  getMemoryLane(@Auth() auth: AuthDto, @Query() dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    return this.service.getMemoryLane(auth, dto);
-  }
 
   @Get('random')
   @Authenticated()

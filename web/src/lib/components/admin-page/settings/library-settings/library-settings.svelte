@@ -47,14 +47,14 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
+      <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingAccordion
           key="library-watching"
           title={$t('admin.library_watching_settings')}
           subtitle={$t('admin.library_watching_settings_description')}
           isOpen={openByDefault}
         >
-          <div class="ml-4 mt-4 flex flex-col gap-4">
+          <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.library_watching_enable_description')}
               {disabled}
@@ -69,7 +69,7 @@
           subtitle={$t('admin.library_scanning_description')}
           isOpen={openByDefault}
         >
-          <div class="ml-4 mt-4 flex flex-col gap-4">
+          <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.library_scanning_enable_description')}
               {disabled}

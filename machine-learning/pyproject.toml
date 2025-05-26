@@ -1,5 +1,5 @@
 [project]
-name = "machine-learning"
+name = "immich-ml"
 version = "1.129.0"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
@@ -66,10 +66,10 @@ explicit = true
 onnxruntime-gpu = { index = "cuda12" }
 
 [tool.hatch.build.targets.sdist]
-include = ["app"]
+include = ["immich_ml"]
 
 [tool.hatch.build.targets.wheel]
-include = ["app"]
+include = ["immich_ml"]
 
 [build-system]
 requires = ["hatchling"]

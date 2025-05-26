@@ -1,22 +1,41 @@
 import { shortcuts } from '$lib/actions/shortcut';
+import { getTabbable } from '$lib/utils/focus-util';
 import { tick } from 'svelte';
 
-const selectors =
-  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+interface Options {
+  /**
+   * Set whether the trap is active or not.
+   */
+  active?: boolean;
+}
 
-export function focusTrap(container: HTMLElement) {
+export function focusTrap(container: HTMLElement, options?: Options) {
   const triggerElement = document.activeElement;
 
-  const focusableElement = container.querySelector<HTMLElement>(selectors);
+  const withDefaults = (options?: Options) => {
+    return {
+      active: options?.active ?? true,
+    };
+  };
 
-  // Use tick() to ensure focus trap works correctly inside <Portal />
-  void tick().then(() => focusableElement?.focus());
+  const setInitialFocus = async () => {
+    const focusableElement = getTabbable(container, false)[0];
+    if (focusableElement) {
+      // Use tick() to ensure focus trap works correctly inside <Portal />
+      await tick();
+      focusableElement?.focus();
+    }
+  };
 
-  const getFocusableElements = (): [HTMLElement | null, HTMLElement | null] => {
-    const focusableElements = container.querySelectorAll<HTMLElement>(selectors);
+  if (withDefaults(options).active) {
+    void setInitialFocus();
+  }
+
+  const getFocusableElements = () => {
+    const focusableElements = getTabbable(container);
     return [
-      focusableElements.item(0), //
-      focusableElements.item(focusableElements.length - 1),
+      focusableElements.at(0), //
+      focusableElements.at(-1),
     ];
   };
 
@@ -27,7 +46,7 @@ export function focusTrap(container: HTMLElement) {
       shortcut: { key: 'Tab' },
       onShortcut: (event) => {
         const [firstElement, lastElement] = getFocusableElements();
-        if (document.activeElement === lastElement) {
+        if (document.activeElement === lastElement && withDefaults(options).active) {
           event.preventDefault();
           firstElement?.focus();
         }
@@ -39,7 +58,7 @@ export function focusTrap(container: HTMLElement) {
       shortcut: { key: 'Tab', shift: true },
       onShortcut: (event) => {
         const [firstElement, lastElement] = getFocusableElements();
-        if (document.activeElement === firstElement) {
+        if (document.activeElement === firstElement && withDefaults(options).active) {
           event.preventDefault();
           lastElement?.focus();
         }
@@ -48,6 +67,12 @@ export function focusTrap(container: HTMLElement) {
   ]);
 
   return {
+    update(newOptions?: Options) {
+      options = newOptions;
+      if (withDefaults(options).active) {
+        void setInitialFocus();
+      }
+    },
     destroy() {
       destroyShortcuts?.();
       if (triggerElement instanceof HTMLElement) {

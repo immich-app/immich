@@ -1,4 +1,4 @@
-import { persisted } from 'svelte-local-storage-store';
+import { persisted } from 'svelte-persisted-store';
 import { writable } from 'svelte/store';
 
 export enum SlideshowState {

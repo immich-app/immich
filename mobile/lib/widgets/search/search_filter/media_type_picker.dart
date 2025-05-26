@@ -17,8 +17,8 @@ class MediaTypePicker extends HookWidget {
       shrinkWrap: true,
       children: [
         RadioListTile(
-          key: const Key("search_filter_media_type_all"),
-          title: const Text("search_filter_media_type_all").tr(),
+          key: const Key("all"),
+          title: const Text("all").tr(),
           value: AssetType.other,
           onChanged: (value) {
             selectedMediaType.value = value!;
@@ -27,8 +27,8 @@ class MediaTypePicker extends HookWidget {
           groupValue: selectedMediaType.value,
         ),
         RadioListTile(
-          key: const Key("search_filter_media_type_image"),
-          title: const Text("search_filter_media_type_image").tr(),
+          key: const Key("image"),
+          title: const Text("image").tr(),
           value: AssetType.image,
           onChanged: (value) {
             selectedMediaType.value = value!;
@@ -37,8 +37,8 @@ class MediaTypePicker extends HookWidget {
           groupValue: selectedMediaType.value,
         ),
         RadioListTile(
-          key: const Key("search_filter_media_type_video"),
-          title: const Text("search_filter_media_type_video").tr(),
+          key: const Key("video"),
+          title: const Text("video").tr(),
           value: AssetType.video,
           onChanged: (value) {
             selectedMediaType.value = value!;

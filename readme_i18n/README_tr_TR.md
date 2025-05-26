@@ -58,18 +58,12 @@ Kurulum dahil olmak üzere resmi belgeleri https://immich.app/ adresinde bulabil
 
 ## Demo
 
-Web demo adresi: https://demo.immich.app
-
-Mobil uygulama için `Server Endpoint URL` olarak `https://demo.immich.app` adresini kullanabilirsiniz.
+Web demo adresi: https://demo.immich.app. Mobil uygulama için `Server Endpoint URL` olarak `https://demo.immich.app` adresini kullanabilirsiniz.
 
 ```bash title="Demo Bilgileri"
 Giriş bilgileri:
 email: demo@immich.app
 password: demo
-```
-
-```
-Server Özellikleri: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
 # Özellikler

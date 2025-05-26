@@ -19,6 +19,15 @@ class BackupAssetInfoTable extends ConsumerWidget {
       ),
     );
 
+    final isUploadInProgress = ref.watch(
+      backupProvider.select(
+        (value) =>
+            value.backupProgress == BackUpProgressEnum.inProgress ||
+            value.backupProgress == BackUpProgressEnum.inBackground ||
+            value.backupProgress == BackUpProgressEnum.manualInProgress,
+      ),
+    );
+
     final asset = isManualUpload
         ? ref.watch(
             manualUploadProvider.select((value) => value.currentUploadAsset),
@@ -47,7 +56,12 @@ class BackupAssetInfoTable extends ConsumerWidget {
                       fontSize: 10.0,
                     ),
                   ).tr(
-                    args: [asset.fileName, asset.fileType.toLowerCase()],
+                    namedArgs: isUploadInProgress
+                        ? {
+                            'filename': asset.fileName,
+                            'size': asset.fileType.toLowerCase(),
+                          }
+                        : {'filename': "-", 'size': "-"},
                   ),
                 ),
               ),
@@ -67,7 +81,11 @@ class BackupAssetInfoTable extends ConsumerWidget {
                       fontSize: 10.0,
                     ),
                   ).tr(
-                    args: [_getAssetCreationDate(asset)],
+                    namedArgs: {
+                      'date': isUploadInProgress
+                          ? _getAssetCreationDate(asset)
+                          : "-",
+                    },
                   ),
                 ),
               ),
@@ -85,7 +103,9 @@ class BackupAssetInfoTable extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                       fontSize: 10.0,
                     ),
-                  ).tr(args: [asset.id]),
+                  ).tr(
+                    namedArgs: {'id': isUploadInProgress ? asset.id : "-"},
+                  ),
                 ),
               ),
             ],

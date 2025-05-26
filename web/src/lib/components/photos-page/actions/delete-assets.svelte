@@ -1,12 +1,12 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { type OnDelete, deleteAssets } from '$lib/utils/actions';
+  import { mdiDeleteForeverOutline, mdiDeleteOutline, mdiTimerSand } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { mdiTimerSand, mdiDeleteOutline, mdiDeleteForeverOutline } from '@mdi/js';
-  import { type OnDelete, deleteAssets } from '$lib/utils/actions';
   import DeleteAssetDialog from '../delete-asset-dialog.svelte';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     onAssetDelete: OnDelete;
@@ -52,7 +52,7 @@
 
 {#if isShowConfirmation}
   <DeleteAssetDialog
-    size={getOwnedAssets().size}
+    size={getOwnedAssets().length}
     onConfirm={handleDelete}
     onCancel={() => (isShowConfirmation = false)}
   />

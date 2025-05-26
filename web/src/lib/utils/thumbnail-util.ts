@@ -1,6 +1,7 @@
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import { locale } from '$lib/stores/preferences.store';
 import { t } from 'svelte-i18n';
-import { derived } from 'svelte/store';
+import { derived, get } from 'svelte/store';
 import { fromLocalDateTime } from './timeline-util';
 
 /**
@@ -38,24 +39,20 @@ export function getThumbnailSize(assetCount: number, viewWidth: number): number 
 }
 
 export const getAltText = derived(t, ($t) => {
-  return (asset: AssetResponseDto) => {
-    if (asset.exifInfo?.description) {
-      return asset.exifInfo.description;
-    }
+  return (asset: TimelineAsset) => {
+    const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' }, { locale: get(locale) });
+    const hasPlace = asset.city && asset.country;
 
-    const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
-    const hasPlace = !!asset.exifInfo?.city && !!asset.exifInfo?.country;
-    const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
-    const peopleCount = names.length;
-    const isVideo = asset.type === AssetTypeEnum.Video;
+    const peopleCount = asset.people.length;
+    const isVideo = asset.isVideo;
 
     const values = {
       date,
-      city: asset.exifInfo?.city,
-      country: asset.exifInfo?.country,
-      person1: names[0],
-      person2: names[1],
-      person3: names[2],
+      city: asset.city,
+      country: asset.country,
+      person1: asset.people[0],
+      person2: asset.people[1],
+      person3: asset.people[2],
       isVideo,
       additionalCount: peopleCount > 3 ? peopleCount - 2 : 0,
     };

@@ -89,7 +89,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'common_add_to_album'.tr(),
+                        'add_to_album'.tr(),
                         style: context.textTheme.displayMedium,
                       ),
                       TextButton.icon(

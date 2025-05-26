@@ -1,30 +1,41 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
+  import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetBucket, AssetStore } from '$lib/stores/assets-store.svelte';
+  import {
+    AssetBucket,
+    assetsSnapshot,
+    AssetStore,
+    isSelectingAllAssets,
+    type TimelineAsset,
+  } from '$lib/stores/assets-store.svelte';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { isSearchEnabled } from '$lib/stores/search.store';
+  import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets } from '$lib/utils/actions';
+  import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { focusNext } from '$lib/utils/focus-util';
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
+  import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onMount, type Snippet } from 'svelte';
+  import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
-  import Scrubber from '../shared-components/scrubber/scrubber.svelte';
-  import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
-  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
-  import { page } from '$app/stores';
-  import type { UpdatePayload } from 'vite';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -35,14 +46,20 @@
     enableRouting: boolean;
     assetStore: AssetStore;
     assetInteraction: AssetInteraction;
-    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.FAVORITE | AssetAction.UNFAVORITE | null;
+    removeAction?:
+      | AssetAction.UNARCHIVE
+      | AssetAction.ARCHIVE
+      | AssetAction.FAVORITE
+      | AssetAction.UNFAVORITE
+      | AssetAction.SET_VISIBILITY_TIMELINE
+      | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
-    onSelect?: (asset: AssetResponseDto) => void;
+    onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     children?: Snippet;
     empty?: Snippet;
@@ -72,43 +89,75 @@
   let element: HTMLElement | undefined = $state();
 
   let timelineElement: HTMLElement | undefined = $state();
-  let showShortcuts = $state(false);
   let showSkeleton = $state(true);
   let scrubBucketPercent = $state(0);
   let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
   let scrubOverallPercent: number = $state(0);
+  let scrubberWidth = $state(0);
 
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
-  const completeNav = async () => {
-    if ($gridScrollTarget?.at) {
-      try {
-        const bucket = await assetStore.findBucketForAsset($gridScrollTarget.at);
-        if (bucket) {
-          const height = bucket.findAssetAbsolutePosition($gridScrollTarget.at);
-          if (height) {
-            element?.scrollTo({ top: height });
-            showSkeleton = false;
-            assetStore.updateIntersections();
-          }
+  const maxMd = $derived(mobileDevice.maxMd);
+  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+
+  $effect(() => {
+    const layoutOptions = maxMd
+      ? {
+          rowHeight: 100,
+          headerHeight: 32,
         }
-      } catch {
-        element?.scrollTo({ top: 0 });
-        showSkeleton = false;
+      : {
+          rowHeight: 235,
+          headerHeight: 48,
+        };
+    assetStore.setLayoutOptions(layoutOptions);
+  });
+
+  const scrollTo = (top: number) => {
+    element?.scrollTo({ top });
+    showSkeleton = false;
+  };
+
+  const scrollToTop = () => {
+    scrollTo(0);
+  };
+
+  const scrollToAsset = async (assetId: string) => {
+    try {
+      const bucket = await assetStore.findBucketForAsset(assetId);
+      if (bucket) {
+        const height = bucket.findAssetAbsolutePosition(assetId);
+        if (height) {
+          scrollTo(height);
+          assetStore.updateIntersections();
+          return true;
+        }
       }
-    } else {
-      element?.scrollTo({ top: 0 });
-      showSkeleton = false;
+    } catch {
+      // ignore errors - asset may not be in the store
+    }
+    return false;
+  };
+
+  const completeNav = async () => {
+    const scrollTarget = $gridScrollTarget?.at;
+    let scrolled = false;
+    if (scrollTarget) {
+      scrolled = await scrollToAsset(scrollTarget);
+    }
+
+    if (!scrolled) {
+      // if the asset is not found, scroll to the top
+      scrollToTop();
     }
   };
+
   beforeNavigate(() => (assetStore.suspendTransitions = true));
+
   afterNavigate((nav) => {
-    const { complete, type } = nav;
-    if (type === 'enter') {
-      return;
-    }
+    const { complete } = nav;
     complete.then(completeNav, completeNav);
   });
 
@@ -134,8 +183,7 @@
                 { replaceState: true, forceNavigate: true },
               );
             } else {
-              element?.scrollTo({ top: 0 });
-              showSkeleton = false;
+              scrollToTop();
             }
           }, 500);
         }
@@ -156,7 +204,13 @@
   const updateIsScrolling = () => (assetStore.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
-  const compensateScrollCallback = (delta: number) => element?.scrollBy(0, delta);
+  const compensateScrollCallback = ({ delta, top }: { delta?: number; top?: number }) => {
+    if (delta) {
+      element?.scrollBy(0, delta);
+    } else if (top) {
+      element?.scrollTo({ top });
+    }
+  };
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
 
   onMount(() => {
@@ -261,10 +315,21 @@
           bucket = assetStore.buckets[i];
           bucketHeight = assetStore.buckets[i].bucketHeight;
         }
+
         let next = top - bucketHeight * maxScrollPercent;
-        if (next < 0) {
+        // instead of checking for < 0, add a little wiggle room for subpixel resolution
+        if (next < -1 && bucket) {
           scrubBucket = bucket;
-          scrubBucketPercent = top / (bucketHeight * maxScrollPercent);
+
+          // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
+          scrubBucketPercent = Math.max(0, top / (bucketHeight * maxScrollPercent));
+
+          // compensate for lost precision/rounding errors advance to the next bucket, if present
+          if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
+            scrubBucket = assetStore.buckets[i + 1];
+            scrubBucketPercent = 0;
+          }
+
           found = true;
           break;
         }
@@ -286,7 +351,7 @@
   };
 
   const onDelete = () => {
-    const hasTrashedAsset = assetInteraction.selectedAssetsArray.some((asset) => asset.isTrashed);
+    const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
 
     if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
       isShowDeleteConfirmation = true;
@@ -304,16 +369,19 @@
   };
 
   const onStackAssets = async () => {
-    const ids = await stackAssets(assetInteraction.selectedAssetsArray);
-    if (ids) {
-      assetStore.removeAssets(ids);
-      onEscape();
-    }
+    const result = await stackAssets(assetInteraction.selectedAssets);
+
+    updateStackedAssetInTimeline(assetStore, result);
+
+    onEscape();
   };
 
   const toggleArchive = async () => {
-    await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
-    assetStore.updateAssets(assetInteraction.selectedAssetsArray);
+    await archiveAssets(
+      assetInteraction.selectedAssets,
+      assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
+    );
+    assetStore.updateAssets(assetInteraction.selectedAssets);
     deselectAllAssets();
   };
 
@@ -323,7 +391,7 @@
     }
   };
 
-  const handleSelectAsset = (asset: AssetResponseDto) => {
+  const handleSelectAsset = (asset: TimelineAsset) => {
     if (!assetStore.albumAssets.has(asset.id)) {
       assetInteraction.selectAsset(asset);
     }
@@ -334,7 +402,8 @@
 
     if (previousAsset) {
       const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
-      assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
+      const asset = await getAssetInfo({ id: previousAsset.id, key: authManager.key });
+      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
 
@@ -343,10 +412,10 @@
 
   const handleNext = async () => {
     const nextAsset = await assetStore.getNextAsset($viewingAsset);
-
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset);
-      assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
+      const asset = await getAssetInfo({ id: nextAsset.id, key: authManager.key });
+      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
 
@@ -358,14 +427,14 @@
 
     if (randomAsset) {
       const preloadAsset = await assetStore.getNextAsset(randomAsset);
-      assetViewingStore.setAsset(randomAsset, preloadAsset ? [preloadAsset] : []);
+      const asset = await getAssetInfo({ id: randomAsset.id, key: authManager.key });
+      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
+      return asset;
     }
-
-    return randomAsset;
   };
 
-  const handleClose = async ({ asset }: { asset: AssetResponseDto }) => {
+  const handleClose = async (asset: { id: string }) => {
     assetViewingStore.showAssetViewer(false);
     showSkeleton = true;
     $gridScrollTarget = { at: asset.id };
@@ -377,10 +446,13 @@
       case removeAction:
       case AssetAction.TRASH:
       case AssetAction.RESTORE:
-      case AssetAction.DELETE: {
+      case AssetAction.DELETE:
+      case AssetAction.ARCHIVE:
+      case AssetAction.SET_VISIBILITY_LOCKED:
+      case AssetAction.SET_VISIBILITY_TIMELINE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        (await handleNext()) || (await handlePrevious()) || (await handleClose({ asset: action.asset }));
+        (await handleNext()) || (await handlePrevious()) || (await handleClose(action.asset));
 
         // delete after find the next one
         assetStore.removeAssets([action.asset.id]);
@@ -404,12 +476,13 @@
       }
 
       case AssetAction.UNSTACK: {
-        assetStore.addAssets(action.assets);
+        updateUnstackedAssetInTimeline(assetStore, action.assets);
+        break;
       }
     }
   };
 
-  let lastAssetMouseEvent: AssetResponseDto | null = $state(null);
+  let lastAssetMouseEvent: TimelineAsset | null = $state(null);
 
   let shiftKeyIsDown = $state(false);
 
@@ -418,7 +491,7 @@
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if (searchStore.isSearchEnabled) {
       return;
     }
 
@@ -429,7 +502,7 @@
   };
 
   const onKeyUp = (event: KeyboardEvent) => {
-    if ($isSearchEnabled) {
+    if (searchStore.isSearchEnabled) {
       return;
     }
 
@@ -439,18 +512,18 @@
     }
   };
 
-  const handleSelectAssetCandidates = (asset: AssetResponseDto | null) => {
+  const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
     if (asset) {
       selectAssetCandidates(asset);
     }
     lastAssetMouseEvent = asset;
   };
 
-  const handleGroupSelect = (group: string, assets: AssetResponseDto[]) => {
+  const handleGroupSelect = (assetStore: AssetStore, group: string, assets: TimelineAsset[]) => {
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
-        assetInteraction.removeAssetFromMultiselectGroup(asset);
+        assetInteraction.removeAssetFromMultiselectGroup(asset.id);
       }
     } else {
       assetInteraction.addGroupToMultiselectGroup(group);
@@ -458,9 +531,15 @@
         handleSelectAsset(asset);
       }
     }
+
+    if (assetStore.getAssets().length == assetInteraction.selectedAssets.length) {
+      isSelectingAllAssets.set(true);
+    } else {
+      isSelectingAllAssets.set(false);
+    }
   };
 
-  const handleSelectAssets = async (asset: AssetResponseDto) => {
+  const handleSelectAssets = async (asset: TimelineAsset) => {
     if (!asset) {
       return;
     }
@@ -471,15 +550,15 @@
       return;
     }
 
-    const rangeSelection = assetInteraction.assetSelectionCandidates.size > 0;
+    const rangeSelection = assetInteraction.assetSelectionCandidates.length > 0;
     const deselect = assetInteraction.hasSelectedAsset(asset.id);
 
     // Select/deselect already loaded assets
     if (deselect) {
       for (const candidate of assetInteraction.assetSelectionCandidates) {
-        assetInteraction.removeAssetFromMultiselectGroup(candidate);
+        assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
       }
-      assetInteraction.removeAssetFromMultiselectGroup(asset);
+      assetInteraction.removeAssetFromMultiselectGroup(asset.id);
     } else {
       for (const candidate of assetInteraction.assetSelectionCandidates) {
         handleSelectAsset(candidate);
@@ -497,12 +576,9 @@
         return;
       }
 
-      // Select/deselect assets in range (start,end]
+      // Select/deselect assets in range (start,end)
       let started = false;
       for (const bucket of assetStore.buckets) {
-        if (bucket === startBucket) {
-          started = true;
-        }
         if (bucket === endBucket) {
           break;
         }
@@ -510,32 +586,36 @@
           await assetStore.loadBucket(bucket.bucketDate);
           for (const asset of bucket.getAssets()) {
             if (deselect) {
-              assetInteraction.removeAssetFromMultiselectGroup(asset);
+              assetInteraction.removeAssetFromMultiselectGroup(asset.id);
             } else {
               handleSelectAsset(asset);
             }
           }
         }
+        if (bucket === startBucket) {
+          started = true;
+        }
       }
 
-      // Update date group selection
+      // Update date group selection in range [start,end]
       started = false;
       for (const bucket of assetStore.buckets) {
         if (bucket === startBucket) {
           started = true;
         }
+        if (started) {
+          // Split bucket into date groups and check each group
+          for (const dateGroup of bucket.dateGroups) {
+            const dateGroupTitle = dateGroup.groupTitle;
+            if (dateGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
+              assetInteraction.addGroupToMultiselectGroup(dateGroupTitle);
+            } else {
+              assetInteraction.removeGroupFromMultiselectGroup(dateGroupTitle);
+            }
+          }
+        }
         if (bucket === endBucket) {
           break;
-        }
-
-        // Split bucket into date groups and check each group
-        for (const dateGroup of bucket.dateGroups) {
-          const dateGroupTitle = dateGroup.groupTitle;
-          if (dateGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-            assetInteraction.addGroupToMultiselectGroup(dateGroupTitle);
-          } else {
-            assetInteraction.removeGroupFromMultiselectGroup(dateGroupTitle);
-          }
         }
       }
     }
@@ -543,7 +623,7 @@
     assetInteraction.setAssetSelectionStart(deselect ? null : asset);
   };
 
-  const selectAssetCandidates = (endAsset: AssetResponseDto) => {
+  const selectAssetCandidates = (endAsset: TimelineAsset) => {
     if (!shiftKeyIsDown) {
       return;
     }
@@ -553,7 +633,7 @@
       return;
     }
 
-    const assets = assetStore.getAssets();
+    const assets = assetsSnapshot(assetStore.getAssets());
 
     let start = assets.findIndex((a) => a.id === startAsset.id);
     let end = assets.findIndex((a) => a.id === endAsset.id);
@@ -571,38 +651,23 @@
     }
   };
 
-  const focusNextAsset = async () => {
-    if (assetInteraction.focussedAssetId === null) {
-      const firstAsset = assetStore.getFirstAsset();
-      if (firstAsset) {
-        assetInteraction.focussedAssetId = firstAsset.id;
-      }
-    } else {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const nextAsset = await assetStore.getNextAsset(focussedAsset);
-        if (nextAsset) {
-          assetInteraction.focussedAssetId = nextAsset.id;
-        }
-      }
-    }
-  };
-
-  const focusPreviousAsset = async () => {
-    if (assetInteraction.focussedAssetId !== null) {
-      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (focussedAsset) {
-        const previousAsset = await assetStore.getPreviousAsset(focussedAsset);
-        if (previousAsset) {
-          assetInteraction.focussedAssetId = previousAsset.id;
-        }
-      }
-    }
-  };
+  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
+  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
-  let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
+  let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
+  let isShortcutModalOpen = false;
+
+  const handleOpenShortcutModal = async () => {
+    if (isShortcutModalOpen) {
+      return;
+    }
+
+    isShortcutModalOpen = true;
+    await modalManager.show(ShortcutsModal, {});
+    isShortcutModalOpen = false;
+  };
 
   $effect(() => {
     if (isEmpty) {
@@ -612,13 +677,13 @@
 
   let shortcutList = $derived(
     (() => {
-      if ($isSearchEnabled || $showAssetViewer) {
+      if (searchStore.isSearchEnabled || $showAssetViewer) {
         return [];
       }
 
       const shortcuts: ShortcutOptions[] = [
         { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-        { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
+        { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteraction) },
         { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
@@ -660,7 +725,7 @@
   });
 </script>
 
-<svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
+<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
@@ -670,13 +735,8 @@
   />
 {/if}
 
-{#if showShortcuts}
-  <ShowShortcuts onClose={() => (showShortcuts = !showShortcuts)} />
-{/if}
-
 {#if assetStore.buckets.length > 0}
   <Scrubber
-    invisible={showSkeleton}
     {assetStore}
     height={assetStore.viewportHeight}
     timelineTopOffset={assetStore.topSectionHeight}
@@ -686,6 +746,7 @@
     {scrubBucketPercent}
     {scrubBucket}
     {onScrub}
+    bind:scrubberWidth
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
       let amount = 50;
@@ -707,7 +768,8 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
+  style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={assetStore.viewportHeight}
   bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
@@ -745,7 +807,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <Skeleton height={bucket.bucketHeight} title={bucket.bucketDateFormatted} />
+          <Skeleton height={bucket.bucketHeight - bucket.store.headerHeight} title={bucket.bucketDateFormatted} />
         </div>
       {:else if display}
         <div
@@ -759,40 +821,50 @@
             {withStacked}
             {showArchiveIcon}
             {assetInteraction}
+            {assetStore}
             {isSelectionMode}
             {singleSelect}
             {bucket}
-            onSelect={({ title, assets }) => handleGroupSelect(title, assets)}
+            onSelect={({ title, assets }) => handleGroupSelect(assetStore, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
           />
         </div>
       {/if}
     {/each}
-    <!-- <div class="h-[60px]" style:position="absolute" style:left="0" style:right="0" style:bottom="0"></div> -->
+    <!-- spacer for leadout -->
+    <div
+      class="h-[60px]"
+      style:position="absolute"
+      style:left="0"
+      style:right="0"
+      style:transform={`translate3d(0,${assetStore.timelineHeight}px,0)`}
+    ></div>
   </section>
 </section>
 
-<Portal target="body">
-  {#if $showAssetViewer}
-    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer
-        {withStacked}
-        asset={$viewingAsset}
-        preloadAssets={$preloadAssets}
-        {isShared}
-        {album}
-        {person}
-        preAction={handlePreAction}
-        onAction={handleAction}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onRandom={handleRandom}
-        onClose={handleClose}
-      />
-    {/await}
-  {/if}
-</Portal>
+{#if !albumMapViewManager.isInMapView}
+  <Portal target="body">
+    {#if $showAssetViewer}
+      {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+        <AssetViewer
+          {withStacked}
+          asset={$viewingAsset}
+          preloadAssets={$preloadAssets}
+          {isShared}
+          {album}
+          {person}
+          preAction={handlePreAction}
+          onAction={handleAction}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onRandom={handleRandom}
+          onClose={handleClose}
+        />
+      {/await}
+    {/if}
+  </Portal>
+{/if}
 
 <style>
   #asset-grid {

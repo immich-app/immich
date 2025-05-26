@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { DB, Libraries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
-import { AssetType } from 'src/enum';
+import { AssetType, AssetVisibility } from 'src/enum';
 
 export enum AssetSyncResult {
   DO_NOTHING,
@@ -76,14 +76,18 @@ export class LibraryRepository {
       .leftJoin('exif', 'exif.assetId', 'assets.id')
       .select((eb) =>
         eb.fn
-          .countAll()
-          .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.isVisible', '=', true)]))
+          .countAll<number>()
+          .filterWhere((eb) =>
+            eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.visibility', '!=', AssetVisibility.HIDDEN)]),
+          )
           .as('photos'),
       )
       .select((eb) =>
         eb.fn
-          .countAll()
-          .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.VIDEO), eb('assets.isVisible', '=', true)]))
+          .countAll<number>()
+          .filterWhere((eb) =>
+            eb.and([eb('assets.type', '=', AssetType.VIDEO), eb('assets.visibility', '!=', AssetVisibility.HIDDEN)]),
+          )
           .as('videos'),
       )
       .select((eb) => eb.fn.coalesce((eb) => eb.fn.sum('exif.fileSizeInByte'), eb.val(0)).as('usage'))
@@ -105,10 +109,10 @@ export class LibraryRepository {
     }
 
     return {
-      photos: Number(stats.photos),
-      videos: Number(stats.videos),
-      usage: Number(stats.usage),
-      total: Number(stats.photos) + Number(stats.videos),
+      photos: stats.photos,
+      videos: stats.videos,
+      usage: stats.usage,
+      total: stats.photos + stats.videos,
     };
   }
 

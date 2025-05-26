@@ -47,7 +47,7 @@ class CameraPicker extends HookConsumerWidget {
             .toList(),
         _ => [],
       },
-      label: const Text('search_filter_camera_make').tr(),
+      label: const Text('make').tr(),
       controller: makeTextController,
       leadingIcon: const Icon(Icons.photo_camera_rounded),
       onSelected: (value) {
@@ -76,7 +76,7 @@ class CameraPicker extends HookConsumerWidget {
             .toList(),
         _ => [],
       },
-      label: const Text('search_filter_camera_model').tr(),
+      label: const Text('model').tr(),
       controller: modelTextController,
       leadingIcon: const Icon(Icons.camera),
       onSelected: (value) {

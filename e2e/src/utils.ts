@@ -3,6 +3,7 @@ import {
   AssetMediaCreateDto,
   AssetMediaResponseDto,
   AssetResponseDto,
+  AssetVisibility,
   CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
@@ -429,7 +430,10 @@ export const utils = {
   },
 
   archiveAssets: (accessToken: string, ids: string[]) =>
-    updateAssets({ assetBulkUpdateDto: { ids, isArchived: true } }, { headers: asBearerAuth(accessToken) }),
+    updateAssets(
+      { assetBulkUpdateDto: { ids, visibility: AssetVisibility.Archive } },
+      { headers: asBearerAuth(accessToken) },
+    ),
 
   deleteAssets: (accessToken: string, ids: string[]) =>
     deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
@@ -493,7 +497,7 @@ export const utils = {
         value: accessToken,
         domain,
         path: '/',
-        expires: 1_742_402_728,
+        expires: 2_058_028_213,
         httpOnly: true,
         secure: false,
         sameSite: 'Lax',
@@ -503,7 +507,7 @@ export const utils = {
         value: 'password',
         domain,
         path: '/',
-        expires: 1_742_402_728,
+        expires: 2_058_028_213,
         httpOnly: true,
         secure: false,
         sameSite: 'Lax',
@@ -513,7 +517,7 @@ export const utils = {
         value: 'true',
         domain,
         path: '/',
-        expires: 1_742_402_728,
+        expires: 2_058_028_213,
         httpOnly: false,
         secure: false,
         sameSite: 'Lax',
@@ -537,6 +541,7 @@ export const utils = {
   },
 
   waitForQueueFinish: (accessToken: string, queue: keyof AllJobStatusResponseDto, ms?: number) => {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise<void>(async (resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 10_000);
 

@@ -131,6 +131,10 @@ For more information on how to use the application once installed, please refer 
 
 ## Updating Steps
 
+:::danger
+Make sure to read the general [upgrade instructions](/docs/install/upgrading.md).
+:::
+
 Updating is extremely easy however it's important to be aware that containers managed via the Docker Compose Manager plugin do not integrate with Unraid's native dockerman UI, the label "_update ready_" will always be present on containers installed via the Docker Compose Manager.
 
 <img

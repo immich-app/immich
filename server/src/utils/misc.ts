@@ -44,8 +44,7 @@ export const getMethodNames = (instance: any) => {
   return methods;
 };
 
-export const getExternalDomain = (server: SystemConfig['server'], port: number) =>
-  server.externalDomain || `http://localhost:${port}`;
+export const getExternalDomain = (server: SystemConfig['server']) => server.externalDomain || `https://my.immich.app`;
 
 /**
  * @returns a list of strings representing the keys of the object in dot notation
@@ -302,3 +301,7 @@ export const globToSqlPattern = (glob: string) => {
   const tokens = picomatch.parse(glob).tokens;
   return tokens.map((token) => convertTokenToSqlPattern(token)).join('');
 };
+
+export function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}

@@ -7,8 +7,10 @@ import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { IORedisInstrumentation } from '@opentelemetry/instrumentation-ioredis';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
-import { NodeSDK, contextBase, metrics, resources } from '@opentelemetry/sdk-node';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { resourceFromAttributes } from '@opentelemetry/resources';
+import { AggregationType } from '@opentelemetry/sdk-metrics';
+import { NodeSDK, contextBase } from '@opentelemetry/sdk-node';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { ClassConstructor } from 'class-transformer';
 import { snakeCase, startCase } from 'lodash';
 import { MetricService } from 'nestjs-otel';
@@ -49,10 +51,9 @@ export class MetricGroupRepository {
   }
 }
 
-const aggregation = new metrics.ExplicitBucketHistogramAggregation(
-  [0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10_000],
-  true,
-);
+const aggregationBoundaries = [
+  0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10_000,
+];
 
 let instance: NodeSDK | undefined;
 
@@ -61,9 +62,9 @@ export const bootstrapTelemetry = (port: number) => {
     throw new Error('OpenTelemetry SDK already started');
   }
   instance = new NodeSDK({
-    resource: new resources.Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: `immich`,
-      [SemanticResourceAttributes.SERVICE_VERSION]: serverVersion.toString(),
+    resource: resourceFromAttributes({
+      [ATTR_SERVICE_NAME]: `immich`,
+      [ATTR_SERVICE_VERSION]: serverVersion.toString(),
     }),
     metricReader: new PrometheusExporter({ port }),
     contextManager: new AsyncLocalStorageContextManager(),
@@ -73,7 +74,16 @@ export const bootstrapTelemetry = (port: number) => {
       new NestInstrumentation(),
       new PgInstrumentation(),
     ],
-    views: [new metrics.View({ aggregation, instrumentName: '*', instrumentUnit: 'ms' })],
+    views: [
+      {
+        instrumentName: '*',
+        instrumentUnit: 'ms',
+        aggregation: {
+          type: AggregationType.EXPLICIT_BUCKET_HISTOGRAM,
+          options: { boundaries: aggregationBoundaries },
+        },
+      },
+    ],
   });
 
   instance.start();

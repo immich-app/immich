@@ -11,6 +11,7 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
   import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -42,9 +43,9 @@
 
   const trashAsset = async () => {
     try {
-      preAction({ type: AssetAction.TRASH, asset });
+      preAction({ type: AssetAction.TRASH, asset: toTimelineAsset(asset) });
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
-      onAction({ type: AssetAction.TRASH, asset });
+      onAction({ type: AssetAction.TRASH, asset: toTimelineAsset(asset) });
 
       notificationController.show({
         message: $t('moved_to_trash'),
@@ -58,7 +59,7 @@
   const deleteAsset = async () => {
     try {
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
-      onAction({ type: AssetAction.DELETE, asset });
+      onAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
 
       notificationController.show({
         message: $t('permanently_deleted_asset'),
@@ -72,7 +73,7 @@
   };
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcuts={[
     { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },

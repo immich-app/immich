@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -75,6 +76,9 @@ class AssetNotifier extends StateNotifier<bool> {
       }
 
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
+    } catch (error) {
+      // If there is error in getting the remote assets, still showing the new local assets
+      await _albumService.refreshDeviceAlbums();
     } finally {
       _getAllAssetInProgress = false;
       state = false;
@@ -166,6 +170,13 @@ class AssetNotifier extends StateNotifier<bool> {
   Future<void> toggleArchive(List<Asset> assets, [bool? status]) {
     status ??= !assets.every((a) => a.isArchived);
     return _assetService.changeArchiveStatus(assets, status);
+  }
+
+  Future<void> setLockedView(
+    List<Asset> selection,
+    AssetVisibilityEnum visibility,
+  ) {
+    return _assetService.setVisibility(selection, visibility);
   }
 }
 

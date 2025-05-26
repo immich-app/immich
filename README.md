@@ -61,9 +61,7 @@
 
 ## Demo
 
-Access the demo [here](https://demo.immich.app). The demo is running on a Free-tier Oracle VM in Amsterdam with a 2.4Ghz quad-core ARM64 CPU and 24GB RAM.
-
-For the mobile app, you can use `https://demo.immich.app` for the `Server Endpoint URL`
+Access the demo [here](https://demo.immich.app). For the mobile app, you can use `https://demo.immich.app` for the `Server Endpoint URL`.
 
 ### Login credentials
 
@@ -104,7 +102,7 @@ For the mobile app, you can use `https://demo.immich.app` for the `Server Endpoi
 | Read-only gallery                            | Yes    | Yes |
 | Stacked Photos                               | Yes    | Yes |
 | Tags                                         | No     | Yes |
-| Folder View                                  | No     | Yes |
+| Folder View                                  | Yes    | Yes |
 
 ## Translations
 

@@ -1,1 +1,17 @@
-{}
+{
+  "about": "সম্পর্কে",
+  "account": "অ্যাকাউন্ট",
+  "account_settings": "অ্যাকাউন্ট সেটিংস",
+  "acknowledge": "স্বীকৃতি",
+  "action": "কার্য",
+  "action_common_update": "আপডেট",
+  "actions": "কর্ম",
+  "active": "সচল",
+  "activity": "কার্যকলাপ",
+  "add": "যোগ করুন",
+  "add_a_description": "একটি বিবরণ যোগ করুন",
+  "add_a_location": "একটি অবস্থান যোগ করুন",
+  "add_a_name": "একটি নাম যোগ করুন",
+  "add_a_title": "একটি শিরোনাম যোগ করুন",
+  "add_endpoint": "এন্ডপয়েন্ট যোগ করুন"
+}

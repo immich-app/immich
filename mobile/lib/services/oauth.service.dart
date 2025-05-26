@@ -13,6 +13,8 @@ class OAuthService {
 
   Future<String?> getOAuthServerUrl(
     String serverUrl,
+    String state,
+    String codeChallenge,
   ) async {
     // Resolve API server endpoint from user provided serverUrl
     await _apiService.resolveAndSetEndpoint(serverUrl);
@@ -22,7 +24,11 @@ class OAuthService {
     );
 
     final dto = await _apiService.oAuthApi.startOAuth(
-      OAuthConfigDto(redirectUri: redirectUri),
+      OAuthConfigDto(
+        redirectUri: redirectUri,
+        state: state,
+        codeChallenge: codeChallenge,
+      ),
     );
 
     final authUrl = dto?.url;
@@ -31,7 +37,11 @@ class OAuthService {
     return authUrl;
   }
 
-  Future<LoginResponseDto?> oAuthLogin(String oauthUrl) async {
+  Future<LoginResponseDto?> oAuthLogin(
+    String oauthUrl,
+    String state,
+    String codeVerifier,
+  ) async {
     String result = await FlutterWebAuth2.authenticate(
       url: oauthUrl,
       callbackUrlScheme: callbackUrlScheme,
@@ -49,6 +59,8 @@ class OAuthService {
     return await _apiService.oAuthApi.finishOAuth(
       OAuthCallbackDto(
         url: result,
+        state: state,
+        codeVerifier: codeVerifier,
       ),
     );
   }

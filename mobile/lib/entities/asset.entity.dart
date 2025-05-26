@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
     as entity;
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
+import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
@@ -44,7 +46,8 @@ class Asset {
             : remote.stack?.primaryAssetId,
         stackCount = remote.stack?.assetCount ?? 0,
         stackId = remote.stack?.id,
-        thumbhash = remote.thumbhash;
+        thumbhash = remote.thumbhash,
+        visibility = getVisibility(remote.visibility);
 
   Asset({
     this.id = Isar.autoIncrement,
@@ -70,6 +73,7 @@ class Asset {
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
+    this.visibility = AssetVisibilityEnum.timeline,
   });
 
   @ignore
@@ -171,6 +175,9 @@ class Asset {
   String? stackPrimaryAssetId;
 
   int stackCount;
+
+  @Enumerated(EnumType.ordinal)
+  AssetVisibilityEnum visibility;
 
   /// Returns null if the asset has no sync access to the exif info
   @ignore
@@ -348,7 +355,8 @@ class Asset {
         a.thumbhash != thumbhash ||
         stackId != a.stackId ||
         stackCount != a.stackCount ||
-        stackPrimaryAssetId == null && a.stackPrimaryAssetId != null;
+        stackPrimaryAssetId == null && a.stackPrimaryAssetId != null ||
+        visibility != a.visibility;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -358,7 +366,7 @@ class Asset {
       // take most values from newer asset
       // keep vales that can never be set by the asset not in DB
       if (a.isRemote) {
-        return a._copyWith(
+        return a.copyWith(
           id: id,
           localId: localId,
           width: a.width ?? width,
@@ -366,7 +374,7 @@ class Asset {
           exifInfo: a.exifInfo?.copyWith(assetId: id) ?? exifInfo,
         );
       } else if (isRemote) {
-        return _copyWith(
+        return copyWith(
           localId: localId ?? a.localId,
           width: width ?? a.width,
           height: height ?? a.height,
@@ -374,7 +382,7 @@ class Asset {
         );
       } else {
         // TODO: Revisit this and remove all bool field assignments
-        return a._copyWith(
+        return a.copyWith(
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
@@ -394,7 +402,7 @@ class Asset {
       // fill in potentially missing values, i.e. merge assets
       if (a.isRemote) {
         // values from remote take precedence
-        return _copyWith(
+        return copyWith(
           remoteId: a.remoteId,
           width: a.width,
           height: a.height,
@@ -416,7 +424,7 @@ class Asset {
         );
       } else {
         // add only missing values (and set isLocal to true)
-        return _copyWith(
+        return copyWith(
           localId: localId ?? a.localId,
           width: width ?? a.width,
           height: height ?? a.height,
@@ -427,7 +435,7 @@ class Asset {
     }
   }
 
-  Asset _copyWith({
+  Asset copyWith({
     Id? id,
     String? checksum,
     String? remoteId,
@@ -451,6 +459,7 @@ class Asset {
     String? stackPrimaryAssetId,
     int? stackCount,
     String? thumbhash,
+    AssetVisibilityEnum? visibility,
   }) =>
       Asset(
         id: id ?? this.id,
@@ -476,6 +485,7 @@ class Asset {
         stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
         stackCount: stackCount ?? this.stackCount,
         thumbhash: thumbhash ?? this.thumbhash,
+        visibility: visibility ?? this.visibility,
       );
 
   Future<void> put(Isar db) async {
@@ -487,6 +497,9 @@ class Asset {
   }
 
   static int compareById(Asset a, Asset b) => a.id.compareTo(b.id);
+
+  static int compareByLocalId(Asset a, Asset b) =>
+      compareToNullable(a.localId, b.localId);
 
   static int compareByChecksum(Asset a, Asset b) =>
       a.checksum.compareTo(b.checksum);
@@ -537,7 +550,21 @@ class Asset {
   "isArchived": $isArchived,
   "isTrashed": $isTrashed,
   "isOffline": $isOffline,
+  "visibility": "$visibility",
 }""";
+  }
+
+  static getVisibility(AssetVisibility visibility) {
+    switch (visibility) {
+      case AssetVisibility.timeline:
+        return AssetVisibilityEnum.timeline;
+      case AssetVisibility.archive:
+        return AssetVisibilityEnum.archive;
+      case AssetVisibility.hidden:
+        return AssetVisibilityEnum.hidden;
+      case AssetVisibility.locked:
+        return AssetVisibilityEnum.locked;
+    }
   }
 }
 

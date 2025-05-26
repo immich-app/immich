@@ -67,7 +67,7 @@ class AlbumTitleTextField extends ConsumerWidget {
           borderSide: const BorderSide(color: Colors.transparent),
           borderRadius: BorderRadius.circular(10),
         ),
-        hintText: 'share_add_title'.tr(),
+        hintText: 'add_a_title'.tr(),
         hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
           fontSize: 28,
           fontWeight: FontWeight.bold,

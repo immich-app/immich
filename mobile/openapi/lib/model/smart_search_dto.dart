@@ -18,13 +18,12 @@ class SmartSearchDto {
     this.createdAfter,
     this.createdBefore,
     this.deviceId,
-    this.isArchived,
     this.isEncoded,
     this.isFavorite,
     this.isMotion,
     this.isNotInAlbum,
     this.isOffline,
-    this.isVisible,
+    this.language,
     this.lensModel,
     this.libraryId,
     this.make,
@@ -43,7 +42,7 @@ class SmartSearchDto {
     this.type,
     this.updatedAfter,
     this.updatedBefore,
-    this.withArchived = false,
+    this.visibility,
     this.withDeleted,
     this.withExif,
   });
@@ -75,14 +74,6 @@ class SmartSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? deviceId;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isArchived;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -130,7 +121,7 @@ class SmartSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isVisible;
+  String? language;
 
   String? lensModel;
 
@@ -239,7 +230,13 @@ class SmartSearchDto {
   ///
   DateTime? updatedBefore;
 
-  bool withArchived;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AssetVisibility? visibility;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -264,13 +261,12 @@ class SmartSearchDto {
     other.createdAfter == createdAfter &&
     other.createdBefore == createdBefore &&
     other.deviceId == deviceId &&
-    other.isArchived == isArchived &&
     other.isEncoded == isEncoded &&
     other.isFavorite == isFavorite &&
     other.isMotion == isMotion &&
     other.isNotInAlbum == isNotInAlbum &&
     other.isOffline == isOffline &&
-    other.isVisible == isVisible &&
+    other.language == language &&
     other.lensModel == lensModel &&
     other.libraryId == libraryId &&
     other.make == make &&
@@ -289,7 +285,7 @@ class SmartSearchDto {
     other.type == type &&
     other.updatedAfter == updatedAfter &&
     other.updatedBefore == updatedBefore &&
-    other.withArchived == withArchived &&
+    other.visibility == visibility &&
     other.withDeleted == withDeleted &&
     other.withExif == withExif;
 
@@ -301,13 +297,12 @@ class SmartSearchDto {
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
     (deviceId == null ? 0 : deviceId!.hashCode) +
-    (isArchived == null ? 0 : isArchived!.hashCode) +
     (isEncoded == null ? 0 : isEncoded!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isMotion == null ? 0 : isMotion!.hashCode) +
     (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
-    (isVisible == null ? 0 : isVisible!.hashCode) +
+    (language == null ? 0 : language!.hashCode) +
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
@@ -326,12 +321,12 @@ class SmartSearchDto {
     (type == null ? 0 : type!.hashCode) +
     (updatedAfter == null ? 0 : updatedAfter!.hashCode) +
     (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
-    (withArchived.hashCode) +
+    (visibility == null ? 0 : visibility!.hashCode) +
     (withDeleted == null ? 0 : withDeleted!.hashCode) +
     (withExif == null ? 0 : withExif!.hashCode);
 
   @override
-  String toString() => 'SmartSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif]';
+  String toString() => 'SmartSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -360,11 +355,6 @@ class SmartSearchDto {
     } else {
     //  json[r'deviceId'] = null;
     }
-    if (this.isArchived != null) {
-      json[r'isArchived'] = this.isArchived;
-    } else {
-    //  json[r'isArchived'] = null;
-    }
     if (this.isEncoded != null) {
       json[r'isEncoded'] = this.isEncoded;
     } else {
@@ -390,10 +380,10 @@ class SmartSearchDto {
     } else {
     //  json[r'isOffline'] = null;
     }
-    if (this.isVisible != null) {
-      json[r'isVisible'] = this.isVisible;
+    if (this.language != null) {
+      json[r'language'] = this.language;
     } else {
-    //  json[r'isVisible'] = null;
+    //  json[r'language'] = null;
     }
     if (this.lensModel != null) {
       json[r'lensModel'] = this.lensModel;
@@ -473,7 +463,11 @@ class SmartSearchDto {
     } else {
     //  json[r'updatedBefore'] = null;
     }
-      json[r'withArchived'] = this.withArchived;
+    if (this.visibility != null) {
+      json[r'visibility'] = this.visibility;
+    } else {
+    //  json[r'visibility'] = null;
+    }
     if (this.withDeleted != null) {
       json[r'withDeleted'] = this.withDeleted;
     } else {
@@ -501,13 +495,12 @@ class SmartSearchDto {
         createdAfter: mapDateTime(json, r'createdAfter', r''),
         createdBefore: mapDateTime(json, r'createdBefore', r''),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
-        isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isEncoded: mapValueOfType<bool>(json, r'isEncoded'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
-        isVisible: mapValueOfType<bool>(json, r'isVisible'),
+        language: mapValueOfType<String>(json, r'language'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
@@ -530,7 +523,7 @@ class SmartSearchDto {
         type: AssetTypeEnum.fromJson(json[r'type']),
         updatedAfter: mapDateTime(json, r'updatedAfter', r''),
         updatedBefore: mapDateTime(json, r'updatedBefore', r''),
-        withArchived: mapValueOfType<bool>(json, r'withArchived') ?? false,
+        visibility: AssetVisibility.fromJson(json[r'visibility']),
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),
       );

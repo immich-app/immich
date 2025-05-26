@@ -59,18 +59,12 @@ La documentazione ufficiale, inclusa la guida all'installazione, è disponibile 
 
 ## Demo
 
-Prova la demo del progetto https://demo.immich.app
-
-Sull'app mobile, imposta `https://demo.immich.app` come `Server Endpoint URL`
+Prova la demo del progetto https://demo.immich.app. Sull'app mobile, imposta `https://demo.immich.app` come `Server Endpoint URL`
 
 ```bash title="Demo Credential"
 Credenziali di accesso
 email: demo@immich.app
 password: demo
-```
-
-```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
 # Funzionalità

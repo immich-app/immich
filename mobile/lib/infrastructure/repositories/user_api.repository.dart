@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:http/http.dart';
-import 'package:immich_mobile/domain/interfaces/user_api.repository.dart';
+import 'package:immich_mobile/domain/interfaces/user_api.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/api.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/user.converter.dart';

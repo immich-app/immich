@@ -1,22 +1,22 @@
 <script lang="ts">
-  import ServerAboutModal from '$lib/components/shared-components/server-about-modal.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';
   import { requestServerInfo } from '$lib/utils/auth';
-  import { onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
   import {
     getAboutInfo,
     getVersionHistory,
     type ServerAboutResponseDto,
     type ServerVersionHistoryResponseDto,
   } from '@immich/sdk';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAlert } from '@mdi/js';
-  import { userInteraction } from '$lib/stores/user.svelte';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   const { serverVersion, connected } = websocketStore;
 
-  let isOpen = $state(false);
   let info: ServerAboutResponseDto | undefined = $state();
   let versions: ServerVersionHistoryResponseDto[] = $state([]);
 
@@ -37,12 +37,8 @@
   );
 </script>
 
-{#if isOpen && info}
-  <ServerAboutModal onClose={() => (isOpen = false)} {info} {versions} />
-{/if}
-
 <div
-  class="text-sm hidden group-hover:sm:flex md:flex pl-5 pr-1 place-items-center place-content-center justify-between"
+  class="text-sm flex md:flex ps-5 pe-1 place-items-center place-content-center justify-between min-w-52 overflow-hidden dark:text-immich-dark-fg"
 >
   {#if $connected}
     <div class="flex gap-2 place-items-center place-content-center">
@@ -58,7 +54,11 @@
 
   <div class="flex justify-between justify-items-center">
     {#if $connected && version}
-      <button type="button" onclick={() => (isOpen = true)} class="dark:text-immich-gray flex gap-1">
+      <button
+        type="button"
+        onclick={() => info && modalManager.show(ServerAboutModal, { versions, info })}
+        class="dark:text-immich-gray flex gap-1"
+      >
         {#if isMain}
           <Icon path={mdiAlert} size="1.5em" color="#ffcc4d" /> {info?.sourceRef}
         {:else}

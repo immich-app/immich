@@ -1,6 +1,5 @@
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/device_asset.entity.dart';
 import 'package:immich_mobile/interfaces/database.interface.dart';
 
 abstract interface class IAssetRepository implements IDatabaseRepository {
@@ -50,10 +49,6 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
     int limit = 100,
   });
 
-  Future<List<DeviceAsset?>> getDeviceAssetsById(List<Object> ids);
-
-  Future<void> upsertDeviceAssets(List<DeviceAsset> deviceAssets);
-
   Future<void> upsertDuplicatedAssets(Iterable<String> duplicatedAssets);
 
   Future<List<String>> getAllDuplicatedAssetIds();
@@ -66,7 +61,7 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<List<Asset>> getTrashAssets(String userId);
 
-  Future<List<Asset>> getRecentlyAddedAssets(String userId);
+  Future<List<Asset>> getRecentlyTakenAssets(String userId);
   Future<List<Asset>> getMotionAssets(String userId);
 }
 

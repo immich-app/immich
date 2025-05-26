@@ -49,7 +49,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
                     onClear();
                     context.pop();
                   },
-                  child: const Text('action_common_clear').tr(),
+                  child: const Text('clear').tr(),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(

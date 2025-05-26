@@ -1,14 +1,14 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import DuplicatesModal from '$lib/components/shared-components/duplicates-modal.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
+  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
@@ -26,9 +26,6 @@
   }
 
   let { data = $bindable() }: Props = $props();
-
-  let isShowKeyboardShortcut = $state(false);
-  let isShowDuplicateInfo = $state(false);
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -55,7 +52,7 @@
   let hasDuplicates = $derived(duplicates.length > 0);
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
-      const isConfirmed = await dialogController.show({ prompt, confirmText });
+      const isConfirmed = await modalManager.showDialog({ prompt, confirmText });
       if (!isConfirmed) {
         return;
       }
@@ -185,7 +182,7 @@
         color="secondary"
         icon={mdiKeyboard}
         title={$t('show_keyboard_shortcuts')}
-        onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+        onclick={() => modalManager.show(ShortcutsModal, { shortcuts: duplicateShortcuts })}
         aria-label={$t('show_keyboard_shortcuts')}
       />
     </HStack>
@@ -202,7 +199,7 @@
           title={$t('deduplication_info')}
           size="16"
           padding="2"
-          onclick={() => (isShowDuplicateInfo = true)}
+          onclick={() => modalManager.show(DuplicatesInformationModal, {})}
         />
       </div>
 
@@ -221,10 +218,3 @@
     {/if}
   </div>
 </UserPageLayout>
-
-{#if isShowKeyboardShortcut}
-  <ShowShortcuts shortcuts={duplicateShortcuts} onClose={() => (isShowKeyboardShortcut = false)} />
-{/if}
-{#if isShowDuplicateInfo}
-  <DuplicatesModal onClose={() => (isShowDuplicateInfo = false)} />
-{/if}

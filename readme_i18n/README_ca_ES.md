@@ -58,17 +58,12 @@ Podeu trobar la documentació principal, incloent les guies d'instal·lació, a 
 
 ## Demo
 
-Podeu accedir a la demostració web a https://demo.immich.app
-
-Per a l'aplicació mòbil, podeu utilitzar `https://demo.immich.app` com a "URL de punt final del servidor".
+Podeu accedir a la demostració web a https://demo.immich.app. Per a l'aplicació mòbil, podeu utilitzar `https://demo.immich.app` com a "URL de punt final del servidor".
 
 ```bash title="Credencials de la demo"
 Les credencials
 email: demo@immich.app
 contrasenya: demo
-```
-```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
 # Funcionalitats

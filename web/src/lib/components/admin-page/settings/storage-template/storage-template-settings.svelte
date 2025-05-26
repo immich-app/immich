@@ -78,6 +78,8 @@
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
+    const albumStartTime = luxon.DateTime.fromISO(new Date('2021-12-31T05:32:41.750').toISOString());
+    const albumEndTime = luxon.DateTime.fromISO(new Date('2023-05-06T09:15:17.100').toISOString());
 
     const dateTokens = [
       ...templateOptions.yearOptions,
@@ -91,6 +93,8 @@
 
     for (const token of dateTokens) {
       substitutions[token] = dt.toFormat(token);
+      substitutions['album-startDate-' + token] = albumStartTime.toFormat(token);
+      substitutions['album-endDate-' + token] = albumEndTime.toFormat(token);
     }
 
     return template(substitutions);
@@ -137,7 +141,7 @@
     </p>
   </div>
   {#await getTemplateOptions() then}
-    <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
+    <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ms-4 mt-4'}">
       <SettingSwitch
         title={$t('admin.storage_template_enable_description')}
         {disabled}

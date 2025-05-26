@@ -21,8 +21,6 @@ class BackupErrorChipText extends ConsumerWidget {
         fontWeight: FontWeight.bold,
         fontSize: 11,
       ),
-    ).tr(
-      args: [count.toString()],
-    );
+    ).tr(namedArgs: {'count': count.toString()});
   }
 }

@@ -185,7 +185,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                           padding: const EdgeInsets.only(top: 2.0),
                           child: Text(
                             album.assetCount.toString() +
-                                (album.isAll ? " (${'backup_all'.tr()})" : ""),
+                                (album.isAll ? " (${'all'.tr()})" : ""),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],

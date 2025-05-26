@@ -14,8 +14,3 @@ order by
   "audit"."entityId" desc,
   "audit"."entityType" desc,
   "audit"."createdAt" desc
-
--- AuditRepository.removeBefore
-delete from "audit"
-where
-  "createdAt" < $1

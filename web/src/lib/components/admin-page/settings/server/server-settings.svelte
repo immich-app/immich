@@ -28,7 +28,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="mt-4 ml-4">
+      <div class="mt-4 ms-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_external_domain_settings')}
@@ -52,7 +52,7 @@
           bind:checked={config.server.publicUsers}
         />
 
-        <div class="ml-4">
+        <div class="ms-4">
           <SettingButtonsRow
             onReset={(options) => onReset({ ...options, configKeys: ['server'] })}
             onSave={() => onSave({ server: config.server })}

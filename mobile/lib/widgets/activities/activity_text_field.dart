@@ -90,7 +90,7 @@ class ActivityTextField extends HookConsumerWidget {
           suffixIconColor: liked ? Colors.red[700] : null,
           hintText: !isEnabled
               ? 'shared_album_activities_input_disable'.tr()
-              : 'shared_album_activities_input_hint'.tr(),
+              : 'say_something'.tr(),
           hintStyle: TextStyle(
             fontWeight: FontWeight.normal,
             fontSize: 14,

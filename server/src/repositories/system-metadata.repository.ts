@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { readFile } from 'node:fs/promises';
 import { DB, SystemMetadata as DbSystemMetadata } from 'src/db';
 import { GenerateSql } from 'src/decorators';
-import { SystemMetadata } from 'src/entities/system-metadata.entity';
+import { SystemMetadata } from 'src/types';
 
 type Upsert = Insertable<DbSystemMetadata>;
 
@@ -26,7 +26,6 @@ export class SystemMetadataRepository {
     return metadata.value as SystemMetadata[T];
   }
 
-  @GenerateSql({ params: ['metadata_key', { foo: 'bar' }] })
   async set<T extends keyof SystemMetadata>(key: T, value: SystemMetadata[T]): Promise<void> {
     await this.db
       .insertInto('system_metadata')

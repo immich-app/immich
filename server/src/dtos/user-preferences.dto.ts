@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
-import { UserPreferences } from 'src/entities/user-metadata.entity';
 import { UserAvatarColor } from 'src/enum';
+import { UserPreferences } from 'src/types';
 import { Optional, ValidateBoolean } from 'src/validation';
 
 class AvatarUpdate {
@@ -137,11 +137,6 @@ export class UserPreferencesUpdateDto {
   purchase?: PurchaseUpdate;
 }
 
-class AvatarResponse {
-  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
-  color!: UserAvatarColor;
-}
-
 class RatingsResponse {
   enabled: boolean = false;
 }
@@ -195,7 +190,6 @@ export class UserPreferencesResponseDto implements UserPreferences {
   ratings!: RatingsResponse;
   sharedLinks!: SharedLinksResponse;
   tags!: TagsResponse;
-  avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;
   purchase!: PurchaseResponse;

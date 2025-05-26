@@ -61,6 +61,7 @@ enum AppSettingsEnum<T> {
     0,
   ),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
+  manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
   logLevel<int>(StoreKey.logLevel, null, 5), // Level.INFO = 5
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
@@ -84,6 +85,11 @@ enum AppSettingsEnum<T> {
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
   syncAlbums<bool>(StoreKey.syncAlbums, null, false),
   autoEndpointSwitching<bool>(StoreKey.autoEndpointSwitching, null, false),
+  photoManagerCustomFilter<bool>(
+    StoreKey.photoManagerCustomFilter,
+    null,
+    false,
+  ),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

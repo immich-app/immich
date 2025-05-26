@@ -40,11 +40,7 @@
   };
 </script>
 
-<div
-  in:fade={{ duration: 250 }}
-  out:fade={{ duration: 100 }}
-  class="flex flex-col rounded-lg bg-immich-bg text-xs dark:bg-immich-dark-bg p-2 gap-1"
->
+<div in:fade={{ duration: 250 }} out:fade={{ duration: 100 }} class="flex flex-col rounded-lg text-xs p-2 gap-1">
   <div class="flex items-center gap-2">
     <div class="flex items-center justify-center">
       {#if uploadAsset.state === UploadState.PENDING}

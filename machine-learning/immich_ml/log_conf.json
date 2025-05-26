@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "handlers": {
+    "console": {
+      "class": "immich_ml.config.CustomRichHandler"
+    }
+  },
+  "loggers": {
+    "gunicorn.error": {
+      "handlers": [
+        "console"
+      ]
+    }
+  },
+  "root": {
+    "handlers": [
+      "console"
+    ]
+  }
+}

@@ -128,6 +128,8 @@ export class BaseConfig implements VideoCodecSWConfig {
       '-fps_mode passthrough',
       // explicitly selects the video stream instead of leaving it up to FFmpeg
       `-map 0:${videoStream.index}`,
+      // Strip metadata like capture date, camera, and GPS
+      '-map_metadata -1',
     ];
 
     if (audioStream) {

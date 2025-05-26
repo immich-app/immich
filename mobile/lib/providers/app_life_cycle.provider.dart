@@ -64,22 +64,22 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       }
 
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
+    }
 
-      switch (_ref.read(tabProvider)) {
-        case TabEnum.home:
-          await _ref.read(assetProvider.notifier).getAllAsset();
-          break;
-        case TabEnum.search:
-          // nothing to do
-          break;
+    switch (_ref.read(tabProvider)) {
+      case TabEnum.home:
+        await _ref.read(assetProvider.notifier).getAllAsset();
+        break;
+      case TabEnum.search:
+        // nothing to do
+        break;
 
-        case TabEnum.albums:
-          await _ref.read(albumProvider.notifier).refreshRemoteAlbums();
-          break;
-        case TabEnum.library:
-          // nothing to do
-          break;
-      }
+      case TabEnum.albums:
+        await _ref.read(albumProvider.notifier).refreshRemoteAlbums();
+        break;
+      case TabEnum.library:
+        // nothing to do
+        break;
     }
 
     _ref.read(websocketProvider.notifier).connect();

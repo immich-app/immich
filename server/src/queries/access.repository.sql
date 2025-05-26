@@ -98,6 +98,7 @@ from
 where
   "assets"."id" in ($1)
   and "assets"."ownerId" = $2
+  and "assets"."visibility" != $3
 
 -- AccessRepository.asset.checkPartnerAccess
 select
@@ -110,8 +111,11 @@ from
   and "assets"."deletedAt" is null
 where
   "partner"."sharedWithId" = $1
-  and "assets"."isArchived" = $2
-  and "assets"."id" in ($3)
+  and (
+    "assets"."visibility" = 'timeline'
+    or "assets"."visibility" = 'hidden'
+  )
+  and "assets"."id" in ($2)
 
 -- AccessRepository.asset.checkSharedLinkAccess
 select
@@ -157,6 +161,15 @@ where
   and "memories"."ownerId" = $2
   and "memories"."deletedAt" is null
 
+-- AccessRepository.notification.checkOwnerAccess
+select
+  "notifications"."id"
+from
+  "notifications"
+where
+  "notifications"."id" in ($1)
+  and "notifications"."userId" = $2
+
 -- AccessRepository.person.checkOwnerAccess
 select
   "person"."id"
@@ -185,6 +198,15 @@ from
 where
   "partners"."sharedById" in ($1)
   and "partners"."sharedWithId" = $2
+
+-- AccessRepository.session.checkOwnerAccess
+select
+  "sessions"."id"
+from
+  "sessions"
+where
+  "sessions"."id" in ($1)
+  and "sessions"."userId" = $2
 
 -- AccessRepository.stack.checkOwnerAccess
 select

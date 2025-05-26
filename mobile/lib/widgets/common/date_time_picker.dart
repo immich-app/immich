@@ -139,7 +139,7 @@ class _DateTimePicker extends HookWidget {
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
-            "action_common_cancel",
+            "cancel",
             style: context.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: context.colorScheme.error,
@@ -162,7 +162,7 @@ class _DateTimePicker extends HookWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "edit_date_time_dialog_date_time",
+            "date_and_time",
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -197,8 +197,8 @@ class _DateTimePicker extends HookWidget {
               Icons.arrow_drop_down,
               color: context.primaryColor,
             ),
-            hintText: "edit_date_time_dialog_timezone".tr(),
-            label: const Text('edit_date_time_dialog_timezone').tr(),
+            hintText: "timezone".tr(),
+            label: const Text('timezone').tr(),
             textStyle: context.textTheme.bodyMedium,
             onSelected: (value) => tzOffset.value = value,
             initialSelection: tzOffset.value,

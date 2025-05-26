@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, NotNull, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns, Partner } from 'src/database';
+import { columns } from 'src/database';
 import { DB, Partners } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 
@@ -44,10 +44,9 @@ export class PartnerRepository {
     return this.builder()
       .where('sharedWithId', '=', sharedWithId)
       .where('sharedById', '=', sharedById)
-      .executeTakeFirst() as Promise<Partner | undefined>;
+      .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [{ sharedWithId: DummyValue.UUID, sharedById: DummyValue.UUID }] })
   create(values: Insertable<Partners>) {
     return this.db
       .insertInto('partners')
@@ -55,7 +54,8 @@ export class PartnerRepository {
       .returningAll()
       .returning(withSharedBy)
       .returning(withSharedWith)
-      .executeTakeFirstOrThrow() as Promise<Partner>;
+      .$narrowType<{ sharedWith: NotNull; sharedBy: NotNull }>()
+      .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [{ sharedWithId: DummyValue.UUID, sharedById: DummyValue.UUID }, { inTimeline: true }] })
@@ -68,7 +68,8 @@ export class PartnerRepository {
       .returningAll()
       .returning(withSharedBy)
       .returning(withSharedWith)
-      .executeTakeFirstOrThrow() as Promise<Partner>;
+      .$narrowType<{ sharedWith: NotNull; sharedBy: NotNull }>()
+      .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [{ sharedWithId: DummyValue.UUID, sharedById: DummyValue.UUID }] })

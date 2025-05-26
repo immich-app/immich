@@ -34,7 +34,7 @@ class AssetLocation extends HookConsumerWidget {
               contentPadding: const EdgeInsets.all(0),
               leading: const Icon(Icons.location_on),
               title: Text(
-                "exif_bottom_sheet_location_add",
+                "add_a_location",
                 style: context.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: context.primaryColor,

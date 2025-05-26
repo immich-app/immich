@@ -9,7 +9,9 @@ import 'package:isar/isar.dart';
 class IsarStoreRepository extends IsarDatabaseRepository
     implements IStoreRepository {
   final Isar _db;
-  const IsarStoreRepository(super.db) : _db = db;
+  final validStoreKeys = StoreKey.values.map((e) => e.id).toSet();
+
+  IsarStoreRepository(super.db) : _db = db;
 
   @override
   Future<bool> deleteAll() async {
@@ -21,9 +23,14 @@ class IsarStoreRepository extends IsarDatabaseRepository
 
   @override
   Stream<StoreUpdateEvent> watchAll() {
-    return _db.storeValues.where().watch(fireImmediately: true).asyncExpand(
-          (entities) =>
-              Stream.fromFutures(entities.map((e) async => _toUpdateEvent(e))),
+    return _db.storeValues
+        .filter()
+        .anyOf(validStoreKeys, (query, id) => query.idEqualTo(id))
+        .watch(fireImmediately: true)
+        .asyncExpand(
+          (entities) => Stream.fromFutures(
+            entities.map((e) async => _toUpdateEvent(e)),
+          ),
         );
   }
 

@@ -1,6 +1,8 @@
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { defaultLang, langs, locales } from '$lib/constants';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
+import { serverConfig } from '$lib/stores/server-config.store';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
@@ -155,17 +157,10 @@ export const getJobName = derived(t, ($t) => {
   };
 });
 
-let _key: string | undefined;
 let _sharedLink: SharedLinkResponseDto | undefined;
 
-export const setKey = (key?: string) => (_key = key);
-export const getKey = (): string | undefined => _key;
 export const setSharedLink = (sharedLink: SharedLinkResponseDto) => (_sharedLink = sharedLink);
 export const getSharedLink = (): SharedLinkResponseDto | undefined => _sharedLink;
-
-export const isSharedLink = () => {
-  return !!_key;
-};
 
 const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const searchParameters = new URLSearchParams();
@@ -189,7 +184,7 @@ export const getAssetOriginalUrl = (options: string | AssetUrlOptions) => {
     options = { id: options };
   }
   const { id, cacheKey } = options;
-  return createUrl(getAssetOriginalPath(id), { key: getKey(), c: cacheKey });
+  return createUrl(getAssetOriginalPath(id), { key: authManager.key, c: cacheKey });
 };
 
 export const getAssetThumbnailUrl = (options: string | (AssetUrlOptions & { size?: AssetMediaSize })) => {
@@ -197,7 +192,7 @@ export const getAssetThumbnailUrl = (options: string | (AssetUrlOptions & { size
     options = { id: options };
   }
   const { id, size, cacheKey } = options;
-  return createUrl(getAssetThumbnailPath(id), { size, key: getKey(), c: cacheKey });
+  return createUrl(getAssetThumbnailPath(id), { size, key: authManager.key, c: cacheKey });
 };
 
 export const getAssetPlaybackUrl = (options: string | AssetUrlOptions) => {
@@ -205,7 +200,7 @@ export const getAssetPlaybackUrl = (options: string | AssetUrlOptions) => {
     options = { id: options };
   }
   const { id, cacheKey } = options;
-  return createUrl(getAssetPlaybackPath(id), { key: getKey(), c: cacheKey });
+  return createUrl(getAssetPlaybackPath(id), { key: authManager.key, c: cacheKey });
 };
 
 export const getProfileImageUrl = (user: UserResponseDto) =>
@@ -262,8 +257,8 @@ export const copyToClipboard = async (secret: string) => {
   }
 };
 
-export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  return new URL(`share/${key}`, externalDomain || globalThis.location.origin).href;
+export const makeSharedLinkUrl = (key: string) => {
+  return new URL(`share/${key}`, get(serverConfig).externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {

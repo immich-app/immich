@@ -34,7 +34,7 @@ class ChangePasswordForm extends HookConsumerWidget {
             alignment: WrapAlignment.start,
             children: [
               Text(
-                'common_change_password'.tr(),
+                'change_password'.tr(),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -110,7 +110,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                     TextButton.icon(
                       icon: const Icon(Icons.arrow_back),
                       onPressed: () => AutoRouter.of(context).back(),
-                      label: const Text('action_common_back').tr(),
+                      label: const Text('back').tr(),
                     ),
                   ],
                 ),
@@ -193,7 +193,7 @@ class ChangePasswordButton extends ConsumerWidget {
       ),
       onPressed: onPressed,
       child: Text(
-        'common_change_password'.tr(),
+        'change_password'.tr(),
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
       ),
     );

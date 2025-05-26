@@ -2,11 +2,10 @@
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { user } from '$lib/stores/user.store';
   import { searchUsersAdmin } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   interface Props {
     onCancel: () => void;
@@ -30,15 +29,19 @@
   };
 </script>
 
-<FullScreenModal title={$t('select_library_owner')} icon={mdiFolderSync} onClose={onCancel}>
-  <form {onsubmit} autocomplete="off" id="select-library-owner-form">
-    <p class="p-5 text-sm">{$t('admin.note_cannot_be_changed_later')}</p>
+<Modal title={$t('select_library_owner')} icon={mdiFolderSync} onClose={onCancel} size="small">
+  <ModalBody>
+    <form {onsubmit} autocomplete="off" id="select-library-owner-form">
+      <p class="p-5 text-sm">{$t('admin.note_cannot_be_changed_later')}</p>
 
-    <SettingSelect bind:value={ownerId} options={userOptions} name="user" />
-  </form>
+      <SettingSelect bind:value={ownerId} options={userOptions} name="user" />
+    </form>
+  </ModalBody>
 
-  {#snippet stickyBottom()}
-    <Button shape="round" color="secondary" fullWidth onclick={onCancel}>{$t('cancel')}</Button>
-    <Button shape="round" type="submit" fullWidth form="select-library-owner-form">{$t('create')}</Button>
-  {/snippet}
-</FullScreenModal>
+  <ModalFooter>
+    <div class="flex gap-2 w-full">
+      <Button shape="round" color="secondary" fullWidth onclick={onCancel}>{$t('cancel')}</Button>
+      <Button shape="round" type="submit" fullWidth form="select-library-owner-form">{$t('create')}</Button>
+    </div>
+  </ModalFooter>
+</Modal>

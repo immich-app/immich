@@ -2,12 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asset_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/share.service.dart';
+import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
@@ -57,12 +59,13 @@ Future<void> handleArchiveAssets(
         .read(assetProvider.notifier)
         .toggleArchive(selection, shouldArchive);
 
-    final assetOrAssets = selection.length > 1 ? 'assets' : 'asset';
-    final archiveOrLibrary = shouldArchive ? 'archive' : 'library';
+    final message = shouldArchive
+        ? t('moved_to_archive', {'count': selection.length})
+        : t('moved_to_library', {'count': selection.length});
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: 'Moved ${selection.length} $assetOrAssets to $archiveOrLibrary',
+        msg: message,
         gravity: toastGravity,
       );
     }
@@ -154,4 +157,30 @@ Future<void> handleEditLocation(
   }
 
   ref.read(assetServiceProvider).changeLocation(selection.toList(), location);
+}
+
+Future<void> handleSetAssetsVisibility(
+  WidgetRef ref,
+  BuildContext context,
+  AssetVisibilityEnum visibility,
+  List<Asset> selection, {
+  ToastGravity toastGravity = ToastGravity.BOTTOM,
+}) async {
+  if (selection.isNotEmpty) {
+    await ref
+        .watch(assetProvider.notifier)
+        .setLockedView(selection, visibility);
+
+    final assetOrAssets = selection.length > 1 ? 'assets' : 'asset';
+    final toastMessage = visibility == AssetVisibilityEnum.locked
+        ? 'Added ${selection.length} $assetOrAssets to locked folder'
+        : 'Removed ${selection.length} $assetOrAssets from locked folder';
+    if (context.mounted) {
+      ImmichToast.show(
+        context: context,
+        msg: toastMessage,
+        gravity: ToastGravity.BOTTOM,
+      );
+    }
+  }
 }

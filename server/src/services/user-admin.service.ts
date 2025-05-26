@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { SALT_ROUNDS } from 'src/constants';
+import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
@@ -18,7 +19,10 @@ import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/uti
 @Injectable()
 export class UserAdminService extends BaseService {
   async search(auth: AuthDto, dto: UserAdminSearchDto): Promise<UserAdminResponseDto[]> {
-    const users = await this.userRepository.getList({ withDeleted: dto.withDeleted });
+    const users = await this.userRepository.getList({
+      id: dto.id,
+      withDeleted: dto.withDeleted,
+    });
     return users.map((user) => mapUserAdmin(user));
   }
 
@@ -70,6 +74,10 @@ export class UserAdminService extends BaseService {
       dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
     }
 
+    if (dto.pinCode) {
+      dto.pinCode = await this.cryptoRepository.hashBcrypt(dto.pinCode, SALT_ROUNDS);
+    }
+
     if (dto.storageLabel === '') {
       dto.storageLabel = null;
     }
@@ -105,22 +113,25 @@ export class UserAdminService extends BaseService {
     return mapUserAdmin(user);
   }
 
+  async getStatistics(auth: AuthDto, id: string, dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
+    const stats = await this.assetRepository.getStatistics(id, dto);
+    return mapStats(stats);
+  }
+
   async getPreferences(auth: AuthDto, id: string): Promise<UserPreferencesResponseDto> {
-    const { email } = await this.findOrFail(id, { withDeleted: true });
+    await this.findOrFail(id, { withDeleted: true });
     const metadata = await this.userRepository.getMetadata(id);
-    const preferences = getPreferences(email, metadata);
-    return mapPreferences(preferences);
+    return mapPreferences(getPreferences(metadata));
   }
 
   async updatePreferences(auth: AuthDto, id: string, dto: UserPreferencesUpdateDto) {
-    const { email } = await this.findOrFail(id, { withDeleted: false });
+    await this.findOrFail(id, { withDeleted: false });
     const metadata = await this.userRepository.getMetadata(id);
-    const preferences = getPreferences(email, metadata);
-    const newPreferences = mergePreferences(preferences, dto);
+    const newPreferences = mergePreferences(getPreferences(metadata), dto);
 
     await this.userRepository.upsertMetadata(id, {
       key: UserMetadataKey.PREFERENCES,
-      value: getPreferencesPartial({ email }, newPreferences),
+      value: getPreferencesPartial(newPreferences),
     });
 
     return mapPreferences(newPreferences);

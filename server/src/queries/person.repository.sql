@@ -7,34 +7,10 @@ set
 where
   "asset_faces"."personId" = $2
 
--- PersonRepository.unassignFaces
-update "asset_faces"
-set
-  "personId" = $1
-where
-  "asset_faces"."sourceType" = $2
-VACUUM
-ANALYZE asset_faces,
-face_search,
-person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
-
 -- PersonRepository.delete
 delete from "person"
 where
   "person"."id" in ($1)
-
--- PersonRepository.deleteFaces
-delete from "asset_faces"
-where
-  "asset_faces"."sourceType" = $1
-VACUUM
-ANALYZE asset_faces,
-face_search,
-person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
 
 -- PersonRepository.getAllWithoutFaces
 select
@@ -95,39 +71,73 @@ where
   "asset_faces"."id" = $1
   and "asset_faces"."deletedAt" is null
 
--- PersonRepository.getFaceByIdWithAssets
+-- PersonRepository.getFaceForFacialRecognitionJob
 select
-  "asset_faces".*,
+  "asset_faces"."id",
+  "asset_faces"."personId",
+  "asset_faces"."sourceType",
   (
     select
       to_json(obj)
     from
       (
         select
-          "person".*
-        from
-          "person"
-        where
-          "person"."id" = "asset_faces"."personId"
-      ) as obj
-  ) as "person",
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
-          "assets".*
+          "assets"."ownerId",
+          "assets"."visibility",
+          "assets"."fileCreatedAt"
         from
           "assets"
         where
           "assets"."id" = "asset_faces"."assetId"
       ) as obj
-  ) as "asset"
+  ) as "asset",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "face_search".*
+        from
+          "face_search"
+        where
+          "face_search"."faceId" = "asset_faces"."id"
+      ) as obj
+  ) as "faceSearch"
 from
   "asset_faces"
 where
   "asset_faces"."id" = $1
+  and "asset_faces"."deletedAt" is null
+
+-- PersonRepository.getDataForThumbnailGenerationJob
+select
+  "person"."ownerId",
+  "asset_faces"."boundingBoxX1" as "x1",
+  "asset_faces"."boundingBoxY1" as "y1",
+  "asset_faces"."boundingBoxX2" as "x2",
+  "asset_faces"."boundingBoxY2" as "y2",
+  "asset_faces"."imageWidth" as "oldWidth",
+  "asset_faces"."imageHeight" as "oldHeight",
+  "assets"."type",
+  "assets"."originalPath",
+  "exif"."orientation" as "exifOrientation",
+  (
+    select
+      "asset_files"."path"
+    from
+      "asset_files"
+    where
+      "asset_files"."assetId" = "assets"."id"
+      and "asset_files"."type" = 'preview'
+  ) as "previewPath"
+from
+  "person"
+  inner join "asset_faces" on "asset_faces"."id" = "person"."faceAssetId"
+  inner join "assets" on "asset_faces"."assetId" = "assets"."id"
+  left join "exif" on "exif"."assetId" = "assets"."id"
+where
+  "person"."id" = $1
   and "asset_faces"."deletedAt" is null
 
 -- PersonRepository.reassignFace
@@ -172,7 +182,7 @@ from
   "asset_faces"
   left join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "asset_faces"."personId" = $1
-  and "assets"."isArchived" = $2
+  and "assets"."visibility" != $2
   and "assets"."deletedAt" is null
 where
   "asset_faces"."deletedAt" is null
@@ -189,7 +199,7 @@ from
   inner join "asset_faces" on "asset_faces"."personId" = "person"."id"
   inner join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "assets"."deletedAt" is null
-  and "assets"."isArchived" = $2
+  and "assets"."visibility" != $2
 where
   "person"."ownerId" = $3
   and "asset_faces"."deletedAt" is null

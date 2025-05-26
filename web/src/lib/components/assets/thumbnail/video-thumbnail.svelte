@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Duration } from 'luxon';
+  import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { Duration } from 'luxon';
 
   interface Props {
     url: string;
@@ -55,35 +55,6 @@
   };
 </script>
 
-<div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
-  {#if showTime}
-    <span class="pt-2">
-      {#if remainingSeconds < 60}
-        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
-      {:else if remainingSeconds < 3600}
-        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('mm:ss')}
-      {:else}
-        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('h:mm:ss')}
-      {/if}
-    </span>
-  {/if}
-
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <span class="pr-2 pt-2" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
-    {#if enablePlayback}
-      {#if loading}
-        <LoadingSpinner />
-      {:else if error}
-        <Icon path={mdiAlertCircleOutline} size="24" class="text-red-600" />
-      {:else}
-        <Icon path={pauseIcon} size="24" />
-      {/if}
-    {:else}
-      <Icon path={playIcon} size="24" />
-    {/if}
-  </span>
-</div>
-
 {#if enablePlayback}
   <video
     bind:this={player}
@@ -114,3 +85,32 @@
     }}
   ></video>
 {/if}
+
+<div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+  {#if showTime}
+    <span class="pt-2">
+      {#if remainingSeconds < 60}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
+      {:else if remainingSeconds < 3600}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('mm:ss')}
+      {:else}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('h:mm:ss')}
+      {/if}
+    </span>
+  {/if}
+
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <span class="pe-2 pt-2" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
+    {#if enablePlayback}
+      {#if loading}
+        <LoadingSpinner />
+      {:else if error}
+        <Icon path={mdiAlertCircleOutline} size="24" class="text-red-600" />
+      {:else}
+        <Icon path={pauseIcon} size="24" />
+      {/if}
+    {:else}
+      <Icon path={playIcon} size="24" />
+    {/if}
+  </span>
+</div>

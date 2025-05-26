@@ -6,6 +6,7 @@ import {
   startOAuth,
   updateConfig,
 } from '@immich/sdk';
+import { createHash, randomBytes } from 'node:crypto';
 import { errorDto } from 'src/responses';
 import { OAuthClient, OAuthUser } from 'src/setup/auth-server';
 import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
@@ -21,18 +22,30 @@ const mobileOverrideRedirectUri = 'https://photos.immich.app/oauth/mobile-redire
 
 const redirect = async (url: string, cookies?: string[]) => {
   const { headers } = await request(url)
-    .get('/')
+    .get('')
     .set('Cookie', cookies || []);
   return { cookies: (headers['set-cookie'] as unknown as string[]) || [], location: headers.location };
 };
 
+// Function to generate a code challenge from the verifier
+const generateCodeChallenge = async (codeVerifier: string): Promise<string> => {
+  const hashed = createHash('sha256').update(codeVerifier).digest();
+  return hashed.toString('base64url');
+};
+
 const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => {
-  const { url } = await startOAuth({ oAuthConfigDto: { redirectUri: redirectUri ?? `${baseUrl}/auth/login` } });
+  const state = randomBytes(16).toString('base64url');
+  const codeVerifier = randomBytes(64).toString('base64url');
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+  const { url } = await startOAuth({
+    oAuthConfigDto: { redirectUri: redirectUri ?? `${baseUrl}/auth/login`, state, codeChallenge },
+  });
 
   // login
   const response1 = await redirect(url.replace(authServer.internal, authServer.external));
   const response2 = await request(authServer.external + response1.location)
-    .post('/')
+    .post('')
     .set('Cookie', response1.cookies)
     .type('form')
     .send({ prompt: 'login', login: sub, password: 'password' });
@@ -40,7 +53,7 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
   // approve
   const response3 = await redirect(response2.header.location, response1.cookies);
   const response4 = await request(authServer.external + response3.location)
-    .post('/')
+    .post('')
     .type('form')
     .set('Cookie', response3.cookies)
     .send({ prompt: 'consent' });
@@ -51,9 +64,9 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
   expect(redirectUrl).toBeDefined();
   const params = new URL(redirectUrl).searchParams;
   expect(params.get('code')).toBeDefined();
-  expect(params.get('state')).toBeDefined();
+  expect(params.get('state')).toBe(state);
 
-  return redirectUrl;
+  return { url: redirectUrl, state, codeVerifier };
 };
 
 const setupOAuth = async (token: string, dto: Partial<SystemConfigOAuthDto>) => {
@@ -119,9 +132,42 @@ describe(`/oauth`, () => {
       expect(body).toEqual(errorDto.badRequest(['url should not be empty']));
     });
 
-    it('should auto register the user by default', async () => {
-      const url = await loginWithOAuth('oauth-auto-register');
+    it(`should throw an error if the state is not provided`, async () => {
+      const { url } = await loginWithOAuth('oauth-auto-register');
       const { status, body } = await request(app).post('/oauth/callback').send({ url });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('OAuth state is missing'));
+    });
+
+    it(`should throw an error if the state mismatches`, async () => {
+      const callbackParams = await loginWithOAuth('oauth-auto-register');
+      const { state } = await loginWithOAuth('oauth-auto-register');
+      const { status } = await request(app)
+        .post('/oauth/callback')
+        .send({ ...callbackParams, state });
+      expect(status).toBeGreaterThanOrEqual(400);
+    });
+
+    it(`should throw an error if the codeVerifier is not provided`, async () => {
+      const { url, state } = await loginWithOAuth('oauth-auto-register');
+      const { status, body } = await request(app).post('/oauth/callback').send({ url, state });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('OAuth code verifier is missing'));
+    });
+
+    it(`should throw an error if the codeVerifier doesn't match the challenge`, async () => {
+      const callbackParams = await loginWithOAuth('oauth-auto-register');
+      const { codeVerifier } = await loginWithOAuth('oauth-auto-register');
+      const { status, body } = await request(app)
+        .post('/oauth/callback')
+        .send({ ...callbackParams, codeVerifier });
+      console.log(body);
+      expect(status).toBeGreaterThanOrEqual(400);
+    });
+
+    it('should auto register the user by default', async () => {
+      const callbackParams = await loginWithOAuth('oauth-auto-register');
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
       expect(status).toBe(201);
       expect(body).toMatchObject({
         accessToken: expect.any(String),
@@ -132,16 +178,30 @@ describe(`/oauth`, () => {
       });
     });
 
+    it('should allow passing state and codeVerifier via cookies', async () => {
+      const { url, state, codeVerifier } = await loginWithOAuth('oauth-auto-register');
+      const { status, body } = await request(app)
+        .post('/oauth/callback')
+        .set('Cookie', [`immich_oauth_state=${state}`, `immich_oauth_code_verifier=${codeVerifier}`])
+        .send({ url });
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        userId: expect.any(String),
+        userEmail: 'oauth-auto-register@immich.app',
+      });
+    });
+
     it('should handle a user without an email', async () => {
-      const url = await loginWithOAuth(OAuthUser.NO_EMAIL);
-      const { status, body } = await request(app).post('/oauth/callback').send({ url });
+      const callbackParams = await loginWithOAuth(OAuthUser.NO_EMAIL);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('OAuth profile does not have an email address'));
     });
 
     it('should set the quota from a claim', async () => {
-      const url = await loginWithOAuth(OAuthUser.WITH_QUOTA);
-      const { status, body } = await request(app).post('/oauth/callback').send({ url });
+      const callbackParams = await loginWithOAuth(OAuthUser.WITH_QUOTA);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
       expect(status).toBe(201);
       expect(body).toMatchObject({
         accessToken: expect.any(String),
@@ -154,8 +214,8 @@ describe(`/oauth`, () => {
     });
 
     it('should set the storage label from a claim', async () => {
-      const url = await loginWithOAuth(OAuthUser.WITH_USERNAME);
-      const { status, body } = await request(app).post('/oauth/callback').send({ url });
+      const callbackParams = await loginWithOAuth(OAuthUser.WITH_USERNAME);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
       expect(status).toBe(201);
       expect(body).toMatchObject({
         accessToken: expect.any(String),
@@ -176,8 +236,8 @@ describe(`/oauth`, () => {
         buttonText: 'Login with Immich',
         signingAlgorithm: 'RS256',
       });
-      const url = await loginWithOAuth('oauth-RS256-token');
-      const { status, body } = await request(app).post('/oauth/callback').send({ url });
+      const callbackParams = await loginWithOAuth('oauth-RS256-token');
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
       expect(status).toBe(201);
       expect(body).toMatchObject({
         accessToken: expect.any(String),
@@ -196,8 +256,8 @@ describe(`/oauth`, () => {
         buttonText: 'Login with Immich',
         profileSigningAlgorithm: 'RS256',
       });
-      const url = await loginWithOAuth('oauth-signed-profile');
-      const { status, body } = await request(app).post('/oauth/callback').send({ url });
+      const callbackParams = await loginWithOAuth('oauth-signed-profile');
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
       expect(status).toBe(201);
       expect(body).toMatchObject({
         userId: expect.any(String),
@@ -213,8 +273,8 @@ describe(`/oauth`, () => {
         buttonText: 'Login with Immich',
         signingAlgorithm: 'something-that-does-not-work',
       });
-      const url = await loginWithOAuth('oauth-signed-bad');
-      const { status, body } = await request(app).post('/oauth/callback').send({ url });
+      const callbackParams = await loginWithOAuth('oauth-signed-bad');
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
       expect(status).toBe(500);
       expect(body).toMatchObject({
         error: 'Internal Server Error',
@@ -235,8 +295,8 @@ describe(`/oauth`, () => {
       });
 
       it('should not auto register the user', async () => {
-        const url = await loginWithOAuth('oauth-no-auto-register');
-        const { status, body } = await request(app).post('/oauth/callback').send({ url });
+        const callbackParams = await loginWithOAuth('oauth-no-auto-register');
+        const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
         expect(status).toBe(400);
         expect(body).toEqual(errorDto.badRequest('User does not exist and auto registering is disabled.'));
       });
@@ -247,8 +307,8 @@ describe(`/oauth`, () => {
           email: 'oauth-user3@immich.app',
           password: 'password',
         });
-        const url = await loginWithOAuth('oauth-user3');
-        const { status, body } = await request(app).post('/oauth/callback').send({ url });
+        const callbackParams = await loginWithOAuth('oauth-user3');
+        const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
         expect(status).toBe(201);
         expect(body).toMatchObject({
           userId,
@@ -286,13 +346,15 @@ describe(`/oauth`, () => {
     });
 
     it('should auto register the user by default', async () => {
-      const url = await loginWithOAuth('oauth-mobile-override', 'app.immich:///oauth-callback');
-      expect(url).toEqual(expect.stringContaining(mobileOverrideRedirectUri));
+      const callbackParams = await loginWithOAuth('oauth-mobile-override', 'app.immich:///oauth-callback');
+      expect(callbackParams.url).toEqual(expect.stringContaining(mobileOverrideRedirectUri));
 
       // simulate redirecting back to mobile app
-      const redirectUri = url.replace(mobileOverrideRedirectUri, 'app.immich:///oauth-callback');
+      const url = callbackParams.url.replace(mobileOverrideRedirectUri, 'app.immich:///oauth-callback');
 
-      const { status, body } = await request(app).post('/oauth/callback').send({ url: redirectUri });
+      const { status, body } = await request(app)
+        .post('/oauth/callback')
+        .send({ ...callbackParams, url });
       expect(status).toBe(201);
       expect(body).toMatchObject({
         accessToken: expect.any(String),

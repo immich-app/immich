@@ -19,11 +19,11 @@ class SyncAssetV1 {
     required this.fileModifiedAt,
     required this.id,
     required this.isFavorite,
-    required this.isVisible,
     required this.localDateTime,
     required this.ownerId,
     required this.thumbhash,
     required this.type,
+    required this.visibility,
   });
 
   String checksum;
@@ -38,8 +38,6 @@ class SyncAssetV1 {
 
   bool isFavorite;
 
-  bool isVisible;
-
   DateTime? localDateTime;
 
   String ownerId;
@@ -47,6 +45,8 @@ class SyncAssetV1 {
   String? thumbhash;
 
   SyncAssetV1TypeEnum type;
+
+  SyncAssetV1VisibilityEnum visibility;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetV1 &&
@@ -56,11 +56,11 @@ class SyncAssetV1 {
     other.fileModifiedAt == fileModifiedAt &&
     other.id == id &&
     other.isFavorite == isFavorite &&
-    other.isVisible == isVisible &&
     other.localDateTime == localDateTime &&
     other.ownerId == ownerId &&
     other.thumbhash == thumbhash &&
-    other.type == type;
+    other.type == type &&
+    other.visibility == visibility;
 
   @override
   int get hashCode =>
@@ -71,14 +71,14 @@ class SyncAssetV1 {
     (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
     (id.hashCode) +
     (isFavorite.hashCode) +
-    (isVisible.hashCode) +
     (localDateTime == null ? 0 : localDateTime!.hashCode) +
     (ownerId.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
-    (type.hashCode);
+    (type.hashCode) +
+    (visibility.hashCode);
 
   @override
-  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, isVisible=$isVisible, localDateTime=$localDateTime, ownerId=$ownerId, thumbhash=$thumbhash, type=$type]';
+  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, localDateTime=$localDateTime, ownerId=$ownerId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -100,7 +100,6 @@ class SyncAssetV1 {
     }
       json[r'id'] = this.id;
       json[r'isFavorite'] = this.isFavorite;
-      json[r'isVisible'] = this.isVisible;
     if (this.localDateTime != null) {
       json[r'localDateTime'] = this.localDateTime!.toUtc().toIso8601String();
     } else {
@@ -113,6 +112,7 @@ class SyncAssetV1 {
     //  json[r'thumbhash'] = null;
     }
       json[r'type'] = this.type;
+      json[r'visibility'] = this.visibility;
     return json;
   }
 
@@ -131,11 +131,11 @@ class SyncAssetV1 {
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r''),
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
-        isVisible: mapValueOfType<bool>(json, r'isVisible')!,
         localDateTime: mapDateTime(json, r'localDateTime', r''),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: SyncAssetV1TypeEnum.fromJson(json[r'type'])!,
+        visibility: SyncAssetV1VisibilityEnum.fromJson(json[r'visibility'])!,
       );
     }
     return null;
@@ -189,11 +189,11 @@ class SyncAssetV1 {
     'fileModifiedAt',
     'id',
     'isFavorite',
-    'isVisible',
     'localDateTime',
     'ownerId',
     'thumbhash',
     'type',
+    'visibility',
   };
 }
 
@@ -274,6 +274,86 @@ class SyncAssetV1TypeEnumTypeTransformer {
 
   /// Singleton [SyncAssetV1TypeEnumTypeTransformer] instance.
   static SyncAssetV1TypeEnumTypeTransformer? _instance;
+}
+
+
+
+class SyncAssetV1VisibilityEnum {
+  /// Instantiate a new enum with the provided [value].
+  const SyncAssetV1VisibilityEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const archive = SyncAssetV1VisibilityEnum._(r'archive');
+  static const timeline = SyncAssetV1VisibilityEnum._(r'timeline');
+  static const hidden = SyncAssetV1VisibilityEnum._(r'hidden');
+  static const locked = SyncAssetV1VisibilityEnum._(r'locked');
+
+  /// List of all possible values in this [enum][SyncAssetV1VisibilityEnum].
+  static const values = <SyncAssetV1VisibilityEnum>[
+    archive,
+    timeline,
+    hidden,
+    locked,
+  ];
+
+  static SyncAssetV1VisibilityEnum? fromJson(dynamic value) => SyncAssetV1VisibilityEnumTypeTransformer().decode(value);
+
+  static List<SyncAssetV1VisibilityEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <SyncAssetV1VisibilityEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = SyncAssetV1VisibilityEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [SyncAssetV1VisibilityEnum] to String,
+/// and [decode] dynamic data back to [SyncAssetV1VisibilityEnum].
+class SyncAssetV1VisibilityEnumTypeTransformer {
+  factory SyncAssetV1VisibilityEnumTypeTransformer() => _instance ??= const SyncAssetV1VisibilityEnumTypeTransformer._();
+
+  const SyncAssetV1VisibilityEnumTypeTransformer._();
+
+  String encode(SyncAssetV1VisibilityEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a SyncAssetV1VisibilityEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  SyncAssetV1VisibilityEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'archive': return SyncAssetV1VisibilityEnum.archive;
+        case r'timeline': return SyncAssetV1VisibilityEnum.timeline;
+        case r'hidden': return SyncAssetV1VisibilityEnum.hidden;
+        case r'locked': return SyncAssetV1VisibilityEnum.locked;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [SyncAssetV1VisibilityEnumTypeTransformer] instance.
+  static SyncAssetV1VisibilityEnumTypeTransformer? _instance;
 }
 
 

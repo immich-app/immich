@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { user } from '$lib/stores/user.store';
-  import type { AlbumResponseDto } from '@immich/sdk';
-  import { mdiDotsVertical } from '@mdi/js';
-  import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
-  import { getShortDateRange } from '$lib/utils/date-time';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { user } from '$lib/stores/user.store';
+  import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
+  import { getShortDateRange } from '$lib/utils/date-time';
+  import type { AlbumResponseDto } from '@immich/sdk';
+  import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -40,7 +40,7 @@
   {#if onShowContextMenu}
     <div
       id="icon-{album.id}"
-      class="absolute right-6 top-6 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
+      class="absolute end-6 top-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
       data-testid="context-button-parent"
     >
       <CircleIconButton

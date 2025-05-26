@@ -1,6 +1,7 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { UploadState } from '$lib/models/upload-asset';
 import { uploadAssetsStore } from '$lib/stores/upload';
-import { getKey, uploadRequest } from '$lib/utils';
+import { uploadRequest } from '$lib/utils';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import {
@@ -134,7 +135,7 @@ async function fileUploader(
     }
 
     let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean } | undefined;
-    const key = getKey();
+    const key = authManager.key;
     if (crypto?.subtle?.digest && !key) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_hashing') });
       await tick();

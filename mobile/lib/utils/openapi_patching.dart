@@ -31,6 +31,11 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
       }
       break;
+    case 'AssetResponseDto':
+      if (value is Map) {
+        addDefault(value, 'visibility', 'timeline');
+      }
+      break;
     case 'UserAdminResponseDto':
       if (value is Map) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());

@@ -2,6 +2,7 @@ import {
   mdiBug,
   mdiCalendarToday,
   mdiCrosshairsOff,
+  mdiCrop,
   mdiDatabase,
   mdiLeadPencil,
   mdiLockOff,
@@ -22,6 +23,18 @@ const withLanguage = (date: Date) => (language: string) => date.toLocaleDateStri
 type Item = Omit<TimelineItem, 'done' | 'getDateLabel'> & { date: Date };
 
 const items: Item[] = [
+  {
+    icon: mdiCrop,
+    iconColor: 'tomato',
+    title: 'Image dimensions in EXIF metadata are cursed',
+    description:
+      'The dimensions in EXIF metadata can be different from the actual dimensions of the image, causing issues with cropping and resizing.',
+    link: {
+      url: 'https://github.com/immich-app/immich/pull/17974',
+      text: '#17974',
+    },
+    date: new Date(2025, 5, 5),
+  },
   {
     icon: mdiMicrosoftWindows,
     iconColor: '#357EC7',

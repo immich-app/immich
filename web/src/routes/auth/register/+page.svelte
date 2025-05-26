@@ -13,18 +13,16 @@
   let password = $state('');
   let confirmPassword = $state('');
   let name = $state('');
-  let errorMessage = $state('');
-  let valid = $derived(password === confirmPassword && confirmPassword.length > 0);
+  let errorMessage = $derived(
+    password === confirmPassword || confirmPassword.length === 0 ? '' : $t('password_does_not_match'),
+  );
+  const valid = $derived(password === confirmPassword && confirmPassword.length > 0);
 
   interface Props {
     data: PageData;
   }
 
   let { data }: Props = $props();
-
-  $effect(() => {
-    errorMessage = password === confirmPassword || confirmPassword.length === 0 ? '' : $t('password_does_not_match');
-  });
 
   const onSubmit = async (event: Event) => {
     event.preventDefault();

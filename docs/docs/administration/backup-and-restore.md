@@ -23,23 +23,32 @@ Refer to the official [postgres documentation](https://www.postgresql.org/docs/c
 It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
 :::
 
-### Automatic Database Backups
+### Automatic Database Dumps
 
-For convenience, Immich will automatically create database backups by default. The backups are stored in `UPLOAD_LOCATION/backups`.  
-As mentioned above, you should make your own backup of these together with the asset folders as noted below.  
-You can adjust the schedule and amount of kept backups in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).  
-By default, Immich will keep the last 14 backups and create a new backup every day at 2:00 AM.
+:::warning
+The automatic database dumps can be used to restore the database in the event of damage to the Postgres database files.
+There is no monitoring for these dumps and you will not be notified if they are unsuccessful.
+:::
 
-#### Trigger Backup
+:::caution
+The database dumps do **NOT** contain any pictures or videos, only metadata. They are only usable with a copy of the other files in `UPLOAD_LOCATION` as outlined below.
+:::
 
-You are able to trigger a backup in the [admin job status page](http://my.immich.app/admin/jobs-status).
-Visit the page, open the "Create job" modal from the top right, select "Backup Database" and click "Confirm".
-A job will run and trigger a backup, you can verify this worked correctly by checking the logs or the backup folder.
-This backup will count towards the last X backups that will be kept based on your settings.
+For disaster-recovery purposes, Immich will automatically create database dumps. The dumps are stored in `UPLOAD_LOCATION/backups`.
+Please be sure to make your own, independent backup of the database together with the asset folders as noted below.
+You can adjust the schedule and amount of kept database dumps in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).
+By default, Immich will keep the last 14 database dumps and create a new dump every day at 2:00 AM.
+
+#### Trigger Dump
+
+You are able to trigger a database dump in the [admin job status page](http://my.immich.app/admin/jobs-status).
+Visit the page, open the "Create job" modal from the top right, select "Create Database Dump" and click "Confirm".
+A job will run and trigger a dump, you can verify this worked correctly by checking the logs or the `backups/` folder.
+This dumps will count towards the last `X` dumps that will be kept based on your settings.
 
 #### Restoring
 
-We hope to make restoring simpler in future versions, for now you can find the backups in the `UPLOAD_LOCATION/backups` folder on your host.  
+We hope to make restoring simpler in future versions, for now you can find the database dumps in the `UPLOAD_LOCATION/backups` folder on your host.
 Then please follow the steps in the following section for restoring the database.
 
 ### Manual Backup and Restore

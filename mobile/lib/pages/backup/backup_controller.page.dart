@@ -91,7 +91,7 @@ class BackupControllerPage extends HookConsumerWidget {
       if (albums.isNotEmpty) {
         for (var album in albums) {
           if (album.name == "Recent" || album.name == "Recents") {
-            text += "${album.name} (${'backup_all'.tr()}), ";
+            text += "${album.name} (${'all'.tr()}), ";
           } else {
             text += "${album.name}, ";
           }
@@ -188,7 +188,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 ref.read(albumProvider.notifier).refreshDeviceAlbums();
               },
               child: const Text(
-                "backup_controller_page_select",
+                "select",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
@@ -231,7 +231,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     }
                   },
                   child: const Text(
-                    "backup_controller_page_cancel",
+                    "cancel",
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -309,7 +309,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   ? [
                       buildFolderSelectionTile(),
                       BackupInfoCard(
-                        title: "backup_controller_page_total".tr(),
+                        title: "total".tr(),
                         subtitle: "backup_controller_page_total_sub".tr(),
                         info: ref.watch(backupProvider).availableAlbums.isEmpty
                             ? "..."

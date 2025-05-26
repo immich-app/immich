@@ -16,14 +16,16 @@ export async function bootstrap() {
 
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
   const logger = await app.resolve(LoggingRepository);
+  const configRepository = app.get(ConfigRepository);
+
+  const { environment, host } = configRepository.getEnv();
+
   logger.setContext('Bootstrap');
   app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
-  await app.listen(0);
+  await (host ? app.listen(0, host) : app.listen(0));
 
-  const configRepository = app.get(ConfigRepository);
-  const { environment } = configRepository.getEnv();
   logger.log(`Immich Microservices is running [v${serverVersion}] [${environment}] `);
 }
 

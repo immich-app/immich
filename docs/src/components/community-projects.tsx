@@ -40,13 +40,9 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: 'Lightroom Immich Plugin: lrc-immich-plugin',
-    description: 'Another Lightroom plugin to publish or export photos from Lightroom to Immich.',
-    url: 'https://github.com/bmachek/lrc-immich-plugin',
-  },
-  {
-    title: 'Immich Duplicate Finder',
-    description: 'Webapp that uses machine learning to identify near-duplicate images.',
-    url: 'https://github.com/vale46n1/immich_duplicate_finder',
+    description:
+      'Lightroom plugin to publish, export photos from Lightroom to Immich. Import from Immich to Lightroom is also supported.',
+    url: 'https://blog.fokuspunk.de/lrc-immich-plugin/',
   },
   {
     title: 'Immich-Tiktok-Remover',

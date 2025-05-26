@@ -21,7 +21,7 @@ class MapTimeDropDown extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 20),
           child: Text(
-            "map_settings_only_relative_range".tr(),
+            "date_range".tr(),
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
@@ -35,7 +35,7 @@ class MapTimeDropDown extends StatelessWidget {
             dropdownMenuEntries: [
               DropdownMenuEntry(
                 value: 0,
-                label: "map_settings_date_range_option_all".tr(),
+                label: "all".tr(),
               ),
               DropdownMenuEntry(
                 value: 1,
@@ -44,13 +44,13 @@ class MapTimeDropDown extends StatelessWidget {
               DropdownMenuEntry(
                 value: 7,
                 label: "map_settings_date_range_option_days".tr(
-                  args: ["7"],
+                  namedArgs: {'days': "7"},
                 ),
               ),
               DropdownMenuEntry(
                 value: 30,
                 label: "map_settings_date_range_option_days".tr(
-                  args: ["30"],
+                  namedArgs: {'days': "30"},
                 ),
               ),
               DropdownMenuEntry(
@@ -81,7 +81,8 @@ class MapTimeDropDown extends StatelessWidget {
                       ),
                     )
                     .inDays,
-                label: "map_settings_date_range_option_years".tr(args: ["3"]),
+                label: "map_settings_date_range_option_years"
+                    .tr(namedArgs: {'years': "3"}),
               ),
             ],
           ),
