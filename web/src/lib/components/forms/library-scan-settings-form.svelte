@@ -1,5 +1,6 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { type LibraryResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
@@ -16,13 +17,11 @@
 
   let { library = $bindable(), onCancel, onSubmit }: Props = $props();
 
-  let addExclusionPattern = $state(false);
   let editExclusionPattern: number | null = $state(null);
 
-  let exclusionPatternToAdd: string = $state('');
-  let editedExclusionPattern: string = $state('');
-
   let exclusionPatterns: string[] = $state([]);
+
+  let closeModal: (() => Promise<void>) | undefined;
 
   onMount(() => {
     if (library.exclusionPatterns) {
@@ -32,11 +31,7 @@
     }
   });
 
-  const handleAddExclusionPattern = () => {
-    if (!addExclusionPattern) {
-      return;
-    }
-
+  const handleAddExclusionPattern = async (exclusionPatternToAdd: string) => {
     if (!library.exclusionPatterns) {
       library.exclusionPatterns = [];
     }
@@ -51,11 +46,11 @@
       handleError(error, $t('errors.unable_to_add_exclusion_pattern'));
     } finally {
       exclusionPatternToAdd = '';
-      addExclusionPattern = false;
+      await closeModal?.();
     }
   };
 
-  const handleEditExclusionPattern = () => {
+  const handleEditExclusionPattern = async (editedExclusionPattern: string) => {
     if (editExclusionPattern === null) {
       return;
     }
@@ -70,11 +65,11 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_edit_exclusion_pattern'));
     } finally {
-      editExclusionPattern = null;
+      await closeModal?.();
     }
   };
 
-  const handleDeleteExclusionPattern = () => {
+  const handleDeleteExclusionPattern = async () => {
     if (editExclusionPattern === null) {
       return;
     }
@@ -90,8 +85,36 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_exclusion_pattern'));
     } finally {
-      editExclusionPattern = null;
+      await closeModal?.();
     }
+  };
+
+  const onAddExclusionPattern = () => {
+    const result = modalManager.open(LibraryExclusionPatternForm, {
+      submitText: $t('add'),
+      exclusionPattern: '',
+      exclusionPatterns,
+      onSubmit: handleAddExclusionPattern,
+    });
+
+    closeModal = result.close;
+  };
+
+  const onEditExclusionPattern = () => {
+    if (editExclusionPattern === null) {
+      return;
+    }
+
+    const result = modalManager.open(LibraryExclusionPatternForm, {
+      submitText: $t('save'),
+      isEditing: true,
+      exclusionPattern: exclusionPatterns[editExclusionPattern],
+      exclusionPatterns,
+      onSubmit: handleEditExclusionPattern,
+      onDelete: handleDeleteExclusionPattern,
+    });
+
+    closeModal = result.close;
   };
 
   const onsubmit = (event: Event) => {
@@ -99,28 +122,6 @@
     onSubmit(library);
   };
 </script>
-
-{#if addExclusionPattern}
-  <LibraryExclusionPatternForm
-    submitText={$t('add')}
-    bind:exclusionPattern={exclusionPatternToAdd}
-    {exclusionPatterns}
-    onSubmit={handleAddExclusionPattern}
-    onCancel={() => (addExclusionPattern = false)}
-  />
-{/if}
-
-{#if editExclusionPattern != undefined}
-  <LibraryExclusionPatternForm
-    submitText={$t('save')}
-    isEditing={true}
-    bind:exclusionPattern={editedExclusionPattern}
-    {exclusionPatterns}
-    onSubmit={handleEditExclusionPattern}
-    onDelete={handleDeleteExclusionPattern}
-    onCancel={() => (editExclusionPattern = null)}
-  />
-{/if}
 
 <form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="w-full text-start">
@@ -138,7 +139,7 @@
               size="16"
               onclick={() => {
                 editExclusionPattern = listIndex;
-                editedExclusionPattern = exclusionPattern;
+                onEditExclusionPattern();
               }}
             />
           </td>
@@ -153,13 +154,9 @@
           {/if}
         </td>
         <td class="w-1/4 text-ellipsis px-4 text-sm flex justify-center">
-          <Button
-            size="small"
-            shape="round"
-            onclick={() => {
-              addExclusionPattern = true;
-            }}>{$t('add_exclusion_pattern')}</Button
-          >
+          <Button size="small" shape="round" onclick={onAddExclusionPattern}>
+            {$t('add_exclusion_pattern')}
+          </Button>
         </td>
       </tr>
     </tbody>
