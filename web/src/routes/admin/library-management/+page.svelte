@@ -56,23 +56,24 @@
   let diskUsageUnit: ByteUnit[] = $state([]);
   let editImportPaths: number | undefined = $state();
   let editScanSettings: number | undefined = $state();
-  let renameLibrary: number | undefined = $state();
   let updateLibraryIndex: number | null;
   let dropdownOpen: boolean[] = [];
-  let toCreateLibrary = $state(false);
-  let toAddImportPath = $state(false);
   let importPathToAdd: string | null = $state(null);
+
+  let closeAddImportPath: (() => Promise<void>) | undefined;
+  let closeRenameLibrary: (() => Promise<void>) | undefined;
+  let closeCreateLibrary: (() => Promise<void>) | undefined;
 
   onMount(async () => {
     await readLibraryList();
   });
 
-  const closeAll = () => {
+  const closeAll = async () => {
     editImportPaths = undefined;
     editScanSettings = undefined;
-    renameLibrary = undefined;
     updateLibraryIndex = null;
-    toAddImportPath = false;
+    await closeAddImportPath?.();
+    await closeRenameLibrary?.();
 
     for (let index = 0; index < dropdownOpen.length; index++) {
       dropdownOpen[index] = false;
@@ -109,31 +110,43 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_create_library'));
     } finally {
-      toCreateLibrary = false;
+      await closeCreateLibrary?.();
       await readLibraryList();
     }
 
     if (createdLibrary) {
       // Open the import paths form for the newly created library
       updateLibraryIndex = libraries.findIndex((library) => library.id === createdLibrary.id);
-      toAddImportPath = true;
+      const result = modalManager.open(LibraryImportPathForm, {
+        title: $t('add_import_path'),
+        submitText: $t('add'),
+        importPath: importPathToAdd,
+        onSubmit: handleAddImportPath,
+        onCancel: async () => {
+          if (updateLibraryIndex !== null) {
+            await onEditImportPathClicked(updateLibraryIndex);
+          }
+        },
+      });
+
+      closeAddImportPath = result.close;
     }
   };
 
-  const handleAddImportPath = () => {
+  const handleAddImportPath = async () => {
     if ((updateLibraryIndex !== 0 && !updateLibraryIndex) || !importPathToAdd) {
       return;
     }
 
     try {
-      onEditImportPathClicked(updateLibraryIndex);
+      await onEditImportPathClicked(updateLibraryIndex);
 
       libraries[updateLibraryIndex].importPaths.push(importPathToAdd);
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_import_path'));
     } finally {
       importPathToAdd = null;
-      toAddImportPath = false;
+      await closeAddImportPath?.();
     }
   };
 
@@ -145,7 +158,7 @@
     try {
       const libraryId = libraries[updateLibraryIndex].id;
       await updateLibrary({ id: libraryId, updateLibraryDto: library });
-      closeAll();
+      await closeAll();
       await readLibraryList();
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_library'));
@@ -177,34 +190,46 @@
     }
   };
 
-  const onRenameClicked = (index: number) => {
-    closeAll();
-    renameLibrary = index;
+  const onRenameClicked = async (index: number) => {
+    await closeAll();
+    // renameLibrary = index;
+    const result = modalManager.open(LibraryRenameForm, {
+      library: libraries[index],
+      onSubmit: handleUpdate,
+    });
+    closeRenameLibrary = result.close;
     updateLibraryIndex = index;
   };
 
-  const onEditImportPathClicked = (index: number) => {
-    closeAll();
+  const onEditImportPathClicked = async (index: number) => {
+    await closeAll();
     editImportPaths = index;
     updateLibraryIndex = index;
   };
 
   const onScanClicked = async (library: LibraryResponseDto) => {
-    closeAll();
+    await closeAll();
 
     if (library) {
       await handleScan(library.id);
     }
   };
 
-  const onScanSettingClicked = (index: number) => {
-    closeAll();
+  const onCreateNewLibraryClicked = () => {
+    const result = modalManager.open(LibraryUserPickerForm, {
+      onSubmit: handleCreate,
+    });
+    closeCreateLibrary = result.close;
+  };
+
+  const onScanSettingClicked = async (index: number) => {
+    await closeAll();
     editScanSettings = index;
     updateLibraryIndex = index;
   };
 
   const handleDelete = async (library: LibraryResponseDto, index: number) => {
-    closeAll();
+    await closeAll();
 
     if (!library) {
       return;
@@ -250,7 +275,7 @@
       {/if}
       <Button
         leadingIcon={mdiPlusBoxOutline}
-        onclick={() => (toCreateLibrary = true)}
+        onclick={onCreateNewLibraryClicked}
         size="small"
         variant="ghost"
         color="secondary"
@@ -359,35 +384,8 @@
 
         <!-- Empty message -->
       {:else}
-        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={() => (toCreateLibrary = true)} />
+        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={onCreateNewLibraryClicked} />
       {/if}
     </div>
   </section>
 </AdminPageLayout>
-
-{#if renameLibrary !== undefined}
-  <LibraryRenameForm
-    library={libraries[renameLibrary]}
-    onSubmit={handleUpdate}
-    onCancel={() => (renameLibrary = undefined)}
-  />
-{/if}
-
-{#if toCreateLibrary}
-  <LibraryUserPickerForm onSubmit={handleCreate} onCancel={() => (toCreateLibrary = false)} />
-{/if}
-
-{#if toAddImportPath}
-  <LibraryImportPathForm
-    title={$t('add_import_path')}
-    submitText={$t('add')}
-    bind:importPath={importPathToAdd}
-    onSubmit={handleAddImportPath}
-    onCancel={() => {
-      toAddImportPath = false;
-      if (updateLibraryIndex) {
-        onEditImportPathClicked(updateLibraryIndex);
-      }
-    }}
-  />
-{/if}

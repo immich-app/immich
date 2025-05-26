@@ -8,11 +8,11 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    onCancel: () => void;
+    onClose: () => void;
     onSubmit: (ownerId: string) => void;
   }
 
-  let { onCancel, onSubmit }: Props = $props();
+  let { onClose, onSubmit }: Props = $props();
 
   let ownerId: string = $state($user.id);
 
@@ -29,7 +29,7 @@
   };
 </script>
 
-<Modal title={$t('select_library_owner')} icon={mdiFolderSync} onClose={onCancel} size="small">
+<Modal title={$t('select_library_owner')} icon={mdiFolderSync} {onClose} size="small">
   <ModalBody>
     <form {onsubmit} autocomplete="off" id="select-library-owner-form">
       <p class="p-5 text-sm">{$t('admin.note_cannot_be_changed_later')}</p>
@@ -40,7 +40,7 @@
 
   <ModalFooter>
     <div class="flex gap-2 w-full">
-      <Button shape="round" color="secondary" fullWidth onclick={onCancel}>{$t('cancel')}</Button>
+      <Button shape="round" color="secondary" fullWidth onclick={onClose}>{$t('cancel')}</Button>
       <Button shape="round" type="submit" fullWidth form="select-library-owner-form">{$t('create')}</Button>
     </div>
   </ModalFooter>
