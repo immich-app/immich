@@ -112,7 +112,7 @@
 
     <button
       type="button"
-      class="flex w-full place-content-center place-items-center pt-1 underline text-xs text-immich-primary dark:text-immich-dark-primary bg-transparent border-0 cursor-pointer"
+      class="text-center pt-1 underline text-xs text-immich-primary dark:text-immich-dark-primary"
       onclick={async () => {
         onClose();
         if (info) {
