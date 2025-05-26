@@ -6,9 +6,13 @@
   import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
+  import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { user } from '$lib/stores/user.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
+  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import UserAvatar from '../user-avatar.svelte';
@@ -19,6 +23,12 @@
   }
 
   let { onLogout, onClose = () => {} }: Props = $props();
+
+  let info: ServerAboutResponseDto | undefined = $state();
+
+  onMount(async () => {
+    info = userInteraction.aboutInfo ?? (await getAboutInfo());
+  });
 </script>
 
 <div
@@ -99,5 +109,18 @@
       <Icon path={mdiLogout} size={24} />
       {$t('sign_out')}</button
     >
+
+    <button
+      type="button"
+      class="flex w-full place-content-center place-items-center pt-1 underline text-xs text-immich-primary dark:text-immich-dark-primary bg-transparent border-0 cursor-pointer"
+      onclick={async () => {
+        onClose();
+        if (info) {
+          await modalManager.show(HelpAndFeedbackModal, { info });
+        }
+      }}
+    >
+      {$t('support_and_feedback')}
+    </button>
   </div>
 </div>
