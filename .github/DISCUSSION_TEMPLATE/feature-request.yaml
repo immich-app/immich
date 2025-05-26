@@ -14,7 +14,6 @@ body:
       label: I have searched the existing feature requests, both open and closed, to make sure this is not a duplicate request.
       options:
         - label: 'Yes'
-          required: true
 
   - type: textarea
     id: feature

@@ -6,7 +6,6 @@ body:
       label: I have searched the existing issues, both open and closed, to make sure this is not a duplicate report.
       options:
         - label: 'Yes'
-          required: true
 
   - type: markdown
     attributes:
