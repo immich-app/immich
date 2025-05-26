@@ -29,6 +29,8 @@ describe(StorageService.name, () => {
           library: true,
           profile: true,
           thumbs: true,
+          'thumbs/thumbnails': true,
+          'thumbs/people': true,
           upload: true,
         },
       });
@@ -36,12 +38,16 @@ describe(StorageService.name, () => {
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/library');
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/profile');
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/thumbnails');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/people');
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/upload');
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/backups');
       expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/encoded-video/.immich', expect.any(Buffer));
       expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/library/.immich', expect.any(Buffer));
       expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/profile/.immich', expect.any(Buffer));
       expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/thumbs/.immich', expect.any(Buffer));
+      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/thumbs/thumbnails/.immich', expect.any(Buffer));
+      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/thumbs/people/.immich', expect.any(Buffer));
       expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/upload/.immich', expect.any(Buffer));
       expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/backups/.immich', expect.any(Buffer));
     });
@@ -54,6 +60,8 @@ describe(StorageService.name, () => {
           library: false,
           profile: true,
           thumbs: true,
+          'thumbs/thumbnails': true,
+          'thumbs/people': true,
           upload: true,
         },
       });
@@ -67,6 +75,8 @@ describe(StorageService.name, () => {
           library: true,
           profile: true,
           thumbs: true,
+          'thumbs/thumbnails': true,
+          'thumbs/people': true,
           upload: true,
         },
       });
