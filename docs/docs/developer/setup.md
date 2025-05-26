@@ -183,5 +183,4 @@ Here are the settings we use, they should be active as workspace settings (`sett
   "svelte.enable-ts-plugin": true,
   "typescript.preferences.importModuleSpecifier": "non-relative"
 }
-
 ```
