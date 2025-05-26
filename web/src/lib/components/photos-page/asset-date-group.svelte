@@ -106,9 +106,13 @@
   }
 
   onMount(() => {
-    onScrollCompensate({ delta: bucket.compensateDelta, top: bucket.compensateTop });
-    bucket.compensateDelta = 0;
-    bucket.compensateTop = 0;
+    if (assetStore.scrollCompensation && assetStore.scrollCompensation.bucket === bucket) {
+      onScrollCompensate({
+        delta: assetStore.scrollCompensation.heightDelta,
+        top: assetStore.scrollCompensation.scrollTop,
+      });
+      assetStore.scrollCompensation = undefined;
+    }
   });
 </script>
 

@@ -140,29 +140,34 @@
     scrollTo(0);
   };
 
-  const scrollToAsset = async (assetId: string) => {
-    try {
-      const bucket = await assetStore.findBucketForAsset(assetId);
-      if (bucket) {
-        const height = bucket.findAssetAbsolutePosition(assetId);
-        if (height) {
-          scrollTo(height);
-          updateSlidingWindow();
-          assetStore.updateIntersections();
-          return true;
-        }
+  const scrollToAssetId = async (assetId: string) => {
+    const bucket = await assetStore.findBucketForAsset(assetId);
+    if (bucket) {
+      const height = bucket.findAssetAbsolutePosition(assetId);
+      if (height) {
+        scrollTo(height);
+        updateSlidingWindow();
+        return true;
       }
-    } catch {
-      // ignore errors - asset may not be in the store
     }
     return false;
+  };
+
+  const scrollToAsset = (asset: TimelineAsset) => {
+    const bucket = assetStore.getBucketIndexByAssetId(asset.id);
+    const height = bucket!.findAssetAbsolutePosition(asset.id);
+    if (height) {
+      scrollTo(height);
+      updateSlidingWindow();
+    }
+    return true;
   };
 
   const completeNav = async () => {
     const scrollTarget = $gridScrollTarget?.at;
     let scrolled = false;
     if (scrollTarget) {
-      scrolled = await scrollToAsset(scrollTarget);
+      scrolled = await scrollToAssetId(scrollTarget);
     }
     if (!scrolled) {
       // if the asset is not found, scroll to the top

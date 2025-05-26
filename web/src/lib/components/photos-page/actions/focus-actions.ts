@@ -1,4 +1,4 @@
-import type { AssetStore } from '$lib/stores/assets-store.svelte';
+import type { AssetStore, TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { moveFocus } from '$lib/utils/focus-util';
 import { InvocationTracker } from '$lib/utils/invocationTracker';
 
@@ -19,8 +19,8 @@ export const focusPreviousAsset = () =>
 
 const queryHTMLElement = (query: string) => document.querySelector(query) as HTMLElement;
 
-export const setFocusToAsset = async (scrollToAsset: (id: string) => Promise<boolean>, asset: { id: string }) => {
-  const scrolled = await scrollToAsset(asset.id);
+export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean, asset: TimelineAsset) => {
+  const scrolled = scrollToAsset(asset);
   if (scrolled) {
     const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
     element?.focus();
@@ -28,7 +28,7 @@ export const setFocusToAsset = async (scrollToAsset: (id: string) => Promise<boo
 };
 
 export const setFocusTo = async (
-  scrollToAsset: (id: string) => Promise<boolean>,
+  scrollToAsset: (asset: TimelineAsset) => Promise<boolean>,
   store: AssetStore,
   direction: 'earlier' | 'later',
   magnitude: 'day' | 'month' | 'year' | 'asset',
@@ -63,7 +63,7 @@ export const setFocusTo = async (
     return;
   }
 
-  const scrolled = await scrollToAsset(asset.id);
+  const scrolled = await scrollToAsset(asset);
   if (!invocation.isStillValid()) {
     return;
   }

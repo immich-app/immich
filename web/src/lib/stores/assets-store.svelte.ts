@@ -108,8 +108,14 @@ class IntersectingAsset {
     }
 
     const store = this.#group.bucket.store;
-    const topWindow = store.visibleWindow.top - store.headerHeight - INTERSECTION_EXPAND_TOP;
-    const bottomWindow = store.visibleWindow.bottom + store.headerHeight + INTERSECTION_EXPAND_BOTTOM;
+
+    const scrollCompensation = store.scrollCompensation;
+    const scrollCompensationHeightDelta = scrollCompensation?.heightDelta ?? 0;
+
+    const topWindow =
+      store.visibleWindow.top - store.headerHeight - INTERSECTION_EXPAND_TOP + scrollCompensationHeightDelta;
+    const bottomWindow =
+      store.visibleWindow.bottom + store.headerHeight + INTERSECTION_EXPAND_BOTTOM + scrollCompensationHeightDelta;
     const positionTop = this.#group.absoluteDateGroupTop + this.position.top;
     const positionBottom = positionTop + this.position.height;
 
@@ -322,8 +328,6 @@ export class AssetBucket {
   actuallyIntersecting: boolean = $state(false);
   isLoaded: boolean = $state(false);
   dateGroups: AssetDateGroup[] = $state([]);
-  compensateDelta: number = $state(0);
-  compensateTop: number = $state(0);
   readonly store: AssetStore;
 
   // --- private ---
@@ -379,13 +383,14 @@ export class AssetBucket {
 
   set intersecting(newValue: boolean) {
     const old = this.#intersecting;
-    if (old !== newValue) {
-      this.#intersecting = newValue;
-      if (newValue) {
-        void this.store.loadBucket(this.yearMonth);
-      } else {
-        this.cancel();
-      }
+    if (old === newValue) {
+      return;
+    }
+    this.#intersecting = newValue;
+    if (newValue) {
+      void this.store.loadBucket(this.yearMonth);
+    } else {
+      this.cancel();
     }
   }
 
@@ -544,6 +549,9 @@ export class AssetBucket {
   }
 
   set bucketHeight(height: number) {
+    if (this.#bucketHeight === height) {
+      return;
+    }
     const { store, percent } = this;
     const index = store.buckets.indexOf(this);
     const bucketHeightDelta = height - this.#bucketHeight;
@@ -569,10 +577,16 @@ export class AssetBucket {
       // size adjustment
       if (currentIndex > 0) {
         if (index < currentIndex) {
-          this.compensateDelta += bucketHeightDelta;
+          store.scrollCompensation = {
+            heightDelta: bucketHeightDelta,
+            bucket: this,
+          };
         } else if (percent > 0) {
           const top = this.top + height * percent;
-          this.compensateTop += top;
+          store.scrollCompensation = {
+            scrollTop: top,
+            bucket: this,
+          };
         }
       }
     }
@@ -766,6 +780,7 @@ export class AssetStore {
   #suspendTransitions = $state(false);
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
+  scrollCompensation: { heightDelta?: number; scrollTop?: number; bucket: AssetBucket } | undefined = undefined;
 
   constructor() {}
 
@@ -1375,7 +1390,9 @@ export class AssetStore {
   }
 
   async findBucketForAsset(id: string) {
-    await this.initTask.waitUntilCompletion();
+    if (!this.isInitialized) {
+      await this.initTask.waitUntilCompletion();
+    }
     let { bucket } = this.#findBucketForAsset(id) ?? {};
     if (bucket) {
       return bucket;
