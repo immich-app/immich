@@ -1,7 +1,7 @@
 # Troubleshooting
 
 :::tip
-A great option to get assistance with troubleshooting is to join our [Discord](https://discord.immich.app) server, where we have a dedicated channel for `#contributing`.
+A great option to get assistance with troubleshooting is to join our [Discord](https://discord.immich.app) server, where we have a dedicated channel for `#help-desk-support`.
 :::
 
 ## Known Issues
