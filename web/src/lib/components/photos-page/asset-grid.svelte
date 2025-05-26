@@ -771,7 +771,7 @@
       isShowSelectDate = false;
       const asset = await assetStore.getClosestAssetToDate((DateTime.fromISO(dateString) as DateTime<true>).toObject());
       if (asset) {
-        await setFocusAsset(asset);
+        setFocusAsset(asset);
       }
     }}
     onCancel={() => (isShowSelectDate = false)}
