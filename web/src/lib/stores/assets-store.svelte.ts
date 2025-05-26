@@ -75,7 +75,7 @@ function updateObject(target: any, source: any): boolean {
 }
 type Direction = 'earlier' | 'later';
 
-export const assetSnapshot = (asset: TimelineAsset): TimelineAsset => $state.snapshot(asset) as TimelineAsset;
+export const assetSnapshot = (asset: TimelineAsset): TimelineAsset => $state.snapshot(asset);
 export const assetsSnapshot = (assets: TimelineAsset[]) => assets.map((asset) => $state.snapshot(asset));
 
 export type TimelineAsset = {
@@ -146,11 +146,11 @@ export class AssetDateGroup {
   readonly index: number;
   readonly groupTitle: string;
   readonly day: number;
-  intersetingAssets: IntersectingAsset[] = $state([]);
+  intersectingAssets: IntersectingAsset[] = $state([]);
 
   height = $state(0);
   width = $state(0);
-  intersecting = $derived.by(() => this.intersetingAssets.some((asset) => asset.intersecting));
+  intersecting = $derived.by(() => this.intersectingAssets.some((asset) => asset.intersecting));
 
   // --- private
   top: number = $state(0);
@@ -168,35 +168,35 @@ export class AssetDateGroup {
 
   sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
     const sortFn = plainDateTimeCompare.bind(undefined, sortOrder === AssetOrder.Asc);
-    this.intersetingAssets.sort((a, b) => sortFn(a.asset.localDateTime, b.asset.localDateTime));
+    this.intersectingAssets.sort((a, b) => sortFn(a.asset.localDateTime, b.asset.localDateTime));
   }
 
   getFirstAsset() {
-    return this.intersetingAssets[0]?.asset;
+    return this.intersectingAssets[0]?.asset;
   }
 
   getRandomAsset() {
-    const random = Math.floor(Math.random() * this.intersetingAssets.length);
-    return this.intersetingAssets[random];
+    const random = Math.floor(Math.random() * this.intersectingAssets.length);
+    return this.intersectingAssets[random];
   }
 
   *assetsIterator(options: { startAsset?: TimelineAsset; direction?: Direction } = {}) {
     const isEarlier = (options?.direction ?? 'earlier') === 'earlier';
     let assetIndex = options?.startAsset
-      ? this.intersetingAssets.findIndex((intersectingAsset) => intersectingAsset.asset.id === options.startAsset!.id)
+      ? this.intersectingAssets.findIndex((intersectingAsset) => intersectingAsset.asset.id === options.startAsset!.id)
       : isEarlier
         ? 0
-        : this.intersetingAssets.length - 1;
+        : this.intersectingAssets.length - 1;
 
-    while (assetIndex >= 0 && assetIndex < this.intersetingAssets.length) {
-      const intersectingAsset = this.intersetingAssets[assetIndex];
+    while (assetIndex >= 0 && assetIndex < this.intersectingAssets.length) {
+      const intersectingAsset = this.intersectingAssets[assetIndex];
       yield intersectingAsset.asset;
       assetIndex += isEarlier ? 1 : -1;
     }
   }
 
   getAssets() {
-    return this.intersetingAssets.map((intersectingasset) => intersectingasset.asset);
+    return this.intersectingAssets.map((intersectingasset) => intersectingasset.asset);
   }
 
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
@@ -213,12 +213,12 @@ export class AssetDateGroup {
     const moveAssets: MoveAsset[] = [];
     let changedGeometry = false;
     for (const assetId of unprocessedIds) {
-      const index = this.intersetingAssets.findIndex((ia) => ia.id == assetId);
+      const index = this.intersectingAssets.findIndex((ia) => ia.id == assetId);
       if (index === -1) {
         continue;
       }
 
-      const asset = this.intersetingAssets[index].asset!;
+      const asset = this.intersectingAssets[index].asset!;
       const oldTime = { ...asset.localDateTime };
       let { remove } = operation(asset);
       const newTime = asset.localDateTime;
@@ -230,7 +230,7 @@ export class AssetDateGroup {
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);
       if (remove || this.bucket.store.isExcluded(asset)) {
-        this.intersetingAssets.splice(index, 1);
+        this.intersectingAssets.splice(index, 1);
         changedGeometry = true;
       }
     }
@@ -242,13 +242,13 @@ export class AssetDateGroup {
       this.deferredLayout = true;
       return;
     }
-    const assets = this.intersetingAssets.map((intersetingAsset) => intersetingAsset.asset!);
+    const assets = this.intersectingAssets.map((intersetingAsset) => intersetingAsset.asset!);
     const geometry = getJustifiedLayoutFromAssets(assets, options);
     this.width = geometry.containerWidth;
     this.height = assets.length === 0 ? 0 : geometry.containerHeight;
-    for (let i = 0; i < this.intersetingAssets.length; i++) {
+    for (let i = 0; i < this.intersectingAssets.length; i++) {
       const position = getPosition(geometry, i);
-      this.intersetingAssets[i].position = position;
+      this.intersectingAssets[i].position = position;
     }
   }
 
@@ -347,7 +347,7 @@ export class AssetBucket {
 
   bucketCount: number = $derived(
     this.isLoaded
-      ? this.dateGroups.reduce((accumulator, g) => accumulator + g.intersetingAssets.length, 0)
+      ? this.dateGroups.reduce((accumulator, g) => accumulator + g.intersectingAssets.length, 0)
       : this.#initialCount,
   );
   loader: CancellableTask | undefined;
@@ -449,7 +449,7 @@ export class AssetBucket {
           idsProcessed.add(id);
         }
         combinedChangedGeometry = combinedChangedGeometry || changedGeometry;
-        if (group.intersetingAssets.length === 0) {
+        if (group.intersectingAssets.length === 0) {
           dateGroups.splice(index, 1);
           combinedChangedGeometry = true;
         }
@@ -529,7 +529,7 @@ export class AssetBucket {
     }
 
     const intersectingAsset = new IntersectingAsset(dateGroup, timelineAsset);
-    dateGroup.intersetingAssets.push(intersectingAsset);
+    dateGroup.intersectingAssets.push(intersectingAsset);
     addContext.changedDateGroups.add(dateGroup);
   }
 
@@ -609,7 +609,7 @@ export class AssetBucket {
 
   findDateGroupForAsset(asset: TimelineAsset) {
     for (const group of this.dateGroups) {
-      if (group.intersetingAssets.some((IntersectingAsset) => IntersectingAsset.id === asset.id)) {
+      if (group.intersectingAssets.some((IntersectingAsset) => IntersectingAsset.id === asset.id)) {
         return group;
       }
     }
@@ -622,7 +622,7 @@ export class AssetBucket {
   findAssetAbsolutePosition(assetId: string) {
     this.store.clearDeferredLayout(this);
     for (const group of this.dateGroups) {
-      const intersectingAsset = group.intersetingAssets.find((asset) => asset.id === assetId);
+      const intersectingAsset = group.intersectingAssets.find((asset) => asset.id === assetId);
       if (intersectingAsset) {
         if (!intersectingAsset.position) {
           console.warn('No position for asset');
@@ -1528,16 +1528,16 @@ export class AssetStore {
 
   async getLaterAsset(
     assetDescriptor: AssetDescriptor,
-    magnitude: 'asset' | 'day' | 'month' | 'year' = 'asset',
+    interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   ): Promise<TimelineAsset | undefined> {
-    return await this.#getAssetWithOffset(assetDescriptor, magnitude, 'later');
+    return await this.#getAssetWithOffset(assetDescriptor, interval, 'later');
   }
 
   async getEarlierAsset(
     assetDescriptor: AssetDescriptor,
-    magnitude: 'asset' | 'day' | 'month' | 'year' = 'asset',
+    interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   ): Promise<TimelineAsset | undefined> {
-    return await this.#getAssetWithOffset(assetDescriptor, magnitude, 'earlier');
+    return await this.#getAssetWithOffset(assetDescriptor, interval, 'earlier');
   }
 
   async getClosestAssetToDate(dateTime: TimelinePlainDateTime) {
@@ -1590,7 +1590,7 @@ export class AssetStore {
 
   async #getAssetWithOffset(
     assetDescriptor: AssetDescriptor,
-    magnitude: 'asset' | 'day' | 'month' | 'year' = 'asset',
+    interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
     direction: Direction,
   ): Promise<TimelineAsset | undefined> {
     const { asset, bucket } = this.#findBucketForAsset(assetDescriptor.id) ?? {};
@@ -1598,7 +1598,7 @@ export class AssetStore {
       return;
     }
 
-    switch (magnitude) {
+    switch (interval) {
       case 'asset': {
         return this.#getAssetByAssetOffset(asset, bucket, direction);
       }
@@ -1606,10 +1606,10 @@ export class AssetStore {
         return this.#getAssetByDayOffset(asset, bucket, direction);
       }
       case 'month': {
-        return this.#getAssetByMonthOffset(asset, bucket, direction);
+        return this.#getAssetByMonthOffset(bucket, direction);
       }
       case 'year': {
-        return this.#getAssetByYearOffset(asset, bucket, direction);
+        return this.#getAssetByYearOffset(bucket, direction);
       }
     }
   }
@@ -1644,7 +1644,7 @@ export class AssetStore {
   }
 
   // starting at bucket, go to the earlier/later bucket by month, returning the first asset in that bucket
-  async #getAssetByMonthOffset(asset: TimelineAsset, bucket: AssetBucket, direction: Direction) {
+  async #getAssetByMonthOffset(bucket: AssetBucket, direction: Direction) {
     for (const targetBucket of this.bucketsIterator({ startBucket: bucket, direction })) {
       if (targetBucket.yearMonth.month !== bucket.yearMonth.month) {
         for await (const targetAsset of this.assetsIterator({ startBucket: targetBucket, direction })) {
@@ -1654,7 +1654,7 @@ export class AssetStore {
     }
   }
 
-  async #getAssetByYearOffset(asset: TimelineAsset, bucket: AssetBucket, direction: Direction) {
+  async #getAssetByYearOffset(bucket: AssetBucket, direction: Direction) {
     for (const targetBucket of this.bucketsIterator({ startBucket: bucket, direction })) {
       if (targetBucket.yearMonth.year !== bucket.yearMonth.year) {
         for await (const targetAsset of this.assetsIterator({ startBucket: targetBucket, direction })) {

@@ -5,7 +5,7 @@ import { InvocationTracker } from '$lib/utils/invocationTracker';
 const tracker = new InvocationTracker();
 
 const getFocusedThumb = () => {
-  const current = document.activeElement as HTMLElement;
+  const current = document.activeElement as HTMLElement | undefined;
   if (current && current.dataset.thumbnailFocusContainer !== undefined) {
     return current;
   }
@@ -31,7 +31,7 @@ export const setFocusTo = async (
   scrollToAsset: (asset: TimelineAsset) => boolean,
   store: AssetStore,
   direction: 'earlier' | 'later',
-  magnitude: 'day' | 'month' | 'year' | 'asset',
+  interval: 'day' | 'month' | 'year' | 'asset',
 ) => {
   if (tracker.isActive()) {
     // there are unfinished running invocations, so return early
@@ -51,8 +51,8 @@ export const setFocusTo = async (
 
   const asset =
     direction === 'earlier'
-      ? await store.getEarlierAsset({ id }, magnitude)
-      : await store.getLaterAsset({ id }, magnitude);
+      ? await store.getEarlierAsset({ id }, interval)
+      : await store.getLaterAsset({ id }, interval);
 
   if (!invocation.isStillValid()) {
     return;

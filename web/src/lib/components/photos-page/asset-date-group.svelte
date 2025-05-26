@@ -156,7 +156,7 @@
       style:height={dateGroup.height + 'px'}
       style:width={dateGroup.width + 'px'}
     >
-      {#each filterIntersecting(dateGroup.intersetingAssets) as intersectingAsset (intersectingAsset.id)}
+      {#each filterIntersecting(dateGroup.intersectingAssets) as intersectingAsset (intersectingAsset.id)}
         {@const position = intersectingAsset.position!}
         {@const asset = intersectingAsset.asset!}
 
