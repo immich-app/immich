@@ -80,6 +80,7 @@
         await onFirstLogin();
         return;
       }
+
       await onSuccess(user);
       return;
     } catch (error) {

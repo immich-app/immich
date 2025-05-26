@@ -512,6 +512,7 @@ export type LoginCredentialDto = {
 export type LoginResponseDto = {
     accessToken: string;
     isAdmin: boolean;
+    isOnboarded: boolean;
     name: string;
     profileImagePath: string;
     shouldChangePassword: boolean;
