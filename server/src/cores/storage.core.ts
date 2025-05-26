@@ -87,7 +87,7 @@ export class StorageCore {
   }
 
   static getPersonThumbnailPath(person: ThumbnailPathEntity) {
-    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, person.ownerId, `${person.id}.jpeg`);
+    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS_PEOPLE, person.ownerId, `${person.id}.jpeg`);
   }
 
   static getImagePath(asset: ThumbnailPathEntity, type: GeneratedImageType, format: 'jpeg' | 'webp') {
