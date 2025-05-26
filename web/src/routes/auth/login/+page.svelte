@@ -81,6 +81,13 @@
         return;
       }
 
+      // We want to onboard after the first login since their password will change
+      // and handleLogin will be called again (relogin). We then do onboarding on that next call.
+      if (!user.isOnboarded) {
+        await onOnboarding();
+        return;
+      }
+
       await onSuccess(user);
       return;
     } catch (error) {

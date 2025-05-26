@@ -57,8 +57,11 @@
     } while (nextStep < onboardingSteps.length && !shouldRunStep(onboardingSteps[nextStep].role, userRole));
 
     if (nextStep == onboardingSteps.length) {
+      if ($user.isAdmin) {
+        await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
+      }
       // TODO update user onboarding state
-      await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
+
       await retrieveServerConfig();
       await goto(AppRoute.PHOTOS);
     } else {
