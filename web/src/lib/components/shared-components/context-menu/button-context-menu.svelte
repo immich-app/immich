@@ -46,7 +46,7 @@
     title,
     align = 'top-left',
     direction = 'right',
-    color = 'info',
+    color = 'secondary',
     size = undefined,
     variant = 'ghost',
     buttonClass = undefined,
