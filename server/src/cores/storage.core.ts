@@ -92,7 +92,8 @@ export class StorageCore {
 
   static getImagePath(asset: ThumbnailPathEntity, type: GeneratedImageType, format: 'jpeg' | 'webp') {
     let thumbFolder = StorageFolder.THUMBNAILS;
-    if (type == AssetPathType.THUMBNAIL) { // Subdir for thumbnails, separate from previews etc.
+    // Subdir for thumbnails, separate from previews etc.
+    if (type == AssetPathType.THUMBNAIL) {
       thumbFolder = StorageFolder.THUMBNAILS_THUMBNAILS;
     }
     return StorageCore.getNestedPath(thumbFolder, asset.ownerId, `${asset.id}-${type}.${format}`);
