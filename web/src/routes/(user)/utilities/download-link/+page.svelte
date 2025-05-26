@@ -8,7 +8,6 @@
   import { getAboutInfo, getVersionHistory } from '@immich/sdk';
 
   const { serverVersion, connected } = websocketStore;
-  const { versionUrl } = await getAboutInfo();
 
   let info: ServerAboutResponseDto | undefined = $state();
   let versions: ServerVersionHistoryResponseDto[] = $state([]);
@@ -25,7 +24,6 @@
   let version = $derived(
     $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null,
   );
-  let versione = $derived(info.versionUrl);
 </script>
 
 <!-- <div class="flex flex-col sm:grid sm:grid-cols-2 gap-1 text-immich-primary dark:text-immich-dark-primary">
@@ -85,8 +83,20 @@
     {version}
   </button>
   <p class="text-red-500">unknown</p>
-  <a href={version} class="underline text-sm immich-form-label" target="_blank" rel="noreferrer" id="version-desc">
-    {(await getAboutInfo()).version} hello
+  {#await getAboutInfo() then { version, versionUrl }}
+    <a href={versionUrl} class="underline text-sm immich-form-label" target="_blank" rel="noreferrer" id="version-desc">
+      {version}
+      hello
+    </a>
+  {/await}
+  <a
+    href={info?.versionUrl}
+    class="underline text-sm immich-form-label"
+    target="_blank"
+    rel="noreferrer"
+    id="version-desc"
+  >
+    {info?.version} hello
   </a>
   <p>test</p>
 </div>
