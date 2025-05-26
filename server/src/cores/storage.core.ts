@@ -91,7 +91,11 @@ export class StorageCore {
   }
 
   static getImagePath(asset: ThumbnailPathEntity, type: GeneratedImageType, format: 'jpeg' | 'webp') {
-    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}-${type}.${format}`);
+    let thumbFolder = StorageFolder.THUMBNAILS;
+    if (type == AssetPathType.THUMBNAIL) { // Subdir for thumbnails, separate from previews etc.
+      thumbFolder = StorageFolder.THUMBNAILS_THUMBNAILS;
+    }
+    return StorageCore.getNestedPath(thumbFolder, asset.ownerId, `${asset.id}-${type}.${format}`);
   }
 
   static getEncodedVideoPath(asset: ThumbnailPathEntity) {

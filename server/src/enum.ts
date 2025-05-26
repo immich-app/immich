@@ -194,6 +194,7 @@ export enum StorageFolder {
   UPLOAD = 'upload',
   PROFILE = 'profile',
   THUMBNAILS = 'thumbs',
+  THUMBNAILS_THUMBNAILS = 'thumbs/thumbnails',
   BACKUPS = 'backups',
 }
 
