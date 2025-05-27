@@ -1076,6 +1076,10 @@ export type ServerVersionResponseDto = {
     minor: number;
     patch: number;
 };
+export type VersionCheckStateResponseDto = {
+    checkedAt: string | null;
+    releaseVersion: string | null;
+};
 export type ServerVersionHistoryResponseDto = {
     createdAt: string;
     id: string;
@@ -2947,6 +2951,14 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VersionCheckStateResponseDto;
+    }>("/server/version-check", {
+        ...opts
+    }));
+}
 export function getVersionHistory(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3281,6 +3293,14 @@ export function getReverseGeocodingState(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ReverseGeocodingStateResponseDto;
     }>("/system-metadata/reverse-geocoding-state", {
+        ...opts
+    }));
+}
+export function getVersionCheckState(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VersionCheckStateResponseDto;
+    }>("/system-metadata/version-check-state", {
         ...opts
     }));
 }
