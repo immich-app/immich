@@ -39,9 +39,9 @@
       checked={selectAllSubItems}
       onCheckedChange={handleSelectAllSubItems}
     />
-    <Label label={title} for={title} />
+    <Label label={title} for={title} class="text-xl font-mono font-semibold text-primary" />
   </div>
-  <div class="ml-4 flex flex-wrap gap-x-5 gap-y-2">
+  <div class="m-4 grid grid-cols-3 gap-2">
     {#each subItems as item (item)}
       <div class="flex items-center gap-2">
         <Checkbox
@@ -50,7 +50,7 @@
           checked={selectedItems.includes(item)}
           onCheckedChange={() => handleToggleItem(item)}
         />
-        <Label label={item} for={item} />
+        <Label label={item} for={item} class="text-sm font-mono" />
       </div>
     {/each}
   </div>

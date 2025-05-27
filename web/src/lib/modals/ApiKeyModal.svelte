@@ -207,7 +207,7 @@
         <Label label={$t('select_all')} for="select-all-permissions" />
       </div>
       {#each permissions as [title, subItems] (title)}
-        <hr />
+        <hr class="dark:border-black" />
         <ApiKeyGrid {title} {subItems} {selectedItems} {handleSelectItems} {handleDeselectItems} />
       {/each}
     </form>
