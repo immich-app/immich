@@ -16,7 +16,7 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    command: ['/usr/src/app/bin/immich-dev']
+    command: [ '/usr/src/app/bin/immich-dev' ]
     image: immich-server-dev:latest
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -31,6 +31,7 @@ services:
       - ../open-api:/usr/src/open-api
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
+      - ${EXTERNAL_LIBRARY}:/data/external-library
       - /usr/src/app/node_modules
       - /etc/localtime:/etc/localtime:ro
     env_file:
@@ -70,7 +71,7 @@ services:
     # user: 0:0
     build:
       context: ../web
-    command: ['/usr/src/app/bin/immich-web']
+    command: [ '/usr/src/app/bin/immich-web' ]
     env_file:
       - .env
     ports:
@@ -134,7 +135,6 @@ services:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
-
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus

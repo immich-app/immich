@@ -339,7 +339,7 @@
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
             curve={selected}
-            durationInSeconds={asset.duration ? timeToSeconds(asset.duration) : 0)}
+            durationInSeconds={asset.duration ? timeToSeconds(asset.duration) : 0}
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
