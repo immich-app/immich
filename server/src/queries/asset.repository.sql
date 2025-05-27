@@ -264,7 +264,7 @@ with
       "assets"."visibility",
       "assets"."isFavorite",
       assets.type = 'IMAGE' as "isImage",
-      assets."deletedAt" is null as "isTrashed",
+      assets."deletedAt" is not null as "isTrashed",
       "assets"."livePhotoVideoId",
       "assets"."localDateTime",
       "assets"."ownerId",
