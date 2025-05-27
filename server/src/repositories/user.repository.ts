@@ -210,7 +210,12 @@ export class UserRepository {
   getUserStats() {
     return this.db
       .selectFrom('users')
-      .leftJoin('assets', 'assets.ownerId', 'users.id')
+      .leftJoin('assets', (join) =>
+        join
+          .onRef('assets.ownerId', '=', 'users.id')
+          .on('assets.deletedAt', 'is', null)
+          .on('assets.visibility', 'in', [sql.lit(AssetVisibility.TIMELINE), sql.lit(AssetVisibility.ARCHIVE)]),
+      )
       .leftJoin('exif', 'exif.assetId', 'assets.id')
       .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes as quotaSizeInBytes'])
       .select((eb) => [
@@ -219,18 +224,13 @@ export class UserRepository {
           .filterWhere((eb) =>
             eb.and([
               eb('assets.type', '=', sql.lit(AssetType.IMAGE)),
-              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+              eb('assets.visibility', 'in', [sql.lit(AssetVisibility.TIMELINE), sql.lit(AssetVisibility.ARCHIVE)]),
             ]),
           )
           .as('photos'),
         eb.fn
           .countAll<number>()
-          .filterWhere((eb) =>
-            eb.and([
-              eb('assets.type', '=', sql.lit(AssetType.VIDEO)),
-              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
-            ]),
-          )
+          .filterWhere((eb) => eb.and([eb('assets.type', '=', sql.lit(AssetType.VIDEO))]))
           .as('videos'),
         eb.fn
           .coalesce(eb.fn.sum<number>('exif.fileSizeInByte').filterWhere('assets.libraryId', 'is', null), eb.lit(0))
@@ -256,7 +256,6 @@ export class UserRepository {
           )
           .as('usageVideos'),
       ])
-      .where('assets.deletedAt', 'is', null)
       .groupBy('users.id')
       .orderBy('users.createdAt', 'asc')
       .execute();
@@ -283,6 +282,7 @@ export class UserRepository {
             .leftJoin('exif', 'exif.assetId', 'assets.id')
             .select((eb) => eb.fn.coalesce(eb.fn.sum<number>('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
             .where('assets.libraryId', 'is', null)
+            .where('assets.visibility', 'in', [sql.lit(AssetVisibility.TIMELINE), sql.lit(AssetVisibility.ARCHIVE)])
             .where('assets.ownerId', '=', eb.ref('users.id')),
         updatedAt: new Date(),
       })

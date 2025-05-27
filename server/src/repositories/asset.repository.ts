@@ -347,8 +347,8 @@ export class AssetRepository {
       .select(['deviceAssetId'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
-      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
+      .$call(withDefaultVisibility)
       .execute();
 
     return items.map((asset) => asset.deviceAssetId);
@@ -523,8 +523,8 @@ export class AssetRepository {
       .selectFrom('assets')
       .selectAll('assets')
       .$call(withExif)
+      .$call(withDefaultVisibility)
       .where('ownerId', '=', anyUuid(userIds))
-      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .orderBy((eb) => eb.fn('random'))
       .limit(take)
@@ -709,6 +709,7 @@ export class AssetRepository {
         .with('duplicates', (qb) =>
           qb
             .selectFrom('assets')
+            .$call(withDefaultVisibility)
             .leftJoinLateral(
               (qb) =>
                 qb
@@ -727,7 +728,6 @@ export class AssetRepository {
             .where('assets.duplicateId', 'is not', null)
             .$narrowType<{ duplicateId: NotNull }>()
             .where('assets.deletedAt', 'is', null)
-            .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
             .where('assets.stackId', 'is', null)
             .groupBy('assets.duplicateId'),
         )

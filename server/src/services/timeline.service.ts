@@ -44,6 +44,10 @@ export class TimelineService extends BaseService {
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
+    if (dto.visibility === AssetVisibility.LOCKED && !auth.session?.hasElevatedPermission) {
+      throw new BadRequestException('Locked assets require elevated permissions');
+    }
+
     if (dto.albumId) {
       await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
     } else {

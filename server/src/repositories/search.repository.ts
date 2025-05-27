@@ -472,7 +472,7 @@ export class SearchRepository {
       .distinctOn(field)
       .innerJoin('assets', 'assets.id', 'exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
-      .where('visibility', '!=', AssetVisibility.HIDDEN)
+      .where('visibility', '=', AssetVisibility.TIMELINE)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null);
   }

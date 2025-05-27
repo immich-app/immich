@@ -22,6 +22,10 @@ import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUn
 @Injectable()
 export class AssetService extends BaseService {
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
+    if (dto.visibility === AssetVisibility.LOCKED && !auth.session?.hasElevatedPermission) {
+      throw new BadRequestException('Locked assets require elevated permissions');
+    }
+
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
     return mapStats(stats);
   }
