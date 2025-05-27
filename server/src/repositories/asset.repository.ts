@@ -595,7 +595,7 @@ export class AssetRepository {
             'assets.visibility',
             'assets.isFavorite',
             sql`assets.type = 'IMAGE'`.as('isImage'),
-            sql`assets."deletedAt" is null`.as('isTrashed'),
+            sql`assets."deletedAt" is not null`.as('isTrashed'),
             'assets.livePhotoVideoId',
             'assets.localDateTime',
             'assets.ownerId',

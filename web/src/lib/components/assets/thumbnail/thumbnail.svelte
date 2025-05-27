@@ -102,8 +102,10 @@
 
   const handleClick = (e: MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
+      window.open(currentUrlReplaceAssetId(asset.id), '_blank');
       return;
     }
+
     e.stopPropagation();
     e.preventDefault();
     callClickHandlers();
@@ -250,19 +252,6 @@
     >
       <!-- icon overlay -->
       <div>
-        {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
-          <!-- lazy show the url on mouse over-->
-          <a
-            class="absolute w-full top-0 bottom-0"
-            style:cursor="unset"
-            href={currentUrlReplaceAssetId(asset.id)}
-            onclick={(evt) => evt.preventDefault()}
-            tabindex={-1}
-            aria-label="Thumbnail URL"
-          >
-          </a>
-        {/if}
-
         <!-- Gradient overlay on hover -->
         {#if !usingMobileDevice && !disabled}
           <div
@@ -314,6 +303,20 @@
           </div>
         {/if}
       </div>
+
+      <!-- lazy show the url on mouse over-->
+      {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
+        <a
+          class="absolute w-full top-0 bottom-0"
+          style:cursor="unset"
+          href={currentUrlReplaceAssetId(asset.id)}
+          onclick={(evt) => evt.preventDefault()}
+          tabindex={-1}
+          aria-label="Thumbnail URL"
+        >
+        </a>
+      {/if}
+
       <ImageThumbnail
         class={imageClass}
         {brokenAssetClass}
@@ -330,7 +333,7 @@
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
             curve={selected}
-            durationInSeconds={timeToSeconds(asset.duration ?? '0:0:0')}
+            durationInSeconds={asset.duration ? timeToSeconds(asset.duration) : 0}
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
