@@ -58,6 +58,7 @@
 
   const deleteAsset = async () => {
     try {
+      preAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
       onAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
 
