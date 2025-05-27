@@ -111,7 +111,7 @@
 
     <button
       type="button"
-      class="text-center mt-2 underline text-xs text-immich-primary dark:text-immich-dark-primary"
+      class="text-center mt-4 underline text-xs text-immich-primary dark:text-immich-dark-primary"
       onclick={async () => {
         onClose();
         if (info) {
