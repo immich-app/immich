@@ -14,6 +14,10 @@ const config = {
   },
   preprocess: vitePreprocess(),
   kit: {
+    prerender: {
+      entries: ['*'],
+      handleHttpError: 'warn',
+    },
     adapter: adapter({
       fallback: 'index.html',
       precompress: true,

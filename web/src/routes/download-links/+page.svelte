@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PageProps } from './$types';
+
   // load data (specifically version) from `+page.ts`
   const { data }: PageProps = $props();
   // initialize constants, apks and docker files are arrays so we can iterate later
