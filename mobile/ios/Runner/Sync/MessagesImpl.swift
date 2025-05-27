@@ -20,7 +20,7 @@ extension PHAsset {
   func toImAsset() -> ImAsset {
     return ImAsset(
       id: localIdentifier,
-      name: PHAssetResource.assetResources(for: self).first?.originalFilename ?? title(),
+      name: title(),
       type: Int64(mediaType.rawValue),
       createdAt: creationDate.map { Int64($0.timeIntervalSince1970) },
       updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
@@ -224,7 +224,12 @@ class NativeSyncApiImpl: NativeSyncApi {
       let date = NSDate(timeIntervalSince1970: TimeInterval(updatedTimeCond!))
       options.predicate = NSPredicate(format: "creationDate > %@ OR modificationDate > %@", date, date)
     }
+
     let result = PHAsset.fetchAssets(in: album, options: options)
+    if(result.count == 0) {
+      return []
+    }
+    
     var assets: [ImAsset] = []
     result.enumerateObjects { (asset, _, _) in
       assets.append(asset.toImAsset())
