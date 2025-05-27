@@ -80,7 +80,7 @@
     "dotenv": "^16.4.7",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-p": "^0.22.0",
+    "eslint-p": "^0.23.0",
     "eslint-plugin-svelte": "^3.0.0",
     "eslint-plugin-unicorn": "^57.0.0",
     "factory.ts": "^1.4.1",
@@ -101,6 +101,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.15.1"
+    "node": "22.16.0"
   }
 }
