@@ -5275,6 +5275,38 @@
         ]
       }
     },
+    "/server/android-links": {
+      "get": {
+        "operationId": "getAndroidLinks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersionAndroidLinksDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
     "/server/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -12190,6 +12222,29 @@
         },
         "required": [
           "customCss"
+        ],
+        "type": "object"
+      },
+      "ServerVersionAndroidLinksDto": {
+        "properties": {
+          "arm64v8a": {
+            "type": "string"
+          },
+          "armeabiv7a": {
+            "type": "string"
+          },
+          "universal": {
+            "type": "string"
+          },
+          "x86_64": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "arm64v8a",
+          "armeabiv7a",
+          "universal",
+          "x86_64"
         ],
         "type": "object"
       },

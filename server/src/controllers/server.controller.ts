@@ -10,6 +10,7 @@ import {
   ServerStatsResponseDto,
   ServerStorageResponseDto,
   ServerThemeDto,
+  ServerVersionAndroidLinksDto,
   ServerVersionHistoryResponseDto,
   ServerVersionResponseDto,
 } from 'src/dtos/server.dto';
@@ -32,6 +33,12 @@ export class ServerController {
   @Authenticated()
   getAboutInfo(): Promise<ServerAboutResponseDto> {
     return this.service.getAboutInfo();
+  }
+
+  @Get('android-links')
+  @Authenticated()
+  getAndroidLinks(): ServerVersionAndroidLinksDto {
+    return this.service.getAndroidLinks();
   }
 
   @Get('storage')
