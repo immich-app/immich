@@ -24,7 +24,7 @@ extension PHAsset {
       type: Int64(mediaType.rawValue),
       createdAt: creationDate.map { Int64($0.timeIntervalSince1970) },
       updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
-      durationInSeconds: Int64(duration),
+      durationInSeconds: Int64(duration)
     )
   }
 }
