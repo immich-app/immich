@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "1.132.3",
+  "version": "1.134.0",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -25,7 +25,7 @@
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@playwright/test": "^1.44.1",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^22.15.18",
+    "@types/node": "^22.15.21",
     "@types/oidc-provider": "^8.5.1",
     "@types/pg": "^8.15.1",
     "@types/pngjs": "^6.0.4",
@@ -52,6 +52,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.15.1"
+    "node": "22.16.0"
   }
 }

@@ -115,32 +115,72 @@ Note: Activating the license is not required.
 
 ### VSCode
 
-Install `Flutter`, `DCM`, `Prettier`, `ESLint` and `Svelte` extensions.
+Install `Flutter`, `DCM`, `Prettier`, `ESLint` and `Svelte` extensions. These extensions are listed in the `extensions.json` file under `.vscode/` and should appear as workspace recommendations.
 
-in User `settings.json` (`cmd + shift + p` and search for `Open User Settings JSON`) add the following:
+Here are the settings we use, they should be active as workspace settings (`settings.json`):
 
 ```json title="settings.json"
 {
-  "editor.formatOnSave": true,
-  "[javascript][typescript][css]": {
+  "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.tabSize": 2,
-    "editor.formatOnSave": true
-  },
-  "[svelte]": {
-    "editor.defaultFormatter": "svelte.svelte-vscode",
+    "editor.formatOnSave": true,
     "editor.tabSize": 2
   },
-  "svelte.enable-ts-plugin": true,
-  "eslint.validate": ["javascript", "svelte"],
   "[dart]": {
+    "editor.defaultFormatter": "Dart-Code.dart-code",
     "editor.formatOnSave": true,
     "editor.selectionHighlight": false,
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "onlySnippets",
-    "editor.wordBasedSuggestions": "off",
-    "editor.defaultFormatter": "Dart-Code.dart-code"
-  }
+    "editor.wordBasedSuggestions": "off"
+  },
+  "[javascript]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.removeUnusedImports": "explicit"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[svelte]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.removeUnusedImports": "explicit"
+    },
+    "editor.defaultFormatter": "svelte.svelte-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.removeUnusedImports": "explicit"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "cSpell.words": ["immich"],
+  "editor.formatOnSave": true,
+  "eslint.validate": ["javascript", "svelte"],
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.dart": "${capture}.g.dart,${capture}.gr.dart,${capture}.drift.dart",
+    "*.ts": "${capture}.spec.ts,${capture}.mock.ts"
+  },
+  "svelte.enable-ts-plugin": true,
+  "typescript.preferences.importModuleSpecifier": "non-relative"
 }
 ```

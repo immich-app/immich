@@ -58,6 +58,7 @@
 
   const deleteAsset = async () => {
     try {
+      preAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
       onAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
 
@@ -73,7 +74,7 @@
   };
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcuts={[
     { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },

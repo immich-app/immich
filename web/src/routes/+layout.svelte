@@ -101,7 +101,7 @@
   {/if}
 </svelte:head>
 
-<svelte:window
+<svelte:document
   use:shortcut={{
     shortcut: { ctrl: true, shift: true, key: 'm' },
     onShortcut: () => copyToClipboard(getMyImmichLink().toString()),

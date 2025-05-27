@@ -206,7 +206,7 @@
   }
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcuts={[
     { shortcut: { key: 'Escape' }, onShortcut: onEscape },
     { shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input?.select() },
@@ -214,7 +214,7 @@
   ]}
 />
 
-<div class="w-full relative" use:focusOutside={{ onFocusOut }} tabindex="-1">
+<div class="w-full relative z-auto" use:focusOutside={{ onFocusOut }} tabindex="-1">
   <form
     draggable="false"
     autocomplete="off"
