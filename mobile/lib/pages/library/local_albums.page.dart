@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
@@ -45,13 +46,11 @@ class LocalAlbumsPage extends HookConsumerWidget {
                 ),
               ),
               subtitle: Text(
-                albums[index].assetCount == 1
-                    ? 'album_thumbnail_card_item'
-                    : 'album_thumbnail_card_items',
+                t('items_count', {'count': albums[index].assetCount}),
                 style: context.textTheme.bodyMedium?.copyWith(
                   color: context.colorScheme.onSurfaceSecondary,
                 ),
-              ).tr(namedArgs: {'count': '${albums[index].assetCount}'}),
+              ),
               onTap: () => context
                   .pushRoute(AlbumViewerRoute(albumId: albums[index].id)),
             ),
