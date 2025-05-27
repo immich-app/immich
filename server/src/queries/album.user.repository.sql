@@ -6,7 +6,9 @@ insert into
 values
   ($1, $2)
 returning
-  *
+  "usersId",
+  "albumsId",
+  "role"
 
 -- AlbumUserRepository.update
 update "albums_shared_users_users"

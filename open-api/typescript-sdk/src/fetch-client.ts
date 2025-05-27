@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.132.3
+ * 1.133.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -1075,6 +1075,10 @@ export type ServerVersionResponseDto = {
     major: number;
     minor: number;
     patch: number;
+};
+export type VersionCheckStateResponseDto = {
+    checkedAt: string | null;
+    releaseVersion: string | null;
 };
 export type ServerVersionHistoryResponseDto = {
     createdAt: string;
@@ -2947,6 +2951,14 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VersionCheckStateResponseDto;
+    }>("/server/version-check", {
+        ...opts
+    }));
+}
 export function getVersionHistory(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3281,6 +3293,14 @@ export function getReverseGeocodingState(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ReverseGeocodingStateResponseDto;
     }>("/system-metadata/reverse-geocoding-state", {
+        ...opts
+    }));
+}
+export function getVersionCheckState(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VersionCheckStateResponseDto;
+    }>("/system-metadata/version-check-state", {
         ...opts
     }));
 }
@@ -3860,7 +3880,11 @@ export enum SyncEntityType {
     AssetExifV1 = "AssetExifV1",
     PartnerAssetV1 = "PartnerAssetV1",
     PartnerAssetDeleteV1 = "PartnerAssetDeleteV1",
-    PartnerAssetExifV1 = "PartnerAssetExifV1"
+    PartnerAssetExifV1 = "PartnerAssetExifV1",
+    AlbumV1 = "AlbumV1",
+    AlbumDeleteV1 = "AlbumDeleteV1",
+    AlbumUserV1 = "AlbumUserV1",
+    AlbumUserDeleteV1 = "AlbumUserDeleteV1"
 }
 export enum SyncRequestType {
     UsersV1 = "UsersV1",
@@ -3868,7 +3892,9 @@ export enum SyncRequestType {
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
     PartnerAssetsV1 = "PartnerAssetsV1",
-    PartnerAssetExifsV1 = "PartnerAssetExifsV1"
+    PartnerAssetExifsV1 = "PartnerAssetExifsV1",
+    AlbumsV1 = "AlbumsV1",
+    AlbumUsersV1 = "AlbumUsersV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

@@ -3,6 +3,7 @@
 .DS_Store
 .vscode/*
 !.vscode/launch.json
+!.vscode/extensions.json
 .idea
 
 docker/upload

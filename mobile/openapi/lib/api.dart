@@ -238,6 +238,10 @@ part 'model/stack_update_dto.dart';
 part 'model/sync_ack_delete_dto.dart';
 part 'model/sync_ack_dto.dart';
 part 'model/sync_ack_set_dto.dart';
+part 'model/sync_album_delete_v1.dart';
+part 'model/sync_album_user_delete_v1.dart';
+part 'model/sync_album_user_v1.dart';
+part 'model/sync_album_v1.dart';
 part 'model/sync_asset_delete_v1.dart';
 part 'model/sync_asset_exif_v1.dart';
 part 'model/sync_asset_v1.dart';
@@ -316,6 +320,7 @@ part 'model/validate_access_token_response_dto.dart';
 part 'model/validate_library_dto.dart';
 part 'model/validate_library_import_path_response_dto.dart';
 part 'model/validate_library_response_dto.dart';
+part 'model/version_check_state_response_dto.dart';
 part 'model/video_codec.dart';
 part 'model/video_container.dart';
 
