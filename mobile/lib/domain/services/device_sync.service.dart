@@ -98,6 +98,7 @@ class DeviceSyncService {
     } finally {
       stopwatch.stop();
       _log.info("Device sync took - ${stopwatch.elapsedMilliseconds}ms");
+      DLog.log("Device sync took - ${stopwatch.elapsedMilliseconds}ms");
     }
   }
 
@@ -125,6 +126,7 @@ class DeviceSyncService {
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
+      DLog.log("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
     } catch (e, s) {
       _log.severe("Error performing full device sync", e, s);
     }
