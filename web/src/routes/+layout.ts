@@ -1,7 +1,6 @@
 import { init } from '$lib/utils/server';
 import type { LayoutLoad } from './$types';
 
-export const prerender = 'auto';
 //export const ssr = false;
 export const csr = true;
 

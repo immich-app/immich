@@ -8,7 +8,7 @@ npm --prefix "$TYPESCRIPT_SDK" run build
 
 COUNT=0
 UPSTREAM="${IMMICH_SERVER_URL:-http://immich-server:2283/}"
-until wget --spider --quiet "${UPSTREAM}/api/server/config" > /dev/null 2>&1; do
+until wget --spider --quiet "${UPSTREAM}/api/server/ping" > /dev/null 2>&1; do
     if [ $((COUNT % 10)) -eq 0 ]; then
       echo "Waiting for $UPSTREAM to start..."
     fi
