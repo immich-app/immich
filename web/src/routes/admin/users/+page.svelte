@@ -10,7 +10,6 @@
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import UserCreateModal from '$lib/modals/UserCreateModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
-  import UserEditModal from '$lib/modals/UserEditModal.svelte';
   import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
@@ -18,8 +17,8 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, HStack, IconButton, Link, Text } from '@immich/ui';
-  import { mdiDeleteRestore, mdiInfinity, mdiPencilOutline, mdiPlusBoxOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { Button, HStack, IconButton, Text } from '@immich/ui';
+  import { mdiDeleteRestore, mdiEyeOutline, mdiInfinity, mdiPlusBoxOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -61,13 +60,6 @@
   const handleCreate = async () => {
     await modalManager.show(UserCreateModal, {});
     await refresh();
-  };
-
-  const handleEdit = async (dto: UserAdminResponseDto) => {
-    const result = await modalManager.show(UserEditModal, { user: dto });
-    if (result) {
-      await refresh();
-    }
   };
 
   const handleDelete = async (user: UserAdminResponseDto) => {
@@ -116,9 +108,9 @@
                   ? 'bg-red-300 dark:bg-red-900'
                   : 'even:bg-subtle/20 odd:bg-subtle/80'}"
               >
-                <td class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-ellipsis break-all px-2 text-sm"
-                  ><Link href="{AppRoute.ADMIN_USERS}/{immichUser.id}">{immichUser.email}</Link></td
-                >
+                <td class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-ellipsis break-all px-2 text-sm">
+                  {immichUser.email}
+                </td>
                 <td class="hidden sm:block w-3/12 text-ellipsis break-all px-2 text-sm">{immichUser.name}</td>
                 <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
@@ -136,10 +128,10 @@
                     <IconButton
                       shape="round"
                       size="medium"
-                      icon={mdiPencilOutline}
-                      title={$t('edit_user')}
-                      onclick={() => handleEdit(immichUser)}
-                      aria-label={$t('edit_user')}
+                      icon={mdiEyeOutline}
+                      title={$t('view_user')}
+                      href={`${AppRoute.ADMIN_USERS}/${immichUser.id}`}
+                      aria-label={$t('view_user')}
                     />
                     {#if immichUser.id !== $user.id}
                       <IconButton
