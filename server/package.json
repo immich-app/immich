@@ -90,7 +90,7 @@
     "sanitize-filename": "^1.6.3",
     "sanitize-html": "^2.14.0",
     "semver": "^7.6.2",
-    "sharp": "^0.34.0",
+    "sharp": "^0.34.2",
     "sirv": "^3.0.0",
     "tailwindcss-preset-email": "^1.3.2",
     "thumbhash": "^0.1.1",
@@ -158,6 +158,6 @@
     "node": "22.16.0"
   },
   "overrides": {
-    "sharp": "^0.34.0"
+    "sharp": "^0.34.2"
   }
 }
