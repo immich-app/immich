@@ -39,7 +39,7 @@
   use:focusTrap
 >
   <div
-    class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
+    class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-t-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
   >
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
@@ -101,13 +101,17 @@
   </div>
 
   <div class="mb-4 flex flex-col">
-    <Button class="m-2 mx-4" onclick={onLogout} leadingIcon={mdiLogout} variant="ghost" color="secondary"
-      >{$t('sign_out')}</Button
+    <Button
+      class="m-1 mx-4 rounded-none rounded-b-3xl bg-white p-3 dark:bg-immich-dark-primary/10"
+      onclick={onLogout}
+      leadingIcon={mdiLogout}
+      variant="ghost"
+      color="secondary">{$t('sign_out')}</Button
     >
 
     <button
       type="button"
-      class="text-center pt-1 underline text-xs text-immich-primary dark:text-immich-dark-primary"
+      class="text-center mt-2 underline text-xs text-immich-primary dark:text-immich-dark-primary"
       onclick={async () => {
         onClose();
         if (info) {
