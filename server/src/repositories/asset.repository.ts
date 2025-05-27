@@ -634,8 +634,6 @@ export class AssetRepository {
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-          .$if(options.visibility == undefined, withDefaultVisibility)
-          .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
           .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb
@@ -656,7 +654,7 @@ export class AssetRepository {
                     .select(sql`array[stacked."stackId"::text, count('stacked')::text]`.as('stack'))
                     .whereRef('stacked.stackId', '=', 'assets.stackId')
                     .where('stacked.deletedAt', 'is', null)
-                    .where('stacked.visibility', '!=', AssetVisibility.ARCHIVE)
+                    .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
                     .groupBy('stacked.stackId')
                     .as('stacked_assets'),
                 (join) => join.onTrue(),

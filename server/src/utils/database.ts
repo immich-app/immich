@@ -156,12 +156,7 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 // TODO come up with a better query that only selects the fields we need
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
-  return qb.where((qb) =>
-    qb.or([
-      qb('assets.visibility', '=', AssetVisibility.TIMELINE),
-      qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
-    ]),
-  );
+  return qb.where('assets.visibility', 'in', [sql.lit(AssetVisibility.ARCHIVE), sql.lit(AssetVisibility.TIMELINE)]);
 }
 
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {

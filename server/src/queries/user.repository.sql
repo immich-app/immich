@@ -293,17 +293,11 @@ select
   "users"."quotaSizeInBytes" as "quotaSizeInBytes",
   count(*) filter (
     where
-      (
-        "assets"."type" = 'IMAGE'
-        and "assets"."visibility" != 'hidden'
-      )
+      "assets"."type" = 'IMAGE'
   ) as "photos",
   count(*) filter (
     where
-      (
-        "assets"."type" = 'VIDEO'
-        and "assets"."visibility" != 'hidden'
-      )
+      "assets"."type" = 'VIDEO'
   ) as "videos",
   coalesce(
     sum("exif"."fileSizeInByte") filter (
@@ -335,9 +329,9 @@ select
 from
   "users"
   left join "assets" on "assets"."ownerId" = "users"."id"
+  and "assets"."deletedAt" is null
+  and "assets"."visibility" in ('timeline', 'archive')
   left join "exif" on "exif"."assetId" = "assets"."id"
-where
-  "assets"."deletedAt" is null
 group by
   "users"."id"
 order by
@@ -363,6 +357,7 @@ set
       left join "exif" on "exif"."assetId" = "assets"."id"
     where
       "assets"."libraryId" is null
+      and "assets"."visibility" in ('timeline', 'archive')
       and "assets"."ownerId" = "users"."id"
   ),
   "updatedAt" = $1

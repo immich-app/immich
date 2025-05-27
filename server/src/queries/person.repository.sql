@@ -182,27 +182,42 @@ from
   "asset_faces"
   left join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "asset_faces"."personId" = $1
-  and "assets"."visibility" != $2
+  and "assets"."visibility" = 'timeline'
   and "assets"."deletedAt" is null
 where
   "asset_faces"."deletedAt" is null
 
 -- PersonRepository.getNumberOfPeople
 select
-  count(distinct ("person"."id")) as "total",
-  count(distinct ("person"."id")) filter (
-    where
-      "person"."isHidden" = $1
+  coalesce(count(*), $1) as "total",
+  coalesce(
+    count(*) filter (
+      where
+        "isHidden" = $2
+    ),
+    $3
   ) as "hidden"
 from
   "person"
-  inner join "asset_faces" on "asset_faces"."personId" = "person"."id"
-  inner join "assets" on "assets"."id" = "asset_faces"."assetId"
-  and "assets"."deletedAt" is null
-  and "assets"."visibility" != $2
 where
-  "person"."ownerId" = $3
-  and "asset_faces"."deletedAt" is null
+  exists (
+    select
+    from
+      "asset_faces"
+    where
+      "asset_faces"."personId" = "person"."id"
+      and "asset_faces"."deletedAt" is null
+      and exists (
+        select
+        from
+          "assets"
+        where
+          "assets"."id" = "asset_faces"."assetId"
+          and "assets"."visibility" = 'timeline'
+          and "assets"."deletedAt" is null
+      )
+  )
+  and "person"."ownerId" = $4
 
 -- PersonRepository.refreshFaces
 with

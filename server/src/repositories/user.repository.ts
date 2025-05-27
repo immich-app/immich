@@ -221,16 +221,11 @@ export class UserRepository {
       .select((eb) => [
         eb.fn
           .countAll<number>()
-          .filterWhere((eb) =>
-            eb.and([
-              eb('assets.type', '=', sql.lit(AssetType.IMAGE)),
-              eb('assets.visibility', 'in', [sql.lit(AssetVisibility.TIMELINE), sql.lit(AssetVisibility.ARCHIVE)]),
-            ]),
-          )
+          .filterWhere((eb) => eb('assets.type', '=', sql.lit(AssetType.IMAGE)))
           .as('photos'),
         eb.fn
           .countAll<number>()
-          .filterWhere((eb) => eb.and([eb('assets.type', '=', sql.lit(AssetType.VIDEO))]))
+          .filterWhere((eb) => eb('assets.type', '=', sql.lit(AssetType.VIDEO)))
           .as('videos'),
         eb.fn
           .coalesce(eb.fn.sum<number>('exif.fileSizeInByte').filterWhere('assets.libraryId', 'is', null), eb.lit(0))

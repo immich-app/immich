@@ -158,8 +158,8 @@ from
 where
   "ownerId" = $1::uuid
   and "deviceId" = $2
-  and "visibility" != $3
   and "deletedAt" is null
+  and "assets"."visibility" in ('archive', 'timeline')
 
 -- AssetRepository.getLivePhotoCount
 select
@@ -240,10 +240,7 @@ with
       "assets"
     where
       "assets"."deletedAt" is null
-      and (
-        "assets"."visibility" = $1
-        or "assets"."visibility" = $2
-      )
+      and "assets"."visibility" in ('archive', 'timeline')
   )
 select
   "timeBucket",
@@ -300,21 +297,14 @@ with
         where
           "stacked"."stackId" = "assets"."stackId"
           and "stacked"."deletedAt" is null
-          and "stacked"."visibility" != $1
+          and "stacked"."visibility" = $1
         group by
           "stacked"."stackId"
       ) as "stacked_assets" on true
     where
       "assets"."deletedAt" is null
-      and (
-        "assets"."visibility" = $2
-        or "assets"."visibility" = $3
-      )
-      and date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
-      and (
-        "assets"."visibility" = $5
-        or "assets"."visibility" = $6
-      )
+      and "assets"."visibility" in ('archive', 'timeline')
+      and date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' = $2
       and not exists (
         select
         from
@@ -374,10 +364,10 @@ with
           "exif"."assetId" = "assets"."id"
       ) as "asset" on true
     where
-      "assets"."ownerId" = $1::uuid
+      "assets"."visibility" in ('archive', 'timeline')
+      and "assets"."ownerId" = $1::uuid
       and "assets"."duplicateId" is not null
       and "assets"."deletedAt" is null
-      and "assets"."visibility" != $2
       and "assets"."stackId" is null
     group by
       "assets"."duplicateId"
@@ -388,12 +378,12 @@ with
     from
       "duplicates"
     where
-      json_array_length("assets") = $3
+      json_array_length("assets") = $2
   ),
   "removed_unique" as (
     update "assets"
     set
-      "duplicateId" = $4
+      "duplicateId" = $3
     from
       "unique"
     where
