@@ -13,7 +13,6 @@
   ];
   const dockerFiles = ['docker-compose.yml', 'example.env', 'hwaccel.ml.yml', 'hwaccel.transcoding.yml'];
   const prometheus = 'prometheus.yml';
-  const temp = ['', '', '', ''];
 
   const downloadBaseURL = new URL('download/' + data.version + '/', baseURL);
 </script>
