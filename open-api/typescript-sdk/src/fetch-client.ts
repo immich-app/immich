@@ -1004,6 +1004,12 @@ export type ServerAboutResponseDto = {
     version: string;
     versionUrl: string;
 };
+export type ServerApkLinksDto = {
+    arm64v8a: string;
+    armeabiv7a: string;
+    universal: string;
+    x86_64: string;
+};
 export type ServerConfigDto = {
     externalDomain: string;
     isInitialized: boolean;
@@ -2865,6 +2871,14 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerAboutResponseDto;
     }>("/server/about", {
+        ...opts
+    }));
+}
+export function getAndroidLinks(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerApkLinksDto;
+    }>("/server/android-links", {
         ...opts
     }));
 }
