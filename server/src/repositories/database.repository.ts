@@ -247,7 +247,10 @@ export class DatabaseRepository {
       return;
     }
     const dimSize = await this.getDimensionSize(table);
-    await sql`DROP INDEX IF EXISTS ${sql.raw(indexName)}`.execute(this.db);
+    await this.db.schema.dropIndex(indexName).ifExists().execute();
+    if (table === 'smart_search') {
+      await this.db.schema.alterTable(table).dropConstraint('dim_size_constraint').ifExists().execute();
+    }
     await this.db.transaction().execute(async (tx) => {
       if (!rows.some((row) => row.columnName === 'embedding')) {
         this.logger.warn(`Column 'embedding' does not exist in table '${table}', truncating and adding column.`);
