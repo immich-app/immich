@@ -76,7 +76,6 @@
   );
 
   const shouldRunStep = (stepRole: OnboardingRole, userRole: OnboardingRole) => {
-    console.log('shouldRunStep', stepRole, userRole, $serverConfig.isOnboarded);
     return (
       stepRole === OnboardingRole.USER ||
       (stepRole === OnboardingRole.SERVER && userRole === OnboardingRole.SERVER && !$serverConfig.isOnboarded)
@@ -92,10 +91,6 @@
   const previousStepIndex = $derived(
     onboardingSteps.findLastIndex((step, i) => shouldRunStep(step.role, userRole) && i < index),
   );
-
-  $effect(() => {
-    console.log('previousStepIndex', previousStepIndex);
-  });
 
   const nextStepIndex = $derived(
     onboardingSteps.findIndex((step, i) => shouldRunStep(step.role, userRole) && i > index),
