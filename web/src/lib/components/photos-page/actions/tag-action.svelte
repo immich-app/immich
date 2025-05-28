@@ -35,9 +35,7 @@
   };
 </script>
 
-<svelte:document
-  use:shortcut={{ shortcut: { key: 't' }, onShortcut: () => (isOpen = true) }}
-/>
+<svelte:document use:shortcut={{ shortcut: { key: 't' }, onShortcut: () => (isOpen = true) }} />
 
 {#if menuItem}
   <MenuOption {text} {icon} onClick={handleOpen} />
