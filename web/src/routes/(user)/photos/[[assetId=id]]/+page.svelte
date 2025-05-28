@@ -150,7 +150,11 @@
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
       {/if}
-      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} onUndoDelete={(assets) => assetStore.addAssets(assets)} />
+      <DeleteAssets
+        menuItem
+        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
+        onUndoDelete={(assets) => assetStore.addAssets(assets)}
+      />
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <hr />
       <AssetJobActions />

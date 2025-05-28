@@ -294,7 +294,7 @@
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
           {/if}
-          <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate}/>
+          <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
           <hr />
           <AssetJobActions />
         </ButtonContextMenu>
@@ -431,7 +431,7 @@
             {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
               <TagAction menuItem />
             {/if}
-            <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate}/>
+            <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
             <hr />
             <AssetJobActions />
           </ButtonContextMenu>

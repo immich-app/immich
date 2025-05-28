@@ -1860,6 +1860,7 @@
   "unable_to_setup_pin_code": "Unable to setup PIN code",
   "unarchive": "Unarchive",
   "unarchived_count": "{count, plural, other {Unarchived #}}",
+  "undo": "Undo",
   "unfavorite": "Unfavorite",
   "unhide_person": "Unhide person",
   "unknown": "Unknown",

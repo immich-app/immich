@@ -18,7 +18,12 @@ export type OnStack = (result: StackResponse) => void;
 export type OnUnstack = (assets: TimelineAsset[]) => void;
 export type OnSetVisibility = (ids: string[]) => void;
 
-export const deleteAssets = async (force: boolean, onAssetDelete: OnDelete, assets: TimelineAsset[], onUndoDelete:OnUndoDelete|undefined=undefined) => {
+export const deleteAssets = async (
+  force: boolean,
+  onAssetDelete: OnDelete,
+  assets: TimelineAsset[],
+  onUndoDelete: OnUndoDelete | undefined = undefined,
+) => {
   const $t = get(t);
   try {
     const ids = assets.map((a) => a.id);
@@ -30,10 +35,10 @@ export const deleteAssets = async (force: boolean, onAssetDelete: OnDelete, asse
         ? $t('assets_permanently_deleted_count', { values: { count: ids.length } })
         : $t('assets_trashed_count', { values: { count: ids.length } }),
       type: NotificationType.Info,
-      ...(onUndoDelete) && { 
-        button: { text: 'Undo', onClick: ()=>undoDeleteAssets(onUndoDelete, assets) },
-        timeout: 5000 
-      },
+      ...(onUndoDelete && {
+        button: { text: $t('undo'), onClick: () => undoDeleteAssets(onUndoDelete, assets) },
+        timeout: 5000,
+      }),
     });
   } catch (error) {
     handleError(error, $t('errors.unable_to_delete_assets'));
@@ -41,6 +46,7 @@ export const deleteAssets = async (force: boolean, onAssetDelete: OnDelete, asse
 };
 
 const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsset[]) => {
+  const $t = get(t);
   try {
     const ids = assets.map((a) => a.id);
     await restoreAssets({ bulkIdsDto: { ids } });
@@ -48,7 +54,7 @@ const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsse
   } catch (error) {
     handleError(error, $t('errors.unable_to_restore_assets'));
   }
-}
+};
 
 /**
  * Update the asset stack state in the asset store based on the provided stack response.

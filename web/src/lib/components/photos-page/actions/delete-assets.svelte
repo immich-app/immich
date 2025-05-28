@@ -10,12 +10,12 @@
 
   interface Props {
     onAssetDelete: OnDelete;
-    onUndoDelete: OnUndoDelete;
+    onUndoDelete: OnUndoDelete | undefined;
     menuItem?: boolean;
     force?: boolean;
   }
 
-  let { onAssetDelete, onUndoDelete, menuItem = false, force = !$featureFlags.trash }: Props = $props();
+  let { onAssetDelete, onUndoDelete = undefined, menuItem = false, force = !$featureFlags.trash }: Props = $props();
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
@@ -35,7 +35,7 @@
 
   const handleDelete = async () => {
     loading = true;
-    const assets = [...getOwnedAssets()]
+    const assets = [...getOwnedAssets()];
     await deleteAssets(force, onAssetDelete, assets, onUndoDelete);
     clearSelect();
     isShowConfirmation = false;

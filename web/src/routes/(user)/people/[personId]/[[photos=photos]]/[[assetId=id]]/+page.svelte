@@ -354,7 +354,7 @@
   const handleUndoDeleteAssets = async (assets: TimelineAsset[]) => {
     assetStore.addAssets(assets);
     await updateAssetCount();
-  }
+  };
 
   let person = $derived(data.person);
 
@@ -537,7 +537,11 @@
           <TagAction menuItem />
         {/if}
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-        <DeleteAssets menuItem onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)} onUndoDelete={(assets) => handleUndoDeleteAssets(assets)} />
+        <DeleteAssets
+          menuItem
+          onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)}
+          onUndoDelete={(assets) => handleUndoDeleteAssets(assets)}
+        />
       </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}

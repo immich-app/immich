@@ -92,7 +92,11 @@
         <TagAction menuItem />
       {/if}
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} onUndoDelete={(assets) => assetStore.addAssets(assets)} />
+      <DeleteAssets
+        menuItem
+        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
+        onUndoDelete={(assets) => assetStore.addAssets(assets)}
+      />
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
