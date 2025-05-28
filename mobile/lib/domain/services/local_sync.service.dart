@@ -13,14 +13,14 @@ import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
 
-class DeviceSyncService {
+class LocalSyncService {
   final ILocalAlbumRepository _localAlbumRepository;
   final NativeSyncApi _nativeSyncApi;
   final Platform _platform;
   final StoreService _storeService;
   final Logger _log = Logger("DeviceSyncService");
 
-  DeviceSyncService({
+  LocalSyncService({
     required ILocalAlbumRepository localAlbumRepository,
     required NativeSyncApi nativeSyncApi,
     required StoreService storeService,

@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/services/device_sync.service.dart';
+import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
@@ -26,8 +26,8 @@ final syncStreamRepositoryProvider = Provider(
   (ref) => DriftSyncStreamRepository(ref.watch(driftProvider)),
 );
 
-final deviceSyncServiceProvider = Provider(
-  (ref) => DeviceSyncService(
+final localSyncServiceProvider = Provider(
+  (ref) => LocalSyncService(
     localAlbumRepository: ref.watch(localAlbumRepository),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
     storeService: ref.watch(storeServiceProvider),

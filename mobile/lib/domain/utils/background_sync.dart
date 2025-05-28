@@ -33,11 +33,11 @@ class BackgroundSyncManager {
     _deviceAlbumSyncTask = full
         ? runInIsolateGentle(
             computation: (ref) =>
-                ref.read(deviceSyncServiceProvider).sync(full: true),
+                ref.read(localSyncServiceProvider).sync(full: true),
           )
         : runInIsolateGentle(
             computation: (ref) =>
-                ref.read(deviceSyncServiceProvider).sync(full: false),
+                ref.read(localSyncServiceProvider).sync(full: false),
           );
 
     return _deviceAlbumSyncTask!.whenComplete(() {
