@@ -7,7 +7,7 @@
   import { fade } from 'svelte/transition';
 
   interface Props {
-    title?: string | undefined;
+    title?: Translations | undefined;
     icon?: string | undefined;
     children?: Snippet;
     previousTitle?: Translations | undefined;
@@ -41,7 +41,7 @@
       {/if}
       {#if title}
         <p class="text-xl text-immich-primary dark:text-immich-dark-primary">
-          {title.toUpperCase()}
+          {$t(title).toUpperCase()}
         </p>
       {/if}
     </div>

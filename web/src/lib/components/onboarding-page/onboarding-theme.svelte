@@ -8,12 +8,10 @@
   export async function save() {}
 </script>
 
-<div>
-  <div>
-    <p class="pb-6 font-light">{$t('onboarding_theme_description')}</p>
-  </div>
+<div class="flex flex-col gap-4">
+  <p>{$t('onboarding_theme_description')}</p>
 
-  <div class="flex gap-4 mb-6">
+  <div class="flex gap-4">
     <button
       type="button"
       class="w-1/2 aspect-square bg-light dark:bg-dark rounded-3xl transition-all shadow-sm hover:shadow-xl border-[3px] border-immich-primary dark:border dark:border-transparent"

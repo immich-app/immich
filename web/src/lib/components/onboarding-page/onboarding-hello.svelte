@@ -10,9 +10,9 @@
   export async function save() {}
 </script>
 
-<div>
-  <ImmichLogo noText class="h-[50px]" />
-  <p class="font-medium text-6xl my-6 text-immich-primary dark:text-immich-dark-primary">
+<div class="gap-4">
+  <ImmichLogo noText class="h-[100px] mb-2" />
+  <p class="font-medium mb-6 text-6xl text-immich-primary dark:text-immich-dark-primary">
     {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>
   <p class="text-3xl pb-6 font-light">

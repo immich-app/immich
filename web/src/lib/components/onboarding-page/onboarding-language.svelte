@@ -31,10 +31,10 @@
   let closestLanguage = $derived(getClosestAvailableLocale([$lang], langCodes));
 </script>
 
-<div>
-  <div>
-    <p class="pb-6 font-light">{$t('onboarding_locale_description')}</p>
-  </div>
+<div class="flex flex-col gap-4">
+  <p>
+    {$t('onboarding_locale_description')}
+  </p>
 
   <Combobox
     label={$t('language')}

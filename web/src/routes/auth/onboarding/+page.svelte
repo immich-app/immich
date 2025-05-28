@@ -4,9 +4,10 @@
   import OnboardingCard from '$lib/components/onboarding-page/onboarding-card.svelte';
   import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
   import OnboardingLocale from '$lib/components/onboarding-page/onboarding-language.svelte';
-  import OnboardingPrivacy from '$lib/components/onboarding-page/onboarding-privacy.svelte';
+  import OnboardingServerPrivacy from '$lib/components/onboarding-page/onboarding-server-privacy.svelte';
   import OnboardingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
+  import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { OnboardingRole } from '$lib/models/onboarding-role';
   import { retrieveServerConfig, serverConfig } from '$lib/stores/server-config.store';
@@ -21,19 +22,15 @@
       | typeof OnboardingHello
       | typeof OnboardingTheme
       | typeof OnboardingStorageTemplate
-      | typeof OnboardingPrivacy
+      | typeof OnboardingServerPrivacy
+      | typeof OnboardingUserPrivacy
       | typeof OnboardingLocale;
     role: OnboardingRole;
     title: Translations;
     icon?: string;
   }
 
-  let onboardingComponent:
-    | OnboardingHello
-    | OnboardingTheme
-    | OnboardingStorageTemplate
-    | OnboardingPrivacy
-    | OnboardingLocale;
+  let onboardingComponent: ReturnType<OnboardingStep['component']>;
 
   const onboardingSteps: OnboardingStep[] = [
     { name: 'hello', component: OnboardingHello, role: OnboardingRole.USER, title: 'welcome' },
@@ -52,10 +49,17 @@
       icon: mdiTranslate,
     },
     {
-      name: 'server-privacy',
-      component: OnboardingPrivacy,
+      name: 'server_privacy',
+      component: OnboardingServerPrivacy,
       role: OnboardingRole.SERVER,
-      title: 'privacy',
+      title: 'server_privacy',
+      icon: mdiIncognito,
+    },
+    {
+      name: 'user_privacy',
+      component: OnboardingUserPrivacy,
+      role: OnboardingRole.USER,
+      title: 'user_privacy',
       icon: mdiIncognito,
     },
     {
@@ -97,7 +101,7 @@
   );
 
   const handleNextClicked = async () => {
-    onboardingComponent.save();
+    await onboardingComponent?.save();
 
     if (nextStepIndex == -1) {
       if ($user.isAdmin) {
@@ -118,7 +122,7 @@
   };
 
   const handlePrevious = async () => {
-    onboardingComponent.save();
+    await onboardingComponent?.save();
 
     if (previousStepIndex === -1) {
       return;

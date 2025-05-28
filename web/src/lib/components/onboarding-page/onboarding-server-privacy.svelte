@@ -18,7 +18,7 @@
   }
 </script>
 
-<div>
+<div class="flex flex-col gap-4">
   <p>
     {$t('onboarding_privacy_description')}
   </p>

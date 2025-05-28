@@ -19,7 +19,7 @@
   };
 </script>
 
-<div>
+<div class="flex flex-col">
   <p>
     <FormatMessage key="admin.storage_template_onboarding_description">
       {#snippet children({ message })}
