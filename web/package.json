@@ -81,7 +81,7 @@
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-p": "^0.23.0",
-    "eslint-plugin-svelte": "^3.0.0",
+    "eslint-plugin-svelte": "^3.9.0",
     "eslint-plugin-unicorn": "^57.0.0",
     "factory.ts": "^1.4.1",
     "globals": "^16.0.0",
