@@ -8,10 +8,11 @@ import { Stats } from 'node:fs';
 import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
-import { AssetFileType, AssetStatus, AssetType, CacheControl, JobName } from 'src/enum';
+import { MapAsset } from 'src/dtos/asset-response.dto';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
+import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -141,7 +142,6 @@ const createDto = Object.freeze({
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  isArchived: false,
   duration: '0:00:00.000000',
 }) as AssetMediaCreateDto;
 
@@ -163,7 +163,6 @@ const assetEntity = Object.freeze({
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   updatedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  isArchived: false,
   encodedVideoPath: '',
   duration: '0:00:00.000000',
   files: [] as AssetFile[],
@@ -173,7 +172,7 @@ const assetEntity = Object.freeze({
   },
   livePhotoVideoId: null,
   sidecarPath: null,
-}) as AssetEntity;
+} as MapAsset);
 
 const existingAsset = Object.freeze({
   ...assetEntity,
@@ -182,18 +181,18 @@ const existingAsset = Object.freeze({
   checksum: Buffer.from('_getExistingAsset', 'utf8'),
   libraryId: 'libraryId',
   originalFileName: 'existing-filename.jpeg',
-}) as AssetEntity;
+}) as MapAsset;
 
 const sidecarAsset = Object.freeze({
   ...existingAsset,
   sidecarPath: 'sidecar-path',
   checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
-}) as AssetEntity;
+}) as MapAsset;
 
 const copiedAsset = Object.freeze({
   id: 'copied-asset',
   originalPath: 'copied-path',
-}) as AssetEntity;
+}) as MapAsset;
 
 describe(AssetMediaService.name, () => {
   let sut: AssetMediaService;
@@ -436,7 +435,10 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should hide the linked motion asset', async () => {
-      mocks.asset.getById.mockResolvedValueOnce({ ...assetStub.livePhotoMotionAsset, isVisible: true });
+      mocks.asset.getById.mockResolvedValueOnce({
+        ...assetStub.livePhotoMotionAsset,
+        visibility: AssetVisibility.TIMELINE,
+      });
       mocks.asset.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
 
       await expect(
@@ -451,7 +453,10 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.asset.getById).toHaveBeenCalledWith('live-photo-motion-asset');
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'live-photo-motion-asset', isVisible: false });
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: 'live-photo-motion-asset',
+        visibility: AssetVisibility.HIDDEN,
+      });
     });
 
     it('should handle a sidecar file', async () => {
@@ -476,7 +481,11 @@ describe(AssetMediaService.name, () => {
     it('should require the asset.download permission', async () => {
       await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1']),
+        undefined,
+      );
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
     });
@@ -507,7 +516,7 @@ describe(AssetMediaService.name, () => {
     it('should require asset.view permissions', async () => {
       await expect(sut.viewThumbnail(authStub.admin, 'id', {})).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']), undefined);
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
     });
@@ -606,7 +615,7 @@ describe(AssetMediaService.name, () => {
     it('should require asset.view permissions', async () => {
       await expect(sut.playbackVideo(authStub.admin, 'id')).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']), undefined);
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
     });
@@ -819,8 +828,8 @@ describe(AssetMediaService.name, () => {
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
       mocks.asset.getByChecksums.mockResolvedValue([
-        { id: 'asset-1', checksum: file1 } as AssetEntity,
-        { id: 'asset-2', checksum: file2 } as AssetEntity,
+        { id: 'asset-1', checksum: file1, deletedAt: null },
+        { id: 'asset-2', checksum: file2, deletedAt: null },
       ]);
 
       await expect(
@@ -856,7 +865,7 @@ describe(AssetMediaService.name, () => {
       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
-      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1 } as AssetEntity]);
+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1, deletedAt: null }]);
 
       await expect(
         sut.bulkUploadCheck(authStub.admin, {

@@ -1,10 +1,11 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetOrder } from 'src/enum';
+import { albums_delete_audit } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
+  AfterDeleteTrigger,
   Column,
-  ColumnIndex,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
@@ -15,6 +16,13 @@ import {
 
 @Table({ name: 'albums', primaryConstraintName: 'PK_7f71c7b5bc7c87b8f94c9a93a00' })
 @UpdatedAtTrigger('albums_updated_at')
+@AfterDeleteTrigger({
+  name: 'albums_delete_audit',
+  scope: 'statement',
+  function: albums_delete_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() = 0',
+})
 export class AlbumTable {
   @PrimaryGeneratedColumn()
   id!: string;
@@ -51,7 +59,6 @@ export class AlbumTable {
   @Column({ default: AssetOrder.DESC })
   order!: AssetOrder;
 
-  @ColumnIndex('IDX_albums_update_id')
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_albums_update_id' })
   updateId?: string;
 }

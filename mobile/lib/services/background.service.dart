@@ -32,7 +32,7 @@ import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:path_provider_foundation/path_provider_foundation.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
@@ -359,7 +359,7 @@ class BackgroundService {
       ],
     );
 
-    HttpOverrides.global = HttpSSLCertOverride();
+    HttpSSLOptions.apply();
     ref
         .read(apiServiceProvider)
         .setAccessToken(Store.get(StoreKey.accessToken));
@@ -562,7 +562,7 @@ class BackgroundService {
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     _showErrorNotification(
       title: "backup_background_service_upload_failure_notification"
-          .tr(args: [errorAssetInfo.fileName]),
+          .tr(namedArgs: {'filename': errorAssetInfo.fileName}),
       individualTag: errorAssetInfo.id,
     );
   }
@@ -577,7 +577,7 @@ class BackgroundService {
 
     _throttledDetailNotify.title =
         "backup_background_service_current_upload_notification"
-            .tr(args: [currentUploadAsset.fileName]);
+            .tr(namedArgs: {'filename': currentUploadAsset.fileName});
     _throttledDetailNotify.progress = 0;
     _throttledDetailNotify.total = 0;
   }

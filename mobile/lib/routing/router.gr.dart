@@ -957,6 +957,25 @@ class LocalAlbumsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LockedPage]
+class LockedRoute extends PageRouteInfo<void> {
+  const LockedRoute({List<PageRouteInfo>? children})
+      : super(
+          LockedRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'LockedRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LockedPage();
+    },
+  );
+}
+
+/// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<void> {
   const LoginRoute({List<PageRouteInfo>? children})
@@ -1024,10 +1043,17 @@ class MapLocationPickerRouteArgs {
 
 /// generated route for
 /// [MapPage]
-class MapRoute extends PageRouteInfo<void> {
-  const MapRoute({List<PageRouteInfo>? children})
-      : super(
+class MapRoute extends PageRouteInfo<MapRouteArgs> {
+  MapRoute({
+    Key? key,
+    LatLng? initialLocation,
+    List<PageRouteInfo>? children,
+  }) : super(
           MapRoute.name,
+          args: MapRouteArgs(
+            key: key,
+            initialLocation: initialLocation,
+          ),
           initialChildren: children,
         );
 
@@ -1036,9 +1062,30 @@ class MapRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const MapPage();
+      final args =
+          data.argsAs<MapRouteArgs>(orElse: () => const MapRouteArgs());
+      return MapPage(
+        key: args.key,
+        initialLocation: args.initialLocation,
+      );
     },
   );
+}
+
+class MapRouteArgs {
+  const MapRouteArgs({
+    this.key,
+    this.initialLocation,
+  });
+
+  final Key? key;
+
+  final LatLng? initialLocation;
+
+  @override
+  String toString() {
+    return 'MapRouteArgs{key: $key, initialLocation: $initialLocation}';
+  }
 }
 
 /// generated route for
@@ -1332,11 +1379,65 @@ class PhotosRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [PinAuthPage]
+class PinAuthRoute extends PageRouteInfo<PinAuthRouteArgs> {
+  PinAuthRoute({
+    Key? key,
+    bool createPinCode = false,
+    List<PageRouteInfo>? children,
+  }) : super(
+          PinAuthRoute.name,
+          args: PinAuthRouteArgs(
+            key: key,
+            createPinCode: createPinCode,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'PinAuthRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args =
+          data.argsAs<PinAuthRouteArgs>(orElse: () => const PinAuthRouteArgs());
+      return PinAuthPage(
+        key: args.key,
+        createPinCode: args.createPinCode,
+      );
+    },
+  );
+}
+
+class PinAuthRouteArgs {
+  const PinAuthRouteArgs({
+    this.key,
+    this.createPinCode = false,
+  });
+
+  final Key? key;
+
+  final bool createPinCode;
+
+  @override
+  String toString() {
+    return 'PinAuthRouteArgs{key: $key, createPinCode: $createPinCode}';
+  }
+}
+
+/// generated route for
 /// [PlacesCollectionPage]
-class PlacesCollectionRoute extends PageRouteInfo<void> {
-  const PlacesCollectionRoute({List<PageRouteInfo>? children})
-      : super(
+class PlacesCollectionRoute extends PageRouteInfo<PlacesCollectionRouteArgs> {
+  PlacesCollectionRoute({
+    Key? key,
+    LatLng? currentLocation,
+    List<PageRouteInfo>? children,
+  }) : super(
           PlacesCollectionRoute.name,
+          args: PlacesCollectionRouteArgs(
+            key: key,
+            currentLocation: currentLocation,
+          ),
           initialChildren: children,
         );
 
@@ -1345,26 +1446,47 @@ class PlacesCollectionRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const PlacesCollectionPage();
+      final args = data.argsAs<PlacesCollectionRouteArgs>(
+          orElse: () => const PlacesCollectionRouteArgs());
+      return PlacesCollectionPage(
+        key: args.key,
+        currentLocation: args.currentLocation,
+      );
     },
   );
 }
 
+class PlacesCollectionRouteArgs {
+  const PlacesCollectionRouteArgs({
+    this.key,
+    this.currentLocation,
+  });
+
+  final Key? key;
+
+  final LatLng? currentLocation;
+
+  @override
+  String toString() {
+    return 'PlacesCollectionRouteArgs{key: $key, currentLocation: $currentLocation}';
+  }
+}
+
 /// generated route for
-/// [RecentlyAddedPage]
-class RecentlyAddedRoute extends PageRouteInfo<void> {
-  const RecentlyAddedRoute({List<PageRouteInfo>? children})
+/// [RecentlyTakenPage]
+class RecentlyTakenRoute extends PageRouteInfo<void> {
+  const RecentlyTakenRoute({List<PageRouteInfo>? children})
       : super(
-          RecentlyAddedRoute.name,
+          RecentlyTakenRoute.name,
           initialChildren: children,
         );
 
-  static const String name = 'RecentlyAddedRoute';
+  static const String name = 'RecentlyTakenRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const RecentlyAddedPage();
+      return const RecentlyTakenPage();
     },
   );
 }

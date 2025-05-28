@@ -17,12 +17,12 @@ import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
-import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
+import { JobService } from 'src/services/job.service';
 import { getKyselyConfig } from 'src/utils/database';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
@@ -44,7 +44,7 @@ const imports = [
   BullModule.registerQueue(...bull.queues),
   ClsModule.forRoot(cls.config),
   OpenTelemetryModule.forRoot(otel),
-  KyselyModule.forRoot(getKyselyConfig(database.config.kysely)),
+  KyselyModule.forRoot(getKyselyConfig(database.config)),
 ];
 
 class BaseModule implements OnModuleInit, OnModuleDestroy {
@@ -52,7 +52,7 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
     private eventRepository: EventRepository,
-    private jobRepository: JobRepository,
+    private jobService: JobService,
     private telemetryRepository: TelemetryRepository,
     private authService: AuthService,
   ) {
@@ -62,10 +62,7 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     this.telemetryRepository.setup({ repositories });
 
-    this.jobRepository.setup({ services });
-    if (this.worker === ImmichWorker.MICROSERVICES) {
-      this.jobRepository.startWorkers();
-    }
+    this.jobService.setServices(services);
 
     this.eventRepository.setAuthFn(async (client) =>
       this.authService.authenticate({

@@ -4,14 +4,11 @@ import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
-import { AssetFileType, JobName, JobStatus, QueueName } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
+import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
-import { getAssetFile } from 'src/utils/asset.util';
+import { JobItem, JobOf } from 'src/types';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class DuplicateService extends BaseService {
@@ -30,17 +27,21 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination, { isVisible: true })
-        : this.assetRepository.getWithout(pagination, WithoutProperty.DUPLICATE);
-    });
+    let jobs: JobItem[] = [];
+    const queueAll = async () => {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    };
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.DUPLICATE_DETECTION, data: { id: asset.id } })),
-      );
+    const assets = this.assetJobRepository.streamForSearchDuplicates(force);
+    for await (const asset of assets) {
+      jobs.push({ name: JobName.DUPLICATE_DETECTION, data: { id: asset.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
+      }
     }
+
+    await queueAll();
 
     return JobStatus.SUCCESS;
   }
@@ -63,15 +64,9 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    if (!asset.isVisible) {
+    if (asset.visibility === AssetVisibility.HIDDEN) {
       this.logger.debug(`Asset ${id} is not visible, skipping`);
       return JobStatus.SKIPPED;
-    }
-
-    const previewFile = getAssetFile(asset.files, AssetFileType.PREVIEW);
-    if (!previewFile) {
-      this.logger.warn(`Asset ${id} is missing preview image`);
-      return JobStatus.FAILED;
     }
 
     if (!asset.embedding) {

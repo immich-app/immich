@@ -6,6 +6,7 @@
     type Padding,
   } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import {
     getContextMenuPositionFromBoundingRect,
@@ -26,6 +27,7 @@
     /**
      * The direction in which the context menu should open.
      */
+    // TODO change to start vs end
     direction?: 'left' | 'right';
     color?: Color;
     size?: string | undefined;
@@ -36,6 +38,10 @@
     buttonClass?: string | undefined;
     hideContent?: boolean;
     children?: Snippet;
+    offset?: {
+      x: number;
+      y: number;
+    };
   } & HTMLAttributes<HTMLDivElement>;
 
   let {
@@ -49,6 +55,7 @@
     buttonClass = undefined,
     hideContent = false,
     children,
+    offset,
     ...restProps
   }: Props = $props();
 
@@ -62,7 +69,15 @@
   const menuId = `context-menu-${id}`;
 
   const openDropdown = (event: KeyboardEvent | MouseEvent) => {
-    contextMenuPosition = getContextMenuPositionFromEvent(event, align);
+    let layoutAlign = align;
+    if (languageManager.rtl) {
+      if (align.includes('left')) {
+        layoutAlign = align.replace('left', 'right') as Align;
+      } else if (align.includes('right')) {
+        layoutAlign = align.replace('right', 'left') as Align;
+      }
+    }
+    contextMenuPosition = getContextMenuPositionFromEvent(event, layoutAlign);
     isOpen = true;
     menuContainer?.focus();
   };
@@ -176,13 +191,14 @@
       ]}
     >
       <ContextMenu
-        {...contextMenuPosition}
         {direction}
         ariaActiveDescendant={$selectedIdStore}
         ariaLabelledBy={buttonId}
         bind:menuElement={menuContainer}
         id={menuId}
         isVisible={isOpen}
+        x={contextMenuPosition.x - (offset?.x ?? 0)}
+        y={contextMenuPosition.y + (offset?.y ?? 0)}
       >
         {@render children?.()}
       </ContextMenu>

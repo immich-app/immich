@@ -29,17 +29,35 @@ export class OAuthController {
   }
 
   @Post('authorize')
-  startOAuth(@Body() dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
-    return this.service.authorize(dto);
+  async startOAuth(
+    @Body() dto: OAuthConfigDto,
+    @Res({ passthrough: true }) res: Response,
+    @GetLoginDetails() loginDetails: LoginDetails,
+  ): Promise<OAuthAuthorizeResponseDto> {
+    const { url, state, codeVerifier } = await this.service.authorize(dto);
+    return respondWithCookie(
+      res,
+      { url },
+      {
+        isSecure: loginDetails.isSecure,
+        values: [
+          { key: ImmichCookie.OAUTH_STATE, value: state },
+          { key: ImmichCookie.OAUTH_CODE_VERIFIER, value: codeVerifier },
+        ],
+      },
+    );
   }
 
   @Post('callback')
   async finishOAuth(
+    @Req() request: Request,
     @Res({ passthrough: true }) res: Response,
     @Body() dto: OAuthCallbackDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const body = await this.service.callback(dto, loginDetails);
+    const body = await this.service.callback(dto, request.headers, loginDetails);
+    res.clearCookie(ImmichCookie.OAUTH_STATE);
+    res.clearCookie(ImmichCookie.OAUTH_CODE_VERIFIER);
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,
       values: [
@@ -52,8 +70,12 @@ export class OAuthController {
 
   @Post('link')
   @Authenticated()
-  linkOAuthAccount(@Auth() auth: AuthDto, @Body() dto: OAuthCallbackDto): Promise<UserAdminResponseDto> {
-    return this.service.link(auth, dto);
+  linkOAuthAccount(
+    @Req() request: Request,
+    @Auth() auth: AuthDto,
+    @Body() dto: OAuthCallbackDto,
+  ): Promise<UserAdminResponseDto> {
+    return this.service.link(auth, dto, request.headers);
   }
 
   @Post('unlink')

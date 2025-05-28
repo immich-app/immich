@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:0a9d314ae6e976351bd37b702bf6b0a89bb58e6304e5df35b960059b12531419 AS builder-cpu
+FROM python:3.11-bookworm@sha256:ab60e444e04215a62671149f24c59cc2893b49cb5dad26f9d139077a86be760e AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 
@@ -8,10 +8,13 @@ FROM builder-cpu AS builder-cuda
 
 FROM builder-cpu AS builder-armnn
 
+# renovate: datasource=github-releases depName=ARM-software/armnn
+ARG ARMNN_VERSION="v24.05"
+
 ENV ARMNN_PATH=/opt/armnn
 COPY ann /opt/ann
 RUN mkdir /opt/armnn && \
-    curl -SL "https://github.com/ARM-software/armnn/releases/download/v24.05/ArmNN-linux-aarch64.tar.gz" | tar -zx -C /opt/armnn && \
+    curl -SL "https://github.com/ARM-software/armnn/releases/download/${ARMNN_VERSION}/ArmNN-linux-aarch64.tar.gz" | tar -zx -C /opt/armnn && \
     cd /opt/ann && \
     sh build.sh
 
@@ -21,6 +24,8 @@ FROM builder-cpu AS builder-rknn
 # TODO: find a way to reduce the image size
 FROM rocm/dev-ubuntu-22.04:6.3.4-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS builder-rocm
 
+# renovate: datasource=github-releases depName=Microsoft/onnxruntime
+ARG ONNXRUNTIME_VERSION="v1.20.1"
 WORKDIR /code
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
@@ -32,7 +37,7 @@ RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.
 
 ENV PATH=/code/cmake-3.30.1-linux-x86_64/bin:${PATH}
 
-RUN git clone --single-branch --branch v1.20.1 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
+RUN git clone --single-branch --branch "${ONNXRUNTIME_VERSION}" --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
 # Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
 # TODO: find a way to fix this without disabling algo caching
@@ -42,7 +47,7 @@ RUN git apply /tmp/*.patch
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # Note: the `parallel` setting uses a substantial amount of RAM
 RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 17 --cmake_extra_defines\
-    ONNXRUNTIME_VERSION=1.20.1 --skip_tests --use_rocm --rocm_home=/opt/rocm
+    ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" --skip_tests --use_rocm --rocm_home=/opt/rocm
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
@@ -54,7 +59,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN apt-get update && apt-get install -y --no-install-recommends g++
 
-COPY --from=ghcr.io/astral-sh/uv:latest@sha256:0b6dc79013b689f3bc0cbf12807cb1c901beaafe80f2ee10a1d76aa3842afb92 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:4a6c9444b126bd325fba904bff796bf91fb777bf6148d60109c4cb1de2ffc497 /uv /uvx /bin/
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
@@ -63,17 +68,18 @@ RUN if [ "$DEVICE" = "rocm" ]; then \
     uv pip install /opt/onnxruntime_rocm-*.whl; \
     fi
 
-FROM python:3.11-slim-bookworm@sha256:49d73c49616929b0a4f37c50fee0056eb4b0f15de624591e8d9bf84b4dfdd3ce AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:97ef3198ec8c78690587167bb6a4905d00ffe053900687bdae93ad667e507cbb AS prod-cpu
 
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
-FROM python:3.11-slim-bookworm@sha256:49d73c49616929b0a4f37c50fee0056eb4b0f15de624591e8d9bf84b4dfdd3ce AS prod-openvino
+FROM python:3.11-slim-bookworm@sha256:97ef3198ec8c78690587167bb6a4905d00ffe053900687bdae93ad667e507cbb AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
     wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-core_1.0.17384.11_amd64.deb && \
     wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-opencl_1.0.17384.11_amd64.deb && \
     wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/intel-opencl-icd_24.31.30508.7_amd64.deb && \
+    # TODO: Figure out how to get renovate to manage this differently versioned libigdgmm file
     wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/libigdgmm12_22.4.1_amd64.deb && \
     dpkg -i *.deb && \
     rm *.deb && \
@@ -118,9 +124,12 @@ COPY --from=builder-armnn \
 
 FROM prod-cpu AS prod-rknn
 
+# renovate: datasource=github-tags depName=airockchip/rknn-toolkit2
+ARG RKNN_TOOLKIT_VERSION="v2.3.0"
+
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
-ADD --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/v2.3.0/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so /usr/lib/
+ADD --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
 
 FROM prod-${DEVICE} AS prod
 

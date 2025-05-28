@@ -58,6 +58,8 @@ export default typescriptEslint.config(
       },
     },
 
+    ignores: ['**/service-worker/**'],
+
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',

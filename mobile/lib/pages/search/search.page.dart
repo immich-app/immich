@@ -523,7 +523,7 @@ class SearchPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         automaticallyImplyLeading: true,
         actions: [
@@ -843,10 +843,10 @@ class QuickLinkList extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         children: [
           QuickLink(
-            title: 'recently_added'.tr(),
+            title: 'recently_taken'.tr(),
             icon: Icons.schedule_outlined,
             isTop: true,
-            onTap: () => context.pushRoute(const RecentlyAddedRoute()),
+            onTap: () => context.pushRoute(const RecentlyTakenRoute()),
           ),
           QuickLink(
             title: 'videos'.tr(),

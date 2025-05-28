@@ -4,18 +4,22 @@ import { DateTime } from 'luxon';
 import { createHash, randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
-import { AssetJobStatus, Assets, DB, FaceSearch, Person, Sessions } from 'src/db';
-import { AssetType, SourceType } from 'src/enum';
+import { Albums, AssetJobStatus, Assets, DB, FaceSearch, Person, Sessions } from 'src/db';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetType, AssetVisibility, SourceType, SyncRequestType } from 'src/enum';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EmailRepository } from 'src/repositories/email.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
@@ -26,8 +30,9 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
+import { SyncService } from 'src/services/sync.service';
 import { RepositoryInterface } from 'src/types';
-import { newDate, newEmbedding, newUuid } from 'test/small.factory';
+import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
 import { automock, ServiceOverrides } from 'test/utils';
 import { Mocked } from 'vitest';
 
@@ -37,15 +42,18 @@ const sha256 = (value: string) => createHash('sha256').update(value).digest('bas
 type RepositoriesTypes = {
   activity: ActivityRepository;
   album: AlbumRepository;
+  albumUser: AlbumUserRepository;
   asset: AssetRepository;
   assetJob: AssetJobRepository;
   config: ConfigRepository;
   crypto: CryptoRepository;
   database: DatabaseRepository;
+  email: EmailRepository;
   job: JobRepository;
   user: UserRepository;
   logger: LoggingRepository;
   memory: MemoryRepository;
+  notification: NotificationRepository;
   partner: PartnerRepository;
   person: PersonRepository;
   search: SearchRepository;
@@ -70,6 +78,61 @@ export type Context<R extends RepositoryOptions, S extends BaseService> = {
   mocks: ContextRepositoryMocks<R>;
   repos: ContextRepositories<R>;
   getRepository<T extends keyof RepositoriesTypes>(key: T): RepositoriesTypes[T];
+};
+
+export type SyncTestOptions = {
+  db: Kysely<DB>;
+};
+
+export const newSyncAuthUser = () => {
+  const user = mediumFactory.userInsert();
+  const session = mediumFactory.sessionInsert({ userId: user.id });
+
+  const auth = factory.auth({
+    session,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    },
+  });
+
+  return {
+    auth,
+    session,
+    user,
+    create: async (db: Kysely<DB>) => {
+      await new UserRepository(db).create(user);
+      await new SessionRepository(db).create(session);
+    },
+  };
+};
+
+export const newSyncTest = (options: SyncTestOptions) => {
+  const { sut, mocks, repos, getRepository } = newMediumService(SyncService, {
+    database: options.db,
+    repos: {
+      sync: 'real',
+      session: 'real',
+    },
+  });
+
+  const testSync = async (auth: AuthDto, types: SyncRequestType[]) => {
+    const stream = mediumFactory.syncStream();
+    // Wait for 2ms to ensure all updates are available and account for setTimeout inaccuracy
+    await new Promise((resolve) => setTimeout(resolve, 2));
+    await sut.stream(auth, stream, { types });
+
+    return stream.getResponse();
+  };
+
+  return {
+    sut,
+    mocks,
+    repos,
+    getRepository,
+    testSync,
+  };
 };
 
 export const newMediumService = <R extends RepositoryOptions, S extends BaseService>(
@@ -121,6 +184,14 @@ export const getRepository = <K extends keyof RepositoriesTypes>(key: K, db: Kys
       return new ActivityRepository(db);
     }
 
+    case 'album': {
+      return new AlbumRepository(db);
+    }
+
+    case 'albumUser': {
+      return new AlbumUserRepository(db);
+    }
+
     case 'asset': {
       return new AssetRepository(db);
     }
@@ -138,17 +209,23 @@ export const getRepository = <K extends keyof RepositoriesTypes>(key: K, db: Kys
     }
 
     case 'database': {
-      const configRepo = new ConfigRepository();
-      return new DatabaseRepository(db, new LoggingRepository(undefined, configRepo), configRepo);
+      return new DatabaseRepository(db, LoggingRepository.create(), new ConfigRepository());
+    }
+
+    case 'email': {
+      return new EmailRepository(LoggingRepository.create());
     }
 
     case 'logger': {
-      const configMock = { getEnv: () => ({ noColor: false }) };
-      return new LoggingRepository(undefined, configMock as ConfigRepository);
+      return LoggingRepository.create();
     }
 
     case 'memory': {
       return new MemoryRepository(db);
+    }
+
+    case 'notification': {
+      return new NotificationRepository(db);
     }
 
     case 'partner': {
@@ -217,12 +294,37 @@ const getRepositoryMock = <K extends keyof RepositoryMocks>(key: K) => {
 
     case 'database': {
       return automock(DatabaseRepository, {
-        args: [undefined, { setContext: () => {} }, { getEnv: () => ({ database: { vectorExtension: '' } }) }],
+        args: [
+          undefined,
+          {
+            setContext: () => {},
+          },
+          { getEnv: () => ({ database: { vectorExtension: '' } }) },
+        ],
+      });
+    }
+
+    case 'email': {
+      return automock(EmailRepository, {
+        args: [
+          {
+            setContext: () => {},
+          },
+        ],
       });
     }
 
     case 'job': {
-      return automock(JobRepository, { args: [undefined, undefined, undefined, { setContext: () => {} }] });
+      return automock(JobRepository, {
+        args: [
+          undefined,
+          undefined,
+          undefined,
+          {
+            setContext: () => {},
+          },
+        ],
+      });
     }
 
     case 'logger': {
@@ -232,6 +334,10 @@ const getRepositoryMock = <K extends keyof RepositoryMocks>(key: K) => {
 
     case 'memory': {
       return automock(MemoryRepository);
+    }
+
+    case 'notification': {
+      return automock(NotificationRepository);
     }
 
     case 'partner': {
@@ -284,6 +390,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.crypto || getRepositoryMock('crypto'),
     repositories.database || getRepositoryMock('database'),
     repositories.downloadRepository,
+    repositories.email || getRepositoryMock('email'),
     repositories.event,
     repositories.job || getRepositoryMock('job'),
     repositories.library,
@@ -293,7 +400,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.memory || getRepositoryMock('memory'),
     repositories.metadata,
     repositories.move,
-    repositories.notification,
+    repositories.notification || getRepositoryMock('notification'),
     repositories.oauth,
     repositories.partner || getRepositoryMock('partner'),
     repositories.person || getRepositoryMock('person'),
@@ -326,16 +433,29 @@ const assetInsert = (asset: Partial<Insertable<Assets>> = {}) => {
     type: AssetType.IMAGE,
     originalPath: '/path/to/something.jpg',
     ownerId: '@immich.cloud',
-    isVisible: true,
     isFavorite: false,
     fileCreatedAt: now,
     fileModifiedAt: now,
     localDateTime: now,
+    visibility: AssetVisibility.TIMELINE,
   };
 
   return {
     ...defaults,
     ...asset,
+    id,
+  };
+};
+
+const albumInsert = (album: Partial<Insertable<Albums>> & { ownerId: string }) => {
+  const id = album.id || newUuid();
+  const defaults: Omit<Insertable<Albums>, 'ownerId'> = {
+    albumName: 'Album',
+  };
+
+  return {
+    ...defaults,
+    ...album,
     id,
   };
 };
@@ -462,6 +582,7 @@ export const mediumFactory = {
   assetInsert,
   assetFaceInsert,
   assetJobStatusInsert,
+  albumInsert,
   faceInsert,
   personInsert,
   sessionInsert,

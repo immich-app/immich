@@ -12,6 +12,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -29,6 +30,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -61,6 +63,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -78,6 +81,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -95,48 +99,6 @@ from
 where
   "sharedWithId" = $1
   and "sharedById" = $2
-
--- PartnerRepository.create
-insert into
-  "partners" ("sharedWithId", "sharedById")
-values
-  ($1, $2)
-returning
-  *,
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
-          "id",
-          "name",
-          "email",
-          "profileImagePath",
-          "profileChangedAt"
-        from
-          "users" as "sharedBy"
-        where
-          "sharedBy"."id" = "partners"."sharedById"
-      ) as obj
-  ) as "sharedBy",
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
-          "id",
-          "name",
-          "email",
-          "profileImagePath",
-          "profileChangedAt"
-        from
-          "users" as "sharedWith"
-        where
-          "sharedWith"."id" = "partners"."sharedWithId"
-      ) as obj
-  ) as "sharedWith"
 
 -- PartnerRepository.update
 update "partners"
@@ -156,6 +118,7 @@ returning
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -173,6 +136,7 @@ returning
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from

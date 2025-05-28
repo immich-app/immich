@@ -10,6 +10,7 @@ const envData: EnvData = {
   buildMetadata: {},
   bull: {
     config: {
+      connection: {},
       prefix: 'immich_bull',
     },
     queues: [{ name: 'queue-1' }],
@@ -21,19 +22,12 @@ const envData: EnvData = {
 
   database: {
     config: {
-      kysely: { database: 'immich', host: 'database', port: 5432 },
-      typeorm: {
-        connectionType: 'parts',
-        database: 'immich',
-        type: 'postgres',
-        host: 'database',
-        port: 5432,
-        username: 'postgres',
-        password: 'postgres',
-        name: 'immich',
-        synchronize: false,
-        migrationsRun: true,
-      },
+      connectionType: 'parts',
+      database: 'immich',
+      host: 'database',
+      port: 5432,
+      username: 'postgres',
+      password: 'postgres',
     },
 
     skipMigrations: false,

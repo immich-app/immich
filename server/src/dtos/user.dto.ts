@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 import { User, UserAdmin } from 'src/database';
 import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
-import { getPreferences } from 'src/utils/preferences';
-import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
+import { Optional, PinCode, ValidateBoolean, ValidateUUID, toEmail, toSanitized } from 'src/validation';
 
 export class UserUpdateMeDto {
   @Optional()
@@ -23,6 +22,11 @@ export class UserUpdateMeDto {
   @IsString()
   @IsNotEmpty()
   name?: string;
+
+  @Optional({ nullable: true })
+  @IsEnum(UserAvatarColor)
+  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
+  avatarColor?: UserAvatarColor | null;
 }
 
 export class UserResponseDto {
@@ -41,13 +45,21 @@ export class UserLicense {
   activatedAt!: Date;
 }
 
+const emailToAvatarColor = (email: string): UserAvatarColor => {
+  const values = Object.values(UserAvatarColor);
+  const randomIndex = Math.floor(
+    [...email].map((letter) => letter.codePointAt(0) ?? 0).reduce((a, b) => a + b, 0) % values.length,
+  );
+  return values[randomIndex];
+};
+
 export const mapUser = (entity: User | UserAdmin): UserResponseDto => {
   return {
     id: entity.id,
     email: entity.email,
     name: entity.name,
     profileImagePath: entity.profileImagePath,
-    avatarColor: getPreferences(entity.email, (entity as UserAdmin).metadata || []).avatar.color,
+    avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
     profileChangedAt: entity.profileChangedAt,
   };
 };
@@ -55,6 +67,9 @@ export const mapUser = (entity: User | UserAdmin): UserResponseDto => {
 export class UserAdminSearchDto {
   @ValidateBoolean({ optional: true })
   withDeleted?: boolean;
+
+  @ValidateUUID({ optional: true })
+  id?: string;
 }
 
 export class UserAdminCreateDto {
@@ -68,6 +83,11 @@ export class UserAdminCreateDto {
   @IsNotEmpty()
   @IsString()
   name!: string;
+
+  @Optional({ nullable: true })
+  @IsEnum(UserAvatarColor)
+  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
+  avatarColor?: UserAvatarColor | null;
 
   @Optional({ nullable: true })
   @IsString()
@@ -99,10 +119,18 @@ export class UserAdminUpdateDto {
   @IsString()
   password?: string;
 
+  @PinCode({ optional: true, nullable: true, emptyToNull: true })
+  pinCode?: string | null;
+
   @Optional()
   @IsString()
   @IsNotEmpty()
   name?: string;
+
+  @Optional({ nullable: true })
+  @IsEnum(UserAvatarColor)
+  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
+  avatarColor?: UserAvatarColor | null;
 
   @Optional({ nullable: true })
   @IsString()

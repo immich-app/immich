@@ -1,7 +1,7 @@
-import { AppRoute } from '$lib/constants';
-import { handleLogout } from '$lib/utils/auth';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import { createEventEmitter } from '$lib/utils/eventemitter';
-import type { AssetResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import { type AssetResponseDto, type NotificationDto, type ServerVersionResponseDto } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
 import { user } from './user.store';
@@ -27,6 +27,7 @@ export interface Events {
   on_config_update: () => void;
   on_new_release: (newRelase: ReleaseEvent) => void;
   on_session_delete: (sessionId: string) => void;
+  on_notification: (notification: NotificationDto) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -50,7 +51,8 @@ websocket
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
   .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
-  .on('on_session_delete', () => handleLogout(AppRoute.AUTH_LOGIN))
+  .on('on_session_delete', () => authManager.logout())
+  .on('on_notification', () => notificationManager.refresh())
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
 export const openWebsocketConnection = () => {

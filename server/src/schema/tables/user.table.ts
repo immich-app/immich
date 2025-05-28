@@ -1,11 +1,10 @@
 import { ColumnType } from 'kysely';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { UserStatus } from 'src/enum';
+import { UserAvatarColor, UserStatus } from 'src/enum';
 import { users_delete_audit } from 'src/schema/functions';
 import {
   AfterDeleteTrigger,
   Column,
-  ColumnIndex,
   CreateDateColumn,
   DeleteDateColumn,
   Index,
@@ -38,6 +37,9 @@ export class UserTable {
   @Column({ default: '' })
   password!: Generated<string>;
 
+  @Column({ nullable: true })
+  pinCode!: string | null;
+
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
@@ -49,6 +51,9 @@ export class UserTable {
 
   @Column({ type: 'boolean', default: true })
   shouldChangePassword!: Generated<boolean>;
+
+  @Column({ default: null })
+  avatarColor!: UserAvatarColor | null;
 
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;
@@ -77,7 +82,6 @@ export class UserTable {
   @Column({ type: 'timestamp with time zone', default: () => 'now()' })
   profileChangedAt!: Generated<Timestamp>;
 
-  @ColumnIndex({ name: 'IDX_users_update_id' })
-  @UpdateIdColumn()
+  @UpdateIdColumn({ indexName: 'IDX_users_update_id' })
   updateId!: Generated<string>;
 }

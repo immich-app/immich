@@ -1,5 +1,4 @@
 import { CheckOptions } from 'src/sql-tools/from-code/decorators/check.decorator';
-import { ColumnIndexOptions } from 'src/sql-tools/from-code/decorators/column-index.decorator';
 import { ColumnOptions } from 'src/sql-tools/from-code/decorators/column.decorator';
 import { ConfigurationParameterOptions } from 'src/sql-tools/from-code/decorators/configuration-parameter.decorator';
 import { DatabaseOptions } from 'src/sql-tools/from-code/decorators/database.decorator';
@@ -21,7 +20,6 @@ export type RegisterItem =
   | { type: 'uniqueConstraint'; item: ClassBased<{ options: UniqueOptions }> }
   | { type: 'checkConstraint'; item: ClassBased<{ options: CheckOptions }> }
   | { type: 'column'; item: PropertyBased<{ options: ColumnOptions }> }
-  | { type: 'columnIndex'; item: PropertyBased<{ options: ColumnIndexOptions }> }
   | { type: 'function'; item: DatabaseFunction }
   | { type: 'enum'; item: DatabaseEnum }
   | { type: 'trigger'; item: ClassBased<{ options: TriggerOptions }> }

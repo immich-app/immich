@@ -1,5 +1,5 @@
 import { Processor } from 'src/sql-tools/from-code/processors/type';
-import { asPrimaryKeyConstraintName } from 'src/sql-tools/helpers';
+import { asKey } from 'src/sql-tools/helpers';
 import { DatabaseConstraintType } from 'src/sql-tools/types';
 
 export const processPrimaryKeyConstraints: Processor = (builder) => {
@@ -22,3 +22,5 @@ export const processPrimaryKeyConstraints: Processor = (builder) => {
     }
   }
 };
+
+const asPrimaryKeyConstraintName = (table: string, columns: string[]) => asKey('PK_', table, columns);

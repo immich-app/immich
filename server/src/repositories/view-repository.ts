@@ -2,8 +2,8 @@ import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { withExif } from 'src/entities/asset.entity';
-import { asUuid } from 'src/utils/database';
+import { AssetVisibility } from 'src/enum';
+import { asUuid, withExif } from 'src/utils/database';
 
 export class ViewRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -15,8 +15,7 @@ export class ViewRepository {
       .select((eb) => eb.fn<string>('substring', ['assets.originalPath', eb.val('^(.*/)[^/]*$')]).as('directoryPath'))
       .distinct()
       .where('ownerId', '=', asUuid(userId))
-      .where('isVisible', '=', true)
-      .where('isArchived', '=', false)
+      .where('visibility', '=', AssetVisibility.TIMELINE)
       .where('deletedAt', 'is', null)
       .where('fileCreatedAt', 'is not', null)
       .where('fileModifiedAt', 'is not', null)
@@ -35,8 +34,7 @@ export class ViewRepository {
       .selectAll('assets')
       .$call(withExif)
       .where('ownerId', '=', asUuid(userId))
-      .where('isVisible', '=', true)
-      .where('isArchived', '=', false)
+      .where('visibility', '=', AssetVisibility.TIMELINE)
       .where('deletedAt', 'is', null)
       .where('fileCreatedAt', 'is not', null)
       .where('fileModifiedAt', 'is not', null)

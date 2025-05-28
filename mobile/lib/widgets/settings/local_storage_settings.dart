@@ -1,9 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useEffect, useState;
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 
@@ -35,7 +35,7 @@ class LocalStorageSettings extends HookConsumerWidget {
         style: context.textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w500,
         ),
-      ).tr(args: ["${cacheItemCount.value}"]),
+      ).tr(namedArgs: {'count': "${cacheItemCount.value}"}),
       subtitle: Text(
         "cache_settings_duplicated_assets_subtitle",
         style: context.textTheme.bodyMedium?.copyWith(

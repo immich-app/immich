@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { generateId } from '$lib/utils/generate-id';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import type { Shortcut } from '$lib/actions/shortcut';
-  import { shortcutLabel as computeShortcutLabel, shortcut as bindShortcut } from '$lib/actions/shortcut';
+  import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '$lib/actions/shortcut';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
+  import { generateId } from '$lib/utils/generate-id';
 
   interface Props {
     text: string;
@@ -44,7 +44,7 @@
     : () => {};
 </script>
 
-<svelte:window use:bindShortcutIfSet />
+<svelte:document use:bindShortcutIfSet />
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
@@ -53,7 +53,7 @@
   onclick={handleClick}
   onmouseover={() => ($selectedIdStore = id)}
   onmouseleave={() => ($selectedIdStore = undefined)}
-  class="w-full p-4 text-left text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
+  class="w-full p-4 text-start text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
     ? activeColor
     : 'bg-slate-100'}"
   role="menuitem"
@@ -65,7 +65,7 @@
     <div class="flex justify-between">
       {text}
       {#if shortcutLabel}
-        <span class="text-gray-500 pl-4">
+        <span class="text-gray-500 ps-4">
           {shortcutLabel}
         </span>
       {/if}

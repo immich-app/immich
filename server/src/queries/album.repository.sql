@@ -12,6 +12,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -36,6 +37,7 @@ select
                   "id",
                   "name",
                   "email",
+                  "avatarColor",
                   "profileImagePath",
                   "profileChangedAt"
                 from
@@ -100,6 +102,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -124,6 +127,7 @@ select
                   "id",
                   "name",
                   "email",
+                  "avatarColor",
                   "profileImagePath",
                   "profileChangedAt"
                 from
@@ -191,6 +195,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -215,6 +220,7 @@ select
                   "id",
                   "name",
                   "email",
+                  "avatarColor",
                   "profileImagePath",
                   "profileChangedAt"
                 from
@@ -269,6 +275,7 @@ select
                   "id",
                   "name",
                   "email",
+                  "avatarColor",
                   "profileImagePath",
                   "profileChangedAt"
                 from
@@ -292,6 +299,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -353,6 +361,7 @@ select
           "id",
           "name",
           "email",
+          "avatarColor",
           "profileImagePath",
           "profileChangedAt"
         from
@@ -382,6 +391,11 @@ where
   )
 order by
   "albums"."createdAt" desc
+
+-- AlbumRepository.removeAssetsFromAll
+delete from "albums_assets_assets"
+where
+  "albums_assets_assets"."assetsId" in ($1)
 
 -- AlbumRepository.getAssetIds
 select

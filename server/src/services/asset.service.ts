@@ -3,12 +3,7 @@ import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import {
-  AssetResponseDto,
-  MemoryLaneResponseDto,
-  SanitizedAssetResponseDto,
-  mapAsset,
-} from 'src/dtos/asset-response.dto';
+import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -19,35 +14,13 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryLaneDto } from 'src/dtos/search.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 
 @Injectable()
 export class AssetService extends BaseService {
-  async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    const partnerIds = await getMyPartnerIds({
-      userId: auth.user.id,
-      repository: this.partnerRepository,
-      timelineEnabled: true,
-    });
-    const userIds = [auth.user.id, ...partnerIds];
-
-    const groups = await this.assetRepository.getByDayOfYear(userIds, dto);
-    return groups.map(({ year, assets }) => {
-      const yearsAgo = DateTime.utc().year - year;
-      return {
-        yearsAgo,
-        // TODO move this to clients
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-        assets: assets.map((asset) => mapAsset(asset as unknown as AssetEntity, { auth })),
-      };
-    });
-  }
-
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
     return mapStats(stats);
@@ -105,7 +78,7 @@ export class AssetService extends BaseService {
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
 
-    let previousMotion: AssetEntity | null = null;
+    let previousMotion: MapAsset | null = null;
     if (rest.livePhotoVideoId) {
       await onBeforeLink(repos, { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId });
     } else if (rest.livePhotoVideoId === null) {
@@ -119,8 +92,12 @@ export class AssetService extends BaseService {
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
-    if (previousMotion) {
-      await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
+    if (previousMotion && asset) {
+      await onAfterUnlink(repos, {
+        userId: auth.user.id,
+        livePhotoVideoId: previousMotion.id,
+        visibility: asset.visibility,
+      });
     }
 
     if (!asset) {
@@ -131,23 +108,35 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, description, dateTimeOriginal, latitude, longitude, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
-    if (dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined) {
-      await this.assetRepository.updateAllExif(ids, { dateTimeOriginal, latitude, longitude });
+    if (
+      description !== undefined ||
+      dateTimeOriginal !== undefined ||
+      latitude !== undefined ||
+      longitude !== undefined
+    ) {
+      await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
       await this.jobRepository.queueAll(
-        ids.map((id) => ({ name: JobName.SIDECAR_WRITE, data: { id, dateTimeOriginal, latitude, longitude } })),
+        ids.map((id) => ({
+          name: JobName.SIDECAR_WRITE,
+          data: { id, description, dateTimeOriginal, latitude, longitude },
+        })),
       );
     }
 
     if (
-      options.isArchived != undefined ||
-      options.isFavorite != undefined ||
-      options.duplicateId != undefined ||
-      options.rating != undefined
+      options.visibility !== undefined ||
+      options.isFavorite !== undefined ||
+      options.duplicateId !== undefined ||
+      options.rating !== undefined
     ) {
       await this.assetRepository.updateAll(ids, options);
+
+      if (options.visibility === AssetVisibility.LOCKED) {
+        await this.albumRepository.removeAssetsFromAll(ids);
+      }
     }
   }
 
@@ -189,13 +178,7 @@ export class AssetService extends BaseService {
   async handleAssetDeletion(job: JobOf<JobName.ASSET_DELETION>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
-    const asset = await this.assetRepository.getById(id, {
-      faces: { person: true },
-      library: true,
-      stack: { assets: true },
-      exifInfo: true,
-      files: true,
-    });
+    const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
       return JobStatus.FAILED;
@@ -233,7 +216,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files);
+    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files ?? []);
     const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
 
     if (deleteOnDisk) {

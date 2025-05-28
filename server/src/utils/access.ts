@@ -81,7 +81,7 @@ const checkSharedLinkAccess = async (
 
     case Permission.ASSET_SHARE: {
       // TODO: fix this to not use sharedLink.userId for access control
-      return await access.asset.checkOwnerAccess(sharedLink.userId, ids);
+      return await access.asset.checkOwnerAccess(sharedLink.userId, ids, false);
     }
 
     case Permission.ALBUM_READ: {
@@ -119,38 +119,38 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.ASSET_READ: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids);
+      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
       const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
       const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner, isAlbum));
       return setUnion(isOwner, isAlbum, isPartner);
     }
 
     case Permission.ASSET_SHARE: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids);
+      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, false);
       const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner));
       return setUnion(isOwner, isPartner);
     }
 
     case Permission.ASSET_VIEW: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids);
+      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
       const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
       const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner, isAlbum));
       return setUnion(isOwner, isAlbum, isPartner);
     }
 
     case Permission.ASSET_DOWNLOAD: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids);
+      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
       const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
       const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner, isAlbum));
       return setUnion(isOwner, isAlbum, isPartner);
     }
 
     case Permission.ASSET_UPDATE: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids);
+      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.ASSET_DELETE: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids);
+      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.ALBUM_READ: {
@@ -221,6 +221,12 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.person.checkFaceOwnerAccess(auth.user.id, ids);
     }
 
+    case Permission.NOTIFICATION_READ:
+    case Permission.NOTIFICATION_UPDATE:
+    case Permission.NOTIFICATION_DELETE: {
+      return access.notification.checkOwnerAccess(auth.user.id, ids);
+    }
+
     case Permission.TAG_ASSET:
     case Permission.TAG_READ:
     case Permission.TAG_UPDATE:
@@ -272,6 +278,13 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     case Permission.PARTNER_UPDATE: {
       return await access.partner.checkUpdateAccess(auth.user.id, ids);
+    }
+
+    case Permission.SESSION_READ:
+    case Permission.SESSION_UPDATE:
+    case Permission.SESSION_DELETE:
+    case Permission.SESSION_LOCK: {
+      return access.session.checkOwnerAccess(auth.user.id, ids);
     }
 
     case Permission.STACK_READ: {

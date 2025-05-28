@@ -10,16 +10,22 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   pre-job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       should_run: ${{ steps.found_paths.outputs.docs == 'true' ||  steps.should_force.outputs.should_force == 'true' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - id: found_paths
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         with:
           filters: |
             docs:
@@ -33,6 +39,8 @@ jobs:
   build:
     name: Docs Build
     needs: pre-job
+    permissions:
+      contents: read
     if: ${{ needs.pre-job.outputs.should_run == 'true' }}
     runs-on: ubuntu-latest
     defaults:
@@ -41,10 +49,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './docs/.nvmrc'
 
@@ -58,8 +68,9 @@ jobs:
         run: npm run build
 
       - name: Upload build output
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: docs-build-output
           path: docs/build/
+          include-hidden-files: true
           retention-days: 1

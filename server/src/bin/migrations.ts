@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 process.env.DB_URL = process.env.DB_URL || 'postgres://postgres:postgres@localhost:5432/immich';
 
-import { Kysely } from 'kysely';
-import { writeFileSync } from 'node:fs';
+import { Kysely, sql } from 'kysely';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join } from 'node:path';
 import postgres from 'postgres';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -10,7 +10,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema';
 import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
-import { getKyselyConfig } from 'src/utils/database';
+import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
 
 const main = async () => {
   const command = process.argv[2];
@@ -23,8 +23,13 @@ const main = async () => {
     }
 
     case 'run': {
-      const only = process.argv[3] as 'kysely' | 'typeorm' | undefined;
-      await run(only);
+      await runMigrations();
+      return;
+    }
+
+    case 'query': {
+      const query = process.argv[3];
+      await runQuery(query);
       return;
     }
 
@@ -48,14 +53,25 @@ const main = async () => {
   }
 };
 
-const run = async (only?: 'kysely' | 'typeorm') => {
+const getDatabaseClient = () => {
   const configRepository = new ConfigRepository();
   const { database } = configRepository.getEnv();
-  const logger = new LoggingRepository(undefined, configRepository);
-  const db = new Kysely<any>(getKyselyConfig(database.config.kysely));
-  const databaseRepository = new DatabaseRepository(db, logger, configRepository);
+  return new Kysely<any>(getKyselyConfig(database.config));
+};
 
-  await databaseRepository.runMigrations({ only });
+const runQuery = async (query: string) => {
+  const db = getDatabaseClient();
+  await sql.raw(query).execute(db);
+  await db.destroy();
+};
+
+const runMigrations = async () => {
+  const configRepository = new ConfigRepository();
+  const logger = LoggingRepository.create();
+  const db = getDatabaseClient();
+  const databaseRepository = new DatabaseRepository(db, logger, configRepository);
+  await databaseRepository.runMigrations();
+  await db.destroy();
 };
 
 const debug = async () => {
@@ -81,14 +97,15 @@ const create = (path: string, up: string[], down: string[]) => {
   const filename = `${timestamp}-${name}.ts`;
   const folder = dirname(path);
   const fullPath = join(folder, filename);
-  writeFileSync(fullPath, asMigration('typeorm', { name, timestamp, up, down }));
+  mkdirSync(folder, { recursive: true });
+  writeFileSync(fullPath, asMigration('kysely', { name, timestamp, up, down }));
   console.log(`Wrote ${fullPath}`);
 };
 
 const compare = async () => {
   const configRepository = new ConfigRepository();
   const { database } = configRepository.getEnv();
-  const db = postgres(database.config.kysely);
+  const db = postgres(asPostgresConnectionConfig(database.config));
 
   const source = schemaFromCode();
   const target = await schemaFromDatabase(db, {});
@@ -108,6 +125,7 @@ const compare = async () => {
   const down = schemaDiff(target, source, {
     tables: { ignoreExtra: false },
     functions: { ignoreExtra: false },
+    extension: { ignoreMissing: true },
   });
 
   return { up, down };

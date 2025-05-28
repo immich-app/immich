@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { SALT_ROUNDS } from 'src/constants';
 import { UserAdmin } from 'src/database';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { AuthType, Permission } from 'src/enum';
@@ -55,23 +56,13 @@ describe(AuthService.name, () => {
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AuthService));
 
-    mocks.oauth.authorize.mockResolvedValue('access-token');
+    mocks.oauth.authorize.mockResolvedValue({ url: 'http://test', state: 'state', codeVerifier: 'codeVerifier' });
     mocks.oauth.getProfile.mockResolvedValue({ sub, email });
     mocks.oauth.getLogoutEndpoint.mockResolvedValue('http://end-session-endpoint');
   });
 
   it('should be defined', () => {
     expect(sut).toBeDefined();
-  });
-
-  describe('onBootstrap', () => {
-    it('should init the repo', () => {
-      mocks.oauth.init.mockResolvedValue();
-
-      sut.onBootstrap();
-
-      expect(mocks.oauth.init).toHaveBeenCalled();
-    });
   });
 
   describe('login', () => {
@@ -128,7 +119,7 @@ describe(AuthService.name, () => {
 
       await sut.changePassword(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, true);
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, { withPassword: true });
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
@@ -262,6 +253,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -274,7 +266,7 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id },
+        session: { id: session.id, hasElevatedPermission: false },
       });
     });
   });
@@ -385,6 +377,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -397,7 +390,7 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id },
+        session: { id: session.id, hasElevatedPermission: false },
       });
     });
 
@@ -407,6 +400,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -426,6 +420,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -519,16 +514,22 @@ describe(AuthService.name, () => {
 
   describe('callback', () => {
     it('should throw an error if OAuth is not enabled', async () => {
-      await expect(sut.callback({ url: '' }, loginDetails)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(
+        sut.callback({ url: '', state: 'xyz789', codeVerifier: 'foo' }, {}, loginDetails),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should not allow auto registering', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.user.getByEmail.mockResolvedValue(void 0);
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
@@ -541,9 +542,13 @@ describe(AuthService.name, () => {
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: sub });
@@ -557,9 +562,13 @@ describe(AuthService.name, () => {
       mocks.user.getAdmin.mockResolvedValue(user);
       mocks.user.create.mockResolvedValue(user);
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+          {},
+          loginDetails,
+        ),
+      ).rejects.toThrow(BadRequestException);
 
       expect(mocks.user.update).not.toHaveBeenCalled();
       expect(mocks.user.create).not.toHaveBeenCalled();
@@ -574,9 +583,13 @@ describe(AuthService.name, () => {
       mocks.user.create.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
       expect(mocks.user.create).toHaveBeenCalledTimes(1);
@@ -592,18 +605,19 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(factory.session());
       mocks.oauth.getProfile.mockResolvedValue({ sub, email: undefined });
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+          {},
+          loginDetails,
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.user.getByEmail).not.toHaveBeenCalled();
       expect(mocks.user.create).not.toHaveBeenCalled();
     });
 
     for (const url of [
-      'app.immich:/',
-      'app.immich://',
-      'app.immich:///',
       'app.immich:/oauth-callback?code=abc123',
       'app.immich://oauth-callback?code=abc123',
       'app.immich:///oauth-callback?code=abc123',
@@ -615,9 +629,14 @@ describe(AuthService.name, () => {
         mocks.user.getByOAuthId.mockResolvedValue(user);
         mocks.session.create.mockResolvedValue(factory.session());
 
-        await sut.callback({ url }, loginDetails);
+        await sut.callback({ url, state: 'xyz789', codeVerifier: 'foo' }, {}, loginDetails);
 
-        expect(mocks.oauth.getProfile).toHaveBeenCalledWith(expect.objectContaining({}), url, 'http://mobile-redirect');
+        expect(mocks.oauth.getProfile).toHaveBeenCalledWith(
+          expect.objectContaining({}),
+          'http://mobile-redirect?code=abc123',
+          'xyz789',
+          'foo',
+        );
       });
     }
 
@@ -630,9 +649,13 @@ describe(AuthService.name, () => {
       mocks.user.create.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ quotaSizeInBytes: 1_073_741_824 }));
     });
@@ -647,9 +670,13 @@ describe(AuthService.name, () => {
       mocks.user.create.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ quotaSizeInBytes: 1_073_741_824 }));
     });
@@ -664,9 +691,13 @@ describe(AuthService.name, () => {
       mocks.user.create.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ quotaSizeInBytes: 1_073_741_824 }));
     });
@@ -681,9 +712,13 @@ describe(AuthService.name, () => {
       mocks.user.create.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.create).toHaveBeenCalledWith({
         email: user.email,
@@ -705,9 +740,13 @@ describe(AuthService.name, () => {
       mocks.user.create.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.create).toHaveBeenCalledWith({
         email: user.email,
@@ -738,9 +777,13 @@ describe(AuthService.name, () => {
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
         profileImagePath: `upload/profile/${user.id}/${fileId}.jpg`,
@@ -762,9 +805,13 @@ describe(AuthService.name, () => {
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        oauthResponse(user),
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.update).not.toHaveBeenCalled();
       expect(mocks.oauth.getProfilePicture).not.toHaveBeenCalled();
@@ -779,7 +826,11 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.user.update.mockResolvedValue(user);
 
-      await sut.link(auth, { url: 'http://immich/user-settings?code=abc123' });
+      await sut.link(
+        auth,
+        { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+      );
 
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: sub });
     });
@@ -792,9 +843,9 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserAdmin);
 
-      await expect(sut.link(auth, { url: 'http://immich/user-settings?code=abc123' })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        sut.link(auth, { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' }, {}),
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.user.update).not.toHaveBeenCalled();
     });
@@ -811,6 +862,83 @@ describe(AuthService.name, () => {
       await sut.unlink(auth);
 
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+    });
+  });
+
+  describe('setupPinCode', () => {
+    it('should setup a PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { pinCode: '123456' };
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: null, password: '' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.setupPinCode(auth, dto);
+
+      expect(mocks.user.getForPinCode).toHaveBeenCalledWith(user.id);
+      expect(mocks.crypto.hashBcrypt).toHaveBeenCalledWith('123456', SALT_ROUNDS);
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: expect.any(String) });
+    });
+
+    it('should fail if the user already has a PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+
+      await expect(sut.setupPinCode(auth, { pinCode: '123456' })).rejects.toThrow('User already has a PIN code');
+    });
+  });
+
+  describe('changePinCode', () => {
+    it('should change the PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { pinCode: '123456', newPinCode: '012345' };
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.user.update.mockResolvedValue(user);
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await sut.changePinCode(auth, dto);
+
+      expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('123456', '123456 (hashed)');
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: '012345 (hashed)' });
+    });
+
+    it('should fail if the PIN code does not match', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await expect(
+        sut.changePinCode(factory.auth({ user }), { pinCode: '000000', newPinCode: '012345' }),
+      ).rejects.toThrow('Wrong PIN code');
+    });
+  });
+
+  describe('resetPinCode', () => {
+    it('should reset the PIN code', async () => {
+      const currentSession = factory.session();
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+      mocks.session.lockAll.mockResolvedValue(void 0);
+      mocks.session.update.mockResolvedValue(currentSession);
+
+      await sut.resetPinCode(factory.auth({ user }), { pinCode: '123456' });
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: null });
+      expect(mocks.session.lockAll).toHaveBeenCalledWith(user.id);
+    });
+
+    it('should throw if the PIN code does not match', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await expect(sut.resetPinCode(factory.auth({ user }), { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
     });
   });
 });

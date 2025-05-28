@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { getTabbable } from '$lib/utils/focus-util';
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import Button from './button.svelte';
 
   interface Props {
     /**
@@ -23,7 +24,12 @@
 
   const moveFocus = () => {
     const targetEl = document.querySelector<HTMLElement>(target);
-    targetEl?.focus();
+    if (targetEl) {
+      const element = getTabbable(targetEl)[0];
+      if (element) {
+        element.focus();
+      }
+    }
   };
 
   const getBreakpoint = () => {
@@ -50,10 +56,9 @@
   };
 </script>
 
-<div class="absolute z-50 top-2 left-2 transition-transform {isFocused ? 'translate-y-0' : '-translate-y-10 sr-only'}">
+<div class="absolute top-2 start-2 transition-transform {isFocused ? 'translate-y-0' : '-translate-y-10 sr-only'}">
   <Button
-    size="sm"
-    rounded="none"
+    size="small"
     onclick={moveFocus}
     class={getBreakpoint()}
     onfocus={() => (isFocused = true)}

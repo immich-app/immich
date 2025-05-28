@@ -72,13 +72,15 @@ class SqlGenerator {
     await rm(this.options.targetDir, { force: true, recursive: true });
     await mkdir(this.options.targetDir);
 
-    process.env.DB_HOSTNAME = 'localhost';
+    if (!process.env.DB_HOSTNAME) {
+      process.env.DB_HOSTNAME = 'localhost';
+    }
     const { database, cls, otel } = new ConfigRepository().getEnv();
 
     const moduleFixture = await Test.createTestingModule({
       imports: [
         KyselyModule.forRoot({
-          ...getKyselyConfig(database.config.kysely),
+          ...getKyselyConfig(database.config),
           log: (event) => {
             if (event.level === 'query') {
               this.sqlLogger.logQuery(event.query.sql);
