@@ -1381,6 +1381,8 @@
   "permanently_delete_assets_prompt": "Are you sure you want to permanently delete {count, plural, one {this asset?} other {these <b>#</b> assets?}} This will also remove {count, plural, one {it from its} other {them from their}} album(s).",
   "permanently_deleted_asset": "Permanently deleted asset",
   "permanently_deleted_assets_count": "Permanently deleted {count, plural, one {# asset} other {# assets}}",
+  "permission": "Permission",
+  "permission_empty": "Your permission shouldn't be empty",
   "permission_onboarding_back": "Back",
   "permission_onboarding_continue_anyway": "Continue anyway",
   "permission_onboarding_get_started": "Get started",
