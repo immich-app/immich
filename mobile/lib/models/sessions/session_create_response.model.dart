@@ -8,7 +8,7 @@ class SessionCreateResponse {
   final String token;
   final String updatedAt;
 
-  SessionCreateResponse({
+  const SessionCreateResponse({
     required this.createdAt,
     required this.current,
     required this.deviceOS,

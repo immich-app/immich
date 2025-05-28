@@ -78,14 +78,15 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
           }
           ref.read(castProvider.notifier).loadMedia(asset, true);
         }
+        return;
+      }
+
+      if (state == VideoPlaybackState.playing) {
+        ref.read(videoPlayerControlsProvider.notifier).pause();
+      } else if (state == VideoPlaybackState.completed) {
+        ref.read(videoPlayerControlsProvider.notifier).restart();
       } else {
-        if (state == VideoPlaybackState.playing) {
-          ref.read(videoPlayerControlsProvider.notifier).pause();
-        } else if (state == VideoPlaybackState.completed) {
-          ref.read(videoPlayerControlsProvider.notifier).restart();
-        } else {
-          ref.read(videoPlayerControlsProvider.notifier).play();
-        }
+        ref.read(videoPlayerControlsProvider.notifier).play();
       }
     }
 

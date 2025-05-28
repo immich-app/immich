@@ -5,8 +5,6 @@ abstract interface class ICastDestinationService {
   Future<bool> initialize();
   CastDestinationType getType();
 
-  bool isAvailable();
-
   void Function(bool)? onConnectionState;
 
   void Function(Duration)? onCurrentTime;
@@ -15,12 +13,14 @@ abstract interface class ICastDestinationService {
   void Function(String)? onReceiverName;
   void Function(CastState)? onCastState;
 
+  Future<void> connect(dynamic device);
+
   void loadMedia(Asset asset, bool reload);
 
   void play();
   void pause();
   void seekTo(Duration position);
-  void disconnect();
+  Future<void> disconnect();
 
   Future<List<(String, CastDestinationType, dynamic)>> getDevices();
 }

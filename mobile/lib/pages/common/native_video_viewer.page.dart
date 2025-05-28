@@ -61,7 +61,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     final log = Logger('NativeVideoViewerPage');
 
-    final cast = ref.watch(castProvider);
+    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
     Future<VideoSource?> createSource() async {
       if (!context.mounted) {
@@ -394,7 +394,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         // This remains under the video to avoid flickering
         // For motion videos, this is the image portion of the asset
         Center(key: ValueKey(asset.id), child: image),
-        if (aspectRatio.value != null && !cast.isCasting)
+        if (aspectRatio.value != null && !isCasting)
           Visibility.maintain(
             key: ValueKey(asset),
             visible: isVisible.value,
