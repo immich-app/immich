@@ -1,14 +1,24 @@
 <script lang="ts">
-  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
+  import {
+    getAboutInfo,
+    getServerVersion,
+    type ServerAboutResponseDto,
+    type ServerVersionResponseDto,
+  } from '@immich/sdk';
   import { Modal, ModalBody } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let info: ServerAboutResponseDto | undefined = $state();
-
+  let version: ServerVersionResponseDto | undefined = $state();
+  let strVersion: string | undefined = $state();
   onMount(async () => {
     info = await getAboutInfo();
+    version = await getServerVersion();
+    strVersion = `v${version?.major}.${version?.minor}.${version?.patch}`;
   });
+
+  //let strVersion = version?.major;
 
   interface Props {
     onClose: () => void;
@@ -32,7 +42,7 @@
             rel="noreferrer"
             id="version-desc"
           >
-            {info?.version}
+            {version}{strVersion}
           </a>
         </div>
       </div>
