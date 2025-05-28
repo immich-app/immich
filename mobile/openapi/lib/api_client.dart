@@ -490,6 +490,8 @@ class ApiClient {
           return ServerStorageResponseDto.fromJson(value);
         case 'ServerThemeDto':
           return ServerThemeDto.fromJson(value);
+        case 'ServerVersionAndroidLinksDto':
+          return ServerVersionAndroidLinksDto.fromJson(value);
         case 'ServerVersionHistoryResponseDto':
           return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':

@@ -217,6 +217,7 @@ part 'model/server_ping_response.dart';
 part 'model/server_stats_response_dto.dart';
 part 'model/server_storage_response_dto.dart';
 part 'model/server_theme_dto.dart';
+part 'model/server_version_android_links_dto.dart';
 part 'model/server_version_history_response_dto.dart';
 part 'model/server_version_response_dto.dart';
 part 'model/session_create_dto.dart';
