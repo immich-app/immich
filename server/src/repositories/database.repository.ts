@@ -144,19 +144,21 @@ export class DatabaseRepository {
 
     const isVectors = extension === DatabaseExtension.VECTORS;
     let restartRequired = false;
+    const diff = semver.diff(installedVersion, targetVersion);
     await this.db.transaction().execute(async (tx) => {
       await this.setSearchPath(tx);
 
       await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(tx);
 
-      const diff = semver.diff(installedVersion, targetVersion);
       if (isVectors && (diff === 'major' || diff === 'minor')) {
         await sql`SELECT pgvectors_upgrade()`.execute(tx);
         restartRequired = true;
-      } else if (diff) {
-        await Promise.all([this.reindexVectors(VectorIndex.CLIP), this.reindexVectors(VectorIndex.FACE)]);
       }
     });
+
+    if (diff && !restartRequired) {
+      await Promise.all([this.reindexVectors(VectorIndex.CLIP), this.reindexVectors(VectorIndex.FACE)]);
+    }
 
     return { restartRequired };
   }
@@ -204,24 +206,20 @@ export class DatabaseRepository {
           const matches = row.indexdef.match(/(?<=lists = \[)\d+/g);
           const lists = matches && matches.length > 0 ? Number(matches[0]) : 1;
           promises.push(
-            this.db
-              .selectFrom(this.db.dynamic.table(table).as('t'))
-              .select((eb) => eb.fn.countAll<number>().as('count'))
-              .executeTakeFirstOrThrow()
-              .then(({ count }) => {
-                const targetLists = this.targetListCount(count);
-                this.logger.log(`targetLists=${targetLists}, current=${lists} for ${indexName} of ${count} rows`);
-                if (
-                  !row.indexdef.toLowerCase().includes('using vchordrq') ||
-                  // slack factor is to avoid frequent reindexing if the count is borderline
-                  (lists !== targetLists && lists !== this.targetListCount(count * VECTORCHORD_LIST_SLACK_FACTOR))
-                ) {
-                  probes[indexName] = this.targetProbeCount(targetLists);
-                  return this.reindexVectors(indexName, { lists: targetLists });
-                } else {
-                  probes[indexName] = this.targetProbeCount(lists);
-                }
-              }),
+            this.getRowCount(table).then((count) => {
+              const targetLists = this.targetListCount(count);
+              this.logger.log(`targetLists=${targetLists}, current=${lists} for ${indexName} of ${count} rows`);
+              if (
+                !row.indexdef.toLowerCase().includes('using vchordrq') ||
+                // slack factor is to avoid frequent reindexing if the count is borderline
+                (lists !== targetLists && lists !== this.targetListCount(count * VECTORCHORD_LIST_SLACK_FACTOR))
+              ) {
+                probes[indexName] = this.targetProbeCount(targetLists);
+                return this.reindexVectors(indexName, { lists: targetLists });
+              } else {
+                probes[indexName] = this.targetProbeCount(lists);
+              }
+            }),
           );
           break;
         }
@@ -237,6 +235,7 @@ export class DatabaseRepository {
     this.logger.log(`Reindexing ${indexName}`);
     const table = VECTOR_INDEX_TABLES[indexName];
     const vectorExtension = await getVectorExtension(this.db);
+
     const { rows } = await sql<{
       columnName: string;
     }>`SELECT column_name as "columnName" FROM information_schema.columns WHERE table_name = ${table}`.execute(this.db);
@@ -263,6 +262,7 @@ export class DatabaseRepository {
         ALTER TABLE ${sql.raw(table)}
         ALTER COLUMN embedding
         SET DATA TYPE ${sql.raw(schema)}vector(${sql.raw(String(dimSize))})`.execute(tx);
+      lists ||= this.targetListCount(await this.getRowCount(table));
       await sql.raw(vectorIndexQuery({ vectorExtension, table, indexName, lists })).execute(tx);
     });
     try {
@@ -348,6 +348,14 @@ export class DatabaseRepository {
 
   private targetProbeCount(lists: number) {
     return Math.ceil(lists / 8);
+  }
+
+  private async getRowCount(table: keyof DB): Promise<number> {
+    const { count } = await this.db
+      .selectFrom(this.db.dynamic.table(table).as('t'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .executeTakeFirstOrThrow();
+    return count;
   }
 
   async runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void> {
