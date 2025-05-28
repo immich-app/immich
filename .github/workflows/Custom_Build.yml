@@ -1,110 +1,61 @@
-name: Sync Immich & Build Docker Images
+name: Sync Immich Release and Build Docker Images
 
-# 1. Trigger manually or every hour to catch new releases
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 * * * *' # Runs every hour
   workflow_dispatch:
 
 permissions:
-  contents: write      # so we can push the updated branch
-  packages: write      # so we can push to GHCR
+  contents: write
+  packages: write
 
 jobs:
-  sync-upstream:
-    name: Sync upstream release → dockerimageML
-    runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.get_tag.outputs.tag }}
-    steps:
-      - name: Get latest release tag from immich-app/immich
-        id: get_tag
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const release = await github.rest.repos.getLatestRelease({
-              owner: 'immich-app',
-              repo: 'immich',
-            });
-            return release.data.tag_name;
-          result-encoding: string
-        # now available as steps.get_tag.outputs.tag
-
-      - name: Clone that tag only
-        run: |
-          git clone --depth 1 \
-            --branch ${{ steps.get_tag.outputs.tag }} \
-            https://github.com/immich-app/immich.git upstream
-
-      - name: Push to dockerimageML (force update)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd upstream
-          git push \
-            https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository_owner }}/immich.git \
-            HEAD:dockerimageML \
-            --force
-
-  build-server:
-    name: Build & Push Server Image
-    needs: sync-upstream
+  sync-and-build:
     runs-on: ubuntu-latest
     env:
       GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
+      - name: Checkout target repo
+        uses: actions/checkout@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_PAT }}
+          ref: dockerimageML
 
-      - name: Build and push server image
-        uses: docker/build-push-action@v6
+      - name: Get latest release tag from source repo
+        id: get_release
+        run: |
+          latest_tag=$(curl -s https://api.github.com/repos/immich-app/immich/releases/latest | jq -r .tag_name)
+          echo "Latest tag is $latest_tag"
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+
+      - name: Check if latest release already exists in this branch
+        id: check_existing
+        run: |
+          if git ls-remote --exit-code --heads origin dockerimageML | grep -q ${{ steps.get_release.outputs.latest_tag }}; then
+            echo "Release already exists. Exiting."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "New release found."
+            echo "exists=false" >> $GITHUB_OUTPUT
+
+      - name: Clone latest release from upstream if new
+        if: steps.check_existing.outputs.exists == 'false'
+        run: |
+          git clone --depth 1 --branch ${{ steps.get_release.outputs.latest_tag }} https://github.com/immich-app/immich temp-clone
+          rsync -a --delete temp-clone/ ./
+          rm -rf temp-clone
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "Sync immich release ${{ steps.get_release.outputs.latest_tag }}"
+          git push origin HEAD:dockerimageML
+
+      - name: Trigger Docker Build Workflow
+        if: steps.check_existing.outputs.exists == 'false'
+        uses: peter-evans/workflow-dispatch@v1
         with:
-          context: .
-          file: server/Dockerfile
-          platforms: linux/amd64
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/immich-server:release-${{ needs.sync-upstream.outputs.tag }}
-
-  build-ml:
-    name: Build & Push ML Images
-    needs: sync-upstream
-    runs-on: ubuntu-latest
-    env:
-      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
-    strategy:
-      matrix:
-        include:
-          - device: cpu
-            suffix: ""
-            dockerfile: machine-learning/Dockerfile
-          - device: cuda
-            suffix: "-cuda"
-            dockerfile: machine-learning/Dockerfile
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_PAT }}
-
-      - name: Build and push ML image
-        uses: docker/build-push-action@v6
-        with:
-          context: machine-learning
-          file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64
-          push: true
-          build-args: |
-            DEVICE=${{ matrix.device }}
-          tags: ghcr.io/${{ github.repository_owner }}/immich-machine-learning:release-${{ needs.sync-upstream.outputs.tag }}${{ matrix.suffix }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          workflow: <name-of-your-docker-build-workflow>.yml
+          ref: dockerimageML
+          inputs:
+            tag: ${{ steps.get_release.outputs.latest_tag }}
