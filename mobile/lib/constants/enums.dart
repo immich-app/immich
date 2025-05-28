@@ -8,3 +8,5 @@ enum TextSearchType {
   filename,
   description,
 }
+
+enum AssetVisibilityEnum { timeline, hidden, archive, locked }

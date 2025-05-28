@@ -1,19 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable } from 'kysely';
+import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, Memories } from 'src/db';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { MemorySearchDto } from 'src/dtos/memory.dto';
+import { AssetVisibility } from 'src/enum';
 import { IBulkAsset } from 'src/types';
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  cleanup() {
+  async cleanup() {
+    await this.db
+      .deleteFrom('memories_assets_assets')
+      .using('assets')
+      .whereRef('memories_assets_assets.assetsId', '=', 'assets.id')
+      .where('assets.visibility', '!=', AssetVisibility.TIMELINE)
+      .execute();
+
     return this.db
       .deleteFrom('memories')
       .where('createdAt', '<', DateTime.now().minus({ days: 30 }).toJSDate())
@@ -37,6 +44,7 @@ export class MemoryRepository implements IBulkAsset {
             .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
             .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
             .orderBy('assets.fileCreatedAt', 'asc')
+            .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
             .where('assets.deletedAt', 'is', null),
         ).as('assets'),
       )
@@ -139,6 +147,7 @@ export class MemoryRepository implements IBulkAsset {
             .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
             .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
             .orderBy('assets.fileCreatedAt', 'asc')
+            .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
             .where('assets.deletedAt', 'is', null),
         ).as('assets'),
       )

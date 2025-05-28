@@ -6,11 +6,14 @@ const Map<String, Locale> locales = {
   // Additional locales
   'Arabic (ar)': Locale('ar'),
   'Catalan (ca)': Locale('ca'),
-  'Chinese Simplified (zh_CN)': Locale('zh', 'SIMPLIFIED'),
-  'Chinese Traditional (zh_TW)': Locale('zh', 'Hant'),
+  'Chinese Simplified (zh_CN)':
+      Locale.fromSubtags(languageCode: 'zh', scriptCode: 'SIMPLIFIED'),
+  'Chinese Traditional (zh_TW)':
+      Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   'Czech (cs)': Locale('cs'),
   'Danish (da)': Locale('da'),
   'Dutch (nl)': Locale('nl'),
+  'Estonian (et)': Locale('et'),
   'Finnish (fi)': Locale('fi'),
   'French (fr)': Locale('fr'),
   'Galician (gl)': Locale('gl'),
@@ -31,11 +34,14 @@ const Map<String, Locale> locales = {
   'Portuguese (pt)': Locale('pt'),
   'Romanian (ro)': Locale('ro'),
   'Russian (ru)': Locale('ru'),
-  'Serbian Cyrillic (sr_Cyrl)': Locale('sr', 'Cyrl'),
-  'Serbian Latin (sr_Latn)': Locale('sr', 'Latn'),
+  'Serbian Cyrillic (sr_Cyrl)':
+      Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl'),
+  'Serbian Latin (sr_Latn)':
+      Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Latn'),
   'Slovak (sk)': Locale('sk'),
   'Slovenian (sl)': Locale('sl'),
   'Spanish (es)': Locale('es'),
+  'Swedish (sv)': Locale('sv'),
   'Thai (th)': Locale('th'),
   'Turkish (tr)': Locale('tr'),
   'Ukrainian (uk)': Locale('uk'),

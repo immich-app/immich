@@ -1,7 +1,7 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { notificationController } from '$lib/components/shared-components/notification/notification';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
@@ -279,13 +279,15 @@
       const data = getFaceCroppedCoordinates();
       if (!data) {
         notificationController.show({
-          message: 'Error tagging face - cannot get bounding box coordinates',
+          message: $t('error_tag_face_bounding_box'),
         });
         return;
       }
 
-      const isConfirmed = await dialogController.show({
-        prompt: `Do you want to tag this face as ${person.name}?`,
+      const isConfirmed = await modalManager.showDialog({
+        prompt: person.name
+          ? $t('confirm_tag_face', { values: { name: person.name } })
+          : $t('confirm_tag_face_unnamed'),
       });
 
       if (!isConfirmed) {

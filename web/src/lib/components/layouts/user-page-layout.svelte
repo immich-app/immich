@@ -3,11 +3,10 @@
 </script>
 
 <script lang="ts">
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
-  import SideBar from '../shared-components/side-bar/side-bar.svelte';
-  import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
+  import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
+  import UserSidebar from '$lib/components/shared-components/side-bar/user-sidebar.svelte';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { Snippet } from 'svelte';
 
   interface Props {
@@ -16,7 +15,6 @@
     title?: string | undefined;
     description?: string | undefined;
     scrollbar?: boolean;
-    admin?: boolean;
     use?: ActionArray;
     header?: Snippet;
     sidebar?: Snippet;
@@ -30,7 +28,6 @@
     title = undefined,
     description = undefined,
     scrollbar = true,
-    admin = false,
     use = [],
     header,
     sidebar,
@@ -39,7 +36,7 @@
   }: Props = $props();
 
   let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar p-2' : 'scrollbar-hidden');
-  let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full');
+  let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-(--spacing(16)))]' : 'top-0 h-full');
 </script>
 
 <header>
@@ -51,19 +48,24 @@
 </header>
 <div
   tabindex="-1"
-  class="relative grid h-dvh grid-cols-[theme(spacing.0)_auto] overflow-hidden bg-immich-bg max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg sidebar:grid-cols-[theme(spacing.64)_auto]"
+  class="relative z-0 grid grid-cols-[--spacing(0)_auto] overflow-hidden sidebar:grid-cols-[--spacing(64)_auto]
+    {hideNavbar ? 'h-dvh' : 'h-[calc(100dvh-var(--navbar-height))]'}
+    {hideNavbar ? 'pt-(--navbar-height)' : ''}
+    {hideNavbar ? 'max-md:pt-(--navbar-height-md)' : ''}"
 >
-  {#if sidebar}{@render sidebar()}{:else if admin}
-    <AdminSideBar />
+  {#if sidebar}
+    {@render sidebar()}
   {:else}
-    <SideBar />
+    <UserSidebar />
   {/if}
 
   <main class="relative">
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
+      {@render children?.()}
+    </div>
+
     {#if title || buttons}
-      <div
-        class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 dark:border-immich-dark-gray dark:text-immich-dark-fg"
-      >
+      <div class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 text-dark">
         <div class="flex gap-2 items-center">
           {#if title}
             <div class="font-medium outline-none" tabindex="-1" id={headerId}>{title}</div>
@@ -75,9 +77,5 @@
         {@render buttons?.()}
       </div>
     {/if}
-
-    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
-      {@render children?.()}
-    </div>
   </main>
 </div>

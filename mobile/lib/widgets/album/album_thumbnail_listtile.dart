@@ -2,9 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
@@ -96,7 +96,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 12,
                           ),
-                        ).tr(args: ['${album.assetCount}']),
+                        ).tr(namedArgs: {'count': '${album.assetCount}'}),
                         if (album.shared)
                           const Text(
                             'album_thumbnail_card_shared',

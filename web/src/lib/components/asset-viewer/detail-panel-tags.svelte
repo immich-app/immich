@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import Icon from '$lib/components/elements/icon.svelte';
   import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
@@ -41,6 +42,8 @@
   };
 </script>
 
+<svelte:document use:shortcut={{ shortcut: { key: 't' }, onShortcut: () => (isOpen = true) }} />
+
 {#if isOwner && !authManager.key}
   <section class="px-4 mt-4">
     <div class="flex h-10 w-full items-center justify-between text-sm">
@@ -50,7 +53,7 @@
       {#each tags as tag (tag.id)}
         <div class="flex group transition-all">
           <a
-            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-immich-primary dark:bg-immich-dark-primary roudned-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-immich-primary dark:bg-immich-dark-primary rounded-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
             href={encodeURI(`${AppRoute.TAGS}/?path=${tag.value}`)}
           >
             <p class="text-sm">

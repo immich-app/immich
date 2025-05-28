@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
-import { AssetStatus, AssetType, JobName, JobStatus } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -46,14 +46,22 @@ describe(AssetService.name, () => {
   describe('getStatistics', () => {
     it('should get the statistics for a user, excluding archived assets', async () => {
       mocks.asset.getStatistics.mockResolvedValue(stats);
-      await expect(sut.getStatistics(authStub.admin, { isArchived: false })).resolves.toEqual(statResponse);
-      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, { isArchived: false });
+      await expect(sut.getStatistics(authStub.admin, { visibility: AssetVisibility.TIMELINE })).resolves.toEqual(
+        statResponse,
+      );
+      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, {
+        visibility: AssetVisibility.TIMELINE,
+      });
     });
 
     it('should get the statistics for a user for archived assets', async () => {
       mocks.asset.getStatistics.mockResolvedValue(stats);
-      await expect(sut.getStatistics(authStub.admin, { isArchived: true })).resolves.toEqual(statResponse);
-      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, { isArchived: true });
+      await expect(sut.getStatistics(authStub.admin, { visibility: AssetVisibility.ARCHIVE })).resolves.toEqual(
+        statResponse,
+      );
+      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, {
+        visibility: AssetVisibility.ARCHIVE,
+      });
     });
 
     it('should get the statistics for a user for favorite assets', async () => {
@@ -114,6 +122,7 @@ describe(AssetService.name, () => {
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set([assetStub.image.id]),
+        undefined,
       );
     });
 
@@ -192,9 +201,9 @@ describe(AssetService.name, () => {
 
   describe('update', () => {
     it('should require asset write access for the id', async () => {
-      await expect(sut.update(authStub.admin, 'asset-1', { isArchived: false })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        sut.update(authStub.admin, 'asset-1', { visibility: AssetVisibility.TIMELINE }),
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
@@ -242,7 +251,10 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
-      expect(mocks.asset.update).not.toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: true });
+      expect(mocks.asset.update).not.toHaveBeenCalledWith({
+        id: assetStub.livePhotoMotionAsset.id,
+        visibility: AssetVisibility.TIMELINE,
+      });
       expect(mocks.event.emit).not.toHaveBeenCalledWith('asset.show', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
@@ -263,7 +275,10 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
-      expect(mocks.asset.update).not.toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: true });
+      expect(mocks.asset.update).not.toHaveBeenCalledWith({
+        id: assetStub.livePhotoMotionAsset.id,
+        visibility: AssetVisibility.TIMELINE,
+      });
       expect(mocks.event.emit).not.toHaveBeenCalledWith('asset.show', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
@@ -284,7 +299,10 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
-      expect(mocks.asset.update).not.toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: true });
+      expect(mocks.asset.update).not.toHaveBeenCalledWith({
+        id: assetStub.livePhotoMotionAsset.id,
+        visibility: AssetVisibility.TIMELINE,
+      });
       expect(mocks.event.emit).not.toHaveBeenCalledWith('asset.show', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
@@ -296,7 +314,7 @@ describe(AssetService.name, () => {
       mocks.asset.getById.mockResolvedValueOnce({
         ...assetStub.livePhotoMotionAsset,
         ownerId: authStub.admin.user.id,
-        isVisible: true,
+        visibility: AssetVisibility.TIMELINE,
       });
       mocks.asset.getById.mockResolvedValueOnce(assetStub.image);
       mocks.asset.update.mockResolvedValue(assetStub.image);
@@ -305,7 +323,10 @@ describe(AssetService.name, () => {
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
 
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: false });
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: assetStub.livePhotoMotionAsset.id,
+        visibility: AssetVisibility.HIDDEN,
+      });
       expect(mocks.event.emit).toHaveBeenCalledWith('asset.hide', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
@@ -335,7 +356,10 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: null,
       });
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: true });
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: assetStub.livePhotoMotionAsset.id,
+        visibility: assetStub.livePhotoStillAsset.visibility,
+      });
       expect(mocks.event.emit).toHaveBeenCalledWith('asset.show', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
@@ -361,7 +385,6 @@ describe(AssetService.name, () => {
       await expect(
         sut.updateAll(authStub.admin, {
           ids: ['asset-1'],
-          isArchived: false,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -369,9 +392,11 @@ describe(AssetService.name, () => {
     it('should update all assets', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
 
-      await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], isArchived: true });
+      await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], visibility: AssetVisibility.ARCHIVE });
 
-      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { isArchived: true });
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], {
+        visibility: AssetVisibility.ARCHIVE,
+      });
     });
 
     it('should not update Assets table if no relevant fields are provided', async () => {
@@ -381,7 +406,6 @@ describe(AssetService.name, () => {
         ids: ['asset-1'],
         latitude: 0,
         longitude: 0,
-        isArchived: undefined,
         isFavorite: undefined,
         duplicateId: undefined,
         rating: undefined,
@@ -389,14 +413,14 @@ describe(AssetService.name, () => {
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
     });
 
-    it('should update Assets table if isArchived field is provided', async () => {
+    it('should update Assets table if visibility field is provided', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
 
       await sut.updateAll(authStub.admin, {
         ids: ['asset-1'],
         latitude: 0,
         longitude: 0,
-        isArchived: undefined,
+        visibility: undefined,
         isFavorite: false,
         duplicateId: undefined,
         rating: undefined,
@@ -416,7 +440,6 @@ describe(AssetService.name, () => {
         latitude: 30,
         longitude: 50,
         dateTimeOriginal,
-        isArchived: undefined,
         isFavorite: false,
         duplicateId: undefined,
         rating: undefined,
@@ -430,6 +453,20 @@ describe(AssetService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.SIDECAR_WRITE, data: { id: 'asset-1', dateTimeOriginal, latitude: 30, longitude: 50 } },
       ]);
+    });
+
+    it('should update Assets table if duplicateId is provided as null', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        latitude: 0,
+        longitude: 0,
+        isFavorite: undefined,
+        duplicateId: null,
+        rating: undefined,
+      });
+      expect(mocks.asset.updateAll).toHaveBeenCalled();
     });
   });
 

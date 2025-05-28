@@ -6,15 +6,15 @@ import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils'
 
 describe(ActivityController.name, () => {
   let ctx: ControllerContext;
+  const service = mockBaseService(ActivityService);
 
   beforeAll(async () => {
-    ctx = await controllerSetup(ActivityController, [
-      { provide: ActivityService, useValue: mockBaseService(ActivityService) },
-    ]);
+    ctx = await controllerSetup(ActivityController, [{ provide: ActivityService, useValue: service }]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
+    service.resetAllMocks();
     ctx.reset();
   });
 

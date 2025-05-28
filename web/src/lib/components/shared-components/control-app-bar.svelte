@@ -1,12 +1,12 @@
 <script lang="ts">
   import { browser } from '$app/environment';
 
-  import { onDestroy, onMount, type Snippet } from 'svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { fly } from 'svelte/transition';
-  import { mdiClose } from '@mdi/js';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import { mdiClose } from '@mdi/js';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { fly } from 'svelte/transition';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   interface Props {
     showBackButton?: boolean;
@@ -32,7 +32,7 @@
     trailing,
   }: Props = $props();
 
-  let appBarBorder = $state('bg-immich-bg border border-transparent');
+  let appBarBorder = $state('bg-light border border-transparent');
 
   const onScroll = () => {
     if (window.scrollY > 80) {
@@ -42,7 +42,7 @@
         appBarBorder = 'border border-gray-600';
       }
     } else {
-      appBarBorder = 'bg-immich-bg border border-transparent';
+      appBarBorder = 'bg-light border border-transparent';
     }
   };
 
@@ -66,7 +66,7 @@
   let buttonClass = $derived(forceDark ? 'hover:text-immich-dark-gray' : undefined);
 </script>
 
-<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
+<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full bg-transparent">
   <nav
     id="asset-selection-app-bar"
     class={[
@@ -77,7 +77,7 @@
       appBarBorder,
       'mx-2 my-2 place-items-center rounded-lg p-2 max-md:p-0 transition-all',
       tailwindClasses,
-      forceDark ? 'bg-immich-dark-gray text-white' : 'bg-immich-gray dark:bg-immich-dark-gray',
+      forceDark ? 'bg-immich-dark-gray! text-white' : 'bg-subtle dark:bg-immich-dark-gray',
     ]}
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
