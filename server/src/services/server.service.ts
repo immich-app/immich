@@ -51,15 +51,11 @@ export class ServerService extends BaseService {
 
   getAndroidLinks(): ServerApkLinksDto {
     const baseURL = `https://github.com/immich-app/immich/releases/download/v${serverVersion.toString()}`;
-    const arm64v8a = `${baseURL}/app-arm64-v8a-release.apk`;
-    const armeabiv7a = `${baseURL}/app-armeabi-v7a-release.apk`;
-    const universal = `${baseURL}/app-release.apk`;
-    const x86_64 = `${baseURL}/app-x86_64-release.apk`;
     return {
-      arm64v8a,
-      armeabiv7a,
-      universal,
-      x86_64,
+      arm64v8a: `${baseURL}/app-arm64-v8a-release.apk`,
+      armeabiv7a: `${baseURL}/app-armeabi-v7a-release.apk`,
+      universal: `${baseURL}/app-release.apk`,
+      x86_64: `${baseURL}/app-x86_64-release.apk`,
     };
   }
 
