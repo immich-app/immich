@@ -6,6 +6,7 @@ import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
+import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
@@ -177,6 +178,39 @@ export class UserService extends BaseService {
     });
 
     return { ...license, activatedAt };
+  }
+
+  async getOnboarding(auth: AuthDto): Promise<OnboardingResponseDto> {
+    const metadata = await this.userRepository.getMetadata(auth.user.id);
+
+    const onboardingData = metadata.find(
+      (item): item is UserMetadataItem<UserMetadataKey.ONBOARDING> => item.key === UserMetadataKey.ONBOARDING,
+    )?.value;
+
+    if (!onboardingData) {
+      return { isOnboarded: false }; // TODO
+    }
+
+    return {
+      isOnboarded: onboardingData.isOnboarded,
+    };
+  }
+
+  async deleteOnboarding({ user }: AuthDto): Promise<void> {
+    await this.userRepository.deleteMetadata(user.id, UserMetadataKey.ONBOARDING);
+  }
+
+  async setOnboarding(auth: AuthDto, onboarding: OnboardingDto): Promise<OnboardingResponseDto> {
+    await this.userRepository.upsertMetadata(auth.user.id, {
+      key: UserMetadataKey.ONBOARDING,
+      value: {
+        isOnboarded: onboarding.isOnboarded,
+      },
+    });
+
+    return {
+      isOnboarded: onboarding.isOnboarded,
+    };
   }
 
   @OnJob({ name: JobName.USER_SYNC_USAGE, queue: QueueName.BACKGROUND_TASK })

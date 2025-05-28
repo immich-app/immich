@@ -1469,7 +1469,14 @@ export type UserUpdateMeDto = {
     avatarColor?: (UserAvatarColor) | null;
     email?: string;
     name?: string;
+    onboardingCompleted?: boolean;
     password?: string;
+};
+export type OnboardingResponseDto = {
+    isOnboarded: boolean;
+};
+export type OnboardingDto = {
+    isOnboarded: boolean;
 };
 export type CreateProfileImageDto = {
     file: Blob;
@@ -3581,6 +3588,32 @@ export function setUserLicense({ licenseKeyDto }: {
         ...opts,
         method: "PUT",
         body: licenseKeyDto
+    })));
+}
+export function deleteUserOnboarding(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/users/me/onboarding", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getUserOnboarding(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: OnboardingResponseDto;
+    }>("/users/me/onboarding", {
+        ...opts
+    }));
+}
+export function setUserOnboarding({ onboardingDto }: {
+    onboardingDto: OnboardingDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: OnboardingResponseDto;
+    }>("/users/me/onboarding", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: onboardingDto
     })));
 }
 export function getMyPreferences(opts?: Oazapfts.RequestOpts) {

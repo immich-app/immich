@@ -3,19 +3,12 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
-  import { Button } from '@immich/ui';
-  import { mdiArrowRight, mdiThemeLightDark } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import OnboardingCard from './onboarding-card.svelte';
 
-  interface Props {
-    onDone: () => void;
-  }
-
-  let { onDone }: Props = $props();
+  export async function save() {}
 </script>
 
-<OnboardingCard icon={mdiThemeLightDark} title={$t('color_theme')}>
+<div>
   <div>
     <p class="pb-6 font-light">{$t('onboarding_theme_description')}</p>
   </div>
@@ -46,17 +39,4 @@
       </div>
     </button>
   </div>
-
-  <div class="flex">
-    <div class="w-full flex place-content-end">
-      <Button
-        trailingIcon={mdiArrowRight}
-        shape="round"
-        class="flex gap-2 place-content-center"
-        onclick={() => onDone()}
-      >
-        <p>{$t('privacy')}</p>
-      </Button>
-    </div>
-  </div>
-</OnboardingCard>
+</div>

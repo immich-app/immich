@@ -1,28 +1,23 @@
 <script lang="ts">
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import { user } from '$lib/stores/user.store';
-  import { Button } from '@immich/ui';
-  import { mdiArrowRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import OnboardingCard from './onboarding-card.svelte';
+  import { OnboardingRole } from '$lib/models/onboarding-role';
+  import { serverConfig } from '$lib/stores/server-config.store';
 
-  interface Props {
-    onDone: () => void;
-  }
+  let userRole = $derived($user.isAdmin && !$serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER);
 
-  let { onDone }: Props = $props();
+  export async function save() {}
 </script>
 
-<OnboardingCard>
+<div>
   <ImmichLogo noText class="h-[50px]" />
   <p class="font-medium text-6xl my-6 text-immich-primary dark:text-immich-dark-primary">
     {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>
-  <p class="text-3xl pb-6 font-light">{$t('onboarding_welcome_description')}</p>
-
-  <div class="w-full flex place-content-end">
-    <Button shape="round" trailingIcon={mdiArrowRight} class="flex gap-2 place-content-center" onclick={onDone}>
-      <p>{$t('theme')}</p>
-    </Button>
-  </div>
-</OnboardingCard>
+  <p class="text-3xl pb-6 font-light">
+    {userRole == OnboardingRole.SERVER
+      ? $t('onboarding_server_welcome_description')
+      : $t('onboarding_user_welcome_description')}
+  </p>
+</div>

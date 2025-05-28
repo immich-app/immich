@@ -7922,6 +7922,101 @@
         ]
       }
     },
+    "/users/me/onboarding": {
+      "delete": {
+        "operationId": "deleteUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "operationId": "getUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "setUserOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/users/me/preferences": {
       "get": {
         "operationId": "getMyPreferences",
@@ -11068,6 +11163,28 @@
         },
         "required": [
           "year"
+        ],
+        "type": "object"
+      },
+      "OnboardingDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "OnboardingResponseDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
         ],
         "type": "object"
       },
@@ -15028,6 +15145,9 @@
           },
           "name": {
             "type": "string"
+          },
+          "onboardingCompleted": {
+            "type": "boolean"
           },
           "password": {
             "type": "string"
