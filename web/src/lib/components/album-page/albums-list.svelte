@@ -257,10 +257,12 @@
   };
 
   const handleEdit = async (album: AlbumResponseDto) => {
-    await modalManager.show(EditAlbumForm, {
+    const editedAlbum = await modalManager.show(EditAlbumForm, {
       album,
-      onEditSuccess: successEditAlbumInfo,
     });
+    if (editedAlbum) {
+      successEditAlbumInfo(editedAlbum);
+    }
     closeAlbumContextMenu();
   };
 

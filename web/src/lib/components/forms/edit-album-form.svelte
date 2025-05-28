@@ -8,11 +8,10 @@
 
   interface Props {
     album: AlbumResponseDto;
-    onEditSuccess?: ((album: AlbumResponseDto) => unknown) | undefined;
-    onClose: () => void;
+    onClose: (album?: AlbumResponseDto) => void;
   }
 
-  let { album = $bindable(), onEditSuccess = undefined, onClose }: Props = $props();
+  let { album = $bindable(), onClose }: Props = $props();
 
   let albumName = $state(album.albumName);
   let description = $state(album.description);
@@ -31,7 +30,7 @@
       });
       album.albumName = albumName;
       album.description = description;
-      onEditSuccess?.(album);
+      onClose(album);
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_info'));
     } finally {
@@ -70,7 +69,7 @@
 
   <ModalFooter>
     <div class="flex gap-2 w-full">
-      <Button shape="round" color="secondary" fullWidth onclick={onClose}>{$t('cancel')}</Button>
+      <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
       <Button shape="round" type="submit" fullWidth disabled={isSubmitting} form="edit-album-form">{$t('save')}</Button>
     </div>
   </ModalFooter>
