@@ -114,6 +114,8 @@ part 'model/bulk_id_response_dto.dart';
 part 'model/bulk_ids_dto.dart';
 part 'model/clip_config.dart';
 part 'model/cq_mode.dart';
+part 'model/cast_response.dart';
+part 'model/cast_update.dart';
 part 'model/change_password_dto.dart';
 part 'model/check_existing_assets_dto.dart';
 part 'model/check_existing_assets_response_dto.dart';
