@@ -1,4 +1,5 @@
 import 'package:background_downloader/background_downloader.dart';
+import 'package:flutter_cache_manager/file.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/interfaces/upload.interface.dart';
 import 'package:immich_mobile/utils/upload.dart';
@@ -19,15 +20,15 @@ class UploadRepository implements IUploadRepository {
     taskQueue.maxConcurrent = 5;
     FileDownloader().addTaskQueue(taskQueue);
     FileDownloader().registerCallbacks(
-      group: uploadGroup,
+      group: kUploadGroup,
       taskStatusCallback: (update) => onUploadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
   }
 
   @override
-  void enqueue(UploadTask task) {
-    taskQueue.add(task);
+  void enqueueAll(List<UploadTask> tasks) {
+    taskQueue.addAll(tasks);
   }
 
   @override
@@ -41,7 +42,26 @@ class UploadRepository implements IUploadRepository {
   }
 
   @override
+  void cancelAll() {
+    return taskQueue.removeAll();
+  }
+
+  @override
+  Future<void> pauseAll() {
+    return FileDownloader().pauseAll(group: kUploadGroup);
+  }
+
+  @override
   Future<void> deleteRecordsWithIds(List<String> ids) {
     return FileDownloader().database.deleteRecordsWithIds(ids);
+  }
+
+  @override
+  Future<List<TaskRecord>> getRecords([TaskStatus? status]) {
+    if (status == null) {
+      return FileDownloader().database.allRecords(group: kUploadGroup);
+    }
+
+    return FileDownloader().database.allRecordsWithStatus(status);
   }
 }

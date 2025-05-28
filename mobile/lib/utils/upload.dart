@@ -1,1 +1,1 @@
-const uploadGroup = 'upload_group';
+const kUploadGroup = 'upload_group';

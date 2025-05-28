@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -262,6 +263,8 @@ class BackupService {
     }
 
     List<BackupCandidate> candidates = assets.toList();
+    print("Found ${candidates.length} assets to upload");
+    List<UploadTask> uploadTasks = [];
     for (final candidate in candidates) {
       final Asset asset = candidate.asset;
       File? file;
@@ -278,13 +281,24 @@ class BackupService {
             await _assetMediaRepository.getOriginalFilename(asset.localId!) ??
                 asset.fileName;
 
-        await _uploadService.upload(
+        final task = await _uploadService.buildUploadTask(
           file,
           originalFileName: originalFileName,
           deviceAssetId: asset.localId,
         );
+
+        uploadTasks.add(task);
       }
     }
+
+    if (uploadTasks.isEmpty) {
+      debugPrint("No assets to upload");
+      return false;
+    }
+
+    print("Uploading ${uploadTasks.length} assets");
+
+    _uploadService.upload(uploadTasks);
   }
 
   Future<bool> backupAsset(

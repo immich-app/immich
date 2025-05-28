@@ -16,6 +16,7 @@ import 'package:immich_mobile/providers/backup/ios_background_settings.provider.
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 import 'package:immich_mobile/widgets/backup/current_backup_asset_info_box.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -333,6 +334,32 @@ class BackupControllerPage extends HookConsumerWidget {
                       const CurrentUploadingAssetInfoBox(),
                       if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
                       buildBackupButton(),
+                      ElevatedButton(
+                        onPressed: () {
+                          ref.watch(uploadServiceProvider).getRecords();
+                        },
+                        child: const Text(
+                          "get record",
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          ref
+                              .watch(uploadServiceProvider)
+                              .deleteAllUploadTasks();
+                        },
+                        child: const Text(
+                          "clear records",
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          ref.watch(uploadServiceProvider).cancelAllUpload();
+                        },
+                        child: const Text(
+                          "cancel all uploads",
+                        ),
+                      ),
                     ]
                   : [
                       buildFolderSelectionTile(),

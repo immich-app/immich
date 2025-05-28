@@ -42,23 +42,47 @@ class UploadService {
     return FileDownloader().cancelTaskWithId(id);
   }
 
-  Future<void> upload(
+  void cancelAllUpload() {
+    return _uploadRepository.cancelAll();
+  }
+
+  Future<void> pauseAllUploads() {
+    return _uploadRepository.pauseAll();
+  }
+
+  Future<void> deleteAllUploadTasks() {
+    return _uploadRepository.deleteAllTrackingRecords();
+  }
+
+  Future<List<TaskRecord>> getRecords() async {
+    final all = await _uploadRepository.getRecords();
+    print('all record: all: ${all.length} records found');
+    final enqueue = await _uploadRepository.getRecords(TaskStatus.enqueued);
+    print(
+      'all record: enqueue: ${enqueue.length} records found',
+    );
+    return all;
+  }
+
+  void upload(List<UploadTask> tasks) {
+    _uploadRepository.enqueueAll(tasks);
+  }
+
+  Future<UploadTask> buildUploadTask(
     File file, {
     Map<String, String>? fields,
     String? originalFileName,
     String? deviceAssetId,
   }) async {
-    final task = await _buildUploadTask(
+    return _buildTask(
       deviceAssetId ?? hash(file.path).toString(),
       file,
       fields: fields,
       originalFileName: originalFileName,
     );
-
-    _uploadRepository.enqueue(task);
   }
 
-  Future<UploadTask> _buildUploadTask(
+  Future<UploadTask> _buildTask(
     String id,
     File file, {
     Map<String, String>? fields,
@@ -95,7 +119,7 @@ class UploadService {
       baseDirectory: baseDirectory,
       directory: directory,
       fileField: 'assetData',
-      group: uploadGroup,
+      group: kUploadGroup,
       updates: Updates.statusAndProgress,
     );
   }

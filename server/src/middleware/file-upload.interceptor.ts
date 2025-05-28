@@ -102,6 +102,10 @@ export class FileUploadInterceptor implements NestInterceptor {
   }
 
   private filename(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
+    console.log(
+      'FileUploadInterceptor.filename called with file:',
+      this.assetService.getUploadFilename(asRequest(request, file)),
+    );
     return callbackify(
       () => this.assetService.getUploadFilename(asRequest(request, file)),
       callback as Callback<string>,
