@@ -977,7 +977,7 @@ packages:
       path: "packages/isar_generator"
       ref: v3
       resolved-ref: ad574f60ed6f39d2995cd16fc7dc3de9a646ef30
-      url: "https://github.com/callumw-k/isar"
+      url: "https://github.com/immich-app/isar"
     source: git
     version: "3.1.8"
   js:

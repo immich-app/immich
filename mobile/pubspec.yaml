@@ -95,7 +95,7 @@ dev_dependencies:
   flutter_native_splash: ^2.4.5
   isar_generator:
     git:
-      url: https://github.com/callumw-k/isar
+      url: https://github.com/immich-app/isar
       ref: v3
       path: packages/isar_generator/
   integration_test:
