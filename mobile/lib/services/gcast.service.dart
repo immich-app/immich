@@ -14,6 +14,7 @@ import 'package:immich_mobile/repositories/gcast.repository.dart';
 import 'package:immich_mobile/repositories/sessions_api.repository.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+// ignore: import_rule_openapi, we are only using the AssetMediaSize enum
 import 'package:openapi/api.dart';
 
 final gCastServiceProvider = Provider(
@@ -34,7 +35,6 @@ class GCastService implements ICastDestinationService {
   bool isConnected = false;
   int? _sessionId;
   Timer? _mediaStatusPollingTimer;
-  CastState? castState;
 
   @override
   void Function(bool)? onConnectionState;
@@ -67,55 +67,58 @@ class GCastService implements ICastDestinationService {
   }
 
   void _onCastMessageCallback(Map<String, dynamic> message) {
-    final msgType = message['type'];
+    switch (message['type']) {
+      case "MEDIA_STATUS":
+        _handleMediaStatus(message);
+        break;
+    }
+  }
 
-    if (msgType == "MEDIA_STATUS") {
-      final statusList = (message['status'] as List)
-          .whereType<Map<String, dynamic>>()
-          .toList();
+  void _handleMediaStatus(Map<String, dynamic> message) {
+    final statusList =
+        (message['status'] as List).whereType<Map<String, dynamic>>().toList();
 
-      if (statusList.isEmpty) {
-        return;
-      }
+    if (statusList.isEmpty) {
+      return;
+    }
 
-      final status = statusList[0];
-      switch (status['playerState']) {
-        case "PLAYING":
-          onCastState?.call(CastState.playing);
-          break;
-        case "PAUSED":
-          onCastState?.call(CastState.paused);
-          break;
-        case "BUFFERING":
-          onCastState?.call(CastState.buffering);
-          break;
-        case "IDLE":
-          onCastState?.call(CastState.idle);
+    final status = statusList[0];
+    switch (status['playerState']) {
+      case "PLAYING":
+        onCastState?.call(CastState.playing);
+        break;
+      case "PAUSED":
+        onCastState?.call(CastState.paused);
+        break;
+      case "BUFFERING":
+        onCastState?.call(CastState.buffering);
+        break;
+      case "IDLE":
+        onCastState?.call(CastState.idle);
 
-          // stop polling for media status if the video finished playing
-          if (status["idleReason"] == "FINISHED") {
-            _mediaStatusPollingTimer?.cancel();
-          }
+        // stop polling for media status if the video finished playing
+        if (status["idleReason"] == "FINISHED") {
+          _mediaStatusPollingTimer?.cancel();
+        }
 
-          break;
-      }
+        break;
+    }
 
-      if (status["media"] != null && status["media"]["duration"] != null) {
-        final duration = Duration(
-          milliseconds: (status["media"]["duration"] * 1000 ?? 0).toInt(),
-        );
-        onDuration?.call(duration);
-      }
+    if (status["media"] != null && status["media"]["duration"] != null) {
+      final duration = Duration(
+        milliseconds: (status["media"]["duration"] * 1000 ?? 0).toInt(),
+      );
+      onDuration?.call(duration);
+    }
 
-      if (status["mediaSessionId"] != null) {
-        _sessionId = status["mediaSessionId"];
-      }
+    if (status["mediaSessionId"] != null) {
+      _sessionId = status["mediaSessionId"];
+    }
 
-      if (status["currentTime"] != null) {
-        final currentTime =
-            Duration(milliseconds: (status["currentTime"] * 1000 ?? 0).toInt());
-        onCurrentTime?.call(currentTime);
-      }
+    if (status["currentTime"] != null) {
+      final currentTime =
+          Duration(milliseconds: (status["currentTime"] * 1000 ?? 0).toInt());
+      onCurrentTime?.call(currentTime);
     }
   }
 
@@ -139,18 +142,9 @@ class GCastService implements ICastDestinationService {
   }
 
   @override
-  void disconnect() {
-    _gCastRepository.disconnect();
-
+  Future<void> disconnect() async {
+    await _gCastRepository.disconnect();
     onReceiverName?.call("");
-  }
-
-  @override
-  bool isAvailable() {
-    // check if server URL is https
-    final serverUrl = punycodeDecodeUrl(Store.tryGet(StoreKey.serverEndpoint));
-
-    return serverUrl?.startsWith("https://") ?? false;
   }
 
   bool isSessionValid() {
@@ -219,6 +213,8 @@ class GCastService implements ICastDestinationService {
       },
       "autoplay": true,
     });
+
+    currentAssetId = asset.remoteId;
 
     // we need to poll for media status since the cast device does not
     // send a message when the media is loaded for whatever reason

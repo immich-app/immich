@@ -46,7 +46,7 @@ class TopControlAppBar extends HookConsumerWidget {
     const double iconSize = 22.0;
     final a = ref.watch(assetWatcher(asset)).value ?? asset;
     final album = ref.watch(currentAlbumProvider);
-    final castManager = ref.watch(castProvider);
+    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final comments = album != null &&
             album.remoteId != null &&
             asset.remoteId != null
@@ -181,9 +181,7 @@ class TopControlAppBar extends HookConsumerWidget {
           );
         },
         icon: Icon(
-          castManager.isCasting
-              ? Icons.cast_connected_rounded
-              : Icons.cast_rounded,
+          isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
           size: 20.0,
           color: Colors.grey[200],
         ),

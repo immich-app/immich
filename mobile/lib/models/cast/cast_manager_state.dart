@@ -11,7 +11,7 @@ class CastManagerState {
   final Duration currentTime;
   final Duration duration;
 
-  CastManagerState({
+  const CastManagerState({
     required this.isCasting,
     required this.receiverName,
     required this.castState,
@@ -49,11 +49,12 @@ class CastManagerState {
 
   factory CastManagerState.fromMap(Map<String, dynamic> map) {
     return CastManagerState(
-        isCasting: map['isCasting'] ?? false,
-        receiverName: map['receiverName'] ?? '',
-        castState: map['castState'] ?? CastState.idle,
-        currentTime: Duration(seconds: map['currentTime']?.toInt() ?? 0),
-        duration: Duration(seconds: map['duration']?.toInt() ?? 0),);
+      isCasting: map['isCasting'] ?? false,
+      receiverName: map['receiverName'] ?? '',
+      castState: map['castState'] ?? CastState.idle,
+      currentTime: Duration(seconds: map['currentTime']?.toInt() ?? 0),
+      duration: Duration(seconds: map['duration']?.toInt() ?? 0),
+    );
   }
 
   String toJson() => json.encode(toMap());
