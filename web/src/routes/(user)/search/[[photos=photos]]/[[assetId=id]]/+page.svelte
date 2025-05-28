@@ -294,7 +294,7 @@
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
           {/if}
-          <DeleteAssets menuItem {onAssetDelete} />
+          <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate}/>
           <hr />
           <AssetJobActions />
         </ButtonContextMenu>
@@ -375,6 +375,7 @@
         showArchiveIcon={true}
         {viewport}
         pageHeaderOffset={54}
+        onReload={onSearchQueryUpdate}
       />
     {:else if !isLoading}
       <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
@@ -430,7 +431,7 @@
             {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
               <TagAction menuItem />
             {/if}
-            <DeleteAssets menuItem {onAssetDelete} />
+            <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate}/>
             <hr />
             <AssetJobActions />
           </ButtonContextMenu>

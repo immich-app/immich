@@ -1,7 +1,7 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { type OnDelete, deleteAssets } from '$lib/utils/actions';
+  import { type OnDelete, type OnUndoDelete, deleteAssets } from '$lib/utils/actions';
   import { mdiDeleteForeverOutline, mdiDeleteOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
@@ -10,11 +10,12 @@
 
   interface Props {
     onAssetDelete: OnDelete;
+    onUndoDelete: OnUndoDelete;
     menuItem?: boolean;
     force?: boolean;
   }
 
-  let { onAssetDelete, menuItem = false, force = !$featureFlags.trash }: Props = $props();
+  let { onAssetDelete, onUndoDelete, menuItem = false, force = !$featureFlags.trash }: Props = $props();
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
@@ -34,8 +35,8 @@
 
   const handleDelete = async () => {
     loading = true;
-    const ids = [...getOwnedAssets()].map((a) => a.id);
-    await deleteAssets(force, onAssetDelete, ids);
+    const assets = [...getOwnedAssets()]
+    await deleteAssets(force, onAssetDelete, assets, onUndoDelete);
     clearSelect();
     isShowConfirmation = false;
     loading = false;
