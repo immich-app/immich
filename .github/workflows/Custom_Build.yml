@@ -1,19 +1,54 @@
-name: Custom Immich Build
+name: Sync Immich & Build Docker Images
 
+# 1. Trigger manually or every hour to catch new releases
 on:
+  schedule:
+    - cron: '0 * * * *'
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to use for images (e.g., test-feature)'
-        required: true
-        type: string
 
-permissions: # Add this block
-  contents: read # Default, but good to be explicit
-  packages: write # This is the crucial permission for pushing to GHCR
-  
+permissions:
+  contents: write      # so we can push the updated branch
+  packages: write      # so we can push to GHCR
+
 jobs:
+  sync-upstream:
+    name: Sync upstream release → dockerimageML
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.get_tag.outputs.tag }}
+    steps:
+      - name: Get latest release tag from immich-app/immich
+        id: get_tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const release = await github.rest.repos.getLatestRelease({
+              owner: 'immich-app',
+              repo: 'immich',
+            });
+            return release.data.tag_name;
+          result-encoding: string
+        # now available as steps.get_tag.outputs.tag
+
+      - name: Clone that tag only
+        run: |
+          git clone --depth 1 \
+            --branch ${{ steps.get_tag.outputs.tag }} \
+            https://github.com/immich-app/immich.git upstream
+
+      - name: Push to dockerimageML (force update)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd upstream
+          git push \
+            https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository_owner }}/immich.git \
+            HEAD:dockerimageML \
+            --force
+
   build-server:
+    name: Build & Push Server Image
+    needs: sync-upstream
     runs-on: ubuntu-latest
     env:
       GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
@@ -35,9 +70,11 @@ jobs:
           file: server/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/immich-server:pr-${{ github.event.inputs.tag }}
+          tags: ghcr.io/${{ github.repository_owner }}/immich-server:release-${{ needs.sync-upstream.outputs.tag }}
 
   build-ml:
+    name: Build & Push ML Images
+    needs: sync-upstream
     runs-on: ubuntu-latest
     env:
       GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
@@ -70,4 +107,4 @@ jobs:
           push: true
           build-args: |
             DEVICE=${{ matrix.device }}
-          tags: ghcr.io/${{ github.repository_owner }}/immich-machine-learning:pr-${{ github.event.inputs.tag }}${{ matrix.suffix }}
+          tags: ghcr.io/${{ github.repository_owner }}/immich-machine-learning:release-${{ needs.sync-upstream.outputs.tag }}${{ matrix.suffix }}
