@@ -9,9 +9,7 @@
     exclusionPatterns?: string[];
     isEditing?: boolean;
     submitText?: string;
-    onClose?: () => void;
-    onSubmit: (exclusionPattern: string) => void;
-    onDelete?: () => void;
+    onClose: (data?: { action: 'delete' } | { action: 'submit'; exclusionPattern: string }) => void;
   }
 
   let {
@@ -19,8 +17,6 @@
     exclusionPatterns = $bindable([]),
     isEditing = false,
     submitText = $t('submit'),
-    onSubmit,
-    onDelete,
     onClose,
   }: Props = $props();
 
@@ -36,7 +32,7 @@
   const onsubmit = (event: Event) => {
     event.preventDefault();
     if (canSubmit) {
-      onSubmit(exclusionPattern);
+      onClose({ action: 'submit', exclusionPattern });
     }
   };
 </script>
@@ -68,9 +64,11 @@
   </ModalBody>
   <ModalFooter>
     <div class="flex gap-2 w-full">
-      <Button shape="round" color="secondary" fullWidth onclick={onClose}>{$t('cancel')}</Button>
+      <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
       {#if isEditing}
-        <Button shape="round" color="danger" fullWidth onclick={onDelete}>{$t('delete')}</Button>
+        <Button shape="round" color="danger" fullWidth onclick={() => onClose({ action: 'delete' })}
+          >{$t('delete')}</Button
+        >
       {/if}
       <Button shape="round" type="submit" disabled={!canSubmit} fullWidth form="add-exclusion-pattern-form">
         {submitText}

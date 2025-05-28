@@ -21,8 +21,6 @@
 
   let exclusionPatterns: string[] = $state([]);
 
-  let closeModal: (() => Promise<void>) | undefined;
-
   onMount(() => {
     if (library.exclusionPatterns) {
       exclusionPatterns = library.exclusionPatterns;
@@ -31,7 +29,7 @@
     }
   });
 
-  const handleAddExclusionPattern = async (exclusionPatternToAdd: string) => {
+  const handleAddExclusionPattern = (exclusionPatternToAdd: string) => {
     if (!library.exclusionPatterns) {
       library.exclusionPatterns = [];
     }
@@ -46,11 +44,10 @@
       handleError(error, $t('errors.unable_to_add_exclusion_pattern'));
     } finally {
       exclusionPatternToAdd = '';
-      await closeModal?.();
     }
   };
 
-  const handleEditExclusionPattern = async (editedExclusionPattern: string) => {
+  const handleEditExclusionPattern = (editedExclusionPattern: string) => {
     if (editExclusionPattern === null) {
       return;
     }
@@ -64,12 +61,10 @@
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
       handleError(error, $t('errors.unable_to_edit_exclusion_pattern'));
-    } finally {
-      await closeModal?.();
     }
   };
 
-  const handleDeleteExclusionPattern = async () => {
+  const handleDeleteExclusionPattern = () => {
     if (editExclusionPattern === null) {
       return;
     }
@@ -84,37 +79,58 @@
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_exclusion_pattern'));
-    } finally {
-      await closeModal?.();
     }
   };
 
-  const onAddExclusionPattern = () => {
-    const result = modalManager.open(LibraryExclusionPatternForm, {
+  const onAddExclusionPattern = async () => {
+    const result = await modalManager.show(LibraryExclusionPatternForm, {
       submitText: $t('add'),
       exclusionPattern: '',
       exclusionPatterns,
-      onSubmit: handleAddExclusionPattern,
     });
 
-    closeModal = result.close;
+    if (!result) {
+      return;
+    }
+
+    switch (result.action) {
+      case 'submit': {
+        handleAddExclusionPattern(result.exclusionPattern);
+        break;
+      }
+      case 'delete': {
+        handleDeleteExclusionPattern();
+        break;
+      }
+    }
   };
 
-  const onEditExclusionPattern = () => {
+  const onEditExclusionPattern = async () => {
     if (editExclusionPattern === null) {
       return;
     }
 
-    const result = modalManager.open(LibraryExclusionPatternForm, {
+    const result = await modalManager.show(LibraryExclusionPatternForm, {
       submitText: $t('save'),
       isEditing: true,
       exclusionPattern: exclusionPatterns[editExclusionPattern],
       exclusionPatterns,
-      onSubmit: handleEditExclusionPattern,
-      onDelete: handleDeleteExclusionPattern,
     });
 
-    closeModal = result.close;
+    if (!result) {
+      return;
+    }
+
+    switch (result.action) {
+      case 'submit': {
+        handleEditExclusionPattern(result.exclusionPattern);
+        break;
+      }
+      case 'delete': {
+        handleDeleteExclusionPattern();
+        break;
+      }
+    }
   };
 
   const onsubmit = (event: Event) => {
@@ -137,9 +153,9 @@
               icon={mdiPencilOutline}
               title={$t('edit_exclusion_pattern')}
               size="16"
-              onclick={() => {
+              onclick={async () => {
                 editExclusionPattern = listIndex;
-                onEditExclusionPattern();
+                await onEditExclusionPattern();
               }}
             />
           </td>
