@@ -1,6 +1,8 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AppDownloadModal from '$lib/modals/AppDownloadModal.svelte';
   import { mdiContentDuplicate, mdiImageSizeSelectLarge } from '@mdi/js';
   import { t } from 'svelte-i18n';
 </script>
@@ -26,4 +28,22 @@
     </span>
     {$t('review_large_files')}
   </a>
+</div>
+<div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
+  <p class="text-xs font-medium p-4">{$t('download').toUpperCase()}</p>
+  <button
+    type="button"
+    onclick={() => modalManager.show(AppDownloadModal, {})}
+    class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
+    >test
+  </button>
+</div>
+<div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
+  <p class="text-xs font-medium p-4">{$t('download').toUpperCase()}</p>
+  <button
+    type="button"
+    onclick={() => modalManager.show(AppDownloadModal, {})}
+    class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
+    >test
+  </button>
 </div>
