@@ -25,22 +25,21 @@ jobs:
         run: |
           latest_tag=$(curl -s https://api.github.com/repos/immich-app/immich/releases/latest | jq -r .tag_name)
           echo "Latest tag is $latest_tag"
-          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+          echo "::set-output name=latest_tag::$latest_tag"
+        shell: bash
 
       - name: Check if latest release already exists in this branch
         id: check_existing
         run: |
-          if git ls-remote --exit-code --heads origin dockerimageML | grep -q ${{ steps.get_release.outputs.latest_tag }}; then
-            echo "Release already exists. Exiting."
-            echo "exists=true" >> $GITHUB_OUTPUT
+          if git ls-remote --exit-code --heads origin dockerimageML | grep -q "${{ steps.get_release.outputs.latest_tag }}"; then
+            echo "exists=true" >> $GITHUB_ENV
           else
-            echo "New release found."
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> $GITHUB_ENV
 
       - name: Clone latest release from upstream if new
-        if: steps.check_existing.outputs.exists == 'false'
+        if: env.exists == 'false'
         run: |
-          git clone --depth 1 --branch ${{ steps.get_release.outputs.latest_tag }} https://github.com/immich-app/immich temp-clone
+          git clone --depth 1 --branch "${{ steps.get_release.outputs.latest_tag }}" https://github.com/immich-app/immich temp-clone
           rsync -a --delete temp-clone/ ./
           rm -rf temp-clone
           git config user.name "github-actions"
@@ -50,12 +49,12 @@ jobs:
           git push origin HEAD:dockerimageML
 
       - name: Trigger Docker Build Workflow
-        if: steps.check_existing.outputs.exists == 'false'
+        if: env.exists == 'false'
         uses: peter-evans/workflow-dispatch@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          workflow: <name-of-your-docker-build-workflow>.yml
+          workflow: Custom_Build.yml
           ref: dockerimageML
           inputs:
             tag: ${{ steps.get_release.outputs.latest_tag }}
