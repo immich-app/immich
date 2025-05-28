@@ -31,7 +31,7 @@
   };
 </script>
 
-<div class="m-4 flex flex-col gap-2">
+<div class="mx-4 my-2 border bg-subtle dark:bg-black/30 dark:border-black p-4 rounded-2xl">
   <div class="flex items-center gap-2">
     <Checkbox
       id="permission-{title}"
@@ -39,9 +39,9 @@
       checked={selectAllSubItems}
       onCheckedChange={handleSelectAllSubItems}
     />
-    <Label label={title} for={title} class="text-xl font-mono font-semibold text-primary" />
+    <Label label={title} for={title} class="font-mono text-primary text-lg" />
   </div>
-  <div class="m-4 grid grid-cols-3 gap-2">
+  <div class="mx-6 mt-3 grid grid-cols-3 gap-2">
     {#each subItems as item (item)}
       <div class="flex items-center gap-2">
         <Checkbox

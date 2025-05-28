@@ -118,7 +118,10 @@
               class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
             >
               <td class="w-1/4 text-ellipsis px-4 text-sm overflow-hidden">{key.name}</td>
-              <td class="w-1/4 text-ellipsis px-4 text-sm overflow-hidden line-clamp-3 break-all">{key.permissions}</td>
+              <td
+                class="w-1/4 text-ellipsis px-4 text-xs overflow-hidden line-clamp-3 break-all font-mono"
+                title={JSON.stringify(key.permissions, undefined, 2)}>{key.permissions}</td
+              >
               <td class="w-1/4 text-ellipsis px-4 text-sm overflow-hidden"
                 >{new Date(key.createdAt).toLocaleDateString($locale, dateFormats.settings)}
               </td>

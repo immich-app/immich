@@ -189,7 +189,7 @@
   });
 </script>
 
-<Modal {title} icon={mdiKeyVariant} {onClose} size="large">
+<Modal {title} icon={mdiKeyVariant} {onClose} size="giant">
   <ModalBody>
     <form {onsubmit} autocomplete="off" id="api-key-form">
       <div class="mb-4 flex flex-col gap-2">
@@ -207,7 +207,6 @@
         <Label label={$t('select_all')} for="select-all-permissions" />
       </div>
       {#each permissions as [title, subItems] (title)}
-        <hr class="dark:border-black" />
         <ApiKeyGrid {title} {subItems} {selectedItems} {handleSelectItems} {handleDeselectItems} />
       {/each}
     </form>
