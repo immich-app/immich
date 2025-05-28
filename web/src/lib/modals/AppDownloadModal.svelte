@@ -1,36 +1,13 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { locale } from '$lib/stores/preferences.store';
-  import { userInteraction } from '$lib/stores/user.svelte';
-  import { websocketStore } from '$lib/stores/websocket';
-  import { requestServerInfo } from '$lib/utils/auth';
-  import {
-    getAboutInfo,
-    getVersionHistory,
-    type ServerAboutResponseDto,
-    type ServerVersionHistoryResponseDto,
-  } from '@immich/sdk';
+  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
   import { Modal, ModalBody } from '@immich/ui';
-  import { mdiAlert } from '@mdi/js';
-  import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  const { serverVersion } = websocketStore;
-
   let info: ServerAboutResponseDto | undefined = $state();
-  let versions: ServerVersionHistoryResponseDto[] = $state([]);
 
   onMount(async () => {
-    if (userInteraction.aboutInfo && userInteraction.versions && $serverVersion) {
-      info = userInteraction.aboutInfo;
-      versions = userInteraction.versions;
-      return;
-    }
-    await requestServerInfo();
-    [info, versions] = await Promise.all([getAboutInfo(), getVersionHistory()]);
-    userInteraction.aboutInfo = info;
-    userInteraction.versions = versions;
+    info = await getAboutInfo();
   });
 
   interface Props {
@@ -180,47 +157,6 @@
           </div>
         </div>
       {/if}
-
-      {#if info?.sourceRef === 'main' && info?.repository === 'immich-app/immich'}
-        <div class="col-span-full p-4 flex gap-1">
-          <Icon path={mdiAlert} size="2em" color="#ffcc4d" />
-          <p class="immich-form-label text-sm" id="main-warning">
-            {$t('main_branch_warning')}
-          </p>
-        </div>
-      {/if}
-
-      <div class="col-span-full">
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-history"
-          >{$t('version_history')}</label
-        >
-        <ul id="version-history" class="list-none">
-          {#each versions.slice(0, 5) as item (item.id)}
-            {@const createdAt = DateTime.fromISO(item.createdAt)}
-            <li>
-              <span
-                class="immich-form-label pb-2 text-xs"
-                id="version-history"
-                title={createdAt.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS, { locale: $locale })}
-              >
-                {$t('version_history_item', {
-                  values: {
-                    version: item.version,
-                    date: createdAt.toLocaleString(
-                      {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      },
-                      { locale: $locale },
-                    ),
-                  },
-                })}
-              </span>
-            </li>
-          {/each}
-        </ul>
-      </div>
     </div>
   </ModalBody>
 </Modal>
