@@ -122,7 +122,8 @@ class GCastService implements ICastDestinationService {
     }
   }
 
-  Future<void> connect(CastDevice device) async {
+  @override
+  Future<void> connect(dynamic device) async {
     await _gCastRepository.connect(device);
 
     onReceiverName?.call(device.extras["fn"] ?? "Google Cast");
