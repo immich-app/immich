@@ -996,7 +996,7 @@ export type ServerAboutResponseDto = {
     version: string;
     versionUrl: string;
 };
-export type ServerVersionAndroidLinksDto = {
+export type ServerApkLinksDto = {
     arm64v8a: string;
     armeabiv7a: string;
     universal: string;
@@ -2869,7 +2869,7 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
 export function getAndroidLinks(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: ServerVersionAndroidLinksDto;
+        data: ServerApkLinksDto;
     }>("/server/android-links", {
         ...opts
     }));

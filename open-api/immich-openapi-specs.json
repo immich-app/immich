@@ -5284,7 +5284,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ServerVersionAndroidLinksDto"
+                  "$ref": "#/components/schemas/ServerApkLinksDto"
                 }
               }
             },
@@ -11971,6 +11971,29 @@
         ],
         "type": "object"
       },
+      "ServerApkLinksDto": {
+        "properties": {
+          "arm64v8a": {
+            "type": "string"
+          },
+          "armeabiv7a": {
+            "type": "string"
+          },
+          "universal": {
+            "type": "string"
+          },
+          "x86_64": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "arm64v8a",
+          "armeabiv7a",
+          "universal",
+          "x86_64"
+        ],
+        "type": "object"
+      },
       "ServerConfigDto": {
         "properties": {
           "externalDomain": {
@@ -12222,29 +12245,6 @@
         },
         "required": [
           "customCss"
-        ],
-        "type": "object"
-      },
-      "ServerVersionAndroidLinksDto": {
-        "properties": {
-          "arm64v8a": {
-            "type": "string"
-          },
-          "armeabiv7a": {
-            "type": "string"
-          },
-          "universal": {
-            "type": "string"
-          },
-          "x86_64": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "arm64v8a",
-          "armeabiv7a",
-          "universal",
-          "x86_64"
         ],
         "type": "object"
       },

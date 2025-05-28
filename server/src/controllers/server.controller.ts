@@ -3,6 +3,7 @@ import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
+  ServerApkLinksDto,
   ServerConfigDto,
   ServerFeaturesDto,
   ServerMediaTypesResponseDto,
@@ -10,7 +11,6 @@ import {
   ServerStatsResponseDto,
   ServerStorageResponseDto,
   ServerThemeDto,
-  ServerVersionAndroidLinksDto,
   ServerVersionHistoryResponseDto,
   ServerVersionResponseDto,
 } from 'src/dtos/server.dto';
@@ -37,7 +37,7 @@ export class ServerController {
 
   @Get('android-links')
   @Authenticated()
-  getAndroidLinks(): ServerVersionAndroidLinksDto {
+  getAndroidLinks(): ServerApkLinksDto {
     return this.service.getAndroidLinks();
   }
 

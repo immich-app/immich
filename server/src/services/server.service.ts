@@ -5,13 +5,13 @@ import { OnEvent } from 'src/decorators';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
+  ServerApkLinksDto,
   ServerConfigDto,
   ServerFeaturesDto,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
   ServerStorageResponseDto,
-  ServerVersionAndroidLinksDto,
   UsageByUserDto,
 } from 'src/dtos/server.dto';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
@@ -49,7 +49,7 @@ export class ServerService extends BaseService {
     };
   }
 
-  getAndroidLinks(): ServerVersionAndroidLinksDto {
+  getAndroidLinks(): ServerApkLinksDto {
     const baseURL = `https://github.com/immich-app/immich/releases/download/v${serverVersion.toString()}`;
     const arm64v8a = `${baseURL}/app-arm64-v8a-release.apk`;
     const armeabiv7a = `${baseURL}/app-armeabi-v7a-release.apk`;

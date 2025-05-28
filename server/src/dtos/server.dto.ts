@@ -37,7 +37,7 @@ export class ServerAboutResponseDto {
   thirdPartySupportUrl?: string;
 }
 
-export class ServerVersionAndroidLinksDto {
+export class ServerApkLinksDto {
   arm64v8a!: string;
   armeabiv7a!: string;
   universal!: string;

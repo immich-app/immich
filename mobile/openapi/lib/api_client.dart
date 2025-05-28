@@ -476,6 +476,8 @@ class ApiClient {
           return SearchSuggestionTypeTypeTransformer().decode(value);
         case 'ServerAboutResponseDto':
           return ServerAboutResponseDto.fromJson(value);
+        case 'ServerApkLinksDto':
+          return ServerApkLinksDto.fromJson(value);
         case 'ServerConfigDto':
           return ServerConfigDto.fromJson(value);
         case 'ServerFeaturesDto':
@@ -490,8 +492,6 @@ class ApiClient {
           return ServerStorageResponseDto.fromJson(value);
         case 'ServerThemeDto':
           return ServerThemeDto.fromJson(value);
-        case 'ServerVersionAndroidLinksDto':
-          return ServerVersionAndroidLinksDto.fromJson(value);
         case 'ServerVersionHistoryResponseDto':
           return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':

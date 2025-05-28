@@ -116,7 +116,7 @@ class ServerApi {
     );
   }
 
-  Future<ServerVersionAndroidLinksDto?> getAndroidLinks() async {
+  Future<ServerApkLinksDto?> getAndroidLinks() async {
     final response = await getAndroidLinksWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -125,7 +125,7 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerVersionAndroidLinksDto',) as ServerVersionAndroidLinksDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerApkLinksDto',) as ServerApkLinksDto;
     
     }
     return null;
