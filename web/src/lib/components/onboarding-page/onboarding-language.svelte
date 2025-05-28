@@ -1,11 +1,11 @@
 <script lang="ts">
-  import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
-  import { defaultLang, fallbackLocale, langs, locales } from '$lib/constants';
+  import Combobox from '$lib/components/shared-components/combobox.svelte';
+
+  import { invalidateAll } from '$app/navigation';
+  import { defaultLang, langs } from '$lib/constants';
+  import { lang } from '$lib/stores/preferences.store';
   import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
   import { locale as i18nLocale, t } from 'svelte-i18n';
-  import { invalidateAll } from '$app/navigation';
-  import { lang } from '$lib/stores/preferences.store';
-  import { Select } from '@immich/ui';
 
   export async function save() {}
 
@@ -36,12 +36,12 @@
     <p class="pb-6 font-light">{$t('onboarding_locale_description')}</p>
   </div>
 
-  <div class="ms-4">
-    <Select
-      data={langOptions}
-      placeholder={$t('language')}
-      onChange={(event) => handleLanguageChange(event.value)}
-      value={langOptions.find(({ value }) => value === closestLanguage) || defaultLangOption}
-    ></Select>
-  </div>
+  <Combobox
+    label={$t('language')}
+    hideLabel={true}
+    selectedOption={langOptions.find(({ value }) => value === closestLanguage) || defaultLangOption}
+    placeholder={$t('language')}
+    onSelect={(event) => handleLanguageChange(event?.value)}
+    options={langOptions}
+  />
 </div>

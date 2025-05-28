@@ -13,7 +13,7 @@
   import { user } from '$lib/stores/user.store';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import { mdiHarddisk, mdiIncognito, mdiThemeLightDark, mdiTranslate } from '@mdi/js';
-  import { t } from 'svelte-i18n';
+  import { type Translations } from 'svelte-i18n';
 
   interface OnboardingStep {
     name: string;
@@ -24,7 +24,7 @@
       | typeof OnboardingPrivacy
       | typeof OnboardingLocale;
     role: OnboardingRole;
-    title: string;
+    title: Translations;
     icon?: string;
   }
 
@@ -36,33 +36,33 @@
     | OnboardingLocale;
 
   const onboardingSteps: OnboardingStep[] = [
-    { name: 'hello', component: OnboardingHello, role: OnboardingRole.USER, title: $t('welcome') },
+    { name: 'hello', component: OnboardingHello, role: OnboardingRole.USER, title: 'welcome' },
     {
       name: 'theme',
       component: OnboardingTheme,
       role: OnboardingRole.USER,
-      title: $t('theme'),
+      title: 'theme',
       icon: mdiThemeLightDark,
     },
     {
       name: 'language',
       component: OnboardingLocale,
       role: OnboardingRole.USER,
-      title: $t('language'),
+      title: 'language',
       icon: mdiTranslate,
     },
     {
       name: 'server-privacy',
       component: OnboardingPrivacy,
       role: OnboardingRole.SERVER,
-      title: $t('privacy'),
+      title: 'privacy',
       icon: mdiIncognito,
     },
     {
       name: 'storage',
       component: OnboardingStorageTemplate,
       role: OnboardingRole.SERVER,
-      title: $t('admin.storage_template_settings'),
+      title: 'admin.storage_template_settings',
       icon: mdiHarddisk,
     },
   ];

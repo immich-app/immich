@@ -3,15 +3,15 @@
   import { Button } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiCheck } from '@mdi/js';
   import type { Snippet } from 'svelte';
-  import { t } from 'svelte-i18n';
+  import { t, type Translations } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
   interface Props {
     title?: string | undefined;
     icon?: string | undefined;
     children?: Snippet;
-    previousTitle?: string | undefined;
-    nextTitle?: string | undefined;
+    previousTitle?: Translations | undefined;
+    nextTitle?: Translations | undefined;
     onNext?: () => void;
     onPrevious?: () => void;
     onLeave?: () => void;
@@ -60,7 +60,7 @@
             onPrevious?.();
           }}
         >
-          <p>{previousTitle}</p>
+          <p>{$t(previousTitle)}</p>
         </Button>
       </div>
     {/if}
@@ -75,7 +75,7 @@
         }}
       >
         <span class="flex place-content-center place-items-center gap-2">
-          {nextTitle ?? $t('done')}
+          {$t(nextTitle ?? 'done')}
         </span>
       </Button>
     </div>
