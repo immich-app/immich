@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class ServerApi {
   ServerApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
@@ -31,7 +30,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -68,7 +66,6 @@ class ServerApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
       'GET',
@@ -90,8 +87,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerAboutResponseDto',) as ServerAboutResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerAboutResponseDto',
+      ) as ServerAboutResponseDto;
     }
     return null;
   }
@@ -111,7 +110,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -134,8 +132,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerApkLinksDto',) as ServerApkLinksDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerApkLinksDto',
+      ) as ServerApkLinksDto;
     }
     return null;
   }
@@ -153,7 +153,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -175,8 +174,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerConfigDto',) as ServerConfigDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerConfigDto',
+      ) as ServerConfigDto;
     }
     return null;
   }
@@ -194,7 +195,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -216,8 +216,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerFeaturesDto',) as ServerFeaturesDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerFeaturesDto',
+      ) as ServerFeaturesDto;
     }
     return null;
   }
@@ -237,7 +239,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -260,8 +261,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LicenseResponseDto',) as LicenseResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'LicenseResponseDto',
+      ) as LicenseResponseDto;
     }
     return null;
   }
@@ -281,7 +284,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -304,8 +306,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerStatsResponseDto',) as ServerStatsResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerStatsResponseDto',
+      ) as ServerStatsResponseDto;
     }
     return null;
   }
@@ -323,7 +327,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -345,8 +348,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerVersionResponseDto',) as ServerVersionResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerVersionResponseDto',
+      ) as ServerVersionResponseDto;
     }
     return null;
   }
@@ -366,7 +371,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -389,8 +393,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerStorageResponseDto',) as ServerStorageResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerStorageResponseDto',
+      ) as ServerStorageResponseDto;
     }
     return null;
   }
@@ -408,7 +414,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -430,8 +435,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerMediaTypesResponseDto',) as ServerMediaTypesResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerMediaTypesResponseDto',
+      ) as ServerMediaTypesResponseDto;
     }
     return null;
   }
@@ -449,7 +456,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -471,8 +477,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerThemeDto',) as ServerThemeDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerThemeDto',
+      ) as ServerThemeDto;
     }
     return null;
   }
@@ -492,7 +500,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -515,8 +522,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'VersionCheckStateResponseDto',) as VersionCheckStateResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'VersionCheckStateResponseDto',
+      ) as VersionCheckStateResponseDto;
     }
     return null;
   }
@@ -534,7 +543,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -558,9 +566,8 @@ class ServerApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<ServerVersionHistoryResponseDto>') as List)
-        .cast<ServerVersionHistoryResponseDto>()
-        .toList(growable: false);
-
+          .cast<ServerVersionHistoryResponseDto>()
+          .toList(growable: false);
     }
     return null;
   }
@@ -578,7 +585,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -600,8 +606,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerPingResponse',) as ServerPingResponse;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ServerPingResponse',
+      ) as ServerPingResponse;
     }
     return null;
   }
@@ -613,7 +621,9 @@ class ServerApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  Future<Response> setServerLicenseWithHttpInfo(LicenseKeyDto licenseKeyDto,) async {
+  Future<Response> setServerLicenseWithHttpInfo(
+    LicenseKeyDto licenseKeyDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/license';
 
@@ -625,7 +635,6 @@ class ServerApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -643,8 +652,12 @@ class ServerApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  Future<LicenseResponseDto?> setServerLicense(LicenseKeyDto licenseKeyDto,) async {
-    final response = await setServerLicenseWithHttpInfo(licenseKeyDto,);
+  Future<LicenseResponseDto?> setServerLicense(
+    LicenseKeyDto licenseKeyDto,
+  ) async {
+    final response = await setServerLicenseWithHttpInfo(
+      licenseKeyDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -652,8 +665,10 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LicenseResponseDto',) as LicenseResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'LicenseResponseDto',
+      ) as LicenseResponseDto;
     }
     return null;
   }
