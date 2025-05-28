@@ -6,6 +6,7 @@ import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.da
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
+import 'package:immich_mobile/utils/thumbnail_utils.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/thumbhash_placeholder.dart';
 import 'package:octo_image/octo_image.dart';
@@ -77,6 +78,13 @@ class ImmichThumbnail extends HookConsumerWidget {
       );
     }
 
+    final assetAltText = getAltText(
+      asset!.exifInfo,
+      asset!.fileCreatedAt,
+      asset!.type,
+      [],
+    );
+
     final thumbnailProviderInstance = ImmichThumbnail.imageProvider(
       asset: asset,
       userId: userId,
@@ -90,18 +98,21 @@ class ImmichThumbnail extends HookConsumerWidget {
       return originalErrorWidgetBuilder(ctx, error, stackTrace);
     }
 
-    return OctoImage.fromSet(
-      placeholderFadeInDuration: Duration.zero,
-      fadeInDuration: Duration.zero,
-      fadeOutDuration: const Duration(milliseconds: 100),
-      octoSet: OctoSet(
-        placeholderBuilder: blurHashPlaceholderBuilder(blurhash, fit: fit),
-        errorBuilder: customErrorBuilder,
+    return Semantics(
+      label: assetAltText,
+      child: OctoImage.fromSet(
+        placeholderFadeInDuration: Duration.zero,
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: const Duration(milliseconds: 100),
+        octoSet: OctoSet(
+          placeholderBuilder: blurHashPlaceholderBuilder(blurhash, fit: fit),
+          errorBuilder: customErrorBuilder,
+        ),
+        image: thumbnailProviderInstance,
+        width: width,
+        height: height,
+        fit: fit,
       ),
-      image: thumbnailProviderInstance,
-      width: width,
-      height: height,
-      fit: fit,
     );
   }
 }
