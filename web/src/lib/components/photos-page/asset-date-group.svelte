@@ -10,15 +10,13 @@
     type TimelineAsset,
   } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { getDateLocaleString } from '$lib/utils/timeline-util';
 
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { fly, scale } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
-  import { flip } from 'svelte/animate';
-
   import { uploadAssetsStore } from '$lib/stores/upload';
+  import { flip } from 'svelte/animate';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -34,6 +32,7 @@
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
     onSelectAssets: (asset: TimelineAsset) => void;
     onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
+    onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
   }
 
   let {
@@ -47,6 +46,7 @@
     onSelect,
     onSelectAssets,
     onSelectAssetCandidates,
+    onScrollCompensation,
   }: Props = $props();
 
   let isMouseOverGroup = $state(false);
@@ -84,7 +84,7 @@
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
 
-    if (assetStore.getAssets().length == assetInteraction.selectedAssets.length) {
+    if (assetStore.count == assetInteraction.selectedAssets.length) {
       isSelectingAllAssets.set(true);
     } else {
       isSelectingAllAssets.set(false);
@@ -103,9 +103,16 @@
   function filterIntersecting<R extends { intersecting: boolean }>(intersectable: R[]) {
     return intersectable.filter((int) => int.intersecting);
   }
+
+  $effect.root(() => {
+    if (assetStore.scrollCompensation.bucket === bucket) {
+      onScrollCompensation(assetStore.scrollCompensation);
+      assetStore.clearScrollCompensation();
+    }
+  });
 </script>
 
-{#each filterIntersecting(bucket.dateGroups) as dateGroup, groupIndex (dateGroup.date)}
+{#each filterIntersecting(bucket.dateGroups) as dateGroup, groupIndex (dateGroup.day)}
   {@const absoluteWidth = dateGroup.left}
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -146,7 +153,7 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize ms-2.5" title={getDateLocaleString(dateGroup.date)}>
+      <span class="w-full truncate first-letter:capitalize ms-2.5" title={dateGroup.groupTitle}>
         {dateGroup.groupTitle}
       </span>
     </div>
@@ -158,7 +165,7 @@
       style:height={dateGroup.height + 'px'}
       style:width={dateGroup.width + 'px'}
     >
-      {#each filterIntersecting(dateGroup.intersetingAssets) as intersectingAsset (intersectingAsset.id)}
+      {#each filterIntersecting(dateGroup.intersectingAssets) as intersectingAsset (intersectingAsset.id)}
         {@const position = intersectingAsset.position!}
         {@const asset = intersectingAsset.asset!}
 
