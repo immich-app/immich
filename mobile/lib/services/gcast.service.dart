@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cast/device.dart';
 import 'package:cast/session.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
