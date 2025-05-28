@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
   import { tagAssets } from '$lib/utils/asset-utils';
   import { mdiTagMultipleOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
 
   interface Props {
     menuItem?: boolean;
@@ -33,6 +34,10 @@
     loading = false;
   };
 </script>
+
+<svelte:document
+  use:shortcut={{ shortcut: { key: 't' }, onShortcut: () => (isOpen = true) }}
+/>
 
 {#if menuItem}
   <MenuOption {text} {icon} onClick={handleOpen} />

@@ -35,6 +35,7 @@
         { key: ['i'], action: $t('show_or_hide_info') },
         { key: ['s'], action: $t('stack_selected_photos') },
         { key: ['l'], action: $t('add_to_album') },
+        { key: ['t'], action: $t('tag_assets') },
         { key: ['⇧', 'l'], action: $t('add_to_shared_album') },
         { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
         { key: ['⇧', 'd'], action: $t('download') },
