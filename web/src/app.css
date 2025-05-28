@@ -34,7 +34,7 @@
   grid-template-columns: repeat(auto-fill, minmax(min(calc(var(--spacing) * --value(number)), 100%), 1fr));
 }
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *):not(.light));
 
 @theme inline {
   --color-immich-primary: rgb(var(--immich-primary));

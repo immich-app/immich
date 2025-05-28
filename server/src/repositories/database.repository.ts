@@ -118,7 +118,7 @@ export class DatabaseRepository {
     this.logger.log(`Creating ${EXTENSION_NAMES[extension]} extension`);
     await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
     if (extension === DatabaseExtension.VECTORCHORD) {
-      const dbName = sql.table(await this.getDatabaseName());
+      const dbName = sql.id(await this.getDatabaseName());
       await sql`ALTER DATABASE ${dbName} SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536'`.execute(this.db);
       await sql`SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536'`.execute(this.db);
       await sql`ALTER DATABASE ${dbName} SET vchordrq.probes = 1`.execute(this.db);
@@ -246,7 +246,10 @@ export class DatabaseRepository {
       return;
     }
     const dimSize = await this.getDimensionSize(table);
-    await sql`DROP INDEX IF EXISTS ${sql.raw(indexName)}`.execute(this.db);
+    await this.db.schema.dropIndex(indexName).ifExists().execute();
+    if (table === 'smart_search') {
+      await this.db.schema.alterTable(table).dropConstraint('dim_size_constraint').ifExists().execute();
+    }
     await this.db.transaction().execute(async (tx) => {
       if (!rows.some((row) => row.columnName === 'embedding')) {
         this.logger.warn(`Column 'embedding' does not exist in table '${table}', truncating and adding column.`);
