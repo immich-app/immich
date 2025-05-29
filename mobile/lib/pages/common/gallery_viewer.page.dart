@@ -223,7 +223,8 @@ class GalleryViewerPage extends HookConsumerWidget {
         heroAttributes: _getHeroAttributes(asset),
         filterQuality: FilterQuality.high,
         tightMode: true,
-        minScale: PhotoViewComputedScale.contained,
+        initialScale: PhotoViewComputedScale.contained * 0.99,
+        minScale: PhotoViewComputedScale.contained * 0.99,
         errorBuilder: (context, error, stackTrace) => ImmichImage(
           asset,
           fit: BoxFit.contain,
@@ -238,9 +239,9 @@ class GalleryViewerPage extends HookConsumerWidget {
         onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
         heroAttributes: _getHeroAttributes(asset),
         filterQuality: FilterQuality.high,
-        initialScale: 1.0,
+        initialScale: PhotoViewComputedScale.contained * 0.99,
         maxScale: 1.0,
-        minScale: 1.0,
+        minScale: PhotoViewComputedScale.contained * 0.99,
         basePosition: Alignment.center,
         child: SizedBox(
           width: context.width,
