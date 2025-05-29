@@ -143,7 +143,6 @@
 
   let albumGroupOption: string = $state(AlbumGroupBy.None);
 
-  let albumToEdit: AlbumResponseDto | null = $state(null);
   let albumToShare: AlbumResponseDto | null = $state(null);
   let albumToDelete: AlbumResponseDto | null = null;
 
@@ -257,9 +256,14 @@
     await deleteSelectedAlbum();
   };
 
-  const handleEdit = (album: AlbumResponseDto) => {
-    albumToEdit = album;
+  const handleEdit = async (album: AlbumResponseDto) => {
     closeAlbumContextMenu();
+    const editedAlbum = await modalManager.show(EditAlbumForm, {
+      album,
+    });
+    if (editedAlbum) {
+      successEditAlbumInfo(editedAlbum);
+    }
   };
 
   const deleteSelectedAlbum = async () => {
@@ -305,8 +309,6 @@
   };
 
   const successEditAlbumInfo = (album: AlbumResponseDto) => {
-    albumToEdit = null;
-
     notificationController.show({
       message: $t('album_info_updated'),
       type: NotificationType.Info,
@@ -422,15 +424,3 @@
     <MenuOption icon={mdiDeleteOutline} text={$t('delete')} onClick={() => setAlbumToDelete()} />
   {/if}
 </RightClickContextMenu>
-
-{#if allowEdit}
-  <!-- Edit Modal -->
-  {#if albumToEdit}
-    <EditAlbumForm
-      album={albumToEdit}
-      onEditSuccess={successEditAlbumInfo}
-      onCancel={() => (albumToEdit = null)}
-      onClose={() => (albumToEdit = null)}
-    />
-  {/if}
-{/if}
