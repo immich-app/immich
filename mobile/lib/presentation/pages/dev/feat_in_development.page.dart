@@ -54,9 +54,23 @@ final _features = [
     },
   ),
   _Feature(
+    name: 'Clear Remote Data',
+    icon: Icons.delete_sweep_rounded,
+    onTap: (_, ref) async {
+      final db = ref.read(driftProvider);
+      await db.remoteAssetEntity.deleteAll();
+      await db.exifEntity.deleteAll();
+    },
+  ),
+  _Feature(
     name: 'Local Media Summary',
     icon: Icons.table_chart_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const LocalMediaSummaryRoute()),
+  ),
+  _Feature(
+    name: 'Remote Media Summary',
+    icon: Icons.summarize_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const RemoteMediaSummaryRoute()),
   ),
 ];
 
