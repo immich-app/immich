@@ -8,11 +8,10 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    onClose: () => void;
-    onSubmit: (ownerId: string) => void;
+    onClose: (ownerId?: string) => void;
   }
 
-  let { onClose, onSubmit }: Props = $props();
+  let { onClose }: Props = $props();
 
   let ownerId: string = $state($user.id);
 
@@ -25,7 +24,7 @@
 
   const onsubmit = (event: Event) => {
     event.preventDefault();
-    onSubmit(ownerId);
+    onClose(ownerId);
   };
 </script>
 
@@ -40,7 +39,7 @@
 
   <ModalFooter>
     <div class="flex gap-2 w-full">
-      <Button shape="round" color="secondary" fullWidth onclick={onClose}>{$t('cancel')}</Button>
+      <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
       <Button shape="round" type="submit" fullWidth form="select-library-owner-form">{$t('create')}</Button>
     </div>
   </ModalFooter>

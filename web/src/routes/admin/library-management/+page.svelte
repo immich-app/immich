@@ -56,24 +56,15 @@
   let diskUsageUnit: ByteUnit[] = $state([]);
   let editImportPaths: number | undefined = $state();
   let editScanSettings: number | undefined = $state();
-  let updateLibraryIndex: number | null;
   let dropdownOpen: boolean[] = [];
-  let importPathToAdd: string | null = $state(null);
-
-  let closeAddImportPath: (() => Promise<void>) | undefined;
-  let closeRenameLibrary: (() => Promise<void>) | undefined;
-  let closeCreateLibrary: (() => Promise<void>) | undefined;
 
   onMount(async () => {
     await readLibraryList();
   });
 
-  const closeAll = async () => {
+  const closeAll = () => {
     editImportPaths = undefined;
     editScanSettings = undefined;
-    updateLibraryIndex = null;
-    await closeAddImportPath?.();
-    await closeRenameLibrary?.();
 
     for (let index = 0; index < dropdownOpen.length; index++) {
       dropdownOpen[index] = false;
@@ -110,55 +101,57 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_create_library'));
     } finally {
-      await closeCreateLibrary?.();
       await readLibraryList();
     }
 
     if (createdLibrary) {
       // Open the import paths form for the newly created library
-      updateLibraryIndex = libraries.findIndex((library) => library.id === createdLibrary.id);
-      const result = modalManager.open(LibraryImportPathForm, {
+      const createdLibraryIndex = libraries.findIndex((library) => library.id === createdLibrary.id);
+      const result = await modalManager.show(LibraryImportPathForm, {
         title: $t('add_import_path'),
         submitText: $t('add'),
-        importPath: importPathToAdd,
-        onSubmit: handleAddImportPath,
-        onCancel: async () => {
-          if (updateLibraryIndex !== null) {
-            await onEditImportPathClicked(updateLibraryIndex);
-          }
-        },
+        importPath: null,
       });
 
-      closeAddImportPath = result.close;
+      if (!result) {
+        if (createdLibraryIndex !== null) {
+          onEditImportPathClicked(createdLibraryIndex);
+        }
+        return;
+      }
+
+      switch (result.action) {
+        case 'submit': {
+          handleAddImportPath(result.importPath, createdLibraryIndex);
+          break;
+        }
+        case 'delete': {
+          await handleDelete(libraries[createdLibraryIndex], createdLibraryIndex);
+          break;
+        }
+      }
     }
   };
 
-  const handleAddImportPath = async () => {
-    if ((updateLibraryIndex !== 0 && !updateLibraryIndex) || !importPathToAdd) {
+  const handleAddImportPath = (newImportPath: string | null, libraryIndex: number) => {
+    if ((libraryIndex !== 0 && !libraryIndex) || !newImportPath) {
       return;
     }
 
     try {
-      await onEditImportPathClicked(updateLibraryIndex);
+      onEditImportPathClicked(libraryIndex);
 
-      libraries[updateLibraryIndex].importPaths.push(importPathToAdd);
+      libraries[libraryIndex].importPaths.push(newImportPath);
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_import_path'));
-    } finally {
-      importPathToAdd = null;
-      await closeAddImportPath?.();
     }
   };
 
-  const handleUpdate = async (library: Partial<LibraryResponseDto>) => {
-    if (updateLibraryIndex === null) {
-      return;
-    }
-
+  const handleUpdate = async (library: Partial<LibraryResponseDto>, libraryIndex: number) => {
     try {
-      const libraryId = libraries[updateLibraryIndex].id;
+      const libraryId = libraries[libraryIndex].id;
       await updateLibrary({ id: libraryId, updateLibraryDto: library });
-      await closeAll();
+      closeAll();
       await readLibraryList();
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_library'));
@@ -191,45 +184,42 @@
   };
 
   const onRenameClicked = async (index: number) => {
-    await closeAll();
-    // renameLibrary = index;
-    const result = modalManager.open(LibraryRenameForm, {
+    closeAll();
+    const result = await modalManager.show(LibraryRenameForm, {
       library: libraries[index],
-      onSubmit: handleUpdate,
     });
-    closeRenameLibrary = result.close;
-    updateLibraryIndex = index;
+    if (result) {
+      await handleUpdate(result, index);
+    }
   };
 
-  const onEditImportPathClicked = async (index: number) => {
-    await closeAll();
+  const onEditImportPathClicked = (index: number) => {
+    closeAll();
     editImportPaths = index;
-    updateLibraryIndex = index;
   };
 
   const onScanClicked = async (library: LibraryResponseDto) => {
-    await closeAll();
+    closeAll();
 
     if (library) {
       await handleScan(library.id);
     }
   };
 
-  const onCreateNewLibraryClicked = () => {
-    const result = modalManager.open(LibraryUserPickerForm, {
-      onSubmit: handleCreate,
-    });
-    closeCreateLibrary = result.close;
+  const onCreateNewLibraryClicked = async () => {
+    const result = await modalManager.show(LibraryUserPickerForm, {});
+    if (result) {
+      await handleCreate(result);
+    }
   };
 
-  const onScanSettingClicked = async (index: number) => {
-    await closeAll();
+  const onScanSettingClicked = (index: number) => {
+    closeAll();
     editScanSettings = index;
-    updateLibraryIndex = index;
   };
 
   const handleDelete = async (library: LibraryResponseDto, index: number) => {
-    await closeAll();
+    closeAll();
 
     if (!library) {
       return;
@@ -363,7 +353,7 @@
                 <div transition:slide={{ duration: 250 }}>
                   <LibraryImportPathsForm
                     {library}
-                    onSubmit={handleUpdate}
+                    onSubmit={(lib) => handleUpdate(lib, index)}
                     onCancel={() => (editImportPaths = undefined)}
                   />
                 </div>
@@ -373,7 +363,7 @@
                 <div transition:slide={{ duration: 250 }} class="mb-4 ms-4 me-4">
                   <LibraryScanSettingsForm
                     {library}
-                    onSubmit={handleUpdate}
+                    onSubmit={(lib) => handleUpdate(lib, index)}
                     onCancel={() => (editScanSettings = undefined)}
                   />
                 </div>
