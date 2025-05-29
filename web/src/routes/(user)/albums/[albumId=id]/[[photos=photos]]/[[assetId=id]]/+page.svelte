@@ -174,7 +174,7 @@
     const asset =
       $slideshowNavigation === SlideshowNavigation.Shuffle
         ? await assetStore.getRandomAsset()
-        : assetStore.buckets[0]?.dateGroups[0]?.intersetingAssets[0]?.asset;
+        : assetStore.buckets[0]?.dateGroups[0]?.intersectingAssets[0]?.asset;
     if (asset) {
       handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
     }
