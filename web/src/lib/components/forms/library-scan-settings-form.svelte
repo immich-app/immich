@@ -122,9 +122,7 @@
               icon={mdiPencilOutline}
               title={$t('edit_exclusion_pattern')}
               size="16"
-              onclick={async () => {
-                await onEditExclusionPattern(listIndex);
-              }}
+              onclick={() => onEditExclusionPattern(listIndex)}
             />
           </td>
         </tr>
