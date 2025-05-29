@@ -1,13 +1,13 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import LibraryExclusionPatternModal from '$lib/modals/LibraryExclusionPatternModal.svelte';
   import { type LibraryResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
-  import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
 
   interface Props {
     library: Partial<LibraryResponseDto>;
@@ -75,7 +75,7 @@
   };
 
   const onEditExclusionPattern = async (patternIndexToEdit?: number) => {
-    const result = await modalManager.show(LibraryExclusionPatternForm, {
+    const result = await modalManager.show(LibraryExclusionPatternModal, {
       submitText: patternIndexToEdit === undefined ? $t('add') : $t('save'),
       isEditing: patternIndexToEdit !== undefined,
       exclusionPattern: patternIndexToEdit === undefined ? '' : exclusionPatterns[patternIndexToEdit],
