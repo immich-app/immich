@@ -56,7 +56,6 @@ class GCastService implements ICastDestinationService {
   }
 
   void _onCastStatusCallback(CastSessionState state) {
-    print("Cast session state changed: $state");
     if (state == CastSessionState.connected) {
       onConnectionState?.call(true);
       isConnected = true;
@@ -68,7 +67,6 @@ class GCastService implements ICastDestinationService {
   }
 
   void _onCastMessageCallback(Map<String, dynamic> message) {
-    print("Received cast message: $message");
     switch (message['type']) {
       case "MEDIA_STATUS":
         _handleMediaStatus(message);
@@ -170,7 +168,6 @@ class GCastService implements ICastDestinationService {
 
   @override
   void loadMedia(Asset asset, bool reload) async {
-    print("Loading media for asset: ${asset.remoteId}");
     if (!isConnected) {
       return;
     } else if (asset.remoteId == null) {
@@ -178,8 +175,6 @@ class GCastService implements ICastDestinationService {
     } else if (asset.remoteId == currentAssetId && !reload) {
       return;
     }
-
-    print("tried to send it!");
 
     // create a session key
     if (!isSessionValid()) {
