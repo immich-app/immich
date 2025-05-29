@@ -110,11 +110,13 @@ class CastDialog extends ConsumerWidget {
                         : isDeviceConnecting(deviceName)
                             ? const CircularProgressIndicator()
                             : null,
-                    onTap: () {
+                    onTap: () async {
                       if (isDeviceConnecting(deviceName)) {
                         return;
                       }
-                      ref.read(castProvider.notifier).disconnect();
+
+                      await ref.read(castProvider.notifier).disconnect();
+
                       ref.read(castProvider.notifier).connect(type, deviceObj);
                     },
                   );

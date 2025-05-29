@@ -83,7 +83,7 @@ class CastNotifier extends StateNotifier<CastManagerState> {
     _gCastService.seekTo(position);
   }
 
-  void disconnect() {
-    _gCastService.disconnect();
+  Future<void> disconnect() async {
+    await _gCastService.disconnect();
   }
 }
