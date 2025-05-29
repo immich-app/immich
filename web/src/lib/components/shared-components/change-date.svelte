@@ -8,8 +8,10 @@
   import { Field, Switch } from '@immich/ui';
 
   interface Props {
+    title?: string;
     initialDate?: DateTime;
     initialTimeZone?: string;
+    timezoneInput?: boolean;
     withDuration?: boolean;
     onCancel: () => void;
     onConfirm: (date: string, duration: number) => void;
@@ -18,6 +20,8 @@
   let {
     initialDate = DateTime.now(),
     initialTimeZone = '',
+    title = $t('edit_date_and_time'),
+    timezoneInput = true,
     withDuration = true,
     onCancel,
     onConfirm,
@@ -46,7 +50,7 @@
     offsetMinutes: number;
 
     /**
-     * True if the date is valid
+     * True iff the date is valid
      *
      * Dates may be invalid for various reasons, for example setting a day that does not exist (30 Feb 2024).
      * Due to daylight saving time, 2:30am is invalid for Europe/Berlin on Mar 31 2024.The two following local times
@@ -148,7 +152,7 @@
 
 <ConfirmModal
   confirmColor="primary"
-  title={$t('edit_date_and_time')}
+  {title}
   prompt="Please select a new date:"
   disabled={!date.isValid}
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
@@ -169,15 +173,17 @@
           <label for="datetime">{$t('date_and_time')}</label>
           <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
         </div>
-        <div>
-          <Combobox
-            bind:selectedOption
-            label={$t('timezone')}
-            options={timezones}
-            placeholder={$t('search_timezone')}
-            onSelect={(option) => handleOnSelect(option)}
-          />
-        </div>
+        {#if timezoneInput}
+                <div>
+                  <Combobox
+                    bind:selectedOption
+                    label={$t('timezone')}
+                    options={timezones}
+                    placeholder={$t('search_timezone')}
+                    onSelect={(option) => handleOnSelect(option)}
+                  />
+                </div>
+              {/if}
       </div>
       <div style="display: {showRelative ? 'block' : 'none'}">
         <div class="flex flex-col">

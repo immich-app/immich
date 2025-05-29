@@ -5275,6 +5275,38 @@
         ]
       }
     },
+    "/server/android-links": {
+      "get": {
+        "operationId": "getAndroidLinks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerApkLinksDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
     "/server/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -8294,10 +8326,18 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "minItems": 1,
+            "type": "array"
           }
         },
         "required": [
-          "name"
+          "name",
+          "permissions"
         ],
         "type": "object"
       },
@@ -9550,6 +9590,26 @@
           "icq"
         ],
         "type": "string"
+      },
+      "CastResponse": {
+        "properties": {
+          "gCastEnabled": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gCastEnabled"
+        ],
+        "type": "object"
+      },
+      "CastUpdate": {
+        "properties": {
+          "gCastEnabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "ChangePasswordDto": {
         "properties": {
@@ -11931,6 +11991,29 @@
           "licensed",
           "version",
           "versionUrl"
+        ],
+        "type": "object"
+      },
+      "ServerApkLinksDto": {
+        "properties": {
+          "arm64v8a": {
+            "type": "string"
+          },
+          "armeabiv7a": {
+            "type": "string"
+          },
+          "universal": {
+            "type": "string"
+          },
+          "x86_64": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "arm64v8a",
+          "armeabiv7a",
+          "universal",
+          "x86_64"
         ],
         "type": "object"
       },
@@ -14801,6 +14884,9 @@
       },
       "UserPreferencesResponseDto": {
         "properties": {
+          "cast": {
+            "$ref": "#/components/schemas/CastResponse"
+          },
           "download": {
             "$ref": "#/components/schemas/DownloadResponse"
           },
@@ -14830,6 +14916,7 @@
           }
         },
         "required": [
+          "cast",
           "download",
           "emailNotifications",
           "folders",
@@ -14846,6 +14933,9 @@
         "properties": {
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "cast": {
+            "$ref": "#/components/schemas/CastUpdate"
           },
           "download": {
             "$ref": "#/components/schemas/DownloadUpdate"

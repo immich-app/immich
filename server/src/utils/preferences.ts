@@ -42,6 +42,9 @@ const getDefaultPreferences = (): UserPreferences => {
       showSupportBadge: true,
       hideBuyButtonUntil: new Date(2022, 1, 12).toISOString(),
     },
+    cast: {
+      gCastEnabled: false,
+    },
   };
 };
 
