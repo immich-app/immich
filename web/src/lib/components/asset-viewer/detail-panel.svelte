@@ -18,7 +18,7 @@
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
+  import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import {
     AssetMediaSize,
     getAssetInfo,
@@ -112,8 +112,8 @@
   let timeZone = $derived(asset.exifInfo?.timeZone);
   let dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
-      ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromLocalDateTime(asset.localDateTime),
+      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromISODateTimeUTC(asset.localDateTime),
   );
 
   const getMegapixel = (width: number, height: number): number | undefined => {

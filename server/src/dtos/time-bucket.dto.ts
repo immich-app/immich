@@ -78,7 +78,12 @@ export class TimeBucketAssetResponseDto {
   @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
   thumbhash!: (string | null)[];
 
-  localDateTime!: string[];
+  dayGroup!: number[];
+
+  fileCreatedAt!: string[];
+
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  fileCreatedAtTimeZone!: string[];
 
   @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
   duration!: (string | null)[];

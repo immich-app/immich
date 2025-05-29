@@ -1,5 +1,5 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
-import { fromLocalDateTimeToObject, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
+import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 import { faker } from '@faker-js/faker';
 import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
@@ -34,7 +34,10 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   ratio: Sync.each(() => faker.number.int()),
   ownerId: Sync.each(() => faker.string.uuid()),
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
-  localDateTime: Sync.each(() => fromLocalDateTimeToObject(faker.date.past().toISOString())),
+  dayGroup: Sync.each(() => faker.number.int()),
+  localDateTime: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
+  fileCreatedAt: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
+  fileCreatedAtTimeZone: 'UTC',
   isFavorite: Sync.each(() => faker.datatype.boolean()),
   visibility: AssetVisibility.Timeline,
   isTrashed: false,
@@ -60,7 +63,9 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     isImage: [],
     isTrashed: [],
     livePhotoVideoId: [],
-    localDateTime: [],
+    dayGroup: [],
+    fileCreatedAt: [],
+    fileCreatedAtTimeZone: [],
     ownerId: [],
     projectionType: [],
     ratio: [],
@@ -68,6 +73,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     thumbhash: [],
   };
   for (const asset of timelineAsset) {
+    const fileCreatedAt = fromTimelinePlainDateTime(asset.fileCreatedAt).toISO();
     bucketAssets.city.push(asset.city);
     bucketAssets.country.push(asset.country);
     bucketAssets.duration.push(asset.duration!);
@@ -77,7 +83,9 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.isImage.push(asset.isImage);
     bucketAssets.isTrashed.push(asset.isTrashed);
     bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
-    bucketAssets.localDateTime.push(fromTimelinePlainDateTime(asset.localDateTime).toISO());
+    bucketAssets.fileCreatedAt.push(fileCreatedAt);
+    bucketAssets.fileCreatedAtTimeZone.push(asset.fileCreatedAtTimeZone);
+    bucketAssets.dayGroup.push(asset.localDateTime.day);
     bucketAssets.ownerId.push(asset.ownerId);
     bucketAssets.projectionType.push(asset.projectionType!);
     bucketAssets.ratio.push(asset.ratio);

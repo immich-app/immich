@@ -533,51 +533,44 @@ export class AssetRepository {
 
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
-    return (
-      this.db
-        .with('assets', (qb) =>
-          qb
-            .selectFrom('assets')
-            .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
-            .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
-            .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-            .$if(options.visibility === undefined, withDefaultVisibility)
-            .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
-            .$if(!!options.albumId, (qb) =>
-              qb
-                .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
-                .where('albums_assets_assets.albumsId', '=', asUuid(options.albumId!)),
-            )
-            .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-            .$if(!!options.withStacked, (qb) =>
-              qb
-                .leftJoin('asset_stack', (join) =>
-                  join
-                    .onRef('asset_stack.id', '=', 'assets.stackId')
-                    .onRef('asset_stack.primaryAssetId', '=', 'assets.id'),
-                )
-                .where((eb) => eb.or([eb('assets.stackId', 'is', null), eb(eb.table('asset_stack'), 'is not', null)])),
-            )
-            .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-            .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
-            .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
-            .$if(options.isDuplicate !== undefined, (qb) =>
-              qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
-            )
-            .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
-        )
-        .selectFrom('assets')
-        .select('timeBucket')
-        /*
-        TODO: the above line outputs in ISO format, which bloats the response.
-        The line below outputs in YYYY-MM-DD format, but needs a change in the web app to work.
-          .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
-        */
-        .select((eb) => eb.fn.countAll<number>().as('count'))
-        .groupBy('timeBucket')
-        .orderBy('timeBucket', options.order ?? 'desc')
-        .execute() as any as Promise<TimeBucketItem[]>
-    );
+    return this.db
+      .with('assets', (qb) =>
+        qb
+          .selectFrom('assets')
+          .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
+          .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
+          .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+          .$if(options.visibility === undefined, withDefaultVisibility)
+          .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
+          .$if(!!options.albumId, (qb) =>
+            qb
+              .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
+              .where('albums_assets_assets.albumsId', '=', asUuid(options.albumId!)),
+          )
+          .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+          .$if(!!options.withStacked, (qb) =>
+            qb
+              .leftJoin('asset_stack', (join) =>
+                join
+                  .onRef('asset_stack.id', '=', 'assets.stackId')
+                  .onRef('asset_stack.primaryAssetId', '=', 'assets.id'),
+              )
+              .where((eb) => eb.or([eb('assets.stackId', 'is', null), eb(eb.table('asset_stack'), 'is not', null)])),
+          )
+          .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
+          .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
+          .$if(options.isDuplicate !== undefined, (qb) =>
+            qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
+          )
+          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+      )
+      .selectFrom('assets')
+      .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .groupBy('timeBucket')
+      .orderBy('timeBucket', options.order ?? 'desc')
+      .execute() as any as Promise<TimeBucketItem[]>;
   }
 
   @GenerateSql({
@@ -597,13 +590,15 @@ export class AssetRepository {
             sql`assets.type = 'IMAGE'`.as('isImage'),
             sql`assets."deletedAt" is not null`.as('isTrashed'),
             'assets.livePhotoVideoId',
-            'assets.localDateTime',
+            sql`extract(day from "localDateTime")`.as('dayGroup'),
             'assets.ownerId',
             'assets.status',
+            'assets.fileCreatedAt',
             eb.fn('encode', ['assets.thumbhash', sql.lit('base64')]).as('thumbhash'),
             'exif.city',
             'exif.country',
             'exif.projectionType',
+            'exif.timeZone as fileCreatedAtTimeZone',
             eb.fn
               .coalesce(
                 eb
@@ -669,7 +664,7 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .orderBy('assets.localDateTime', options.order ?? 'desc'),
+          .orderBy('assets.fileCreatedAt', options.order ?? 'desc'),
       )
       .with('agg', (qb) =>
         qb
@@ -685,7 +680,9 @@ export class AssetRepository {
             // TODO: isTrashed is redundant as it will always be all true or false depending on the options
             eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),
             eb.fn.coalesce(eb.fn('array_agg', ['livePhotoVideoId']), sql.lit('{}')).as('livePhotoVideoId'),
-            eb.fn.coalesce(eb.fn('array_agg', ['localDateTime']), sql.lit('{}')).as('localDateTime'),
+            eb.fn.coalesce(eb.fn('array_agg', ['dayGroup']), sql.lit('{}')).as('dayGroup'),
+            eb.fn.coalesce(eb.fn('array_agg', ['fileCreatedAt']), sql.lit('{}')).as('fileCreatedAt'),
+            eb.fn.coalesce(eb.fn('array_agg', ['fileCreatedAtTimeZone']), sql.lit('{}')).as('fileCreatedAtTimeZone'),
             eb.fn.coalesce(eb.fn('array_agg', ['ownerId']), sql.lit('{}')).as('ownerId'),
             eb.fn.coalesce(eb.fn('array_agg', ['projectionType']), sql.lit('{}')).as('projectionType'),
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),

@@ -10,13 +10,13 @@ import {
 import {
   formatBucketTitle,
   formatGroupTitle,
-  fromLocalDateTimeToObject,
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
   plainDateTimeCompare,
-  toISOLocalDateTime,
+  toISOYearMonthUTC,
   toTimelineAsset,
+  toTimelineAssetFromTimeBucketResponse,
   type TimelinePlainDate,
   type TimelinePlainDateTime,
   type TimelinePlainYearMonth,
@@ -83,6 +83,9 @@ export type TimelineAsset = {
   ownerId: string;
   ratio: number;
   thumbhash: string | null;
+  dayGroup: number;
+  fileCreatedAt: TimelinePlainDateTime;
+  fileCreatedAtTimeZone: string | null;
   localDateTime: TimelinePlainDateTime;
   visibility: AssetVisibility;
   isFavorite: boolean;
@@ -168,7 +171,7 @@ export class AssetDateGroup {
 
   sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
     const sortFn = plainDateTimeCompare.bind(undefined, sortOrder === AssetOrder.Asc);
-    this.intersectingAssets.sort((a, b) => sortFn(a.asset.localDateTime, b.asset.localDateTime));
+    this.intersectingAssets.sort((a, b) => sortFn(a.asset.fileCreatedAt, b.asset.fileCreatedAt));
   }
 
   getFirstAsset() {
@@ -465,33 +468,9 @@ export class AssetBucket {
 
   addAssets(bucketAssets: TimeBucketAssetResponseDto) {
     const addContext = new AddContext();
-    const people: string[] = [];
+
     for (let i = 0; i < bucketAssets.id.length; i++) {
-      const timelineAsset: TimelineAsset = {
-        city: bucketAssets.city[i],
-        country: bucketAssets.country[i],
-        duration: bucketAssets.duration[i],
-        id: bucketAssets.id[i],
-        visibility: bucketAssets.visibility[i],
-        isFavorite: bucketAssets.isFavorite[i],
-        isImage: bucketAssets.isImage[i],
-        isTrashed: bucketAssets.isTrashed[i],
-        isVideo: !bucketAssets.isImage[i],
-        livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
-        localDateTime: fromLocalDateTimeToObject(bucketAssets.localDateTime[i]),
-        ownerId: bucketAssets.ownerId[i],
-        people,
-        projectionType: bucketAssets.projectionType[i],
-        ratio: bucketAssets.ratio[i],
-        stack: bucketAssets.stack?.[i]
-          ? {
-              id: bucketAssets.stack[i]![0],
-              primaryAssetId: bucketAssets.id[i],
-              assetCount: Number.parseInt(bucketAssets.stack[i]![1]),
-            }
-          : null,
-        thumbhash: bucketAssets.thumbhash[i],
-      };
+      const timelineAsset = toTimelineAssetFromTimeBucketResponse(bucketAssets, i);
       this.addTimelineAsset(timelineAsset, addContext);
     }
 
@@ -661,7 +640,7 @@ export class AssetBucket {
     let closest = undefined;
     let smallestDiff = Infinity;
     for (const current of this.assetsIterator()) {
-      const currentAssetDate = fromTimelinePlainDateTime(current.localDateTime);
+      const currentAssetDate = fromTimelinePlainDateTime(current.fileCreatedAt);
       const diff = Math.abs(targetDate.diff(currentAssetDate).as('milliseconds'));
       if (diff < smallestDiff) {
         smallestDiff = diff;
@@ -1089,7 +1068,7 @@ export class AssetStore {
     this.#pendingChanges = [];
   }, 2500);
 
-  async #initialiazeTimeBuckets() {
+  async #initializeTimeBuckets() {
     const timebuckets = await getTimeBuckets({
       ...this.#options,
       key: authManager.key,
@@ -1133,7 +1112,7 @@ export class AssetStore {
     this.albumAssets.clear();
     await this.initTask.execute(async () => {
       this.#options = options;
-      await this.#initialiazeTimeBuckets();
+      await this.#initializeTimeBuckets();
     }, true);
   }
 
@@ -1300,7 +1279,7 @@ export class AssetStore {
         // so no need to load the bucket, it already has assets
         return;
       }
-      const timeBucket = toISOLocalDateTime(bucket.yearMonth);
+      const timeBucket = toISOYearMonthUTC(bucket.yearMonth);
       const key = authManager.key;
       const bucketResponse = await getTimeBucket(
         {

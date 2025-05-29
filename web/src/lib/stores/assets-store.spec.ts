@@ -1,6 +1,6 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { AbortError } from '$lib/utils';
-import { fromLocalDateTimeToObject } from '$lib/utils/timeline-util';
+import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { AssetStore, type TimelineAsset } from './assets-store.svelte';
@@ -13,6 +13,14 @@ async function getAssets(store: AssetStore) {
   return assets;
 }
 
+function deriveLocalDateTimeFromFileCreatedAt(arg: TimelineAsset): TimelineAsset {
+  return {
+    ...arg,
+    localDateTime: arg.fileCreatedAt,
+    dayGroup: fromISODateTimeUTCToObject(arg.fileCreatedAt).day,
+  };
+}
+
 describe('AssetStore', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -21,15 +29,24 @@ describe('AssetStore', () => {
   describe('init', () => {
     let assetStore: AssetStore;
     const bucketAssets: Record<string, TimelineAsset[]> = {
-      '2024-03-01T00:00:00.000Z': timelineAssetFactory
-        .buildList(1)
-        .map((asset) => ({ ...asset, localDateTime: fromLocalDateTimeToObject('2024-03-01T00:00:00.000Z') })),
-      '2024-02-01T00:00:00.000Z': timelineAssetFactory
-        .buildList(100)
-        .map((asset) => ({ ...asset, localDateTime: fromLocalDateTimeToObject('2024-02-01T00:00:00.000Z') })),
-      '2024-01-01T00:00:00.000Z': timelineAssetFactory
-        .buildList(3)
-        .map((asset) => ({ ...asset, localDateTime: fromLocalDateTimeToObject('2024-01-01T00:00:00.000Z') })),
+      '2024-03-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-03-01T00:00:00.000Z'),
+        }),
+      ),
+      '2024-02-01T00:00:00.000Z': timelineAssetFactory.buildList(100).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-01T00:00:00.000Z'),
+        }),
+      ),
+      '2024-01-01T00:00:00.000Z': timelineAssetFactory.buildList(3).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-01T00:00:00.000Z'),
+        }),
+      ),
     };
 
     const bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
@@ -39,9 +56,9 @@ describe('AssetStore', () => {
     beforeEach(async () => {
       assetStore = new AssetStore();
       sdkMock.getTimeBuckets.mockResolvedValue([
-        { count: 1, timeBucket: '2024-03-01T00:00:00.000Z' },
-        { count: 100, timeBucket: '2024-02-01T00:00:00.000Z' },
-        { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
+        { count: 1, timeBucket: '2024-03-01' },
+        { count: 100, timeBucket: '2024-02-01' },
+        { count: 3, timeBucket: '2024-01-01' },
       ]);
 
       sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
@@ -77,12 +94,18 @@ describe('AssetStore', () => {
   describe('loadBucket', () => {
     let assetStore: AssetStore;
     const bucketAssets: Record<string, TimelineAsset[]> = {
-      '2024-01-03T00:00:00.000Z': timelineAssetFactory
-        .buildList(1)
-        .map((asset) => ({ ...asset, localDateTime: fromLocalDateTimeToObject('2024-03-01T00:00:00.000Z') })),
-      '2024-01-01T00:00:00.000Z': timelineAssetFactory
-        .buildList(3)
-        .map((asset) => ({ ...asset, localDateTime: fromLocalDateTimeToObject('2024-01-01T00:00:00.000Z') })),
+      '2024-01-03T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-03-01T00:00:00.000Z'),
+        }),
+      ),
+      '2024-01-01T00:00:00.000Z': timelineAssetFactory.buildList(3).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-01T00:00:00.000Z'),
+        }),
+      ),
     };
     const bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
@@ -165,9 +188,11 @@ describe('AssetStore', () => {
     });
 
     it('adds assets to new bucket', () => {
-      const asset = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
-      });
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+        }),
+      );
       assetStore.addAssets([asset]);
 
       expect(assetStore.buckets.length).toEqual(1);
@@ -179,9 +204,11 @@ describe('AssetStore', () => {
     });
 
     it('adds assets to existing bucket', () => {
-      const [assetOne, assetTwo] = timelineAssetFactory.buildList(2, {
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
-      });
+      const [assetOne, assetTwo] = timelineAssetFactory
+        .buildList(2, {
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+        })
+        .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset));
       assetStore.addAssets([assetOne]);
       assetStore.addAssets([assetTwo]);
 
@@ -193,15 +220,24 @@ describe('AssetStore', () => {
     });
 
     it('orders assets in buckets by descending date', () => {
-      const assetOne = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
-      });
-      const assetTwo = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-15T12:00:00.000Z'),
-      });
-      const assetThree = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-16T12:00:00.000Z'),
-      });
+      const assetOne = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+          dayGroup: 20,
+        }),
+      );
+      const assetTwo = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-15T12:00:00.000Z'),
+          dayGroup: 15,
+        }),
+      );
+      const assetThree = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-16T12:00:00.000Z'),
+          dayGroup: 16,
+        }),
+      );
       assetStore.addAssets([assetOne, assetTwo, assetThree]);
 
       const bucket = assetStore.getBucketByDate({ year: 2024, month: 1 });
@@ -213,15 +249,24 @@ describe('AssetStore', () => {
     });
 
     it('orders buckets by descending date', () => {
-      const assetOne = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
-      });
-      const assetTwo = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-04-20T12:00:00.000Z'),
-      });
-      const assetThree = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2023-01-20T12:00:00.000Z'),
-      });
+      const assetOne = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+          dayGroup: 10,
+        }),
+      );
+      const assetTwo = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-04-20T12:00:00.000Z'),
+          dayGroup: 20,
+        }),
+      );
+      const assetThree = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2023-01-20T12:00:00.000Z'),
+          dayGroup: 20,
+        }),
+      );
       assetStore.addAssets([assetOne, assetTwo, assetThree]);
 
       expect(assetStore.buckets.length).toEqual(3);
@@ -237,7 +282,7 @@ describe('AssetStore', () => {
 
     it('updates existing asset', () => {
       const updateAssetsSpy = vi.spyOn(assetStore, 'updateAssets');
-      const asset = timelineAssetFactory.build();
+      const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build());
       assetStore.addAssets([asset]);
 
       assetStore.addAssets([asset]);
@@ -247,8 +292,8 @@ describe('AssetStore', () => {
 
     // disabled due to the wasm Justified Layout import
     it('ignores trashed assets when isTrashed is true', async () => {
-      const asset = timelineAssetFactory.build({ isTrashed: false });
-      const trashedAsset = timelineAssetFactory.build({ isTrashed: true });
+      const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ isTrashed: false }));
+      const trashedAsset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ isTrashed: true }));
 
       const assetStore = new AssetStore();
       await assetStore.updateOptions({ isTrashed: true });
@@ -268,14 +313,14 @@ describe('AssetStore', () => {
     });
 
     it('ignores non-existing assets', () => {
-      assetStore.updateAssets([timelineAssetFactory.build()]);
+      assetStore.updateAssets([deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build())]);
 
       expect(assetStore.buckets.length).toEqual(0);
       expect(assetStore.count).toEqual(0);
     });
 
     it('updates an asset', () => {
-      const asset = timelineAssetFactory.build({ isFavorite: false });
+      const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ isFavorite: false }));
       const updatedAsset = { ...asset, isFavorite: true };
 
       assetStore.addAssets([asset]);
@@ -288,10 +333,15 @@ describe('AssetStore', () => {
     });
 
     it('asset moves buckets when asset date changes', () => {
-      const asset = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+        }),
+      );
+      const updatedAsset = deriveLocalDateTimeFromFileCreatedAt({
+        ...asset,
+        fileCreatedAt: fromISODateTimeUTCToObject('2024-03-20T12:00:00.000Z'),
       });
-      const updatedAsset = { ...asset, localDateTime: fromLocalDateTimeToObject('2024-03-20T12:00:00.000Z') };
 
       assetStore.addAssets([asset]);
       expect(assetStore.buckets.length).toEqual(1);
@@ -319,7 +369,12 @@ describe('AssetStore', () => {
 
     it('ignores invalid IDs', () => {
       assetStore.addAssets(
-        timelineAssetFactory.buildList(2, { localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z') }),
+        timelineAssetFactory
+          .buildList(2, {
+            fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+            dayGroup: 20,
+          })
+          .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset)),
       );
       assetStore.removeAssets(['', 'invalid', '4c7d9acc']);
 
@@ -329,9 +384,12 @@ describe('AssetStore', () => {
     });
 
     it('removes asset from bucket', () => {
-      const [assetOne, assetTwo] = timelineAssetFactory.buildList(2, {
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
-      });
+      const [assetOne, assetTwo] = timelineAssetFactory
+        .buildList(2, {
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+          dayGroup: 20,
+        })
+        .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset));
       assetStore.addAssets([assetOne, assetTwo]);
       assetStore.removeAssets([assetOne.id]);
 
@@ -341,9 +399,12 @@ describe('AssetStore', () => {
     });
 
     it('does not remove bucket when empty', () => {
-      const assets = timelineAssetFactory.buildList(2, {
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
-      });
+      const assets = timelineAssetFactory
+        .buildList(2, {
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+          dayGroup: 20,
+        })
+        .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset));
       assetStore.addAssets(assets);
       assetStore.removeAssets(assets.map((asset) => asset.id));
 
@@ -366,12 +427,18 @@ describe('AssetStore', () => {
     });
 
     it('populated store returns first asset', () => {
-      const assetOne = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
-      });
-      const assetTwo = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-15T12:00:00.000Z'),
-      });
+      const assetOne = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+          dayGroup: 20,
+        }),
+      );
+      const assetTwo = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-15T12:00:00.000Z'),
+          dayGroup: 15,
+        }),
+      );
       assetStore.addAssets([assetOne, assetTwo]);
       expect(assetStore.getFirstAsset()).toEqual(assetOne);
     });
@@ -380,15 +447,27 @@ describe('AssetStore', () => {
   describe('getLaterAsset', () => {
     let assetStore: AssetStore;
     const bucketAssets: Record<string, TimelineAsset[]> = {
-      '2024-03-01T00:00:00.000Z': timelineAssetFactory
-        .buildList(1)
-        .map((asset) => ({ ...asset, localDateTime: fromLocalDateTimeToObject('2024-03-01T00:00:00.000Z') })),
-      '2024-02-01T00:00:00.000Z': timelineAssetFactory
-        .buildList(6)
-        .map((asset) => ({ ...asset, localDateTime: fromLocalDateTimeToObject('2024-02-01T00:00:00.000Z') })),
-      '2024-01-01T00:00:00.000Z': timelineAssetFactory
-        .buildList(3)
-        .map((asset) => ({ ...asset, localDateTime: fromLocalDateTimeToObject('2024-01-01T00:00:00.000Z') })),
+      '2024-03-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-03-01T00:00:00.000Z'),
+          dayGroup: 1,
+        }),
+      ),
+      '2024-02-01T00:00:00.000Z': timelineAssetFactory.buildList(6).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-01T00:00:00.000Z'),
+          dayGroup: 1,
+        }),
+      ),
+      '2024-01-01T00:00:00.000Z': timelineAssetFactory.buildList(3).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-01T00:00:00.000Z'),
+          dayGroup: 1,
+        }),
+      ),
     };
     const bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
@@ -478,12 +557,16 @@ describe('AssetStore', () => {
     });
 
     it('returns the bucket index', () => {
-      const assetOne = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
-      });
-      const assetTwo = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-02-15T12:00:00.000Z'),
-      });
+      const assetOne = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+        }),
+      );
+      const assetTwo = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-15T12:00:00.000Z'),
+        }),
+      );
       assetStore.addAssets([assetOne, assetTwo]);
 
       expect(assetStore.getBucketIndexByAssetId(assetTwo.id)?.yearMonth.year).toEqual(2024);
@@ -493,12 +576,16 @@ describe('AssetStore', () => {
     });
 
     it('ignores removed buckets', () => {
-      const assetOne = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-01-20T12:00:00.000Z'),
-      });
-      const assetTwo = timelineAssetFactory.build({
-        localDateTime: fromLocalDateTimeToObject('2024-02-15T12:00:00.000Z'),
-      });
+      const assetOne = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+        }),
+      );
+      const assetTwo = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-15T12:00:00.000Z'),
+        }),
+      );
       assetStore.addAssets([assetOne, assetTwo]);
 
       assetStore.removeAssets([assetTwo.id]);

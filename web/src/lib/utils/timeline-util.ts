@@ -1,9 +1,26 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { get } from 'svelte/store';
+
+// Move type definitions to the top
+export type TimelinePlainYearMonth = {
+  year: number;
+  month: number;
+};
+
+export type TimelinePlainDate = TimelinePlainYearMonth & {
+  day: number;
+};
+
+export type TimelinePlainDateTime = TimelinePlainDate & {
+  hour: number;
+  minute: number;
+  second: number;
+  millisecond: number;
+};
 
 export type ScrubberListener = (
   bucketDate: { year: number; month: number },
@@ -11,11 +28,27 @@ export type ScrubberListener = (
   bucketScrollPercent: number,
 ) => void | Promise<void>;
 
-export const fromLocalDateTime = (localDateTime: string) =>
-  DateTime.fromISO(localDateTime, { zone: 'UTC', locale: get(locale) });
+// used for AssetResponseDto.dateTimeOriginal, amongst others
+export const fromISODateTime = (isoDateTime: string, timeZone: string): DateTime<true> =>
+  DateTime.fromISO(isoDateTime, { zone: timeZone, locale: get(locale) }) as DateTime<true>;
 
-export const fromLocalDateTimeToObject = (localDateTime: string): TimelinePlainDateTime =>
-  (fromLocalDateTime(localDateTime) as DateTime<true>).toObject();
+export const fromISODateTimeToObject = (isoDateTime: string, timeZone: string): TimelinePlainDateTime =>
+  (fromISODateTime(isoDateTime, timeZone) as DateTime<true>).toObject();
+
+// used for AssetResponseDto.localDateTime, amoungst others
+export const fromISODateTimeUTC = (isoDateTimeUtc: string) => fromISODateTime(isoDateTimeUtc, 'UTC');
+
+export const fromISODateTimeUTCToObject = (isoDateTimeUtc: string): TimelinePlainDateTime =>
+  (fromISODateTimeUTC(isoDateTimeUtc) as DateTime<true>).toObject();
+
+// used to create equivalent of AssetResponseDto.localDateTime in UTC, but without timezone information
+export const fromISODateTimeTruncateTZToObject = (
+  isoDateTimeUtc: string,
+  timeZone: string | undefined,
+): TimelinePlainDateTime =>
+  (
+    fromISODateTime(isoDateTimeUtc, timeZone ?? 'UTC').setZone('UTC', { keepLocalTime: true }) as DateTime<true>
+  ).toObject();
 
 export const fromTimelinePlainDateTime = (timelineDateTime: TimelinePlainDateTime): DateTime<true> =>
   DateTime.fromObject(timelineDateTime, { zone: 'local', locale: get(locale) }) as DateTime<true>;
@@ -32,10 +65,7 @@ export const fromTimelinePlainYearMonth = (timelineYearMonth: TimelinePlainYearM
     { zone: 'local', locale: get(locale) },
   ) as DateTime<true>;
 
-export const fromDateTimeOriginal = (dateTimeOriginal: string, timeZone: string) =>
-  DateTime.fromISO(dateTimeOriginal, { zone: timeZone, locale: get(locale) });
-
-export const toISOLocalDateTime = (timelineYearMonth: TimelinePlainYearMonth): string =>
+export const toISOYearMonthUTC = (timelineYearMonth: TimelinePlainYearMonth): string =>
   (fromTimelinePlainYearMonth(timelineYearMonth).setZone('UTC', { keepLocalTime: true }) as DateTime<true>).toISO();
 
 export function formatBucketTitle(_date: DateTime): string {
@@ -104,12 +134,17 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   const country = assetResponse.exifInfo?.country;
   const people = assetResponse.people?.map((person) => person.name) || [];
 
+  const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
+
   return {
     id: assetResponse.id,
     ownerId: assetResponse.ownerId,
     ratio,
     thumbhash: assetResponse.thumbhash,
-    localDateTime: fromLocalDateTimeToObject(assetResponse.localDateTime),
+    dayGroup: localDateTime.day,
+    localDateTime,
+    fileCreatedAt: fromISODateTimeToObject(assetResponse.fileCreatedAt, assetResponse.exifInfo?.timeZone ?? 'UTC'),
+    fileCreatedAtTimeZone: assetResponse.exifInfo?.timeZone || null,
     isFavorite: assetResponse.isFavorite,
     visibility: assetResponse.visibility,
     isTrashed: assetResponse.isTrashed,
@@ -123,6 +158,44 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     country: country || null,
     people,
   };
+};
+
+export const toTimelineAssetFromTimeBucketResponse = (
+  bucketAssets: TimeBucketAssetResponseDto,
+  index: number,
+): TimelineAsset => {
+  const timelineAsset: TimelineAsset = {
+    city: bucketAssets.city[index],
+    country: bucketAssets.country[index],
+    duration: bucketAssets.duration[index],
+    id: bucketAssets.id[index],
+    visibility: bucketAssets.visibility[index],
+    isFavorite: bucketAssets.isFavorite[index],
+    isImage: bucketAssets.isImage[index],
+    isTrashed: bucketAssets.isTrashed[index],
+    isVideo: !bucketAssets.isImage[index],
+    livePhotoVideoId: bucketAssets.livePhotoVideoId[index],
+    dayGroup: bucketAssets.dayGroup[index],
+    localDateTime: fromISODateTimeTruncateTZToObject(
+      bucketAssets.fileCreatedAt[index],
+      bucketAssets.fileCreatedAtTimeZone[index] || undefined,
+    ),
+    fileCreatedAt: fromISODateTimeUTCToObject(bucketAssets.fileCreatedAt[index]),
+    fileCreatedAtTimeZone: bucketAssets.fileCreatedAtTimeZone[index],
+    ownerId: bucketAssets.ownerId[index],
+    people: [],
+    projectionType: bucketAssets.projectionType[index],
+    ratio: bucketAssets.ratio[index],
+    stack: bucketAssets.stack?.[index]
+      ? {
+          id: bucketAssets.stack[index]![0],
+          primaryAssetId: bucketAssets.id[index],
+          assetCount: Number.parseInt(bucketAssets.stack[index]![1]),
+        }
+      : null,
+    thumbhash: bucketAssets.thumbhash[index],
+  };
+  return timelineAsset;
 };
 
 export const isTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): unknownAsset is TimelineAsset =>
@@ -150,20 +223,4 @@ export const plainDateTimeCompare = (ascending: boolean, a: TimelinePlainDateTim
     return aDateTime.second - bDateTime.second;
   }
   return aDateTime.millisecond - bDateTime.millisecond;
-};
-
-export type TimelinePlainDateTime = TimelinePlainDate & {
-  hour: number;
-  minute: number;
-  second: number;
-  millisecond: number;
-};
-
-export type TimelinePlainDate = TimelinePlainYearMonth & {
-  day: number;
-};
-
-export type TimelinePlainYearMonth = {
-  year: number;
-  month: number;
 };
