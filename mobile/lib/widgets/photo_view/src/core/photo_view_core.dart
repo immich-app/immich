@@ -120,7 +120,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
         TickerProviderStateMixin,
         PhotoViewControllerDelegate,
         HitCornersDetector {
-  Offset? _normalizedPosition;
   double? _scaleBefore;
   double? _rotationBefore;
 
@@ -153,7 +152,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   void onScaleStart(ScaleStartDetails details) {
     _rotationBefore = controller.rotation;
     _scaleBefore = scale;
-    _normalizedPosition = details.focalPoint - controller.position;
     _scaleAnimationController.stop();
     _positionAnimationController.stop();
     _rotationAnimationController.stop();
