@@ -19,8 +19,10 @@ class SessionsAPIRepository extends ApiRepository
 
   @override
   Future<SessionCreateResponse> createSession(
-      String deviceType, String deviceOS,
-      {int? duration,}) async {
+    String deviceType,
+    String deviceOS, {
+    int? duration,
+  }) async {
     final dto = await checkNull(
       _api.createSession(
         SessionCreateDto(
