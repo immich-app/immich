@@ -115,7 +115,9 @@ class CastDialog extends ConsumerWidget {
                         return;
                       }
 
-                      await ref.read(castProvider.notifier).disconnect();
+                      if (castManager.isCasting) {
+                        await ref.read(castProvider.notifier).disconnect();
+                      }
 
                       ref.read(castProvider.notifier).connect(type, deviceObj);
                     },
