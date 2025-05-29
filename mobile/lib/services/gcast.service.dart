@@ -56,16 +56,19 @@ class GCastService implements ICastDestinationService {
   }
 
   void _onCastStatusCallback(CastSessionState state) {
+    print("Cast session state changed: $state");
     if (state == CastSessionState.connected) {
       onConnectionState?.call(true);
       isConnected = true;
     } else if (state == CastSessionState.closed) {
       onConnectionState?.call(false);
       isConnected = false;
+      onReceiverName?.call("");
     }
   }
 
   void _onCastMessageCallback(Map<String, dynamic> message) {
+    print("Received cast message: $message");
     switch (message['type']) {
       case "MEDIA_STATUS":
         _handleMediaStatus(message);
@@ -143,8 +146,9 @@ class GCastService implements ICastDestinationService {
 
   @override
   Future<void> disconnect() async {
-    await _gCastRepository.disconnect();
     onReceiverName?.call("");
+    currentAssetId = null;
+    await _gCastRepository.disconnect();
   }
 
   bool isSessionValid() {
@@ -166,6 +170,7 @@ class GCastService implements ICastDestinationService {
 
   @override
   void loadMedia(Asset asset, bool reload) async {
+    print("Loading media for asset: ${asset.remoteId}");
     if (!isConnected) {
       return;
     } else if (asset.remoteId == null) {
@@ -173,6 +178,8 @@ class GCastService implements ICastDestinationService {
     } else if (asset.remoteId == currentAssetId && !reload) {
       return;
     }
+
+    print("tried to send it!");
 
     // create a session key
     if (!isSessionValid()) {

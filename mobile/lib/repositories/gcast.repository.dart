@@ -47,6 +47,9 @@ class GCastRepository {
       "sessionId": sessionID,
     });
 
+    // wait 500ms to ensure the stop command is processed
+    await Future.delayed(const Duration(milliseconds: 500));
+
     await _castSession?.close();
   }
 
