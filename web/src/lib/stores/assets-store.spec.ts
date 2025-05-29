@@ -17,7 +17,7 @@ function deriveLocalDateTimeFromFileCreatedAt(arg: TimelineAsset): TimelineAsset
   return {
     ...arg,
     localDateTime: arg.fileCreatedAt,
-    dayGroup: fromISODateTimeUTCToObject(arg.fileCreatedAt).day,
+    dayGroup: arg.fileCreatedAt.day,
   };
 }
 
