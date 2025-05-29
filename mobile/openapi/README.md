@@ -184,6 +184,7 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **POST** /search/smart | 
 *ServerApi* | [**deleteServerLicense**](doc//ServerApi.md#deleteserverlicense) | **DELETE** /server/license | 
 *ServerApi* | [**getAboutInfo**](doc//ServerApi.md#getaboutinfo) | **GET** /server/about | 
+*ServerApi* | [**getAndroidLinks**](doc//ServerApi.md#getandroidlinks) | **GET** /server/android-links | 
 *ServerApi* | [**getServerConfig**](doc//ServerApi.md#getserverconfig) | **GET** /server/config | 
 *ServerApi* | [**getServerFeatures**](doc//ServerApi.md#getserverfeatures) | **GET** /server/features | 
 *ServerApi* | [**getServerLicense**](doc//ServerApi.md#getserverlicense) | **GET** /server/license | 
@@ -321,6 +322,8 @@ Class | Method | HTTP request | Description
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)
  - [CQMode](doc//CQMode.md)
+ - [CastResponse](doc//CastResponse.md)
+ - [CastUpdate](doc//CastUpdate.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
@@ -417,6 +420,7 @@ Class | Method | HTTP request | Description
  - [SearchResponseDto](doc//SearchResponseDto.md)
  - [SearchSuggestionType](doc//SearchSuggestionType.md)
  - [ServerAboutResponseDto](doc//ServerAboutResponseDto.md)
+ - [ServerApkLinksDto](doc//ServerApkLinksDto.md)
  - [ServerConfigDto](doc//ServerConfigDto.md)
  - [ServerFeaturesDto](doc//ServerFeaturesDto.md)
  - [ServerMediaTypesResponseDto](doc//ServerMediaTypesResponseDto.md)

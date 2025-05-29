@@ -128,6 +128,9 @@ export type UserAdminUpdateDto = {
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
 };
+export type CastResponse = {
+    gCastEnabled: boolean;
+};
 export type DownloadResponse = {
     archiveSize: number;
     includeEmbeddedVideos: boolean;
@@ -164,6 +167,7 @@ export type TagsResponse = {
     sidebarWeb: boolean;
 };
 export type UserPreferencesResponseDto = {
+    cast: CastResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     folders: FoldersResponse;
@@ -176,6 +180,9 @@ export type UserPreferencesResponseDto = {
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
+};
+export type CastUpdate = {
+    gCastEnabled?: boolean;
 };
 export type DownloadUpdate = {
     archiveSize?: number;
@@ -214,6 +221,7 @@ export type TagsUpdate = {
 };
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
+    cast?: CastUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     folders?: FoldersUpdate;
@@ -408,6 +416,7 @@ export type ApiKeyCreateResponseDto = {
 };
 export type ApiKeyUpdateDto = {
     name: string;
+    permissions: Permission[];
 };
 export type AssetBulkDeleteDto = {
     force?: boolean;
@@ -994,6 +1003,12 @@ export type ServerAboutResponseDto = {
     thirdPartySupportUrl?: string;
     version: string;
     versionUrl: string;
+};
+export type ServerApkLinksDto = {
+    arm64v8a: string;
+    armeabiv7a: string;
+    universal: string;
+    x86_64: string;
 };
 export type ServerConfigDto = {
     externalDomain: string;
@@ -2856,6 +2871,14 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerAboutResponseDto;
     }>("/server/about", {
+        ...opts
+    }));
+}
+export function getAndroidLinks(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerApkLinksDto;
+    }>("/server/android-links", {
         ...opts
     }));
 }

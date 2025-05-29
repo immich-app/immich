@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import Icon from '$lib/components/elements/icon.svelte';
   import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
@@ -40,6 +41,8 @@
     }
   };
 </script>
+
+<svelte:document use:shortcut={{ shortcut: { key: 't' }, onShortcut: () => (isOpen = true) }} />
 
 {#if isOwner && !authManager.key}
   <section class="px-4 mt-4">
