@@ -50,7 +50,7 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
   override fun getMediaChanges(): SyncDelta {
     val genMap = getSavedGenerationMap()
     val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
-    val changed = mutableListOf<ImAsset>()
+    val changed = mutableListOf<PlatformAsset>()
     val deleted = mutableListOf<String>()
     val assetAlbums = mutableMapOf<String, List<String>>()
     var hasChanges = genMap.keys != currentVolumes

@@ -7,7 +7,7 @@ import android.provider.MediaStore
 import java.io.File
 
 sealed class AssetResult {
-  data class ValidAsset(val asset: ImAsset, val albumId: String) : AssetResult()
+  data class ValidAsset(val asset: PlatformAsset, val albumId: String) : AssetResult()
   data class InvalidAsset(val assetId: String) : AssetResult()
 }
 
@@ -84,15 +84,15 @@ open class NativeSyncApiImplBase(context: Context) {
           else c.getLong(durationColumn) / 1000
           val bucketId = c.getString(bucketIdColumn)
 
-          val asset = ImAsset(id, name, mediaType.toLong(), createdAt, modifiedAt, duration)
+          val asset = PlatformAsset(id, name, mediaType.toLong(), createdAt, modifiedAt, duration)
           yield(AssetResult.ValidAsset(asset, bucketId))
         }
       }
     }
   }
 
-  fun getAlbums(): List<ImAlbum> {
-    val albums = mutableListOf<ImAlbum>()
+  fun getAlbums(): List<PlatformAlbum> {
+    val albums = mutableListOf<PlatformAlbum>()
     val albumsCount = mutableMapOf<String, Int>()
 
     val projection = arrayOf(
@@ -128,7 +128,7 @@ open class NativeSyncApiImplBase(context: Context) {
 
         val name = cursor.getString(bucketNameColumn)
         val updatedAt = cursor.getLong(dateModified)
-        albums.add(ImAlbum(id, name, updatedAt, false, 0))
+        albums.add(PlatformAlbum(id, name, updatedAt, false, 0))
         albumsCount[id] = 1
       }
     }
@@ -161,7 +161,7 @@ open class NativeSyncApiImplBase(context: Context) {
     )?.use { cursor -> cursor.count.toLong() } ?: 0L
 
 
-  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<ImAsset> {
+  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset> {
     var selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
     val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
 

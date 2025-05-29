@@ -129,7 +129,7 @@ func deepHashMessages(value: Any?, hasher: inout Hasher) {
     
 
 /// Generated class from Pigeon that represents data sent in messages.
-struct ImAsset: Hashable {
+struct PlatformAsset: Hashable {
   var id: String
   var name: String
   var type: Int64
@@ -139,7 +139,7 @@ struct ImAsset: Hashable {
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> ImAsset? {
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformAsset? {
     let id = pigeonVar_list[0] as! String
     let name = pigeonVar_list[1] as! String
     let type = pigeonVar_list[2] as! Int64
@@ -147,7 +147,7 @@ struct ImAsset: Hashable {
     let updatedAt: Int64? = nilOrValue(pigeonVar_list[4])
     let durationInSeconds = pigeonVar_list[5] as! Int64
 
-    return ImAsset(
+    return PlatformAsset(
       id: id,
       name: name,
       type: type,
@@ -166,7 +166,7 @@ struct ImAsset: Hashable {
       durationInSeconds,
     ]
   }
-  static func == (lhs: ImAsset, rhs: ImAsset) -> Bool {
+  static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
     return deepEqualsMessages(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashMessages(value: toList(), hasher: &hasher)
@@ -174,7 +174,7 @@ struct ImAsset: Hashable {
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
-struct ImAlbum: Hashable {
+struct PlatformAlbum: Hashable {
   var id: String
   var name: String
   var updatedAt: Int64? = nil
@@ -183,14 +183,14 @@ struct ImAlbum: Hashable {
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> ImAlbum? {
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformAlbum? {
     let id = pigeonVar_list[0] as! String
     let name = pigeonVar_list[1] as! String
     let updatedAt: Int64? = nilOrValue(pigeonVar_list[2])
     let isCloud = pigeonVar_list[3] as! Bool
     let assetCount = pigeonVar_list[4] as! Int64
 
-    return ImAlbum(
+    return PlatformAlbum(
       id: id,
       name: name,
       updatedAt: updatedAt,
@@ -207,7 +207,7 @@ struct ImAlbum: Hashable {
       assetCount,
     ]
   }
-  static func == (lhs: ImAlbum, rhs: ImAlbum) -> Bool {
+  static func == (lhs: PlatformAlbum, rhs: PlatformAlbum) -> Bool {
     return deepEqualsMessages(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashMessages(value: toList(), hasher: &hasher)
@@ -217,7 +217,7 @@ struct ImAlbum: Hashable {
 /// Generated class from Pigeon that represents data sent in messages.
 struct SyncDelta: Hashable {
   var hasChanges: Bool
-  var updates: [ImAsset]
+  var updates: [PlatformAsset]
   var deletes: [String]
   var assetAlbums: [String: [String]]
 
@@ -225,7 +225,7 @@ struct SyncDelta: Hashable {
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> SyncDelta? {
     let hasChanges = pigeonVar_list[0] as! Bool
-    let updates = pigeonVar_list[1] as! [ImAsset]
+    let updates = pigeonVar_list[1] as! [PlatformAsset]
     let deletes = pigeonVar_list[2] as! [String]
     let assetAlbums = pigeonVar_list[3] as! [String: [String]]
 
@@ -255,9 +255,9 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
-      return ImAsset.fromList(self.readValue() as! [Any?])
+      return PlatformAsset.fromList(self.readValue() as! [Any?])
     case 130:
-      return ImAlbum.fromList(self.readValue() as! [Any?])
+      return PlatformAlbum.fromList(self.readValue() as! [Any?])
     case 131:
       return SyncDelta.fromList(self.readValue() as! [Any?])
     default:
@@ -268,10 +268,10 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
 
 private class MessagesPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? ImAsset {
+    if let value = value as? PlatformAsset {
       super.writeByte(129)
       super.writeValue(value.toList())
-    } else if let value = value as? ImAlbum {
+    } else if let value = value as? PlatformAlbum {
       super.writeByte(130)
       super.writeValue(value.toList())
     } else if let value = value as? SyncDelta {
@@ -304,9 +304,9 @@ protocol NativeSyncApi {
   func checkpointSync() throws
   func clearSyncCheckpoint() throws
   func getAssetIdsForAlbum(albumId: String) throws -> [String]
-  func getAlbums() throws -> [ImAlbum]
+  func getAlbums() throws -> [PlatformAlbum]
   func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
-  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [ImAsset]
+  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.

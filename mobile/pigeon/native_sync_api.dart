@@ -12,7 +12,7 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
-class ImAsset {
+class PlatformAsset {
   final String id;
   final String name;
   // Follows AssetType enum from base_asset.model.dart
@@ -22,7 +22,7 @@ class ImAsset {
   final int? updatedAt;
   final int durationInSeconds;
 
-  const ImAsset({
+  const PlatformAsset({
     required this.id,
     required this.name,
     required this.type,
@@ -32,7 +32,7 @@ class ImAsset {
   });
 }
 
-class ImAlbum {
+class PlatformAlbum {
   final String id;
   final String name;
   // Seconds since epoch
@@ -40,7 +40,7 @@ class ImAlbum {
   final bool isCloud;
   final int assetCount;
 
-  const ImAlbum({
+  const PlatformAlbum({
     required this.id,
     required this.name,
     this.updatedAt,
@@ -51,7 +51,7 @@ class ImAlbum {
 
 class SyncDelta {
   final bool hasChanges;
-  final List<ImAsset> updates;
+  final List<PlatformAsset> updates;
   final List<String> deletes;
   // Asset -> Album mapping
   final Map<String, List<String>> assetAlbums;
@@ -79,11 +79,11 @@ abstract class NativeSyncApi {
   List<String> getAssetIdsForAlbum(String albumId);
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<ImAlbum> getAlbums();
+  List<PlatformAlbum> getAlbums();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   int getAssetsCountSince(String albumId, int timestamp);
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<ImAsset> getAssetsForAlbum(String albumId, {int? updatedTimeCond});
+  List<PlatformAsset> getAssetsForAlbum(String albumId, {int? updatedTimeCond});
 }

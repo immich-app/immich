@@ -1,9 +1,9 @@
 import Photos
 
 struct AssetWrapper: Hashable, Equatable {
-  let asset: ImAsset
+  let asset: PlatformAsset
   
-  init(with asset: ImAsset) {
+  init(with asset: PlatformAsset) {
     self.asset = asset
   }
   
@@ -17,8 +17,8 @@ struct AssetWrapper: Hashable, Equatable {
 }
 
 extension PHAsset {
-  func toImAsset() -> ImAsset {
-    return ImAsset(
+  func toPlatformAsset() -> PlatformAsset {
+    return PlatformAsset(
       id: localIdentifier,
       name: title(),
       type: Int64(mediaType.rawValue),
@@ -81,8 +81,8 @@ class NativeSyncApiImpl: NativeSyncApi {
     return false
   }
   
-  func getAlbums() throws -> [ImAlbum] {
-    var albums: [ImAlbum] = []
+  func getAlbums() throws -> [PlatformAlbum] {
+    var albums: [PlatformAlbum] = []
     
     albumTypes.forEach { type in
       let collections = PHAssetCollection.fetchAssetCollections(with: type, subtype: .any, options: nil)
@@ -92,7 +92,7 @@ class NativeSyncApiImpl: NativeSyncApi {
         let assets = PHAsset.fetchAssets(in: album, options: options)
         let isCloud = album.assetCollectionSubtype == .albumCloudShared || album.assetCollectionSubtype == .albumMyPhotoStream
         
-        var domainAlbum = ImAlbum(
+        var domainAlbum = PlatformAlbum(
           id: album.localIdentifier,
           name: album.localizedTitle!,
           updatedAt: nil,
@@ -149,12 +149,19 @@ class NativeSyncApiImpl: NativeSyncApi {
           let asset = result.object(at: i)
           
           // Asset wrapper only uses the id for comparison. Multiple change can contain the same asset, skip duplicate changes
-          let predicate = ImAsset(id: asset.localIdentifier, name: "", type: 0, createdAt: nil, updatedAt: nil, durationInSeconds: 0)
+          let predicate = PlatformAsset(
+            id: asset.localIdentifier,
+            name: "",
+            type: 0,
+            createdAt: nil,
+            updatedAt: nil,
+            durationInSeconds: 0
+          )
           if (updatedAssets.contains(AssetWrapper(with: predicate))) {
             continue
           }
           
-          let domainAsset = AssetWrapper(with: asset.toImAsset())
+          let domainAsset = AssetWrapper(with: asset.toPlatformAsset())
           updatedAssets.insert(domainAsset)
         }
       }
@@ -165,7 +172,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   }
   
   
-  private func buildAssetAlbumsMap(assets: Array<ImAsset>) -> [String: [String]] {
+  private func buildAssetAlbumsMap(assets: Array<PlatformAsset>) -> [String: [String]] {
     guard !assets.isEmpty else {
       return [:]
     }
@@ -213,7 +220,7 @@ class NativeSyncApiImpl: NativeSyncApi {
     return Int64(assets.count)
   }
   
-  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [ImAsset] {
+  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset] {
     let collections = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil)
     guard let album = collections.firstObject else {
       return []
@@ -230,9 +237,9 @@ class NativeSyncApiImpl: NativeSyncApi {
       return []
     }
     
-    var assets: [ImAsset] = []
+    var assets: [PlatformAsset] = []
     result.enumerateObjects { (asset, _, _) in
-      assets.append(asset.toImAsset())
+      assets.append(asset.toPlatformAsset())
     }
     return assets
   }

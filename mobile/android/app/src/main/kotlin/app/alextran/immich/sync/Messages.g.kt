@@ -79,7 +79,7 @@ class FlutterError (
 ) : Throwable()
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class ImAsset (
+data class PlatformAsset (
   val id: String,
   val name: String,
   val type: Long,
@@ -89,14 +89,14 @@ data class ImAsset (
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): ImAsset {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformAsset {
       val id = pigeonVar_list[0] as String
       val name = pigeonVar_list[1] as String
       val type = pigeonVar_list[2] as Long
       val createdAt = pigeonVar_list[3] as Long?
       val updatedAt = pigeonVar_list[4] as Long?
       val durationInSeconds = pigeonVar_list[5] as Long
-      return ImAsset(id, name, type, createdAt, updatedAt, durationInSeconds)
+      return PlatformAsset(id, name, type, createdAt, updatedAt, durationInSeconds)
     }
   }
   fun toList(): List<Any?> {
@@ -110,7 +110,7 @@ data class ImAsset (
     )
   }
   override fun equals(other: Any?): Boolean {
-    if (other !is ImAsset) {
+    if (other !is PlatformAsset) {
       return false
     }
     if (this === other) {
@@ -122,7 +122,7 @@ data class ImAsset (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class ImAlbum (
+data class PlatformAlbum (
   val id: String,
   val name: String,
   val updatedAt: Long? = null,
@@ -131,13 +131,13 @@ data class ImAlbum (
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): ImAlbum {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformAlbum {
       val id = pigeonVar_list[0] as String
       val name = pigeonVar_list[1] as String
       val updatedAt = pigeonVar_list[2] as Long?
       val isCloud = pigeonVar_list[3] as Boolean
       val assetCount = pigeonVar_list[4] as Long
-      return ImAlbum(id, name, updatedAt, isCloud, assetCount)
+      return PlatformAlbum(id, name, updatedAt, isCloud, assetCount)
     }
   }
   fun toList(): List<Any?> {
@@ -150,7 +150,7 @@ data class ImAlbum (
     )
   }
   override fun equals(other: Any?): Boolean {
-    if (other !is ImAlbum) {
+    if (other !is PlatformAlbum) {
       return false
     }
     if (this === other) {
@@ -164,7 +164,7 @@ data class ImAlbum (
 /** Generated class from Pigeon that represents data sent in messages. */
 data class SyncDelta (
   val hasChanges: Boolean,
-  val updates: List<ImAsset>,
+  val updates: List<PlatformAsset>,
   val deletes: List<String>,
   val assetAlbums: Map<String, List<String>>
 )
@@ -172,7 +172,7 @@ data class SyncDelta (
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): SyncDelta {
       val hasChanges = pigeonVar_list[0] as Boolean
-      val updates = pigeonVar_list[1] as List<ImAsset>
+      val updates = pigeonVar_list[1] as List<PlatformAsset>
       val deletes = pigeonVar_list[2] as List<String>
       val assetAlbums = pigeonVar_list[3] as Map<String, List<String>>
       return SyncDelta(hasChanges, updates, deletes, assetAlbums)
@@ -202,12 +202,12 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
     return when (type) {
       129.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ImAsset.fromList(it)
+          PlatformAsset.fromList(it)
         }
       }
       130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ImAlbum.fromList(it)
+          PlatformAlbum.fromList(it)
         }
       }
       131.toByte() -> {
@@ -220,11 +220,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is ImAsset -> {
+      is PlatformAsset -> {
         stream.write(129)
         writeValue(stream, value.toList())
       }
-      is ImAlbum -> {
+      is PlatformAlbum -> {
         stream.write(130)
         writeValue(stream, value.toList())
       }
@@ -244,9 +244,9 @@ interface NativeSyncApi {
   fun checkpointSync()
   fun clearSyncCheckpoint()
   fun getAssetIdsForAlbum(albumId: String): List<String>
-  fun getAlbums(): List<ImAlbum>
+  fun getAlbums(): List<PlatformAlbum>
   fun getAssetsCountSince(albumId: String, timestamp: Long): Long
-  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<ImAsset>
+  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
 
   companion object {
     /** The codec used by NativeSyncApi. */

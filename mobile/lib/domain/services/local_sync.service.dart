@@ -106,7 +106,8 @@ class LocalSyncService {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
 
-      List<ImAlbum> deviceAlbums = List.of(await _nativeSyncApi.getAlbums());
+      List<PlatformAlbum> deviceAlbums =
+          List.of(await _nativeSyncApi.getAlbums());
       if (_platform.isIOS && _ignoreIcloudAssets) {
         deviceAlbums.removeWhere((album) => album.isCloud);
       }
@@ -138,7 +139,7 @@ class LocalSyncService {
 
       final assets = album.assetCount > 0
           ? await _nativeSyncApi.getAssetsForAlbum(album.id)
-          : <ImAsset>[];
+          : <PlatformAsset>[];
 
       await _localAlbumRepository.upsert(
         album,
@@ -343,7 +344,7 @@ class LocalSyncService {
   }
 }
 
-extension on Iterable<ImAlbum> {
+extension on Iterable<PlatformAlbum> {
   List<LocalAlbum> toLocalAlbums() {
     return map(
       (e) => LocalAlbum(
@@ -358,7 +359,7 @@ extension on Iterable<ImAlbum> {
   }
 }
 
-extension on Iterable<ImAsset> {
+extension on Iterable<PlatformAsset> {
   List<LocalAsset> toLocalAssets() {
     return map(
       (e) => LocalAsset(
