@@ -4,7 +4,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/utils/translation.dart';
-import 'package:intl/intl.dart';
 
 /// This is a simple debug widget which should be removed later on when we are
 /// more confident about background sync
