@@ -59,7 +59,7 @@ jobs:
         working-directory: ./mobile
 
       - name: Generate translation file
-        run: make translation; dart format lib/generated/codegen_loader.g.dart
+        run: make translation
         working-directory: ./mobile
 
       - name: Run Build Runner
@@ -67,7 +67,7 @@ jobs:
         working-directory: ./mobile
 
       - name: Generate platform API
-        run: make pigeon; dart format ib/platform/native_sync_api.g.dart
+        run: make pigeon
         working-directory: ./mobile
 
       - name: Find file changes
