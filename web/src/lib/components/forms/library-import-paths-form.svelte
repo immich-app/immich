@@ -2,6 +2,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { validate, type LibraryResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -10,7 +11,6 @@
   import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import LibraryImportPathForm from './library-import-path-form.svelte';
 
   interface Props {
     library: LibraryResponseDto;
@@ -126,7 +126,7 @@
   };
 
   const onEditImportPath = async (pathIndexToEdit?: number) => {
-    const result = await modalManager.show(LibraryImportPathForm, {
+    const result = await modalManager.show(LibraryImportPathModal, {
       title: pathIndexToEdit === undefined ? $t('add_import_path') : $t('edit_import_path'),
       submitText: pathIndexToEdit === undefined ? $t('add') : $t('save'),
       isEditing: pathIndexToEdit !== undefined,

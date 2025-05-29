@@ -1,9 +1,6 @@
 <script lang="ts">
-  import LibraryImportPathForm from '$lib/components/forms/library-import-path-form.svelte';
   import LibraryImportPathsForm from '$lib/components/forms/library-import-paths-form.svelte';
-  import LibraryRenameForm from '$lib/components/forms/library-rename-form.svelte';
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
-  import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -14,6 +11,9 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
+  import LibraryRenameModal from '$lib/modals/LibraryRenameModal.svelte';
+  import LibraryUserPickerModal from '$lib/modals/LibraryUserPickerModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { ByteUnit, getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -107,7 +107,7 @@
     if (createdLibrary) {
       // Open the import paths form for the newly created library
       const createdLibraryIndex = libraries.findIndex((library) => library.id === createdLibrary.id);
-      const result = await modalManager.show(LibraryImportPathForm, {
+      const result = await modalManager.show(LibraryImportPathModal, {
         title: $t('add_import_path'),
         submitText: $t('add'),
         importPath: null,
@@ -185,7 +185,7 @@
 
   const onRenameClicked = async (index: number) => {
     closeAll();
-    const result = await modalManager.show(LibraryRenameForm, {
+    const result = await modalManager.show(LibraryRenameModal, {
       library: libraries[index],
     });
     if (result) {
@@ -207,7 +207,7 @@
   };
 
   const onCreateNewLibraryClicked = async () => {
-    const result = await modalManager.show(LibraryUserPickerForm, {});
+    const result = await modalManager.show(LibraryUserPickerModal, {});
     if (result) {
       await handleCreate(result);
     }
