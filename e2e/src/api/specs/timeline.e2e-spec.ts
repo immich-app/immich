@@ -75,8 +75,8 @@ describe('/timeline', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.arrayContaining([
-          { count: 3, timeBucket: '1970-02-01T00:00:00.000Z' },
-          { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
+          { count: 3, timeBucket: '1970-02-01' },
+          { count: 1, timeBucket: '1970-01-01' },
         ]),
       );
     });
@@ -167,7 +167,9 @@ describe('/timeline', () => {
         isImage: [],
         isTrashed: [],
         livePhotoVideoId: [],
-        localDateTime: [],
+        fileCreatedAt: [],
+        fileCreatedAtTimeZone: [],
+        dayGroup: [],
         ownerId: [],
         projectionType: [],
         ratio: [],
