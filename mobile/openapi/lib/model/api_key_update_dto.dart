@@ -13,11 +13,17 @@ part of openapi.api;
 class APIKeyUpdateDto {
   /// Returns a new [APIKeyUpdateDto] instance.
   APIKeyUpdateDto({
-    required this.name,
+    this.name,
     this.permissions = const [],
   });
 
-  String name;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? name;
 
   List<Permission> permissions;
 
@@ -29,7 +35,7 @@ class APIKeyUpdateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (name.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (permissions.hashCode);
 
   @override
@@ -37,7 +43,11 @@ class APIKeyUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+    //  json[r'name'] = null;
+    }
       json[r'permissions'] = this.permissions;
     return json;
   }
@@ -51,7 +61,7 @@ class APIKeyUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return APIKeyUpdateDto(
-        name: mapValueOfType<String>(json, r'name')!,
+        name: mapValueOfType<String>(json, r'name'),
         permissions: Permission.listFromJson(json[r'permissions']),
       );
     }
@@ -100,8 +110,6 @@ class APIKeyUpdateDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'name',
-    'permissions',
   };
 }
 
