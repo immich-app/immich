@@ -273,6 +273,7 @@ class GCastService implements ICastDestinationService {
             device
           ),
         )
+        .where((device) => device.$3.extras["md"] != "Chromecast Audio")
         .toList(growable: false);
   }
 }
