@@ -111,34 +111,29 @@ export class AssetService extends BaseService {
     const { ids, description, dateTimeOriginal, dateTimeRelative, latitude, longitude, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
-    if (
-      description !== undefined ||
-      dateTimeOriginal !== undefined ||
-      dateTimeRelative !== undefined ||
-      latitude !== undefined ||
-      longitude !== undefined
-    ) {
-      await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
-      let dateTimes: { assetId: string; dateTimeOriginal: Date | null }[] | null = null;
-      if (dateTimeRelative !== undefined && dateTimeRelative != 0) {
-        dateTimes = await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative);
+    const staticValuesChanged =
+      description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined;
+
+    if (staticValuesChanged || (dateTimeRelative != undefined && dateTimeRelative !== 0)) {
+      if (staticValuesChanged) {
+        await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
       }
 
-      const entries: JobItem[] = dateTimes
-        ? dateTimes.map((entry) => ({
-            name: JobName.SIDECAR_WRITE,
-            data: {
-              id: entry.assetId,
-              description,
-              dateTimeOriginal: entry.dateTimeOriginal?.toISOString(),
-              latitude,
-              longitude,
-            },
-          }))
-        : ids.map((id) => ({
-            name: JobName.SIDECAR_WRITE,
-            data: { id, description, dateTimeOriginal, latitude, longitude },
-          }));
+      const dateTimes =
+        dateTimeRelative !== undefined && dateTimeRelative !== 0
+          ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative)
+          : null;
+
+      const entries: JobItem[] = (dateTimes ?? ids).map((entry: any) => ({
+        name: JobName.SIDECAR_WRITE,
+        data: {
+          id: entry.assetId ?? entry,
+          description,
+          dateTimeOriginal: entry.dateTimeOriginal?.toISOString() ?? dateTimeOriginal,
+          latitude,
+          longitude,
+        },
+      }));
       await this.jobRepository.queueAll(entries);
     }
 
