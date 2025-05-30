@@ -269,7 +269,9 @@ export const oauth = {
   isAutoLaunchDisabled: (location: Location) => {
     const values = ['autoLaunch=0', 'password=1', 'password=true'];
     for (const value of values) {
-      if (location.search.includes(value)) return true;
+      if (location.search.includes(value)) {
+        return true;
+      }
     }
     return false;
   },
