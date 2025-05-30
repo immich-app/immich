@@ -158,6 +158,7 @@ from
 where
   "ownerId" = $1::uuid
   and "deviceId" = $2
+  and "visibility" != $3
   and "deletedAt" is null
 
 -- AssetRepository.getLivePhotoCount

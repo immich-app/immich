@@ -210,22 +210,27 @@ export class UserRepository {
   getUserStats() {
     return this.db
       .selectFrom('users')
-      .leftJoin('assets', (join) =>
-        join
-          .onRef('assets.ownerId', '=', 'users.id')
-          .on('assets.deletedAt', 'is', null)
-          .on('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
-      )
+      .leftJoin('assets', (join) => join.onRef('assets.ownerId', '=', 'users.id').on('assets.deletedAt', 'is', null))
       .leftJoin('exif', 'exif.assetId', 'assets.id')
       .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes'])
       .select((eb) => [
         eb.fn
           .countAll<number>()
-          .filterWhere((eb) => eb('assets.type', '=', sql.lit(AssetType.IMAGE)))
+          .filterWhere((eb) =>
+            eb.and([
+              eb('assets.type', '=', sql.lit(AssetType.IMAGE)),
+              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+            ]),
+          )
           .as('photos'),
         eb.fn
           .countAll<number>()
-          .filterWhere((eb) => eb('assets.type', '=', sql.lit(AssetType.VIDEO)))
+          .filterWhere((eb) =>
+            eb.and([
+              eb('assets.type', '=', sql.lit(AssetType.VIDEO)),
+              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+            ]),
+          )
           .as('videos'),
         eb.fn
           .coalesce(eb.fn.sum<number>('exif.fileSizeInByte').filterWhere('assets.libraryId', 'is', null), eb.lit(0))
