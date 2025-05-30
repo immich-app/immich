@@ -16,7 +16,6 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import UserAvatar from '../user-avatar.svelte';
-  import { deleteUserOnboarding } from '@immich/sdk';
 
   interface Props {
     onLogout: () => void;
