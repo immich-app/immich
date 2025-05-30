@@ -116,7 +116,7 @@
       <CloseAction {onClose} />
     {/if}
   </div>
-  <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
+  <div class="flex gap-2 overflow-x-auto text-white dark" data-testid="asset-viewer-navbar-actions">
     <CastButton />
 
     {#if !asset.isTrashed && $user && !isLocked}
