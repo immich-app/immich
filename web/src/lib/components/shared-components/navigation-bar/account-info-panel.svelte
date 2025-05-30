@@ -123,12 +123,4 @@
       {$t('support_and_feedback')}
     </button>
   </div>
-
-  <Button
-    onclick={async () => {
-      onClose();
-      await deleteUserOnboarding();
-      onLogout();
-    }}>test</Button
-  >
 </div>
