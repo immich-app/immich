@@ -35,10 +35,9 @@ export class ServerController {
     return this.service.getAboutInfo();
   }
 
-  @Get('android-links')
-  @Authenticated()
-  getAndroidLinks(): ServerApkLinksDto {
-    return this.service.getAndroidLinks();
+  @Get('apk-links')
+  getApkLinks(): ServerApkLinksDto {
+    return this.service.getApkLinks();
   }
 
   @Get('storage')
