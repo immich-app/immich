@@ -102,23 +102,23 @@ with
       "assets"
       inner join "smart_search" on "assets"."id" = "smart_search"."assetId"
     where
-      "assets"."ownerId" = any ($2::uuid[])
+      "assets"."visibility" in ('archive', 'timeline')
+      and "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
-      and "assets"."visibility" != $3
-      and "assets"."type" = $4
-      and "assets"."id" != $5::uuid
+      and "assets"."type" = $3
+      and "assets"."id" != $4::uuid
       and "assets"."stackId" is null
     order by
       "distance"
     limit
-      $6
+      $5
   )
 select
   *
 from
   "cte"
 where
-  "cte"."distance" <= $7
+  "cte"."distance" <= $6
 commit
 
 -- SearchRepository.searchFaces

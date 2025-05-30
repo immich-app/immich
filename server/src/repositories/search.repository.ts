@@ -7,7 +7,7 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
-import { anyUuid, asUuid, searchAssetBuilder } from 'src/utils/database';
+import { anyUuid, asUuid, searchAssetBuilder, withDefaultVisibility } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
@@ -268,6 +268,7 @@ export class SearchRepository {
         .with('cte', (qb) =>
           qb
             .selectFrom('assets')
+            .$call(withDefaultVisibility)
             .select([
               'assets.id as assetId',
               'assets.duplicateId',
@@ -276,7 +277,6 @@ export class SearchRepository {
             .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
             .where('assets.ownerId', '=', anyUuid(userIds))
             .where('assets.deletedAt', 'is', null)
-            .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
             .where('assets.type', '=', type)
             .where('assets.id', '!=', asUuid(assetId))
             .where('assets.stackId', 'is', null)
