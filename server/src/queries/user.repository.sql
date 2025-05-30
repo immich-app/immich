@@ -290,7 +290,7 @@ order by
 select
   "users"."id" as "userId",
   "users"."name" as "userName",
-  "users"."quotaSizeInBytes" as "quotaSizeInBytes",
+  "users"."quotaSizeInBytes",
   count(*) filter (
     where
       "assets"."type" = 'IMAGE'
@@ -330,7 +330,7 @@ from
   "users"
   left join "assets" on "assets"."ownerId" = "users"."id"
   and "assets"."deletedAt" is null
-  and "assets"."visibility" in ('timeline', 'archive')
+  and "assets"."visibility" != 'hidden'
   left join "exif" on "exif"."assetId" = "assets"."id"
 group by
   "users"."id"
@@ -357,7 +357,6 @@ set
       left join "exif" on "exif"."assetId" = "assets"."id"
     where
       "assets"."libraryId" is null
-      and "assets"."visibility" in ('timeline', 'archive')
       and "assets"."ownerId" = "users"."id"
   ),
   "updatedAt" = $1

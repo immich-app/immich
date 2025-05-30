@@ -350,7 +350,7 @@ export class PersonRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getNumberOfPeople(userId: string) {
-    const zero = sql.val(0);
+    const zero = sql.lit(0);
     return this.db
       .selectFrom('person')
       .where((eb) =>

@@ -189,13 +189,13 @@ where
 
 -- PersonRepository.getNumberOfPeople
 select
-  coalesce(count(*), $1) as "total",
+  coalesce(count(*), 0) as "total",
   coalesce(
     count(*) filter (
       where
-        "isHidden" = $2
+        "isHidden" = $1
     ),
-    $3
+    0
   ) as "hidden"
 from
   "person"
@@ -217,7 +217,7 @@ where
           and "assets"."deletedAt" is null
       )
   )
-  and "person"."ownerId" = $4
+  and "person"."ownerId" = $2
 
 -- PersonRepository.refreshFaces
 with

@@ -214,10 +214,10 @@ export class UserRepository {
         join
           .onRef('assets.ownerId', '=', 'users.id')
           .on('assets.deletedAt', 'is', null)
-          .on('assets.visibility', 'in', [sql.lit(AssetVisibility.TIMELINE), sql.lit(AssetVisibility.ARCHIVE)]),
+          .on('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
       )
       .leftJoin('exif', 'exif.assetId', 'assets.id')
-      .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes as quotaSizeInBytes'])
+      .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes'])
       .select((eb) => [
         eb.fn
           .countAll<number>()
@@ -277,7 +277,6 @@ export class UserRepository {
             .leftJoin('exif', 'exif.assetId', 'assets.id')
             .select((eb) => eb.fn.coalesce(eb.fn.sum<number>('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
             .where('assets.libraryId', 'is', null)
-            .where('assets.visibility', 'in', [sql.lit(AssetVisibility.TIMELINE), sql.lit(AssetVisibility.ARCHIVE)])
             .where('assets.ownerId', '=', eb.ref('users.id')),
         updatedAt: new Date(),
       })
