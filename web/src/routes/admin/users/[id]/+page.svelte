@@ -316,6 +316,9 @@
                 <Field readOnly label={$t('tags')}>
                   <Switch checked={userPreferences.tags.enabled} color="primary" />
                 </Field>
+                <Field readOnly label={$t('gcast_enabled')}>
+                  <Switch checked={userPreferences.cast.gCastEnabled} color="primary" />
+                </Field>
               </Stack>
             </div>
           </CardBody>
