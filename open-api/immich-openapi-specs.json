@@ -8335,10 +8335,6 @@
             "type": "array"
           }
         },
-        "required": [
-          "name",
-          "permissions"
-        ],
         "type": "object"
       },
       "ActivityCreateDto": {

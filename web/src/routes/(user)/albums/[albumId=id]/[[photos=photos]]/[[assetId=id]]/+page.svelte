@@ -44,6 +44,7 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError, makeSharedLinkUrl } from '$lib/utils';
@@ -650,7 +651,9 @@
               <CircleIconButton title={$t('share')} onclick={handleShare} icon={mdiShareVariantOutline} />
             {/if}
 
-            <AlbumMap {album} />
+            {#if $featureFlags.loaded && $featureFlags.map}
+              <AlbumMap {album} />
+            {/if}
 
             {#if album.assetCount > 0}
               <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />

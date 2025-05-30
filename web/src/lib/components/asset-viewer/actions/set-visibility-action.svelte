@@ -56,6 +56,6 @@
 
 <MenuOption
   onClick={() => toggleLockedVisibility()}
-  text={isLocked ? $t('move_off_locked_folder') : $t('add_to_locked_folder')}
+  text={isLocked ? $t('move_off_locked_folder') : $t('move_to_locked_folder')}
   icon={isLocked ? mdiLockOpenVariantOutline : mdiLockOutline}
 />

@@ -415,8 +415,8 @@ export type ApiKeyCreateResponseDto = {
     secret: string;
 };
 export type ApiKeyUpdateDto = {
-    name: string;
-    permissions: Permission[];
+    name?: string;
+    permissions?: Permission[];
 };
 export type AssetBulkDeleteDto = {
     force?: boolean;
