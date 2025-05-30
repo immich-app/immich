@@ -100,13 +100,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
               i0.TableUpdate('remote_asset_entity', kind: i0.UpdateKind.delete),
             ],
           ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('remote_asset_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('exif_entity', kind: i0.UpdateKind.delete),
-            ],
-          ),
         ],
       );
   @override

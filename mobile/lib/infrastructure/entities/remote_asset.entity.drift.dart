@@ -4,13 +4,12 @@ import 'package:drift/drift.dart' as i0;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
     as i1;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as i2;
-import 'dart:typed_data' as i3;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart'
-    as i4;
-import 'package:drift/src/runtime/query_builder/query_builder.dart' as i5;
+    as i3;
+import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
-    as i6;
-import 'package:drift/internal/modular.dart' as i7;
+    as i5;
+import 'package:drift/internal/modular.dart' as i6;
 
 typedef $$RemoteAssetEntityTableCreateCompanionBuilder
     = i1.RemoteAssetEntityCompanion Function({
@@ -19,10 +18,10 @@ typedef $$RemoteAssetEntityTableCreateCompanionBuilder
   i0.Value<DateTime> createdAt,
   i0.Value<DateTime> updatedAt,
   i0.Value<int?> durationInSeconds,
-  required i3.Uint8List remoteId,
+  required String id,
   required String checksum,
   i0.Value<bool> isFavorite,
-  required i3.Uint8List ownerId,
+  required String ownerId,
   i0.Value<DateTime?> localDateTime,
   i0.Value<String?> thumbHash,
   i0.Value<DateTime?> deletedAt,
@@ -35,10 +34,10 @@ typedef $$RemoteAssetEntityTableUpdateCompanionBuilder
   i0.Value<DateTime> createdAt,
   i0.Value<DateTime> updatedAt,
   i0.Value<int?> durationInSeconds,
-  i0.Value<i3.Uint8List> remoteId,
+  i0.Value<String> id,
   i0.Value<String> checksum,
   i0.Value<bool> isFavorite,
-  i0.Value<i3.Uint8List> ownerId,
+  i0.Value<String> ownerId,
   i0.Value<DateTime?> localDateTime,
   i0.Value<String?> thumbHash,
   i0.Value<DateTime?> deletedAt,
@@ -52,25 +51,25 @@ final class $$RemoteAssetEntityTableReferences extends i0.BaseReferences<
   $$RemoteAssetEntityTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
 
-  static i6.$UserEntityTable _ownerIdTable(i0.GeneratedDatabase db) =>
-      i7.ReadDatabaseContainer(db)
-          .resultSet<i6.$UserEntityTable>('user_entity')
+  static i5.$UserEntityTable _ownerIdTable(i0.GeneratedDatabase db) =>
+      i6.ReadDatabaseContainer(db)
+          .resultSet<i5.$UserEntityTable>('user_entity')
           .createAlias(i0.$_aliasNameGenerator(
-              i7.ReadDatabaseContainer(db)
+              i6.ReadDatabaseContainer(db)
                   .resultSet<i1.$RemoteAssetEntityTable>('remote_asset_entity')
                   .ownerId,
-              i7.ReadDatabaseContainer(db)
-                  .resultSet<i6.$UserEntityTable>('user_entity')
+              i6.ReadDatabaseContainer(db)
+                  .resultSet<i5.$UserEntityTable>('user_entity')
                   .id));
 
-  i6.$$UserEntityTableProcessedTableManager get ownerId {
-    final $_column = $_itemColumn<i3.Uint8List>('owner_id')!;
+  i5.$$UserEntityTableProcessedTableManager get ownerId {
+    final $_column = $_itemColumn<String>('owner_id')!;
 
-    final manager = i6
+    final manager = i5
         .$$UserEntityTableTableManager(
             $_db,
-            i7.ReadDatabaseContainer($_db)
-                .resultSet<i6.$UserEntityTable>('user_entity'))
+            i6.ReadDatabaseContainer($_db)
+                .resultSet<i5.$UserEntityTable>('user_entity'))
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_ownerIdTable($_db));
     if (item == null) return manager;
@@ -106,8 +105,8 @@ class $$RemoteAssetEntityTableFilterComposer
       column: $table.durationInSeconds,
       builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<i3.Uint8List> get remoteId => $composableBuilder(
-      column: $table.remoteId, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<String> get checksum => $composableBuilder(
       column: $table.checksum, builder: (column) => i0.ColumnFilters(column));
@@ -130,20 +129,20 @@ class $$RemoteAssetEntityTableFilterComposer
           column: $table.visibility,
           builder: (column) => i0.ColumnWithTypeConverterFilters(column));
 
-  i6.$$UserEntityTableFilterComposer get ownerId {
-    final i6.$$UserEntityTableFilterComposer composer = $composerBuilder(
+  i5.$$UserEntityTableFilterComposer get ownerId {
+    final i5.$$UserEntityTableFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i7.ReadDatabaseContainer($db)
-            .resultSet<i6.$UserEntityTable>('user_entity'),
+        referencedTable: i6.ReadDatabaseContainer($db)
+            .resultSet<i5.$UserEntityTable>('user_entity'),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
-            i6.$$UserEntityTableFilterComposer(
+            i5.$$UserEntityTableFilterComposer(
               $db: $db,
-              $table: i7.ReadDatabaseContainer($db)
-                  .resultSet<i6.$UserEntityTable>('user_entity'),
+              $table: i6.ReadDatabaseContainer($db)
+                  .resultSet<i5.$UserEntityTable>('user_entity'),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -180,8 +179,8 @@ class $$RemoteAssetEntityTableOrderingComposer
       column: $table.durationInSeconds,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<i3.Uint8List> get remoteId => $composableBuilder(
-      column: $table.remoteId, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
 
   i0.ColumnOrderings<String> get checksum => $composableBuilder(
       column: $table.checksum, builder: (column) => i0.ColumnOrderings(column));
@@ -206,20 +205,20 @@ class $$RemoteAssetEntityTableOrderingComposer
       column: $table.visibility,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i6.$$UserEntityTableOrderingComposer get ownerId {
-    final i6.$$UserEntityTableOrderingComposer composer = $composerBuilder(
+  i5.$$UserEntityTableOrderingComposer get ownerId {
+    final i5.$$UserEntityTableOrderingComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i7.ReadDatabaseContainer($db)
-            .resultSet<i6.$UserEntityTable>('user_entity'),
+        referencedTable: i6.ReadDatabaseContainer($db)
+            .resultSet<i5.$UserEntityTable>('user_entity'),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
-            i6.$$UserEntityTableOrderingComposer(
+            i5.$$UserEntityTableOrderingComposer(
               $db: $db,
-              $table: i7.ReadDatabaseContainer($db)
-                  .resultSet<i6.$UserEntityTable>('user_entity'),
+              $table: i6.ReadDatabaseContainer($db)
+                  .resultSet<i5.$UserEntityTable>('user_entity'),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -253,8 +252,8 @@ class $$RemoteAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<int> get durationInSeconds => $composableBuilder(
       column: $table.durationInSeconds, builder: (column) => column);
 
-  i0.GeneratedColumn<i3.Uint8List> get remoteId =>
-      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+  i0.GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
 
   i0.GeneratedColumn<String> get checksum =>
       $composableBuilder(column: $table.checksum, builder: (column) => column);
@@ -275,20 +274,20 @@ class $$RemoteAssetEntityTableAnnotationComposer
       $composableBuilder(
           column: $table.visibility, builder: (column) => column);
 
-  i6.$$UserEntityTableAnnotationComposer get ownerId {
-    final i6.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
+  i5.$$UserEntityTableAnnotationComposer get ownerId {
+    final i5.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i7.ReadDatabaseContainer($db)
-            .resultSet<i6.$UserEntityTable>('user_entity'),
+        referencedTable: i6.ReadDatabaseContainer($db)
+            .resultSet<i5.$UserEntityTable>('user_entity'),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
-            i6.$$UserEntityTableAnnotationComposer(
+            i5.$$UserEntityTableAnnotationComposer(
               $db: $db,
-              $table: i7.ReadDatabaseContainer($db)
-                  .resultSet<i6.$UserEntityTable>('user_entity'),
+              $table: i6.ReadDatabaseContainer($db)
+                  .resultSet<i5.$UserEntityTable>('user_entity'),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -328,10 +327,10 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime> createdAt = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<int?> durationInSeconds = const i0.Value.absent(),
-            i0.Value<i3.Uint8List> remoteId = const i0.Value.absent(),
+            i0.Value<String> id = const i0.Value.absent(),
             i0.Value<String> checksum = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
-            i0.Value<i3.Uint8List> ownerId = const i0.Value.absent(),
+            i0.Value<String> ownerId = const i0.Value.absent(),
             i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
             i0.Value<String?> thumbHash = const i0.Value.absent(),
             i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
@@ -343,7 +342,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             createdAt: createdAt,
             updatedAt: updatedAt,
             durationInSeconds: durationInSeconds,
-            remoteId: remoteId,
+            id: id,
             checksum: checksum,
             isFavorite: isFavorite,
             ownerId: ownerId,
@@ -358,10 +357,10 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime> createdAt = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<int?> durationInSeconds = const i0.Value.absent(),
-            required i3.Uint8List remoteId,
+            required String id,
             required String checksum,
             i0.Value<bool> isFavorite = const i0.Value.absent(),
-            required i3.Uint8List ownerId,
+            required String ownerId,
             i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
             i0.Value<String?> thumbHash = const i0.Value.absent(),
             i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
@@ -373,7 +372,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             createdAt: createdAt,
             updatedAt: updatedAt,
             durationInSeconds: durationInSeconds,
-            remoteId: remoteId,
+            id: id,
             checksum: checksum,
             isFavorite: isFavorite,
             ownerId: ownerId,
@@ -444,7 +443,7 @@ i0.Index get uQRemoteAssetOwnerChecksum => i0.Index(
     'UQ_remote_asset_owner_checksum',
     'CREATE UNIQUE INDEX UQ_remote_asset_owner_checksum ON remote_asset_entity (checksum, owner_id)');
 
-class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
+class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
     with i0.TableInfo<$RemoteAssetEntityTable, i1.RemoteAssetEntityData> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
@@ -469,7 +468,7 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
       i0.GeneratedColumn<DateTime>('created_at', aliasedName, false,
           type: i0.DriftSqlType.dateTime,
           requiredDuringInsert: false,
-          defaultValue: i5.currentDateAndTime);
+          defaultValue: i4.currentDateAndTime);
   static const i0.VerificationMeta _updatedAtMeta =
       const i0.VerificationMeta('updatedAt');
   @override
@@ -477,19 +476,18 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
       i0.GeneratedColumn<DateTime>('updated_at', aliasedName, false,
           type: i0.DriftSqlType.dateTime,
           requiredDuringInsert: false,
-          defaultValue: i5.currentDateAndTime);
+          defaultValue: i4.currentDateAndTime);
   static const i0.VerificationMeta _durationInSecondsMeta =
       const i0.VerificationMeta('durationInSeconds');
   @override
   late final i0.GeneratedColumn<int> durationInSeconds =
       i0.GeneratedColumn<int>('duration_in_seconds', aliasedName, true,
           type: i0.DriftSqlType.int, requiredDuringInsert: false);
-  static const i0.VerificationMeta _remoteIdMeta =
-      const i0.VerificationMeta('remoteId');
+  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
-  late final i0.GeneratedColumn<i3.Uint8List> remoteId =
-      i0.GeneratedColumn<i3.Uint8List>('remote_id', aliasedName, false,
-          type: i0.DriftSqlType.blob, requiredDuringInsert: true);
+  late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: i0.DriftSqlType.string, requiredDuringInsert: true);
   static const i0.VerificationMeta _checksumMeta =
       const i0.VerificationMeta('checksum');
   @override
@@ -505,16 +503,16 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
       requiredDuringInsert: false,
       defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
           'CHECK ("is_favorite" IN (0, 1))'),
-      defaultValue: const i5.Constant(false));
+      defaultValue: const i4.Constant(false));
   static const i0.VerificationMeta _ownerIdMeta =
       const i0.VerificationMeta('ownerId');
   @override
-  late final i0.GeneratedColumn<i3.Uint8List> ownerId =
-      i0.GeneratedColumn<i3.Uint8List>('owner_id', aliasedName, false,
-          type: i0.DriftSqlType.blob,
-          requiredDuringInsert: true,
-          defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-              'REFERENCES user_entity (id) ON DELETE CASCADE'));
+  late final i0.GeneratedColumn<String> ownerId = i0.GeneratedColumn<String>(
+      'owner_id', aliasedName, false,
+      type: i0.DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+          'REFERENCES user_entity (id) ON DELETE CASCADE'));
   static const i0.VerificationMeta _localDateTimeMeta =
       const i0.VerificationMeta('localDateTime');
   @override
@@ -546,7 +544,7 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
         createdAt,
         updatedAt,
         durationInSeconds,
-        remoteId,
+        id,
         checksum,
         isFavorite,
         ownerId,
@@ -586,11 +584,10 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
           durationInSeconds.isAcceptableOrUnknown(
               data['duration_in_seconds']!, _durationInSecondsMeta));
     }
-    if (data.containsKey('remote_id')) {
-      context.handle(_remoteIdMeta,
-          remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta));
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
-      context.missing(_remoteIdMeta);
+      context.missing(_idMeta);
     }
     if (data.containsKey('checksum')) {
       context.handle(_checksumMeta,
@@ -628,7 +625,7 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {remoteId};
+  Set<i0.GeneratedColumn> get $primaryKey => {id};
   @override
   i1.RemoteAssetEntityData map(Map<String, dynamic> data,
       {String? tablePrefix}) {
@@ -645,14 +642,14 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
           i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       durationInSeconds: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.int, data['${effectivePrefix}duration_in_seconds']),
-      remoteId: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.blob, data['${effectivePrefix}remote_id'])!,
+      id: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
       checksum: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}checksum'])!,
       isFavorite: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
       ownerId: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.blob, data['${effectivePrefix}owner_id'])!,
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
       localDateTime: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.dateTime, data['${effectivePrefix}local_date_time']),
       thumbHash: attachedDatabase.typeMapping
@@ -688,10 +685,10 @@ class RemoteAssetEntityData extends i0.DataClass
   final DateTime createdAt;
   final DateTime updatedAt;
   final int? durationInSeconds;
-  final i3.Uint8List remoteId;
+  final String id;
   final String checksum;
   final bool isFavorite;
-  final i3.Uint8List ownerId;
+  final String ownerId;
   final DateTime? localDateTime;
   final String? thumbHash;
   final DateTime? deletedAt;
@@ -702,7 +699,7 @@ class RemoteAssetEntityData extends i0.DataClass
       required this.createdAt,
       required this.updatedAt,
       this.durationInSeconds,
-      required this.remoteId,
+      required this.id,
       required this.checksum,
       required this.isFavorite,
       required this.ownerId,
@@ -723,10 +720,10 @@ class RemoteAssetEntityData extends i0.DataClass
     if (!nullToAbsent || durationInSeconds != null) {
       map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds);
     }
-    map['remote_id'] = i0.Variable<i3.Uint8List>(remoteId);
+    map['id'] = i0.Variable<String>(id);
     map['checksum'] = i0.Variable<String>(checksum);
     map['is_favorite'] = i0.Variable<bool>(isFavorite);
-    map['owner_id'] = i0.Variable<i3.Uint8List>(ownerId);
+    map['owner_id'] = i0.Variable<String>(ownerId);
     if (!nullToAbsent || localDateTime != null) {
       map['local_date_time'] = i0.Variable<DateTime>(localDateTime);
     }
@@ -753,10 +750,10 @@ class RemoteAssetEntityData extends i0.DataClass
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
-      remoteId: serializer.fromJson<i3.Uint8List>(json['remoteId']),
+      id: serializer.fromJson<String>(json['id']),
       checksum: serializer.fromJson<String>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
-      ownerId: serializer.fromJson<i3.Uint8List>(json['ownerId']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
       localDateTime: serializer.fromJson<DateTime?>(json['localDateTime']),
       thumbHash: serializer.fromJson<String?>(json['thumbHash']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -774,10 +771,10 @@ class RemoteAssetEntityData extends i0.DataClass
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
-      'remoteId': serializer.toJson<i3.Uint8List>(remoteId),
+      'id': serializer.toJson<String>(id),
       'checksum': serializer.toJson<String>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
-      'ownerId': serializer.toJson<i3.Uint8List>(ownerId),
+      'ownerId': serializer.toJson<String>(ownerId),
       'localDateTime': serializer.toJson<DateTime?>(localDateTime),
       'thumbHash': serializer.toJson<String?>(thumbHash),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -792,10 +789,10 @@ class RemoteAssetEntityData extends i0.DataClass
           DateTime? createdAt,
           DateTime? updatedAt,
           i0.Value<int?> durationInSeconds = const i0.Value.absent(),
-          i3.Uint8List? remoteId,
+          String? id,
           String? checksum,
           bool? isFavorite,
-          i3.Uint8List? ownerId,
+          String? ownerId,
           i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
           i0.Value<String?> thumbHash = const i0.Value.absent(),
           i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
@@ -808,7 +805,7 @@ class RemoteAssetEntityData extends i0.DataClass
         durationInSeconds: durationInSeconds.present
             ? durationInSeconds.value
             : this.durationInSeconds,
-        remoteId: remoteId ?? this.remoteId,
+        id: id ?? this.id,
         checksum: checksum ?? this.checksum,
         isFavorite: isFavorite ?? this.isFavorite,
         ownerId: ownerId ?? this.ownerId,
@@ -827,7 +824,7 @@ class RemoteAssetEntityData extends i0.DataClass
       durationInSeconds: data.durationInSeconds.present
           ? data.durationInSeconds.value
           : this.durationInSeconds,
-      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      id: data.id.present ? data.id.value : this.id,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite:
           data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
@@ -850,7 +847,7 @@ class RemoteAssetEntityData extends i0.DataClass
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('durationInSeconds: $durationInSeconds, ')
-          ..write('remoteId: $remoteId, ')
+          ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('ownerId: $ownerId, ')
@@ -869,10 +866,10 @@ class RemoteAssetEntityData extends i0.DataClass
       createdAt,
       updatedAt,
       durationInSeconds,
-      i0.$driftBlobEquality.hash(remoteId),
+      id,
       checksum,
       isFavorite,
-      i0.$driftBlobEquality.hash(ownerId),
+      ownerId,
       localDateTime,
       thumbHash,
       deletedAt,
@@ -886,10 +883,10 @@ class RemoteAssetEntityData extends i0.DataClass
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.durationInSeconds == this.durationInSeconds &&
-          i0.$driftBlobEquality.equals(other.remoteId, this.remoteId) &&
+          other.id == this.id &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
-          i0.$driftBlobEquality.equals(other.ownerId, this.ownerId) &&
+          other.ownerId == this.ownerId &&
           other.localDateTime == this.localDateTime &&
           other.thumbHash == this.thumbHash &&
           other.deletedAt == this.deletedAt &&
@@ -903,10 +900,10 @@ class RemoteAssetEntityCompanion
   final i0.Value<DateTime> createdAt;
   final i0.Value<DateTime> updatedAt;
   final i0.Value<int?> durationInSeconds;
-  final i0.Value<i3.Uint8List> remoteId;
+  final i0.Value<String> id;
   final i0.Value<String> checksum;
   final i0.Value<bool> isFavorite;
-  final i0.Value<i3.Uint8List> ownerId;
+  final i0.Value<String> ownerId;
   final i0.Value<DateTime?> localDateTime;
   final i0.Value<String?> thumbHash;
   final i0.Value<DateTime?> deletedAt;
@@ -917,7 +914,7 @@ class RemoteAssetEntityCompanion
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     this.durationInSeconds = const i0.Value.absent(),
-    this.remoteId = const i0.Value.absent(),
+    this.id = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.ownerId = const i0.Value.absent(),
@@ -932,17 +929,17 @@ class RemoteAssetEntityCompanion
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     this.durationInSeconds = const i0.Value.absent(),
-    required i3.Uint8List remoteId,
+    required String id,
     required String checksum,
     this.isFavorite = const i0.Value.absent(),
-    required i3.Uint8List ownerId,
+    required String ownerId,
     this.localDateTime = const i0.Value.absent(),
     this.thumbHash = const i0.Value.absent(),
     this.deletedAt = const i0.Value.absent(),
     required i2.AssetVisibility visibility,
   })  : name = i0.Value(name),
         type = i0.Value(type),
-        remoteId = i0.Value(remoteId),
+        id = i0.Value(id),
         checksum = i0.Value(checksum),
         ownerId = i0.Value(ownerId),
         visibility = i0.Value(visibility);
@@ -952,10 +949,10 @@ class RemoteAssetEntityCompanion
     i0.Expression<DateTime>? createdAt,
     i0.Expression<DateTime>? updatedAt,
     i0.Expression<int>? durationInSeconds,
-    i0.Expression<i3.Uint8List>? remoteId,
+    i0.Expression<String>? id,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
-    i0.Expression<i3.Uint8List>? ownerId,
+    i0.Expression<String>? ownerId,
     i0.Expression<DateTime>? localDateTime,
     i0.Expression<String>? thumbHash,
     i0.Expression<DateTime>? deletedAt,
@@ -967,7 +964,7 @@ class RemoteAssetEntityCompanion
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
-      if (remoteId != null) 'remote_id': remoteId,
+      if (id != null) 'id': id,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (ownerId != null) 'owner_id': ownerId,
@@ -984,10 +981,10 @@ class RemoteAssetEntityCompanion
       i0.Value<DateTime>? createdAt,
       i0.Value<DateTime>? updatedAt,
       i0.Value<int?>? durationInSeconds,
-      i0.Value<i3.Uint8List>? remoteId,
+      i0.Value<String>? id,
       i0.Value<String>? checksum,
       i0.Value<bool>? isFavorite,
-      i0.Value<i3.Uint8List>? ownerId,
+      i0.Value<String>? ownerId,
       i0.Value<DateTime?>? localDateTime,
       i0.Value<String?>? thumbHash,
       i0.Value<DateTime?>? deletedAt,
@@ -998,7 +995,7 @@ class RemoteAssetEntityCompanion
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
-      remoteId: remoteId ?? this.remoteId,
+      id: id ?? this.id,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       ownerId: ownerId ?? this.ownerId,
@@ -1028,8 +1025,8 @@ class RemoteAssetEntityCompanion
     if (durationInSeconds.present) {
       map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds.value);
     }
-    if (remoteId.present) {
-      map['remote_id'] = i0.Variable<i3.Uint8List>(remoteId.value);
+    if (id.present) {
+      map['id'] = i0.Variable<String>(id.value);
     }
     if (checksum.present) {
       map['checksum'] = i0.Variable<String>(checksum.value);
@@ -1038,7 +1035,7 @@ class RemoteAssetEntityCompanion
       map['is_favorite'] = i0.Variable<bool>(isFavorite.value);
     }
     if (ownerId.present) {
-      map['owner_id'] = i0.Variable<i3.Uint8List>(ownerId.value);
+      map['owner_id'] = i0.Variable<String>(ownerId.value);
     }
     if (localDateTime.present) {
       map['local_date_time'] = i0.Variable<DateTime>(localDateTime.value);
@@ -1065,7 +1062,7 @@ class RemoteAssetEntityCompanion
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('durationInSeconds: $durationInSeconds, ')
-          ..write('remoteId: $remoteId, ')
+          ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('ownerId: $ownerId, ')
