@@ -159,7 +159,6 @@ where
   "ownerId" = $1::uuid
   and "deviceId" = $2
   and "deletedAt" is null
-  and "assets"."visibility" in ('archive', 'timeline')
 
 -- AssetRepository.getLivePhotoCount
 select

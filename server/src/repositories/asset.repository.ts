@@ -348,7 +348,6 @@ export class AssetRepository {
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
       .where('deletedAt', 'is', null)
-      .$call(withDefaultVisibility)
       .execute();
 
     return items.map((asset) => asset.deviceAssetId);
