@@ -48,8 +48,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
         localAlbumAssetEntity,
         remoteAssetEntity,
         exifEntity,
-        i5.localAssetChecksum,
-        i7.remoteAssetChecksum
+        i5.idxLocalAssetChecksum,
+        i7.uQRemoteAssetOwnerChecksum
       ];
   @override
   i0.StreamQueryUpdateRules get streamUpdateRules =>

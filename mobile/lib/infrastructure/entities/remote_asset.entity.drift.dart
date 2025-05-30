@@ -440,8 +440,9 @@ typedef $$RemoteAssetEntityTableProcessedTableManager
         (i1.RemoteAssetEntityData, i1.$$RemoteAssetEntityTableReferences),
         i1.RemoteAssetEntityData,
         i0.PrefetchHooks Function({bool ownerId})>;
-i0.Index get remoteAssetChecksum => i0.Index('remote_asset_checksum',
-    'CREATE INDEX remote_asset_checksum ON remote_asset_entity (checksum)');
+i0.Index get uQRemoteAssetOwnerChecksum => i0.Index(
+    'UQ_remote_asset_owner_checksum',
+    'CREATE UNIQUE INDEX UQ_remote_asset_owner_checksum ON remote_asset_entity (checksum, owner_id)');
 
 class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
     with i0.TableInfo<$RemoteAssetEntityTable, i1.RemoteAssetEntityData> {
@@ -494,9 +495,7 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
   @override
   late final i0.GeneratedColumn<String> checksum = i0.GeneratedColumn<String>(
       'checksum', aliasedName, false,
-      type: i0.DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: i0.GeneratedColumn.constraintIsAlways('UNIQUE'));
+      type: i0.DriftSqlType.string, requiredDuringInsert: true);
   static const i0.VerificationMeta _isFavoriteMeta =
       const i0.VerificationMeta('isFavorite');
   @override

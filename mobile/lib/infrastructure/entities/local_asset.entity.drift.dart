@@ -231,8 +231,8 @@ typedef $$LocalAssetEntityTableProcessedTableManager = i0.ProcessedTableManager<
     ),
     i1.LocalAssetEntityData,
     i0.PrefetchHooks Function()>;
-i0.Index get localAssetChecksum => i0.Index('local_asset_checksum',
-    'CREATE INDEX local_asset_checksum ON local_asset_entity (checksum)');
+i0.Index get idxLocalAssetChecksum => i0.Index('idx_local_asset_checksum',
+    'CREATE INDEX idx_local_asset_checksum ON local_asset_entity (checksum)');
 
 class $LocalAssetEntityTable extends i3.LocalAssetEntity
     with i0.TableInfo<$LocalAssetEntityTable, i1.LocalAssetEntityData> {
