@@ -26,6 +26,7 @@ typedef $$RemoteAssetEntityTableCreateCompanionBuilder
   i0.Value<DateTime?> localDateTime,
   i0.Value<String?> thumbHash,
   i0.Value<DateTime?> deletedAt,
+  required i2.AssetVisibility visibility,
 });
 typedef $$RemoteAssetEntityTableUpdateCompanionBuilder
     = i1.RemoteAssetEntityCompanion Function({
@@ -41,6 +42,7 @@ typedef $$RemoteAssetEntityTableUpdateCompanionBuilder
   i0.Value<DateTime?> localDateTime,
   i0.Value<String?> thumbHash,
   i0.Value<DateTime?> deletedAt,
+  i0.Value<i2.AssetVisibility> visibility,
 });
 
 final class $$RemoteAssetEntityTableReferences extends i0.BaseReferences<
@@ -123,6 +125,11 @@ class $$RemoteAssetEntityTableFilterComposer
   i0.ColumnFilters<DateTime> get deletedAt => $composableBuilder(
       column: $table.deletedAt, builder: (column) => i0.ColumnFilters(column));
 
+  i0.ColumnWithTypeConverterFilters<i2.AssetVisibility, i2.AssetVisibility, int>
+      get visibility => $composableBuilder(
+          column: $table.visibility,
+          builder: (column) => i0.ColumnWithTypeConverterFilters(column));
+
   i6.$$UserEntityTableFilterComposer get ownerId {
     final i6.$$UserEntityTableFilterComposer composer = $composerBuilder(
         composer: this,
@@ -195,6 +202,10 @@ class $$RemoteAssetEntityTableOrderingComposer
       column: $table.deletedAt,
       builder: (column) => i0.ColumnOrderings(column));
 
+  i0.ColumnOrderings<int> get visibility => $composableBuilder(
+      column: $table.visibility,
+      builder: (column) => i0.ColumnOrderings(column));
+
   i6.$$UserEntityTableOrderingComposer get ownerId {
     final i6.$$UserEntityTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -260,6 +271,10 @@ class $$RemoteAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
+  i0.GeneratedColumnWithTypeConverter<i2.AssetVisibility, int> get visibility =>
+      $composableBuilder(
+          column: $table.visibility, builder: (column) => column);
+
   i6.$$UserEntityTableAnnotationComposer get ownerId {
     final i6.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -320,6 +335,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
             i0.Value<String?> thumbHash = const i0.Value.absent(),
             i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+            i0.Value<i2.AssetVisibility> visibility = const i0.Value.absent(),
           }) =>
               i1.RemoteAssetEntityCompanion(
             name: name,
@@ -334,6 +350,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             localDateTime: localDateTime,
             thumbHash: thumbHash,
             deletedAt: deletedAt,
+            visibility: visibility,
           ),
           createCompanionCallback: ({
             required String name,
@@ -348,6 +365,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
             i0.Value<String?> thumbHash = const i0.Value.absent(),
             i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+            required i2.AssetVisibility visibility,
           }) =>
               i1.RemoteAssetEntityCompanion.insert(
             name: name,
@@ -362,6 +380,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             localDateTime: localDateTime,
             thumbHash: thumbHash,
             deletedAt: deletedAt,
+            visibility: visibility,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -516,6 +535,12 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
       i0.GeneratedColumn<DateTime>('deleted_at', aliasedName, true,
           type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
+  late final i0.GeneratedColumnWithTypeConverter<i2.AssetVisibility, int>
+      visibility = i0.GeneratedColumn<int>('visibility', aliasedName, false,
+              type: i0.DriftSqlType.int, requiredDuringInsert: true)
+          .withConverter<i2.AssetVisibility>(
+              i1.$RemoteAssetEntityTable.$convertervisibility);
+  @override
   List<i0.GeneratedColumn> get $columns => [
         name,
         type,
@@ -528,7 +553,8 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
         ownerId,
         localDateTime,
         thumbHash,
-        deletedAt
+        deletedAt,
+        visibility
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -634,6 +660,9 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
           .read(i0.DriftSqlType.string, data['${effectivePrefix}thumb_hash']),
       deletedAt: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      visibility: i1.$RemoteAssetEntityTable.$convertervisibility.fromSql(
+          attachedDatabase.typeMapping.read(
+              i0.DriftSqlType.int, data['${effectivePrefix}visibility'])!),
     );
   }
 
@@ -644,6 +673,9 @@ class $RemoteAssetEntityTable extends i4.RemoteAssetEntity
 
   static i0.JsonTypeConverter2<i2.AssetType, int, int> $convertertype =
       const i0.EnumIndexConverter<i2.AssetType>(i2.AssetType.values);
+  static i0.JsonTypeConverter2<i2.AssetVisibility, int, int>
+      $convertervisibility = const i0.EnumIndexConverter<i2.AssetVisibility>(
+          i2.AssetVisibility.values);
   @override
   bool get withoutRowId => true;
   @override
@@ -664,6 +696,7 @@ class RemoteAssetEntityData extends i0.DataClass
   final DateTime? localDateTime;
   final String? thumbHash;
   final DateTime? deletedAt;
+  final i2.AssetVisibility visibility;
   const RemoteAssetEntityData(
       {required this.name,
       required this.type,
@@ -676,7 +709,8 @@ class RemoteAssetEntityData extends i0.DataClass
       required this.ownerId,
       this.localDateTime,
       this.thumbHash,
-      this.deletedAt});
+      this.deletedAt,
+      required this.visibility});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -703,6 +737,10 @@ class RemoteAssetEntityData extends i0.DataClass
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = i0.Variable<DateTime>(deletedAt);
     }
+    {
+      map['visibility'] = i0.Variable<int>(
+          i1.$RemoteAssetEntityTable.$convertervisibility.toSql(visibility));
+    }
     return map;
   }
 
@@ -723,6 +761,8 @@ class RemoteAssetEntityData extends i0.DataClass
       localDateTime: serializer.fromJson<DateTime?>(json['localDateTime']),
       thumbHash: serializer.fromJson<String?>(json['thumbHash']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      visibility: i1.$RemoteAssetEntityTable.$convertervisibility
+          .fromJson(serializer.fromJson<int>(json['visibility'])),
     );
   }
   @override
@@ -742,6 +782,8 @@ class RemoteAssetEntityData extends i0.DataClass
       'localDateTime': serializer.toJson<DateTime?>(localDateTime),
       'thumbHash': serializer.toJson<String?>(thumbHash),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'visibility': serializer.toJson<int>(
+          i1.$RemoteAssetEntityTable.$convertervisibility.toJson(visibility)),
     };
   }
 
@@ -757,7 +799,8 @@ class RemoteAssetEntityData extends i0.DataClass
           i3.Uint8List? ownerId,
           i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
           i0.Value<String?> thumbHash = const i0.Value.absent(),
-          i0.Value<DateTime?> deletedAt = const i0.Value.absent()}) =>
+          i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+          i2.AssetVisibility? visibility}) =>
       i1.RemoteAssetEntityData(
         name: name ?? this.name,
         type: type ?? this.type,
@@ -774,6 +817,7 @@ class RemoteAssetEntityData extends i0.DataClass
             localDateTime.present ? localDateTime.value : this.localDateTime,
         thumbHash: thumbHash.present ? thumbHash.value : this.thumbHash,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+        visibility: visibility ?? this.visibility,
       );
   RemoteAssetEntityData copyWithCompanion(i1.RemoteAssetEntityCompanion data) {
     return RemoteAssetEntityData(
@@ -794,6 +838,8 @@ class RemoteAssetEntityData extends i0.DataClass
           : this.localDateTime,
       thumbHash: data.thumbHash.present ? data.thumbHash.value : this.thumbHash,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      visibility:
+          data.visibility.present ? data.visibility.value : this.visibility,
     );
   }
 
@@ -811,7 +857,8 @@ class RemoteAssetEntityData extends i0.DataClass
           ..write('ownerId: $ownerId, ')
           ..write('localDateTime: $localDateTime, ')
           ..write('thumbHash: $thumbHash, ')
-          ..write('deletedAt: $deletedAt')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('visibility: $visibility')
           ..write(')'))
         .toString();
   }
@@ -829,7 +876,8 @@ class RemoteAssetEntityData extends i0.DataClass
       i0.$driftBlobEquality.hash(ownerId),
       localDateTime,
       thumbHash,
-      deletedAt);
+      deletedAt,
+      visibility);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -845,7 +893,8 @@ class RemoteAssetEntityData extends i0.DataClass
           i0.$driftBlobEquality.equals(other.ownerId, this.ownerId) &&
           other.localDateTime == this.localDateTime &&
           other.thumbHash == this.thumbHash &&
-          other.deletedAt == this.deletedAt);
+          other.deletedAt == this.deletedAt &&
+          other.visibility == this.visibility);
 }
 
 class RemoteAssetEntityCompanion
@@ -862,6 +911,7 @@ class RemoteAssetEntityCompanion
   final i0.Value<DateTime?> localDateTime;
   final i0.Value<String?> thumbHash;
   final i0.Value<DateTime?> deletedAt;
+  final i0.Value<i2.AssetVisibility> visibility;
   const RemoteAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -875,6 +925,7 @@ class RemoteAssetEntityCompanion
     this.localDateTime = const i0.Value.absent(),
     this.thumbHash = const i0.Value.absent(),
     this.deletedAt = const i0.Value.absent(),
+    this.visibility = const i0.Value.absent(),
   });
   RemoteAssetEntityCompanion.insert({
     required String name,
@@ -889,11 +940,13 @@ class RemoteAssetEntityCompanion
     this.localDateTime = const i0.Value.absent(),
     this.thumbHash = const i0.Value.absent(),
     this.deletedAt = const i0.Value.absent(),
+    required i2.AssetVisibility visibility,
   })  : name = i0.Value(name),
         type = i0.Value(type),
         remoteId = i0.Value(remoteId),
         checksum = i0.Value(checksum),
-        ownerId = i0.Value(ownerId);
+        ownerId = i0.Value(ownerId),
+        visibility = i0.Value(visibility);
   static i0.Insertable<i1.RemoteAssetEntityData> custom({
     i0.Expression<String>? name,
     i0.Expression<int>? type,
@@ -907,6 +960,7 @@ class RemoteAssetEntityCompanion
     i0.Expression<DateTime>? localDateTime,
     i0.Expression<String>? thumbHash,
     i0.Expression<DateTime>? deletedAt,
+    i0.Expression<int>? visibility,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -921,6 +975,7 @@ class RemoteAssetEntityCompanion
       if (localDateTime != null) 'local_date_time': localDateTime,
       if (thumbHash != null) 'thumb_hash': thumbHash,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (visibility != null) 'visibility': visibility,
     });
   }
 
@@ -936,7 +991,8 @@ class RemoteAssetEntityCompanion
       i0.Value<i3.Uint8List>? ownerId,
       i0.Value<DateTime?>? localDateTime,
       i0.Value<String?>? thumbHash,
-      i0.Value<DateTime?>? deletedAt}) {
+      i0.Value<DateTime?>? deletedAt,
+      i0.Value<i2.AssetVisibility>? visibility}) {
     return i1.RemoteAssetEntityCompanion(
       name: name ?? this.name,
       type: type ?? this.type,
@@ -950,6 +1006,7 @@ class RemoteAssetEntityCompanion
       localDateTime: localDateTime ?? this.localDateTime,
       thumbHash: thumbHash ?? this.thumbHash,
       deletedAt: deletedAt ?? this.deletedAt,
+      visibility: visibility ?? this.visibility,
     );
   }
 
@@ -993,6 +1050,11 @@ class RemoteAssetEntityCompanion
     if (deletedAt.present) {
       map['deleted_at'] = i0.Variable<DateTime>(deletedAt.value);
     }
+    if (visibility.present) {
+      map['visibility'] = i0.Variable<int>(i1
+          .$RemoteAssetEntityTable.$convertervisibility
+          .toSql(visibility.value));
+    }
     return map;
   }
 
@@ -1010,7 +1072,8 @@ class RemoteAssetEntityCompanion
           ..write('ownerId: $ownerId, ')
           ..write('localDateTime: $localDateTime, ')
           ..write('thumbHash: $thumbHash, ')
-          ..write('deletedAt: $deletedAt')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('visibility: $visibility')
           ..write(')'))
         .toString();
   }

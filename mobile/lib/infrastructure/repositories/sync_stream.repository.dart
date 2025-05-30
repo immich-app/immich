@@ -8,7 +8,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
+import 'package:openapi/api.dart' hide AssetVisibility;
 
 class DriftSyncStreamRepository extends DriftDatabaseRepository
     implements ISyncStreamRepository {
@@ -165,8 +165,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
       _db.batch((batch) {
         for (final asset in data) {
           final companion = RemoteAssetEntityCompanion(
-            // TODO: Update name when originalFileName is available
-            name: Value(asset.id),
+            name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
             createdAt: Value.absentIfNull(asset.fileCreatedAt),
             updatedAt: Value.absentIfNull(asset.fileModifiedAt),
@@ -177,6 +176,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
             localDateTime: Value(asset.localDateTime),
             thumbHash: Value(asset.thumbhash),
             deletedAt: Value(asset.deletedAt),
+            visibility: Value(asset.visibility.toAssetVisibility()),
           );
 
           batch.insert(
@@ -241,5 +241,15 @@ extension on SyncAssetV1TypeEnum {
         SyncAssetV1TypeEnum.AUDIO => AssetType.audio,
         SyncAssetV1TypeEnum.OTHER => AssetType.other,
         _ => throw Exception('Unknown SyncAssetV1TypeEnum value: $this'),
+      };
+}
+
+extension on SyncAssetV1VisibilityEnum {
+  AssetVisibility toAssetVisibility() => switch (this) {
+        SyncAssetV1VisibilityEnum.timeline => AssetVisibility.timeline,
+        SyncAssetV1VisibilityEnum.hidden => AssetVisibility.hidden,
+        SyncAssetV1VisibilityEnum.archive => AssetVisibility.archive,
+        SyncAssetV1VisibilityEnum.locked => AssetVisibility.locked,
+        _ => throw Exception('Unknown SyncAssetV1VisibilityEnum value: $this'),
       };
 }
