@@ -8,7 +8,7 @@ class RemoteAlbumEntity extends Table
     with DriftDefaultsMixin {
   const RemoteAlbumEntity();
 
-  BlobColumn get remoteId => blob()();
+  TextColumn get id => text()();
 
   TextColumn get name => text()();
 
@@ -16,16 +16,16 @@ class RemoteAlbumEntity extends Table
 
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
-  BlobColumn get ownerId =>
-      blob().references(UserEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get ownerId =>
+      text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
-  BlobColumn get thumbnailAssetId =>
-      blob().references(RemoteAssetEntity, #remoteId, onDelete: KeyAction.setNull)();
+  TextColumn get thumbnailAssetId =>
+      text().references(RemoteAssetEntity, #id, onDelete: KeyAction.setNull)();
 
   BoolColumn get isActivityEnabled => boolean().withDefault(const Constant(true))();
 
   IntColumn get order => intEnum<AssetOrder>()();
 
   @override
-  Set<Column> get primaryKey => {remoteId};
+  Set<Column> get primaryKey => {id};
 }

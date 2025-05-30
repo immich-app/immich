@@ -7,10 +7,10 @@ class RemoteAlbumAssetEntity extends Table with DriftDefaultsMixin {
   const RemoteAlbumAssetEntity();
 
   TextColumn get assetId =>
-      text().references(RemoteAssetEntity, #remoteId, onDelete: KeyAction.cascade)();
+      text().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
 
   TextColumn get albumId =>
-      text().references(RemoteAlbumEntity, #remoteId, onDelete: KeyAction.cascade)();
+      text().references(RemoteAlbumEntity, #id, onDelete: KeyAction.cascade)();
 
   @override
   Set<Column> get primaryKey => {assetId, albumId};

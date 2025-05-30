@@ -5,7 +5,11 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.
     as i1;
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart'
     as i2;
-import 'dart:typed_data' as i3;
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
+    as i3;
+import 'package:drift/internal/modular.dart' as i4;
+import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart'
+    as i5;
 
 typedef $$RemoteAlbumAssetEntityTableCreateCompanionBuilder
     = i1.RemoteAlbumAssetEntityCompanion Function({
@@ -18,6 +22,68 @@ typedef $$RemoteAlbumAssetEntityTableUpdateCompanionBuilder
   i0.Value<String> albumId,
 });
 
+final class $$RemoteAlbumAssetEntityTableReferences extends i0.BaseReferences<
+    i0.GeneratedDatabase,
+    i1.$RemoteAlbumAssetEntityTable,
+    i1.RemoteAlbumAssetEntityData> {
+  $$RemoteAlbumAssetEntityTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static i3.$RemoteAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
+      i4.ReadDatabaseContainer(db)
+          .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
+          .createAlias(i0.$_aliasNameGenerator(
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i1.$RemoteAlbumAssetEntityTable>(
+                      'remote_album_asset_entity')
+                  .assetId,
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
+                  .id));
+
+  i3.$$RemoteAssetEntityTableProcessedTableManager get assetId {
+    final $_column = $_itemColumn<String>('asset_id')!;
+
+    final manager = i3
+        .$$RemoteAssetEntityTableTableManager(
+            $_db,
+            i4.ReadDatabaseContainer($_db)
+                .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'))
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_assetIdTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static i5.$RemoteAlbumEntityTable _albumIdTable(i0.GeneratedDatabase db) =>
+      i4.ReadDatabaseContainer(db)
+          .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity')
+          .createAlias(i0.$_aliasNameGenerator(
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i1.$RemoteAlbumAssetEntityTable>(
+                      'remote_album_asset_entity')
+                  .albumId,
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity')
+                  .id));
+
+  i5.$$RemoteAlbumEntityTableProcessedTableManager get albumId {
+    final $_column = $_itemColumn<String>('album_id')!;
+
+    final manager = i5
+        .$$RemoteAlbumEntityTableTableManager(
+            $_db,
+            i4.ReadDatabaseContainer($_db)
+                .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'))
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_albumIdTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
 class $$RemoteAlbumAssetEntityTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteAlbumAssetEntityTable> {
   $$RemoteAlbumAssetEntityTableFilterComposer({
@@ -27,6 +93,49 @@ class $$RemoteAlbumAssetEntityTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  i3.$$RemoteAssetEntityTableFilterComposer get assetId {
+    final i3.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.assetId,
+        referencedTable: i4.ReadDatabaseContainer($db)
+            .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i3.$$RemoteAssetEntityTableFilterComposer(
+              $db: $db,
+              $table: i4.ReadDatabaseContainer($db)
+                  .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  i5.$$RemoteAlbumEntityTableFilterComposer get albumId {
+    final i5.$$RemoteAlbumEntityTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.albumId,
+        referencedTable: i4.ReadDatabaseContainer($db)
+            .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i5.$$RemoteAlbumEntityTableFilterComposer(
+              $db: $db,
+              $table: i4.ReadDatabaseContainer($db)
+                  .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
 class $$RemoteAlbumAssetEntityTableOrderingComposer
@@ -38,6 +147,53 @@ class $$RemoteAlbumAssetEntityTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  i3.$$RemoteAssetEntityTableOrderingComposer get assetId {
+    final i3.$$RemoteAssetEntityTableOrderingComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.assetId,
+            referencedTable: i4.ReadDatabaseContainer($db)
+                .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                i3.$$RemoteAssetEntityTableOrderingComposer(
+                  $db: $db,
+                  $table: i4.ReadDatabaseContainer($db)
+                      .resultSet<i3.$RemoteAssetEntityTable>(
+                          'remote_asset_entity'),
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
+
+  i5.$$RemoteAlbumEntityTableOrderingComposer get albumId {
+    final i5.$$RemoteAlbumEntityTableOrderingComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.albumId,
+            referencedTable: i4.ReadDatabaseContainer($db)
+                .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                i5.$$RemoteAlbumEntityTableOrderingComposer(
+                  $db: $db,
+                  $table: i4.ReadDatabaseContainer($db)
+                      .resultSet<i5.$RemoteAlbumEntityTable>(
+                          'remote_album_entity'),
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
 }
 
 class $$RemoteAlbumAssetEntityTableAnnotationComposer
@@ -49,6 +205,53 @@ class $$RemoteAlbumAssetEntityTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  i3.$$RemoteAssetEntityTableAnnotationComposer get assetId {
+    final i3.$$RemoteAssetEntityTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.assetId,
+            referencedTable: i4.ReadDatabaseContainer($db)
+                .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                i3.$$RemoteAssetEntityTableAnnotationComposer(
+                  $db: $db,
+                  $table: i4.ReadDatabaseContainer($db)
+                      .resultSet<i3.$RemoteAssetEntityTable>(
+                          'remote_asset_entity'),
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
+
+  i5.$$RemoteAlbumEntityTableAnnotationComposer get albumId {
+    final i5.$$RemoteAlbumEntityTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.albumId,
+            referencedTable: i4.ReadDatabaseContainer($db)
+                .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                i5.$$RemoteAlbumEntityTableAnnotationComposer(
+                  $db: $db,
+                  $table: i4.ReadDatabaseContainer($db)
+                      .resultSet<i5.$RemoteAlbumEntityTable>(
+                          'remote_album_entity'),
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
 }
 
 class $$RemoteAlbumAssetEntityTableTableManager extends i0.RootTableManager<
@@ -60,13 +263,9 @@ class $$RemoteAlbumAssetEntityTableTableManager extends i0.RootTableManager<
     i1.$$RemoteAlbumAssetEntityTableAnnotationComposer,
     $$RemoteAlbumAssetEntityTableCreateCompanionBuilder,
     $$RemoteAlbumAssetEntityTableUpdateCompanionBuilder,
-    (
-      i1.RemoteAlbumAssetEntityData,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$RemoteAlbumAssetEntityTable,
-          i1.RemoteAlbumAssetEntityData>
-    ),
+    (i1.RemoteAlbumAssetEntityData, i1.$$RemoteAlbumAssetEntityTableReferences),
     i1.RemoteAlbumAssetEntityData,
-    i0.PrefetchHooks Function()> {
+    i0.PrefetchHooks Function({bool assetId, bool albumId})> {
   $$RemoteAlbumAssetEntityTableTableManager(
       i0.GeneratedDatabase db, i1.$RemoteAlbumAssetEntityTable table)
       : super(i0.TableManagerState(
@@ -98,9 +297,58 @@ class $$RemoteAlbumAssetEntityTableTableManager extends i0.RootTableManager<
             albumId: albumId,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable(table),
+                    i1.$$RemoteAlbumAssetEntityTableReferences(db, table, e)
+                  ))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({assetId = false, albumId = false}) {
+            return i0.PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends i0.TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (assetId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.assetId,
+                    referencedTable: i1.$$RemoteAlbumAssetEntityTableReferences
+                        ._assetIdTable(db),
+                    referencedColumn: i1.$$RemoteAlbumAssetEntityTableReferences
+                        ._assetIdTable(db)
+                        .id,
+                  ) as T;
+                }
+                if (albumId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.albumId,
+                    referencedTable: i1.$$RemoteAlbumAssetEntityTableReferences
+                        ._albumIdTable(db),
+                    referencedColumn: i1.$$RemoteAlbumAssetEntityTableReferences
+                        ._albumIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ));
 }
 
@@ -116,11 +364,10 @@ typedef $$RemoteAlbumAssetEntityTableProcessedTableManager
         $$RemoteAlbumAssetEntityTableUpdateCompanionBuilder,
         (
           i1.RemoteAlbumAssetEntityData,
-          i0.BaseReferences<i0.GeneratedDatabase,
-              i1.$RemoteAlbumAssetEntityTable, i1.RemoteAlbumAssetEntityData>
+          i1.$$RemoteAlbumAssetEntityTableReferences
         ),
         i1.RemoteAlbumAssetEntityData,
-        i0.PrefetchHooks Function()>;
+        i0.PrefetchHooks Function({bool assetId, bool albumId})>;
 
 class $RemoteAlbumAssetEntityTable extends i2.RemoteAlbumAssetEntity
     with
@@ -138,7 +385,7 @@ class $RemoteAlbumAssetEntityTable extends i2.RemoteAlbumAssetEntity
       type: i0.DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'REFERENCES remote_asset_entity (remote_id) ON DELETE CASCADE'));
+          'REFERENCES remote_asset_entity (id) ON DELETE CASCADE'));
   static const i0.VerificationMeta _albumIdMeta =
       const i0.VerificationMeta('albumId');
   @override
@@ -147,7 +394,7 @@ class $RemoteAlbumAssetEntityTable extends i2.RemoteAlbumAssetEntity
       type: i0.DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'REFERENCES remote_album_entity (remote_id) ON DELETE CASCADE'));
+          'REFERENCES remote_album_entity (id) ON DELETE CASCADE'));
   @override
   List<i0.GeneratedColumn> get $columns => [assetId, albumId];
   @override
