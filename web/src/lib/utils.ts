@@ -269,17 +269,13 @@ export const oauth = {
   isAutoLaunchDisabled: (location: Location) => {
     const values = ['autoLaunch=0', 'password=1', 'password=true'];
     for (const value of values) {
-      if (location.search.includes(value)) {
-        return true;
-      }
+      if (location.search.includes(value)) return true;
     }
     return false;
   },
   isAutoLaunchEnabled: (location: Location) => {
     const value = 'autoLaunch=1';
-    if (location.search.includes(value)) {
-      return true;
-    }
+    if (location.search.includes(value)) return true;
     return false;
   },
   authorize: async (location: Location) => {
