@@ -188,7 +188,7 @@ export class UserService extends BaseService {
     )?.value;
 
     if (!onboardingData) {
-      return { isOnboarded: false }; // TODO
+      return { isOnboarded: false };
     }
 
     return {
