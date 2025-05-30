@@ -5,6 +5,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 class AlbumThumbnailCard extends ConsumerWidget {
@@ -74,10 +75,7 @@ class AlbumThumbnailCard extends ConsumerWidget {
               ),
               children: [
                 TextSpan(
-                  text: album.assetCount == 1
-                      ? 'album_thumbnail_card_item'.tr()
-                      : 'album_thumbnail_card_items'
-                          .tr(namedArgs: {'count': '${album.assetCount}'}),
+                  text: t('items_count', {'count': album.assetCount}),
                 ),
                 if (owner != null) const TextSpan(text: ' • '),
                 if (owner != null) TextSpan(text: owner),

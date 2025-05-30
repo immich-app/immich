@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/translation.dart';
 import 'package:openapi/api.dart';
 
 class AlbumThumbnailListTile extends StatelessWidget {
@@ -90,20 +91,13 @@ class AlbumThumbnailListTile extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          album.assetCount == 1
-                              ? 'album_thumbnail_card_item'
-                              : 'album_thumbnail_card_items',
+                          '${t('items_count', {
+                                'count': album.assetCount
+                              })}${album.shared ? ' • ${t('shared')}' : ''}',
                           style: const TextStyle(
                             fontSize: 12,
                           ),
-                        ).tr(namedArgs: {'count': '${album.assetCount}'}),
-                        if (album.shared)
-                          const Text(
-                            'album_thumbnail_card_shared',
-                            style: TextStyle(
-                              fontSize: 12,
-                            ),
-                          ).tr(),
+                        ),
                       ],
                     ),
                   ],
