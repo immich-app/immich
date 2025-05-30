@@ -394,30 +394,25 @@ class _MapWithMarker extends StatelessWidget {
         child: Stack(
           children: [
             style.widgetWhen(
-              onData: (style) => Padding(
-                // Avoids the map being under the status bar
-                padding: const EdgeInsets.only(
-                  top: kToolbarHeight,
+              onData: (style) => MapLibreMap(
+                attributionButtonMargins: const Point(8, kToolbarHeight),
+                initialCameraPosition: CameraPosition(
+                  target: initialLocation ?? const LatLng(0, 0),
+                  zoom: initialLocation != null ? 12 : 0,
                 ),
-                child: MapLibreMap(
-                  initialCameraPosition: CameraPosition(
-                    target: initialLocation ?? const LatLng(0, 0),
-                    zoom: initialLocation != null ? 12 : 0,
-                  ),
-                  styleString: style,
-                  // This is needed to update the selectedMarker's position on map camera updates
-                  // The changes are notified through the mapController ValueListener which is added in [onMapCreated]
-                  trackCameraPosition: true,
-                  onMapCreated: onMapCreated,
-                  onCameraIdle: onMapMoved,
-                  onMapClick: onMapClicked,
-                  onStyleLoadedCallback: onStyleLoaded,
-                  tiltGesturesEnabled: false,
-                  dragEnabled: false,
-                  myLocationEnabled: false,
-                  attributionButtonPosition: AttributionButtonPosition.topRight,
-                  rotateGesturesEnabled: false,
-                ),
+                styleString: style,
+                // This is needed to update the selectedMarker's position on map camera updates
+                // The changes are notified through the mapController ValueListener which is added in [onMapCreated]
+                trackCameraPosition: true,
+                onMapCreated: onMapCreated,
+                onCameraIdle: onMapMoved,
+                onMapClick: onMapClicked,
+                onStyleLoadedCallback: onStyleLoaded,
+                tiltGesturesEnabled: false,
+                dragEnabled: false,
+                myLocationEnabled: false,
+                attributionButtonPosition: AttributionButtonPosition.topRight,
+                rotateGesturesEnabled: false,
               ),
             ),
             ValueListenableBuilder(
