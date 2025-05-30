@@ -28,7 +28,7 @@ const oauthResponse = ({
   name,
   profileImagePath,
   isAdmin: false,
-  isOnboarded: true,
+  isOnboarded: false,
   shouldChangePassword: false,
 });
 
