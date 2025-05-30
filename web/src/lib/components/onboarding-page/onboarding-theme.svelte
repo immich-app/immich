@@ -4,8 +4,6 @@
   import { Theme } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import { t } from 'svelte-i18n';
-
-  export async function save() {}
 </script>
 
 <div class="flex flex-col gap-4">

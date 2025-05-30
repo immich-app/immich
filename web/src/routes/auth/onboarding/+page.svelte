@@ -30,8 +30,6 @@
     icon?: string;
   }
 
-  let onboardingComponent: ReturnType<OnboardingStep['component']>;
-
   const onboardingSteps: OnboardingStep[] = [
     { name: 'hello', component: OnboardingHello, role: OnboardingRole.USER, title: 'welcome' },
     {
@@ -101,8 +99,6 @@
   );
 
   const handleNextClicked = async () => {
-    await onboardingComponent?.save();
-
     if (nextStepIndex == -1) {
       if ($user.isAdmin) {
         await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
@@ -122,8 +118,6 @@
   };
 
   const handlePrevious = async () => {
-    await onboardingComponent?.save();
-
     if (previousStepIndex === -1) {
       return;
     }
@@ -153,7 +147,7 @@
         previousTitle={onboardingSteps[previousStepIndex]?.title}
         nextTitle={onboardingSteps[nextStepIndex]?.title}
       >
-        <OnboardingStep bind:this={onboardingComponent} />
+        <OnboardingStep />
       </OnboardingCard>
     </div>
   </div>

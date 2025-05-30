@@ -3,7 +3,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { user } from '$lib/stores/user.store';
   import { getConfig, type SystemConfigDto } from '@immich/sdk';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let config: SystemConfigDto | null = $state(null);
@@ -13,9 +13,9 @@
     config = await getConfig();
   });
 
-  export async function save() {
+  onDestroy(async () => {
     await adminSettingsComponent?.handleSave({ map: config?.map, newVersionCheck: config?.newVersionCheck });
-  }
+  });
 </script>
 
 <div class="flex flex-col gap-4">

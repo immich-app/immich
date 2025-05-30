@@ -7,8 +7,6 @@
   import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
   import { locale as i18nLocale, t } from 'svelte-i18n';
 
-  export async function save() {}
-
   const langOptions = langs
     .map((lang) => ({ label: lang.name, value: lang.code }))
     .sort((a, b) => {

@@ -3,11 +3,12 @@
   import { preferences } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { updateMyPreferences } from '@immich/sdk';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let gCastEnabled = $state($preferences?.cast?.gCastEnabled ?? false);
 
-  export async function save() {
+  onDestroy(async () => {
     try {
       const data = await updateMyPreferences({
         userPreferencesUpdateDto: {
@@ -19,7 +20,7 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }
-  }
+  });
 </script>
 
 <div class="flex flex-col gap-4">

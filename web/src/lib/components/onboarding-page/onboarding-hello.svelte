@@ -6,8 +6,6 @@
   import { serverConfig } from '$lib/stores/server-config.store';
 
   let userRole = $derived($user.isAdmin && !$serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER);
-
-  export async function save() {}
 </script>
 
 <div class="gap-4">
