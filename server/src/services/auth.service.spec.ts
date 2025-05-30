@@ -28,7 +28,7 @@ const oauthResponse = ({
   name,
   profileImagePath,
   isAdmin: false,
-  isOnboarded: false,
+  isOnboarded: true,
   shouldChangePassword: false,
 });
 
@@ -102,7 +102,7 @@ describe(AuthService.name, () => {
         name: user.name,
         profileImagePath: user.profileImagePath,
         isAdmin: user.isAdmin,
-        isOnboarded: true,
+        isOnboarded: false,
         shouldChangePassword: user.shouldChangePassword,
       });
 
