@@ -26,7 +26,6 @@
   let oauthLoading = $state(true);
 
   const onSuccess = async (user: LoginResponseDto) => {
-    console.log(data.continueUrl);
     await goto(data.continueUrl, { invalidateAll: true });
     eventManager.emit('auth.login', user);
   };
@@ -43,6 +42,12 @@
     if (oauth.isCallback(globalThis.location)) {
       try {
         const user = await oauth.login(globalThis.location);
+
+        if (!user.isOnboarded) {
+          await onOnboarding();
+          return;
+        }
+
         await onSuccess(user);
         return;
       } catch (error) {
@@ -76,6 +81,7 @@
         return;
       }
 
+      // change the user password before we onboard them
       if (!user.isAdmin && user.shouldChangePassword) {
         await onFirstLogin();
         return;
