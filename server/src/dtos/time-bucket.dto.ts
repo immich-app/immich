@@ -104,21 +104,21 @@ export class TimeBucketAssetDto extends TimeBucketDto {
 }
 
 export class TimelineStackResponseDto {
-  @ApiProperty({ 
+  @ApiProperty({
     type: 'string',
-    description: 'Unique identifier for the asset stack'
+    description: 'Unique identifier for the asset stack',
   })
   id!: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: 'string',
-    description: 'Asset ID of the primary (representative) asset in the stack'
+    description: 'Asset ID of the primary (representative) asset in the stack',
   })
   primaryAssetId!: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: 'integer',
-    description: 'Total number of assets in this stack'
+    description: 'Total number of assets in this stack',
   })
   assetCount!: number;
 }
@@ -246,17 +246,17 @@ export class TimeBucketAssetResponseDto {
 }
 
 export class TimeBucketsResponseDto {
-  @ApiProperty({ 
+  @ApiProperty({
     type: 'string',
     description: 'Time bucket identifier in YYYY-MM-DD format representing the start of the time period',
-    example: '2024-01-01'
+    example: '2024-01-01',
   })
   timeBucket!: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: 'integer',
     description: 'Number of assets in this time bucket',
-    example: 42
+    example: 42,
   })
   count!: number;
 }
