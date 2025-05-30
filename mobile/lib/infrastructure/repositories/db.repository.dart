@@ -7,6 +7,9 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:isar/isar.dart';
@@ -36,6 +39,10 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     LocalAlbumEntity,
     LocalAssetEntity,
     LocalAlbumAssetEntity,
+    RemoteAssetEntity,
+    RemoteAlbumEntity,
+    RemoteAlbumAssetEntity,
+    ExifEntity,
   ],
 )
 class Drift extends $Drift implements IDatabaseRepository {
