@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
@@ -24,7 +23,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
         for (final user in data) {
           batch.delete(
             _db.userEntity,
-            UserEntityCompanion(id: Value(user.userId.toUuidByte())),
+            UserEntityCompanion(id: Value(user.userId)),
           );
         }
       });
@@ -46,7 +45,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
 
           batch.insert(
             _db.userEntity,
-            companion.copyWith(id: Value(user.id.toUuidByte())),
+            companion.copyWith(id: Value(user.id)),
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -65,8 +64,8 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
           batch.delete(
             _db.partnerEntity,
             PartnerEntityCompanion(
-              sharedById: Value(partner.sharedById.toUuidByte()),
-              sharedWithId: Value(partner.sharedWithId.toUuidByte()),
+              sharedById: Value(partner.sharedById),
+              sharedWithId: Value(partner.sharedWithId),
             ),
           );
         }
@@ -88,8 +87,8 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
           batch.insert(
             _db.partnerEntity,
             companion.copyWith(
-              sharedById: Value(partner.sharedById.toUuidByte()),
-              sharedWithId: Value(partner.sharedWithId.toUuidByte()),
+              sharedById: Value(partner.sharedById),
+              sharedWithId: Value(partner.sharedWithId),
             ),
             onConflict: DoUpdate((_) => companion),
           );
@@ -172,7 +171,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
             durationInSeconds: const Value(0),
             checksum: Value(asset.checksum),
             isFavorite: Value(asset.isFavorite),
-            ownerId: Value(asset.ownerId.toUuidByte()),
+            ownerId: Value(asset.ownerId),
             localDateTime: Value(asset.localDateTime),
             thumbHash: Value(asset.thumbhash),
             deletedAt: Value(asset.deletedAt),
@@ -181,7 +180,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
 
           batch.insert(
             _db.remoteAssetEntity,
-            companion.copyWith(remoteId: Value(asset.id.toUuidByte())),
+            companion.copyWith(id: Value(asset.id)),
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -192,9 +191,13 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
         for (final asset in assets) {
           batch.delete(
             _db.remoteAssetEntity,
-            RemoteAssetEntityCompanion(
-              remoteId: Value(asset.assetId.toUuidByte()),
-            ),
+            RemoteAssetEntityCompanion(id: Value(asset.assetId)),
+          );
+          // We do not cascade delete exif data since it also has local exif data
+          // so remove it manually when the asset is deleted
+          batch.delete(
+            _db.exifEntity,
+            ExifEntityCompanion(assetId: Value(asset.assetId)),
           );
         }
       });
@@ -227,7 +230,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
 
           batch.insert(
             _db.exifEntity,
-            companion.copyWith(assetId: Value(exif.assetId.toUuidByte())),
+            companion.copyWith(assetId: Value(exif.assetId)),
             onConflict: DoUpdate((_) => companion),
           );
         }

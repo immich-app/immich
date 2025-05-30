@@ -13,14 +13,14 @@ class RemoteAssetEntity extends Table
     with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();
 
-  BlobColumn get remoteId => blob()();
+  TextColumn get id => text()();
 
   TextColumn get checksum => text()();
 
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
 
-  BlobColumn get ownerId =>
-      blob().references(UserEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get ownerId =>
+      text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
   DateTimeColumn get localDateTime => dateTime().nullable()();
 
@@ -31,5 +31,5 @@ class RemoteAssetEntity extends Table
   IntColumn get visibility => intEnum<AssetVisibility>()();
 
   @override
-  Set<Column> get primaryKey => {remoteId};
+  Set<Column> get primaryKey => {id};
 }

@@ -3,13 +3,12 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
     as i1;
-import 'dart:typed_data' as i2;
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as i3;
-import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as i2;
+import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
 
 typedef $$UserEntityTableCreateCompanionBuilder = i1.UserEntityCompanion
     Function({
-  required i2.Uint8List id,
+  required String id,
   required String name,
   i0.Value<bool> isAdmin,
   required String email,
@@ -20,7 +19,7 @@ typedef $$UserEntityTableCreateCompanionBuilder = i1.UserEntityCompanion
 });
 typedef $$UserEntityTableUpdateCompanionBuilder = i1.UserEntityCompanion
     Function({
-  i0.Value<i2.Uint8List> id,
+  i0.Value<String> id,
   i0.Value<String> name,
   i0.Value<bool> isAdmin,
   i0.Value<String> email,
@@ -39,7 +38,7 @@ class $$UserEntityTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnFilters<i2.Uint8List> get id => $composableBuilder(
+  i0.ColumnFilters<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<String> get name => $composableBuilder(
@@ -76,7 +75,7 @@ class $$UserEntityTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnOrderings<i2.Uint8List> get id => $composableBuilder(
+  i0.ColumnOrderings<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => i0.ColumnOrderings(column));
 
   i0.ColumnOrderings<String> get name => $composableBuilder(
@@ -114,7 +113,7 @@ class $$UserEntityTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<i2.Uint8List> get id =>
+  i0.GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   i0.GeneratedColumn<String> get name =>
@@ -167,7 +166,7 @@ class $$UserEntityTableTableManager extends i0.RootTableManager<
           createComputedFieldComposer: () =>
               i1.$$UserEntityTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
-            i0.Value<i2.Uint8List> id = const i0.Value.absent(),
+            i0.Value<String> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
             i0.Value<bool> isAdmin = const i0.Value.absent(),
             i0.Value<String> email = const i0.Value.absent(),
@@ -187,7 +186,7 @@ class $$UserEntityTableTableManager extends i0.RootTableManager<
             quotaUsageInBytes: quotaUsageInBytes,
           ),
           createCompanionCallback: ({
-            required i2.Uint8List id,
+            required String id,
             required String name,
             i0.Value<bool> isAdmin = const i0.Value.absent(),
             required String email,
@@ -230,7 +229,7 @@ typedef $$UserEntityTableProcessedTableManager = i0.ProcessedTableManager<
     i1.UserEntityData,
     i0.PrefetchHooks Function()>;
 
-class $UserEntityTable extends i3.UserEntity
+class $UserEntityTable extends i2.UserEntity
     with i0.TableInfo<$UserEntityTable, i1.UserEntityData> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
@@ -238,9 +237,9 @@ class $UserEntityTable extends i3.UserEntity
   $UserEntityTable(this.attachedDatabase, [this._alias]);
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
-  late final i0.GeneratedColumn<i2.Uint8List> id =
-      i0.GeneratedColumn<i2.Uint8List>('id', aliasedName, false,
-          type: i0.DriftSqlType.blob, requiredDuringInsert: true);
+  late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: i0.DriftSqlType.string, requiredDuringInsert: true);
   static const i0.VerificationMeta _nameMeta =
       const i0.VerificationMeta('name');
   @override
@@ -256,7 +255,7 @@ class $UserEntityTable extends i3.UserEntity
       requiredDuringInsert: false,
       defaultConstraints:
           i0.GeneratedColumn.constraintIsAlways('CHECK ("is_admin" IN (0, 1))'),
-      defaultValue: const i4.Constant(false));
+      defaultValue: const i3.Constant(false));
   static const i0.VerificationMeta _emailMeta =
       const i0.VerificationMeta('email');
   @override
@@ -276,7 +275,7 @@ class $UserEntityTable extends i3.UserEntity
       i0.GeneratedColumn<DateTime>('updated_at', aliasedName, false,
           type: i0.DriftSqlType.dateTime,
           requiredDuringInsert: false,
-          defaultValue: i4.currentDateAndTime);
+          defaultValue: i3.currentDateAndTime);
   static const i0.VerificationMeta _quotaSizeInBytesMeta =
       const i0.VerificationMeta('quotaSizeInBytes');
   @override
@@ -290,7 +289,7 @@ class $UserEntityTable extends i3.UserEntity
       i0.GeneratedColumn<int>('quota_usage_in_bytes', aliasedName, false,
           type: i0.DriftSqlType.int,
           requiredDuringInsert: false,
-          defaultValue: const i4.Constant(0));
+          defaultValue: const i3.Constant(0));
   @override
   List<i0.GeneratedColumn> get $columns => [
         id,
@@ -366,7 +365,7 @@ class $UserEntityTable extends i3.UserEntity
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return i1.UserEntityData(
       id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.blob, data['${effectivePrefix}id'])!,
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
       name: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
       isAdmin: attachedDatabase.typeMapping
@@ -397,7 +396,7 @@ class $UserEntityTable extends i3.UserEntity
 
 class UserEntityData extends i0.DataClass
     implements i0.Insertable<i1.UserEntityData> {
-  final i2.Uint8List id;
+  final String id;
   final String name;
   final bool isAdmin;
   final String email;
@@ -417,7 +416,7 @@ class UserEntityData extends i0.DataClass
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
-    map['id'] = i0.Variable<i2.Uint8List>(id);
+    map['id'] = i0.Variable<String>(id);
     map['name'] = i0.Variable<String>(name);
     map['is_admin'] = i0.Variable<bool>(isAdmin);
     map['email'] = i0.Variable<String>(email);
@@ -436,7 +435,7 @@ class UserEntityData extends i0.DataClass
       {i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return UserEntityData(
-      id: serializer.fromJson<i2.Uint8List>(json['id']),
+      id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       isAdmin: serializer.fromJson<bool>(json['isAdmin']),
       email: serializer.fromJson<String>(json['email']),
@@ -450,7 +449,7 @@ class UserEntityData extends i0.DataClass
   Map<String, dynamic> toJson({i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<i2.Uint8List>(id),
+      'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'isAdmin': serializer.toJson<bool>(isAdmin),
       'email': serializer.toJson<String>(email),
@@ -462,7 +461,7 @@ class UserEntityData extends i0.DataClass
   }
 
   i1.UserEntityData copyWith(
-          {i2.Uint8List? id,
+          {String? id,
           String? name,
           bool? isAdmin,
           String? email,
@@ -519,13 +518,13 @@ class UserEntityData extends i0.DataClass
   }
 
   @override
-  int get hashCode => Object.hash(i0.$driftBlobEquality.hash(id), name, isAdmin,
-      email, profileImagePath, updatedAt, quotaSizeInBytes, quotaUsageInBytes);
+  int get hashCode => Object.hash(id, name, isAdmin, email, profileImagePath,
+      updatedAt, quotaSizeInBytes, quotaUsageInBytes);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is i1.UserEntityData &&
-          i0.$driftBlobEquality.equals(other.id, this.id) &&
+          other.id == this.id &&
           other.name == this.name &&
           other.isAdmin == this.isAdmin &&
           other.email == this.email &&
@@ -536,7 +535,7 @@ class UserEntityData extends i0.DataClass
 }
 
 class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
-  final i0.Value<i2.Uint8List> id;
+  final i0.Value<String> id;
   final i0.Value<String> name;
   final i0.Value<bool> isAdmin;
   final i0.Value<String> email;
@@ -555,7 +554,7 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
     this.quotaUsageInBytes = const i0.Value.absent(),
   });
   UserEntityCompanion.insert({
-    required i2.Uint8List id,
+    required String id,
     required String name,
     this.isAdmin = const i0.Value.absent(),
     required String email,
@@ -567,7 +566,7 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
         name = i0.Value(name),
         email = i0.Value(email);
   static i0.Insertable<i1.UserEntityData> custom({
-    i0.Expression<i2.Uint8List>? id,
+    i0.Expression<String>? id,
     i0.Expression<String>? name,
     i0.Expression<bool>? isAdmin,
     i0.Expression<String>? email,
@@ -589,7 +588,7 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
   }
 
   i1.UserEntityCompanion copyWith(
-      {i0.Value<i2.Uint8List>? id,
+      {i0.Value<String>? id,
       i0.Value<String>? name,
       i0.Value<bool>? isAdmin,
       i0.Value<String>? email,
@@ -613,7 +612,7 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     if (id.present) {
-      map['id'] = i0.Variable<i2.Uint8List>(id.value);
+      map['id'] = i0.Variable<String>(id.value);
     }
     if (name.present) {
       map['name'] = i0.Variable<String>(name.value);

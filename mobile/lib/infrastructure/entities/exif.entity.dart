@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart' hide Query;
 import 'package:immich_mobile/domain/models/exif.model.dart' as domain;
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:isar/isar.dart';
@@ -97,8 +96,7 @@ class ExifInfo {
 class ExifEntity extends Table with DriftDefaultsMixin {
   const ExifEntity();
 
-  BlobColumn get assetId => blob()
-      .references(RemoteAssetEntity, #remoteId, onDelete: KeyAction.cascade)();
+  TextColumn get assetId => text()();
 
   TextColumn get city => text().nullable()();
 
