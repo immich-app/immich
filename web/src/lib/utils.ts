@@ -275,7 +275,7 @@ export const oauth = {
   },
   isAutoLaunchEnabled: (location: Location) => {
     const value = 'autoLaunch=1';
-    return (location.search.includes(value));
+    return location.search.includes(value);
   },
   authorize: async (location: Location) => {
     const $t = get(t);
