@@ -300,7 +300,6 @@ export class AssetRepository {
       .select(withFacesAndPeople)
       .select(withTags)
       .$call(withExif)
-      .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
       .where('assets.id', '=', anyUuid(ids))
       .execute();
   }

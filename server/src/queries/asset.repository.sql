@@ -130,7 +130,6 @@ select
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
-  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
 where
   "assets"."id" = any ($1::uuid[])
 
