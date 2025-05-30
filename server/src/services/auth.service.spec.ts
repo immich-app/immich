@@ -102,7 +102,7 @@ describe(AuthService.name, () => {
         name: user.name,
         profileImagePath: user.profileImagePath,
         isAdmin: user.isAdmin,
-        isOnboarded: false,
+        isOnboarded: true,
         shouldChangePassword: user.shouldChangePassword,
       });
 
