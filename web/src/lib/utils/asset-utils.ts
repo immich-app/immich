@@ -21,6 +21,7 @@ import { navigate } from '$lib/utils/navigation';
 import {
   addAssetsToAlbum as addAssets,
   AssetVisibility,
+  bulkTagAssets,
   createStack,
   deleteAssets,
   deleteStacks,
@@ -28,7 +29,6 @@ import {
   getBaseUrl,
   getDownloadInfo,
   getStack,
-  tagAssets as tagAllAssets,
   untagAssets,
   updateAsset,
   updateAssets,
@@ -83,9 +83,7 @@ export const tagAssets = async ({
   tagIds: string[];
   showNotification?: boolean;
 }) => {
-  for (const tagId of tagIds) {
-    await tagAllAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
-  }
+  await bulkTagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
 
   if (showNotification) {
     const $t = await getFormatter();
@@ -479,13 +477,13 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: 
 
   try {
     for (const bucket of assetStore.buckets) {
-      await assetStore.loadBucket(bucket.bucketDate);
+      await assetStore.loadBucket(bucket.yearMonth);
 
       if (!get(isSelectingAllAssets)) {
         assetInteraction.clearMultiselect();
         break; // Cancelled
       }
-      assetInteraction.selectAssets(assetsSnapshot(bucket.getAssets()));
+      assetInteraction.selectAssets(assetsSnapshot([...bucket.assetsIterator()]));
 
       for (const dateGroup of bucket.dateGroups) {
         assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);

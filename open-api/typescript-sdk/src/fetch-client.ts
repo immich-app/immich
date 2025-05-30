@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.133.1
+ * 1.134.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -128,6 +128,9 @@ export type UserAdminUpdateDto = {
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
 };
+export type CastResponse = {
+    gCastEnabled: boolean;
+};
 export type DownloadResponse = {
     archiveSize: number;
     includeEmbeddedVideos: boolean;
@@ -164,6 +167,7 @@ export type TagsResponse = {
     sidebarWeb: boolean;
 };
 export type UserPreferencesResponseDto = {
+    cast: CastResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     folders: FoldersResponse;
@@ -176,6 +180,9 @@ export type UserPreferencesResponseDto = {
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
+};
+export type CastUpdate = {
+    gCastEnabled?: boolean;
 };
 export type DownloadUpdate = {
     archiveSize?: number;
@@ -214,6 +221,7 @@ export type TagsUpdate = {
 };
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
+    cast?: CastUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     folders?: FoldersUpdate;
@@ -407,7 +415,8 @@ export type ApiKeyCreateResponseDto = {
     secret: string;
 };
 export type ApiKeyUpdateDto = {
-    name: string;
+    name?: string;
+    permissions?: Permission[];
 };
 export type AssetBulkDeleteDto = {
     force?: boolean;
@@ -995,6 +1004,12 @@ export type ServerAboutResponseDto = {
     version: string;
     versionUrl: string;
 };
+export type ServerApkLinksDto = {
+    arm64v8a: string;
+    armeabiv7a: string;
+    universal: string;
+    x86_64: string;
+};
 export type ServerConfigDto = {
     externalDomain: string;
     isInitialized: boolean;
@@ -1075,6 +1090,10 @@ export type ServerVersionResponseDto = {
     major: number;
     minor: number;
     patch: number;
+};
+export type VersionCheckStateResponseDto = {
+    checkedAt: string | null;
+    releaseVersion: string | null;
 };
 export type ServerVersionHistoryResponseDto = {
     createdAt: string;
@@ -2855,6 +2874,14 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function getAndroidLinks(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerApkLinksDto;
+    }>("/server/android-links", {
+        ...opts
+    }));
+}
 export function getServerConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2944,6 +2971,14 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerVersionResponseDto;
     }>("/server/version", {
+        ...opts
+    }));
+}
+export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VersionCheckStateResponseDto;
+    }>("/server/version-check", {
         ...opts
     }));
 }
@@ -3281,6 +3316,14 @@ export function getReverseGeocodingState(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ReverseGeocodingStateResponseDto;
     }>("/system-metadata/reverse-geocoding-state", {
+        ...opts
+    }));
+}
+export function getVersionCheckState(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VersionCheckStateResponseDto;
+    }>("/system-metadata/version-check-state", {
         ...opts
     }));
 }

@@ -63,7 +63,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.1-pgvectors0.2.0
     env_file:
       - .env
     environment:

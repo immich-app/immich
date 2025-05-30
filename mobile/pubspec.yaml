@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.133.1+199
+version: 1.134.0+200
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -32,6 +32,7 @@ dependencies:
   flutter_displaymode: ^0.6.0
   flutter_hooks: ^0.21.2
   flutter_local_notifications: ^17.2.1+2
+  flutter_secure_storage: ^9.2.4
   flutter_svg: ^2.0.17
   flutter_udid: ^3.0.0
   flutter_web_auth_2: ^5.0.0-alpha.0
@@ -41,6 +42,7 @@ dependencies:
   http: ^1.3.0
   image_picker: ^1.1.2
   intl: ^0.19.0
+  local_auth: ^2.3.0
   logging: ^1.3.0
   maplibre_gl: ^0.21.0
   network_info_plus: ^6.1.3
@@ -52,6 +54,8 @@ dependencies:
   permission_handler: ^11.4.0
   photo_manager: ^3.6.4
   photo_manager_image_provider: ^2.2.0
+  pinput: ^5.0.1
+  platform: ^3.1.6
   punycode: ^1.0.0
   riverpod_annotation: ^2.6.1
   scrollable_positioned_list: ^0.3.8
@@ -64,9 +68,6 @@ dependencies:
   uuid: ^4.5.1
   wakelock_plus: ^1.2.10
   worker_manager: ^7.2.3
-  local_auth: ^2.3.0
-  pinput: ^5.0.1
-  flutter_secure_storage: ^9.2.4
 
   native_video_player:
     git:
@@ -84,11 +85,6 @@ dependencies:
   drift: ^2.23.1
   drift_flutter: ^0.2.4
 
-dependency_overrides:
-  analyzer: ^6.0.0
-  meta: ^1.11.0
-  analyzer_plugin: ^0.11.3
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -98,11 +94,13 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.3
   flutter_native_splash: ^2.4.5
   isar_generator:
-    version: *isar_version
-    hosted: https://pub.isar-community.dev/
+    git:
+      url: https://github.com/immich-app/isar
+      ref: v3
+      path: packages/isar_generator/
   integration_test:
     sdk: flutter
-  custom_lint: ^0.6.4
+  custom_lint: ^0.7.5
   riverpod_lint: ^2.6.1
   riverpod_generator: ^2.6.1
   mocktail: ^1.0.4
@@ -112,6 +110,8 @@ dev_dependencies:
   file: ^7.0.1 # for MemoryFileSystem
   # Drift generator
   drift_dev: ^2.23.1
+  # Type safe platform code
+  pigeon: ^25.3.1
 
 flutter:
   uses-material-design: true

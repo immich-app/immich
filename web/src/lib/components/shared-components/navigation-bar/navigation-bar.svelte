@@ -12,18 +12,13 @@
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
-  import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
-  import { userInteraction } from '$lib/stores/user.svelte';
-  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, IconButton } from '@immich/ui';
-  import { mdiBellBadge, mdiBellOutline, mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
@@ -42,12 +37,6 @@
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
   const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
-
-  let info: ServerAboutResponseDto | undefined = $state();
-
-  onMount(async () => {
-    info = userInteraction.aboutInfo ?? (await getAboutInfo());
-  });
 </script>
 
 <svelte:window bind:innerWidth />
@@ -129,18 +118,6 @@
         {/if}
 
         <ThemeButton padding="2" />
-
-        <div>
-          <IconButton
-            shape="round"
-            color="secondary"
-            variant="ghost"
-            size="medium"
-            icon={mdiHelpCircleOutline}
-            onclick={() => info && modalManager.show(HelpAndFeedbackModal, { info })}
-            aria-label={$t('support_and_feedback')}
-          />
-        </div>
 
         <div
           use:clickOutside={{

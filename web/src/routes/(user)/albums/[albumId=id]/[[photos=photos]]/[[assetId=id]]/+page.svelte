@@ -44,6 +44,7 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError, makeSharedLinkUrl } from '$lib/utils';
@@ -174,7 +175,7 @@
     const asset =
       $slideshowNavigation === SlideshowNavigation.Shuffle
         ? await assetStore.getRandomAsset()
-        : assetStore.buckets[0]?.dateGroups[0]?.intersetingAssets[0]?.asset;
+        : assetStore.buckets[0]?.dateGroups[0]?.intersectingAssets[0]?.asset;
     if (asset) {
       handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
     }
@@ -650,7 +651,9 @@
               <CircleIconButton title={$t('share')} onclick={handleShare} icon={mdiShareVariantOutline} />
             {/if}
 
-            <AlbumMap {album} />
+            {#if $featureFlags.loaded && $featureFlags.map}
+              <AlbumMap {album} />
+            {/if}
 
             {#if album.assetCount > 0}
               <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />
