@@ -1442,15 +1442,14 @@ export type TagUpdateDto = {
 export type TimeBucketAssetResponseDto = {
     city: (string | null)[];
     country: (string | null)[];
-    dayGroup: number[];
     duration: (string | null)[];
     fileCreatedAt: string[];
-    fileCreatedAtTimeZone: (string | null)[];
     id: string[];
     isFavorite: boolean[];
     isImage: boolean[];
     isTrashed: boolean[];
     livePhotoVideoId: (string | null)[];
+    localOffsetMinutes: number[];
     ownerId: string[];
     projectionType: (string | null)[];
     ratio: number[];

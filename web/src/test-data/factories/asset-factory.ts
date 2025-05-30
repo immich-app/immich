@@ -34,10 +34,8 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   ratio: Sync.each(() => faker.number.int()),
   ownerId: Sync.each(() => faker.string.uuid()),
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
-  dayGroup: Sync.each(() => faker.number.int()),
   localDateTime: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
   fileCreatedAt: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
-  fileCreatedAtTimeZone: 'UTC',
   isFavorite: Sync.each(() => faker.datatype.boolean()),
   visibility: AssetVisibility.Timeline,
   isTrashed: false,
@@ -63,9 +61,8 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     isImage: [],
     isTrashed: [],
     livePhotoVideoId: [],
-    dayGroup: [],
     fileCreatedAt: [],
-    fileCreatedAtTimeZone: [],
+    localOffsetMinutes: [],
     ownerId: [],
     projectionType: [],
     ratio: [],
@@ -84,8 +81,6 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.isTrashed.push(asset.isTrashed);
     bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
     bucketAssets.fileCreatedAt.push(fileCreatedAt);
-    bucketAssets.fileCreatedAtTimeZone.push(asset.fileCreatedAtTimeZone);
-    bucketAssets.dayGroup.push(asset.localDateTime.day);
     bucketAssets.ownerId.push(asset.ownerId);
     bucketAssets.projectionType.push(asset.projectionType!);
     bucketAssets.ratio.push(asset.ratio);

@@ -71,7 +71,6 @@ describe('getAltText', () => {
           second: testDate.getUTCSeconds(),
           millisecond: testDate.getUTCMilliseconds(),
         },
-        fileCreatedAtTimeZone: 'UTC',
         localDateTime: {
           year: testDate.getUTCFullYear(),
           month: testDate.getUTCMonth() + 1, // Note: getMonth() is 0-based
@@ -81,7 +80,7 @@ describe('getAltText', () => {
           second: testDate.getUTCSeconds(),
           millisecond: testDate.getUTCMilliseconds(),
         },
-        dayGroup: testDate.getUTCDate(),
+
         visibility: AssetVisibility.Timeline,
         isFavorite: false,
         isTrashed: false,

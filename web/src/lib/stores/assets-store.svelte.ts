@@ -10,8 +10,8 @@ import {
 import {
   formatBucketTitle,
   formatGroupTitle,
-  fromISODateTimeTruncateTZToObject,
   fromISODateTimeUTCToObject,
+  fromISODateTimeWithOffsetToObject,
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
@@ -43,44 +43,6 @@ const {
 } = TUNABLES;
 
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
-
-export const toTimelineAssetFromTimeBucketResponse = (
-  bucketAssets: TimeBucketAssetResponseDto,
-  index: number,
-): TimelineAsset => {
-  const timelineAsset: TimelineAsset = {
-    city: bucketAssets.city[index],
-    country: bucketAssets.country[index],
-    duration: bucketAssets.duration[index],
-    id: bucketAssets.id[index],
-    visibility: bucketAssets.visibility[index],
-    isFavorite: bucketAssets.isFavorite[index],
-    isImage: bucketAssets.isImage[index],
-    isTrashed: bucketAssets.isTrashed[index],
-    isVideo: !bucketAssets.isImage[index],
-    livePhotoVideoId: bucketAssets.livePhotoVideoId[index],
-    dayGroup: bucketAssets.dayGroup[index],
-    localDateTime: fromISODateTimeTruncateTZToObject(
-      bucketAssets.fileCreatedAt[index],
-      bucketAssets.fileCreatedAtTimeZone[index] || undefined,
-    ),
-    fileCreatedAt: fromISODateTimeUTCToObject(bucketAssets.fileCreatedAt[index]),
-    fileCreatedAtTimeZone: bucketAssets.fileCreatedAtTimeZone[index],
-    ownerId: bucketAssets.ownerId[index],
-    people: [],
-    projectionType: bucketAssets.projectionType[index],
-    ratio: bucketAssets.ratio[index],
-    stack: bucketAssets.stack?.[index]
-      ? {
-          id: bucketAssets.stack[index]![0],
-          primaryAssetId: bucketAssets.id[index],
-          assetCount: Number.parseInt(bucketAssets.stack[index]![1]),
-        }
-      : null,
-    thumbhash: bucketAssets.thumbhash[index],
-  };
-  return timelineAsset;
-};
 
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
@@ -122,9 +84,7 @@ export type TimelineAsset = {
   ownerId: string;
   ratio: number;
   thumbhash: string | null;
-  dayGroup: number;
   fileCreatedAt: TimelinePlainDateTime;
-  fileCreatedAtTimeZone: string | null;
   localDateTime: TimelinePlainDateTime;
   visibility: AssetVisibility;
   isFavorite: boolean;
@@ -520,13 +480,11 @@ export class AssetBucket {
         isTrashed: bucketAssets.isTrashed[i],
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
-        dayGroup: bucketAssets.dayGroup[i],
-        localDateTime: fromISODateTimeTruncateTZToObject(
+        localDateTime: fromISODateTimeWithOffsetToObject(
           bucketAssets.fileCreatedAt[i],
-          bucketAssets.fileCreatedAtTimeZone[i] || undefined,
+          bucketAssets.localOffsetMinutes[i],
         ),
         fileCreatedAt: fromISODateTimeUTCToObject(bucketAssets.fileCreatedAt[i]),
-        fileCreatedAtTimeZone: bucketAssets.fileCreatedAtTimeZone[i],
         ownerId: bucketAssets.ownerId[i],
         people: [],
         projectionType: bucketAssets.projectionType[i],

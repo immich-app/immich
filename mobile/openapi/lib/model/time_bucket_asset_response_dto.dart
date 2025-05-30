@@ -15,15 +15,14 @@ class TimeBucketAssetResponseDto {
   TimeBucketAssetResponseDto({
     this.city = const [],
     this.country = const [],
-    this.dayGroup = const [],
     this.duration = const [],
     this.fileCreatedAt = const [],
-    this.fileCreatedAtTimeZone = const [],
     this.id = const [],
     this.isFavorite = const [],
     this.isImage = const [],
     this.isTrashed = const [],
     this.livePhotoVideoId = const [],
+    this.localOffsetMinutes = const [],
     this.ownerId = const [],
     this.projectionType = const [],
     this.ratio = const [],
@@ -36,13 +35,9 @@ class TimeBucketAssetResponseDto {
 
   List<String?> country;
 
-  List<num> dayGroup;
-
   List<String?> duration;
 
   List<String> fileCreatedAt;
-
-  List<String?> fileCreatedAtTimeZone;
 
   List<String> id;
 
@@ -53,6 +48,8 @@ class TimeBucketAssetResponseDto {
   List<bool> isTrashed;
 
   List<String?> livePhotoVideoId;
+
+  List<num> localOffsetMinutes;
 
   List<String> ownerId;
 
@@ -71,15 +68,14 @@ class TimeBucketAssetResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is TimeBucketAssetResponseDto &&
     _deepEquality.equals(other.city, city) &&
     _deepEquality.equals(other.country, country) &&
-    _deepEquality.equals(other.dayGroup, dayGroup) &&
     _deepEquality.equals(other.duration, duration) &&
     _deepEquality.equals(other.fileCreatedAt, fileCreatedAt) &&
-    _deepEquality.equals(other.fileCreatedAtTimeZone, fileCreatedAtTimeZone) &&
     _deepEquality.equals(other.id, id) &&
     _deepEquality.equals(other.isFavorite, isFavorite) &&
     _deepEquality.equals(other.isImage, isImage) &&
     _deepEquality.equals(other.isTrashed, isTrashed) &&
     _deepEquality.equals(other.livePhotoVideoId, livePhotoVideoId) &&
+    _deepEquality.equals(other.localOffsetMinutes, localOffsetMinutes) &&
     _deepEquality.equals(other.ownerId, ownerId) &&
     _deepEquality.equals(other.projectionType, projectionType) &&
     _deepEquality.equals(other.ratio, ratio) &&
@@ -92,15 +88,14 @@ class TimeBucketAssetResponseDto {
     // ignore: unnecessary_parenthesis
     (city.hashCode) +
     (country.hashCode) +
-    (dayGroup.hashCode) +
     (duration.hashCode) +
     (fileCreatedAt.hashCode) +
-    (fileCreatedAtTimeZone.hashCode) +
     (id.hashCode) +
     (isFavorite.hashCode) +
     (isImage.hashCode) +
     (isTrashed.hashCode) +
     (livePhotoVideoId.hashCode) +
+    (localOffsetMinutes.hashCode) +
     (ownerId.hashCode) +
     (projectionType.hashCode) +
     (ratio.hashCode) +
@@ -109,21 +104,20 @@ class TimeBucketAssetResponseDto {
     (visibility.hashCode);
 
   @override
-  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, dayGroup=$dayGroup, duration=$duration, fileCreatedAt=$fileCreatedAt, fileCreatedAtTimeZone=$fileCreatedAtTimeZone, id=$id, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash, visibility=$visibility]';
+  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, fileCreatedAt=$fileCreatedAt, id=$id, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, localOffsetMinutes=$localOffsetMinutes, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'city'] = this.city;
       json[r'country'] = this.country;
-      json[r'dayGroup'] = this.dayGroup;
       json[r'duration'] = this.duration;
       json[r'fileCreatedAt'] = this.fileCreatedAt;
-      json[r'fileCreatedAtTimeZone'] = this.fileCreatedAtTimeZone;
       json[r'id'] = this.id;
       json[r'isFavorite'] = this.isFavorite;
       json[r'isImage'] = this.isImage;
       json[r'isTrashed'] = this.isTrashed;
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
+      json[r'localOffsetMinutes'] = this.localOffsetMinutes;
       json[r'ownerId'] = this.ownerId;
       json[r'projectionType'] = this.projectionType;
       json[r'ratio'] = this.ratio;
@@ -148,17 +142,11 @@ class TimeBucketAssetResponseDto {
         country: json[r'country'] is Iterable
             ? (json[r'country'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        dayGroup: json[r'dayGroup'] is Iterable
-            ? (json[r'dayGroup'] as Iterable).cast<num>().toList(growable: false)
-            : const [],
         duration: json[r'duration'] is Iterable
             ? (json[r'duration'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         fileCreatedAt: json[r'fileCreatedAt'] is Iterable
             ? (json[r'fileCreatedAt'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        fileCreatedAtTimeZone: json[r'fileCreatedAtTimeZone'] is Iterable
-            ? (json[r'fileCreatedAtTimeZone'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         id: json[r'id'] is Iterable
             ? (json[r'id'] as Iterable).cast<String>().toList(growable: false)
@@ -174,6 +162,9 @@ class TimeBucketAssetResponseDto {
             : const [],
         livePhotoVideoId: json[r'livePhotoVideoId'] is Iterable
             ? (json[r'livePhotoVideoId'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        localOffsetMinutes: json[r'localOffsetMinutes'] is Iterable
+            ? (json[r'localOffsetMinutes'] as Iterable).cast<num>().toList(growable: false)
             : const [],
         ownerId: json[r'ownerId'] is Iterable
             ? (json[r'ownerId'] as Iterable).cast<String>().toList(growable: false)
@@ -242,15 +233,14 @@ class TimeBucketAssetResponseDto {
   static const requiredKeys = <String>{
     'city',
     'country',
-    'dayGroup',
     'duration',
     'fileCreatedAt',
-    'fileCreatedAtTimeZone',
     'id',
     'isFavorite',
     'isImage',
     'isTrashed',
     'livePhotoVideoId',
+    'localOffsetMinutes',
     'ownerId',
     'projectionType',
     'ratio',

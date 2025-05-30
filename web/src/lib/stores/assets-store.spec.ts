@@ -17,7 +17,6 @@ function deriveLocalDateTimeFromFileCreatedAt(arg: TimelineAsset): TimelineAsset
   return {
     ...arg,
     localDateTime: arg.fileCreatedAt,
-    dayGroup: arg.fileCreatedAt.day,
   };
 }
 
@@ -223,19 +222,16 @@ describe('AssetStore', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
-          dayGroup: 20,
         }),
       );
       const assetTwo = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-15T12:00:00.000Z'),
-          dayGroup: 15,
         }),
       );
       const assetThree = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-16T12:00:00.000Z'),
-          dayGroup: 16,
         }),
       );
       assetStore.addAssets([assetOne, assetTwo, assetThree]);
@@ -252,19 +248,16 @@ describe('AssetStore', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
-          dayGroup: 10,
         }),
       );
       const assetTwo = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-04-20T12:00:00.000Z'),
-          dayGroup: 20,
         }),
       );
       const assetThree = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2023-01-20T12:00:00.000Z'),
-          dayGroup: 20,
         }),
       );
       assetStore.addAssets([assetOne, assetTwo, assetThree]);
@@ -372,7 +365,6 @@ describe('AssetStore', () => {
         timelineAssetFactory
           .buildList(2, {
             fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
-            dayGroup: 20,
           })
           .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset)),
       );
@@ -387,7 +379,6 @@ describe('AssetStore', () => {
       const [assetOne, assetTwo] = timelineAssetFactory
         .buildList(2, {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
-          dayGroup: 20,
         })
         .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset));
       assetStore.addAssets([assetOne, assetTwo]);
@@ -402,7 +393,6 @@ describe('AssetStore', () => {
       const assets = timelineAssetFactory
         .buildList(2, {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
-          dayGroup: 20,
         })
         .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset));
       assetStore.addAssets(assets);
@@ -430,13 +420,11 @@ describe('AssetStore', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
-          dayGroup: 20,
         }),
       );
       const assetTwo = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-15T12:00:00.000Z'),
-          dayGroup: 15,
         }),
       );
       assetStore.addAssets([assetOne, assetTwo]);
@@ -451,21 +439,18 @@ describe('AssetStore', () => {
         deriveLocalDateTimeFromFileCreatedAt({
           ...asset,
           fileCreatedAt: fromISODateTimeUTCToObject('2024-03-01T00:00:00.000Z'),
-          dayGroup: 1,
         }),
       ),
       '2024-02-01T00:00:00.000Z': timelineAssetFactory.buildList(6).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
           ...asset,
           fileCreatedAt: fromISODateTimeUTCToObject('2024-02-01T00:00:00.000Z'),
-          dayGroup: 1,
         }),
       ),
       '2024-01-01T00:00:00.000Z': timelineAssetFactory.buildList(3).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
           ...asset,
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-01T00:00:00.000Z'),
-          dayGroup: 1,
         }),
       ),
     };

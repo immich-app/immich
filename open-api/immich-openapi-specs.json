@@ -14334,12 +14334,6 @@
             },
             "type": "array"
           },
-          "dayGroup": {
-            "items": {
-              "type": "number"
-            },
-            "type": "array"
-          },
           "duration": {
             "items": {
               "nullable": true,
@@ -14349,13 +14343,6 @@
           },
           "fileCreatedAt": {
             "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "fileCreatedAtTimeZone": {
-            "items": {
-              "nullable": true,
               "type": "string"
             },
             "type": "array"
@@ -14388,6 +14375,12 @@
             "items": {
               "nullable": true,
               "type": "string"
+            },
+            "type": "array"
+          },
+          "localOffsetMinutes": {
+            "items": {
+              "type": "number"
             },
             "type": "array"
           },
@@ -14440,15 +14433,14 @@
         "required": [
           "city",
           "country",
-          "dayGroup",
           "duration",
           "fileCreatedAt",
-          "fileCreatedAtTimeZone",
           "id",
           "isFavorite",
           "isImage",
           "isTrashed",
           "livePhotoVideoId",
+          "localOffsetMinutes",
           "ownerId",
           "projectionType",
           "ratio",
