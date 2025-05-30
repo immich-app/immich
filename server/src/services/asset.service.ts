@@ -17,13 +17,14 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
+import { requireElevatedPermission } from 'src/utils/access';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 
 @Injectable()
 export class AssetService extends BaseService {
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
-    if (dto.visibility === AssetVisibility.LOCKED && !auth.session?.hasElevatedPermission) {
-      throw new BadRequestException('Locked assets require elevated permissions');
+    if (dto.visibility === AssetVisibility.LOCKED) {
+      requireElevatedPermission(auth);
     }
 
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);

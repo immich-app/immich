@@ -4,6 +4,7 @@ import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/d
 import { AssetVisibility, Permission } from 'src/enum';
 import { TimeBucketOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
+import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 
 @Injectable()
@@ -44,8 +45,8 @@ export class TimelineService extends BaseService {
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
-    if (dto.visibility === AssetVisibility.LOCKED && !auth.session?.hasElevatedPermission) {
-      throw new BadRequestException('Locked assets require elevated permissions');
+    if (dto.visibility === AssetVisibility.LOCKED) {
+      requireElevatedPermission(auth);
     }
 
     if (dto.albumId) {

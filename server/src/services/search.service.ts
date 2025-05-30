@@ -16,6 +16,7 @@ import {
 } from 'src/dtos/search.dto';
 import { AssetOrder, AssetVisibility } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
@@ -40,8 +41,8 @@ export class SearchService extends BaseService {
   }
 
   async searchMetadata(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
-    if (dto.visibility === AssetVisibility.LOCKED && !auth.session?.hasElevatedPermission) {
-      throw new BadRequestException('Locked assets require elevated permissions');
+    if (dto.visibility === AssetVisibility.LOCKED) {
+      requireElevatedPermission(auth);
     }
 
     let checksum: Buffer | undefined;
@@ -67,8 +68,8 @@ export class SearchService extends BaseService {
   }
 
   async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
-    if (dto.visibility === AssetVisibility.LOCKED && !auth.session?.hasElevatedPermission) {
-      throw new BadRequestException('Locked assets require elevated permissions');
+    if (dto.visibility === AssetVisibility.LOCKED) {
+      requireElevatedPermission(auth);
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
@@ -77,8 +78,8 @@ export class SearchService extends BaseService {
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
-    if (dto.visibility === AssetVisibility.LOCKED && !auth.session?.hasElevatedPermission) {
-      throw new BadRequestException('Locked assets require elevated permissions');
+    if (dto.visibility === AssetVisibility.LOCKED) {
+      requireElevatedPermission(auth);
     }
 
     const { machineLearning } = await this.getConfig({ withCache: false });
