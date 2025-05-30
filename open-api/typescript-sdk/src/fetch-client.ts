@@ -1440,26 +1440,43 @@ export type TagUpdateDto = {
     color?: string | null;
 };
 export type TimeBucketAssetResponseDto = {
+    /** Array of city names extracted from EXIF GPS data */
     city: (string | null)[];
+    /** Array of country names extracted from EXIF GPS data */
     country: (string | null)[];
+    /** Array of video durations in HH:MM:SS format (null for images) */
     duration: (string | null)[];
+    /** Array of file creation timestamps in UTC (ISO 8601 format) */
     fileCreatedAt: string[];
+    /** Array of asset IDs in the time bucket */
     id: string[];
+    /** Array indicating whether each asset is favorited */
     isFavorite: boolean[];
+    /** Array indicating whether each asset is an image (false for videos) */
     isImage: boolean[];
+    /** Array indicating whether each asset is in the trash */
     isTrashed: boolean[];
+    /** Array of live photo video asset IDs (null for non-live photos) */
     livePhotoVideoId: (string | null)[];
+    /** Array of UTC offset minutes at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective. */
     localOffsetMinutes: number[];
+    /** Array of owner IDs for each asset */
     ownerId: string[];
+    /** Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL") */
     projectionType: (string | null)[];
+    /** Array of aspect ratios (width/height) for each asset */
     ratio: number[];
-    /** (stack ID, stack asset count) tuple */
+    /** Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets) */
     stack?: (string[] | null)[];
+    /** Array of BlurHash strings for generating asset previews (base64 encoded) */
     thumbhash: (string | null)[];
+    /** Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED) */
     visibility: AssetVisibility[];
 };
 export type TimeBucketsResponseDto = {
+    /** Number of assets in this time bucket */
     count: number;
+    /** Time bucket identifier in YYYY-MM-DD format representing the start of the time period */
     timeBucket: string;
 };
 export type TrashResponseDto = {
@@ -3429,14 +3446,12 @@ export function tagAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, page, pageSize, personId, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
-    page?: number;
-    pageSize?: number;
     personId?: string;
     tagId?: string;
     timeBucket: string;
@@ -3454,8 +3469,6 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, page
         isTrashed,
         key,
         order,
-        page,
-        pageSize,
         personId,
         tagId,
         timeBucket,

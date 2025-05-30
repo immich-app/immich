@@ -31,37 +31,52 @@ class TimeBucketAssetResponseDto {
     this.visibility = const [],
   });
 
+  /// Array of city names extracted from EXIF GPS data
   List<String?> city;
 
+  /// Array of country names extracted from EXIF GPS data
   List<String?> country;
 
+  /// Array of video durations in HH:MM:SS format (null for images)
   List<String?> duration;
 
+  /// Array of file creation timestamps in UTC (ISO 8601 format)
   List<String> fileCreatedAt;
 
+  /// Array of asset IDs in the time bucket
   List<String> id;
 
+  /// Array indicating whether each asset is favorited
   List<bool> isFavorite;
 
+  /// Array indicating whether each asset is an image (false for videos)
   List<bool> isImage;
 
+  /// Array indicating whether each asset is in the trash
   List<bool> isTrashed;
 
+  /// Array of live photo video asset IDs (null for non-live photos)
   List<String?> livePhotoVideoId;
 
-  List<num> localOffsetMinutes;
+  /// Array of UTC offset minutes at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.
+  List<int> localOffsetMinutes;
 
+  /// Array of owner IDs for each asset
   List<String> ownerId;
 
+  /// Array of projection types for 360° content (e.g., \"EQUIRECTANGULAR\", \"CUBEFACE\", \"CYLINDRICAL\")
   List<String?> projectionType;
 
+  /// Array of aspect ratios (width/height) for each asset
   List<num> ratio;
 
-  /// (stack ID, stack asset count) tuple
+  /// Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets)
   List<List<String>?> stack;
 
+  /// Array of BlurHash strings for generating asset previews (base64 encoded)
   List<String?> thumbhash;
 
+  /// Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)
   List<AssetVisibility> visibility;
 
   @override
@@ -164,7 +179,7 @@ class TimeBucketAssetResponseDto {
             ? (json[r'livePhotoVideoId'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         localOffsetMinutes: json[r'localOffsetMinutes'] is Iterable
-            ? (json[r'localOffsetMinutes'] as Iterable).cast<num>().toList(growable: false)
+            ? (json[r'localOffsetMinutes'] as Iterable).cast<int>().toList(growable: false)
             : const [],
         ownerId: json[r'ownerId'] is Iterable
             ? (json[r'ownerId'] as Iterable).cast<String>().toList(growable: false)
