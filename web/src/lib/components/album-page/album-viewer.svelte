@@ -43,7 +43,7 @@
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      handlePromiseError(fileUploadHandler(value.files, album.id));
+      handlePromiseError(fileUploadHandler({ files: value.files, albumId: album.id }));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });

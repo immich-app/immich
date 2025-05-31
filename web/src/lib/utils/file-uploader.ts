@@ -74,7 +74,7 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
         }
         const files = Array.from(target.files);
 
-        resolve(fileUploadHandler(files, albumId, assetId));
+        resolve(fileUploadHandler({ files, albumId, replaceAssetId: assetId }));
       });
 
       fileSelector.click();
@@ -85,12 +85,16 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
   });
 };
 
-export const fileUploadHandler = async (
-  files: File[],
-  albumId?: string,
-  replaceAssetId?: string,
-  isLockedAssets: boolean = false,
-): Promise<string[]> => {
+type FileUploadHandlerParams = Omit<FileUploaderParams, 'deviceAssetId' | 'assetFile'> & {
+  files: File[];
+};
+
+export const fileUploadHandler = async ({
+  files,
+  albumId,
+  replaceAssetId,
+  isLockedAssets = false,
+}: FileUploadHandlerParams): Promise<string[]> => {
   const extensions = await getExtensions();
   const promises = [];
   for (const file of files) {
@@ -99,7 +103,9 @@ export const fileUploadHandler = async (
       const deviceAssetId = getDeviceAssetId(file);
       uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId });
       promises.push(
-        uploadExecutionQueue.addTask(() => fileUploader(file, deviceAssetId, albumId, replaceAssetId, isLockedAssets)),
+        uploadExecutionQueue.addTask(() =>
+          fileUploader({ assetFile: file, deviceAssetId, albumId, replaceAssetId, isLockedAssets }),
+        ),
       );
     }
   }
@@ -112,14 +118,22 @@ function getDeviceAssetId(asset: File) {
   return 'web' + '-' + asset.name + '-' + asset.lastModified;
 }
 
+type FileUploaderParams = {
+  assetFile: File;
+  albumId?: string;
+  replaceAssetId?: string;
+  isLockedAssets?: boolean;
+  deviceAssetId: string;
+};
+
 // TODO: should probably use the @api SDK
-async function fileUploader(
-  assetFile: File,
-  deviceAssetId: string,
-  albumId?: string,
-  replaceAssetId?: string,
-  isLockedAssets: boolean = false,
-): Promise<string | undefined> {
+async function fileUploader({
+  assetFile,
+  deviceAssetId,
+  albumId,
+  replaceAssetId,
+  isLockedAssets = false,
+}: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const $t = get(t);
 

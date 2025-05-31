@@ -52,7 +52,7 @@
       let results: (string | undefined)[] = [];
       results = await (!files || files.length === 0 || !Array.isArray(files)
         ? openFileUploadDialog()
-        : fileUploadHandler(files));
+        : fileUploadHandler({ files }));
       const data = await addSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {

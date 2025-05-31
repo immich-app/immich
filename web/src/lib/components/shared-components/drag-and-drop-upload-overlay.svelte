@@ -127,7 +127,7 @@
     if (authManager.key) {
       dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
     } else {
-      await fileUploadHandler(filesArray, albumId, undefined, isInLockedFolder);
+      await fileUploadHandler({ files: filesArray, albumId, isLockedAssets: isInLockedFolder });
     }
   };
 
