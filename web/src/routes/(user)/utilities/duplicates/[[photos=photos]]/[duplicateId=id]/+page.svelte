@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import {
@@ -6,18 +7,18 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, updateAssets } from '@immich/sdk';
-  import { Button, HStack, IconButton, Text } from '@immich/ui';
-  import { mdiCheckOutline, mdiInformationOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
+  import { HStack, IconButton } from '@immich/ui';
+  import { mdiInformationOutline, mdiKeyboard } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -48,8 +49,9 @@
     ],
   };
 
+  let activeDuplicate = $state(data.activeDuplicate);
   let duplicates = $state(data.duplicates);
-  let hasDuplicates = $derived(duplicates.length > 0);
+
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
       const isConfirmed = await modalManager.showDialog({ prompt, confirmText });
@@ -84,9 +86,19 @@
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
 
+        const currentDuplicateIndex = duplicates.findIndex((duplicate) => duplicate.duplicateId === duplicateId);
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
+
+        // Move to the next duplicate
+        if (duplicates.length > 0) {
+          // The index of the next duplicate is the same as the current one, since we removed the current one
+          activeDuplicate = duplicates[currentDuplicateIndex] || duplicates[0];
+        } else {
+          // If there are no more duplicates, redirect to the duplicates page
+          await goto(AppRoute.DUPLICATES);
+        }
       },
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
@@ -97,85 +109,23 @@
     await stackAssets(assets, false);
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+    const currentDuplicateIndex = duplicates.findIndex((duplicate) => duplicate.duplicateId === duplicateId);
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
-  };
 
-  const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
-    const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
-    );
-
-    let prompt, confirmText;
-    if ($featureFlags.trash) {
-      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: idsToDelete.length } });
-      confirmText = $t('confirm');
+    // Move to the next duplicate
+    if (duplicates.length > 0) {
+      // The index of the next duplicate is the same as the current one, since we removed the current one
+      activeDuplicate = duplicates[currentDuplicateIndex] || duplicates[0];
     } else {
-      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count: idsToDelete.length } });
-      confirmText = $t('permanently_delete');
+      // If there are no more duplicates, redirect to the duplicates page
+      await goto(AppRoute.DUPLICATES);
     }
-
-    return withConfirmation(
-      async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
-        await updateAssets({
-          assetBulkUpdateDto: {
-            ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],
-            duplicateId: null,
-          },
-        });
-
-        duplicates = [];
-
-        deletedNotification(idsToDelete.length);
-      },
-      prompt,
-      confirmText,
-    );
-  };
-
-  const handleKeepAll = async () => {
-    const ids = duplicates.flatMap((group) => group.assets.map((asset) => asset.id));
-    return withConfirmation(
-      async () => {
-        await updateAssets({ assetBulkUpdateDto: { ids, duplicateId: null } });
-
-        duplicates = [];
-
-        notificationController.show({
-          message: $t('resolved_all_duplicates'),
-          type: NotificationType.Info,
-        });
-      },
-      $t('bulk_keep_duplicates_confirmation', { values: { count: ids.length } }),
-      $t('confirm'),
-    );
   };
 </script>
 
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <HStack gap={0}>
-      <Button
-        leadingIcon={mdiTrashCanOutline}
-        onclick={() => handleDeduplicateAll()}
-        disabled={!hasDuplicates}
-        size="small"
-        variant="ghost"
-        color="secondary"
-      >
-        <Text class="hidden md:block">{$t('deduplicate_all')}</Text>
-      </Button>
-      <Button
-        leadingIcon={mdiCheckOutline}
-        onclick={() => handleKeepAll()}
-        disabled={!hasDuplicates}
-        size="small"
-        variant="ghost"
-        color="secondary"
-      >
-        <Text class="hidden md:block">{$t('keep_all')}</Text>
-      </Button>
       <IconButton
         shape="round"
         variant="ghost"
@@ -192,7 +142,7 @@
     {#if duplicates && duplicates.length > 0}
       <div class="flex items-center mb-2">
         <div class="text-sm dark:text-white">
-          <p>{$t('duplicates_description')}</p>
+          <p>{$t('duplicates_description_single')}</p>
         </div>
         <CircleIconButton
           icon={mdiInformationOutline}
@@ -203,12 +153,12 @@
         />
       </div>
 
-      {#key duplicates[0].duplicateId}
+      {#key activeDuplicate.duplicateId}
         <DuplicatesCompareControl
-          assets={duplicates[0].assets}
+          assets={activeDuplicate.assets}
           onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
-          onStack={(assets) => handleStack(duplicates[0].duplicateId, assets)}
+            handleResolve(activeDuplicate.duplicateId, duplicateAssetIds, trashIds)}
+          onStack={(assets) => handleStack(activeDuplicate.duplicateId, assets)}
         />
       {/key}
     {:else}
