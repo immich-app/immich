@@ -435,7 +435,7 @@ describe('/albums', () => {
         .send({ albumName: 'New album', albumUsers: [{ role: AlbumUserRole.Editor, userId: user1.userId }] })
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Cannot share album to owner'));
+      expect(body).toEqual(errorDto.badRequest('Cannot share album with owner'));
     });
   });
 

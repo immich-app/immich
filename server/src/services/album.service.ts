@@ -95,7 +95,7 @@ export class AlbumService extends BaseService {
       }
 
       if (userId == auth.user.id) {
-        throw new BadRequestException('Cannot share album to owner');
+        throw new BadRequestException('Cannot share album with owner');
       }
     }
 

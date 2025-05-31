@@ -212,7 +212,7 @@ describe(AlbumService.name, () => {
     });
 
     it('should throw an error if the userId is the ownerId', async () => {
-      mocks.user.get.mockResolvedValue(void 0);
+      mocks.user.get.mockResolvedValue(userStub.admin);
       await expect(
         sut.create(authStub.admin, {
           albumName: 'Empty album',
