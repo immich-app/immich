@@ -35,6 +35,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getAllForUserFullSync: vitest.fn(),
     getChangedDeltaSync: vitest.fn(),
     getDuplicates: vitest.fn(),
+    getLargeAssets: vitest.fn(),
     upsertFile: vitest.fn(),
     upsertFiles: vitest.fn(),
     deleteFiles: vitest.fn(),
