@@ -216,7 +216,7 @@ describe(MediaService.name, () => {
         entityId: assetStub.image.id,
         pathType: AssetPathType.THUMBNAIL,
         oldPath: '/uploads/user-id/webp/path.ext',
-        newPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        newPath: 'upload/thumbs/thumbnails/user-id/as/se/asset-id-thumbnail.webp',
       });
       expect(mocks.move.create).toHaveBeenCalledTimes(3);
     });
@@ -295,7 +295,7 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/thumbnails/user-id/as/se');
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
@@ -327,7 +327,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        'upload/thumbs/thumbnails/user-id/as/se/asset-id-thumbnail.webp',
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
@@ -346,7 +346,7 @@ describe(MediaService.name, () => {
         {
           assetId: 'asset-id',
           type: AssetFileType.THUMBNAIL,
-          path: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+          path: 'upload/thumbs/thumbnails/user-id/as/se/asset-id-thumbnail.webp',
         },
       ]);
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: thumbhashBuffer });
@@ -382,7 +382,7 @@ describe(MediaService.name, () => {
         {
           assetId: 'asset-id',
           type: AssetFileType.THUMBNAIL,
-          path: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+          path: 'upload/thumbs/thumbnails/user-id/as/se/asset-id-thumbnail.webp',
         },
       ]);
     });
@@ -417,7 +417,7 @@ describe(MediaService.name, () => {
         {
           assetId: 'asset-id',
           type: AssetFileType.THUMBNAIL,
-          path: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+          path: 'upload/thumbs/thumbnails/user-id/as/se/asset-id-thumbnail.webp',
         },
       ]);
     });
@@ -486,7 +486,7 @@ describe(MediaService.name, () => {
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
-      const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
+      const thumbnailPath = `upload/thumbs/thumbnails/user-id/as/se/asset-id-thumbnail.webp`;
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -531,7 +531,7 @@ describe(MediaService.name, () => {
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.jpeg`;
-      const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`;
+      const thumbnailPath = `upload/thumbs/thumbnails/user-id/as/se/asset-id-thumbnail.${format}`;
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -663,7 +663,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.objectContaining({ processInvalidImages: false }),
-        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        'upload/thumbs/thumbnails/user-id/as/se/asset-id-thumbnail.webp',
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
@@ -911,7 +911,7 @@ describe(MediaService.name, () => {
       );
 
       expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/people/admin_id/pe/rs');
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.originalPath, {
         colorspace: Colorspace.P3,
         orientation: undefined,
@@ -933,11 +933,11 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        'upload/thumbs/people/admin_id/pe/rs/person-1.jpeg',
       );
       expect(mocks.person.update).toHaveBeenCalledWith({
         id: 'person-1',
-        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        thumbnailPath: 'upload/thumbs/people/admin_id/pe/rs/person-1.jpeg',
       });
     });
 
@@ -953,7 +953,7 @@ describe(MediaService.name, () => {
       );
 
       expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/people/admin_id/pe/rs');
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.previewPath, {
         colorspace: Colorspace.P3,
         orientation: undefined,
@@ -975,11 +975,11 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        'upload/thumbs/people/admin_id/pe/rs/person-1.jpeg',
       );
       expect(mocks.person.update).toHaveBeenCalledWith({
         id: 'person-1',
-        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        thumbnailPath: 'upload/thumbs/people/admin_id/pe/rs/person-1.jpeg',
       });
     });
 
@@ -1015,7 +1015,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        'upload/thumbs/people/admin_id/pe/rs/person-1.jpeg',
       );
     });
 
@@ -1052,7 +1052,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        'upload/thumbs/people/admin_id/pe/rs/person-1.jpeg',
       );
     });
 
@@ -1089,7 +1089,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        'upload/thumbs/people/admin_id/pe/rs/person-1.jpeg',
       );
     });
 
@@ -1126,7 +1126,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        'upload/thumbs/people/admin_id/pe/rs/person-1.jpeg',
       );
     });
 
@@ -1168,7 +1168,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        'upload/thumbs/people/admin_id/pe/rs/person-1.jpeg',
       );
     });
 
