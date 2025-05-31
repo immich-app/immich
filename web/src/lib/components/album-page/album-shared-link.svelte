@@ -1,9 +1,8 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
-  import { Text } from '@immich/ui';
+  import { IconButton, Text } from '@immich/ui';
   import { mdiQrcode } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -41,7 +40,14 @@
     <Text size="tiny" color="muted">{getShareProperties()}</Text>
   </div>
   <div class="flex">
-    <CircleIconButton title={$t('view_qr_code')} icon={mdiQrcode} onclick={onViewQrCode} />
+    <IconButton
+      aria-label={$t('view_qr_code')}
+      shape="round"
+      color="secondary"
+      variant="ghost"
+      icon={mdiQrcode}
+      onclick={onViewQrCode}
+    />
     <SharedLinkCopy link={sharedLink} />
   </div>
 </div>

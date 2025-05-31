@@ -1,10 +1,6 @@
 <script lang="ts">
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
   import { shortcuts } from '$lib/actions/shortcut';
-  import CircleIconButton, {
-    type Color,
-    type Padding,
-  } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
@@ -14,6 +10,7 @@
     type Align,
   } from '$lib/utils/context-menu';
   import { generateId } from '$lib/utils/generate-id';
+  import { IconButton, type Color, type Size, type Variants } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
 
@@ -30,8 +27,8 @@
     // TODO change to start vs end
     direction?: 'left' | 'right';
     color?: Color;
-    size?: string | undefined;
-    padding?: Padding | undefined;
+    size?: Size | undefined;
+    variant?: Variants | undefined;
     /**
      * Additional classes to apply to the button.
      */
@@ -49,9 +46,9 @@
     title,
     align = 'top-left',
     direction = 'right',
-    color = 'transparent',
+    color = 'secondary',
     size = undefined,
-    padding = undefined,
+    variant = 'ghost',
     buttonClass = undefined,
     hideContent = false,
     children,
@@ -161,12 +158,13 @@
   {...restProps}
 >
   <div bind:this={buttonContainer}>
-    <CircleIconButton
+    <IconButton
       {color}
       {icon}
-      {padding}
       {size}
-      {title}
+      shape="round"
+      {variant}
+      aria-label={title}
       aria-controls={menuId}
       aria-expanded={isOpen}
       aria-haspopup={true}
