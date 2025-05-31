@@ -227,7 +227,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   }
 }
 
-// ignore: prefer-single-widget-per-file
 class MainWidget extends StatelessWidget {
   const MainWidget({super.key});
 

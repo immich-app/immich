@@ -184,10 +184,10 @@ class BackupVerificationService {
           // for images: make sure they are pixel-wise identical
           // (skip first few KBs containing metadata)
           final Uint64List localImage =
-              _fakeDecodeImg(local, await file.readAsBytes());
+              _fakeDecodeImg(await file.readAsBytes());
           final res = await apiService.assetsApi
               .downloadAssetWithHttpInfo(remote.remoteId!);
-          final Uint64List remoteImage = _fakeDecodeImg(remote, res.bodyBytes);
+          final Uint64List remoteImage = _fakeDecodeImg(res.bodyBytes);
 
           final eq = const ListEquality().equals(remoteImage, localImage);
           return eq;
@@ -198,7 +198,7 @@ class BackupVerificationService {
     return false;
   }
 
-  static Uint64List _fakeDecodeImg(Asset asset, Uint8List bytes) {
+  static Uint64List _fakeDecodeImg(Uint8List bytes) {
     const headerLength = 131072; // assume header is at most 128 KB
     final start = bytes.length < headerLength * 2
         ? (bytes.length ~/ (4 * 8)) * 8
