@@ -3,6 +3,7 @@
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
+  import { castManager } from '$lib/managers/cast-manager.svelte';
   import { photoViewerImgElement, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
@@ -23,7 +24,6 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { castManager } from '$lib/managers/cast-manager.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -110,6 +110,8 @@
   zoomToggle = () => {
     $zoomed = $zoomed ? false : true;
   };
+
+  const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
 
   $effect(() => {
     if (isFaceEditMode.value && $photoZoomState.currentZoom > 1) {
@@ -204,6 +206,8 @@
 
 <svelte:document
   use:shortcuts={[
+    { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: true },
+    { shortcut: { key: 's' }, onShortcut: onPlaySlideshow, preventDefault: true },
     { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
   ]}

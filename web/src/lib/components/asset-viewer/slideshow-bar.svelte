@@ -28,7 +28,8 @@
     onSetToFullScreen = () => {},
   }: Props = $props();
 
-  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation } = slideshowStore;
+  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowAutoplay } =
+    slideshowStore;
 
   let progressBarStatus: ProgressBarStatus | undefined = $state();
   let progressBar = $state<ReturnType<typeof ProgressBar>>();
@@ -60,20 +61,20 @@
         showControls = false;
         setCursorStyle('none');
       }
-    }, 10_000);
+    }, 2500);
   };
 
   onMount(() => {
     hideControlsAfterDelay();
     unsubscribeRestart = restartProgress.subscribe((value) => {
       if (value) {
-        progressBar?.restart(value);
+        progressBar?.restart();
       }
     });
 
     unsubscribeStop = stopProgress.subscribe((value) => {
       if (value) {
-        progressBar?.restart(false);
+        progressBar?.restart();
         stopControlsHideTimer();
       }
     });
@@ -90,7 +91,7 @@
   });
 
   const handleDone = async () => {
-    await progressBar?.reset();
+    await progressBar?.resetProgress();
 
     if ($slideshowNavigation === SlideshowNavigation.AscendingOrder) {
       onPrevious();
@@ -113,6 +114,17 @@
     { shortcut: { key: 'Escape' }, onShortcut: onClose },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: onPrevious },
     { shortcut: { key: 'ArrowRight' }, onShortcut: onNext },
+    {
+      shortcut: { key: ' ' },
+      onShortcut: () => {
+        if (progressBarStatus === ProgressBarStatus.Paused) {
+          progressBar?.play();
+        } else {
+          progressBar?.pause();
+        }
+      },
+      preventDefault: true,
+    },
   ]}
 />
 
@@ -187,7 +199,7 @@
 {/if}
 
 <ProgressBar
-  autoplay
+  autoplay={$slideshowAutoplay}
   hidden={!$showProgressBar}
   duration={$slideshowDelay}
   bind:this={progressBar}

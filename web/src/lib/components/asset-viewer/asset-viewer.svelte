@@ -352,7 +352,9 @@
   const handleUpdateSelectedEditType = (type: string) => {
     selectedEditType = type;
   };
+
   let isFullScreen = $derived(fullscreenElement !== null);
+
   $effect(() => {
     if (asset) {
       previewStackedAsset = undefined;
