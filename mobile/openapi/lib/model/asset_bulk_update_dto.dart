@@ -14,6 +14,7 @@ class AssetBulkUpdateDto {
   /// Returns a new [AssetBulkUpdateDto] instance.
   AssetBulkUpdateDto({
     this.dateTimeOriginal,
+    this.dateTimeRelative,
     this.description,
     this.duplicateId,
     this.ids = const [],
@@ -31,6 +32,14 @@ class AssetBulkUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? dateTimeOriginal;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? dateTimeRelative;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -89,6 +98,7 @@ class AssetBulkUpdateDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
     other.dateTimeOriginal == dateTimeOriginal &&
+    other.dateTimeRelative == dateTimeRelative &&
     other.description == description &&
     other.duplicateId == duplicateId &&
     _deepEquality.equals(other.ids, ids) &&
@@ -102,6 +112,7 @@ class AssetBulkUpdateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
+    (dateTimeRelative == null ? 0 : dateTimeRelative!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (duplicateId == null ? 0 : duplicateId!.hashCode) +
     (ids.hashCode) +
@@ -112,7 +123,7 @@ class AssetBulkUpdateDto {
     (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, description=$description, duplicateId=$duplicateId, ids=$ids, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating, visibility=$visibility]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, dateTimeRelative=$dateTimeRelative, description=$description, duplicateId=$duplicateId, ids=$ids, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -120,6 +131,11 @@ class AssetBulkUpdateDto {
       json[r'dateTimeOriginal'] = this.dateTimeOriginal;
     } else {
     //  json[r'dateTimeOriginal'] = null;
+    }
+    if (this.dateTimeRelative != null) {
+      json[r'dateTimeRelative'] = this.dateTimeRelative;
+    } else {
+    //  json[r'dateTimeRelative'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
@@ -170,6 +186,7 @@ class AssetBulkUpdateDto {
 
       return AssetBulkUpdateDto(
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
+        dateTimeRelative: num.parse('${json[r'dateTimeRelative']}'),
         description: mapValueOfType<String>(json, r'description'),
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
         ids: json[r'ids'] is Iterable

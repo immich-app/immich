@@ -8704,6 +8704,9 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "dateTimeRelative": {
+            "type": "number"
+          },
           "description": {
             "type": "string"
           },

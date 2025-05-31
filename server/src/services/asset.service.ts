@@ -108,22 +108,33 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, description, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, description, dateTimeOriginal, dateTimeRelative, latitude, longitude, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
-    if (
-      description !== undefined ||
-      dateTimeOriginal !== undefined ||
-      latitude !== undefined ||
-      longitude !== undefined
-    ) {
-      await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
-      await this.jobRepository.queueAll(
-        ids.map((id) => ({
-          name: JobName.SIDECAR_WRITE,
-          data: { id, description, dateTimeOriginal, latitude, longitude },
-        })),
-      );
+    const staticValuesChanged =
+      description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined;
+
+    if (staticValuesChanged || (dateTimeRelative != undefined && dateTimeRelative !== 0)) {
+      if (staticValuesChanged) {
+        await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
+      }
+
+      const dateTimes =
+        dateTimeRelative !== undefined && dateTimeRelative !== 0
+          ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative)
+          : null;
+
+      const entries: JobItem[] = (dateTimes ?? ids).map((entry: any) => ({
+        name: JobName.SIDECAR_WRITE,
+        data: {
+          id: entry.assetId ?? entry,
+          description,
+          dateTimeOriginal: entry.dateTimeOriginal?.toISOString() ?? dateTimeOriginal,
+          latitude,
+          longitude,
+        },
+      }));
+      await this.jobRepository.queueAll(entries);
     }
 
     if (
