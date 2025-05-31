@@ -269,7 +269,7 @@
         bind:this={$photoViewerImgElement}
         src={assetFileUrl}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {transparentBackgroundRequired ? 'checkerboard' : ''} {$slideshowState ===
+        class="h-full w-full {transparentBackgroundRequired ? 'bg-gray-300' : ''} {$slideshowState ===
         SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"
@@ -299,18 +299,5 @@
   #spinner {
     visibility: hidden;
     animation: 0s linear 0.4s forwards delayedVisibility;
-  }
-
-  .checkerboard {
-    background-color: #ccc;
-    background-image:
-      linear-gradient(45deg, #999 25%, transparent 25%), linear-gradient(-45deg, #999 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #999 75%), linear-gradient(-45deg, transparent 75%, #999 75%);
-    background-size: 20px 20px;
-    background-position:
-      0 0,
-      0 10px,
-      10px -10px,
-      -10px 0px;
   }
 </style>
