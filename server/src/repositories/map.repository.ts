@@ -230,6 +230,7 @@ export class MapRepository {
       this.loadAdmin(resourcePaths.geodata.admin2),
     ]);
 
+    await this.db.schema.dropTable('geodata_places_tmp').ifExists().execute();
     await this.db.transaction().execute(async (manager) => {
       await sql`CREATE TABLE geodata_places_tmp
                 (
@@ -238,7 +239,12 @@ export class MapRepository {
       await manager.schema.dropTable('geodata_places').execute();
       await manager.schema.alterTable('geodata_places_tmp').renameTo('geodata_places').execute();
     });
-
+    await this.db.schema
+      .createIndex('IDX_geodata_gist_earthcoord')
+      .on('geodata_places')
+      .using('gist')
+      .expression(sql`ll_to_earth_public(latitude, longitude)`)
+      .execute();
     await this.loadCities500(admin1, admin2);
     await this.createGeodataIndices();
   }
@@ -323,12 +329,6 @@ export class MapRepository {
   private createGeodataIndices() {
     return Promise.all([
       sql`ALTER TABLE geodata_places ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db),
-      sql`
-        CREATE INDEX IDX_geodata_gist_earthcoord
-                ON geodata_places
-                USING gist (ll_to_earth_public(latitude, longitude))
-                WITH (fillfactor = 100)
-      `.execute(this.db),
       this.db.schema
         .createIndex(`idx_geodata_places_alternate_names`)
         .on('geodata_places')
