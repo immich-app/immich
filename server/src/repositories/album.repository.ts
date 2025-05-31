@@ -6,6 +6,7 @@ import { columns, Exif } from 'src/database';
 import { Albums, DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
+import { withDefaultVisibility } from 'src/utils/database';
 
 export interface AlbumAssetCount {
   albumId: string;
@@ -58,6 +59,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
         .where('assets.deletedAt', 'is', null)
+        .$call(withDefaultVisibility)
         .orderBy('assets.fileCreatedAt', 'desc')
         .as('asset'),
     )
@@ -121,6 +123,7 @@ export class AlbumRepository {
     return (
       this.db
         .selectFrom('assets')
+        .$call(withDefaultVisibility)
         .innerJoin('albums_assets_assets as album_assets', 'album_assets.assetsId', 'assets.id')
         .select('album_assets.albumsId as albumId')
         .select((eb) => eb.fn.min(sql<Date>`("assets"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
