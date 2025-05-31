@@ -1,12 +1,16 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
+import 'package:openapi/api.dart' hide AssetVisibility, AssetOrder;
 
 class DriftSyncStreamRepository extends DriftDatabaseRepository
     implements ISyncStreamRepository {
@@ -134,21 +138,83 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
 
   @override
   Future<void> updateAlbumsV1(Iterable<SyncAlbumV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final album in data) {
+          final companion = RemoteAlbumEntityCompanion(
+            name: Value(album.name),
+            description: Value(album.description),
+            ownerId: Value(album.ownerId),
+            thumbnailAssetId: Value(album.thumbnailAssetId),
+            createdAt: Value(album.createdAt),
+            updatedAt: Value(album.updatedAt),
+            isActivityEnabled: Value(album.isActivityEnabled),
+            order: Value(album.order.toAssetOrder()),
+          );
 
+          batch.insert(
+            _db.remoteAlbumEntity,
+            companion.copyWith(id: Value(album.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (e, s) {
+      _logger.severe('Error while processing updateAlbumsV1', e, s);
+      rethrow;
+    }
   }
 
   @override
-  Future<void> deleteAlbumsV1(Iterable<SyncAlbumV1> data) async {
-
+  Future<void> deleteAlbumsV1(Iterable<SyncAlbumDeleteV1> data) async {
+    try {
+      _db.batch((batch) {
+        for (final album in data) {
+          batch.delete(
+            _db.remoteAlbumEntity,
+            RemoteAlbumEntityCompanion(id: Value(album.albumId)),
+          );
+        }
+      });
+    } catch (e, s) {
+      _logger.severe('Error while processing deleteAlbumsV1', e, s);
+      rethrow;
+    }
   }
 
   @override
   Future<void> updateAlbumUsersV1(Iterable<SyncAlbumUserV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final album in data) {
 
+        }
+      });
+    } catch (e, s) {
+      _logger.severe('Error while processing updateAlbumUsersV1', e, s);
+      rethrow;
+    }
   }
 
   @override
-  Future<void> deleteAlbumUsersV1(Iterable<SyncAlbumUserV1> data) async {
+  Future<void> deleteAlbumUsersV1(Iterable<SyncAlbumUserDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final albumUser in data) {
 
+        }
+      });
+    } catch (e, s) {
+      _logger.severe('Error while processing deleteAlbumUsersV1', e, s);
+      rethrow;
+    }
   }
+}
+
+extension on SyncAlbumV1OrderEnum {
+  AssetOrder toAssetOrder() => switch (this) {
+        SyncAlbumV1OrderEnum.asc => AssetOrder.asc,
+        SyncAlbumV1OrderEnum.desc => AssetOrder.desc,
+        _ => throw Exception('Unknown SyncAlbumV1OrderEnum value: $this'),
+      };
 }

@@ -14,13 +14,15 @@ class RemoteAlbumEntity extends Table
 
   TextColumn get description => text()();
 
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   TextColumn get ownerId =>
       text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
   TextColumn get thumbnailAssetId =>
-      text().references(RemoteAssetEntity, #id, onDelete: KeyAction.setNull)();
+      text().references(RemoteAssetEntity, #id, onDelete: KeyAction.setNull).nullable()();
 
   BoolColumn get isActivityEnabled => boolean().withDefault(const Constant(true))();
 

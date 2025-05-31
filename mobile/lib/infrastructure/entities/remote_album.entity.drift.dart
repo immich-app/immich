@@ -18,9 +18,10 @@ typedef $$RemoteAlbumEntityTableCreateCompanionBuilder
   required String id,
   required String name,
   required String description,
+  i0.Value<DateTime> createdAt,
   i0.Value<DateTime> updatedAt,
   required String ownerId,
-  required String thumbnailAssetId,
+  i0.Value<String?> thumbnailAssetId,
   i0.Value<bool> isActivityEnabled,
   required i2.AssetOrder order,
 });
@@ -29,9 +30,10 @@ typedef $$RemoteAlbumEntityTableUpdateCompanionBuilder
   i0.Value<String> id,
   i0.Value<String> name,
   i0.Value<String> description,
+  i0.Value<DateTime> createdAt,
   i0.Value<DateTime> updatedAt,
   i0.Value<String> ownerId,
-  i0.Value<String> thumbnailAssetId,
+  i0.Value<String?> thumbnailAssetId,
   i0.Value<bool> isActivityEnabled,
   i0.Value<i2.AssetOrder> order,
 });
@@ -81,9 +83,9 @@ final class $$RemoteAlbumEntityTableReferences extends i0.BaseReferences<
                   .resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity')
                   .id));
 
-  i7.$$RemoteAssetEntityTableProcessedTableManager get thumbnailAssetId {
-    final $_column = $_itemColumn<String>('thumbnail_asset_id')!;
-
+  i7.$$RemoteAssetEntityTableProcessedTableManager? get thumbnailAssetId {
+    final $_column = $_itemColumn<String>('thumbnail_asset_id');
+    if ($_column == null) return null;
     final manager = i7
         .$$RemoteAssetEntityTableTableManager(
             $_db,
@@ -115,6 +117,9 @@ class $$RemoteAlbumEntityTableFilterComposer
   i0.ColumnFilters<String> get description => $composableBuilder(
       column: $table.description,
       builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
@@ -192,6 +197,10 @@ class $$RemoteAlbumEntityTableOrderingComposer
       column: $table.description,
       builder: (column) => i0.ColumnOrderings(column));
 
+  i0.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt,
+      builder: (column) => i0.ColumnOrderings(column));
+
   i0.ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt,
       builder: (column) => i0.ColumnOrderings(column));
@@ -267,6 +276,9 @@ class $$RemoteAlbumEntityTableAnnotationComposer
 
   i0.GeneratedColumn<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => column);
+
+  i0.GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   i0.GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
@@ -352,9 +364,10 @@ class $$RemoteAlbumEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
+            i0.Value<DateTime> createdAt = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<String> ownerId = const i0.Value.absent(),
-            i0.Value<String> thumbnailAssetId = const i0.Value.absent(),
+            i0.Value<String?> thumbnailAssetId = const i0.Value.absent(),
             i0.Value<bool> isActivityEnabled = const i0.Value.absent(),
             i0.Value<i2.AssetOrder> order = const i0.Value.absent(),
           }) =>
@@ -362,6 +375,7 @@ class $$RemoteAlbumEntityTableTableManager extends i0.RootTableManager<
             id: id,
             name: name,
             description: description,
+            createdAt: createdAt,
             updatedAt: updatedAt,
             ownerId: ownerId,
             thumbnailAssetId: thumbnailAssetId,
@@ -372,9 +386,10 @@ class $$RemoteAlbumEntityTableTableManager extends i0.RootTableManager<
             required String id,
             required String name,
             required String description,
+            i0.Value<DateTime> createdAt = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             required String ownerId,
-            required String thumbnailAssetId,
+            i0.Value<String?> thumbnailAssetId = const i0.Value.absent(),
             i0.Value<bool> isActivityEnabled = const i0.Value.absent(),
             required i2.AssetOrder order,
           }) =>
@@ -382,6 +397,7 @@ class $$RemoteAlbumEntityTableTableManager extends i0.RootTableManager<
             id: id,
             name: name,
             description: description,
+            createdAt: createdAt,
             updatedAt: updatedAt,
             ownerId: ownerId,
             thumbnailAssetId: thumbnailAssetId,
@@ -481,6 +497,14 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
   late final i0.GeneratedColumn<String> description =
       i0.GeneratedColumn<String>('description', aliasedName, false,
           type: i0.DriftSqlType.string, requiredDuringInsert: true);
+  static const i0.VerificationMeta _createdAtMeta =
+      const i0.VerificationMeta('createdAt');
+  @override
+  late final i0.GeneratedColumn<DateTime> createdAt =
+      i0.GeneratedColumn<DateTime>('created_at', aliasedName, false,
+          type: i0.DriftSqlType.dateTime,
+          requiredDuringInsert: false,
+          defaultValue: i4.currentDateAndTime);
   static const i0.VerificationMeta _updatedAtMeta =
       const i0.VerificationMeta('updatedAt');
   @override
@@ -502,9 +526,9 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
       const i0.VerificationMeta('thumbnailAssetId');
   @override
   late final i0.GeneratedColumn<String> thumbnailAssetId =
-      i0.GeneratedColumn<String>('thumbnail_asset_id', aliasedName, false,
+      i0.GeneratedColumn<String>('thumbnail_asset_id', aliasedName, true,
           type: i0.DriftSqlType.string,
-          requiredDuringInsert: true,
+          requiredDuringInsert: false,
           defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
               'REFERENCES remote_asset_entity (id) ON DELETE SET NULL'));
   static const i0.VerificationMeta _isActivityEnabledMeta =
@@ -528,6 +552,7 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
         id,
         name,
         description,
+        createdAt,
         updatedAt,
         ownerId,
         thumbnailAssetId,
@@ -564,6 +589,10 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
     } else if (isInserting) {
       context.missing(_descriptionMeta);
     }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
@@ -579,8 +608,6 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
           _thumbnailAssetIdMeta,
           thumbnailAssetId.isAcceptableOrUnknown(
               data['thumbnail_asset_id']!, _thumbnailAssetIdMeta));
-    } else if (isInserting) {
-      context.missing(_thumbnailAssetIdMeta);
     }
     if (data.containsKey('is_activity_enabled')) {
       context.handle(
@@ -604,13 +631,14 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
           .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
       description: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}description'])!,
+      createdAt: attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       ownerId: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
       thumbnailAssetId: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.string,
-          data['${effectivePrefix}thumbnail_asset_id'])!,
+          i0.DriftSqlType.string, data['${effectivePrefix}thumbnail_asset_id']),
       isActivityEnabled: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.bool, data['${effectivePrefix}is_activity_enabled'])!,
       order: i1.$RemoteAlbumEntityTable.$converterorder.fromSql(attachedDatabase
@@ -637,18 +665,20 @@ class RemoteAlbumEntityData extends i0.DataClass
   final String id;
   final String name;
   final String description;
+  final DateTime createdAt;
   final DateTime updatedAt;
   final String ownerId;
-  final String thumbnailAssetId;
+  final String? thumbnailAssetId;
   final bool isActivityEnabled;
   final i2.AssetOrder order;
   const RemoteAlbumEntityData(
       {required this.id,
       required this.name,
       required this.description,
+      required this.createdAt,
       required this.updatedAt,
       required this.ownerId,
-      required this.thumbnailAssetId,
+      this.thumbnailAssetId,
       required this.isActivityEnabled,
       required this.order});
   @override
@@ -657,9 +687,12 @@ class RemoteAlbumEntityData extends i0.DataClass
     map['id'] = i0.Variable<String>(id);
     map['name'] = i0.Variable<String>(name);
     map['description'] = i0.Variable<String>(description);
+    map['created_at'] = i0.Variable<DateTime>(createdAt);
     map['updated_at'] = i0.Variable<DateTime>(updatedAt);
     map['owner_id'] = i0.Variable<String>(ownerId);
-    map['thumbnail_asset_id'] = i0.Variable<String>(thumbnailAssetId);
+    if (!nullToAbsent || thumbnailAssetId != null) {
+      map['thumbnail_asset_id'] = i0.Variable<String>(thumbnailAssetId);
+    }
     map['is_activity_enabled'] = i0.Variable<bool>(isActivityEnabled);
     {
       map['order'] = i0.Variable<int>(
@@ -675,9 +708,10 @@ class RemoteAlbumEntityData extends i0.DataClass
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       description: serializer.fromJson<String>(json['description']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       ownerId: serializer.fromJson<String>(json['ownerId']),
-      thumbnailAssetId: serializer.fromJson<String>(json['thumbnailAssetId']),
+      thumbnailAssetId: serializer.fromJson<String?>(json['thumbnailAssetId']),
       isActivityEnabled: serializer.fromJson<bool>(json['isActivityEnabled']),
       order: i1.$RemoteAlbumEntityTable.$converterorder
           .fromJson(serializer.fromJson<int>(json['order'])),
@@ -690,9 +724,10 @@ class RemoteAlbumEntityData extends i0.DataClass
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'description': serializer.toJson<String>(description),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'ownerId': serializer.toJson<String>(ownerId),
-      'thumbnailAssetId': serializer.toJson<String>(thumbnailAssetId),
+      'thumbnailAssetId': serializer.toJson<String?>(thumbnailAssetId),
       'isActivityEnabled': serializer.toJson<bool>(isActivityEnabled),
       'order': serializer.toJson<int>(
           i1.$RemoteAlbumEntityTable.$converterorder.toJson(order)),
@@ -703,18 +738,22 @@ class RemoteAlbumEntityData extends i0.DataClass
           {String? id,
           String? name,
           String? description,
+          DateTime? createdAt,
           DateTime? updatedAt,
           String? ownerId,
-          String? thumbnailAssetId,
+          i0.Value<String?> thumbnailAssetId = const i0.Value.absent(),
           bool? isActivityEnabled,
           i2.AssetOrder? order}) =>
       i1.RemoteAlbumEntityData(
         id: id ?? this.id,
         name: name ?? this.name,
         description: description ?? this.description,
+        createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         ownerId: ownerId ?? this.ownerId,
-        thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
+        thumbnailAssetId: thumbnailAssetId.present
+            ? thumbnailAssetId.value
+            : this.thumbnailAssetId,
         isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
         order: order ?? this.order,
       );
@@ -724,6 +763,7 @@ class RemoteAlbumEntityData extends i0.DataClass
       name: data.name.present ? data.name.value : this.name,
       description:
           data.description.present ? data.description.value : this.description,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
       thumbnailAssetId: data.thumbnailAssetId.present
@@ -742,6 +782,7 @@ class RemoteAlbumEntityData extends i0.DataClass
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('description: $description, ')
+          ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('ownerId: $ownerId, ')
           ..write('thumbnailAssetId: $thumbnailAssetId, ')
@@ -752,8 +793,8 @@ class RemoteAlbumEntityData extends i0.DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, name, description, updatedAt, ownerId,
-      thumbnailAssetId, isActivityEnabled, order);
+  int get hashCode => Object.hash(id, name, description, createdAt, updatedAt,
+      ownerId, thumbnailAssetId, isActivityEnabled, order);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -761,6 +802,7 @@ class RemoteAlbumEntityData extends i0.DataClass
           other.id == this.id &&
           other.name == this.name &&
           other.description == this.description &&
+          other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.ownerId == this.ownerId &&
           other.thumbnailAssetId == this.thumbnailAssetId &&
@@ -773,15 +815,17 @@ class RemoteAlbumEntityCompanion
   final i0.Value<String> id;
   final i0.Value<String> name;
   final i0.Value<String> description;
+  final i0.Value<DateTime> createdAt;
   final i0.Value<DateTime> updatedAt;
   final i0.Value<String> ownerId;
-  final i0.Value<String> thumbnailAssetId;
+  final i0.Value<String?> thumbnailAssetId;
   final i0.Value<bool> isActivityEnabled;
   final i0.Value<i2.AssetOrder> order;
   const RemoteAlbumEntityCompanion({
     this.id = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
     this.description = const i0.Value.absent(),
+    this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     this.ownerId = const i0.Value.absent(),
     this.thumbnailAssetId = const i0.Value.absent(),
@@ -792,21 +836,22 @@ class RemoteAlbumEntityCompanion
     required String id,
     required String name,
     required String description,
+    this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     required String ownerId,
-    required String thumbnailAssetId,
+    this.thumbnailAssetId = const i0.Value.absent(),
     this.isActivityEnabled = const i0.Value.absent(),
     required i2.AssetOrder order,
   })  : id = i0.Value(id),
         name = i0.Value(name),
         description = i0.Value(description),
         ownerId = i0.Value(ownerId),
-        thumbnailAssetId = i0.Value(thumbnailAssetId),
         order = i0.Value(order);
   static i0.Insertable<i1.RemoteAlbumEntityData> custom({
     i0.Expression<String>? id,
     i0.Expression<String>? name,
     i0.Expression<String>? description,
+    i0.Expression<DateTime>? createdAt,
     i0.Expression<DateTime>? updatedAt,
     i0.Expression<String>? ownerId,
     i0.Expression<String>? thumbnailAssetId,
@@ -817,6 +862,7 @@ class RemoteAlbumEntityCompanion
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (description != null) 'description': description,
+      if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (ownerId != null) 'owner_id': ownerId,
       if (thumbnailAssetId != null) 'thumbnail_asset_id': thumbnailAssetId,
@@ -829,15 +875,17 @@ class RemoteAlbumEntityCompanion
       {i0.Value<String>? id,
       i0.Value<String>? name,
       i0.Value<String>? description,
+      i0.Value<DateTime>? createdAt,
       i0.Value<DateTime>? updatedAt,
       i0.Value<String>? ownerId,
-      i0.Value<String>? thumbnailAssetId,
+      i0.Value<String?>? thumbnailAssetId,
       i0.Value<bool>? isActivityEnabled,
       i0.Value<i2.AssetOrder>? order}) {
     return i1.RemoteAlbumEntityCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       ownerId: ownerId ?? this.ownerId,
       thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
@@ -857,6 +905,9 @@ class RemoteAlbumEntityCompanion
     }
     if (description.present) {
       map['description'] = i0.Variable<String>(description.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = i0.Variable<DateTime>(createdAt.value);
     }
     if (updatedAt.present) {
       map['updated_at'] = i0.Variable<DateTime>(updatedAt.value);
@@ -883,6 +934,7 @@ class RemoteAlbumEntityCompanion
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('description: $description, ')
+          ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('ownerId: $ownerId, ')
           ..write('thumbnailAssetId: $thumbnailAssetId, ')
