@@ -90,10 +90,10 @@ class ServerApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server/android-links' operation and returns the [Response].
-  Future<Response> getAndroidLinksWithHttpInfo() async {
+  /// Performs an HTTP 'GET /server/apk-links' operation and returns the [Response].
+  Future<Response> getApkLinksWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/server/android-links';
+    final apiPath = r'/server/apk-links';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -116,8 +116,8 @@ class ServerApi {
     );
   }
 
-  Future<ServerApkLinksDto?> getAndroidLinks() async {
-    final response = await getAndroidLinksWithHttpInfo();
+  Future<ServerApkLinksDto?> getApkLinks() async {
+    final response = await getApkLinksWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
