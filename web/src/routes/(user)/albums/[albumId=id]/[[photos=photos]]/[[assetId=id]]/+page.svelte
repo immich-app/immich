@@ -88,6 +88,7 @@
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import { type TimelineAsset } from '$lib/stores/assets-store.svelte';
 
   interface Props {
     data: PageData;
@@ -315,6 +316,11 @@
 
   const handleRemoveAssets = async (assetIds: string[]) => {
     assetStore.removeAssets(assetIds);
+    await refreshAlbum();
+  };
+
+  const handleUndoRemoveAssets = async (assets: TimelineAsset[]) => {
+    assetStore.addAssets(assets);
     await refreshAlbum();
   };
 
@@ -621,7 +627,7 @@
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
           {#if assetInteraction.isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
+            <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
           {/if}
         </ButtonContextMenu>
       </AssetSelectControlBar>
