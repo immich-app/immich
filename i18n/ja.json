@@ -824,7 +824,7 @@
   "email": "メールアドレス",
   "email_notifications": "Eメール通知",
   "empty_folder": "このフォルダーは空です",
-  "empty_trash": "コミ箱を空にする",
+  "empty_trash": "ゴミ箱を空にする",
   "empty_trash_confirmation": "本当にゴミ箱を空にしますか? これにより、ゴミ箱内のすべてのアセットが Immich から永久に削除されます。\nこの操作を元に戻すことはできません!",
   "enable": "有効化",
   "enable_biometric_auth_description": "生体認証を有効化するために、PINコードを入力してください",
