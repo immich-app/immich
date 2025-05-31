@@ -174,16 +174,16 @@
           <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
         </div>
         {#if timezoneInput}
-                <div>
-                  <Combobox
-                    bind:selectedOption
-                    label={$t('timezone')}
-                    options={timezones}
-                    placeholder={$t('search_timezone')}
-                    onSelect={(option) => handleOnSelect(option)}
-                  />
-                </div>
-              {/if}
+          <div>
+            <Combobox
+              bind:selectedOption
+              label={$t('timezone')}
+              options={timezones}
+              placeholder={$t('search_timezone')}
+              onSelect={(option) => handleOnSelect(option)}
+            />
+          </div>
+        {/if}
       </div>
       <div style="display: {showRelative ? 'block' : 'none'}">
         <div class="flex flex-col">
