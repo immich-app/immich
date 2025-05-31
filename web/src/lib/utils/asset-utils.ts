@@ -593,3 +593,31 @@ export const copyImageToClipboard = async (source: HTMLImageElement | string) =>
   const blob = source instanceof HTMLImageElement ? await imgToBlob(source) : await urlToBlob(source);
   await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
 };
+
+export const imageHasTransparency = async (assetFileUrl: string): Promise<boolean> => {
+  const source: Blob = await urlToBlob(assetFileUrl);
+  const bitmap: ImageBitmap = await createImageBitmap(source);
+
+  const canvas: HTMLCanvasElement = document.createElement('canvas');
+  const context: CanvasRenderingContext2D | null = canvas.getContext('2d');
+
+  if (!context) {
+    return false;
+  }
+
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+
+  context.drawImage(bitmap, 0, 0);
+
+  const imageData: ImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  const pixelData: Uint8ClampedArray = imageData.data;
+
+  for (let i: number = 3; i < pixelData.length; i += 4) {
+    if (pixelData[i] < 255) {
+      return true;
+    }
+  }
+
+  return false;
+};
