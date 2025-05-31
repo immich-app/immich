@@ -14235,6 +14235,10 @@
           "color": {
             "nullable": true,
             "type": "string"
+          },
+          "name": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "type": "object"

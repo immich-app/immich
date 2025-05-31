@@ -1438,6 +1438,7 @@ export type TagBulkAssetsResponseDto = {
 };
 export type TagUpdateDto = {
     color?: string | null;
+    name?: string | null;
 };
 export type TimeBucketAssetResponseDto = {
     city: (string | null)[];
