@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/models/places/place_result.model.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 
 import 'package:immich_mobile/services/search.service.dart';
@@ -29,7 +30,7 @@ final getPreviewPlacesProvider =
 });
 
 final getAllPlacesProvider =
-    FutureProvider.autoDispose<List<SearchCuratedContent>>((ref) async {
+    FutureProvider.autoDispose<List<PlaceResult>>((ref) async {
   final SearchService searchService = ref.watch(searchServiceProvider);
 
   final assetPlaces = await searchService.getAllPlaces();
@@ -40,9 +41,11 @@ final getAllPlacesProvider =
 
   final curatedContent = assetPlaces
       .map(
-        (data) => SearchCuratedContent(
+        (data) => PlaceResult(
           label: data.exifInfo!.city!,
           id: data.id,
+          latitude: data.exifInfo!.latitude!.toDouble(),
+          longitude: data.exifInfo!.longitude!.toDouble(),
         ),
       )
       .toList();
