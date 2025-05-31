@@ -137,7 +137,6 @@ export class SyncAlbumV1 {
   updatedAt!: Date;
   thumbnailAssetId!: string | null;
   isActivityEnabled!: boolean;
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order!: AssetOrder;
 }
 

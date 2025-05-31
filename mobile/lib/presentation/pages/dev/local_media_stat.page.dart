@@ -19,6 +19,18 @@ final _stats = [
   ),
 ];
 
+final _remoteStats = [
+  _Stat(
+    name: 'Remote Assets',
+    load: (db) => db.managers.remoteAssetEntity.count(),
+  ),
+  _Stat(name: 'Exif Entities', load: (db) => db.managers.exifEntity.count()),
+  _Stat(
+    name: 'Remote Albums',
+    load: (db) => db.managers.remoteAlbumEntity.count(),
+  ),
+];
+
 @RoutePage()
 class LocalMediaSummaryPage extends StatelessWidget {
   const LocalMediaSummaryPage({super.key});
