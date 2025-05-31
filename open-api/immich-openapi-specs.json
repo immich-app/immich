@@ -15146,9 +15146,6 @@
           "name": {
             "type": "string"
           },
-          "onboardingCompleted": {
-            "type": "boolean"
-          },
           "password": {
             "type": "string"
           }

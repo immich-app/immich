@@ -16,7 +16,6 @@ class UserUpdateMeDto {
     this.avatarColor,
     this.email,
     this.name,
-    this.onboardingCompleted,
     this.password,
   });
 
@@ -44,14 +43,6 @@ class UserUpdateMeDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? onboardingCompleted;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? password;
 
   @override
@@ -59,7 +50,6 @@ class UserUpdateMeDto {
     other.avatarColor == avatarColor &&
     other.email == email &&
     other.name == name &&
-    other.onboardingCompleted == onboardingCompleted &&
     other.password == password;
 
   @override
@@ -68,11 +58,10 @@ class UserUpdateMeDto {
     (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
-    (onboardingCompleted == null ? 0 : onboardingCompleted!.hashCode) +
     (password == null ? 0 : password!.hashCode);
 
   @override
-  String toString() => 'UserUpdateMeDto[avatarColor=$avatarColor, email=$email, name=$name, onboardingCompleted=$onboardingCompleted, password=$password]';
+  String toString() => 'UserUpdateMeDto[avatarColor=$avatarColor, email=$email, name=$name, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -90,11 +79,6 @@ class UserUpdateMeDto {
       json[r'name'] = this.name;
     } else {
     //  json[r'name'] = null;
-    }
-    if (this.onboardingCompleted != null) {
-      json[r'onboardingCompleted'] = this.onboardingCompleted;
-    } else {
-    //  json[r'onboardingCompleted'] = null;
     }
     if (this.password != null) {
       json[r'password'] = this.password;
@@ -116,7 +100,6 @@ class UserUpdateMeDto {
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
-        onboardingCompleted: mapValueOfType<bool>(json, r'onboardingCompleted'),
         password: mapValueOfType<String>(json, r'password'),
       );
     }

@@ -27,10 +27,6 @@ export class UserUpdateMeDto {
   @IsEnum(UserAvatarColor)
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
   avatarColor?: UserAvatarColor | null;
-
-  @Optional({ nullable: true })
-  @IsBoolean()
-  onboardingCompleted?: boolean;
 }
 
 export class UserResponseDto {

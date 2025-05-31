@@ -1469,7 +1469,6 @@ export type UserUpdateMeDto = {
     avatarColor?: (UserAvatarColor) | null;
     email?: string;
     name?: string;
-    onboardingCompleted?: boolean;
     password?: string;
 };
 export type OnboardingResponseDto = {
