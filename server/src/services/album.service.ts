@@ -93,6 +93,10 @@ export class AlbumService extends BaseService {
       if (!exists) {
         throw new BadRequestException('User not found');
       }
+
+      if (userId == auth.user.id) {
+        throw new BadRequestException('Cannot share album to owner');
+      }
     }
 
     const allowedAssetIdsSet = await this.checkAccess({
