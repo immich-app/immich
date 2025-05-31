@@ -131,4 +131,24 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   Future<void> updatePartnerAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
     debugPrint("updatePartnerAssetsExifV1 - ${data.length}");
   }
+
+  @override
+  Future<void> updateAlbumsV1(Iterable<SyncAlbumV1> data) async {
+
+  }
+
+  @override
+  Future<void> deleteAlbumsV1(Iterable<SyncAlbumV1> data) async {
+
+  }
+
+  @override
+  Future<void> updateAlbumUsersV1(Iterable<SyncAlbumUserV1> data) async {
+
+  }
+
+  @override
+  Future<void> deleteAlbumUsersV1(Iterable<SyncAlbumUserV1> data) async {
+
+  }
 }
