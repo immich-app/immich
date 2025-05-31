@@ -189,6 +189,22 @@ export class SyncRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getAlbumAssetDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('albums_assets_assets_audit')
+      .select(['id', 'albumId', 'assetId'])
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getAlbumAssetUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('albums_assets_assets')
+      .select(['albumsId as albumId', 'assetsId as assetId', 'updateId'])
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getAlbumUserDeletes(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('album_users_audit')

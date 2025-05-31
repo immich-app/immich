@@ -1,3 +1,4 @@
+import { UpdateIdColumn } from 'src/decorators';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { CreateDateColumn, ForeignKeyColumn, Table } from 'src/sql-tools';
@@ -12,4 +13,7 @@ export class AlbumAssetTable {
 
   @CreateDateColumn()
   createdAt!: Date;
+
+  @UpdateIdColumn({ indexName: 'IDX_album_assets_assets_update_id' })
+  updateId?: string;
 }
