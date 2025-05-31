@@ -5275,9 +5275,9 @@
         ]
       }
     },
-    "/server/android-links": {
+    "/server/apk-links": {
       "get": {
-        "operationId": "getAndroidLinks",
+        "operationId": "getApkLinks",
         "parameters": [],
         "responses": {
           "200": {
@@ -8335,10 +8335,6 @@
             "type": "array"
           }
         },
-        "required": [
-          "name",
-          "permissions"
-        ],
         "type": "object"
       },
       "ActivityCreateDto": {
@@ -13134,6 +13130,9 @@
             "nullable": true,
             "type": "string"
           },
+          "originalFileName": {
+            "type": "string"
+          },
           "ownerId": {
             "type": "string"
           },
@@ -13168,6 +13167,7 @@
           "id",
           "isFavorite",
           "localDateTime",
+          "originalFileName",
           "ownerId",
           "thumbhash",
           "type",

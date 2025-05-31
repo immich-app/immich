@@ -415,8 +415,8 @@ export type ApiKeyCreateResponseDto = {
     secret: string;
 };
 export type ApiKeyUpdateDto = {
-    name: string;
-    permissions: Permission[];
+    name?: string;
+    permissions?: Permission[];
 };
 export type AssetBulkDeleteDto = {
     force?: boolean;
@@ -2875,11 +2875,11 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function getAndroidLinks(opts?: Oazapfts.RequestOpts) {
+export function getApkLinks(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: ServerApkLinksDto;
-    }>("/server/android-links", {
+    }>("/server/apk-links", {
         ...opts
     }));
 }

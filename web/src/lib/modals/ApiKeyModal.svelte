@@ -110,7 +110,13 @@
     Permission.PersonReassign,
   ]);
 
-  permissions.set('session', [Permission.SessionRead, Permission.SessionUpdate, Permission.SessionDelete]);
+  permissions.set('session', [
+    Permission.SessionCreate,
+    Permission.SessionRead,
+    Permission.SessionUpdate,
+    Permission.SessionDelete,
+    Permission.SessionLock,
+  ]);
 
   permissions.set('sharedLink', [
     Permission.SharedLinkCreate,

@@ -7,7 +7,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -180,10 +179,10 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               child: action,
             ),
           ),
-        if (kDebugMode)
+        if (kDebugMode || kProfileMode)
           IconButton(
-            onPressed: () => ref.read(backgroundSyncProvider).sync(),
-            icon: const Icon(Icons.sync),
+            icon: const Icon(Icons.science_rounded),
+            onPressed: () => context.pushRoute(const FeatInDevRoute()),
           ),
         if (showUploadButton)
           Padding(

@@ -23,6 +23,7 @@ describe.concurrent(SyncRequestType.PartnerAssetsV1, () => {
   it('should detect and sync the first partner asset', async () => {
     const { auth, sut, getRepository, testSync } = await setup();
 
+    const originalFileName = 'firstPartnerAsset';
     const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
     const thumbhash = '2225vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
     const date = new Date().toISOString();
@@ -34,6 +35,7 @@ describe.concurrent(SyncRequestType.PartnerAssetsV1, () => {
     const assetRepo = getRepository('asset');
     const asset = mediumFactory.assetInsert({
       ownerId: user2.id,
+      originalFileName,
       checksum: Buffer.from(checksum, 'base64'),
       thumbhash: Buffer.from(thumbhash, 'base64'),
       fileCreatedAt: date,
@@ -56,6 +58,7 @@ describe.concurrent(SyncRequestType.PartnerAssetsV1, () => {
           data: {
             id: asset.id,
             ownerId: asset.ownerId,
+            originalFileName,
             thumbhash,
             checksum,
             deletedAt: null,
