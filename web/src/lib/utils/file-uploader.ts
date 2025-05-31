@@ -7,6 +7,7 @@ import { ExecutorQueue } from '$lib/utils/executor-queue';
 import {
   Action,
   AssetMediaStatus,
+  AssetVisibility,
   checkBulkUpload,
   getAssetOriginalPath,
   getBaseUrl,
@@ -88,6 +89,7 @@ export const fileUploadHandler = async (
   files: File[],
   albumId?: string,
   replaceAssetId?: string,
+  isLockedAssets: boolean = false,
 ): Promise<string[]> => {
   const extensions = await getExtensions();
   const promises = [];
@@ -96,7 +98,9 @@ export const fileUploadHandler = async (
     if (extensions.some((extension) => name.endsWith(extension))) {
       const deviceAssetId = getDeviceAssetId(file);
       uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId });
-      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, deviceAssetId, albumId, replaceAssetId)));
+      promises.push(
+        uploadExecutionQueue.addTask(() => fileUploader(file, deviceAssetId, albumId, replaceAssetId, isLockedAssets)),
+      );
     }
   }
 
@@ -114,6 +118,7 @@ async function fileUploader(
   deviceAssetId: string,
   albumId?: string,
   replaceAssetId?: string,
+  isLockedAssets: boolean = false,
 ): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const $t = get(t);
@@ -132,6 +137,10 @@ async function fileUploader(
       assetData: new File([assetFile], assetFile.name),
     })) {
       formData.append(key, value);
+    }
+
+    if (isLockedAssets) {
+      formData.append('visibility', AssetVisibility.Locked);
     }
 
     let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean } | undefined;
