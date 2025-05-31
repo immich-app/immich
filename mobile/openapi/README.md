@@ -247,13 +247,16 @@ Class | Method | HTTP request | Description
 *UsersApi* | [**createProfileImage**](doc//UsersApi.md#createprofileimage) | **POST** /users/profile-image | 
 *UsersApi* | [**deleteProfileImage**](doc//UsersApi.md#deleteprofileimage) | **DELETE** /users/profile-image | 
 *UsersApi* | [**deleteUserLicense**](doc//UsersApi.md#deleteuserlicense) | **DELETE** /users/me/license | 
+*UsersApi* | [**deleteUserOnboarding**](doc//UsersApi.md#deleteuseronboarding) | **DELETE** /users/me/onboarding | 
 *UsersApi* | [**getMyPreferences**](doc//UsersApi.md#getmypreferences) | **GET** /users/me/preferences | 
 *UsersApi* | [**getMyUser**](doc//UsersApi.md#getmyuser) | **GET** /users/me | 
 *UsersApi* | [**getProfileImage**](doc//UsersApi.md#getprofileimage) | **GET** /users/{id}/profile-image | 
 *UsersApi* | [**getUser**](doc//UsersApi.md#getuser) | **GET** /users/{id} | 
 *UsersApi* | [**getUserLicense**](doc//UsersApi.md#getuserlicense) | **GET** /users/me/license | 
+*UsersApi* | [**getUserOnboarding**](doc//UsersApi.md#getuseronboarding) | **GET** /users/me/onboarding | 
 *UsersApi* | [**searchUsers**](doc//UsersApi.md#searchusers) | **GET** /users | 
 *UsersApi* | [**setUserLicense**](doc//UsersApi.md#setuserlicense) | **PUT** /users/me/license | 
+*UsersApi* | [**setUserOnboarding**](doc//UsersApi.md#setuseronboarding) | **PUT** /users/me/onboarding | 
 *UsersApi* | [**updateMyPreferences**](doc//UsersApi.md#updatemypreferences) | **PUT** /users/me/preferences | 
 *UsersApi* | [**updateMyUser**](doc//UsersApi.md#updatemyuser) | **PUT** /users/me | 
 *UsersAdminApi* | [**createUserAdmin**](doc//UsersAdminApi.md#createuseradmin) | **POST** /admin/users | 
@@ -385,6 +388,8 @@ Class | Method | HTTP request | Description
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthTokenEndpointAuthMethod](doc//OAuthTokenEndpointAuthMethod.md)
  - [OnThisDayDto](doc//OnThisDayDto.md)
+ - [OnboardingDto](doc//OnboardingDto.md)
+ - [OnboardingResponseDto](doc//OnboardingResponseDto.md)
  - [PartnerDirection](doc//PartnerDirection.md)
  - [PartnerResponseDto](doc//PartnerResponseDto.md)
  - [PeopleResponse](doc//PeopleResponse.md)

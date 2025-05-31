@@ -177,6 +177,8 @@ part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
 part 'model/o_auth_token_endpoint_auth_method.dart';
 part 'model/on_this_day_dto.dart';
+part 'model/onboarding_dto.dart';
+part 'model/onboarding_response_dto.dart';
 part 'model/partner_direction.dart';
 part 'model/partner_response_dto.dart';
 part 'model/people_response.dart';

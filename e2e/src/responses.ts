@@ -103,6 +103,7 @@ export const loginResponseDto = {
     accessToken: expect.any(String),
     name: 'Immich Admin',
     isAdmin: true,
+    isOnboarded: false,
     profileImagePath: '',
     shouldChangePassword: true,
     userEmail: 'admin@immich.cloud',

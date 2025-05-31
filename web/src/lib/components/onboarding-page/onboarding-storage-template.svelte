@@ -5,18 +5,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { getConfig, type SystemConfigDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
-  import { mdiArrowLeft, mdiCheck, mdiHarddisk } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
-  import OnboardingCard from './onboarding-card.svelte';
-
-  interface Props {
-    onDone: () => void;
-    onPrevious: () => void;
-  }
-
-  let { onDone, onPrevious }: Props = $props();
 
   let config: SystemConfigDto | undefined = $state();
   let adminSettingsComponent = $state<ReturnType<typeof AdminSettings>>();
@@ -24,9 +13,13 @@
   onMount(async () => {
     config = await getConfig();
   });
+
+  export const save = async () => {
+    await adminSettingsComponent?.handleSave({ storageTemplate: config?.storageTemplate });
+  };
 </script>
 
-<OnboardingCard title={$t('admin.storage_template_settings')} icon={mdiHarddisk}>
+<div class="flex flex-col">
   <p>
     <FormatMessage key="admin.storage_template_onboarding_description">
       {#snippet children({ message })}
@@ -48,36 +41,9 @@
             onSave={(config) => adminSettingsComponent?.handleSave(config)}
             onReset={(options) => adminSettingsComponent?.handleReset(options)}
             duration={0}
-          >
-            <div class="flex pt-4">
-              <div class="w-full flex place-content-start">
-                <Button
-                  shape="round"
-                  leadingIcon={mdiArrowLeft}
-                  class="flex gap-2 place-content-center"
-                  onclick={() => onPrevious()}
-                >
-                  <p>{$t('privacy')}</p>
-                </Button>
-              </div>
-              <div class="flex w-full place-content-end">
-                <Button
-                  shape="round"
-                  trailingIcon={mdiCheck}
-                  onclick={() => {
-                    adminSettingsComponent?.handleSave({ storageTemplate: config?.storageTemplate });
-                    onDone();
-                  }}
-                >
-                  <span class="flex place-content-center place-items-center gap-2">
-                    {$t('done')}
-                  </span>
-                </Button>
-              </div>
-            </div>
-          </StorageTemplateSettings>
+          />
         {/if}
       {/snippet}
     </AdminSettings>
   {/if}
-</OnboardingCard>
+</div>
