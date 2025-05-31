@@ -89,6 +89,10 @@ class SyncStreamService {
         return _syncStreamRepository.updateAlbumsV1(data.cast());
       case SyncEntityType.albumDeleteV1:
         return _syncStreamRepository.deleteAlbumsV1(data.cast());
+      // case SyncEntityType.albumAssetV1:
+      //   return _syncStreamRepository.updateAlbumAssetsV1(data.cast());
+      // case SyncEntityType.albumAssetDeleteV1:
+      //   return _syncStreamRepository.deleteAlbumAssetsV1(data.cast());
       case SyncEntityType.albumUserV1:
         return _syncStreamRepository.updateAlbumUsersV1(data.cast());
       case SyncEntityType.albumUserDeleteV1:

@@ -2,15 +2,18 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album_user.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/entities/album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
+// import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' hide AssetVisibility, AssetOrder;
+import 'package:openapi/api.dart' hide AssetVisibility, AssetOrder, AlbumUserRole;
 
 class DriftSyncStreamRepository extends DriftDatabaseRepository
     implements ISyncStreamRepository {
@@ -182,12 +185,57 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
+  // @override
+  // Future<void> updateAlbumAssetsV1(Iterable<SyncAlbumAssetV1> data) async {
+  //   try {
+  //     await _db.remoteAlbumAssetEntity.insertAll(
+  //       data.map(
+  //         (albumAsset) => RemoteAlbumAssetEntityCompanion.insert(
+  //           albumId: albumAsset.albumId,
+  //           assetId: albumAsset.assetId,
+  //         ),
+  //       ),
+  //       mode: InsertMode.insertOrIgnore,
+  //     );
+  //   } catch (e, s) {
+  //     _logger.severe('Error while processing updateAlbumAssetsV1', e, s);
+  //     rethrow;
+  //   }
+  // }
+
+  // @override
+  // Future<void> deleteAlbumAssetsV1(Iterable<SyncAlbumAssetDeleteV1> data) async {
+  //   try {
+  //     await _db.batch((batch) {
+  //       for (final albumAsset in data) {
+  //         batch.delete(
+  //           _db.remoteAlbumAssetEntity,
+  //           RemoteAlbumAssetEntityCompanion(
+  //             albumId: Value(albumAsset.albumId),
+  //             assetId: Value(albumAsset.assetId),
+  //           ),
+  //         );
+  //       }
+  //     });
+  //   } catch (e, s) {
+  //     _logger.severe('Error while processing deleteAlbumAssetsV1', e, s);
+  //     rethrow;
+  //   }
+  // }
+
   @override
   Future<void> updateAlbumUsersV1(Iterable<SyncAlbumUserV1> data) async {
     try {
       await _db.batch((batch) {
-        for (final album in data) {
+        for (final albumUser in data) {
+          final companion =
+              AlbumUserEntityCompanion(role: Value(albumUser.role.toAlbumUserRole()));
 
+          batch.insert(
+            _db.albumUserEntity,
+            companion.copyWith(albumId: Value(albumUser.albumId), userId: Value(albumUser.userId)),
+            onConflict: DoUpdate((_) => companion),
+          );
         }
       });
     } catch (e, s) {
@@ -201,7 +249,13 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     try {
       await _db.batch((batch) {
         for (final albumUser in data) {
-
+          batch.delete(
+            _db.albumUserEntity,
+            AlbumUserEntityCompanion(
+              albumId: Value(albumUser.albumId),
+              userId: Value(albumUser.userId),
+            ),
+          );
         }
       });
     } catch (e, s) {
@@ -216,5 +270,13 @@ extension on SyncAlbumV1OrderEnum {
         SyncAlbumV1OrderEnum.asc => AssetOrder.asc,
         SyncAlbumV1OrderEnum.desc => AssetOrder.desc,
         _ => throw Exception('Unknown SyncAlbumV1OrderEnum value: $this'),
+      };
+}
+
+extension on SyncAlbumUserV1RoleEnum {
+  AlbumUserRole toAlbumUserRole() => switch (this) {
+        SyncAlbumUserV1RoleEnum.editor => AlbumUserRole.editor,
+        SyncAlbumUserV1RoleEnum.viewer => AlbumUserRole.viewer,
+        _ => throw Exception('Unknown SyncAlbumUserV1RoleEnum value: $this'),
       };
 }

@@ -21,6 +21,8 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.
     as i9;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart'
     as i10;
+import 'package:immich_mobile/infrastructure/entities/album_user.entity.drift.dart'
+    as i11;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -43,6 +45,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i9.$RemoteAlbumAssetEntityTable remoteAlbumAssetEntity =
       i9.$RemoteAlbumAssetEntityTable(this);
   late final i10.$ExifEntityTable exifEntity = i10.$ExifEntityTable(this);
+  late final i11.$AlbumUserEntityTable albumUserEntity =
+      i11.$AlbumUserEntityTable(this);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -59,6 +63,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
         remoteAlbumEntity,
         remoteAlbumAssetEntity,
         exifEntity,
+        albumUserEntity,
         i5.idxLocalAssetChecksum,
         i7.uQRemoteAssetOwnerChecksum
       ];
@@ -141,6 +146,20 @@ abstract class $Drift extends i0.GeneratedDatabase {
                   kind: i0.UpdateKind.delete),
             ],
           ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('remote_album_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('album_user_entity', kind: i0.UpdateKind.delete),
+            ],
+          ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('user_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('album_user_entity', kind: i0.UpdateKind.delete),
+            ],
+          ),
         ],
       );
   @override
@@ -172,4 +191,6 @@ class $DriftManager {
           _db, _db.remoteAlbumAssetEntity);
   i10.$$ExifEntityTableTableManager get exifEntity =>
       i10.$$ExifEntityTableTableManager(_db, _db.exifEntity);
+  i11.$$AlbumUserEntityTableTableManager get albumUserEntity =>
+      i11.$$AlbumUserEntityTableTableManager(_db, _db.albumUserEntity);
 }

@@ -19,6 +19,9 @@ abstract interface class ISyncStreamRepository implements IDatabaseRepository {
   Future<void> updateAlbumsV1(Iterable<SyncAlbumV1> data);
   Future<void> deleteAlbumsV1(Iterable<SyncAlbumDeleteV1> data);
 
+  // Future<void> updateAlbumAssetsV1(Iterable<SyncAlbumAssetV1> data);
+  // Future<void> deleteAlbumAssetsV1(Iterable<SyncAlbumAssetV1> data);
+
   Future<void> updateAlbumUsersV1(Iterable<SyncAlbumUserV1> data);
   Future<void> deleteAlbumUsersV1(Iterable<SyncAlbumUserDeleteV1> data);
 }

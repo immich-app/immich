@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
+import 'package:immich_mobile/infrastructure/entities/album_user.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
@@ -43,6 +45,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     RemoteAlbumEntity,
     RemoteAlbumAssetEntity,
     ExifEntity,
+    AlbumUserEntity,
   ],
 )
 class Drift extends $Drift implements IDatabaseRepository {
