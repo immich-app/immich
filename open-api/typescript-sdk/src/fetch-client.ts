@@ -1335,7 +1335,7 @@ export type SystemConfigOAuthDto = {
     buttonText: string;
     clientId: string;
     clientSecret: string;
-    defaultStorageQuota: number;
+    defaultStorageQuota?: number;
     enabled: boolean;
     issuerUrl: string;
     mobileOverrideEnabled: boolean;

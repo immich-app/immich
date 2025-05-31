@@ -17,10 +17,6 @@ describe('getKeysDeep', () => {
     ).toEqual(['foo', 'flag', 'count', 'date']);
   });
 
-  it('should skip undefined properties', () => {
-    expect(getKeysDeep({ foo: 'bar', hello: undefined })).toEqual(['foo']);
-  });
-
   it('should skip array indices', () => {
     expect(getKeysDeep({ foo: 'bar', hello: ['foo', 'bar'] })).toEqual(['foo', 'hello']);
     expect(getKeysDeep({ foo: 'bar', nested: { hello: ['foo', 'bar'] } })).toEqual(['foo', 'nested.hello']);

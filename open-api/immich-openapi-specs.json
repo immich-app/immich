@@ -13832,8 +13832,9 @@
             "type": "string"
           },
           "defaultStorageQuota": {
+            "format": "int64",
             "minimum": 0,
-            "type": "number"
+            "type": "integer"
           },
           "enabled": {
             "type": "boolean"
@@ -13881,7 +13882,6 @@
           "buttonText",
           "clientId",
           "clientSecret",
-          "defaultStorageQuota",
           "enabled",
           "issuerUrl",
           "mobileOverrideEnabled",

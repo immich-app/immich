@@ -360,7 +360,9 @@ class SystemConfigOAuthDto {
 
   @IsNumber()
   @Min(0)
-  defaultStorageQuota!: number;
+  @Optional()
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  defaultStorageQuota?: number;
 
   @ValidateBoolean()
   enabled!: boolean;
