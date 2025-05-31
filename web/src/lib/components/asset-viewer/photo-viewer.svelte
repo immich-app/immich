@@ -1,29 +1,34 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import {shortcuts} from '$lib/actions/shortcut';
+  import {zoomed, zoomImageAction} from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { photoViewerImgElement, type TimelineAsset } from '$lib/stores/assets-store.svelte';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
-  import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getBoundingBox } from '$lib/utils/people-utils';
-  import { cancelImageUrl } from '$lib/utils/sw-messaging';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { onDestroy, onMount } from 'svelte';
-  import { swipe, type SwipeCustomEvent } from 'svelte-gestures';
-  import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
+  import {photoViewerImgElement, type TimelineAsset} from '$lib/stores/assets-store.svelte';
+  import {isFaceEditMode} from '$lib/stores/face-edit.svelte';
+  import {boundingBoxesArray} from '$lib/stores/people.store';
+  import {alwaysLoadOriginalFile} from '$lib/stores/preferences.store';
+  import {SlideshowLook, slideshowLookCssMapping, SlideshowState, slideshowStore} from '$lib/stores/slideshow.store';
+  import {photoZoomState} from '$lib/stores/zoom-image.store';
+  import {getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError} from '$lib/utils';
+  import {
+    canCopyImageToClipboard,
+    copyImageToClipboard,
+    imageHasTransparency,
+    isWebCompatibleImage,
+  } from '$lib/utils/asset-utils';
+  import {handleError} from '$lib/utils/handle-error';
+  import {getBoundingBox} from '$lib/utils/people-utils';
+  import {cancelImageUrl} from '$lib/utils/sw-messaging';
+  import {getAltText} from '$lib/utils/thumbnail-util';
+  import {toTimelineAsset} from '$lib/utils/timeline-util';
+  import {AssetMediaSize, type AssetResponseDto, AssetTypeEnum, type SharedLinkResponseDto} from '@immich/sdk';
+  import {onDestroy, onMount} from 'svelte';
+  import {swipe, type SwipeCustomEvent} from 'svelte-gestures';
+  import {t} from 'svelte-i18n';
+  import {fade} from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { castManager } from '$lib/managers/cast-manager.svelte';
+  import {notificationController, NotificationType} from '../shared-components/notification/notification';
+  import {castManager} from '$lib/managers/cast-manager.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -173,6 +178,22 @@
     imageLoaded = true;
     assetFileUrl = imageLoaderUrl;
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
+
+    if (asset.type !== AssetTypeEnum.Image) {
+      return;
+    }
+
+    const fullsizeUrl: string = getAssetUrl(asset.id, AssetMediaSize.Fullsize, asset.thumbhash);
+    imageHasTransparency(fullsizeUrl)
+      .then((result) => {
+        transparentBackgroundRequired = result;
+        if (transparentBackgroundRequired) {
+          assetFileUrl = fullsizeUrl;
+        }
+      })
+      .catch((error) => {
+        handleError(error, 'Unable to determine image transparency');
+      });
   };
 
   const onerror = () => {
@@ -200,6 +221,8 @@
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+
+  let transparentBackgroundRequired = $state(false);
 </script>
 
 <svelte:document
@@ -246,7 +269,8 @@
         bind:this={$photoViewerImgElement}
         src={assetFileUrl}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {$slideshowState === SlideshowState.None
+        class="h-full w-full {transparentBackgroundRequired ? 'checkerboard' : ''} {$slideshowState ===
+        SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
@@ -275,5 +299,18 @@
   #spinner {
     visibility: hidden;
     animation: 0s linear 0.4s forwards delayedVisibility;
+  }
+
+  .checkerboard {
+    background-color: #ccc;
+    background-image:
+      linear-gradient(45deg, #999 25%, transparent 25%), linear-gradient(-45deg, #999 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #999 75%), linear-gradient(-45deg, transparent 75%, #999 75%);
+    background-size: 20px 20px;
+    background-position:
+      0 0,
+      0 10px,
+      10px -10px,
+      -10px 0px;
   }
 </style>
