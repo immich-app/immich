@@ -112,7 +112,7 @@
     "@types/bcrypt": "^5.0.0",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.8",
-    "@types/express": "^4.17.17",
+    "@types/express": "^5.0.0",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.14.197",
