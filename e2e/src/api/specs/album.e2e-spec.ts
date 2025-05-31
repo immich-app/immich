@@ -428,6 +428,15 @@ describe('/albums', () => {
         order: AssetOrder.Desc,
       });
     });
+
+    it('should not be able to share album with owner', async () => {
+      const { status, body } = await request(app)
+        .post('/albums')
+        .send({ albumName: 'New album', albumUsers: [{ role: AlbumUserRole.Editor, userId: user1.userId }] })
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Cannot share album to owner'));
+    });
   });
 
   describe('PUT /albums/:id/assets', () => {
