@@ -285,6 +285,22 @@ where
 order by
   "albums"."updateId" asc
 
+-- SyncRepository.getAlbumAssetDeletes
+select
+  "id",
+  "albumId",
+  "assetId"
+from
+  "albums_assets_assets_audit"
+
+-- SyncRepository.getAlbumAssetUpserts
+select
+  "albumsId",
+  "assetsId",
+  "updateId"
+from
+  "albums_assets_assets"
+
 -- SyncRepository.getAlbumUserDeletes
 select
   "id",

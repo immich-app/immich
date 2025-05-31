@@ -13,6 +13,7 @@ import {
   users_delete_audit,
 } from 'src/schema/functions';
 import { ActivityTable } from 'src/schema/tables/activity.table';
+import { AlbumAssetAuditTable } from 'src/schema/tables/album-asset-audit.table';
 import { AlbumAssetTable } from 'src/schema/tables/album-asset.table';
 import { AlbumAuditTable } from 'src/schema/tables/album-audit.table';
 import { AlbumUserAuditTable } from 'src/schema/tables/album-user-audit.table';
@@ -59,6 +60,7 @@ export class ImmichDatabase {
     ActivityTable,
     AlbumAssetTable,
     AlbumAuditTable,
+    AlbumAssetAuditTable,
     AlbumUserAuditTable,
     AlbumUserTable,
     AlbumTable,

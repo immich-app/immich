@@ -3906,6 +3906,8 @@ export enum SyncEntityType {
     PartnerAssetExifV1 = "PartnerAssetExifV1",
     AlbumV1 = "AlbumV1",
     AlbumDeleteV1 = "AlbumDeleteV1",
+    AlbumAssetV1 = "AlbumAssetV1",
+    AlbumAssetDeleteV1 = "AlbumAssetDeleteV1",
     AlbumUserV1 = "AlbumUserV1",
     AlbumUserDeleteV1 = "AlbumUserDeleteV1"
 }
@@ -3917,6 +3919,7 @@ export enum SyncRequestType {
     PartnerAssetsV1 = "PartnerAssetsV1",
     PartnerAssetExifsV1 = "PartnerAssetExifsV1",
     AlbumsV1 = "AlbumsV1",
+    AlbumAssetsV1 = "AlbumAssetsV1",
     AlbumUsersV1 = "AlbumUsersV1"
 }
 export enum TranscodeHWAccel {
