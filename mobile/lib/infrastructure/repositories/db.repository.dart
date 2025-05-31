@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset_hash.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
@@ -38,6 +39,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     LocalAlbumEntity,
     LocalAssetEntity,
     LocalAlbumAssetEntity,
+    LocalAssetHashEntity,
     RemoteAssetEntity,
     RemoteExifEntity,
   ],

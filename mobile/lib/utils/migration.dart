@@ -1,8 +1,10 @@
 // ignore_for_file: avoid-unsafe-collection-methods
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -13,14 +15,16 @@ import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset_hash.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 11;
+const int targetVersion = 12;
 
 Future<void> migrateDatabaseIfNeeded(Isar db) async {
   final int version = Store.get(StoreKey.version, targetVersion);
@@ -45,7 +49,13 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
     await _migrateDeviceAsset(db);
   }
 
-  final shouldTruncate = version < 8 && version < targetVersion;
+  if (version < 11) {
+    final drift = Drift();
+    await _migrateDeviceAssetToSqlite(db, drift);
+    await drift.close();
+  }
+
+  final shouldTruncate = version < 8 || version < targetVersion;
   if (shouldTruncate) {
     await _migrateTo(db, targetVersion);
   }
@@ -151,6 +161,22 @@ Future<void> _migrateDeviceAsset(Isar db) async {
 
   await db.writeTxn(() async {
     await db.deviceAssetEntitys.putAll(toAdd);
+  });
+}
+
+Future<void> _migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
+  final isarDeviceAssets = await db.deviceAssetEntitys.where().findAll();
+  await drift.batch((batch) {
+    for (final deviceAsset in isarDeviceAssets) {
+      batch.insert(
+        drift.localAssetHashEntity,
+        LocalAssetHashEntityCompanion.insert(
+          id: deviceAsset.assetId,
+          updatedAt: Value(deviceAsset.modifiedTime),
+          checksum: base64.encode(deviceAsset.hash),
+        ),
+      );
+    }
   });
 }
 

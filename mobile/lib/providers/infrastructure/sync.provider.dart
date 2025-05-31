@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
@@ -7,7 +8,9 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/device_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 
 final syncStreamServiceProvider = Provider(
@@ -31,5 +34,14 @@ final localSyncServiceProvider = Provider(
     localAlbumRepository: ref.watch(localAlbumRepository),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
     storeService: ref.watch(storeServiceProvider),
+  ),
+);
+
+final hashServiceProvider = Provider(
+  (ref) => HashService(
+    localAlbumRepository: ref.watch(localAlbumRepository),
+    localAssetHashRepository: ref.watch(assetHashRepositoryProvider),
+    storageRepository: ref.watch(storageRepositoryProvider),
+    nativeSyncApi: ref.watch(nativeSyncApiProvider),
   ),
 );

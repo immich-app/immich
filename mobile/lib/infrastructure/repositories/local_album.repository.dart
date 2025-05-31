@@ -98,12 +98,24 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       name: localAlbum.name,
       updatedAt: Value(localAlbum.updatedAt),
       backupSelection: localAlbum.backupSelection,
+      isCloud: Value(localAlbum.isCloud),
     );
 
     return _db.transaction(() async {
       await _db.localAlbumEntity
           .insertOne(companion, onConflict: DoUpdate((_) => companion));
-      await _addAssets(localAlbum.id, toUpsert);
+      if (toUpsert.isNotEmpty) {
+        await upsertAssets(toUpsert);
+        await _db.localAlbumAssetEntity.insertAll(
+          toUpsert.map(
+            (a) => LocalAlbumAssetEntityCompanion.insert(
+              assetId: a.id,
+              albumId: localAlbum.id,
+            ),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+      }
       await _removeAssets(localAlbum.id, toDelete);
     });
   }
@@ -122,6 +134,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
             name: album.name,
             updatedAt: Value(album.updatedAt),
             backupSelection: album.backupSelection,
+            isCloud: Value(album.isCloud),
             marker_: const Value(null),
           );
 
@@ -194,7 +207,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     return _db.transaction(() async {
       await _deleteAssets(deletes);
 
-      await _upsertAssets(updates);
+      await upsertAssets(updates);
       // The ugly casting below is required for now because the generated code
       // casts the returned values from the platform during decoding them
       // and iterating over them causes the type to be List<Object?> instead of
@@ -226,22 +239,46 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     });
   }
 
-  Future<void> _addAssets(String albumId, Iterable<LocalAsset> assets) {
-    if (assets.isEmpty) {
+  @override
+  Future<void> upsertAssets(Iterable<LocalAsset> localAssets) {
+    if (localAssets.isEmpty) {
       return Future.value();
     }
-    return transaction(() async {
-      await _upsertAssets(assets);
-      await _db.localAlbumAssetEntity.insertAll(
-        assets.map(
-          (a) => LocalAlbumAssetEntityCompanion.insert(
-            assetId: a.id,
-            albumId: albumId,
+
+    return _db.batch((batch) async {
+      batch.insertAllOnConflictUpdate(
+        _db.localAssetEntity,
+        localAssets.map(
+          (a) => LocalAssetEntityCompanion.insert(
+            name: a.name,
+            type: a.type,
+            createdAt: Value(a.createdAt),
+            updatedAt: Value(a.updatedAt),
+            durationInSeconds: Value.absentIfNull(a.durationInSeconds),
+            id: a.id,
+            checksum: Value.absentIfNull(a.checksum),
           ),
         ),
-        mode: InsertMode.insertOrIgnore,
       );
     });
+  }
+
+  @override
+  Future<List<LocalAsset>> getUnHashedAssets(String albumId) {
+    final query = _db.localAssetEntity.select()
+      ..join(
+        [
+          innerJoin(
+            _db.localAlbumAssetEntity,
+            _db.localAssetEntity.id
+                    .equalsExp(_db.localAlbumAssetEntity.assetId) &
+                _db.localAlbumAssetEntity.albumId.equals(albumId),
+          ),
+        ],
+      )
+      ..where((row) => row.checksum.isNull())
+      ..orderBy([(o) => OrderingTerm.asc(o.id)]);
+    return query.map((row) => row.toDto()).get();
   }
 
   Future<void> _removeAssets(String albumId, Iterable<String> assetIds) async {
@@ -301,29 +338,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     return query.map((row) => row.read(assetId)!).get();
   }
 
-  Future<void> _upsertAssets(Iterable<LocalAsset> localAssets) {
-    if (localAssets.isEmpty) {
-      return Future.value();
-    }
-
-    return _db.batch((batch) async {
-      batch.insertAllOnConflictUpdate(
-        _db.localAssetEntity,
-        localAssets.map(
-          (a) => LocalAssetEntityCompanion.insert(
-            name: a.name,
-            type: a.type,
-            createdAt: Value(a.createdAt),
-            updatedAt: Value(a.updatedAt),
-            durationInSeconds: Value.absentIfNull(a.durationInSeconds),
-            id: a.id,
-            checksum: Value.absentIfNull(a.checksum),
-          ),
-        ),
-      );
-    });
-  }
-
   Future<void> _deleteAssets(Iterable<String> ids) {
     if (ids.isEmpty) {
       return Future.value();
@@ -331,9 +345,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
 
     return _db.batch((batch) {
       batch.deleteWhere(_db.localAssetEntity, (f) => f.id.isIn(ids));
-      // We do not cascade delete exif data since it also has remote exif data
-      // so remove it manually when the asset is deleted
-      batch.deleteWhere(_db.exifEntity, (f) => f.assetId.isIn(ids));
     });
   }
 }

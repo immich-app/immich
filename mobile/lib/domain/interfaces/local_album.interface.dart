@@ -29,6 +29,10 @@ abstract interface class ILocalAlbumRepository implements IDatabaseRepository {
     String albumId,
     Iterable<String> assetIdsToKeep,
   );
+
+  Future<void> upsertAssets(Iterable<LocalAsset> localAssets);
+
+  Future<List<LocalAsset>> getUnHashedAssets(String albumId);
 }
 
 enum SortLocalAlbumsBy { id }

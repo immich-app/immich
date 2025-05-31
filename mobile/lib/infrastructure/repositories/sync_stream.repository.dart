@@ -251,13 +251,3 @@ extension on api.AssetVisibility {
         _ => throw Exception('Unknown AssetVisibility value: $this'),
       };
 }
-
-extension on SyncAssetV1VisibilityEnum {
-  AssetVisibility toAssetVisibility() => switch (this) {
-        SyncAssetV1VisibilityEnum.timeline => AssetVisibility.timeline,
-        SyncAssetV1VisibilityEnum.hidden => AssetVisibility.hidden,
-        SyncAssetV1VisibilityEnum.archive => AssetVisibility.archive,
-        SyncAssetV1VisibilityEnum.locked => AssetVisibility.locked,
-        _ => throw Exception('Unknown SyncAssetV1VisibilityEnum value: $this'),
-      };
-}

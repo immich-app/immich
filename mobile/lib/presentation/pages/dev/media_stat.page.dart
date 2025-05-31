@@ -49,6 +49,10 @@ final _localStats = [
     load: (db) => db.managers.localAssetEntity.count(),
   ),
   _Stat(
+    name: 'Local Asset Hash',
+    load: (db) => db.managers.localAssetHashEntity.count(),
+  ),
+  _Stat(
     name: 'Local Albums',
     load: (db) => db.managers.localAlbumEntity.count(),
   ),
