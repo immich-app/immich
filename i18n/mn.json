@@ -26,7 +26,6 @@
     "authentication_settings": "Танин нэвтрэлт тохиргоо",
     "authentication_settings_description": "Нууц үгийн удирдлага, OAuth болон бусад танин нэвтрэлтийн тохиргоо",
     "authentication_settings_disable_all": "Бүх нэвтрэх аргуудыг идэвхигүй болгохдоо итгэлтэй байна уу? Нэвтрэх үйлдэл бүрэн идэвхигүй болно.",
-    "check_all": "Бүгдийг сонгох",
     "face_detection": "Нүүр илрүүлэх",
     "image_quality": "Чанар",
     "job_settings": "Ажлын тохиргоо",

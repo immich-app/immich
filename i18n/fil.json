@@ -34,7 +34,6 @@
     "image_format": "Format",
     "library_import_path_description": "Tukuyin ang folder na i-import. Ang folder na ito, kasama ang subfolders, ay mag sa-scan para sa mga imahe at mga videos.",
     "note_cannot_be_changed_later": "TANDAAN: Hindi na ito pwede baguhin sa susunod!",
-    "repair_all": "Ayusin lahat",
     "server_welcome_message_description": "Mensahe na ipapakita sa login page.",
     "user_restore_description": "Ang account ni <b>{user}</b> ay maibabalik."
   },
