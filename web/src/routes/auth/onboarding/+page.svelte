@@ -14,7 +14,7 @@
   import { user } from '$lib/stores/user.store';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import { mdiHarddisk, mdiIncognito, mdiThemeLightDark, mdiTranslate } from '@mdi/js';
-  import { type Translations } from 'svelte-i18n';
+  import { t } from 'svelte-i18n';
 
   interface OnboardingStep {
     name: string;
@@ -26,48 +26,48 @@
       | typeof OnboardingUserPrivacy
       | typeof OnboardingLocale;
     role: OnboardingRole;
-    title: Translations;
+    title: string;
     icon?: string;
   }
 
-  const onboardingSteps: OnboardingStep[] = [
-    { name: 'hello', component: OnboardingHello, role: OnboardingRole.USER, title: 'welcome' },
+  const onboardingSteps: OnboardingStep[] = $derived([
+    { name: 'hello', component: OnboardingHello, role: OnboardingRole.USER, title: $t('welcome') },
     {
       name: 'theme',
       component: OnboardingTheme,
       role: OnboardingRole.USER,
-      title: 'theme',
+      title: $t('theme'),
       icon: mdiThemeLightDark,
     },
     {
       name: 'language',
       component: OnboardingLocale,
       role: OnboardingRole.USER,
-      title: 'language',
+      title: $t('language'),
       icon: mdiTranslate,
     },
     {
       name: 'server_privacy',
       component: OnboardingServerPrivacy,
       role: OnboardingRole.SERVER,
-      title: 'server_privacy',
+      title: $t('server_privacy'),
       icon: mdiIncognito,
     },
     {
       name: 'user_privacy',
       component: OnboardingUserPrivacy,
       role: OnboardingRole.USER,
-      title: 'user_privacy',
+      title: $t('user_privacy'),
       icon: mdiIncognito,
     },
     {
-      name: 'storage',
+      name: 'storage_template',
       component: OnboardingStorageTemplate,
       role: OnboardingRole.SERVER,
-      title: 'admin.storage_template_settings',
+      title: $t('admin.storage_template_settings'),
       icon: mdiHarddisk,
     },
-  ];
+  ]);
 
   let index = $state(0);
   let userRole = $derived($user.isAdmin && !$serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER);
