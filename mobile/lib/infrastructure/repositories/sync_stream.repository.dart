@@ -193,19 +193,13 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
             _db.remoteAssetEntity,
             RemoteAssetEntityCompanion(id: Value(asset.assetId)),
           );
-          // We do not cascade delete exif data since it also has local exif data
-          // so remove it manually when the asset is deleted
-          batch.delete(
-            _db.exifEntity,
-            ExifEntityCompanion(assetId: Value(asset.assetId)),
-          );
         }
       });
 
   Future<void> _updateAssetExifV1(Iterable<SyncAssetExifV1> data) =>
       _db.batch((batch) {
         for (final exif in data) {
-          final companion = ExifEntityCompanion(
+          final companion = RemoteExifEntityCompanion(
             city: Value(exif.city),
             state: Value(exif.state),
             country: Value(exif.country),
@@ -229,7 +223,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
           );
 
           batch.insert(
-            _db.exifEntity,
+            _db.remoteExifEntity,
             companion.copyWith(assetId: Value(exif.assetId)),
             onConflict: DoUpdate((_) => companion),
           );

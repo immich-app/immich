@@ -34,7 +34,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
       i6.$LocalAlbumAssetEntityTable(this);
   late final i7.$RemoteAssetEntityTable remoteAssetEntity =
       i7.$RemoteAssetEntityTable(this);
-  late final i8.$ExifEntityTable exifEntity = i8.$ExifEntityTable(this);
+  late final i8.$RemoteExifEntityTable remoteExifEntity =
+      i8.$RemoteExifEntityTable(this);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -47,7 +48,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
         localAssetEntity,
         localAlbumAssetEntity,
         remoteAssetEntity,
-        exifEntity,
+        remoteExifEntity,
         i5.idxLocalAssetChecksum,
         i7.uQRemoteAssetOwnerChecksum
       ];
@@ -100,6 +101,13 @@ abstract class $Drift extends i0.GeneratedDatabase {
               i0.TableUpdate('remote_asset_entity', kind: i0.UpdateKind.delete),
             ],
           ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('remote_asset_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('remote_exif_entity', kind: i0.UpdateKind.delete),
+            ],
+          ),
         ],
       );
   @override
@@ -124,6 +132,6 @@ class $DriftManager {
       .$$LocalAlbumAssetEntityTableTableManager(_db, _db.localAlbumAssetEntity);
   i7.$$RemoteAssetEntityTableTableManager get remoteAssetEntity =>
       i7.$$RemoteAssetEntityTableTableManager(_db, _db.remoteAssetEntity);
-  i8.$$ExifEntityTableTableManager get exifEntity =>
-      i8.$$ExifEntityTableTableManager(_db, _db.exifEntity);
+  i8.$$RemoteExifEntityTableTableManager get remoteExifEntity =>
+      i8.$$RemoteExifEntityTableTableManager(_db, _db.remoteExifEntity);
 }

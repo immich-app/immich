@@ -4,9 +4,12 @@ import 'package:drift/drift.dart' as i0;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart'
     as i1;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart' as i2;
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
+    as i3;
+import 'package:drift/internal/modular.dart' as i4;
 
-typedef $$ExifEntityTableCreateCompanionBuilder = i1.ExifEntityCompanion
-    Function({
+typedef $$RemoteExifEntityTableCreateCompanionBuilder
+    = i1.RemoteExifEntityCompanion Function({
   required String assetId,
   i0.Value<String?> city,
   i0.Value<String?> state,
@@ -29,8 +32,8 @@ typedef $$ExifEntityTableCreateCompanionBuilder = i1.ExifEntityCompanion
   i0.Value<int?> rating,
   i0.Value<String?> projectionType,
 });
-typedef $$ExifEntityTableUpdateCompanionBuilder = i1.ExifEntityCompanion
-    Function({
+typedef $$RemoteExifEntityTableUpdateCompanionBuilder
+    = i1.RemoteExifEntityCompanion Function({
   i0.Value<String> assetId,
   i0.Value<String?> city,
   i0.Value<String?> state,
@@ -54,18 +57,47 @@ typedef $$ExifEntityTableUpdateCompanionBuilder = i1.ExifEntityCompanion
   i0.Value<String?> projectionType,
 });
 
-class $$ExifEntityTableFilterComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$ExifEntityTable> {
-  $$ExifEntityTableFilterComposer({
+final class $$RemoteExifEntityTableReferences extends i0.BaseReferences<
+    i0.GeneratedDatabase, i1.$RemoteExifEntityTable, i1.RemoteExifEntityData> {
+  $$RemoteExifEntityTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static i3.$RemoteAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
+      i4.ReadDatabaseContainer(db)
+          .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
+          .createAlias(i0.$_aliasNameGenerator(
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i1.$RemoteExifEntityTable>('remote_exif_entity')
+                  .assetId,
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
+                  .id));
+
+  i3.$$RemoteAssetEntityTableProcessedTableManager get assetId {
+    final $_column = $_itemColumn<String>('asset_id')!;
+
+    final manager = i3
+        .$$RemoteAssetEntityTableTableManager(
+            $_db,
+            i4.ReadDatabaseContainer($_db)
+                .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'))
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_assetIdTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$RemoteExifEntityTableFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteExifEntityTable> {
+  $$RemoteExifEntityTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnFilters<String> get assetId => $composableBuilder(
-      column: $table.assetId, builder: (column) => i0.ColumnFilters(column));
-
   i0.ColumnFilters<String> get city => $composableBuilder(
       column: $table.city, builder: (column) => i0.ColumnFilters(column));
 
@@ -131,20 +163,39 @@ class $$ExifEntityTableFilterComposer
   i0.ColumnFilters<String> get projectionType => $composableBuilder(
       column: $table.projectionType,
       builder: (column) => i0.ColumnFilters(column));
+
+  i3.$$RemoteAssetEntityTableFilterComposer get assetId {
+    final i3.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.assetId,
+        referencedTable: i4.ReadDatabaseContainer($db)
+            .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i3.$$RemoteAssetEntityTableFilterComposer(
+              $db: $db,
+              $table: i4.ReadDatabaseContainer($db)
+                  .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
-class $$ExifEntityTableOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$ExifEntityTable> {
-  $$ExifEntityTableOrderingComposer({
+class $$RemoteExifEntityTableOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteExifEntityTable> {
+  $$RemoteExifEntityTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnOrderings<String> get assetId => $composableBuilder(
-      column: $table.assetId, builder: (column) => i0.ColumnOrderings(column));
-
   i0.ColumnOrderings<String> get city => $composableBuilder(
       column: $table.city, builder: (column) => i0.ColumnOrderings(column));
 
@@ -211,20 +262,41 @@ class $$ExifEntityTableOrderingComposer
   i0.ColumnOrderings<String> get projectionType => $composableBuilder(
       column: $table.projectionType,
       builder: (column) => i0.ColumnOrderings(column));
+
+  i3.$$RemoteAssetEntityTableOrderingComposer get assetId {
+    final i3.$$RemoteAssetEntityTableOrderingComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.assetId,
+            referencedTable: i4.ReadDatabaseContainer($db)
+                .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                i3.$$RemoteAssetEntityTableOrderingComposer(
+                  $db: $db,
+                  $table: i4.ReadDatabaseContainer($db)
+                      .resultSet<i3.$RemoteAssetEntityTable>(
+                          'remote_asset_entity'),
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
 }
 
-class $$ExifEntityTableAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$ExifEntityTable> {
-  $$ExifEntityTableAnnotationComposer({
+class $$RemoteExifEntityTableAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteExifEntityTable> {
+  $$RemoteExifEntityTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<String> get assetId =>
-      $composableBuilder(column: $table.assetId, builder: (column) => column);
-
   i0.GeneratedColumn<String> get city =>
       $composableBuilder(column: $table.city, builder: (column) => column);
 
@@ -284,35 +356,56 @@ class $$ExifEntityTableAnnotationComposer
 
   i0.GeneratedColumn<String> get projectionType => $composableBuilder(
       column: $table.projectionType, builder: (column) => column);
+
+  i3.$$RemoteAssetEntityTableAnnotationComposer get assetId {
+    final i3.$$RemoteAssetEntityTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.assetId,
+            referencedTable: i4.ReadDatabaseContainer($db)
+                .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                i3.$$RemoteAssetEntityTableAnnotationComposer(
+                  $db: $db,
+                  $table: i4.ReadDatabaseContainer($db)
+                      .resultSet<i3.$RemoteAssetEntityTable>(
+                          'remote_asset_entity'),
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
 }
 
-class $$ExifEntityTableTableManager extends i0.RootTableManager<
+class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
-    i1.$ExifEntityTable,
-    i1.ExifEntityData,
-    i1.$$ExifEntityTableFilterComposer,
-    i1.$$ExifEntityTableOrderingComposer,
-    i1.$$ExifEntityTableAnnotationComposer,
-    $$ExifEntityTableCreateCompanionBuilder,
-    $$ExifEntityTableUpdateCompanionBuilder,
-    (
-      i1.ExifEntityData,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$ExifEntityTable,
-          i1.ExifEntityData>
-    ),
-    i1.ExifEntityData,
-    i0.PrefetchHooks Function()> {
-  $$ExifEntityTableTableManager(
-      i0.GeneratedDatabase db, i1.$ExifEntityTable table)
+    i1.$RemoteExifEntityTable,
+    i1.RemoteExifEntityData,
+    i1.$$RemoteExifEntityTableFilterComposer,
+    i1.$$RemoteExifEntityTableOrderingComposer,
+    i1.$$RemoteExifEntityTableAnnotationComposer,
+    $$RemoteExifEntityTableCreateCompanionBuilder,
+    $$RemoteExifEntityTableUpdateCompanionBuilder,
+    (i1.RemoteExifEntityData, i1.$$RemoteExifEntityTableReferences),
+    i1.RemoteExifEntityData,
+    i0.PrefetchHooks Function({bool assetId})> {
+  $$RemoteExifEntityTableTableManager(
+      i0.GeneratedDatabase db, i1.$RemoteExifEntityTable table)
       : super(i0.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              i1.$$ExifEntityTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$$ExifEntityTableOrderingComposer($db: db, $table: table),
+              i1.$$RemoteExifEntityTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => i1
+              .$$RemoteExifEntityTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              i1.$$ExifEntityTableAnnotationComposer($db: db, $table: table),
+              i1.$$RemoteExifEntityTableAnnotationComposer(
+                  $db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<String> assetId = const i0.Value.absent(),
             i0.Value<String?> city = const i0.Value.absent(),
@@ -336,7 +429,7 @@ class $$ExifEntityTableTableManager extends i0.RootTableManager<
             i0.Value<int?> rating = const i0.Value.absent(),
             i0.Value<String?> projectionType = const i0.Value.absent(),
           }) =>
-              i1.ExifEntityCompanion(
+              i1.RemoteExifEntityCompanion(
             assetId: assetId,
             city: city,
             state: state,
@@ -382,7 +475,7 @@ class $$ExifEntityTableTableManager extends i0.RootTableManager<
             i0.Value<int?> rating = const i0.Value.absent(),
             i0.Value<String?> projectionType = const i0.Value.absent(),
           }) =>
-              i1.ExifEntityCompanion.insert(
+              i1.RemoteExifEntityCompanion.insert(
             assetId: assetId,
             city: city,
             state: state,
@@ -406,41 +499,78 @@ class $$ExifEntityTableTableManager extends i0.RootTableManager<
             projectionType: projectionType,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable(table),
+                    i1.$$RemoteExifEntityTableReferences(db, table, e)
+                  ))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({assetId = false}) {
+            return i0.PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends i0.TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (assetId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.assetId,
+                    referencedTable:
+                        i1.$$RemoteExifEntityTableReferences._assetIdTable(db),
+                    referencedColumn: i1.$$RemoteExifEntityTableReferences
+                        ._assetIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ));
 }
 
-typedef $$ExifEntityTableProcessedTableManager = i0.ProcessedTableManager<
+typedef $$RemoteExifEntityTableProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
-    i1.$ExifEntityTable,
-    i1.ExifEntityData,
-    i1.$$ExifEntityTableFilterComposer,
-    i1.$$ExifEntityTableOrderingComposer,
-    i1.$$ExifEntityTableAnnotationComposer,
-    $$ExifEntityTableCreateCompanionBuilder,
-    $$ExifEntityTableUpdateCompanionBuilder,
-    (
-      i1.ExifEntityData,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$ExifEntityTable,
-          i1.ExifEntityData>
-    ),
-    i1.ExifEntityData,
-    i0.PrefetchHooks Function()>;
+    i1.$RemoteExifEntityTable,
+    i1.RemoteExifEntityData,
+    i1.$$RemoteExifEntityTableFilterComposer,
+    i1.$$RemoteExifEntityTableOrderingComposer,
+    i1.$$RemoteExifEntityTableAnnotationComposer,
+    $$RemoteExifEntityTableCreateCompanionBuilder,
+    $$RemoteExifEntityTableUpdateCompanionBuilder,
+    (i1.RemoteExifEntityData, i1.$$RemoteExifEntityTableReferences),
+    i1.RemoteExifEntityData,
+    i0.PrefetchHooks Function({bool assetId})>;
 
-class $ExifEntityTable extends i2.ExifEntity
-    with i0.TableInfo<$ExifEntityTable, i1.ExifEntityData> {
+class $RemoteExifEntityTable extends i2.RemoteExifEntity
+    with i0.TableInfo<$RemoteExifEntityTable, i1.RemoteExifEntityData> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $ExifEntityTable(this.attachedDatabase, [this._alias]);
+  $RemoteExifEntityTable(this.attachedDatabase, [this._alias]);
   static const i0.VerificationMeta _assetIdMeta =
       const i0.VerificationMeta('assetId');
   @override
   late final i0.GeneratedColumn<String> assetId = i0.GeneratedColumn<String>(
       'asset_id', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
+      type: i0.DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+          'REFERENCES remote_asset_entity (id) ON DELETE CASCADE'));
   static const i0.VerificationMeta _cityMeta =
       const i0.VerificationMeta('city');
   @override
@@ -588,10 +718,10 @@ class $ExifEntityTable extends i2.ExifEntity
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'exif_entity';
+  static const String $name = 'remote_exif_entity';
   @override
   i0.VerificationContext validateIntegrity(
-      i0.Insertable<i1.ExifEntityData> instance,
+      i0.Insertable<i1.RemoteExifEntityData> instance,
       {bool isInserting = false}) {
     final context = i0.VerificationContext();
     final data = instance.toColumns(true);
@@ -699,9 +829,10 @@ class $ExifEntityTable extends i2.ExifEntity
   @override
   Set<i0.GeneratedColumn> get $primaryKey => {assetId};
   @override
-  i1.ExifEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  i1.RemoteExifEntityData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.ExifEntityData(
+    return i1.RemoteExifEntityData(
       assetId: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}asset_id'])!,
       city: attachedDatabase.typeMapping
@@ -749,8 +880,8 @@ class $ExifEntityTable extends i2.ExifEntity
   }
 
   @override
-  $ExifEntityTable createAlias(String alias) {
-    return $ExifEntityTable(attachedDatabase, alias);
+  $RemoteExifEntityTable createAlias(String alias) {
+    return $RemoteExifEntityTable(attachedDatabase, alias);
   }
 
   @override
@@ -759,8 +890,8 @@ class $ExifEntityTable extends i2.ExifEntity
   bool get isStrict => true;
 }
 
-class ExifEntityData extends i0.DataClass
-    implements i0.Insertable<i1.ExifEntityData> {
+class RemoteExifEntityData extends i0.DataClass
+    implements i0.Insertable<i1.RemoteExifEntityData> {
   final String assetId;
   final String? city;
   final String? state;
@@ -782,7 +913,7 @@ class ExifEntityData extends i0.DataClass
   final String? timeZone;
   final int? rating;
   final String? projectionType;
-  const ExifEntityData(
+  const RemoteExifEntityData(
       {required this.assetId,
       this.city,
       this.state,
@@ -871,10 +1002,10 @@ class ExifEntityData extends i0.DataClass
     return map;
   }
 
-  factory ExifEntityData.fromJson(Map<String, dynamic> json,
+  factory RemoteExifEntityData.fromJson(Map<String, dynamic> json,
       {i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
-    return ExifEntityData(
+    return RemoteExifEntityData(
       assetId: serializer.fromJson<String>(json['assetId']),
       city: serializer.fromJson<String?>(json['city']),
       state: serializer.fromJson<String?>(json['state']),
@@ -927,7 +1058,7 @@ class ExifEntityData extends i0.DataClass
     };
   }
 
-  i1.ExifEntityData copyWith(
+  i1.RemoteExifEntityData copyWith(
           {String? assetId,
           i0.Value<String?> city = const i0.Value.absent(),
           i0.Value<String?> state = const i0.Value.absent(),
@@ -949,7 +1080,7 @@ class ExifEntityData extends i0.DataClass
           i0.Value<String?> timeZone = const i0.Value.absent(),
           i0.Value<int?> rating = const i0.Value.absent(),
           i0.Value<String?> projectionType = const i0.Value.absent()}) =>
-      i1.ExifEntityData(
+      i1.RemoteExifEntityData(
         assetId: assetId ?? this.assetId,
         city: city.present ? city.value : this.city,
         state: state.present ? state.value : this.state,
@@ -976,8 +1107,8 @@ class ExifEntityData extends i0.DataClass
         projectionType:
             projectionType.present ? projectionType.value : this.projectionType,
       );
-  ExifEntityData copyWithCompanion(i1.ExifEntityCompanion data) {
-    return ExifEntityData(
+  RemoteExifEntityData copyWithCompanion(i1.RemoteExifEntityCompanion data) {
+    return RemoteExifEntityData(
       assetId: data.assetId.present ? data.assetId.value : this.assetId,
       city: data.city.present ? data.city.value : this.city,
       state: data.state.present ? data.state.value : this.state,
@@ -1013,7 +1144,7 @@ class ExifEntityData extends i0.DataClass
 
   @override
   String toString() {
-    return (StringBuffer('ExifEntityData(')
+    return (StringBuffer('RemoteExifEntityData(')
           ..write('assetId: $assetId, ')
           ..write('city: $city, ')
           ..write('state: $state, ')
@@ -1066,7 +1197,7 @@ class ExifEntityData extends i0.DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is i1.ExifEntityData &&
+      (other is i1.RemoteExifEntityData &&
           other.assetId == this.assetId &&
           other.city == this.city &&
           other.state == this.state &&
@@ -1090,7 +1221,8 @@ class ExifEntityData extends i0.DataClass
           other.projectionType == this.projectionType);
 }
 
-class ExifEntityCompanion extends i0.UpdateCompanion<i1.ExifEntityData> {
+class RemoteExifEntityCompanion
+    extends i0.UpdateCompanion<i1.RemoteExifEntityData> {
   final i0.Value<String> assetId;
   final i0.Value<String?> city;
   final i0.Value<String?> state;
@@ -1112,7 +1244,7 @@ class ExifEntityCompanion extends i0.UpdateCompanion<i1.ExifEntityData> {
   final i0.Value<String?> timeZone;
   final i0.Value<int?> rating;
   final i0.Value<String?> projectionType;
-  const ExifEntityCompanion({
+  const RemoteExifEntityCompanion({
     this.assetId = const i0.Value.absent(),
     this.city = const i0.Value.absent(),
     this.state = const i0.Value.absent(),
@@ -1135,7 +1267,7 @@ class ExifEntityCompanion extends i0.UpdateCompanion<i1.ExifEntityData> {
     this.rating = const i0.Value.absent(),
     this.projectionType = const i0.Value.absent(),
   });
-  ExifEntityCompanion.insert({
+  RemoteExifEntityCompanion.insert({
     required String assetId,
     this.city = const i0.Value.absent(),
     this.state = const i0.Value.absent(),
@@ -1158,7 +1290,7 @@ class ExifEntityCompanion extends i0.UpdateCompanion<i1.ExifEntityData> {
     this.rating = const i0.Value.absent(),
     this.projectionType = const i0.Value.absent(),
   }) : assetId = i0.Value(assetId);
-  static i0.Insertable<i1.ExifEntityData> custom({
+  static i0.Insertable<i1.RemoteExifEntityData> custom({
     i0.Expression<String>? assetId,
     i0.Expression<String>? city,
     i0.Expression<String>? state,
@@ -1206,7 +1338,7 @@ class ExifEntityCompanion extends i0.UpdateCompanion<i1.ExifEntityData> {
     });
   }
 
-  i1.ExifEntityCompanion copyWith(
+  i1.RemoteExifEntityCompanion copyWith(
       {i0.Value<String>? assetId,
       i0.Value<String?>? city,
       i0.Value<String?>? state,
@@ -1228,7 +1360,7 @@ class ExifEntityCompanion extends i0.UpdateCompanion<i1.ExifEntityData> {
       i0.Value<String?>? timeZone,
       i0.Value<int?>? rating,
       i0.Value<String?>? projectionType}) {
-    return i1.ExifEntityCompanion(
+    return i1.RemoteExifEntityCompanion(
       assetId: assetId ?? this.assetId,
       city: city ?? this.city,
       state: state ?? this.state,
@@ -1324,7 +1456,7 @@ class ExifEntityCompanion extends i0.UpdateCompanion<i1.ExifEntityData> {
 
   @override
   String toString() {
-    return (StringBuffer('ExifEntityCompanion(')
+    return (StringBuffer('RemoteExifEntityCompanion(')
           ..write('assetId: $assetId, ')
           ..write('city: $city, ')
           ..write('state: $state, ')

@@ -59,7 +59,7 @@ final _features = [
     onTap: (_, ref) async {
       final db = ref.read(driftProvider);
       await db.remoteAssetEntity.deleteAll();
-      await db.exifEntity.deleteAll();
+      await db.remoteExifEntity.deleteAll();
     },
   ),
   _Feature(

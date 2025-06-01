@@ -329,12 +329,12 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       return Future.value();
     }
 
-    return _db.batch((batch) {
-      batch.deleteWhere(_db.localAssetEntity, (f) => f.id.isIn(ids));
-      // We do not cascade delete exif data since it also has remote exif data
-      // so remove it manually when the asset is deleted
-      batch.deleteWhere(_db.exifEntity, (f) => f.assetId.isIn(ids));
-    });
+    return _db.batch(
+      (batch) => batch.deleteWhere(
+        _db.localAssetEntity,
+        (f) => f.id.isIn(ids),
+      ),
+    );
   }
 }
 

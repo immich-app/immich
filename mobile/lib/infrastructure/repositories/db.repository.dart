@@ -39,7 +39,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     LocalAssetEntity,
     LocalAlbumAssetEntity,
     RemoteAssetEntity,
-    ExifEntity,
+    RemoteExifEntity,
   ],
 )
 class Drift extends $Drift implements IDatabaseRepository {
