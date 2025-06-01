@@ -14,7 +14,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions: {}
+permissions:
+  packages: write
 
 jobs:
   pre-job:
@@ -48,112 +49,9 @@ jobs:
       - name: Check if we should force jobs to run
         id: should_force
         run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
-
-  retag_ml:
-    name: Re-Tag ML
-    needs: pre-job
-    permissions:
-      contents: read
-      packages: write
-    if: ${{ needs.pre-job.outputs.should_run_ml == 'false' && !github.event.pull_request.head.repo.fork }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        suffix: ['', '-cuda', '-rocm', '-openvino', '-armnn', '-rknn']
-    steps:
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Re-tag image
-        env:
-          REGISTRY_NAME: 'ghcr.io'
-          REPOSITORY: ${{ github.repository_owner }}/immich-machine-learning
-          TAG_OLD: main${{ matrix.suffix }}
-          TAG_PR: ${{ github.event.number == 0 && github.ref_name || format('pr-{0}', github.event.number) }}${{ matrix.suffix }}
-          TAG_COMMIT: commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}${{ matrix.suffix }}
-        run: |
-          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_PR}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
-          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_COMMIT}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
-
-  retag_server:
-    name: Re-Tag Server
-    needs: pre-job
-    permissions:
-      contents: read
-      packages: write
-    if: ${{ needs.pre-job.outputs.should_run_server == 'false' && !github.event.pull_request.head.repo.fork }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        suffix: ['']
-    steps:
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Re-tag image
-        env:
-          REGISTRY_NAME: 'ghcr.io'
-          REPOSITORY: ${{ github.repository_owner }}/immich-server
-          TAG_OLD: main${{ matrix.suffix }}
-          TAG_PR: ${{ github.event.number == 0 && github.ref_name || format('pr-{0}', github.event.number) }}${{ matrix.suffix }}
-          TAG_COMMIT: commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}${{ matrix.suffix }}
-        run: |
-          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_PR}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
-          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_COMMIT}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
-
-  machine-learning:
-    name: Build and Push ML
-    needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - device: cpu
-            tag-suffix: ''
-          - device: cuda
-            tag-suffix: '-cuda'
-            platforms: linux/amd64
-          - device: openvino
-            tag-suffix: '-openvino'
-            platforms: linux/amd64
-          - device: armnn
-            tag-suffix: '-armnn'
-            platforms: linux/arm64
-          - device: rknn
-            tag-suffix: '-rknn'
-            platforms: linux/arm64
-          - device: rocm
-            tag-suffix: '-rocm'
-            platforms: linux/amd64
-            runner-mapping: '{"linux/amd64": "mich"}'
-    uses: ./.github/workflows/multi-runner-build.yml
-    permissions:
-      contents: read
-      actions: read
-      packages: write
-    secrets:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-    with:
-      image: immich-machine-learning
-      context: machine-learning
-      dockerfile: machine-learning/Dockerfile
-      platforms: ${{ matrix.platforms }}
-      runner-mapping: ${{ matrix.runner-mapping }}
-      tag-suffix: ${{ matrix.tag-suffix }}
-      dockerhub-push: ${{ github.event_name == 'release' }}
-      build-args: |
-        DEVICE=${{ matrix.device }}
-
   server:
     name: Build and Push Server
+    runs-on: ubuntu-latest
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     env:
@@ -221,6 +119,7 @@ jobs:
       - name: Build and push image
         id: build
         uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           context: ${{ env.context }}
           file: ${{ env.file }}
@@ -252,50 +151,3 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  merge_server:
-    name: Merge & Push Server
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read
-      packages: write
-    secrets:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-    with:
-      image: immich-server
-      context: .
-      dockerfile: server/Dockerfile
-      dockerhub-push: ${{ github.event_name == 'release' }}
-      build-args: |
-        DEVICE=cpu
-
-  success-check-server:
-    name: Docker Build & Push Server Success
-    needs: [server, retag_server]
-    permissions: {}
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Any jobs failed?
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
-      - name: All jobs passed or skipped
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        # zizmor: ignore[template-injection]
-        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
-
-  success-check-ml:
-    name: Docker Build & Push ML Success
-    needs: [merge_ml, retag_ml]
-    permissions: {}
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Any jobs failed?
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
-      - name: All jobs passed or skipped
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        # zizmor: ignore[template-injection]
-        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
