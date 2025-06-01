@@ -12921,11 +12921,11 @@
             "type": "string"
           },
           "order": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetOrder"
-              }
-            ]
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "type": "string"
           },
           "ownerId": {
             "type": "string"

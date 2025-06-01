@@ -34,7 +34,7 @@ class SyncAlbumV1 {
 
   String name;
 
-  AssetOrder order;
+  SyncAlbumV1OrderEnum order;
 
   String ownerId;
 
@@ -102,7 +102,7 @@ class SyncAlbumV1 {
         id: mapValueOfType<String>(json, r'id')!,
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
         name: mapValueOfType<String>(json, r'name')!,
-        order: AssetOrder.fromJson(json[r'order'])!,
+        order: SyncAlbumV1OrderEnum.fromJson(json[r'order'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         thumbnailAssetId: mapValueOfType<String>(json, r'thumbnailAssetId'),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
@@ -164,4 +164,78 @@ class SyncAlbumV1 {
     'updatedAt',
   };
 }
+
+
+class SyncAlbumV1OrderEnum {
+  /// Instantiate a new enum with the provided [value].
+  const SyncAlbumV1OrderEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const asc = SyncAlbumV1OrderEnum._(r'asc');
+  static const desc = SyncAlbumV1OrderEnum._(r'desc');
+
+  /// List of all possible values in this [enum][SyncAlbumV1OrderEnum].
+  static const values = <SyncAlbumV1OrderEnum>[
+    asc,
+    desc,
+  ];
+
+  static SyncAlbumV1OrderEnum? fromJson(dynamic value) => SyncAlbumV1OrderEnumTypeTransformer().decode(value);
+
+  static List<SyncAlbumV1OrderEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <SyncAlbumV1OrderEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = SyncAlbumV1OrderEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [SyncAlbumV1OrderEnum] to String,
+/// and [decode] dynamic data back to [SyncAlbumV1OrderEnum].
+class SyncAlbumV1OrderEnumTypeTransformer {
+  factory SyncAlbumV1OrderEnumTypeTransformer() => _instance ??= const SyncAlbumV1OrderEnumTypeTransformer._();
+
+  const SyncAlbumV1OrderEnumTypeTransformer._();
+
+  String encode(SyncAlbumV1OrderEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a SyncAlbumV1OrderEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  SyncAlbumV1OrderEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'asc': return SyncAlbumV1OrderEnum.asc;
+        case r'desc': return SyncAlbumV1OrderEnum.desc;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [SyncAlbumV1OrderEnumTypeTransformer] instance.
+  static SyncAlbumV1OrderEnumTypeTransformer? _instance;
+}
+
 

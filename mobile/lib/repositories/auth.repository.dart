@@ -36,7 +36,9 @@ class AuthRepository extends DatabaseRepository implements IAuthRepository {
         db.albums.clear(),
         db.eTags.clear(),
         db.users.clear(),
+        _drift.remoteAlbumEntity.deleteAll(),
         _drift.remoteAssetEntity.deleteAll(),
+        _drift.remoteAlbumAssetEntity.deleteAll(),
         _drift.exifEntity.deleteWhere(
           (r) => r.assetStorage.equalsValue(ExifAssetStorage.remote),
         ),

@@ -130,7 +130,14 @@ final _remoteStats = [
     name: 'Remote Assets',
     load: (db) => db.managers.remoteAssetEntity.count(),
   ),
-  _Stat(name: 'Exif Entities', load: (db) => db.managers.exifEntity.count()),
+  _Stat(
+    name: 'Exif Entities',
+    load: (db) => db.managers.exifEntity.count(),
+  ),
+  _Stat(
+    name: 'Remote Albums',
+    load: (db) => db.managers.remoteAlbumEntity.count(),
+  ),
 ];
 
 @RoutePage()
