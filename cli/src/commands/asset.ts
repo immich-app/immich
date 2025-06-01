@@ -43,6 +43,7 @@ export interface UploadOptionsDto {
   concurrency: number;
   progress?: boolean;
   watch?: boolean;
+  jsonOutput?: boolean;
 }
 
 class UploadFile extends File {
@@ -65,6 +66,9 @@ class UploadFile extends File {
 const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
   const { newFiles, duplicates } = await checkForDuplicates(files, options);
   const newAssets = await uploadFiles(newFiles, options);
+  if (options.jsonOutput) {
+    console.log(JSON.stringify({ newFiles, duplicates, newAssets }, undefined, 4));
+  }
   await updateAlbums([...newAssets, ...duplicates], options);
   await deleteFiles(newFiles, options);
 };
