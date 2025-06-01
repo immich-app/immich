@@ -33,13 +33,12 @@
   let hours = $state(initial.hours);
   let minutes = $state(initial.minutes);
 
-  function update() {
+  $effect(() => {
     value = partsToMin(sign, days, hours, minutes);
-  }
+  });
 
   function toggleSign() {
     sign = -sign;
-    update();
   }
 </script>
 
@@ -47,23 +46,8 @@
   <button type="button" class="w-8 text-xl font-bold" onclick={toggleSign} title="Toggle sign">
     {sign >= 0 ? '+' : '-'}
   </button>
-  <input
-    type="number"
-    min="0"
-    placeholder={$t('days')}
-    class="immich-form-input w-1/3"
-    bind:value={days}
-    oninput={update}
-  />
-  <input
-    type="number"
-    min="0"
-    max="23"
-    placeholder={$t('hours')}
-    class="immich-form-input w-1/3"
-    bind:value={hours}
-    oninput={update}
-  />
+  <input type="number" min="0" placeholder={$t('days')} class="immich-form-input w-1/3" bind:value={days} />
+  <input type="number" min="0" max="23" placeholder={$t('hours')} class="immich-form-input w-1/3" bind:value={hours} />
   <input
     type="number"
     min="0"
@@ -71,6 +55,5 @@
     placeholder={$t('minutes')}
     class="immich-form-input w-1/3"
     bind:value={minutes}
-    oninput={update}
   />
 </div>
