@@ -23,7 +23,7 @@
         icon={mdiArrowUpLeft}
         title={$t('to_parent')}
         href={getLink(pathSegments.slice(0, -1).join('/'))}
-        class="mr-2"
+        class="me-2"
         padding="2"
         onclick={() => {}}
       />

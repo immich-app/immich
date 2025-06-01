@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.132.3",
+  "version": "1.134.0",
   "license": "GNU Affero General Public License version 3",
   "type": "module",
   "scripts": {
@@ -12,13 +12,14 @@
     "check:svelte": "svelte-check --no-tsconfig --fail-on-warnings --compiler-warnings 'reactive_declaration_non_reactive_property:ignore' --ignore src/lib/components/photos-page/asset-grid.svelte",
     "check:typescript": "tsc --noEmit",
     "check:watch": "npm run check:svelte -- --watch",
-    "check:code": "npm run format && npm run lint && npm run check:svelte && npm run check:typescript",
+    "check:code": "npm run format && npm run lint:p && npm run check:svelte && npm run check:typescript",
     "check:all": "npm run check:code && npm run test:cov",
     "lint": "eslint . --max-warnings 0",
     "lint:p": "eslint-p . --max-warnings 0 --concurrency=4",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --check .",
-    "format:fix": "prettier --write .",
+    "format:fix": "prettier --write . && npm run format:i18n",
+    "format:i18n": "npx --yes sort-json ../i18n/*.json",
     "test": "vitest --run",
     "test:cov": "vitest --coverage",
     "test:watch": "vitest dev",
@@ -27,7 +28,7 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.17.3",
+    "@immich/ui": "^0.22.4",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.11.5",
@@ -51,6 +52,7 @@
     "svelte-i18n": "^4.0.1",
     "svelte-maplibre": "^1.0.0",
     "svelte-persisted-store": "^0.12.0",
+    "tabbable": "^6.2.0",
     "thumbhash": "^0.1.1"
   },
   "devDependencies": {
@@ -59,12 +61,15 @@
     "@faker-js/faker": "^9.3.0",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.8",
-    "@sveltejs/enhanced-img": "^0.4.4",
+    "@sveltejs/enhanced-img": "^0.6.0",
     "@sveltejs/kit": "^2.15.2",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tailwindcss/postcss": "^4.1.7",
+    "@tailwindcss/vite": "^4.1.7",
     "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/svelte": "^5.2.6",
+    "@testing-library/svelte": "^5.2.8",
     "@testing-library/user-event": "^14.5.2",
+    "@types/chromecast-caf-sender": "^1.0.11",
     "@types/dom-to-image": "^2.6.7",
     "@types/justified-layout": "^4.1.4",
     "@types/lodash-es": "^4.17.12",
@@ -75,7 +80,7 @@
     "dotenv": "^16.4.7",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-p": "^0.21.0",
+    "eslint-p": "^0.23.0",
     "eslint-plugin-svelte": "^3.0.0",
     "eslint-plugin-unicorn": "^57.0.0",
     "factory.ts": "^1.4.1",
@@ -88,7 +93,7 @@
     "rollup-plugin-visualizer": "^5.14.0",
     "svelte": "^5.25.3",
     "svelte-check": "^4.1.5",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.7",
     "tslib": "^2.6.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.28.0",
@@ -96,6 +101,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.14.0"
+    "node": "22.16.0"
   }
 }

@@ -23,6 +23,7 @@ const resetEnv = () => {
     'DB_USERNAME',
     'DB_PASSWORD',
     'DB_DATABASE_NAME',
+    'DB_SSL_MODE',
     'DB_SKIP_MIGRATIONS',
     'DB_VECTOR_EXTENSION',
 
@@ -88,8 +89,19 @@ describe('getEnv', () => {
           password: 'postgres',
         },
         skipMigrations: false,
-        vectorExtension: 'vectors',
+        vectorExtension: undefined,
       });
+    });
+
+    it('should validate DB_SSL_MODE', () => {
+      process.env.DB_SSL_MODE = 'invalid';
+      expect(() => getEnv()).toThrowError('Invalid environment variables: DB_SSL_MODE');
+    });
+
+    it('should accept a valid DB_SSL_MODE', () => {
+      process.env.DB_SSL_MODE = 'prefer';
+      const { database } = getEnv();
+      expect(database.config).toMatchObject(expect.objectContaining({ ssl: 'prefer' }));
     });
 
     it('should allow skipping migrations', () => {

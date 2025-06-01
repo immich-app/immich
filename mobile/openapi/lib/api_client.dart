@@ -268,10 +268,12 @@ class ApiClient {
           return AssetStatsResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
+        case 'AssetVisibility':
+          return AssetVisibilityTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
-        case 'AvatarResponse':
-          return AvatarResponse.fromJson(value);
+        case 'AuthStatusResponseDto':
+          return AuthStatusResponseDto.fromJson(value);
         case 'AvatarUpdate':
           return AvatarUpdate.fromJson(value);
         case 'BulkIdResponseDto':
@@ -322,16 +324,6 @@ class ApiClient {
           return FaceDto.fromJson(value);
         case 'FacialRecognitionConfig':
           return FacialRecognitionConfig.fromJson(value);
-        case 'FileChecksumDto':
-          return FileChecksumDto.fromJson(value);
-        case 'FileChecksumResponseDto':
-          return FileChecksumResponseDto.fromJson(value);
-        case 'FileReportDto':
-          return FileReportDto.fromJson(value);
-        case 'FileReportFixDto':
-          return FileReportFixDto.fromJson(value);
-        case 'FileReportItemDto':
-          return FileReportItemDto.fromJson(value);
         case 'FoldersResponse':
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':
@@ -380,8 +372,6 @@ class ApiClient {
           return MemoriesUpdate.fromJson(value);
         case 'MemoryCreateDto':
           return MemoryCreateDto.fromJson(value);
-        case 'MemoryLaneResponseDto':
-          return MemoryLaneResponseDto.fromJson(value);
         case 'MemoryResponseDto':
           return MemoryResponseDto.fromJson(value);
         case 'MemoryType':
@@ -392,22 +382,34 @@ class ApiClient {
           return MergePersonDto.fromJson(value);
         case 'MetadataSearchDto':
           return MetadataSearchDto.fromJson(value);
+        case 'NotificationCreateDto':
+          return NotificationCreateDto.fromJson(value);
+        case 'NotificationDeleteAllDto':
+          return NotificationDeleteAllDto.fromJson(value);
+        case 'NotificationDto':
+          return NotificationDto.fromJson(value);
+        case 'NotificationLevel':
+          return NotificationLevelTypeTransformer().decode(value);
+        case 'NotificationType':
+          return NotificationTypeTypeTransformer().decode(value);
+        case 'NotificationUpdateAllDto':
+          return NotificationUpdateAllDto.fromJson(value);
+        case 'NotificationUpdateDto':
+          return NotificationUpdateDto.fromJson(value);
         case 'OAuthAuthorizeResponseDto':
           return OAuthAuthorizeResponseDto.fromJson(value);
         case 'OAuthCallbackDto':
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':
           return OAuthConfigDto.fromJson(value);
+        case 'OAuthTokenEndpointAuthMethod':
+          return OAuthTokenEndpointAuthMethodTypeTransformer().decode(value);
         case 'OnThisDayDto':
           return OnThisDayDto.fromJson(value);
         case 'PartnerDirection':
           return PartnerDirectionTypeTransformer().decode(value);
         case 'PartnerResponseDto':
           return PartnerResponseDto.fromJson(value);
-        case 'PathEntityType':
-          return PathEntityTypeTypeTransformer().decode(value);
-        case 'PathType':
-          return PathTypeTypeTransformer().decode(value);
         case 'PeopleResponse':
           return PeopleResponse.fromJson(value);
         case 'PeopleResponseDto':
@@ -430,6 +432,12 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'PersonWithFacesResponseDto':
           return PersonWithFacesResponseDto.fromJson(value);
+        case 'PinCodeChangeDto':
+          return PinCodeChangeDto.fromJson(value);
+        case 'PinCodeResetDto':
+          return PinCodeResetDto.fromJson(value);
+        case 'PinCodeSetupDto':
+          return PinCodeSetupDto.fromJson(value);
         case 'PlacesResponseDto':
           return PlacesResponseDto.fromJson(value);
         case 'PurchaseResponse':
@@ -486,8 +494,14 @@ class ApiClient {
           return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':
           return ServerVersionResponseDto.fromJson(value);
+        case 'SessionCreateDto':
+          return SessionCreateDto.fromJson(value);
+        case 'SessionCreateResponseDto':
+          return SessionCreateResponseDto.fromJson(value);
         case 'SessionResponseDto':
           return SessionResponseDto.fromJson(value);
+        case 'SessionUnlockDto':
+          return SessionUnlockDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
@@ -518,6 +532,14 @@ class ApiClient {
           return SyncAckDto.fromJson(value);
         case 'SyncAckSetDto':
           return SyncAckSetDto.fromJson(value);
+        case 'SyncAlbumDeleteV1':
+          return SyncAlbumDeleteV1.fromJson(value);
+        case 'SyncAlbumUserDeleteV1':
+          return SyncAlbumUserDeleteV1.fromJson(value);
+        case 'SyncAlbumUserV1':
+          return SyncAlbumUserV1.fromJson(value);
+        case 'SyncAlbumV1':
+          return SyncAlbumV1.fromJson(value);
         case 'SyncAssetDeleteV1':
           return SyncAssetDeleteV1.fromJson(value);
         case 'SyncAssetExifV1':
@@ -620,10 +642,10 @@ class ApiClient {
           return TemplateResponseDto.fromJson(value);
         case 'TestEmailResponseDto':
           return TestEmailResponseDto.fromJson(value);
-        case 'TimeBucketResponseDto':
-          return TimeBucketResponseDto.fromJson(value);
-        case 'TimeBucketSize':
-          return TimeBucketSizeTypeTransformer().decode(value);
+        case 'TimeBucketAssetResponseDto':
+          return TimeBucketAssetResponseDto.fromJson(value);
+        case 'TimeBucketsResponseDto':
+          return TimeBucketsResponseDto.fromJson(value);
         case 'ToneMapping':
           return ToneMappingTypeTransformer().decode(value);
         case 'TranscodeHWAccel':
@@ -674,6 +696,8 @@ class ApiClient {
           return ValidateLibraryImportPathResponseDto.fromJson(value);
         case 'ValidateLibraryResponseDto':
           return ValidateLibraryResponseDto.fromJson(value);
+        case 'VersionCheckStateResponseDto':
+          return VersionCheckStateResponseDto.fromJson(value);
         case 'VideoCodec':
           return VideoCodecTypeTransformer().decode(value);
         case 'VideoContainer':

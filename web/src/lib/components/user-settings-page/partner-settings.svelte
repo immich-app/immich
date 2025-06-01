@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
   import {
     createPartner,
     getPartners,
@@ -18,7 +19,6 @@
   import { handleError } from '../../utils/handle-error';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Icon from '../elements/icon.svelte';
-  import PartnerSelectionModal from './partner-selection-modal.svelte';
 
   interface PartnerSharing {
     user: UserResponseDto;
@@ -33,8 +33,6 @@
 
   let { user }: Props = $props();
 
-  let createPartnerFlag = $state(false);
-  // let removePartnerDto: PartnerResponseDto | null = null;
   let partners: Array<PartnerSharing> = $state([]);
 
   onMount(async () => {
@@ -82,7 +80,7 @@
   };
 
   const handleRemovePartner = async (partner: PartnerResponseDto) => {
-    const isConfirmed = await dialogController.show({
+    const isConfirmed = await modalManager.showDialog({
       title: $t('stop_photo_sharing'),
       prompt: $t('stop_photo_sharing_description', { values: { partner: partner.name } }),
     });
@@ -99,14 +97,19 @@
     }
   };
 
-  const handleCreatePartners = async (users: UserResponseDto[]) => {
+  const handleCreatePartners = async () => {
+    const users = await modalManager.show(PartnerSelectionModal, { user });
+
+    if (!users) {
+      return;
+    }
+
     try {
       for (const user of users) {
         await createPartner({ id: user.id });
       }
 
       await refreshPartners();
-      createPartnerFlag = false;
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_partners'));
     }
@@ -130,7 +133,7 @@
         <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">
           <div class="flex gap-4">
             <UserAvatar user={partner.user} size="md" />
-            <div class="text-left">
+            <div class="text-start">
               <p class="text-immich-fg dark:text-immich-dark-fg">
                 {partner.user.name}
               </p>
@@ -189,10 +192,6 @@
   {/if}
 
   <div class="flex justify-end mt-5">
-    <Button shape="round" size="small" onclick={() => (createPartnerFlag = true)}>{$t('add_partner')}</Button>
+    <Button shape="round" size="small" onclick={() => handleCreatePartners()}>{$t('add_partner')}</Button>
   </div>
 </section>
-
-{#if createPartnerFlag}
-  <PartnerSelectionModal {user} onClose={() => (createPartnerFlag = false)} onAddUsers={handleCreatePartners} />
-{/if}

@@ -1,7 +1,8 @@
 import { SystemConfig } from 'src/config';
+import { VECTOR_EXTENSIONS } from 'src/constants';
 import {
   AssetType,
-  DatabaseExtension,
+  DatabaseSslMode,
   ExifOrientation,
   ImageFormat,
   JobName,
@@ -11,7 +12,6 @@ import {
   SyncEntityType,
   SystemMetadataKey,
   TranscodeTarget,
-  UserAvatarColor,
   UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
@@ -89,7 +89,7 @@ export interface VideoStreamInfo {
 export interface AudioStreamInfo {
   index: number;
   codecName?: string;
-  frameCount: number;
+  bitrate: number;
 }
 
 export interface VideoFormat {
@@ -178,9 +178,10 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
+export type JobSource = 'upload' | 'sidecar-write' | 'copy';
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'sidecar-write' | 'copy';
+  source?: JobSource;
   notify?: boolean;
 }
 
@@ -252,7 +253,7 @@ export interface INotifyAlbumInviteJob extends IEntityJob {
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
-  recipientIds: string[];
+  recipientId: string;
 }
 
 export interface JobCounts {
@@ -298,6 +299,10 @@ export type JobItem =
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
+
+  // Notifications
+  | { name: JobName.NOTIFICATIONS_CLEANUP; data?: IBaseJob }
+
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
@@ -356,13 +361,9 @@ export type JobItem =
   | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
 
   // Version check
-  | { name: JobName.VERSION_CHECK; data: IBaseJob }
+  | { name: JobName.VERSION_CHECK; data: IBaseJob };
 
-  // Memories
-  | { name: JobName.MEMORIES_CLEANUP; data?: IBaseJob }
-  | { name: JobName.MEMORIES_CREATE; data?: IBaseJob };
-
-export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
+export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
 export type DatabaseConnectionURL = {
   connectionType: 'url';
@@ -376,11 +377,13 @@ export type DatabaseConnectionParts = {
   username: string;
   password: string;
   database: string;
+  ssl?: DatabaseSslMode;
 };
 
 export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;
 
 export interface ExtensionVersion {
+  name: VectorExtension;
   availableVersion: string | null;
   installedVersion: string | null;
 }
@@ -485,9 +488,6 @@ export interface UserPreferences {
   tags: {
     enabled: boolean;
     sidebarWeb: boolean;
-  };
-  avatar: {
-    color: UserAvatarColor;
   };
   emailNotifications: {
     enabled: boolean;

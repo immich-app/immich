@@ -15,7 +15,7 @@ import {
 } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserStatus } from 'src/enum';
 import { OnThisDayData } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
@@ -58,7 +58,7 @@ const authFactory = ({
   }
 
   if (session) {
-    auth.session = { id: session.id };
+    auth.session = { id: session.id, hasElevatedPermission: false };
   }
 
   if (sharedLink) {
@@ -126,7 +126,10 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   deviceOS: 'android',
   deviceType: 'mobile',
   token: 'abc123',
+  parentId: null,
+  expiresAt: null,
   userId: newUuid(),
+  pinExpiresAt: newDate(),
   ...session,
 });
 
@@ -140,6 +143,7 @@ const userFactory = (user: Partial<User> = {}) => ({
   id: newUuid(),
   name: 'Test User',
   email: 'test@immich.cloud',
+  avatarColor: null,
   profileImagePath: '',
   profileChangedAt: newDate(),
   ...user,
@@ -155,6 +159,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     storageLabel = null,
     shouldChangePassword = false,
     isAdmin = false,
+    avatarColor = null,
     createdAt = newDate(),
     updatedAt = newDate(),
     deletedAt = null,
@@ -173,6 +178,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     storageLabel,
     shouldChangePassword,
     isAdmin,
+    avatarColor,
     createdAt,
     updatedAt,
     deletedAt,
@@ -199,11 +205,9 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   encodedVideoPath: null,
   fileCreatedAt: newDate(),
   fileModifiedAt: newDate(),
-  isArchived: false,
   isExternal: false,
   isFavorite: false,
   isOffline: false,
-  isVisible: true,
   libraryId: null,
   livePhotoVideoId: null,
   localDateTime: newDate(),
@@ -214,6 +218,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   stackId: null,
   thumbhash: null,
   type: AssetType.IMAGE,
+  visibility: AssetVisibility.TIMELINE,
   ...asset,
 });
 
@@ -311,4 +316,12 @@ export const factory = {
     sidecarWrite: assetSidecarWriteFactory,
   },
   uuid: newUuid,
+  date: newDate,
+  responses: {
+    badRequest: (message: any = null) => ({
+      error: 'Bad Request',
+      statusCode: 400,
+      message: message ?? expect.anything(),
+    }),
+  },
 };

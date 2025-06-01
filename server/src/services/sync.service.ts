@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import { Writable } from 'node:stream';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { SessionSyncCheckpoints } from 'src/db';
-import { AssetResponseDto, hexOrBufferToBase64, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetDeltaSyncDto,
@@ -14,22 +14,24 @@ import {
   SyncAckSetDto,
   SyncStreamDto,
 } from 'src/dtos/sync.dto';
-import { DatabaseAction, EntityType, Permission, SyncEntityType, SyncRequestType } from 'src/enum';
+import { AssetVisibility, DatabaseAction, EntityType, Permission, SyncEntityType, SyncRequestType } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
 import { getMyPartnerIds } from 'src/utils/asset.util';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { setIsEqual } from 'src/utils/set';
 import { fromAck, serialize } from 'src/utils/sync';
 
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 export const SYNC_TYPES_ORDER = [
-  //
   SyncRequestType.UsersV1,
   SyncRequestType.PartnersV1,
   SyncRequestType.AssetsV1,
   SyncRequestType.AssetExifsV1,
   SyncRequestType.PartnerAssetsV1,
   SyncRequestType.PartnerAssetExifsV1,
+  SyncRequestType.AlbumsV1,
+  SyncRequestType.AlbumUsersV1,
 ];
 
 const throwSessionRequired = () => {
@@ -205,6 +207,43 @@ export class SyncService extends BaseService {
           break;
         }
 
+        case SyncRequestType.AlbumsV1: {
+          const deletes = this.syncRepository.getAlbumDeletes(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AlbumDeleteV1],
+          );
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.AlbumDeleteV1, updateId: id, data }));
+          }
+
+          const upserts = this.syncRepository.getAlbumUpserts(auth.user.id, checkpointMap[SyncEntityType.AlbumV1]);
+          for await (const { updateId, ...data } of upserts) {
+            response.write(serialize({ type: SyncEntityType.AlbumV1, updateId, data }));
+          }
+
+          break;
+        }
+
+        case SyncRequestType.AlbumUsersV1: {
+          const deletes = this.syncRepository.getAlbumUserDeletes(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AlbumUserDeleteV1],
+          );
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.AlbumUserDeleteV1, updateId: id, data }));
+          }
+
+          const upserts = this.syncRepository.getAlbumUserUpserts(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AlbumUserV1],
+          );
+          for await (const { updateId, ...data } of upserts) {
+            response.write(serialize({ type: SyncEntityType.AlbumUserV1, updateId, data }));
+          }
+
+          break;
+        }
+
         default: {
           this.logger.warn(`Unsupported sync type: ${type}`);
           break;
@@ -262,7 +301,10 @@ export class SyncService extends BaseService {
       needsFullSync: false,
       upserted: upserted
         // do not return archived assets for partner users
-        .filter((a) => a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && !a.isArchived))
+        .filter(
+          (a) =>
+            a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && a.visibility === AssetVisibility.TIMELINE),
+        )
         .map((a) =>
           mapAsset(a, {
             auth,

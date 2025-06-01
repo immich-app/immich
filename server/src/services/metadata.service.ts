@@ -14,6 +14,7 @@ import { AssetFaces, Exif, Person } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   AssetType,
+  AssetVisibility,
   DatabaseLock,
   ExifOrientation,
   ImmichWorker,
@@ -22,14 +23,12 @@ import {
   QueueName,
   SourceType,
 } from 'src/enum';
-import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
+import { JobItem, JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
 
 /** look for a date from these tags (in order) */
@@ -158,8 +157,8 @@ export class MetadataService extends BaseService {
     const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
     await Promise.all([
       this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id }),
-      this.assetRepository.update({ id: motionAsset.id, isVisible: false }),
-      this.albumRepository.removeAsset(motionAsset.id),
+      this.assetRepository.update({ id: motionAsset.id, visibility: AssetVisibility.HIDDEN }),
+      this.albumRepository.removeAssetsFromAll([motionAsset.id]),
     ]);
 
     await this.eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
@@ -168,30 +167,30 @@ export class MetadataService extends BaseService {
   @OnJob({ name: JobName.QUEUE_METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
   async handleQueueMetadataExtraction(job: JobOf<JobName.QUEUE_METADATA_EXTRACTION>): Promise<JobStatus> {
     const { force } = job;
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.EXIF);
-    });
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } })),
-      );
+    let queue: { name: JobName.METADATA_EXTRACTION; data: { id: string } }[] = [];
+    for await (const asset of this.assetJobRepository.streamForMetadataExtraction(force)) {
+      queue.push({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } });
+
+      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(queue);
+        queue = [];
+      }
     }
 
+    await this.jobRepository.queueAll(queue);
     return JobStatus.SUCCESS;
   }
 
   @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
-  async handleMetadataExtraction(data: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
+  async handleMetadataExtraction(data: JobOf<JobName.METADATA_EXTRACTION>) {
     const [{ metadata, reverseGeocoding }, asset] = await Promise.all([
       this.getConfig({ withCache: true }),
       this.assetJobRepository.getForMetadataExtraction(data.id),
     ]);
 
     if (!asset) {
-      return JobStatus.FAILED;
+      return;
     }
 
     const [exifTags, stats] = await Promise.all([
@@ -285,26 +284,30 @@ export class MetadataService extends BaseService {
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() });
 
-    return JobStatus.SUCCESS;
+    await this.eventRepository.emit('asset.metadataExtracted', {
+      assetId: asset.id,
+      userId: asset.ownerId,
+      source: data.source,
+    });
   }
 
   @OnJob({ name: JobName.QUEUE_SIDECAR, queue: QueueName.SIDECAR })
-  async handleQueueSidecar(job: JobOf<JobName.QUEUE_SIDECAR>): Promise<JobStatus> {
-    const { force } = job;
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.SIDECAR);
-    });
+  async handleQueueSidecar({ force }: JobOf<JobName.QUEUE_SIDECAR>): Promise<JobStatus> {
+    let jobs: JobItem[] = [];
+    const queueAll = async () => {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    };
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({
-          name: force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY,
-          data: { id: asset.id },
-        })),
-      );
+    const assets = this.assetJobRepository.streamForSidecar(force);
+    for await (const asset of assets) {
+      jobs.push({ name: force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY, data: { id: asset.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
+      }
     }
+
+    await queueAll();
 
     return JobStatus.SUCCESS;
   }
@@ -525,8 +528,11 @@ export class MetadataService extends BaseService {
         });
 
         // Hide the motion photo video asset if it's not already hidden to prepare for linking
-        if (motionAsset.isVisible) {
-          await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
+        if (motionAsset.visibility === AssetVisibility.TIMELINE) {
+          await this.assetRepository.update({
+            id: motionAsset.id,
+            visibility: AssetVisibility.HIDDEN,
+          });
           this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
         }
       } else {
@@ -542,7 +548,7 @@ export class MetadataService extends BaseService {
           ownerId: asset.ownerId,
           originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
           originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
-          isVisible: false,
+          visibility: AssetVisibility.HIDDEN,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
@@ -594,6 +600,80 @@ export class MetadataService extends BaseService {
     );
   }
 
+  private orientRegionInfo(
+    regionInfo: ImmichTagsWithFaces['RegionInfo'],
+    orientation: ExifOrientation | undefined,
+  ): ImmichTagsWithFaces['RegionInfo'] {
+    // skip default Orientation
+    if (orientation === undefined || orientation === ExifOrientation.Horizontal) {
+      return regionInfo;
+    }
+
+    const isSidewards = [
+      ExifOrientation.MirrorHorizontalRotate270CW,
+      ExifOrientation.Rotate90CW,
+      ExifOrientation.MirrorHorizontalRotate90CW,
+      ExifOrientation.Rotate270CW,
+    ].includes(orientation);
+
+    // swap image dimensions in AppliedToDimensions if orientation is sidewards
+    const adjustedAppliedToDimensions = isSidewards
+      ? {
+          ...regionInfo.AppliedToDimensions,
+          W: regionInfo.AppliedToDimensions.H,
+          H: regionInfo.AppliedToDimensions.W,
+        }
+      : regionInfo.AppliedToDimensions;
+
+    // update area coordinates and dimensions in RegionList assuming "normalized" unit as per MWG guidelines
+    const adjustedRegionList = regionInfo.RegionList.map((region) => {
+      let { X, Y, W, H } = region.Area;
+      switch (orientation) {
+        case ExifOrientation.MirrorHorizontal: {
+          X = 1 - X;
+          break;
+        }
+        case ExifOrientation.Rotate180: {
+          [X, Y] = [1 - X, 1 - Y];
+          break;
+        }
+        case ExifOrientation.MirrorVertical: {
+          Y = 1 - Y;
+          break;
+        }
+        case ExifOrientation.MirrorHorizontalRotate270CW: {
+          [X, Y] = [Y, X];
+          break;
+        }
+        case ExifOrientation.Rotate90CW: {
+          [X, Y] = [1 - Y, X];
+          break;
+        }
+        case ExifOrientation.MirrorHorizontalRotate90CW: {
+          [X, Y] = [1 - Y, 1 - X];
+          break;
+        }
+        case ExifOrientation.Rotate270CW: {
+          [X, Y] = [Y, 1 - X];
+          break;
+        }
+      }
+      if (isSidewards) {
+        [W, H] = [H, W];
+      }
+      return {
+        ...region,
+        Area: { ...region.Area, X, Y, W, H },
+      };
+    });
+
+    return {
+      ...regionInfo,
+      AppliedToDimensions: adjustedAppliedToDimensions,
+      RegionList: adjustedRegionList,
+    };
+  }
+
   private async applyTaggedFaces(
     asset: { id: string; ownerId: string; faces: AssetFace[]; originalPath: string },
     tags: ImmichTags,
@@ -607,13 +687,16 @@ export class MetadataService extends BaseService {
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
     const missing: (Insertable<Person> & { ownerId: string })[] = [];
     const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
-    for (const region of tags.RegionInfo.RegionList) {
+
+    const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
+    const imageWidth = adjustedRegionInfo.AppliedToDimensions.W;
+    const imageHeight = adjustedRegionInfo.AppliedToDimensions.H;
+
+    for (const region of adjustedRegionInfo.RegionList) {
       if (!region.Name) {
         continue;
       }
 
-      const imageWidth = tags.RegionInfo.AppliedToDimensions.W;
-      const imageHeight = tags.RegionInfo.AppliedToDimensions.H;
       const loweredName = region.Name.toLowerCase();
       const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
 
@@ -784,7 +867,7 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!isSync && (!asset.isVisible || asset.sidecarPath) && !asset.isExternal) {
+    if (!isSync && (asset.visibility === AssetVisibility.HIDDEN || asset.sidecarPath) && !asset.isExternal) {
       return JobStatus.FAILED;
     }
 

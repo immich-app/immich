@@ -1,15 +1,10 @@
 <script lang="ts">
-  import { onMount, onDestroy, tick } from 'svelte';
-  import { t } from 'svelte-i18n';
   import { getAssetOriginalUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { onDestroy, onMount, tick } from 'svelte';
+  import { t } from 'svelte-i18n';
 
-  import { imgElement, cropAreaEl, resetCropStore, overlayEl, isResizingOrDragging, cropFrame } from './crop-store';
-  import { draw } from './drawing';
-  import { onImageLoad, resizeCanvas } from './image-loading';
-  import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
-  import { recalculateCrop, animateCropChange } from './crop-settings';
   import {
     changedOriention,
     cropAspectRatio,
@@ -17,7 +12,13 @@
     resetGlobalCropStore,
     rotateDegrees,
   } from '$lib/stores/asset-editor.store';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
+  import { animateCropChange, recalculateCrop } from './crop-settings';
+  import { cropAreaEl, cropFrame, imgElement, isResizingOrDragging, overlayEl, resetCropStore } from './crop-store';
+  import { draw } from './drawing';
+  import { onImageLoad, resizeCanvas } from './image-loading';
+  import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
 
   interface Props {
     asset: AssetResponseDto;
@@ -81,7 +82,7 @@
     aria-label="Crop area"
     type="button"
   >
-    <img draggable="false" src={img?.src} alt={$getAltText(asset)} />
+    <img draggable="false" src={img?.src} alt={$getAltText(toTimelineAsset(asset))} />
     <div class={`${$isResizingOrDragging ? 'resizing' : ''} crop-frame`} bind:this={$cropFrame}>
       <div class="grid"></div>
       <div class="corner top-left"></div>
@@ -169,7 +170,6 @@
     border: 2px solid white;
     box-sizing: border-box;
     pointer-events: none;
-    z-index: 1;
   }
 
   .corner {

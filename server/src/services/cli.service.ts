@@ -18,7 +18,7 @@ export class CliService extends BaseService {
     }
 
     const providedPassword = await ask(mapUserAdmin(admin));
-    const password = providedPassword || this.cryptoRepository.newPassword(24);
+    const password = providedPassword || this.cryptoRepository.randomBytesAsText(24);
     const hashedPassword = await this.cryptoRepository.hashBcrypt(password, SALT_ROUNDS);
 
     await this.userRepository.update(admin.id, { password: hashedPassword });

@@ -26,11 +26,11 @@ jobs:
       should_run_ml: ${{ steps.found_paths.outputs.machine-learning == 'true' || steps.should_force.outputs.should_force == 'true' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - id: found_paths
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         with:
           filters: |
             server:
@@ -42,6 +42,8 @@ jobs:
               - 'machine-learning/**'
             workflow:
               - '.github/workflows/docker.yml'
+              - '.github/workflows/multi-runner-build.yml'
+              - '.github/actions/image-build'
 
       - name: Check if we should force jobs to run
         id: should_force
@@ -60,7 +62,7 @@ jobs:
         suffix: ['', '-cuda', '-rocm', '-openvino', '-armnn', '-rknn']
     steps:
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -89,7 +91,7 @@ jobs:
         suffix: ['']
     steps:
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -105,210 +107,53 @@ jobs:
           docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_PR}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
           docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_COMMIT}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
 
-  # build_and_push_ml:
-  #   name: Build and Push ML
-  #   needs: pre-job
-  #   if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
-  #   runs-on: ${{ matrix.runner }}
-  #   env:
-  #     image: immich-machine-learning
-  #     context: machine-learning
-  #     file: machine-learning/Dockerfile
-  #     GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
-  #   strategy:
-  #     # Prevent a failure in one image from stopping the other builds
-  #     fail-fast: false
-  #     matrix:
-  #       include:
-  #         - platform: linux/amd64
-  #           runner: ubuntu-latest
-  #           device: cpu
-
-  #         - platform: linux/arm64
-  #           runner: ubuntu-24.04-arm
-  #           device: cpu
-
-  #         - platform: linux/amd64
-  #           runner: ubuntu-latest
-  #           device: cuda
-  #           suffix: -cuda
-
-  #         - platform: linux/amd64
-  #           runner: mich
-  #           device: rocm
-  #           suffix: -rocm
-
-  #         - platform: linux/amd64
-  #           runner: ubuntu-latest
-  #           device: openvino
-  #           suffix: -openvino
-
-  #         - platform: linux/arm64
-  #           runner: ubuntu-24.04-arm
-  #           device: armnn
-  #           suffix: -armnn
-
-  #         - platform: linux/arm64
-  #           runner: ubuntu-24.04-arm
-  #           device: rknn
-  #           suffix: -rknn
-
-  #   steps:
-  #     - name: Prepare
-  #       run: |
-  #         platform=${{ matrix.platform }}
-  #         echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
-
-  #     - name: Checkout
-  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
-
-  #     - name: Login to GitHub Container Registry
-  #       uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-  #       if: ${{ !github.event.pull_request.head.repo.fork }}
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.repository_owner }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: Generate cache key suffix
-  #       run: |
-  #         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-  #           echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
-  #         else
-  #           echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
-  #         fi
-
-  #     - name: Generate cache target
-  #       id: cache-target
-  #       run: |
-  #         if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-  #           # Essentially just ignore the cache output (forks can't write to registry cache)
-  #           echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
-  #         else
-  #           echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
-  #         fi
-
-  #     - name: Build and push image
-  #       id: build
-  #       uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
-  #       with:
-  #         context: ${{ env.context }}
-  #         file: ${{ env.file }}
-  #         platforms: ${{ matrix.platforms }}
-  #         labels: ${{ steps.metadata.outputs.labels }}
-  #         cache-to: ${{ steps.cache-target.outputs.cache-to }}
-  #         cache-from: |
-  #           type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }}
-  #           type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-main
-  #         outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
-  #         build-args: |
-  #           DEVICE=${{ matrix.device }}
-  #           BUILD_ID=${{ github.run_id }}
-  #           BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
-  #           BUILD_SOURCE_REF=${{ github.ref_name }}
-  #           BUILD_SOURCE_COMMIT=${{ github.sha }}
-
-  #     - name: Export digest
-  #       run: |
-  #         mkdir -p ${{ runner.temp }}/digests
-  #         digest="${{ steps.build.outputs.digest }}"
-  #         touch "${{ runner.temp }}/digests/${digest#sha256:}"
-
-  #     - name: Upload digest
-  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-  #       with:
-  #         name: ml-digests-${{ matrix.device }}-${{ env.PLATFORM_PAIR }}
-  #         path: ${{ runner.temp }}/digests/*
-  #         if-no-files-found: error
-  #         retention-days: 1
-
-  # merge_ml:
-  #   name: Merge & Push ML
-  #   runs-on: ubuntu-latest
-  #   if: ${{ needs.pre-job.outputs.should_run_ml == 'true' && !github.event.pull_request.head.repo.fork }}
-  #   env:
-  #     GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
-  #     DOCKER_REPO: altran1502/immich-machine-learning
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - device: cpu
-  #         - device: cuda
-  #           suffix: -cuda
-  #         - device: rocm
-  #           suffix: -rocm
-  #         - device: openvino
-  #           suffix: -openvino
-  #         - device: armnn
-  #           suffix: -armnn
-  #         - device: rknn
-  #           suffix: -rknn
-  #   needs:
-  #     - build_and_push_ml
-  #   steps:
-  #     - name: Download digests
-  #       uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
-  #       with:
-  #         path: ${{ runner.temp }}/digests
-  #         pattern: ml-digests-${{ matrix.device }}-*
-  #         merge-multiple: true
-
-  #     - name: Login to Docker Hub
-  #       if: ${{ github.event_name == 'release' }}
-  #       uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-  #     - name: Login to GHCR
-  #       uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.repository_owner }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
-
-  #     - name: Generate docker image tags
-  #       id: meta
-  #       uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
-  #       env:
-  #         DOCKER_METADATA_PR_HEAD_SHA: 'true'
-  #       with:
-  #         flavor: |
-  #           # Disable latest tag
-  #           latest=false
-  #           suffix=${{ matrix.suffix }}
-  #         images: |
-  #           name=${{ env.GHCR_REPO }}
-  #           name=${{ env.DOCKER_REPO }},enable=${{ github.event_name == 'release' }}
-  #         tags: |
-  #           # Tag with branch name
-  #           type=ref,event=branch
-  #           # Tag with pr-number
-  #           type=ref,event=pr
-  #           # Tag with long commit sha hash
-  #           type=sha,format=long,prefix=commit-
-  #           # Tag with git tag on release
-  #           type=ref,event=tag
-  #           type=raw,value=release,enable=${{ github.event_name == 'release' }}
-
-  #     - name: Create manifest list and push
-  #       working-directory: ${{ runner.temp }}/digests
-  #       run: |
-  #         docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-  #           $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
-
-  build_and_push_server:
-    name: Build and Push Server
-    runs-on: ${{ matrix.runner }}
+  machine-learning:
+    name: Build and Push ML
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device: cpu
+            tag-suffix: ''
+          - device: cuda
+            tag-suffix: '-cuda'
+            platforms: linux/amd64
+          - device: openvino
+            tag-suffix: '-openvino'
+            platforms: linux/amd64
+          - device: armnn
+            tag-suffix: '-armnn'
+            platforms: linux/arm64
+          - device: rknn
+            tag-suffix: '-rknn'
+            platforms: linux/arm64
+          - device: rocm
+            tag-suffix: '-rocm'
+            platforms: linux/amd64
+            runner-mapping: '{"linux/amd64": "mich"}'
+    uses: ./.github/workflows/multi-runner-build.yml
     permissions:
       contents: read
+      actions: read
       packages: write
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    with:
+      image: immich-machine-learning
+      context: machine-learning
+      dockerfile: machine-learning/Dockerfile
+      platforms: ${{ matrix.platforms }}
+      runner-mapping: ${{ matrix.runner-mapping }}
+      tag-suffix: ${{ matrix.tag-suffix }}
+      dockerhub-push: ${{ github.event_name == 'release' }}
+      build-args: |
+        DEVICE=${{ matrix.device }}
+
+  server:
+    name: Build and Push Server
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     env:
@@ -345,10 +190,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Fix branding in trsnslations
-        run: |
-          sed -i 's/Immich/PixelUnion/g' i18n/*.json
 
       - name: Generate cache key suffix
         env:
@@ -418,86 +259,20 @@ jobs:
       contents: read
       actions: read
       packages: write
-    if: ${{ needs.pre-job.outputs.should_run_server == 'true' && !github.event.pull_request.head.repo.fork }}
-    env:
-      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
-      DOCKER_REPO: altran1502/immich-server
-    needs:
-      - build_and_push_server
-    steps:
-      - name: Download digests
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
-        with:
-          path: ${{ runner.temp }}/digests
-          pattern: server-digests-*
-          merge-multiple: true
-
-      - name: Login to Docker Hub
-        if: ${{ github.event_name == 'release' }}
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Login to GHCR
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
-
-      - name: Generate docker image tags
-        id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
-        env:
-          DOCKER_METADATA_PR_HEAD_SHA: 'true'
-        with:
-          flavor: |
-            # Disable latest tag
-            latest=false
-            suffix=${{ matrix.suffix }}
-          images: |
-            name=${{ env.GHCR_REPO }}
-            name=${{ env.DOCKER_REPO }},enable=${{ github.event_name == 'release' }}
-          tags: |
-            # Tag with branch name
-            type=ref,event=branch
-            # Tag with pr-number
-            type=ref,event=pr
-            # Tag with long commit sha hash
-            type=sha,format=long,prefix=commit-
-            # Tag with git tag on release
-            type=ref,event=tag
-            type=raw,value=release,enable=${{ github.event_name == 'release' }}
-
-      - name: Create manifest list and push
-        working-directory: ${{ runner.temp }}/digests
-        run: |
-          # Process annotations
-          declare -a ANNOTATIONS=()
-          if [[ -n "$DOCKER_METADATA_OUTPUT_JSON" ]]; then
-            while IFS= read -r annotation; do
-              # Extract key and value by removing the manifest: prefix
-              if [[ "$annotation" =~ ^manifest:(.+)=(.+)$ ]]; then
-                key="${BASH_REMATCH[1]}"
-                value="${BASH_REMATCH[2]}"
-                # Use array to properly handle arguments with spaces
-                ANNOTATIONS+=(--annotation "index:$key=$value")
-              fi
-            done < <(jq -r '.annotations[]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
-          fi
-
-          TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-          SOURCE_ARGS=$(printf "${GHCR_REPO}@sha256:%s " *)
-
-          docker buildx imagetools create $TAGS "${ANNOTATIONS[@]}" $SOURCE_ARGS
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    with:
+      image: immich-server
+      context: .
+      dockerfile: server/Dockerfile
+      dockerhub-push: ${{ github.event_name == 'release' }}
+      build-args: |
+        DEVICE=cpu
 
   success-check-server:
     name: Docker Build & Push Server Success
-    needs: [merge_server, retag_server]
+    needs: [server, retag_server]
     permissions: {}
     runs-on: ubuntu-latest
     if: always()
@@ -510,15 +285,17 @@ jobs:
         # zizmor: ignore[template-injection]
         run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
 
-  # success-check-ml:
-  #   name: Docker Build & Push ML Success
-  #   needs: [merge_ml, retag_ml]
-  #   runs-on: ubuntu-latest
-  #   if: always()
-  #   steps:
-  #     - name: Any jobs failed?
-  #       if: ${{ contains(needs.*.result, 'failure') }}
-  #       run: exit 1
-  #     - name: All jobs passed or skipped
-  #       if: ${{ !(contains(needs.*.result, 'failure')) }}
-  #       run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
+  success-check-ml:
+    name: Docker Build & Push ML Success
+    needs: [merge_ml, retag_ml]
+    permissions: {}
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Any jobs failed?
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
+      - name: All jobs passed or skipped
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        # zizmor: ignore[template-injection]
+        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"

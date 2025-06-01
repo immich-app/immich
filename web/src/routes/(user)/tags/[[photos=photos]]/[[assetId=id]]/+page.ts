@@ -7,7 +7,7 @@ import { getAllTags } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
-  await authenticate();
+  await authenticate(url);
   const asset = await getAssetInfoFromParam(params);
   const $t = await getFormatter();
 

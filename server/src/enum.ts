@@ -126,6 +126,11 @@ export enum Permission {
   MEMORY_UPDATE = 'memory.update',
   MEMORY_DELETE = 'memory.delete',
 
+  NOTIFICATION_CREATE = 'notification.create',
+  NOTIFICATION_READ = 'notification.read',
+  NOTIFICATION_UPDATE = 'notification.update',
+  NOTIFICATION_DELETE = 'notification.delete',
+
   PARTNER_CREATE = 'partner.create',
   PARTNER_READ = 'partner.read',
   PARTNER_UPDATE = 'partner.update',
@@ -139,9 +144,11 @@ export enum Permission {
   PERSON_MERGE = 'person.merge',
   PERSON_REASSIGN = 'person.reassign',
 
+  SESSION_CREATE = 'session.create',
   SESSION_READ = 'session.read',
   SESSION_UPDATE = 'session.update',
   SESSION_DELETE = 'session.delete',
+  SESSION_LOCK = 'session.lock',
 
   SHARED_LINK_CREATE = 'sharedLink.create',
   SHARED_LINK_READ = 'sharedLink.read',
@@ -337,6 +344,11 @@ export enum ImageFormat {
   WEBP = 'webp',
 }
 
+export enum RawExtractedFormat {
+  JPEG = 'jpeg',
+  JXL = 'jxl',
+}
+
 export enum LogLevel {
   VERBOSE = 'verbose',
   DEBUG = 'debug',
@@ -407,6 +419,7 @@ export enum DatabaseExtension {
   EARTH_DISTANCE = 'earthdistance',
   VECTOR = 'vector',
   VECTORS = 'vectors',
+  VECTORCHORD = 'vchord',
 }
 
 export enum BootstrapEventPriority {
@@ -520,6 +533,7 @@ export enum JobName {
   NOTIFY_SIGNUP = 'notify-signup',
   NOTIFY_ALBUM_INVITE = 'notify-album-invite',
   NOTIFY_ALBUM_UPDATE = 'notify-album-update',
+  NOTIFICATIONS_CLEANUP = 'notifications-cleanup',
   SEND_EMAIL = 'notification-send-email',
 
   // Version check
@@ -559,6 +573,7 @@ export enum DatabaseLock {
   Library = 1337,
   GetSystemConfig = 69,
   BackupDatabase = 42,
+  MemoryCreation = 777,
 }
 
 export enum SyncRequestType {
@@ -568,6 +583,8 @@ export enum SyncRequestType {
   AssetExifsV1 = 'AssetExifsV1',
   PartnerAssetsV1 = 'PartnerAssetsV1',
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
+  AlbumsV1 = 'AlbumsV1',
+  AlbumUsersV1 = 'AlbumUsersV1',
 }
 
 export enum SyncEntityType {
@@ -584,4 +601,47 @@ export enum SyncEntityType {
   PartnerAssetV1 = 'PartnerAssetV1',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
+
+  AlbumV1 = 'AlbumV1',
+  AlbumDeleteV1 = 'AlbumDeleteV1',
+  AlbumUserV1 = 'AlbumUserV1',
+  AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
+}
+
+export enum NotificationLevel {
+  Success = 'success',
+  Error = 'error',
+  Warning = 'warning',
+  Info = 'info',
+}
+
+export enum NotificationType {
+  JobFailed = 'JobFailed',
+  BackupFailed = 'BackupFailed',
+  SystemMessage = 'SystemMessage',
+  Custom = 'Custom',
+}
+
+export enum OAuthTokenEndpointAuthMethod {
+  CLIENT_SECRET_POST = 'client_secret_post',
+  CLIENT_SECRET_BASIC = 'client_secret_basic',
+}
+
+export enum DatabaseSslMode {
+  Disable = 'disable',
+  Allow = 'allow',
+  Prefer = 'prefer',
+  Require = 'require',
+  VerifyFull = 'verify-full',
+}
+
+export enum AssetVisibility {
+  ARCHIVE = 'archive',
+  TIMELINE = 'timeline',
+
+  /**
+   * Video part of the LivePhotos and MotionPhotos
+   */
+  HIDDEN = 'hidden',
+  LOCKED = 'locked',
 }

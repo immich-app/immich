@@ -9,7 +9,7 @@ import { JobName, JobStatus, MetadataKey, QueueCleanType, QueueName } from 'src/
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { IEntityJob, JobCounts, JobItem, JobOf, QueueStatus } from 'src/types';
+import { JobCounts, JobItem, JobOf, QueueStatus } from 'src/types';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
 
 type JobMapItem = {
@@ -206,7 +206,10 @@ export class JobRepository {
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
       case JobName.NOTIFY_ALBUM_UPDATE: {
-        return { jobId: item.data.id, delay: item.data?.delay };
+        return {
+          jobId: `${item.data.id}/${item.data.recipientId}`,
+          delay: item.data?.delay,
+        };
       }
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         return { jobId: item.data.id, delay: 1000 };
@@ -251,19 +254,12 @@ export class JobRepository {
     return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
   }
 
-  public async removeJob(jobId: string, name: JobName): Promise<IEntityJob | undefined> {
-    const existingJob = await this.getQueue(this.getQueueName(name)).getJob(jobId);
-    if (!existingJob) {
-      return;
-    }
-    try {
+  /** @deprecated */
+  // todo: remove this when asset notifications no longer need it.
+  public async removeJob(name: JobName, jobID: string): Promise<void> {
+    const existingJob = await this.getQueue(this.getQueueName(name)).getJob(jobID);
+    if (existingJob) {
       await existingJob.remove();
-    } catch (error: any) {
-      if (error.message?.includes('Missing key for job')) {
-        return;
-      }
-      throw error;
     }
-    return existingJob.data;
   }
 }

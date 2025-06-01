@@ -1,10 +1,10 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
-  import { mdiMagnify, mdiClose } from '@mdi/js';
-  import { fly } from 'svelte/transition';
+  import { mdiClose, mdiMagnify } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { fly } from 'svelte/transition';
 
   interface Props {
     id: string;
@@ -95,7 +95,7 @@
   {#if isOpen && isSearchSuggestions}
     <div
       transition:fly={{ y: 25, duration: 150 }}
-      class="absolute w-full rounded-b-3xl border-2 border-t-0 border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-700 dark:bg-immich-dark-gray dark:text-gray-300"
+      class="absolute w-full rounded-b-3xl border-2 border-t-0 border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-700 dark:bg-immich-dark-gray dark:text-gray-300 z-1"
     >
       <div class="flex items-center justify-between px-5 pt-5 text-xs">
         <p class="py-2" aria-hidden={true}>{$t('recent_searches').toUpperCase()}</p>
@@ -122,7 +122,7 @@
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
               id={getId(index)}
-              class="relative flex w-full cursor-pointer gap-3 py-3 pl-5 hover:bg-gray-100 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-500/30 dark:hover:bg-gray-500/30"
+              class="relative flex w-full cursor-pointer gap-3 py-3 ps-5 hover:bg-gray-100 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-500/30 dark:hover:bg-gray-500/30"
               onclick={() => handleSelect(savedSearchTerm)}
               role="option"
               tabindex="-1"
@@ -132,7 +132,7 @@
               <Icon path={mdiMagnify} size="1.5em" ariaHidden={true} />
               {savedSearchTerm}
             </div>
-            <div aria-hidden={true} class="absolute right-5 top-0 items-center justify-center py-3">
+            <div aria-hidden={true} class="absolute end-5 top-0 items-center justify-center py-3">
               <CircleIconButton
                 icon={mdiClose}
                 title={$t('remove')}

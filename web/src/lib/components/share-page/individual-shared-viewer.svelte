@@ -1,27 +1,28 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { getKey, handlePromiseError } from '$lib/utils';
-  import { downloadArchive } from '$lib/utils/asset-utils';
+  import { handlePromiseError } from '$lib/utils';
+  import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { addSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
+  import { t } from 'svelte-i18n';
+  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
   import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import type { Viewport } from '$lib/stores/assets-store.svelte';
-  import { t } from 'svelte-i18n';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -33,7 +34,7 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
 
-  let assets = $derived(sharedLink.assets);
+  let assets = $derived(sharedLink.assets.map((a) => toTimelineAsset(a)));
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -57,7 +58,7 @@
         assetIdsDto: {
           assetIds: results.filter((id) => !!id) as string[],
         },
-        key: getKey(),
+        key: authManager.key,
       });
 
       const added = data.filter((item) => item.success).length;
@@ -87,7 +88,7 @@
   };
 </script>
 
-<section class="bg-immich-bg dark:bg-immich-dark-bg">
+<section>
   {#if sharedLink?.allowUpload || assets.length > 1}
     {#if assetInteraction.selectionActive}
       <AssetSelectControlBar
@@ -126,15 +127,17 @@
     <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
       <GalleryViewer {assets} {assetInteraction} {viewport} />
     </section>
-  {:else}
-    <AssetViewer
-      asset={assets[0]}
-      showCloseButton={false}
-      onAction={handleAction}
-      onPrevious={() => Promise.resolve(false)}
-      onNext={() => Promise.resolve(false)}
-      onRandom={() => Promise.resolve(undefined)}
-      onClose={() => {}}
-    />
+  {:else if assets.length === 1}
+    {#await getAssetInfo({ id: assets[0].id, key: authManager.key }) then asset}
+      <AssetViewer
+        {asset}
+        showCloseButton={false}
+        onAction={handleAction}
+        onPrevious={() => Promise.resolve(false)}
+        onNext={() => Promise.resolve(false)}
+        onRandom={() => Promise.resolve(undefined)}
+        onClose={() => {}}
+      />
+    {/await}
   {/if}
 </section>

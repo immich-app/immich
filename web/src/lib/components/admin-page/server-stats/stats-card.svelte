@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { ByteUnit } from '$lib/utils/byte-units';
+  import { Code, Text } from '@immich/ui';
 
   interface Props {
     icon: string;
@@ -20,18 +21,16 @@
   });
 </script>
 
-<div class="flex h-[140px] w-[250px] flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">
-  <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
+<div class="flex h-[140px] w-full flex-col justify-between rounded-3xl bg-subtle text-primary p-5">
+  <div class="flex place-items-center gap-4">
     <Icon path={icon} size="40" />
-    <p>{title}</p>
+    <Text size="large" fontWeight="bold">{title}</Text>
   </div>
 
-  <div class="relative text-center font-mono text-2xl font-semibold">
-    <span class="text-[#DCDADA] dark:text-[#525252]">{zeros()}</span><span
-      class="text-immich-primary dark:text-immich-dark-primary">{value}</span
-    >
+  <div class="relative mx-auto font-mono text-2xl font-semibold">
+    <span class="text-gray-400 dark:text-gray-600">{zeros()}</span><span>{value}</span>
     {#if unit}
-      <span class="absolute -top-5 right-2 text-base font-light text-gray-400">{unit}</span>
+      <Code color="muted" class="absolute -top-5 end-1 font-light">{unit}</Code>
     {/if}
   </div>
 </div>

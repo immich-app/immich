@@ -2,7 +2,7 @@
 sidebar_position: 80
 ---
 
-# TrueNAS SCALE [Community]
+# TrueNAS [Community]
 
 :::note
 This is a community contribution and not officially supported by the Immich team, but included here for convenience.
@@ -12,17 +12,17 @@ Community support can be found in the dedicated channel on the [Discord Server](
 **Please report app issues to the corresponding [Github Repository](https://github.com/truenas/charts/tree/master/community/immich).**
 :::
 
-Immich can easily be installed on TrueNAS SCALE via the **Community** train application.
-Consider reviewing the TrueNAS [Apps tutorial](https://www.truenas.com/docs/scale/scaletutorials/apps/) if you have not previously configured applications on your system.
+Immich can easily be installed on TrueNAS Community Edition via the **Community** train application.
+Consider reviewing the TrueNAS [Apps resources](https://apps.truenas.com/getting-started/) if you have not previously configured applications on your system.
 
-TrueNAS SCALE makes installing and updating Immich easy, but you must use the Immich web portal and mobile app to configure accounts and access libraries.
+TrueNAS Community Edition makes installing and updating Immich easy, but you must use the Immich web portal and mobile app to configure accounts and access libraries.
 
 ## First Steps
 
-The Immich app in TrueNAS SCALE installs, completes the initial configuration, then starts the Immich web portal.
-When updates become available, SCALE alerts and provides easy updates.
+The Immich app in TrueNAS Community Edition installs, completes the initial configuration, then starts the Immich web portal.
+When updates become available, TrueNAS alerts and provides easy updates.
 
-Before installing the Immich app in SCALE, review the [Environment Variables](#environment-variables) documentation to see if you want to configure any during installation.
+Before installing the Immich app in TrueNAS, review the [Environment Variables](#environment-variables) documentation to see if you want to configure any during installation.
 You may also configure environment variables at any time after deploying the application.
 
 ### Setting up Storage Datasets
@@ -126,9 +126,9 @@ className="border rounded-xl"
 
 Accept the default port `30041` in **WebUI Port** or enter a custom port number.
 :::info Allowed Port Numbers
-Only numbers within the range 9000-65535 may be used on SCALE versions below TrueNAS Scale 24.10 Electric Eel.
+Only numbers within the range 9000-65535 may be used on TrueNAS versions below TrueNAS Community Edition 24.10 Electric Eel.
 
-Regardless of version, to avoid port conflicts, don't use [ports on this list](https://www.truenas.com/docs/references/defaultports/).
+Regardless of version, to avoid port conflicts, don't use [ports on this list](https://www.truenas.com/docs/solutions/optimizations/security/#truenas-default-ports).
 :::
 
 ### Storage Configuration
@@ -173,7 +173,7 @@ className="border rounded-xl"
 
 You may configure [External Libraries](/docs/features/libraries) by mounting them using **Additional Storage**.
 The **Mount Path** is the location you will need to copy and paste into the External Library settings within Immich.
-The **Host Path** is the location on the TrueNAS SCALE server where your external library is located.
+The **Host Path** is the location on the TrueNAS Community Edition server where your external library is located.
 
 <!-- A section for Labels would go here but I don't know what they do. -->
 
@@ -188,17 +188,17 @@ className="border rounded-xl"
 
 Accept the default **CPU** limit of `2` threads or specify the number of threads (CPUs with Multi-/Hyper-threading have 2 threads per core).
 
-Accept the default **Memory** limit of `4096` MB or specify the number of MB of RAM. If you're using Machine Learning you should probably set this above 8000 MB.
+Specify the **Memory** limit in MB of RAM. Immich recommends at least 6000 MB (6GB). If you selected **Enable Machine Learning** in **Immich Configuration**, you should probably set this above 8000 MB.
 
-:::info Older SCALE Versions
-Before TrueNAS SCALE version 24.10 Electric Eel:
+:::info Older TrueNAS Versions
+Before TrueNAS Community Edition version 24.10 Electric Eel:
 
 The **CPU** value was specified in a different format with a default of `4000m` which is 4 threads.
 
 The **Memory** value was specified in a different format with a default of `8Gi` which is 8 GiB of RAM. The value was specified in bytes or a number with a measurement suffix. Examples: `129M`, `123Mi`, `1000000000`
 :::
 
-Enable **GPU Configuration** options if you have a GPU that you will use for [Hardware Transcoding](/docs/features/hardware-transcoding) and/or [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md). More info: [GPU Passthrough Docs for TrueNAS Apps](https://www.truenas.com/docs/truenasapps/#gpu-passthrough)
+Enable **GPU Configuration** options if you have a GPU that you will use for [Hardware Transcoding](/docs/features/hardware-transcoding) and/or [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md). More info: [GPU Passthrough Docs for TrueNAS Apps](https://apps.truenas.com/managing-apps/installing-apps/#gpu-passthrough)
 
 ### Install
 
@@ -240,7 +240,7 @@ className="border rounded-xl"
 />
 
 :::info
-Some Environment Variables are not available for the TrueNAS SCALE app. This is mainly because they can be configured through GUI options in the [Edit Immich screen](#edit-app-settings).
+Some Environment Variables are not available for the TrueNAS Community Edition app. This is mainly because they can be configured through GUI options in the [Edit Immich screen](#edit-app-settings).
 
 Some examples are: `IMMICH_VERSION`, `UPLOAD_LOCATION`, `DB_DATA_LOCATION`, `TZ`, `IMMICH_LOG_LEVEL`, `DB_PASSWORD`, `REDIS_PASSWORD`.
 :::
@@ -251,7 +251,7 @@ Some examples are: `IMMICH_VERSION`, `UPLOAD_LOCATION`, `DB_DATA_LOCATION`, `TZ`
 Make sure to read the general [upgrade instructions](/docs/install/upgrading.md).
 :::
 
-When updates become available, SCALE alerts and provides easy updates.
+When updates become available, TrueNAS alerts and provides easy updates.
 To update the app to the latest version:
 
 - Go to the **Installed Applications** screen and select Immich from the list of installed applications.

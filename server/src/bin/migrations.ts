@@ -67,7 +67,7 @@ const runQuery = async (query: string) => {
 
 const runMigrations = async () => {
   const configRepository = new ConfigRepository();
-  const logger = new LoggingRepository(undefined, configRepository);
+  const logger = LoggingRepository.create();
   const db = getDatabaseClient();
   const databaseRepository = new DatabaseRepository(db, logger, configRepository);
   await databaseRepository.runMigrations();
@@ -125,6 +125,7 @@ const compare = async () => {
   const down = schemaDiff(target, source, {
     tables: { ignoreExtra: false },
     functions: { ignoreExtra: false },
+    extension: { ignoreMissing: true },
   });
 
   return { up, down };

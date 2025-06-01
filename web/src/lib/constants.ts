@@ -10,10 +10,12 @@ export enum AssetAction {
   ADD_TO_ALBUM = 'add-to-album',
   UNSTACK = 'unstack',
   KEEP_THIS_DELETE_OTHERS = 'keep-this-delete-others',
+  SET_VISIBILITY_LOCKED = 'set-visibility-locked',
+  SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
 }
 
 export enum AppRoute {
-  ADMIN_USER_MANAGEMENT = '/admin/user-management',
+  ADMIN_USERS = '/admin/users',
   ADMIN_LIBRARY_MANAGEMENT = '/admin/library-management',
   ADMIN_SETTINGS = '/admin/system-settings',
   ADMIN_STATS = '/admin/server-status',
@@ -43,12 +45,14 @@ export enum AppRoute {
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
   AUTH_ONBOARDING = '/auth/onboarding',
+  AUTH_PIN_PROMPT = '/auth/pin-prompt',
 
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
 
   FOLDERS = '/folders',
   TAGS = '/tags',
+  LOCKED = '/locked',
 }
 
 export enum ProjectionType {
@@ -64,6 +68,11 @@ export enum ProjectionType {
 
 export const dateFormats = {
   album: <Intl.DateTimeFormatOptions>{
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  },
+  settings: <Intl.DateTimeFormatOptions>{
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -268,8 +277,8 @@ export const defaultLang = { name: 'English', code: 'en', loader: () => import('
 
 export const langs = [
   { name: 'Afrikaans', code: 'af', loader: () => import('$i18n/af.json') },
-  { name: 'Arabic', code: 'ar', loader: () => import('$i18n/ar.json') },
-  { name: 'Azerbaijani', code: 'az', loader: () => import('$i18n/az.json') },
+  { name: 'Arabic', code: 'ar', loader: () => import('$i18n/ar.json'), rtl: true },
+  { name: 'Azerbaijani', code: 'az', loader: () => import('$i18n/az.json'), rtl: true },
   { name: 'Belarusian', code: 'be', loader: () => import('$i18n/be.json') },
   { name: 'Bulgarian', code: 'bg', loader: () => import('$i18n/bg.json') },
   { name: 'Bislama', code: 'bi', loader: () => import('$i18n/bi.json') },
@@ -284,12 +293,12 @@ export const langs = [
   { name: 'Spanish', code: 'es', loader: () => import('$i18n/es.json') },
   { name: 'Estonian', code: 'et', loader: () => import('$i18n/et.json') },
   { name: 'Basque', code: 'eu', loader: () => import('$i18n/eu.json') },
-  { name: 'Persian', code: 'fa', loader: () => import('$i18n/fa.json') },
+  { name: 'Persian', code: 'fa', loader: () => import('$i18n/fa.json'), rtl: true },
   { name: 'Finnish', code: 'fi', loader: () => import('$i18n/fi.json') },
   { name: 'Filipino', code: 'fil', loader: () => import('$i18n/fil.json') },
   { name: 'French', code: 'fr', loader: () => import('$i18n/fr.json') },
   { name: 'Galician', code: 'gl', loader: () => import('$i18n/gl.json') },
-  { name: 'Hebrew', code: 'he', loader: () => import('$i18n/he.json') },
+  { name: 'Hebrew', code: 'he', loader: () => import('$i18n/he.json'), rtl: true },
   { name: 'Hindi', code: 'hi', loader: () => import('$i18n/hi.json') },
   { name: 'Croatian', code: 'hr', loader: () => import('$i18n/hr.json') },
   { name: 'Hungarian', code: 'hu', loader: () => import('$i18n/hu.json') },
@@ -299,7 +308,7 @@ export const langs = [
   { name: 'Japanese', code: 'ja', loader: () => import('$i18n/ja.json') },
   { name: 'Georgian', code: 'ka', loader: () => import('$i18n/ka.json') },
   { name: 'Kazakh', code: 'kk', loader: () => import('$i18n/kk.json') },
-  { name: 'Kurdish (Northern)', code: 'kmr', loader: () => import('$i18n/kmr.json') },
+  { name: 'Kurdish (Northern)', code: 'kmr', loader: () => import('$i18n/kmr.json'), rtl: true },
   { name: 'Kannada', code: 'kn', loader: () => import('$i18n/kn.json') },
   { name: 'Korean', code: 'ko', loader: () => import('$i18n/ko.json') },
   { name: 'Luxembourgish', code: 'lb', loader: () => import('$i18n/lb.json') },
@@ -307,6 +316,7 @@ export const langs = [
   { name: 'Latvian', code: 'lv', loader: () => import('$i18n/lv.json') },
   { name: 'Malay (Pattani)', code: 'mfa', loader: () => import('$i18n/mfa.json') },
   { name: 'Macedonian', code: 'mk', loader: () => import('$i18n/mk.json') },
+  { name: 'Malayalam', code: 'ml', loader: () => import('$i18n/ml.json') },
   { name: 'Mongolian', code: 'mn', loader: () => import('$i18n/mn.json') },
   { name: 'Marathi', code: 'mr', loader: () => import('$i18n/mr.json') },
   { name: 'Malay', code: 'ms', loader: () => import('$i18n/ms.json') },
@@ -335,7 +345,7 @@ export const langs = [
   { name: 'Thai', code: 'th', loader: () => import('$i18n/th.json') },
   { name: 'Turkish', code: 'tr', loader: () => import('$i18n/tr.json') },
   { name: 'Ukrainian', code: 'uk', loader: () => import('$i18n/uk.json') },
-  { name: 'Urdu', code: 'ur', loader: () => import('$i18n/ur.json') },
+  { name: 'Urdu', code: 'ur', loader: () => import('$i18n/ur.json'), rtl: true },
   { name: 'Vietnamese', code: 'vi', loader: () => import('$i18n/vi.json') },
   {
     name: 'Chinese (Traditional)',
@@ -366,21 +376,15 @@ export enum SettingInputFieldType {
 }
 
 export const AlbumPageViewMode = {
-  LINK_SHARING: 'link-sharing',
-  SELECT_USERS: 'select-users',
   SELECT_THUMBNAIL: 'select-thumbnail',
   SELECT_ASSETS: 'select-assets',
-  VIEW_USERS: 'view-users',
   VIEW: 'view',
   OPTIONS: 'options',
 };
 
 export type AlbumPageViewMode =
-  | typeof AlbumPageViewMode.LINK_SHARING
-  | typeof AlbumPageViewMode.SELECT_USERS
   | typeof AlbumPageViewMode.SELECT_THUMBNAIL
   | typeof AlbumPageViewMode.SELECT_ASSETS
-  | typeof AlbumPageViewMode.VIEW_USERS
   | typeof AlbumPageViewMode.VIEW
   | typeof AlbumPageViewMode.OPTIONS;
 
@@ -388,8 +392,6 @@ export enum PersonPageViewMode {
   VIEW_ASSETS = 'view-assets',
   SELECT_PERSON = 'select-person',
   MERGE_PEOPLE = 'merge-people',
-  SUGGEST_MERGE = 'suggest-merge',
-  BIRTH_DATE = 'birth-date',
   UNASSIGN_ASSETS = 'unassign-faces',
 }
 

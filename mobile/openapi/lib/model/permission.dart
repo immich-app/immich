@@ -66,6 +66,10 @@ class Permission {
   static const memoryPeriodRead = Permission._(r'memory.read');
   static const memoryPeriodUpdate = Permission._(r'memory.update');
   static const memoryPeriodDelete = Permission._(r'memory.delete');
+  static const notificationPeriodCreate = Permission._(r'notification.create');
+  static const notificationPeriodRead = Permission._(r'notification.read');
+  static const notificationPeriodUpdate = Permission._(r'notification.update');
+  static const notificationPeriodDelete = Permission._(r'notification.delete');
   static const partnerPeriodCreate = Permission._(r'partner.create');
   static const partnerPeriodRead = Permission._(r'partner.read');
   static const partnerPeriodUpdate = Permission._(r'partner.update');
@@ -77,9 +81,11 @@ class Permission {
   static const personPeriodStatistics = Permission._(r'person.statistics');
   static const personPeriodMerge = Permission._(r'person.merge');
   static const personPeriodReassign = Permission._(r'person.reassign');
+  static const sessionPeriodCreate = Permission._(r'session.create');
   static const sessionPeriodRead = Permission._(r'session.read');
   static const sessionPeriodUpdate = Permission._(r'session.update');
   static const sessionPeriodDelete = Permission._(r'session.delete');
+  static const sessionPeriodLock = Permission._(r'session.lock');
   static const sharedLinkPeriodCreate = Permission._(r'sharedLink.create');
   static const sharedLinkPeriodRead = Permission._(r'sharedLink.read');
   static const sharedLinkPeriodUpdate = Permission._(r'sharedLink.update');
@@ -147,6 +153,10 @@ class Permission {
     memoryPeriodRead,
     memoryPeriodUpdate,
     memoryPeriodDelete,
+    notificationPeriodCreate,
+    notificationPeriodRead,
+    notificationPeriodUpdate,
+    notificationPeriodDelete,
     partnerPeriodCreate,
     partnerPeriodRead,
     partnerPeriodUpdate,
@@ -158,9 +168,11 @@ class Permission {
     personPeriodStatistics,
     personPeriodMerge,
     personPeriodReassign,
+    sessionPeriodCreate,
     sessionPeriodRead,
     sessionPeriodUpdate,
     sessionPeriodDelete,
+    sessionPeriodLock,
     sharedLinkPeriodCreate,
     sharedLinkPeriodRead,
     sharedLinkPeriodUpdate,
@@ -263,6 +275,10 @@ class PermissionTypeTransformer {
         case r'memory.read': return Permission.memoryPeriodRead;
         case r'memory.update': return Permission.memoryPeriodUpdate;
         case r'memory.delete': return Permission.memoryPeriodDelete;
+        case r'notification.create': return Permission.notificationPeriodCreate;
+        case r'notification.read': return Permission.notificationPeriodRead;
+        case r'notification.update': return Permission.notificationPeriodUpdate;
+        case r'notification.delete': return Permission.notificationPeriodDelete;
         case r'partner.create': return Permission.partnerPeriodCreate;
         case r'partner.read': return Permission.partnerPeriodRead;
         case r'partner.update': return Permission.partnerPeriodUpdate;
@@ -274,9 +290,11 @@ class PermissionTypeTransformer {
         case r'person.statistics': return Permission.personPeriodStatistics;
         case r'person.merge': return Permission.personPeriodMerge;
         case r'person.reassign': return Permission.personPeriodReassign;
+        case r'session.create': return Permission.sessionPeriodCreate;
         case r'session.read': return Permission.sessionPeriodRead;
         case r'session.update': return Permission.sessionPeriodUpdate;
         case r'session.delete': return Permission.sessionPeriodDelete;
+        case r'session.lock': return Permission.sessionPeriodLock;
         case r'sharedLink.create': return Permission.sharedLinkPeriodCreate;
         case r'sharedLink.read': return Permission.sharedLinkPeriodRead;
         case r'sharedLink.update': return Permission.sharedLinkPeriodUpdate;
