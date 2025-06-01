@@ -42,7 +42,9 @@
     getTagById,
     type MetadataSearchDto,
     searchAssets,
+    searchOcr,
     searchSmart,
+    type OcrSearchDto,
     type SmartSearchDto,
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
@@ -67,7 +69,7 @@
 
   const assetInteraction = new AssetInteraction();
 
-  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
+  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'> & Pick<OcrSearchDto, 'ocr'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
@@ -166,9 +168,11 @@
 
     try {
       const { albums, assets } =
-        'query' in searchDto && smartSearchEnabled
-          ? await searchSmart({ smartSearchDto: searchDto })
-          : await searchAssets({ metadataSearchDto: searchDto });
+        'ocr' in searchDto
+          ? await searchOcr({ ocrSearchDto: searchDto })
+          : 'query' in searchDto && smartSearchEnabled
+            ? await searchSmart({ smartSearchDto: searchDto })
+            : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items.map((asset) => toTimelineAsset(asset)));
@@ -212,6 +216,7 @@
       tagIds: $t('tags'),
       originalFileName: $t('file_name'),
       description: $t('description'),
+      ocr: $t('ocr'),
     };
     return keyMap[key] || key;
   }

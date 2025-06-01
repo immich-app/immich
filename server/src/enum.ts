@@ -442,6 +442,7 @@ export enum QueueName {
   LIBRARY = 'library',
   NOTIFICATION = 'notifications',
   BACKUP_DATABASE = 'backupDatabase',
+  OCR = 'ocr',
 }
 
 export enum JobName {
@@ -533,6 +534,11 @@ export enum JobName {
 
   // Version check
   VERSION_CHECK = 'version-check',
+
+  // OCR
+  QUEUE_OCR = 'queue-ocr',
+  OCR = 'ocr',
+  OCR_CLEANUP = 'ocr-cleanup',
 }
 
 export enum JobCommand {

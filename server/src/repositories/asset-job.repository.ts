@@ -342,6 +342,23 @@ export class AssetJobRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [], stream: true })
+  streamForOcrJob(force?: boolean) {
+    return this.db
+    .selectFrom('assets')
+    .select(['assets.id'])
+    .$if(!force, (qb) =>
+      qb
+        .leftJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
+        .where((eb) =>
+          eb.or([eb('asset_job_status.ocrAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
+        )
+        .where('assets.visibility', '!=', AssetVisibility.HIDDEN),
+    )
+    .where('assets.deletedAt', 'is', null)
+    .stream();
+  }
+
   @GenerateSql({ params: [DummyValue.DATE], stream: true })
   streamForMigrationJob() {
     return this.db.selectFrom('assets').select(['id']).where('assets.deletedAt', 'is', null).stream();

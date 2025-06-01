@@ -4,7 +4,7 @@
 
   interface Props {
     query: string | undefined;
-    queryType?: 'smart' | 'metadata' | 'description';
+    queryType?: 'smart' | 'metadata' | 'description' | 'ocr';
   }
 
   let { query = $bindable(), queryType = $bindable('smart') }: Props = $props();
@@ -28,6 +28,7 @@
       bind:group={queryType}
       value="description"
     />
+    <RadioButton name="query-type" id="ocr-radio" label={$t('ocr')} bind:group={queryType} value="ocr" />
   </div>
 </fieldset>
 
@@ -62,5 +63,16 @@
     placeholder={$t('search_by_description_example')}
     bind:value={query}
     aria-labelledby="description-label"
+  />
+{:else if queryType === 'ocr'}
+  <label for="ocr-input" class="immich-form-label">{$t('search_by_ocr')}</label>
+  <input
+    class="immich-form-input hover:cursor-text w-full !mt-1"
+    type="text"
+    id="ocr-input"
+    name="ocr"
+    placeholder={$t('search_by_ocr_example')}
+    bind:value={query}
+    aria-labelledby="ocr-label"
   />
 {/if}

@@ -361,7 +361,12 @@ export type JobItem =
   | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
 
   // Version check
-  | { name: JobName.VERSION_CHECK; data: IBaseJob };
+  | { name: JobName.VERSION_CHECK; data: IBaseJob }
+
+  // OCR
+  | { name: JobName.QUEUE_OCR; data: INightlyJob }
+  | { name: JobName.OCR; data: IEntityJob }
+  | { name: JobName.OCR_CLEANUP; data?: IBaseJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
