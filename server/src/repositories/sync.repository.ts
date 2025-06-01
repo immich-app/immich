@@ -7,8 +7,21 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { SyncEntityType } from 'src/enum';
 import { SyncAck } from 'src/types';
 
-type AuditTables = 'users_audit' | 'partners_audit' | 'assets_audit' | 'albums_audit' | 'album_users_audit';
-type UpsertTables = 'users' | 'partners' | 'assets' | 'exif' | 'albums' | 'albums_shared_users_users';
+type AuditTables =
+  | 'users_audit'
+  | 'partners_audit'
+  | 'assets_audit'
+  | 'albums_audit'
+  | 'album_users_audit'
+  | 'albums_assets_assets_audit';
+type UpsertTables =
+  | 'users'
+  | 'partners'
+  | 'assets'
+  | 'exif'
+  | 'albums'
+  | 'albums_shared_users_users'
+  | 'albums_assets_assets';
 
 @Injectable()
 export class SyncRepository {
@@ -193,6 +206,8 @@ export class SyncRepository {
     return this.db
       .selectFrom('albums_assets_assets_audit')
       .select(['id', 'albumId', 'assetId'])
+      .where('albumId', '=', (eb) => eb.selectFrom('albums').select('id').where('ownerId', '=', userId))
+      .$call((qb) => this.auditTableFilters(qb, ack))
       .stream();
   }
 
@@ -201,6 +216,8 @@ export class SyncRepository {
     return this.db
       .selectFrom('albums_assets_assets')
       .select(['albumsId as albumId', 'assetsId as assetId', 'updateId'])
+      .where('albumsId', '=', (eb) => eb.selectFrom('albums_audit').select('id').where('userId', '=', userId))
+      .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }
 

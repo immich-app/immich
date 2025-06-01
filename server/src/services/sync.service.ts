@@ -231,10 +231,13 @@ export class SyncService extends BaseService {
             checkpointMap[SyncEntityType.AlbumAssetV1],
           );
           for await (const { id, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.AlbumAssetDeleteV1, updateId: id, data }))
+            response.write(serialize({ type: SyncEntityType.AlbumAssetDeleteV1, updateId: id, data }));
           }
 
-          const upserts = this.syncRepository.getAlbumAssetUpserts(auth.user.id, checkpointMap[SyncEntityType.AlbumAssetV1]);
+          const upserts = this.syncRepository.getAlbumAssetUpserts(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AlbumAssetV1],
+          );
           for await (const { updateId, ...data } of upserts) {
             response.write(serialize({ type: SyncEntityType.AlbumAssetV1, updateId, data }));
           }

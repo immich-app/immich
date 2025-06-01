@@ -1,5 +1,5 @@
-import { PrimaryGeneratedUuidV7Column } from "src/decorators";
-import { Column, CreateDateColumn, Table } from "src/sql-tools";
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
+import { Column, CreateDateColumn, Table } from 'src/sql-tools';
 
 @Table('album_assets_assets_audit')
 export class AlbumAssetAuditTable {
