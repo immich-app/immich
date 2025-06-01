@@ -20,8 +20,11 @@
     };
   }
 
-  function partsToMin(s: number, d: number | null, h: number | null, m: number | null) {
-    return s * Duration.fromObject({ days: d ?? 0, hours: h ?? 0, minutes: m ?? 0 }).shiftTo('minutes').minutes;
+  function partsToMin(sign: number, days: number | null, hours: number | null, minutes: number | null) {
+    return (
+      sign *
+      Duration.fromObject({ days: days ?? 0, hours: hours ?? 0, minutes: minutes ?? 0 }).shiftTo('minutes').minutes
+    );
   }
 
   const initial = minToParts(value);
