@@ -22,6 +22,8 @@ dependencies = [
     "rich>=13.4.2",
     "tokenizers>=0.15.0,<1.0",
     "uvicorn[standard]>=0.22.0,<1.0",
+    "paddleocr>=3.0.0",
+    "setuptools>=78.1.0",
 ]
 
 [dependency-groups]
@@ -48,11 +50,15 @@ lint = [
 dev = ["locust>=2.15.1", { include-group = "test" }, { include-group = "lint" }]
 
 [project.optional-dependencies]
-cpu = ["onnxruntime>=1.15.0,<2"]
-cuda = ["onnxruntime-gpu>=1.17.0,<2"]
-openvino = ["onnxruntime-openvino>=1.17.1,<1.19.0"]
-armnn = ["onnxruntime>=1.15.0,<2"]
-rknn = ["onnxruntime>=1.15.0,<2", "rknn-toolkit-lite2>=2.3.0,<3"]
+cpu = ["onnxruntime>=1.15.0,<2", "paddlepaddle==3.0.0rc1"]
+cuda = ["onnxruntime-gpu>=1.17.0,<2", "paddlepaddle-gpu==3.0.0rc1"]
+openvino = ["onnxruntime-openvino>=1.17.1,<1.19.0", "paddlepaddle==3.0.0rc1"]
+armnn = ["onnxruntime>=1.15.0,<2", "paddlepaddle==3.0.0rc1"]
+rknn = [
+    "onnxruntime>=1.15.0,<2",
+    "rknn-toolkit-lite2>=2.3.0,<3",
+    "paddlepaddle==3.0.0rc1",
+]
 rocm = []
 
 [tool.uv]
@@ -63,8 +69,20 @@ name = "cuda12"
 url = "https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/"
 explicit = true
 
+[[tool.uv.index]]
+name = "paddlepaddle-cpu"
+url = "https://www.paddlepaddle.org.cn/packages/stable/cpu/"
+explicit = true
+
+[[tool.uv.index]]
+name = "paddlepaddle-gpu"
+url = "https://www.paddlepaddle.org.cn/packages/stable/cu118/"
+explicit = true
+
 [tool.uv.sources]
 onnxruntime-gpu = { index = "cuda12" }
+paddlepaddle = { index = "paddlepaddle-cpu" }
+paddlepaddle-gpu = { index = "paddlepaddle-gpu" }
 
 [tool.hatch.build.targets.sdist]
 include = ["immich_ml"]

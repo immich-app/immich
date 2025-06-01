@@ -23,14 +23,14 @@ class BoundingBox(TypedDict):
 class ModelTask(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
     SEARCH = "clip"
-
+    OCR = "ocr"
 
 class ModelType(StrEnum):
     DETECTION = "detection"
     RECOGNITION = "recognition"
     TEXTUAL = "textual"
     VISUAL = "visual"
-
+    OCR = "ocr"
 
 class ModelFormat(StrEnum):
     ARMNN = "armnn"
@@ -42,7 +42,7 @@ class ModelSource(StrEnum):
     INSIGHTFACE = "insightface"
     MCLIP = "mclip"
     OPENCLIP = "openclip"
-
+    PADDLE = "paddle"
 
 ModelIdentity = tuple[ModelType, ModelTask]
 
@@ -85,6 +85,11 @@ class DetectedFace(TypedDict):
 
 
 FacialRecognitionOutput = list[DetectedFace]
+
+
+class OCROutput(TypedDict):
+    text: str
+    confidence: float
 
 
 class PipelineEntry(TypedDict):

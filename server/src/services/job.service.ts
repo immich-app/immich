@@ -237,6 +237,14 @@ export class JobService extends BaseService {
         return this.jobRepository.queue({ name: JobName.DatabaseBackup, data: { force } });
       }
 
+      case QueueName.OCR: {
+        return this.jobRepository.queue({ name: JobName.QUEUE_OCR, data: { force } });
+      }
+
+      case QueueName.OCR: {
+        return this.jobRepository.queue({ name: JobName.QUEUE_OCR, data: { force } });
+      }
+
       default: {
         throw new BadRequestException(`Invalid job name: ${name}`);
       }
@@ -300,6 +308,7 @@ export class JobService extends BaseService {
 
     if (config.nightlyTasks.clusterNewFaces) {
       jobs.push({ name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } });
+      { name: JobName.QUEUE_OCR, data: { force: false, nightly: true } },
     }
 
     await this.jobRepository.queueAll(jobs);
@@ -353,6 +362,7 @@ export class JobService extends BaseService {
         const jobs: JobItem[] = [
           { name: JobName.SmartSearch, data: item.data },
           { name: JobName.AssetDetectFaces, data: item.data },
+          { name: JobName.OCR, data: item.data },
         ];
 
         if (asset.type === AssetType.Video) {

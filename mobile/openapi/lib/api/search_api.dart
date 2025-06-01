@@ -577,6 +577,53 @@ class SearchApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /search/ocr' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [OcrSearchDto] ocrSearchDto (required):
+  Future<Response> searchOcrWithHttpInfo(OcrSearchDto ocrSearchDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/search/ocr';
+
+    // ignore: prefer_final_locals
+    Object? postBody = ocrSearchDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [OcrSearchDto] ocrSearchDto (required):
+  Future<SearchResponseDto?> searchOcr(OcrSearchDto ocrSearchDto,) async {
+    final response = await searchOcrWithHttpInfo(ocrSearchDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SearchResponseDto',) as SearchResponseDto;
+    
+    }
+    return null;
+  }
+
   /// This endpoint requires the `person.read` permission.
   ///
   /// Note: This method returns the HTTP [Response].

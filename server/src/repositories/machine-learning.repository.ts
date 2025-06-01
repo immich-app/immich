@@ -14,6 +14,7 @@ export interface BoundingBox {
 export enum ModelTask {
   FACIAL_RECOGNITION = 'facial-recognition',
   SEARCH = 'clip',
+  OCR = 'ocr',
 }
 
 export enum ModelType {
@@ -22,6 +23,7 @@ export enum ModelType {
   RECOGNITION = 'recognition',
   TEXTUAL = 'textual',
   VISUAL = 'visual',
+  OCR = 'ocr',
 }
 
 export type ModelPayload = { imagePath: string } | { text: string };
@@ -29,13 +31,21 @@ export type ModelPayload = { imagePath: string } | { text: string };
 type ModelOptions = { modelName: string };
 
 export type FaceDetectionOptions = ModelOptions & { minScore: number };
-
+export type OcrOptions = ModelOptions & { minScore: number };
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
 export type ClipVisualResponse = { [ModelTask.SEARCH]: string } & VisualResponse;
 
 export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: ModelOptions } };
 export type ClipTextualResponse = { [ModelTask.SEARCH]: string };
+
+export type OCR = {
+  text: string;
+  confidence: number;
+};
+
+export type OcrRequest = { [ModelTask.OCR]: { [ModelType.OCR]: ModelOptions & { options: { minScore: number } } } };
+export type OcrResponse = { [ModelTask.OCR]: OCR } & VisualResponse;
 
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {
@@ -52,7 +62,7 @@ export interface Face {
 
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
 export type DetectedFaces = { faces: Face[] } & VisualResponse;
-export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
+export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest | OcrRequest;
 export type TextEncodingOptions = ModelOptions & { language?: string };
 
 @Injectable()
@@ -191,5 +201,11 @@ export class MachineLearningRepository {
     }
 
     return formData;
+  }
+
+  async ocr(urls: string[], imagePath: string, { modelName, minScore }: OcrOptions) {
+    const request = { [ModelTask.OCR]: { [ModelType.OCR]: { modelName, options: { minScore } } } };
+    const response = await this.predict<OcrResponse>(urls, { imagePath }, request);
+    return response[ModelTask.OCR];
   }
 }

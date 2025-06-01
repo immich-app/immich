@@ -20,6 +20,7 @@ import { MemoryService } from 'src/services/memory.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { NotificationAdminService } from 'src/services/notification-admin.service';
 import { NotificationService } from 'src/services/notification.service';
+import { OcrService } from 'src/services/ocr.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
 import { SearchService } from 'src/services/search.service';
@@ -64,6 +65,7 @@ export const services = [
   MetadataService,
   NotificationService,
   NotificationAdminService,
+  OcrService,
   PartnerService,
   PersonService,
   SearchService,
