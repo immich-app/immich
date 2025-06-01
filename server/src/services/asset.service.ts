@@ -114,16 +114,16 @@ export class AssetService extends BaseService {
     const staticValuesChanged =
       description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined;
 
-    if (staticValuesChanged || (dateTimeRelative != undefined && dateTimeRelative !== 0)) {
-      if (staticValuesChanged) {
-        await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
-      }
+    if (staticValuesChanged) {
+      await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
+    }
 
-      const dateTimes =
-        dateTimeRelative !== undefined && dateTimeRelative !== 0
-          ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative)
-          : null;
+    const dateTimes =
+      dateTimeRelative !== undefined && dateTimeRelative !== 0
+        ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative)
+        : null;
 
+    if (staticValuesChanged || dateTimes !== null) {
       const entries: JobItem[] = (dateTimes ?? ids).map((entry: any) => ({
         name: JobName.SIDECAR_WRITE,
         data: {
