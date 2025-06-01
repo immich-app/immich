@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from 'svelte-i18n';
+  import { Duration } from 'luxon';
 
   interface Props {
     value: number;
@@ -9,23 +10,18 @@
 
   let { value = $bindable(), class: className = '', ...rest }: Props = $props();
 
-  function minToParts(min: number) {
-    const sign = min < 0 ? -1 : 1;
-    const abs = Math.abs(min);
-    const days = Math.floor(abs / (60 * 24));
-    const remaining = abs - days * 60 * 24;
-    const hours = Math.floor(remaining / 60);
-    const minutes = remaining - hours * 60;
+  function minToParts(minutes: number) {
+    const duration = Duration.fromObject({ minutes: Math.abs(minutes) }).shiftTo('days', 'hours', 'minutes');
     return {
-      sign,
-      days: days === 0 ? null : days,
-      hours: hours === 0 ? null : hours,
-      minutes: minutes === 0 ? null : minutes,
+      sign: minutes < 0 ? -1 : 1,
+      days: duration.days === 0 ? null : duration.days,
+      hours: duration.hours === 0 ? null : duration.hours,
+      minutes: duration.minutes === 0 ? null : duration.minutes,
     };
   }
 
   function partsToMin(s: number, d: number | null, h: number | null, m: number | null) {
-    return s * (d ?? 0) * 24 * 60 + (h ?? 0) * 60 + (m ?? 0);
+    return s * Duration.fromObject({ days: d ?? 0, hours: h ?? 0, minutes: m ?? 0 }).shiftTo('minutes').minutes;
   }
 
   const initial = minToParts(value);
