@@ -16,6 +16,7 @@ class AppBarServerInfo extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    context.locale;
     ServerInfo serverInfoState = ref.watch(serverInfoProvider);
 
     final appInfo = useState({});
