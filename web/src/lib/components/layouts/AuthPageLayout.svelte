@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card, CardBody, CardHeader, Heading, Logo, VStack } from '@immich/ui';
+  import { Card, CardBody } from '@immich/ui';
   import type { Snippet } from 'svelte';
   interface Props {
     title?: string;
@@ -23,15 +23,6 @@
   </div>
 
   <Card color="secondary" class="w-full max-w-lg border m-2">
-    {#if withHeader}
-      <CardHeader class="mt-6">
-        <VStack>
-          <Logo variant="icon" size="giant" />
-          <Heading size="large" class="font-semibold" color="primary" tag="h1">{title}</Heading>
-        </VStack>
-      </CardHeader>
-    {/if}
-
     <CardBody class="p-8">
       <img src="https://pixelunion.eu/images/logo.png" alt="Immich logo" />
       {@render children?.()}

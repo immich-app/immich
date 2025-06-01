@@ -96,14 +96,15 @@
             {$t('administration')}
           </div>
         </Button>
+
         <Button
           href="https://billing.stripe.com/p/login/14kaFHfe8aTHa2s5kk"
           onclick={onClose}
-          color="dark-gray"
-          target
-          size="sm"
-          shadow={false}
-          border
+          shape="round"
+          variant="ghost"
+          size="small"
+          color="secondary"
+          class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
         >
           <div class="flex place-content-center place-items-center text-center gap-2 px-2">
             <Icon path={mdiCreditCard} size="18" ariaHidden />
