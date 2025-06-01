@@ -179,11 +179,12 @@
     assetFileUrl = imageLoaderUrl;
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
 
-    if (asset.type !== AssetTypeEnum.Image) {
+    if (!isWebCompatibleImage(asset)) {
       return;
     }
 
-    const fullsizeUrl: string = getAssetUrl(asset.id, AssetMediaSize.Fullsize, asset.thumbhash);
+    const imageSize = asset.originalMimeType === 'image/gif' ? targetImageSize : 'original';
+    const fullsizeUrl: string = getAssetUrl(asset.id, imageSize, asset.thumbhash);
     imageHasTransparency(fullsizeUrl)
       .then((result) => {
         transparentBackgroundRequired = result;
