@@ -144,6 +144,7 @@ export interface AssetJobStatus {
   metadataExtractedAt: Timestamp | null;
   previewAt: Timestamp | null;
   thumbnailAt: Timestamp | null;
+  ocrAt: Timestamp | null;
 }
 
 export interface AssetsAudit {
@@ -197,6 +198,12 @@ export interface Audit {
   entityType: string;
   id: Generated<number>;
   ownerId: string;
+}
+
+export interface AssetOcr {
+  id: Generated<string>;
+  assetId: string;
+  text: string;
 }
 
 export interface Exif {
@@ -490,6 +497,7 @@ export interface DB {
   asset_faces: AssetFaces;
   asset_files: AssetFiles;
   asset_job_status: AssetJobStatus;
+  asset_ocr: AssetOcr;
   asset_stack: AssetStack;
   assets: Assets;
   assets_audit: AssetsAudit;

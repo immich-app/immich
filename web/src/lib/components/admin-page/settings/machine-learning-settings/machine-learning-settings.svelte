@@ -218,6 +218,42 @@
         </div>
       </SettingAccordion>
 
+      <SettingAccordion
+        key="ocr"
+        title={$t('admin.machine_learning_ocr')}
+        subtitle={$t('admin.machine_learning_ocr_description')}
+      >
+        <div class="ml-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            title={$t('admin.machine_learning_ocr_enabled')}
+            subtitle={$t('admin.machine_learning_ocr_enabled_description')}
+            bind:checked={config.machineLearning.ocr.enabled}
+            disabled={disabled || !config.machineLearning.enabled}
+          />
+
+          <SettingSelect
+            label={$t('admin.machine_learning_ocr_model')}
+            desc={$t('admin.machine_learning_ocr_model_description')}
+            name="ocr-model"
+            bind:value={config.machineLearning.ocr.modelName}
+            options={[
+              { value: 'paddle', text: 'paddle' },
+            ]}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+            isEdited={config.machineLearning.ocr.modelName !== savedConfig.machineLearning.ocr.modelName}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_ocr_min_score')}
+            bind:value={config.machineLearning.ocr.minScore}
+            step="0.1"
+            min={0.1}
+            max={1}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+          />
+        </div>
+      </SettingAccordion>
       <SettingButtonsRow
         onReset={(options) => onReset({ ...options, configKeys: ['machineLearning'] })}
         onSave={() => onSave({ machineLearning: config.machineLearning })}

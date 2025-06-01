@@ -5,6 +5,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
   MetadataSearchDto,
+  OcrSearchDto,
   PlacesResponseDto,
   RandomSearchDto,
   SearchExploreResponseDto,
@@ -50,6 +51,13 @@ export class SearchController {
   @Authenticated()
   searchSmart(@Auth() auth: AuthDto, @Body() dto: SmartSearchDto): Promise<SearchResponseDto> {
     return this.service.searchSmart(auth, dto);
+  }
+
+  @Post('ocr')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated()
+  searchOcr(@Auth() auth: AuthDto, @Body() dto: OcrSearchDto): Promise<SearchResponseDto> {
+    return this.service.searchOcr(auth, dto);
   }
 
   @Get('explore')

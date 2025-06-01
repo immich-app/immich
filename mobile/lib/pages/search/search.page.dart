@@ -506,6 +506,14 @@ class SearchPage extends HookConsumerWidget {
             description: value,
           );
           break;
+        case TextSearchType.ocr:
+          filter.value = filter.value.copyWith(
+            filename: '',
+            context: '',
+            description: '',
+            ocr: value,
+          );
+          break;
       }
 
       search();
@@ -519,6 +527,8 @@ class SearchPage extends HookConsumerWidget {
           return Icons.abc_rounded;
         case TextSearchType.description:
           return Icons.text_snippet_outlined;
+        case TextSearchType.ocr:
+          return Icons.document_scanner_outlined;
       }
     }
 
@@ -619,6 +629,26 @@ class SearchPage extends HookConsumerWidget {
                   onPressed: () {
                     textSearchType.value = TextSearchType.description;
                     searchHintText.value = 'search_by_description_example'.tr();
+                  },
+                ),
+                MenuItemButton(
+                  child: ListTile(
+                    leading: const Icon(Icons.document_scanner_outlined),
+                    title: Text(
+                      'search_filter_ocr'.tr(),
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: textSearchType.value == TextSearchType.ocr
+                            ? context.colorScheme.primary
+                            : null,
+                      ),
+                    ),
+                    selectedColor: context.colorScheme.primary,
+                    selected: textSearchType.value == TextSearchType.ocr,
+                  ),
+                  onPressed: () {
+                    textSearchType.value = TextSearchType.ocr;
+                    searchHintText.value = 'search_by_ocr_example'.tr();
                   },
                 ),
               ],

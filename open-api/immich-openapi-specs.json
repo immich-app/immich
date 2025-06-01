@@ -5109,6 +5109,48 @@
         ]
       }
     },
+    "/search/ocr": {
+      "post": {
+        "operationId": "searchOcr",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OcrSearchDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/person": {
       "get": {
         "operationId": "searchPerson",
@@ -8950,6 +8992,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -8979,6 +9024,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -10539,7 +10585,8 @@
           "sidecar",
           "library",
           "notifications",
-          "backupDatabase"
+          "backupDatabase",
+          "ocr"
         ],
         "type": "string"
       },
@@ -11397,6 +11444,165 @@
           "client_secret_basic"
         ],
         "type": "string"
+      },
+      "OcrConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "minScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "modelName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "minScore",
+          "modelName"
+        ],
+        "type": "object"
+      },
+      "OcrSearchDto": {
+        "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "isEncoded": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isMotion": {
+            "type": "boolean"
+          },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "lensModel": {
+            "nullable": true,
+            "type": "string"
+          },
+          "libraryId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "make": {
+            "type": "string"
+          },
+          "model": {
+            "nullable": true,
+            "type": "string"
+          },
+          "ocr": {
+            "type": "string"
+          },
+          "page": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "personIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
+          },
+          "size": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "number"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
+          },
+          "tagIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "takenAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "takenBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
+          },
+          "updatedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
+          },
+          "withDeleted": {
+            "type": "boolean"
+          },
+          "withExif": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ocr"
+        ],
+        "type": "object"
       },
       "OnThisDayDto": {
         "properties": {
@@ -12466,6 +12672,9 @@
           "oauthAutoLaunch": {
             "type": "boolean"
           },
+          "ocr": {
+            "type": "boolean"
+          },
           "passwordLogin": {
             "type": "boolean"
           },
@@ -12494,6 +12703,7 @@
           "map",
           "oauth",
           "oauthAutoLaunch",
+          "ocr",
           "passwordLogin",
           "reverseGeocoding",
           "search",
@@ -14143,6 +14353,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -14166,6 +14379,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -14248,6 +14462,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/OcrConfig"
+          },
           "url": {
             "deprecated": true,
             "description": "This property was deprecated in v1.122.0",
@@ -14268,6 +14485,7 @@
           "duplicateDetection",
           "enabled",
           "facialRecognition",
+          "ocr",
           "urls"
         ],
         "type": "object"
