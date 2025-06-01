@@ -88,25 +88,6 @@ Future<void> initApp() async {
   };
 
   initializeTimeZones();
-
-  FileDownloader().configureNotification(
-    running: TaskNotification(
-      'downloading_media'.tr(),
-      'file: {filename}',
-    ),
-    complete: TaskNotification(
-      'download_finished'.tr(),
-      'file: {filename}',
-    ),
-    progressBar: true,
-  );
-
-  await FileDownloader().trackTasksInGroup(
-    downloadGroupLivePhoto,
-    markDownloadedComplete: false,
-  );
-
-  await FileDownloader().trackTasks();
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -146,6 +127,27 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      FileDownloader().configureNotification(
+        running: TaskNotification(
+          'downloading_media'.tr(),
+          'file: {filename}',
+        ),
+        complete: TaskNotification(
+          'download_finished'.tr(),
+          'file: {filename}',
+        ),
+        progressBar: true,
+      );
+
+      await FileDownloader().trackTasksInGroup(
+        downloadGroupLivePhoto,
+        markDownloadedComplete: false,
+      );
+
+      await FileDownloader().trackTasks();
+    });
 
     // Draw the app from edge to edge
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
