@@ -4,8 +4,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
-class RemoteAlbumEntity extends Table
-    with DriftDefaultsMixin {
+class RemoteAlbumEntity extends Table with DriftDefaultsMixin {
   const RemoteAlbumEntity();
 
   TextColumn get id => text()();
@@ -21,10 +20,12 @@ class RemoteAlbumEntity extends Table
   TextColumn get ownerId =>
       text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
-  TextColumn get thumbnailAssetId =>
-      text().references(RemoteAssetEntity, #id, onDelete: KeyAction.setNull).nullable()();
+  TextColumn get thumbnailAssetId => text()
+      .references(RemoteAssetEntity, #id, onDelete: KeyAction.setNull)
+      .nullable()();
 
-  BoolColumn get isActivityEnabled => boolean().withDefault(const Constant(true))();
+  BoolColumn get isActivityEnabled =>
+      boolean().withDefault(const Constant(true))();
 
   IntColumn get order => intEnum<AssetOrder>()();
 

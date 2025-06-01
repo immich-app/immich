@@ -6,17 +6,15 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album_user.model.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/album_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 // import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' hide AssetVisibility, AssetOrder, AlbumUserRole;
+import 'package:openapi/api.dart'
+    hide AssetVisibility, AssetOrder, AlbumUserRole;
 
 class DriftSyncStreamRepository extends DriftDatabaseRepository
     implements ISyncStreamRepository {
@@ -258,12 +256,16 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     try {
       await _db.batch((batch) {
         for (final albumUser in data) {
-          final companion =
-              AlbumUserEntityCompanion(role: Value(albumUser.role.toAlbumUserRole()));
+          final companion = AlbumUserEntityCompanion(
+            role: Value(albumUser.role.toAlbumUserRole()),
+          );
 
           batch.insert(
             _db.albumUserEntity,
-            companion.copyWith(albumId: Value(albumUser.albumId), userId: Value(albumUser.userId)),
+            companion.copyWith(
+              albumId: Value(albumUser.albumId),
+              userId: Value(albumUser.userId),
+            ),
             onConflict: DoUpdate((_) => companion),
           );
         }
