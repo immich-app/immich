@@ -1,7 +1,7 @@
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import PhotoViewer from '$lib/components/asset-viewer/photo-viewer.svelte';
 import * as utils from '$lib/utils';
-import { AssetMediaSize } from '@immich/sdk';
+import {AssetMediaSize, AssetTypeEnum} from '@immich/sdk';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 import { render } from '@testing-library/svelte';
@@ -64,20 +64,23 @@ describe('PhotoViewer component', () => {
     vi.resetAllMocks();
   });
 
-  it('loads the thumbnail', () => {
+  it('loads the thumbnail and original', () => {
     const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
     render(PhotoViewer, { asset });
 
+    expect(getAssetOriginalUrlSpy).toBeCalledWith({
+      id: asset.id,
+      cacheKey: asset.thumbhash,
+    });
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
       cacheKey: asset.thumbhash,
     });
-    expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
 
   it('loads the original image for gifs', () => {
-    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif', type: AssetTypeEnum.Image });
     render(PhotoViewer, { asset });
 
     expect(getAssetThumbnailUrlSpy).not.toBeCalled();
@@ -85,7 +88,7 @@ describe('PhotoViewer component', () => {
   });
 
   it('loads original for shared link when download permission is true and showMetadata permission is true', () => {
-    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif', type: AssetTypeEnum.Image });
     const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
@@ -94,7 +97,7 @@ describe('PhotoViewer component', () => {
   });
 
   it('not loads original image when shared link download permission is false', () => {
-    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif', type: AssetTypeEnum.Image });
     const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
@@ -108,7 +111,7 @@ describe('PhotoViewer component', () => {
   });
 
   it('not loads original image when shared link showMetadata permission is false', () => {
-    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif', type: AssetTypeEnum.Image });
     const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
