@@ -10,10 +10,11 @@
   import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { OnboardingRole } from '$lib/models/onboarding-role';
-  import { retrieveServerConfig, serverConfig } from '$lib/stores/server-config.store';
+  import { retrieveServerConfig, retrieveSystemConfig, serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import { mdiHarddisk, mdiIncognito, mdiThemeLightDark, mdiTranslate } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface OnboardingStep {
@@ -102,13 +103,13 @@
     if (nextStepIndex == -1) {
       if ($user.isAdmin) {
         await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
+        await retrieveServerConfig();
       }
 
       await setUserOnboarding({
         onboardingDto: { isOnboarded: true },
       });
 
-      await retrieveServerConfig();
       await goto(AppRoute.PHOTOS);
     } else {
       await goto(
@@ -126,6 +127,10 @@
       `${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[previousStepIndex].name}`,
     );
   };
+
+  onMount(async () => {
+    await retrieveSystemConfig();
+  });
 
   const OnboardingStep = $derived(onboardingSteps[index].component);
 </script>
