@@ -1,9 +1,9 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
   import ProgressBar from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
-  import SlideshowSettings from '$lib/components/slideshow-settings.svelte';
   import { ProgressBarStatus } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import SlideshowSettingsModal from '$lib/modals/SlideshowSettingsModal.svelte';
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
   import { IconButton } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
@@ -104,7 +104,7 @@
     if (document.fullscreenElement) {
       await document.exitFullscreen();
     }
-    await modalManager.show(SlideshowSettings, {});
+    await modalManager.show(SlideshowSettingsModal, {});
   };
 </script>
 

@@ -12,9 +12,9 @@
     mdiShuffle,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import type { RenderedOption } from '../components/elements/dropdown.svelte';
+  import SettingDropdown from '../components/shared-components/settings/setting-dropdown.svelte';
   import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
-  import type { RenderedOption } from './elements/dropdown.svelte';
-  import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
 
   const {
     slideshowDelay,
@@ -26,10 +26,10 @@
   } = slideshowStore;
 
   interface Props {
-    onClose?: () => void;
+    onClose: () => void;
   }
 
-  let { onClose = () => {} }: Props = $props();
+  let { onClose }: Props = $props();
 
   // Temporary variables to hold the settings - marked as reactive with $state() but initialized with store values
   let tempSlideshowDelay = $state($slideshowDelay);
