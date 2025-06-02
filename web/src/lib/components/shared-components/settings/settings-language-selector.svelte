@@ -38,7 +38,7 @@
   {#if showSettingDescription}
     <div>
       <div class="flex h-[26px] place-items-center gap-1">
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="language-selector">
+        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={$t('language')}>
           {$t('language')}
         </label>
       </div>
@@ -48,7 +48,6 @@
   {/if}
 
   <Combobox
-    id="language-selector"
     label={$t('language')}
     hideLabel={true}
     selectedOption={langOptions.find(({ value }) => value === closestLanguage) || defaultLangOption}
