@@ -1624,7 +1624,6 @@
   "setting_image_viewer_title": "Images",
   "setting_languages_apply": "Apply",
   "setting_languages_subtitle": "Change the app's language",
-  "setting_languages_title": "Languages",
   "setting_notifications_notify_failures_grace_period": "Notify background backup failures: {duration}",
   "setting_notifications_notify_hours": "{count} hours",
   "setting_notifications_notify_immediately": "immediately",
