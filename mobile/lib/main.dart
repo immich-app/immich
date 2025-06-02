@@ -89,18 +89,6 @@ Future<void> initApp() async {
 
   initializeTimeZones();
 
-  FileDownloader().configureNotification(
-    running: TaskNotification(
-      'downloading_media'.tr(),
-      'file: {filename}',
-    ),
-    complete: TaskNotification(
-      'download_finished'.tr(),
-      'file: {filename}',
-    ),
-    progressBar: true,
-  );
-
   await FileDownloader().trackTasksInGroup(
     downloadGroupLivePhoto,
     markDownloadedComplete: false,
@@ -167,10 +155,27 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     await ref.read(localNotificationService).setup();
   }
 
+  void _configureFileDownloaderNotifications() {
+    FileDownloader().configureNotification(
+      running: TaskNotification(
+        'downloading_media'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      complete: TaskNotification(
+        'download_finished'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      progressBar: true,
+    );
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     Intl.defaultLocale = context.locale.toLanguageTag();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _configureFileDownloaderNotifications();
+    });
   }
 
   @override

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import {
     NotificationType,
@@ -194,11 +193,13 @@
         <div class="text-sm dark:text-white">
           <p>{$t('duplicates_description')}</p>
         </div>
-        <CircleIconButton
+        <IconButton
+          shape="round"
+          variant="ghost"
+          color="secondary"
           icon={mdiInformationOutline}
-          title={$t('deduplication_info')}
-          size="16"
-          padding="2"
+          aria-label={$t('deduplication_info')}
+          size="small"
           onclick={() => modalManager.show(DuplicatesInformationModal, {})}
         />
       </div>

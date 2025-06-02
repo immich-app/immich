@@ -2881,11 +2881,11 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function getAndroidLinks(opts?: Oazapfts.RequestOpts) {
+export function getApkLinks(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: ServerApkLinksDto;
-    }>("/server/android-links", {
+    }>("/server/apk-links", {
         ...opts
     }));
 }

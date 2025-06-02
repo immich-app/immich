@@ -290,7 +290,7 @@ order by
 select
   "users"."id" as "userId",
   "users"."name" as "userName",
-  "users"."quotaSizeInBytes" as "quotaSizeInBytes",
+  "users"."quotaSizeInBytes",
   count(*) filter (
     where
       (
@@ -335,9 +335,8 @@ select
 from
   "users"
   left join "assets" on "assets"."ownerId" = "users"."id"
+  and "assets"."deletedAt" is null
   left join "exif" on "exif"."assetId" = "assets"."id"
-where
-  "assets"."deletedAt" is null
 group by
   "users"."id"
 order by
