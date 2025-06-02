@@ -348,7 +348,7 @@
   <ul
     role="listbox"
     id={listboxId}
-    transition:fly={{ duration: 250 }}
+    in:fly={{ duration: 250 }}
     class="fixed z-1 text-start text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900"
     class:rounded-b-xl={dropdownDirection === 'bottom'}
     class:rounded-t-xl={dropdownDirection === 'top'}

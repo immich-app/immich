@@ -15,8 +15,8 @@ import {
 } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserStatus } from 'src/enum';
-import { OnThisDayData } from 'src/types';
+import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserMetadataKey, UserStatus } from 'src/enum';
+import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
 export const newUuids = () =>
@@ -146,6 +146,12 @@ const userFactory = (user: Partial<User> = {}) => ({
   avatarColor: null,
   profileImagePath: '',
   profileChangedAt: newDate(),
+  metadata: [
+    {
+      key: UserMetadataKey.ONBOARDING,
+      value: 'true',
+    },
+  ] as UserMetadataItem[],
   ...user,
 });
 
