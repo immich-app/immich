@@ -64,6 +64,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final currentIndex = useValueNotifier(initialIndex);
     final loadAsset = renderList.loadAsset;
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
+    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
     final videoPlayerKeys = useRef<Map<int, GlobalKey>>({});
 
@@ -126,21 +127,23 @@ class GalleryViewerPage extends HookConsumerWidget {
       if (asset.isRemote) {
         ref.read(castProvider.notifier).loadMedia(asset, false);
       } else {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) {
-            context.scaffoldMessenger.showSnackBar(
-              SnackBar(
-                duration: const Duration(seconds: 1),
-                content: Text(
-                  "local_asset_cast_failed".tr(),
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    color: context.primaryColor,
+        if (isCasting) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              context.scaffoldMessenger.showSnackBar(
+                SnackBar(
+                  duration: const Duration(seconds: 1),
+                  content: Text(
+                    "local_asset_cast_failed".tr(),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      color: context.primaryColor,
+                    ),
                   ),
                 ),
-              ),
-            );
-          }
-        });
+              );
+            }
+          });
+        }
       }
       return null;
     }, [
@@ -393,17 +396,20 @@ class GalleryViewerPage extends HookConsumerWidget {
                   ref.read(castProvider.notifier).loadMedia(newAsset, false);
                 } else {
                   context.scaffoldMessenger.clearSnackBars();
-                  context.scaffoldMessenger.showSnackBar(
-                    SnackBar(
-                      duration: const Duration(seconds: 2),
-                      content: Text(
-                        "local_asset_cast_failed".tr(),
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          color: context.primaryColor,
+
+                  if (isCasting) {
+                    context.scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        duration: const Duration(seconds: 2),
+                        content: Text(
+                          "local_asset_cast_failed".tr(),
+                          style: context.textTheme.bodyLarge?.copyWith(
+                            color: context.primaryColor,
+                          ),
                         ),
                       ),
-                    ),
-                  );
+                    );
+                  }
                 }
               },
               builder: buildAsset,
