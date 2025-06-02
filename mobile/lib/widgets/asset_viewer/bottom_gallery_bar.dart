@@ -105,6 +105,11 @@ class BottomGalleryBar extends ConsumerWidget {
         return isDeleted;
       }
 
+      // PROPOSITION
+      // Before trashing anything; ask for a confirmation (Same as in google photos)
+      // Rename that to "Trash" instead of "Delete"
+      // This galery view bar is also used on "Trashed item" in my opinion it should, why would you want to edit a trashed item; in google photos only two choice - restore or delete
+
       // Asset is trashed
       if (isTrashEnabled && !isFromTrash) {
         final isDeleted = await onDelete(false);

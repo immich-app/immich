@@ -472,6 +472,11 @@ class MultiselectGrid extends HookConsumerWidget {
               onShare: onShareAssets,
               onFavorite: favoriteEnabled ? onFavoriteAssets : null,
               onArchive: archiveEnabled ? onArchiveAsset : null,
+
+              // PROPOSITION
+              // As in the gallery viewer, we should ask for a confirmation before deleting anything
+              // As in google photos, only a "move to trash" button should be necessary
+
               onDelete: deleteEnabled ? onDelete : null,
               onDeleteServer: deleteEnabled ? onDeleteRemote : null,
 
