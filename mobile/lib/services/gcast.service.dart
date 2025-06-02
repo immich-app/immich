@@ -60,6 +60,7 @@ class GCastService implements ICastDestinationService {
       onConnectionState?.call(false);
       isConnected = false;
       onReceiverName?.call("");
+      currentAssetId = null;
     }
   }
 
