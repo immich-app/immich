@@ -7,6 +7,7 @@ import { ExecutorQueue } from '$lib/utils/executor-queue';
 import {
   Action,
   AssetMediaStatus,
+  AssetVisibility,
   checkBulkUpload,
   getAssetOriginalPath,
   getBaseUrl,
@@ -73,7 +74,7 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
         }
         const files = Array.from(target.files);
 
-        resolve(fileUploadHandler(files, albumId, assetId));
+        resolve(fileUploadHandler({ files, albumId, replaceAssetId: assetId }));
       });
 
       fileSelector.click();
@@ -84,11 +85,16 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
   });
 };
 
-export const fileUploadHandler = async (
-  files: File[],
-  albumId?: string,
-  replaceAssetId?: string,
-): Promise<string[]> => {
+type FileUploadHandlerParams = Omit<FileUploaderParams, 'deviceAssetId' | 'assetFile'> & {
+  files: File[];
+};
+
+export const fileUploadHandler = async ({
+  files,
+  albumId,
+  replaceAssetId,
+  isLockedAssets = false,
+}: FileUploadHandlerParams): Promise<string[]> => {
   const extensions = await getExtensions();
   const promises = [];
   for (const file of files) {
@@ -96,7 +102,11 @@ export const fileUploadHandler = async (
     if (extensions.some((extension) => name.endsWith(extension))) {
       const deviceAssetId = getDeviceAssetId(file);
       uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId });
-      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, deviceAssetId, albumId, replaceAssetId)));
+      promises.push(
+        uploadExecutionQueue.addTask(() =>
+          fileUploader({ assetFile: file, deviceAssetId, albumId, replaceAssetId, isLockedAssets }),
+        ),
+      );
     }
   }
 
@@ -108,13 +118,22 @@ function getDeviceAssetId(asset: File) {
   return 'web' + '-' + asset.name + '-' + asset.lastModified;
 }
 
+type FileUploaderParams = {
+  assetFile: File;
+  albumId?: string;
+  replaceAssetId?: string;
+  isLockedAssets?: boolean;
+  deviceAssetId: string;
+};
+
 // TODO: should probably use the @api SDK
-async function fileUploader(
-  assetFile: File,
-  deviceAssetId: string,
-  albumId?: string,
-  replaceAssetId?: string,
-): Promise<string | undefined> {
+async function fileUploader({
+  assetFile,
+  deviceAssetId,
+  albumId,
+  replaceAssetId,
+  isLockedAssets = false,
+}: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const $t = get(t);
 
@@ -132,6 +151,10 @@ async function fileUploader(
       assetData: new File([assetFile], assetFile.name),
     })) {
       formData.append(key, value);
+    }
+
+    if (isLockedAssets) {
+      formData.append('visibility', AssetVisibility.Locked);
     }
 
     let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean } | undefined;

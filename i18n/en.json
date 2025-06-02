@@ -43,7 +43,7 @@
     "backup_database_enable_description": "Enable database dumps",
     "backup_keep_last_amount": "Amount of previous dumps to keep",
     "backup_settings": "Database Dump Settings",
-    "backup_settings_description": "Manage database dump settings. Note: These jobs are not monitored and you will not be notified of failure.",
+    "backup_settings_description": "Manage database dump settings.",
     "cleared_jobs": "Cleared jobs for: {job}",
     "config_set_by_file": "Config is currently set by a config file",
     "confirm_delete_library": "Are you sure you want to delete {library} library?",

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -225,6 +225,18 @@ void main() {
           appSettingsServiceProvider.overrideWith((ref) => settingsMock),
         ],
       );
+      when(
+        () => settingsMock.setSetting<bool>(
+          AppSettingsEnum.selectedAlbumSortReverse,
+          any(),
+        ),
+      ).thenAnswer((_) async => {});
+      when(
+        () => settingsMock.setSetting<int>(
+          AppSettingsEnum.selectedAlbumSortOrder,
+          any(),
+        ),
+      ).thenAnswer((_) async => {});
     });
 
     test('Returns the default sort mode when none set', () {
@@ -298,6 +310,8 @@ void main() {
     late AppSettingsService settingsMock;
     late ProviderContainer container;
 
+    registerFallbackValue(AppSettingsEnum.selectedAlbumSortReverse);
+
     setUp(() async {
       settingsMock = MockAppSettingsService();
       container = TestUtils.createContainer(
@@ -305,6 +319,18 @@ void main() {
           appSettingsServiceProvider.overrideWith((ref) => settingsMock),
         ],
       );
+      when(
+        () => settingsMock.setSetting<bool>(
+          AppSettingsEnum.selectedAlbumSortReverse,
+          any(),
+        ),
+      ).thenAnswer((_) async => {});
+      when(
+        () => settingsMock.setSetting<int>(
+          AppSettingsEnum.selectedAlbumSortOrder,
+          any(),
+        ),
+      ).thenAnswer((_) async => {});
     });
 
     test('Returns the default sort order when none set - false', () {

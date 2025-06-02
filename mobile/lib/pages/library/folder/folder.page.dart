@@ -9,6 +9,7 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/folder.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -219,12 +220,15 @@ class FolderContent extends HookConsumerWidget {
                       list.allAssets!.isNotEmpty)
                     ...list.allAssets!.map(
                       (asset) => LargeLeadingTile(
-                        onTap: () => context.pushRoute(
-                          GalleryViewerRoute(
-                            renderList: list,
-                            initialIndex: list.allAssets!.indexOf(asset),
-                          ),
-                        ),
+                        onTap: () {
+                          ref.read(currentAssetProvider.notifier).set(asset);
+                          context.pushRoute(
+                            GalleryViewerRoute(
+                              renderList: list,
+                              initialIndex: list.allAssets!.indexOf(asset),
+                            ),
+                          );
+                        },
                         leading: ClipRRect(
                           borderRadius: const BorderRadius.all(
                             Radius.circular(15),
