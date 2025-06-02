@@ -1,11 +1,11 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
   import Icon from '$lib/components/elements/icon.svelte';
-  import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { removeTag, tagAssets } from '$lib/utils/asset-utils';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+  import { removeTag } from '$lib/utils/asset-utils';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { mdiClose, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -19,19 +19,12 @@
 
   let tags = $derived(asset.tags || []);
 
-  let isOpen = $state(false);
+  const handleAddTag = async () => {
+    const success = await modalManager.show(AssetTagModal, { assetIds: [asset.id] });
 
-  const handleAdd = () => (isOpen = true);
-
-  const handleCancel = () => (isOpen = false);
-
-  const handleTag = async (tagIds: string[]) => {
-    const ids = await tagAssets({ tagIds, assetIds: [asset.id], showNotification: false });
-    if (ids) {
-      isOpen = false;
+    if (success) {
+      asset = await getAssetInfo({ id: asset.id });
     }
-
-    asset = await getAssetInfo({ id: asset.id });
   };
 
   const handleRemove = async (tagId: string) => {
@@ -42,7 +35,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 't' }, onShortcut: () => (isOpen = true) }} />
+<svelte:document use:shortcut={{ shortcut: { key: 't' }, onShortcut: handleAddTag }} />
 
 {#if isOwner && !authManager.key}
   <section class="px-4 mt-4">
@@ -75,16 +68,10 @@
         type="button"
         class="rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 flex place-items-center place-content-center gap-1 px-2 py-1"
         title="Add tag"
-        onclick={handleAdd}
+        onclick={handleAddTag}
       >
         <span class="text-sm px-1 flex place-items-center place-content-center gap-1"><Icon path={mdiPlus} />Add</span>
       </button>
     </section>
   </section>
-{/if}
-
-{#if isOpen}
-  <Portal>
-    <TagAssetForm onTag={(tagsIds) => handleTag(tagsIds)} onCancel={handleCancel} />
-  </Portal>
 {/if}
