@@ -136,10 +136,8 @@ class GCastService implements ICastDestinationService {
 
   @override
   Future<bool> initialize() async {
-    // check if server URL is https
-    final serverUrl = punycodeDecodeUrl(Store.tryGet(StoreKey.serverEndpoint));
-
-    return serverUrl?.startsWith("https://") ?? false;
+    // there is nothing blocking us from using Google Cast that we can check for
+    return true;
   }
 
   @override
