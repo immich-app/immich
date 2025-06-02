@@ -313,7 +313,7 @@
 />
 
 {#if assetInteraction.selectionActive}
-  <div class="sticky top-0 z-1">
+  <div class="sticky top-0 z-1 dark">
     <AssetSelectControlBar
       forceDark
       assets={assetInteraction.selectedAssets}
