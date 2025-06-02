@@ -26,12 +26,12 @@
       | typeof OnboardingUserPrivacy
       | typeof OnboardingLocale;
     role: OnboardingRole;
-    title: string;
+    title?: string;
     icon?: string;
   }
 
   const onboardingSteps: OnboardingStep[] = $derived([
-    { name: 'hello', component: OnboardingHello, role: OnboardingRole.USER, title: $t('welcome') },
+    { name: 'hello', component: OnboardingHello, role: OnboardingRole.USER },
     {
       name: 'theme',
       component: OnboardingTheme,
