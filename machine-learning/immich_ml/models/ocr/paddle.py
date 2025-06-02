@@ -34,13 +34,17 @@ class PaddleOCRecognizer(InferenceModel):
         valid_texts_and_scores = [
             (text, score, box)
             for result in results
-            for text, score, box in zip(result['rec_texts'], result['rec_scores'], result['rec_boxes'].tolist())
+            for text, score, box in zip(result['rec_texts'], result['rec_scores'], result['rec_polys'])
             if score >= self.min_score
         ]
         if not valid_texts_and_scores:
             return []
         
         return [
-            OCROutput(text=text, confidence=score, boundingBox={"x1": box[0], "y1": box[1], "x2": box[2], "y2": box[3]})
+            OCROutput(
+                text=text, confidence=score,
+                x1=box[0][0], y1=box[0][1], x2=box[1][0], y2=box[1][1],
+                x3=box[2][0], y3=box[2][1], x4=box[3][0], y4=box[3][1]
+            )
             for text, score, box in valid_texts_and_scores
         ]
