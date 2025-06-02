@@ -72,7 +72,10 @@ class LanguageSettings extends HookConsumerWidget {
                 onPressed: isButtonDisabled
                     ? null
                     : () => _applyLanguageChange(
-                        context, selectedLocale, isLoading),
+                          context,
+                          selectedLocale,
+                          isLoading,
+                        ),
                 child: isLoading.value
                     ? SizedBox(
                         height: 24,
