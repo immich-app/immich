@@ -10,7 +10,7 @@
 
   interface Props {
     onAssetDelete: OnDelete;
-    onUndoDelete: OnUndoDelete | undefined;
+    onUndoDelete?: OnUndoDelete | undefined;
     menuItem?: boolean;
     force?: boolean;
   }
