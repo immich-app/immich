@@ -29,7 +29,6 @@ export default typescriptEslint.config(
       '**/yarn.lock',
       '**/svelte.config.js',
       'eslint.config.js',
-      'postcss.config.cjs',
       'tailwind.config.js',
       'coverage',
     ],
