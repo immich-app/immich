@@ -1,5 +1,4 @@
 {
-  "darkTheme": "中国",
   "about": "关于",
   "account": "账户",
   "account_settings": "账户设置",
@@ -714,6 +713,7 @@
   "custom_locale": "自定义地区",
   "custom_locale_description": "日期和数字显示格式跟随语言和地区",
   "dark": "深色",
+  "darkTheme": "切换深色主题",
   "date_after": "开始日期",
   "date_and_time": "日期与时间",
   "date_before": "结束日期",
@@ -1825,7 +1825,6 @@
   "to_parent": "返回上一级",
   "to_trash": "放入回收站",
   "toggle_settings": "切换设置",
-  "darkTheme": "切换深色主题",
   "total": "总计",
   "total_usage": "总用量",
   "trash": "回收站",

@@ -39,7 +39,7 @@
   };
 
   const handleToggleLocaleBrowser = () => {
-    $locale = $locale !== 'default' ? 'default' : fallbackLocale.code;
+    $locale = $locale === 'default' ? fallbackLocale.code : 'default';
   };
 
   const handleLocaleChange = (newLocale: string | undefined) => {

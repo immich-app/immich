@@ -274,11 +274,11 @@ export const locales = [
 ];
 
 interface Lang {
-  name: string,
-  code: string,
-  loader: () => Promise<{default: {}}>,
-  rtl?: boolean,
-  weblateCode?: string,
+  name: string;
+  code: string;
+  loader: () => Promise<{ default: object }>;
+  rtl?: boolean;
+  weblateCode?: string;
 }
 
 export const defaultLang: Lang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
