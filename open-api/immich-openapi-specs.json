@@ -12926,12 +12926,20 @@
           },
           "modelName": {
             "type": "string"
+          },
+          "orientationClassifyEnabled": {
+            "type": "boolean"
+          },
+          "unwarpingEnabled": {
+            "type": "boolean"
           }
         },
         "required": [
           "enabled",
           "minScore",
-          "modelName"
+          "modelName",
+          "orientationClassifyEnabled",
+          "unwarpingEnabled"
         ],
         "type": "object"
       },

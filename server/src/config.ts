@@ -73,6 +73,8 @@ export interface SystemConfig {
       enabled: boolean;
       modelName: string;
       minScore: number;
+      unwarpingEnabled: boolean;
+      orientationClassifyEnabled: boolean;
     };
   };
   map: {
@@ -250,8 +252,10 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     ocr: {
       enabled: true,
-      modelName: 'paddle',
+      modelName: 'PP-OCRv5_server',
       minScore: 0.9,
+      unwarpingEnabled: false,
+      orientationClassifyEnabled: false,
     },
   },
   map: {

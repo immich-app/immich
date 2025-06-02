@@ -355,10 +355,8 @@ export class AssetJobRepository {
     .select(['assets.id'])
     .$if(!force, (qb) =>
       qb
-        .leftJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
-        .where((eb) =>
-          eb.or([eb('asset_job_status.ocrAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
-        )
+        .innerJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
+        .where('asset_job_status.ocrAt', 'is', null)
         .where('assets.visibility', '!=', AssetVisibility.HIDDEN),
     )
     .where('assets.deletedAt', 'is', null)

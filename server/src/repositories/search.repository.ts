@@ -321,19 +321,14 @@ export class SearchRepository {
       throw new Error(`Invalid value for 'size': ${pagination.size}`);
     }
 
-    const items = await this.db
-      .selectFrom('asset_ocr')
-      .selectAll()
-      .innerJoin('assets', 'assets.id', 'asset_ocr.assetId')
-      .where('assets.ownerId', '=', anyUuid(options.userIds))
+    const items = await searchAssetBuilder(this.db, options)
+      .innerJoin('asset_ocr', 'assets.id', 'asset_ocr.assetId')
       .where('asset_ocr.text', 'ilike', `%${options.ocr}%`)
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
-      .execute() as any;
+      .execute();
 
-    const hasNextPage = items.length > pagination.size;
-    items.splice(pagination.size);
-    return { items, hasNextPage };
+    return paginationHelper(items, pagination.size);
   }
 
   @GenerateSql({

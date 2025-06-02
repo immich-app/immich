@@ -231,13 +231,30 @@
             disabled={disabled || !config.machineLearning.enabled}
           />
 
+          <SettingSwitch
+            title={$t('admin.machine_learning_ocr_unwarping_enabled')}
+            subtitle={$t('admin.machine_learning_ocr_unwarping_enabled_description')}
+            bind:checked={config.machineLearning.ocr.unwarpingEnabled}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+          />
+
+          <SettingSwitch
+            title={$t('admin.machine_learning_ocr_orientation_classify_enabled')}
+            subtitle={$t('admin.machine_learning_ocr_orientation_classify_enabled_description')}
+            bind:checked={config.machineLearning.ocr.orientationClassifyEnabled}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+          />
+
+          <hr />
+
           <SettingSelect
             label={$t('admin.machine_learning_ocr_model')}
             desc={$t('admin.machine_learning_ocr_model_description')}
             name="ocr-model"
             bind:value={config.machineLearning.ocr.modelName}
             options={[
-              { value: 'paddle', text: 'paddle' },
+              { value: 'PP-OCRv5_server', text: 'PP-OCRv5_server' },
+              { value: 'PP-OCRv5_mobile', text: 'PP-OCRv5_mobile' },
             ]}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
             isEdited={config.machineLearning.ocr.modelName !== savedConfig.machineLearning.ocr.modelName}
@@ -246,11 +263,13 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_ocr_min_score')}
+            description={$t('admin.machine_learning_ocr_min_score_description')}
             bind:value={config.machineLearning.ocr.minScore}
             step="0.1"
             min={0.1}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+            isEdited={config.machineLearning.ocr.minScore !== savedConfig.machineLearning.ocr.minScore}
           />
         </div>
       </SettingAccordion>
