@@ -9,21 +9,33 @@ export class AssetOcrTable {
   @ForeignKeyColumn(() => AssetTable, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    index: false,
+    index: true,
   })
   assetId!: string;
 
-  @Column({ default: 0, type: 'integer' })
-  boundingBoxX1!: number;
+  @Column({ type: 'integer' })
+  x1!: number;
 
-  @Column({ default: 0, type: 'integer' })
-  boundingBoxY1!: number;
+  @Column({ type: 'integer' })
+  y1!: number;
 
-  @Column({ default: 0, type: 'integer' })
-  boundingBoxX2!: number;
+  @Column({ type: 'integer' })
+  x2!: number;
 
-  @Column({ default: 0, type: 'integer' })
-  boundingBoxY2!: number;
+  @Column({ type: 'integer' })
+  y2!: number;
+
+  @Column({ type: 'integer' })
+  x3!: number;
+
+  @Column({ type: 'integer' })
+  y3!: number;
+
+  @Column({ type: 'integer' })
+  x4!: number;
+
+  @Column({ type: 'integer' })
+  y4!: number;
 
   @Column({ type: 'text' })
   text!: string;

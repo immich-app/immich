@@ -40,13 +40,19 @@ export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: Mo
 export type ClipTextualResponse = { [ModelTask.SEARCH]: string };
 
 export type OCR = {
-  boundingBox: BoundingBox;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  x3: number;
+  y3: number;
+  x4: number;
+  y4: number;
   text: string;
-  confidence: number;
 };
 
 export type OcrRequest = { [ModelTask.OCR]: { [ModelType.OCR]: ModelOptions & { options: { minScore: number } } } };
-export type OcrResponse = { [ModelTask.OCR]: OCR | OCR[] } & VisualResponse;
+export type OcrResponse = { [ModelTask.OCR]: OCR[] } & VisualResponse;
 
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {

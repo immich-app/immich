@@ -66,14 +66,7 @@ export class OcrService extends BaseService {
       machineLearning.ocr
     );
 
-    const resultsArray = Array.isArray(ocrResults) ? ocrResults : [ocrResults];
-    const validResults = resultsArray.filter(result => 
-      result && 
-      result.text && 
-      result.text.trim().length > 0
-    );
-
-    if (validResults.length === 0) {
+    if (ocrResults.length === 0) {
       this.logger.warn(`No valid OCR results for document ${id}`);
       await this.assetRepository.upsertJobStatus({
         assetId: asset.id,
@@ -83,12 +76,16 @@ export class OcrService extends BaseService {
     }
 
     try {
-      const ocrDataList = validResults.map(result => ({
+      const ocrDataList = ocrResults.map(result => ({
         assetId: id,
-        boundingBoxX1: result.boundingBox.x1,
-        boundingBoxY1: result.boundingBox.y1,
-        boundingBoxX2: result.boundingBox.x2,
-        boundingBoxY2: result.boundingBox.y2,
+        x1: result.x1,
+        y1: result.y1,
+        x2: result.x2,
+        y2: result.y2,
+        x3: result.x3,
+        y3: result.y3,
+        x4: result.x4,
+        y4: result.y4,
         text: result.text.trim(),
       }));
 
@@ -99,7 +96,7 @@ export class OcrService extends BaseService {
         ocrAt: new Date(),
       });
       
-      this.logger.debug(`Processed ${validResults.length} OCR result(s) for ${id}`);
+      this.logger.debug(`Processed ${ocrResults.length} OCR result(s) for ${id}`);
       return JobStatus.SUCCESS;
     } catch (error) {
       this.logger.error(`Failed to insert OCR results for ${id}:`, error);
