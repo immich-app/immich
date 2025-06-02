@@ -13,12 +13,6 @@ import { isOcrEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class OcrService extends BaseService {
-  @OnJob({ name: JobName.OCR_CLEANUP, queue: QueueName.BACKGROUND_TASK })
-  async handleOcrCleanup(): Promise<JobStatus> {
-    const ocr = await this.ocrRepository.getOcrWithoutText();
-    await this.ocrRepository.delete(ocr);
-    return JobStatus.SUCCESS;
-  }
 
   @OnJob({ name: JobName.QUEUE_OCR, queue: QueueName.OCR })
   async handleQueueOcr({ force, nightly }: JobOf<JobName.QUEUE_OCR>): Promise<JobStatus> {
@@ -28,7 +22,7 @@ export class OcrService extends BaseService {
     }
 
     if (force) {
-      await this.ocrRepository.deleteAllOcr();
+      await this.ocrRepository.deleteAll();
     }
 
     let jobs: JobItem[] = [];
@@ -44,11 +38,6 @@ export class OcrService extends BaseService {
     }
 
     await this.jobRepository.queueAll(jobs);
-
-    if (force === undefined) {
-      await this.jobRepository.queue({ name: JobName.OCR_CLEANUP });
-    }
-
     return JobStatus.SUCCESS;
   }
 
@@ -77,8 +66,15 @@ export class OcrService extends BaseService {
       machineLearning.ocr
     );
 
-    if (!ocrResults || ocrResults.text.length === 0) {
-      this.logger.warn(`No OCR results for document ${id}`);
+    const resultsArray = Array.isArray(ocrResults) ? ocrResults : [ocrResults];
+    const validResults = resultsArray.filter(result => 
+      result && 
+      result.text && 
+      result.text.trim().length > 0
+    );
+
+    if (validResults.length === 0) {
+      this.logger.warn(`No valid OCR results for document ${id}`);
       await this.assetRepository.upsertJobStatus({
         assetId: asset.id,
         ocrAt: new Date(),
@@ -86,23 +82,29 @@ export class OcrService extends BaseService {
       return JobStatus.SUCCESS;
     }
 
-    this.logger.debug(`OCR ${id} has OCR results`);
+    try {
+      const ocrDataList = validResults.map(result => ({
+        assetId: id,
+        boundingBoxX1: result.boundingBox.x1,
+        boundingBoxY1: result.boundingBox.y1,
+        boundingBoxX2: result.boundingBox.x2,
+        boundingBoxY2: result.boundingBox.y2,
+        text: result.text.trim(),
+      }));
 
-    const ocr = await this.ocrRepository.getOcrById(id);
-    if (ocr) {
-      this.logger.debug(`Updating OCR for ${id}`);
-      await this.ocrRepository.updateOcrData(id, ocrResults.text);
-    } else {
-      this.logger.debug(`Inserting OCR for ${id}`);
-      await this.ocrRepository.insertOcrData(id, ocrResults.text);
+      await this.ocrRepository.insertMany(ocrDataList);
+
+      await this.assetRepository.upsertJobStatus({
+        assetId: asset.id,
+        ocrAt: new Date(),
+      });
+      
+      this.logger.debug(`Processed ${validResults.length} OCR result(s) for ${id}`);
+      return JobStatus.SUCCESS;
+    } catch (error) {
+      this.logger.error(`Failed to insert OCR results for ${id}:`, error);
+      return JobStatus.FAILED;
     }
-
-    await this.assetRepository.upsertJobStatus({
-      assetId: asset.id,
-      ocrAt: new Date(),
-    });
-    this.logger.debug(`Processed OCR for ${id}`);
-    return JobStatus.SUCCESS;
   }
 
 }

@@ -18,7 +18,7 @@ import {
 import { AssetOrder } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
-import { isSmartSearchEnabled, isOcrEnabled } from 'src/utils/misc';
+import { isOcrEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class SearchService extends BaseService {

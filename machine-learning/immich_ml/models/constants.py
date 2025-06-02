@@ -76,7 +76,8 @@ _INSIGHTFACE_MODELS = {
 
 
 _PADDLE_MODELS = {
-    "paddle",
+    "PP-OCRv5_server",
+    "PP-OCRv5_mobile",
 }
 
 SUPPORTED_PROVIDERS = [

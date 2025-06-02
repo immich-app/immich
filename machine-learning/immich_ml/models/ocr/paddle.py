@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 import numpy as np
 from numpy.typing import NDArray
@@ -14,34 +14,33 @@ class PaddleOCRecognizer(InferenceModel):
 
     def __init__(self, model_name: str, min_score: float = 0.9, **model_kwargs: Any) -> None:
         self.min_score = model_kwargs.pop("minScore", min_score)
+        self.orientation_classify_enabled = model_kwargs.pop("orientationClassifyEnabled", True)
+        self.unwarping_enabled = model_kwargs.pop("unwarpingEnabled", True)
         super().__init__(model_name, **model_kwargs)
         self._load()
         self.loaded = True
 
-    def _load(self) -> None:
-        try:
-            self.model = PaddleOCR(
-                use_doc_orientation_classify=False,
-                use_doc_unwarping=False,
-                use_textline_orientation=False
-            )
-        except Exception as e:
-            print(f"Error loading PaddleOCR model: {e}")
-            raise e
+    def _load(self) -> PaddleOCR:
+        self.model = PaddleOCR(
+            text_detection_model_name=f"{self.model_name}_det",
+            text_recognition_model_name=f"{self.model_name}_rec",
+            use_doc_orientation_classify=self.orientation_classify_enabled,
+            use_doc_unwarping=self.unwarping_enabled,
+        )
 
-    def _predict(self, inputs: NDArray[np.uint8] | bytes | Image.Image, **kwargs: Any) -> OCROutput:
+    def _predict(self, inputs: NDArray[np.uint8] | bytes | Image.Image, **kwargs: Any) -> List[OCROutput]:
         inputs = decode_cv2(inputs)
         results = self.model.predict(inputs)
         valid_texts_and_scores = [
-            (text, score)
+            (text, score, box)
             for result in results
-            for text, score in zip(result['rec_texts'], result['rec_scores'])
-            if score > self.min_score
+            for text, score, box in zip(result['rec_texts'], result['rec_scores'], result['rec_boxes'].tolist())
+            if score >= self.min_score
         ]
         if not valid_texts_and_scores:
-            return OCROutput(text="", confidence=0.0)
-        texts, scores = zip(*valid_texts_and_scores)
-        return OCROutput(
-            text="".join(texts),
-            confidence=sum(scores) / len(scores)
-        )
+            return []
+        
+        return [
+            OCROutput(text=text, confidence=score, boundingBox={"x1": box[0], "y1": box[1], "x2": box[2], "y2": box[3]})
+            for text, score, box in valid_texts_and_scores
+        ]
