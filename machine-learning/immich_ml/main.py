@@ -183,7 +183,10 @@ async def run_inference(payload: Image | str, entries: InferenceEntries) -> Infe
     response: InferenceResponse = {}
 
     async def _run_inference(entry: InferenceEntry) -> None:
-        model = await model_cache.get(entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl)
+        model = await model_cache.get(
+            entry["name"], entry["type"], entry["task"],
+            ttl=settings.model_ttl, **entry["options"]
+        )
         inputs = [payload]
         for dep in model.depends:
             try:

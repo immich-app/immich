@@ -38,7 +38,13 @@ class ModelCache:
     async def get(
         self, model_name: str, model_type: ModelType, model_task: ModelTask, **model_kwargs: Any
     ) -> InferenceModel:
-        key = f"{model_name}{model_type}{model_task}"
+        config_key = ""
+        if model_type == ModelType.OCR and model_task == ModelTask.OCR:
+            orientation = model_kwargs.get("orientationClassifyEnabled", True)
+            unwarping = model_kwargs.get("unwarpingEnabled", True)
+            config_key = f"_o{orientation}_u{unwarping}"
+        
+        key = f"{model_name}{model_type}{model_task}{config_key}"
 
         async with OptimisticLock(self.cache, key) as lock:
             model: InferenceModel | None = await self.cache.get(key)

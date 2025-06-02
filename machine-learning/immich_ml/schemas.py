@@ -90,6 +90,7 @@ FacialRecognitionOutput = list[DetectedFace]
 class OCROutput(TypedDict):
     text: str
     confidence: float
+    boundingBox: BoundingBox
 
 
 class PipelineEntry(TypedDict):

@@ -54,4 +54,10 @@ export class OcrConfig extends ModelConfig {
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'double' })
   minScore!: number;
+
+  @ValidateBoolean()
+  unwarpingEnabled!: boolean;
+
+  @ValidateBoolean()
+  orientationClassifyEnabled!: boolean;
 }
