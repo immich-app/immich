@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/activity_statistics.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -183,7 +184,7 @@ class TopControlAppBar extends HookConsumerWidget {
         icon: Icon(
           isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
           size: 20.0,
-          color: Colors.grey[200],
+          color: isCasting ? context.primaryColor : Colors.grey[200],
         ),
       );
     }
