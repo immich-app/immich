@@ -1,6 +1,8 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { validate, type LibraryResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -9,7 +11,6 @@
   import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import LibraryImportPathForm from './library-import-path-form.svelte';
 
   interface Props {
     library: LibraryResponseDto;
@@ -18,12 +19,6 @@
   }
 
   let { library = $bindable(), onCancel, onSubmit }: Props = $props();
-
-  let addImportPath = $state(false);
-  let editImportPath: number | null = $state(null);
-
-  let importPathToAdd: string | null = $state(null);
-  let editedImportPath: string = $state('');
 
   let validatedPaths: ValidateLibraryImportPathResponseDto[] = $state([]);
 
@@ -71,8 +66,8 @@
     }
   };
 
-  const handleAddImportPath = async () => {
-    if (!addImportPath || !importPathToAdd) {
+  const handleAddImportPath = async (importPathToAdd: string | null) => {
+    if (!importPathToAdd) {
       return;
     }
 
@@ -88,14 +83,11 @@
       }
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_import_path'));
-    } finally {
-      addImportPath = false;
-      importPathToAdd = null;
     }
   };
 
-  const handleEditImportPath = async () => {
-    if (editImportPath === null) {
+  const handleEditImportPath = async (editedImportPath: string | null, pathIndexToEdit: number) => {
+    if (editedImportPath === null) {
       return;
     }
 
@@ -105,22 +97,18 @@
 
     try {
       // Check so that import path isn't duplicated
-
       if (!library.importPaths.includes(editedImportPath)) {
         // Update import path
-        library.importPaths[editImportPath] = editedImportPath;
+        library.importPaths[pathIndexToEdit] = editedImportPath;
         await revalidate(false);
       }
     } catch (error) {
-      editImportPath = null;
       handleError(error, $t('errors.unable_to_edit_import_path'));
-    } finally {
-      editImportPath = null;
     }
   };
 
-  const handleDeleteImportPath = async () => {
-    if (editImportPath === null) {
+  const handleDeleteImportPath = async (pathIndexToDelete?: number) => {
+    if (pathIndexToDelete === undefined) {
       return;
     }
 
@@ -129,13 +117,41 @@
         library.importPaths = [];
       }
 
-      const pathToDelete = library.importPaths[editImportPath];
+      const pathToDelete = library.importPaths[pathIndexToDelete];
       library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
       await handleValidation();
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_import_path'));
-    } finally {
-      editImportPath = null;
+    }
+  };
+
+  const onEditImportPath = async (pathIndexToEdit?: number) => {
+    const result = await modalManager.show(LibraryImportPathModal, {
+      title: pathIndexToEdit === undefined ? $t('add_import_path') : $t('edit_import_path'),
+      submitText: pathIndexToEdit === undefined ? $t('add') : $t('save'),
+      isEditing: pathIndexToEdit !== undefined,
+      importPath: pathIndexToEdit === undefined ? null : library.importPaths[pathIndexToEdit],
+      importPaths: library.importPaths,
+    });
+
+    if (!result) {
+      return;
+    }
+
+    switch (result.action) {
+      case 'submit': {
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (pathIndexToEdit === undefined) {
+          await handleAddImportPath(result.importPath);
+        } else {
+          await handleEditImportPath(result.importPath, pathIndexToEdit);
+        }
+        break;
+      }
+      case 'delete': {
+        await handleDeleteImportPath(pathIndexToEdit);
+        break;
+      }
     }
   };
 
@@ -144,33 +160,6 @@
     onSubmit({ ...library });
   };
 </script>
-
-{#if addImportPath}
-  <LibraryImportPathForm
-    title={$t('add_import_path')}
-    submitText={$t('add')}
-    bind:importPath={importPathToAdd}
-    {importPaths}
-    onSubmit={handleAddImportPath}
-    onCancel={() => {
-      addImportPath = false;
-      importPathToAdd = null;
-    }}
-  />
-{/if}
-
-{#if editImportPath != undefined}
-  <LibraryImportPathForm
-    title={$t('edit_import_path')}
-    submitText={$t('save')}
-    isEditing={true}
-    bind:importPath={editedImportPath}
-    {importPaths}
-    onSubmit={handleEditImportPath}
-    onDelete={handleDeleteImportPath}
-    onCancel={() => (editImportPath = null)}
-  />
-{/if}
 
 <form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="text-start">
@@ -204,10 +193,7 @@
               icon={mdiPencilOutline}
               title={$t('edit_import_path')}
               size="16"
-              onclick={() => {
-                editImportPath = listIndex;
-                editedImportPath = validatedPath.importPath;
-              }}
+              onclick={() => onEditImportPath(listIndex)}
             />
           </td>
         </tr>
@@ -221,7 +207,7 @@
           {/if}</td
         >
         <td class="w-1/5 text-ellipsis px-4 text-sm">
-          <Button shape="round" size="small" onclick={() => (addImportPath = true)}>{$t('add_path')}</Button>
+          <Button shape="round" size="small" onclick={() => onEditImportPath()}>{$t('add_path')}</Button>
         </td>
       </tr>
     </tbody>

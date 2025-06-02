@@ -33,7 +33,7 @@ const items: Item[] = [
       url: 'https://github.com/immich-app/immich/pull/17974',
       text: '#17974',
     },
-    date: new Date(2025, 5, 5),
+    date: new Date(2025, 4, 5),
   },
   {
     icon: mdiMicrosoftWindows,

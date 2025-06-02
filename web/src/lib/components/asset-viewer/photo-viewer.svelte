@@ -1,6 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
@@ -65,7 +65,6 @@
     currentPositionX: 0,
     currentPositionY: 0,
   });
-  $zoomed = false;
 
   onDestroy(() => {
     $boundingBoxesArray = [];
@@ -108,7 +107,10 @@
   };
 
   zoomToggle = () => {
-    $zoomed = $zoomed ? false : true;
+    photoZoomState.set({
+      ...$photoZoomState,
+      currentZoom: $photoZoomState.currentZoom > 1 ? 1 : 2,
+    });
   };
 
   const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
@@ -210,6 +212,7 @@
     { shortcut: { key: 's' }, onShortcut: onPlaySlideshow, preventDefault: true },
     { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
+    { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: false },
   ]}
 />
 {#if imageError}
