@@ -1811,7 +1811,7 @@
   "to_parent": "Subir um nível",
   "to_trash": "Reciclagem",
   "toggle_settings": "Alternar configurações",
-  "toggle_theme": "Ativar modo escuro",
+  "darkTheme": "Ativar modo escuro",
   "total_usage": "Total utilizado",
   "trash": "Reciclagem",
   "trash_all": "Mover todos para a reciclagem",

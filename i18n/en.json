@@ -1815,7 +1815,7 @@
   "to_parent": "Go to parent",
   "to_trash": "Trash",
   "toggle_settings": "Toggle settings",
-  "toggle_theme": "Toggle dark theme",
+  "darkTheme": "Toggle dark theme",
   "total": "Total",
   "total_usage": "Total usage",
   "trash": "Trash",

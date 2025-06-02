@@ -1757,7 +1757,7 @@
   "to_parent": "Voltar para nível acima",
   "to_trash": "Mover para a lixeira",
   "toggle_settings": "Alternar configurações",
-  "toggle_theme": "Alternar tema escuro",
+  "darkTheme": "Alternar tema escuro",
   "total_usage": "Utilização total",
   "trash": "Lixeira",
   "trash_all": "Mover todos para o lixo",

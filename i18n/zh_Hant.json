@@ -1788,7 +1788,7 @@
   "to_parent": "到上一級",
   "to_trash": "垃圾桶",
   "toggle_settings": "切換設定",
-  "toggle_theme": "切換深色主題",
+  "darkTheme": "切換深色主題",
   "total": "統計",
   "total_usage": "總用量",
   "trash": "垃圾桶",

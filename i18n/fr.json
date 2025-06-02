@@ -1788,7 +1788,7 @@
   "to_parent": "Aller au dossier parent",
   "to_trash": "Corbeille",
   "toggle_settings": "Inverser les paramètres",
-  "toggle_theme": "Inverser le thème sombre",
+  "darkTheme": "Inverser le thème sombre",
   "total_usage": "Utilisation globale",
   "trash": "Corbeille",
   "trash_all": "Tout supprimer",

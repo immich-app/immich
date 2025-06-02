@@ -1779,7 +1779,7 @@
   "to_parent": "Siirry vanhempaan",
   "to_trash": "Roskakoriin",
   "toggle_settings": "Määritä asetukset",
-  "toggle_theme": "Aseta tumma teema",
+  "darkTheme": "Aseta tumma teema",
   "total": "Yhteensä",
   "total_usage": "Käyttö yhteensä",
   "trash": "Roskakori",

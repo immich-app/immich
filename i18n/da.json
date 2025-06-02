@@ -1788,7 +1788,7 @@
   "to_parent": "Gå op",
   "to_trash": "Papirkurv",
   "toggle_settings": "Slå indstillinger til eller fra",
-  "toggle_theme": "Slå mørkt tema til eller fra",
+  "darkTheme": "Slå mørkt tema til eller fra",
   "total_usage": "Samlet forbrug",
   "trash": "Papirkurv",
   "trash_all": "Smid alle ud",

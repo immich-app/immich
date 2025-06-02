@@ -1819,7 +1819,7 @@
   "to_parent": "상위 항목으로",
   "to_trash": "삭제",
   "toggle_settings": "설정 변경",
-  "toggle_theme": "다크 모드 사용",
+  "darkTheme": "다크 모드 사용",
   "total": "전체",
   "total_usage": "총 사용량",
   "trash": "휴지통",

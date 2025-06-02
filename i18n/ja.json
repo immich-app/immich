@@ -1828,7 +1828,7 @@
   "to_parent": "上位の階層へ",
   "to_trash": "ゴミ箱",
   "toggle_settings": "設定をトグル",
-  "toggle_theme": "ダークテーマを切り替え",
+  "darkTheme": "ダークテーマを切り替え",
   "total": "合計",
   "total_usage": "総使用量",
   "trash": "ゴミ箱",

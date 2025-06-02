@@ -1756,7 +1756,7 @@
   "to_parent": "Egy szinttel feljebb",
   "to_trash": "Lomtárba helyezés",
   "toggle_settings": "Beállítások átállítása",
-  "toggle_theme": "Sötét téma átváltása",
+  "darkTheme": "Sötét téma átváltása",
   "total": "Összesen",
   "total_usage": "Összesen használatban",
   "trash": "Lomtár",

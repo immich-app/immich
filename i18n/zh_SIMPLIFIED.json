@@ -1,4 +1,5 @@
 {
+  "darkTheme": "中国",
   "about": "关于",
   "account": "账户",
   "account_settings": "账户设置",
@@ -1824,7 +1825,7 @@
   "to_parent": "返回上一级",
   "to_trash": "放入回收站",
   "toggle_settings": "切换设置",
-  "toggle_theme": "切换深色主题",
+  "darkTheme": "切换深色主题",
   "total": "总计",
   "total_usage": "总用量",
   "trash": "回收站",
