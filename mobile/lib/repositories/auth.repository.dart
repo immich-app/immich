@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -36,7 +37,9 @@ class AuthRepository extends DatabaseRepository implements IAuthRepository {
         db.eTags.clear(),
         db.users.clear(),
         _drift.remoteAssetEntity.deleteAll(),
-        _drift.remoteExifEntity.deleteAll(),
+        _drift.exifEntity.deleteWhere(
+          (r) => r.assetStorage.equalsValue(ExifAssetStorage.remote),
+        ),
       ]);
     });
   }

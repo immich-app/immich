@@ -1,0 +1,15 @@
+import 'remote_asset.entity.dart';
+import 'local_asset.entity.dart';
+import 'exif.entity.dart';
+
+CREATE TRIGGER IF NOT EXISTS tr_remote_asset_delete_cascade
+AFTER DELETE ON remote_asset_entity
+BEGIN
+    DELETE FROM exif_entity WHERE asset_id = OLD.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS tr_local_asset_delete_cascade
+AFTER DELETE ON local_asset_entity
+BEGIN
+    DELETE FROM exif_entity WHERE asset_id = OLD.id;
+END;

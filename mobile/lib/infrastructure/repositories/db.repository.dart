@@ -39,8 +39,9 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     LocalAssetEntity,
     LocalAlbumAssetEntity,
     RemoteAssetEntity,
-    RemoteExifEntity,
+    ExifEntity,
   ],
+  include: {'package:immich_mobile/infrastructure/entities/trigger.drift'},
 )
 class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])

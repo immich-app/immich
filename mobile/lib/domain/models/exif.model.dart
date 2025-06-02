@@ -1,3 +1,9 @@
+enum ExifAssetStorage {
+  // do not change the order
+  local,
+  remote,
+}
+
 class ExifInfo {
   final int? assetId;
   final int? fileSize;

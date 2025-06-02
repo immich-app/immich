@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
@@ -199,7 +200,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   Future<void> _updateAssetExifV1(Iterable<SyncAssetExifV1> data) =>
       _db.batch((batch) {
         for (final exif in data) {
-          final companion = RemoteExifEntityCompanion(
+          final companion = ExifEntityCompanion(
             city: Value(exif.city),
             state: Value(exif.state),
             country: Value(exif.country),
@@ -220,10 +221,11 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
             timeZone: Value(exif.timeZone),
             rating: Value(exif.rating),
             projectionType: Value(exif.projectionType),
+            assetStorage: const Value(ExifAssetStorage.remote),
           );
 
           batch.insert(
-            _db.remoteExifEntity,
+            _db.exifEntity,
             companion.copyWith(assetId: Value(exif.assetId)),
             onConflict: DoUpdate((_) => companion),
           );

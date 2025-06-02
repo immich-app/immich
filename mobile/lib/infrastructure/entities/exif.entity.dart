@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart' hide Query;
 import 'package:immich_mobile/domain/models/exif.model.dart' as domain;
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:isar/isar.dart';
@@ -94,11 +93,10 @@ class ExifInfo {
       );
 }
 
-class RemoteExifEntity extends Table with DriftDefaultsMixin {
-  const RemoteExifEntity();
+class ExifEntity extends Table with DriftDefaultsMixin {
+  const ExifEntity();
 
-  TextColumn get assetId =>
-      text().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get assetId => text()();
 
   TextColumn get city => text().nullable()();
 
@@ -139,6 +137,8 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
   IntColumn get rating => integer().nullable()();
 
   TextColumn get projectionType => text().nullable()();
+
+  IntColumn get assetStorage => intEnum<domain.ExifAssetStorage>()();
 
   @override
   Set<Column> get primaryKey => {assetId};
