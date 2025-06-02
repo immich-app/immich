@@ -1,9 +1,6 @@
 <script lang="ts">
-  import LibraryImportPathForm from '$lib/components/forms/library-import-path-form.svelte';
   import LibraryImportPathsForm from '$lib/components/forms/library-import-paths-form.svelte';
-  import LibraryRenameForm from '$lib/components/forms/library-rename-form.svelte';
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
-  import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -14,6 +11,9 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
+  import LibraryRenameModal from '$lib/modals/LibraryRenameModal.svelte';
+  import LibraryUserPickerModal from '$lib/modals/LibraryUserPickerModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { ByteUnit, getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -56,12 +56,7 @@
   let diskUsageUnit: ByteUnit[] = $state([]);
   let editImportPaths: number | undefined = $state();
   let editScanSettings: number | undefined = $state();
-  let renameLibrary: number | undefined = $state();
-  let updateLibraryIndex: number | null;
   let dropdownOpen: boolean[] = [];
-  let toCreateLibrary = $state(false);
-  let toAddImportPath = $state(false);
-  let importPathToAdd: string | null = $state(null);
 
   onMount(async () => {
     await readLibraryList();
@@ -70,9 +65,6 @@
   const closeAll = () => {
     editImportPaths = undefined;
     editScanSettings = undefined;
-    renameLibrary = undefined;
-    updateLibraryIndex = null;
-    toAddImportPath = false;
 
     for (let index = 0; index < dropdownOpen.length; index++) {
       dropdownOpen[index] = false;
@@ -109,41 +101,55 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_create_library'));
     } finally {
-      toCreateLibrary = false;
       await readLibraryList();
     }
 
     if (createdLibrary) {
       // Open the import paths form for the newly created library
-      updateLibraryIndex = libraries.findIndex((library) => library.id === createdLibrary.id);
-      toAddImportPath = true;
+      const createdLibraryIndex = libraries.findIndex((library) => library.id === createdLibrary.id);
+      const result = await modalManager.show(LibraryImportPathModal, {
+        title: $t('add_import_path'),
+        submitText: $t('add'),
+        importPath: null,
+      });
+
+      if (!result) {
+        if (createdLibraryIndex !== null) {
+          onEditImportPathClicked(createdLibraryIndex);
+        }
+        return;
+      }
+
+      switch (result.action) {
+        case 'submit': {
+          handleAddImportPath(result.importPath, createdLibraryIndex);
+          break;
+        }
+        case 'delete': {
+          await handleDelete(libraries[createdLibraryIndex], createdLibraryIndex);
+          break;
+        }
+      }
     }
   };
 
-  const handleAddImportPath = () => {
-    if ((updateLibraryIndex !== 0 && !updateLibraryIndex) || !importPathToAdd) {
+  const handleAddImportPath = (newImportPath: string | null, libraryIndex: number) => {
+    if ((libraryIndex !== 0 && !libraryIndex) || !newImportPath) {
       return;
     }
 
     try {
-      onEditImportPathClicked(updateLibraryIndex);
+      onEditImportPathClicked(libraryIndex);
 
-      libraries[updateLibraryIndex].importPaths.push(importPathToAdd);
+      libraries[libraryIndex].importPaths.push(newImportPath);
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_import_path'));
-    } finally {
-      importPathToAdd = null;
-      toAddImportPath = false;
     }
   };
 
-  const handleUpdate = async (library: Partial<LibraryResponseDto>) => {
-    if (updateLibraryIndex === null) {
-      return;
-    }
-
+  const handleUpdate = async (library: Partial<LibraryResponseDto>, libraryIndex: number) => {
     try {
-      const libraryId = libraries[updateLibraryIndex].id;
+      const libraryId = libraries[libraryIndex].id;
       await updateLibrary({ id: libraryId, updateLibraryDto: library });
       closeAll();
       await readLibraryList();
@@ -177,16 +183,19 @@
     }
   };
 
-  const onRenameClicked = (index: number) => {
+  const onRenameClicked = async (index: number) => {
     closeAll();
-    renameLibrary = index;
-    updateLibraryIndex = index;
+    const result = await modalManager.show(LibraryRenameModal, {
+      library: libraries[index],
+    });
+    if (result) {
+      await handleUpdate(result, index);
+    }
   };
 
   const onEditImportPathClicked = (index: number) => {
     closeAll();
     editImportPaths = index;
-    updateLibraryIndex = index;
   };
 
   const onScanClicked = async (library: LibraryResponseDto) => {
@@ -197,10 +206,16 @@
     }
   };
 
+  const onCreateNewLibraryClicked = async () => {
+    const result = await modalManager.show(LibraryUserPickerModal, {});
+    if (result) {
+      await handleCreate(result);
+    }
+  };
+
   const onScanSettingClicked = (index: number) => {
     closeAll();
     editScanSettings = index;
-    updateLibraryIndex = index;
   };
 
   const handleDelete = async (library: LibraryResponseDto, index: number) => {
@@ -250,7 +265,7 @@
       {/if}
       <Button
         leadingIcon={mdiPlusBoxOutline}
-        onclick={() => (toCreateLibrary = true)}
+        onclick={onCreateNewLibraryClicked}
         size="small"
         variant="ghost"
         color="secondary"
@@ -338,7 +353,7 @@
                 <div transition:slide={{ duration: 250 }}>
                   <LibraryImportPathsForm
                     {library}
-                    onSubmit={handleUpdate}
+                    onSubmit={(lib) => handleUpdate(lib, index)}
                     onCancel={() => (editImportPaths = undefined)}
                   />
                 </div>
@@ -348,7 +363,7 @@
                 <div transition:slide={{ duration: 250 }} class="mb-4 ms-4 me-4">
                   <LibraryScanSettingsForm
                     {library}
-                    onSubmit={handleUpdate}
+                    onSubmit={(lib) => handleUpdate(lib, index)}
                     onCancel={() => (editScanSettings = undefined)}
                   />
                 </div>
@@ -359,35 +374,8 @@
 
         <!-- Empty message -->
       {:else}
-        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={() => (toCreateLibrary = true)} />
+        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={onCreateNewLibraryClicked} />
       {/if}
     </div>
   </section>
 </AdminPageLayout>
-
-{#if renameLibrary !== undefined}
-  <LibraryRenameForm
-    library={libraries[renameLibrary]}
-    onSubmit={handleUpdate}
-    onCancel={() => (renameLibrary = undefined)}
-  />
-{/if}
-
-{#if toCreateLibrary}
-  <LibraryUserPickerForm onSubmit={handleCreate} onCancel={() => (toCreateLibrary = false)} />
-{/if}
-
-{#if toAddImportPath}
-  <LibraryImportPathForm
-    title={$t('add_import_path')}
-    submitText={$t('add')}
-    bind:importPath={importPathToAdd}
-    onSubmit={handleAddImportPath}
-    onCancel={() => {
-      toAddImportPath = false;
-      if (updateLibraryIndex) {
-        onEditImportPathClicked(updateLibraryIndex);
-      }
-    }}
-  />
-{/if}
