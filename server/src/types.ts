@@ -371,8 +371,7 @@ export type JobItem =
 
   // OCR
   | { name: JobName.QUEUE_OCR; data: INightlyJob }
-  | { name: JobName.OCR; data: IEntityJob }
-  | { name: JobName.OCR_CLEANUP; data?: IBaseJob };
+  | { name: JobName.OCR; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
