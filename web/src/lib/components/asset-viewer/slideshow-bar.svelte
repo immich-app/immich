@@ -120,7 +120,7 @@
 
 {#if showControls}
   <div
-    class="m-4 flex gap-2"
+    class="m-4 flex gap-2 dark"
     onmouseenter={() => (isOverControls = true)}
     onmouseleave={() => (isOverControls = false)}
     transition:fly={{ duration: 150 }}
@@ -133,7 +133,6 @@
       icon={mdiClose}
       onclick={onClose}
       aria-label={$t('exit_slideshow')}
-      class="text-white"
     />
 
     <IconButton
@@ -143,7 +142,6 @@
       icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
       onclick={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar?.play() : progressBar?.pause())}
       aria-label={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
-      class="text-white"
     />
     <IconButton
       variant="ghost"
@@ -152,7 +150,6 @@
       icon={mdiChevronLeft}
       onclick={onPrevious}
       aria-label={$t('previous')}
-      class="text-white"
     />
     <IconButton
       variant="ghost"
@@ -161,7 +158,6 @@
       icon={mdiChevronRight}
       onclick={onNext}
       aria-label={$t('next')}
-      class="text-white"
     />
     <IconButton
       variant="ghost"
@@ -170,7 +166,6 @@
       icon={mdiCog}
       onclick={onShowSettings}
       aria-label={$t('slideshow_settings')}
-      class="text-white"
     />
     {#if !isFullScreen}
       <IconButton
@@ -180,7 +175,6 @@
         icon={mdiFullscreen}
         onclick={onSetToFullScreen}
         aria-label={$t('set_slideshow_to_fullscreen')}
-        class="text-white"
       />
     {/if}
   </div>

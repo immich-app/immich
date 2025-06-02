@@ -495,7 +495,7 @@
             {/key}
 
             <div
-              class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2"
+              class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2 dark"
               class:opacity-0={galleryInView}
               class:opacity-100={!galleryInView}
             >
@@ -507,7 +507,7 @@
                   color="secondary"
                   aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
                   onclick={() => handleSaveMemory()}
-                  class="text-white dark:text-white w-[48px] h-[48px]"
+                  class="w-[48px] h-[48px]"
                 />
                 <!-- <IconButton
                   icon={mdiShareVariantOutline}
@@ -524,7 +524,6 @@
                   direction="left"
                   size="medium"
                   align="bottom-right"
-                  class="text-white dark:text-white"
                 >
                   <MenuOption onClick={() => handleDeleteMemory()} text={$t('remove_memory')} icon={mdiCardsOutline} />
                   <MenuOption
@@ -544,7 +543,6 @@
                   color="secondary"
                   variant="ghost"
                   shape="round"
-                  class="text-white dark:text-white"
                 />
               </div>
             </div>

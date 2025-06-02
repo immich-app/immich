@@ -111,12 +111,12 @@
 <div
   class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
 >
-  <div class="text-white">
+  <div class="dark">
     {#if showCloseButton}
       <CloseAction {onClose} />
     {/if}
   </div>
-  <div class="flex gap-2 overflow-x-auto text-white dark" data-testid="asset-viewer-navbar-actions">
+  <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
     <CastButton />
 
     {#if !asset.isTrashed && $user && !isLocked}
