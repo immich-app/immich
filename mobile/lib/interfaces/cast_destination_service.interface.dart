@@ -20,6 +20,7 @@ abstract interface class ICastDestinationService {
   void play();
   void pause();
   void seekTo(Duration position);
+  void stop();
   Future<void> disconnect();
 
   Future<List<(String, CastDestinationType, dynamic)>> getDevices();

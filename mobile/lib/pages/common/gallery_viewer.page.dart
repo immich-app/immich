@@ -130,6 +130,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (isCasting) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) {
+              ref.read(castProvider.notifier).stop();
               context.scaffoldMessenger.showSnackBar(
                 SnackBar(
                   duration: const Duration(seconds: 1),
@@ -398,6 +399,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   context.scaffoldMessenger.clearSnackBars();
 
                   if (isCasting) {
+                    ref.read(castProvider.notifier).stop();
                     context.scaffoldMessenger.showSnackBar(
                       SnackBar(
                         duration: const Duration(seconds: 2),

@@ -264,6 +264,17 @@ class GCastService implements ICastDestinationService {
   }
 
   @override
+  void stop() {
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
+      "type": "STOP",
+      "mediaSessionId": _sessionId,
+    });
+    _mediaStatusPollingTimer?.cancel();
+
+    currentAssetId = null;
+  }
+
+  @override
   Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
     final dests = await _gCastRepository.listDestinations();
 
