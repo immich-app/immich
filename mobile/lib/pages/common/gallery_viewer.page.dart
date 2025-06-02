@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
@@ -121,8 +122,26 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     useEffect(() {
       final asset = loadAsset(currentIndex.value);
-      ref.read(castProvider.notifier).loadMedia(asset, false);
 
+      if (asset.isRemote) {
+        ref.read(castProvider.notifier).loadMedia(asset, false);
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            context.scaffoldMessenger.showSnackBar(
+              SnackBar(
+                duration: const Duration(seconds: 1),
+                content: Text(
+                  "local_asset_cast_failed".tr(),
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    color: context.primaryColor,
+                  ),
+                ),
+              ),
+            );
+          }
+        });
+      }
       return null;
     }, [
       ref.watch(castProvider).isCasting,
@@ -367,9 +386,24 @@ class GalleryViewerPage extends HookConsumerWidget {
                   precacheNextImage(next);
                 });
 
+                context.scaffoldMessenger.hideCurrentSnackBar();
+
                 // send image to casting if the server has it
                 if (newAsset.isRemote) {
                   ref.read(castProvider.notifier).loadMedia(newAsset, false);
+                } else {
+                  context.scaffoldMessenger.clearSnackBars();
+                  context.scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      duration: const Duration(seconds: 2),
+                      content: Text(
+                        "local_asset_cast_failed".tr(),
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: context.primaryColor,
+                        ),
+                      ),
+                    ),
+                  );
                 }
               },
               builder: buildAsset,

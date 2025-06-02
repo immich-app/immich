@@ -1124,6 +1124,7 @@
   "list": "List",
   "loading": "Loading",
   "loading_search_results_failed": "Loading search results failed",
+  "local_asset_cast_failed": "Unable to cast an asset that is not uploaded to the server",
   "local_network": "Local network",
   "local_network_sheet_info": "The app will connect to the server through this URL when using the specified Wi-Fi network",
   "location_permission": "Location permission",
