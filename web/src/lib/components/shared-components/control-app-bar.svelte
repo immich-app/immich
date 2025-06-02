@@ -80,7 +80,7 @@
       forceDark ? 'bg-immich-dark-gray! text-white' : 'bg-subtle dark:bg-immich-dark-gray',
     ]}
   >
-    <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
+    <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg {forceDark ? 'dark' : ''}">
       {#if showBackButton}
         <IconButton
           aria-label={$t('close')}
