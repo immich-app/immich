@@ -7,6 +7,7 @@ import 'src/schema/tables/asset-audit.table';
 import 'src/schema/tables/asset-face.table';
 import 'src/schema/tables/asset-files.table';
 import 'src/schema/tables/asset-job-status.table';
+import 'src/schema/tables/asset-ocr.table';
 import 'src/schema/tables/asset.table';
 import 'src/schema/tables/audit.table';
 import 'src/schema/tables/exif.table';
@@ -33,3 +34,4 @@ import 'src/schema/tables/user-audit.table';
 import 'src/schema/tables/user-metadata.table';
 import 'src/schema/tables/user.table';
 import 'src/schema/tables/version-history.table';
+
