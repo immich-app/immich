@@ -17,7 +17,6 @@
   import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
@@ -36,6 +35,7 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import {
     mdiAlertOutline,
     mdiCogRefreshOutline,
@@ -111,34 +111,49 @@
 <div
   class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
 >
-  <div class="text-white">
+  <div class="dark">
     {#if showCloseButton}
       <CloseAction {onClose} />
     {/if}
   </div>
-  <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
+  <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
     <CastButton />
 
     {#if !asset.isTrashed && $user && !isLocked}
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
-      <CircleIconButton color="alert" icon={mdiAlertOutline} onclick={onShowDetail} title={$t('asset_offline')} />
+      <IconButton
+        shape="round"
+        color="danger"
+        icon={mdiAlertOutline}
+        onclick={onShowDetail}
+        aria-label={$t('asset_offline')}
+      />
     {/if}
     {#if asset.livePhotoVideoId}
       {@render motionPhoto?.()}
     {/if}
     {#if asset.type === AssetTypeEnum.Image}
-      <CircleIconButton
-        color="opaque"
-        hideMobile={true}
+      <IconButton
+        class="hidden sm:flex"
+        color="secondary"
+        variant="ghost"
+        shape="round"
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
-        title={$t('zoom_image')}
+        aria-label={$t('zoom_image')}
         onclick={onZoomImage}
       />
     {/if}
     {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
-      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} onclick={() => onCopyImage?.()} />
+      <IconButton
+        color="secondary"
+        variant="ghost"
+        shape="round"
+        icon={mdiContentCopy}
+        aria-label={$t('copy_image')}
+        onclick={() => onCopyImage?.()}
+      />
     {/if}
 
     {#if !isOwner && showDownloadButton}
@@ -152,20 +167,11 @@
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
     {/if}
-    <!-- {#if showEditorButton}
-      <CircleIconButton
-        color="opaque"
-        hideMobile={true}
-        icon={mdiImageEditOutline}
-        onclick={showEditorHandler}
-        title={$t('editor')}
-      />
-    {/if} -->
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} />
 
-      <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
+      <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
         {#if showSlideshow && !isLocked}
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}

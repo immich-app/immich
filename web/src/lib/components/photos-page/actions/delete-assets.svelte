@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { type OnDelete, deleteAssets } from '$lib/utils/actions';
   import { mdiDeleteForeverOutline, mdiDeleteOutline, mdiTimerSand } from '@mdi/js';
@@ -7,6 +6,7 @@
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import DeleteAssetDialog from '../delete-asset-dialog.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     onAssetDelete: OnDelete;
@@ -45,9 +45,23 @@
 {#if menuItem}
   <MenuOption text={label} icon={mdiDeleteOutline} onClick={handleTrash} />
 {:else if loading}
-  <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
+  <IconButton
+    shape="round"
+    color="secondary"
+    variant="ghost"
+    aria-label={$t('loading')}
+    icon={mdiTimerSand}
+    onclick={() => {}}
+  />
 {:else}
-  <CircleIconButton title={label} icon={mdiDeleteForeverOutline} onclick={handleTrash} />
+  <IconButton
+    shape="round"
+    color="secondary"
+    variant="ghost"
+    aria-label={label}
+    icon={mdiDeleteForeverOutline}
+    onclick={handleTrash}
+  />
 {/if}
 
 {#if isShowConfirmation}

@@ -1,11 +1,10 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { validate, type LibraryResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -188,12 +187,13 @@
 
           <td class="w-4/5 text-ellipsis px-4 text-sm">{validatedPath.importPath}</td>
           <td class="w-1/5 text-ellipsis flex justify-center">
-            <CircleIconButton
+            <IconButton
+              shape="round"
               color="primary"
               icon={mdiPencilOutline}
-              title={$t('edit_import_path')}
-              size="16"
+              aria-label={$t('edit_import_path')}
               onclick={() => onEditImportPath(listIndex)}
+              size="small"
             />
           </td>
         </tr>
