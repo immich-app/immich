@@ -539,7 +539,6 @@ export enum JobName {
   // OCR
   QUEUE_OCR = 'queue-ocr',
   OCR = 'ocr',
-  OCR_CLEANUP = 'ocr-cleanup',
 }
 
 export enum JobCommand {
