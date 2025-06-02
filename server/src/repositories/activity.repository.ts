@@ -5,6 +5,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Activity, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { AssetVisibility } from 'src/enum';
 import { asUuid } from 'src/utils/database';
 
 export interface ActivitySearch {
@@ -76,6 +77,7 @@ export class ActivityRepository {
       .where('activity.albumId', '=', albumId)
       .where('activity.isLiked', '=', false)
       .where('assets.deletedAt', 'is', null)
+      .where('assets.visibility', '!=', sql.lit(AssetVisibility.LOCKED))
       .executeTakeFirstOrThrow();
 
     return count;
