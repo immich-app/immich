@@ -754,6 +754,107 @@ export class AssetRepository {
     );
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getDuplicatesInfo(userId: string) {
+    return this.db
+      .with('duplicates', (qb) =>
+        qb
+          .selectFrom('assets')
+          .leftJoinLateral(
+            (qb) =>
+              qb
+                .selectFrom('exif')
+                .selectAll('assets')
+                .select((eb) => eb.table('exif').as('exifInfo'))
+                .whereRef('exif.assetId', '=', 'assets.id')
+                .as('asset'),
+            (join) => join.onTrue(),
+          )
+          .select('assets.duplicateId')
+          .select((eb) => eb.fn('jsonb_agg', [eb.table('asset')]).as('assets'))
+          .select((eb) => sql<MapAsset>`(${eb.fn('jsonb_agg', [eb.table('asset')])}->>0)::jsonb`.as('exampleAsset'))
+          .where('assets.duplicateId', 'is not', null)
+          .$narrowType<{ duplicateId: NotNull }>()
+          .where('assets.ownerId', '=', asUuid(userId))
+          .where('assets.deletedAt', 'is', null)
+          .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
+          .groupBy('assets.duplicateId'),
+      )
+      .with('unique', (qb) =>
+        qb
+          .selectFrom('duplicates')
+          .select('duplicateId')
+          .where((eb) => eb(eb.fn('jsonb_array_length', ['assets']), '=', 1)),
+      )
+      .with('removed_unique', (qb) =>
+        qb
+          .updateTable('assets')
+          .set({ duplicateId: null })
+          .from('unique')
+          .whereRef('assets.duplicateId', '=', 'unique.duplicateId'),
+      )
+      .selectFrom('duplicates')
+      .select(['duplicateId', 'exampleAsset'])
+      .where('duplicateId', 'is not', null)
+      .where(({ not, exists }) =>
+        not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
+      )
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getDuplicateById(userId: string, duplicateId: string) {
+    return this.db
+      .with('duplicates', (qb) =>
+        qb
+          .selectFrom('assets')
+          .leftJoinLateral(
+            (qb) =>
+              qb
+                .selectFrom('exif')
+                .selectAll('assets')
+                .select((eb) => eb.table('exif').as('exifInfo'))
+                .whereRef('exif.assetId', '=', 'assets.id')
+                .as('asset'),
+            (join) => join.onTrue(),
+          )
+          .select('assets.duplicateId')
+          .select((eb) =>
+            eb
+              .fn('jsonb_agg', [eb.table('asset')])
+              .$castTo<MapAsset[]>()
+              .as('assets'),
+          )
+          .where('assets.ownerId', '=', asUuid(userId))
+          .where('assets.duplicateId', 'is not', null)
+          .$narrowType<{ duplicateId: NotNull }>()
+          .where('assets.deletedAt', 'is', null)
+          .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
+          .groupBy('assets.duplicateId'),
+      )
+      .with('unique', (qb) =>
+        qb
+          .selectFrom('duplicates')
+          .select('duplicateId')
+          .where((eb) => eb(eb.fn('jsonb_array_length', ['assets']), '=', 1)),
+      )
+      .with('removed_unique', (qb) =>
+        qb
+          .updateTable('assets')
+          .set({ duplicateId: null })
+          .from('unique')
+          .whereRef('assets.duplicateId', '=', 'unique.duplicateId'),
+      )
+      .selectFrom('duplicates')
+      .selectAll()
+      .where('duplicates.duplicateId', '=', asUuid(duplicateId))
+      .where(({ not, exists }) =>
+        not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
+      )
+      .limit(1)
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
   async getAssetIdByCity(ownerId: string, { minAssetsPerField, maxFields }: AssetExploreFieldOptions) {
     const items = await this.db
