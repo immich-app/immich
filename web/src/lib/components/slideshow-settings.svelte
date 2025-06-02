@@ -16,7 +16,14 @@
   import type { RenderedOption } from './elements/dropdown.svelte';
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
 
-  const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook, slideshowTransition } = slideshowStore;
+  const {
+    slideshowDelay,
+    showProgressBar,
+    slideshowNavigation,
+    slideshowLook,
+    slideshowTransition,
+    slideshowAutoplay,
+  } = slideshowStore;
 
   interface Props {
     onClose?: () => void;
@@ -30,6 +37,7 @@
   let tempSlideshowNavigation = $state($slideshowNavigation);
   let tempSlideshowLook = $state($slideshowLook);
   let tempSlideshowTransition = $state($slideshowTransition);
+  let tempSlideshowAutoplay = $state($slideshowAutoplay);
 
   const navigationOptions: Record<SlideshowNavigation, RenderedOption> = {
     [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: $t('shuffle') },
@@ -60,6 +68,7 @@
     $slideshowNavigation = tempSlideshowNavigation;
     $slideshowLook = tempSlideshowLook;
     $slideshowTransition = tempSlideshowTransition;
+    $slideshowAutoplay = tempSlideshowAutoplay;
     onClose();
   };
 </script>
@@ -83,6 +92,7 @@
           tempSlideshowLook = handleToggle(option, lookOptions) || tempSlideshowLook;
         }}
       />
+      <SettingSwitch title={$t('autoplay_slideshow')} bind:checked={tempSlideshowAutoplay} />
       <SettingSwitch title={$t('show_progress_bar')} bind:checked={tempShowProgressBar} />
       <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={tempSlideshowTransition} />
       <SettingInputField
