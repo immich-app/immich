@@ -5,7 +5,8 @@ String t(String key, [Map<String, Object>? args]) {
   try {
     String message = key.tr();
     if (args != null) {
-      return MessageFormat(message, locale: Intl.defaultLocale!).format(args);
+      return MessageFormat(message, locale: Intl.defaultLocale ?? 'en')
+          .format(args);
     }
     return message;
   } catch (e) {
