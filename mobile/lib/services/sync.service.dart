@@ -378,15 +378,8 @@ class SyncService {
     final bool changes = await diffSortedLists(
       remoteAlbums,
       dbAlbums,
-      // compare: (remoteAlbum, dbAlbum) {
-      //   final idCompare = remoteAlbum.remoteId!.compareTo(dbAlbum.remoteId!);
-      //   if (idCompare != 0) return idCompare;
-      //   return (remoteAlbum.description ?? '')
-      //       .compareTo(dbAlbum.description ?? '');
-      // },
       compare: (remoteAlbum, dbAlbum) =>
           remoteAlbum.remoteId!.compareTo(dbAlbum.remoteId!),
-
       both: (remoteAlbum, dbAlbum) =>
           _syncRemoteAlbum(remoteAlbum, dbAlbum, toDelete, existing),
       onlyFirst: (remoteAlbum) => _addAlbumFromServer(remoteAlbum, existing),
