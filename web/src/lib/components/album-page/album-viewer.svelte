@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import CastButton from '$lib/cast/cast-button.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
@@ -7,6 +8,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -14,14 +16,13 @@
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import AssetGrid from '../photos-page/asset-grid.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import AlbumSummary from './album-summary.svelte';
-  import CastButton from '$lib/cast/cast-button.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -42,7 +43,7 @@
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      handlePromiseError(fileUploadHandler(value.files, album.id));
+      handlePromiseError(fileUploadHandler({ files: value.files, albumId: album.id }));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
@@ -104,24 +105,30 @@
       {/snippet}
 
       {#snippet trailing()}
-        <CastButton whiteHover />
+        <CastButton />
 
         {#if sharedLink.allowUpload}
-          <CircleIconButton
-            title={$t('add_photos')}
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('add_photos')}
             onclick={() => openFileUploadDialog({ albumId: album.id })}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton
-            title={$t('download')}
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('download')}
             onclick={() => downloadAlbum(album)}
             icon={mdiFolderDownloadOutline}
           />
         {/if}
-        {#if sharedLink.showMetadata}
+        {#if sharedLink.showMetadata && $featureFlags.loaded && $featureFlags.map}
           <AlbumMap {album} />
         {/if}
         <ThemeButton />

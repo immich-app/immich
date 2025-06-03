@@ -5,6 +5,7 @@ import { OnEvent } from 'src/decorators';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
+  ServerApkLinksDto,
   ServerConfigDto,
   ServerFeaturesDto,
   ServerMediaTypesResponseDto,
@@ -45,6 +46,16 @@ export class ServerService extends BaseService {
       licensed: !!licensed,
       ...buildMetadata,
       ...buildVersions,
+    };
+  }
+
+  getApkLinks(): ServerApkLinksDto {
+    const baseUrl = `https://github.com/immich-app/immich/releases/download/v${serverVersion.toString()}`;
+    return {
+      arm64v8a: `${baseUrl}/app-arm64-v8a-release.apk`,
+      armeabiv7a: `${baseUrl}/app-armeabi-v7a-release.apk`,
+      universal: `${baseUrl}/app-release.apk`,
+      x86_64: `${baseUrl}/app-x86_64-release.apk`,
     };
   }
 

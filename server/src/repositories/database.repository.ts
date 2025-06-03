@@ -246,6 +246,7 @@ export class DatabaseRepository {
       return;
     }
     const dimSize = await this.getDimensionSize(table);
+    lists ||= this.targetListCount(await this.getRowCount(table));
     await this.db.schema.dropIndex(indexName).ifExists().execute();
     if (table === 'smart_search') {
       await this.db.schema.alterTable(table).dropConstraint('dim_size_constraint').ifExists().execute();
@@ -262,7 +263,6 @@ export class DatabaseRepository {
         ALTER TABLE ${sql.raw(table)}
         ALTER COLUMN embedding
         SET DATA TYPE ${sql.raw(schema)}vector(${sql.raw(String(dimSize))})`.execute(tx);
-      lists ||= this.targetListCount(await this.getRowCount(table));
       await sql.raw(vectorIndexQuery({ vectorExtension, table, indexName, lists })).execute(tx);
     });
     try {

@@ -5275,6 +5275,38 @@
         ]
       }
     },
+    "/server/apk-links": {
+      "get": {
+        "operationId": "getApkLinks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerApkLinksDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
     "/server/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -7890,6 +7922,101 @@
         ]
       }
     },
+    "/users/me/onboarding": {
+      "delete": {
+        "operationId": "deleteUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "operationId": "getUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "setUserOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/users/me/preferences": {
       "get": {
         "operationId": "getMyPreferences",
@@ -8303,10 +8430,6 @@
             "type": "array"
           }
         },
-        "required": [
-          "name",
-          "permissions"
-        ],
         "type": "object"
       },
       "ActivityCreateDto": {
@@ -9556,6 +9679,26 @@
         ],
         "type": "string"
       },
+      "CastResponse": {
+        "properties": {
+          "gCastEnabled": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gCastEnabled"
+        ],
+        "type": "object"
+      },
+      "CastUpdate": {
+        "properties": {
+          "gCastEnabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "ChangePasswordDto": {
         "properties": {
           "newPassword": {
@@ -10356,6 +10499,9 @@
           "isAdmin": {
             "type": "boolean"
           },
+          "isOnboarded": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -10375,6 +10521,7 @@
         "required": [
           "accessToken",
           "isAdmin",
+          "isOnboarded",
           "name",
           "profileImagePath",
           "shouldChangePassword",
@@ -11016,6 +11163,28 @@
         },
         "required": [
           "year"
+        ],
+        "type": "object"
+      },
+      "OnboardingDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "OnboardingResponseDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
         ],
         "type": "object"
       },
@@ -11936,6 +12105,29 @@
           "licensed",
           "version",
           "versionUrl"
+        ],
+        "type": "object"
+      },
+      "ServerApkLinksDto": {
+        "properties": {
+          "arm64v8a": {
+            "type": "string"
+          },
+          "armeabiv7a": {
+            "type": "string"
+          },
+          "universal": {
+            "type": "string"
+          },
+          "x86_64": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "arm64v8a",
+          "armeabiv7a",
+          "universal",
+          "x86_64"
         ],
         "type": "object"
       },
@@ -13056,6 +13248,9 @@
             "nullable": true,
             "type": "string"
           },
+          "originalFileName": {
+            "type": "string"
+          },
           "ownerId": {
             "type": "string"
           },
@@ -13090,6 +13285,7 @@
           "id",
           "isFavorite",
           "localDateTime",
+          "originalFileName",
           "ownerId",
           "thumbhash",
           "type",
@@ -14806,6 +15002,9 @@
       },
       "UserPreferencesResponseDto": {
         "properties": {
+          "cast": {
+            "$ref": "#/components/schemas/CastResponse"
+          },
           "download": {
             "$ref": "#/components/schemas/DownloadResponse"
           },
@@ -14835,6 +15034,7 @@
           }
         },
         "required": [
+          "cast",
           "download",
           "emailNotifications",
           "folders",
@@ -14851,6 +15051,9 @@
         "properties": {
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "cast": {
+            "$ref": "#/components/schemas/CastUpdate"
           },
           "download": {
             "$ref": "#/components/schemas/DownloadUpdate"

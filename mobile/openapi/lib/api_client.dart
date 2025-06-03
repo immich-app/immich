@@ -284,6 +284,10 @@ class ApiClient {
           return CLIPConfig.fromJson(value);
         case 'CQMode':
           return CQModeTypeTransformer().decode(value);
+        case 'CastResponse':
+          return CastResponse.fromJson(value);
+        case 'CastUpdate':
+          return CastUpdate.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
         case 'CheckExistingAssetsDto':
@@ -406,6 +410,10 @@ class ApiClient {
           return OAuthTokenEndpointAuthMethodTypeTransformer().decode(value);
         case 'OnThisDayDto':
           return OnThisDayDto.fromJson(value);
+        case 'OnboardingDto':
+          return OnboardingDto.fromJson(value);
+        case 'OnboardingResponseDto':
+          return OnboardingResponseDto.fromJson(value);
         case 'PartnerDirection':
           return PartnerDirectionTypeTransformer().decode(value);
         case 'PartnerResponseDto':
@@ -476,6 +484,8 @@ class ApiClient {
           return SearchSuggestionTypeTypeTransformer().decode(value);
         case 'ServerAboutResponseDto':
           return ServerAboutResponseDto.fromJson(value);
+        case 'ServerApkLinksDto':
+          return ServerApkLinksDto.fromJson(value);
         case 'ServerConfigDto':
           return ServerConfigDto.fromJson(value);
         case 'ServerFeaturesDto':

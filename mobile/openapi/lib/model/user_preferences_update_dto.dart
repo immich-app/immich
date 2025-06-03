@@ -14,6 +14,7 @@ class UserPreferencesUpdateDto {
   /// Returns a new [UserPreferencesUpdateDto] instance.
   UserPreferencesUpdateDto({
     this.avatar,
+    this.cast,
     this.download,
     this.emailNotifications,
     this.folders,
@@ -32,6 +33,14 @@ class UserPreferencesUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   AvatarUpdate? avatar;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  CastUpdate? cast;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -108,6 +117,7 @@ class UserPreferencesUpdateDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesUpdateDto &&
     other.avatar == avatar &&
+    other.cast == cast &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
     other.folders == folders &&
@@ -122,6 +132,7 @@ class UserPreferencesUpdateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (avatar == null ? 0 : avatar!.hashCode) +
+    (cast == null ? 0 : cast!.hashCode) +
     (download == null ? 0 : download!.hashCode) +
     (emailNotifications == null ? 0 : emailNotifications!.hashCode) +
     (folders == null ? 0 : folders!.hashCode) +
@@ -133,7 +144,7 @@ class UserPreferencesUpdateDto {
     (tags == null ? 0 : tags!.hashCode);
 
   @override
-  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
+  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, cast=$cast, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -141,6 +152,11 @@ class UserPreferencesUpdateDto {
       json[r'avatar'] = this.avatar;
     } else {
     //  json[r'avatar'] = null;
+    }
+    if (this.cast != null) {
+      json[r'cast'] = this.cast;
+    } else {
+    //  json[r'cast'] = null;
     }
     if (this.download != null) {
       json[r'download'] = this.download;
@@ -200,6 +216,7 @@ class UserPreferencesUpdateDto {
 
       return UserPreferencesUpdateDto(
         avatar: AvatarUpdate.fromJson(json[r'avatar']),
+        cast: CastUpdate.fromJson(json[r'cast']),
         download: DownloadUpdate.fromJson(json[r'download']),
         emailNotifications: EmailNotificationsUpdate.fromJson(json[r'emailNotifications']),
         folders: FoldersUpdate.fromJson(json[r'folders']),

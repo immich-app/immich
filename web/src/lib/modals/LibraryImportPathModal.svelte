@@ -11,9 +11,7 @@
     cancelText?: string;
     submitText?: string;
     isEditing?: boolean;
-    onCancel: () => void;
-    onSubmit: (importPath: string | null) => void;
-    onDelete?: () => void;
+    onClose: (data?: { action: 'delete' } | { action: 'submit'; importPath: string | null }) => void;
   }
 
   let {
@@ -23,9 +21,7 @@
     cancelText = $t('cancel'),
     submitText = $t('save'),
     isEditing = false,
-    onCancel,
-    onSubmit,
-    onDelete,
+    onClose,
   }: Props = $props();
 
   onMount(() => {
@@ -40,12 +36,12 @@
   const onsubmit = (event: Event) => {
     event.preventDefault();
     if (canSubmit) {
-      onSubmit(importPath);
+      onClose({ action: 'submit', importPath });
     }
   };
 </script>
 
-<Modal {title} icon={mdiFolderSync} onClose={onCancel} size="small">
+<Modal {title} icon={mdiFolderSync} {onClose} size="small">
   <ModalBody>
     <form {onsubmit} autocomplete="off" id="library-import-path-form">
       <p class="py-5 text-sm">{$t('admin.library_import_path_description')}</p>
@@ -65,13 +61,15 @@
 
   <ModalFooter>
     <div class="flex gap-2 w-full">
-      <Button shape="round" color="secondary" fullWidth onclick={onCancel}>{cancelText}</Button>
+      <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{cancelText}</Button>
       {#if isEditing}
-        <Button shape="round" color="danger" fullWidth onclick={onDelete}>{$t('delete')}</Button>
+        <Button shape="round" color="danger" fullWidth onclick={() => onClose({ action: 'delete' })}>
+          {$t('delete')}
+        </Button>
       {/if}
-      <Button shape="round" type="submit" disabled={!canSubmit} fullWidth form="library-import-path-form"
-        >{submitText}</Button
-      >
+      <Button shape="round" type="submit" disabled={!canSubmit} fullWidth form="library-import-path-form">
+        {submitText}
+      </Button>
     </div>
   </ModalFooter>
 </Modal>

@@ -128,6 +128,9 @@ export type UserAdminUpdateDto = {
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
 };
+export type CastResponse = {
+    gCastEnabled: boolean;
+};
 export type DownloadResponse = {
     archiveSize: number;
     includeEmbeddedVideos: boolean;
@@ -164,6 +167,7 @@ export type TagsResponse = {
     sidebarWeb: boolean;
 };
 export type UserPreferencesResponseDto = {
+    cast: CastResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     folders: FoldersResponse;
@@ -176,6 +180,9 @@ export type UserPreferencesResponseDto = {
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
+};
+export type CastUpdate = {
+    gCastEnabled?: boolean;
 };
 export type DownloadUpdate = {
     archiveSize?: number;
@@ -214,6 +221,7 @@ export type TagsUpdate = {
 };
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
+    cast?: CastUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     folders?: FoldersUpdate;
@@ -407,8 +415,8 @@ export type ApiKeyCreateResponseDto = {
     secret: string;
 };
 export type ApiKeyUpdateDto = {
-    name: string;
-    permissions: Permission[];
+    name?: string;
+    permissions?: Permission[];
 };
 export type AssetBulkDeleteDto = {
     force?: boolean;
@@ -504,6 +512,7 @@ export type LoginCredentialDto = {
 export type LoginResponseDto = {
     accessToken: string;
     isAdmin: boolean;
+    isOnboarded: boolean;
     name: string;
     profileImagePath: string;
     shouldChangePassword: boolean;
@@ -996,6 +1005,12 @@ export type ServerAboutResponseDto = {
     version: string;
     versionUrl: string;
 };
+export type ServerApkLinksDto = {
+    arm64v8a: string;
+    armeabiv7a: string;
+    universal: string;
+    x86_64: string;
+};
 export type ServerConfigDto = {
     externalDomain: string;
     isInitialized: boolean;
@@ -1455,6 +1470,12 @@ export type UserUpdateMeDto = {
     email?: string;
     name?: string;
     password?: string;
+};
+export type OnboardingResponseDto = {
+    isOnboarded: boolean;
+};
+export type OnboardingDto = {
+    isOnboarded: boolean;
 };
 export type CreateProfileImageDto = {
     file: Blob;
@@ -2860,6 +2881,14 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function getApkLinks(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerApkLinksDto;
+    }>("/server/apk-links", {
+        ...opts
+    }));
+}
 export function getServerConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3558,6 +3587,32 @@ export function setUserLicense({ licenseKeyDto }: {
         ...opts,
         method: "PUT",
         body: licenseKeyDto
+    })));
+}
+export function deleteUserOnboarding(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/users/me/onboarding", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getUserOnboarding(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: OnboardingResponseDto;
+    }>("/users/me/onboarding", {
+        ...opts
+    }));
+}
+export function setUserOnboarding({ onboardingDto }: {
+    onboardingDto: OnboardingDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: OnboardingResponseDto;
+    }>("/users/me/onboarding", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: onboardingDto
     })));
 }
 export function getMyPreferences(opts?: Oazapfts.RequestOpts) {

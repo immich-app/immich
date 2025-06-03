@@ -184,6 +184,7 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **POST** /search/smart | 
 *ServerApi* | [**deleteServerLicense**](doc//ServerApi.md#deleteserverlicense) | **DELETE** /server/license | 
 *ServerApi* | [**getAboutInfo**](doc//ServerApi.md#getaboutinfo) | **GET** /server/about | 
+*ServerApi* | [**getApkLinks**](doc//ServerApi.md#getapklinks) | **GET** /server/apk-links | 
 *ServerApi* | [**getServerConfig**](doc//ServerApi.md#getserverconfig) | **GET** /server/config | 
 *ServerApi* | [**getServerFeatures**](doc//ServerApi.md#getserverfeatures) | **GET** /server/features | 
 *ServerApi* | [**getServerLicense**](doc//ServerApi.md#getserverlicense) | **GET** /server/license | 
@@ -246,13 +247,16 @@ Class | Method | HTTP request | Description
 *UsersApi* | [**createProfileImage**](doc//UsersApi.md#createprofileimage) | **POST** /users/profile-image | 
 *UsersApi* | [**deleteProfileImage**](doc//UsersApi.md#deleteprofileimage) | **DELETE** /users/profile-image | 
 *UsersApi* | [**deleteUserLicense**](doc//UsersApi.md#deleteuserlicense) | **DELETE** /users/me/license | 
+*UsersApi* | [**deleteUserOnboarding**](doc//UsersApi.md#deleteuseronboarding) | **DELETE** /users/me/onboarding | 
 *UsersApi* | [**getMyPreferences**](doc//UsersApi.md#getmypreferences) | **GET** /users/me/preferences | 
 *UsersApi* | [**getMyUser**](doc//UsersApi.md#getmyuser) | **GET** /users/me | 
 *UsersApi* | [**getProfileImage**](doc//UsersApi.md#getprofileimage) | **GET** /users/{id}/profile-image | 
 *UsersApi* | [**getUser**](doc//UsersApi.md#getuser) | **GET** /users/{id} | 
 *UsersApi* | [**getUserLicense**](doc//UsersApi.md#getuserlicense) | **GET** /users/me/license | 
+*UsersApi* | [**getUserOnboarding**](doc//UsersApi.md#getuseronboarding) | **GET** /users/me/onboarding | 
 *UsersApi* | [**searchUsers**](doc//UsersApi.md#searchusers) | **GET** /users | 
 *UsersApi* | [**setUserLicense**](doc//UsersApi.md#setuserlicense) | **PUT** /users/me/license | 
+*UsersApi* | [**setUserOnboarding**](doc//UsersApi.md#setuseronboarding) | **PUT** /users/me/onboarding | 
 *UsersApi* | [**updateMyPreferences**](doc//UsersApi.md#updatemypreferences) | **PUT** /users/me/preferences | 
 *UsersApi* | [**updateMyUser**](doc//UsersApi.md#updatemyuser) | **PUT** /users/me | 
 *UsersAdminApi* | [**createUserAdmin**](doc//UsersAdminApi.md#createuseradmin) | **POST** /admin/users | 
@@ -321,6 +325,8 @@ Class | Method | HTTP request | Description
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)
  - [CQMode](doc//CQMode.md)
+ - [CastResponse](doc//CastResponse.md)
+ - [CastUpdate](doc//CastUpdate.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
@@ -382,6 +388,8 @@ Class | Method | HTTP request | Description
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthTokenEndpointAuthMethod](doc//OAuthTokenEndpointAuthMethod.md)
  - [OnThisDayDto](doc//OnThisDayDto.md)
+ - [OnboardingDto](doc//OnboardingDto.md)
+ - [OnboardingResponseDto](doc//OnboardingResponseDto.md)
  - [PartnerDirection](doc//PartnerDirection.md)
  - [PartnerResponseDto](doc//PartnerResponseDto.md)
  - [PeopleResponse](doc//PeopleResponse.md)
@@ -417,6 +425,7 @@ Class | Method | HTTP request | Description
  - [SearchResponseDto](doc//SearchResponseDto.md)
  - [SearchSuggestionType](doc//SearchSuggestionType.md)
  - [ServerAboutResponseDto](doc//ServerAboutResponseDto.md)
+ - [ServerApkLinksDto](doc//ServerApkLinksDto.md)
  - [ServerConfigDto](doc//ServerConfigDto.md)
  - [ServerFeaturesDto](doc//ServerFeaturesDto.md)
  - [ServerMediaTypesResponseDto](doc//ServerMediaTypesResponseDto.md)

@@ -11,6 +11,7 @@ import {
   anyUuid,
   asUuid,
   toJson,
+  withDefaultVisibility,
   withExif,
   withExifInner,
   withFaces,
@@ -140,9 +141,9 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('assets')
       .select(['assets.id'])
-      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .where('assets.deletedAt', 'is', null)
       .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
+      .$call(withDefaultVisibility)
       .$if(!force, (qb) =>
         qb
           .innerJoin('asset_job_status as job_status', 'job_status.assetId', 'assets.id')
@@ -226,7 +227,7 @@ export class AssetJobRepository {
             .select(['asset_stack.id', 'asset_stack.primaryAssetId'])
             .select((eb) => eb.fn<Asset[]>('array_agg', [eb.table('stacked')]).as('assets'))
             .where('stacked.deletedAt', 'is not', null)
-            .where('stacked.visibility', '!=', AssetVisibility.ARCHIVE)
+            .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
             .whereRef('stacked.stackId', '=', 'asset_stack.id')
             .groupBy('asset_stack.id')
             .as('stacked_assets'),

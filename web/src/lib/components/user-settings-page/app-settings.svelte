@@ -1,22 +1,20 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation';
   import type { ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { defaultLang, fallbackLocale, langs, locales } from '$lib/constants';
+  import SettingsLanguageSelector from '$lib/components/shared-components/settings/settings-language-selector.svelte';
+  import { fallbackLocale, locales } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import {
     alwaysLoadOriginalFile,
-    lang,
     locale,
     loopVideo,
     playVideoThumbnailOnHover,
     showDeleteModal,
   } from '$lib/stores/preferences.store';
   import { findLocale } from '$lib/utils';
-  import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
   import { onMount } from 'svelte';
-  import { locale as i18nLocale, t } from 'svelte-i18n';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
   let time = $state(new Date());
@@ -44,24 +42,6 @@
     $locale = $locale ? undefined : fallbackLocale.code;
   };
 
-  const langOptions = langs
-    .map((lang) => ({ label: lang.name, value: lang.code }))
-    .sort((a, b) => {
-      if (b.label.startsWith('Development')) {
-        return -1;
-      }
-      return a.label.localeCompare(b.label);
-    });
-  const defaultLangOption = { label: defaultLang.name, value: defaultLang.code };
-
-  const handleLanguageChange = async (newLang: string | undefined) => {
-    if (newLang) {
-      $lang = newLang;
-      await i18nLocale.set(newLang);
-      await invalidateAll();
-    }
-  };
-
   const handleLocaleChange = (newLocale: string | undefined) => {
     if (newLocale) {
       $locale = newLocale;
@@ -87,7 +67,6 @@
     value: findLocale(editedLocale).code || fallbackLocale.code,
     label: findLocale(editedLocale).name || fallbackLocale.name,
   });
-  let closestLanguage = $derived(getClosestAvailableLocale([$lang], langCodes));
 </script>
 
 <section class="my-4">
@@ -103,14 +82,7 @@
       </div>
 
       <div class="ms-4">
-        <SettingCombobox
-          comboboxPlaceholder={$t('language')}
-          selectedOption={langOptions.find(({ value }) => value === closestLanguage) || defaultLangOption}
-          options={langOptions}
-          title={$t('language')}
-          subtitle={$t('language_setting_description')}
-          onSelect={(combobox) => handleLanguageChange(combobox?.value)}
-        />
+        <SettingsLanguageSelector showSettingDescription />
       </div>
 
       <div class="ms-4">

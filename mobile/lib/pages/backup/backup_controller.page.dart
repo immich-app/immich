@@ -6,11 +6,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
@@ -86,8 +88,13 @@ class BackupControllerPage extends HookConsumerWidget {
     );
 
     Widget buildSelectedAlbumName() {
-      var text = "backup_controller_page_backup_selected".tr();
-      var albums = ref.watch(backupProvider).selectedBackupAlbums;
+      String text = "backup_controller_page_backup_selected".tr();
+      final albums = ref
+          .watch(backupAlbumProvider)
+          .where(
+            (album) => album.backupSelection == BackupSelection.selected,
+          )
+          .toList();
 
       if (albums.isNotEmpty) {
         for (var album in albums) {
@@ -121,8 +128,13 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     Widget buildExcludedAlbumName() {
-      var text = "backup_controller_page_excluded".tr();
-      var albums = ref.watch(backupProvider).excludedBackupAlbums;
+      String text = "backup_controller_page_excluded".tr();
+      final albums = ref
+          .watch(backupAlbumProvider)
+          .where(
+            (album) => album.backupSelection == BackupSelection.excluded,
+          )
+          .toList();
 
       if (albums.isNotEmpty) {
         for (var album in albums) {

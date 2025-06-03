@@ -3,6 +3,7 @@ import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
+  ServerApkLinksDto,
   ServerConfigDto,
   ServerFeaturesDto,
   ServerMediaTypesResponseDto,
@@ -32,6 +33,12 @@ export class ServerController {
   @Authenticated()
   getAboutInfo(): Promise<ServerAboutResponseDto> {
     return this.service.getAboutInfo();
+  }
+
+  @Get('apk-links')
+  @Authenticated()
+  getApkLinks(): ServerApkLinksDto {
+    return this.service.getApkLinks();
   }
 
   @Get('storage')

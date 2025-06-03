@@ -3,7 +3,7 @@ import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
-  await authenticate(url, { admin: true });
+  await authenticate(url);
 
   const $t = await getFormatter();
 

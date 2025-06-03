@@ -20,6 +20,7 @@ class SyncAssetV1 {
     required this.id,
     required this.isFavorite,
     required this.localDateTime,
+    required this.originalFileName,
     required this.ownerId,
     required this.thumbhash,
     required this.type,
@@ -40,6 +41,8 @@ class SyncAssetV1 {
 
   DateTime? localDateTime;
 
+  String originalFileName;
+
   String ownerId;
 
   String? thumbhash;
@@ -57,6 +60,7 @@ class SyncAssetV1 {
     other.id == id &&
     other.isFavorite == isFavorite &&
     other.localDateTime == localDateTime &&
+    other.originalFileName == originalFileName &&
     other.ownerId == ownerId &&
     other.thumbhash == thumbhash &&
     other.type == type &&
@@ -72,13 +76,14 @@ class SyncAssetV1 {
     (id.hashCode) +
     (isFavorite.hashCode) +
     (localDateTime == null ? 0 : localDateTime!.hashCode) +
+    (originalFileName.hashCode) +
     (ownerId.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
     (visibility.hashCode);
 
   @override
-  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, localDateTime=$localDateTime, ownerId=$ownerId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
+  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -105,6 +110,7 @@ class SyncAssetV1 {
     } else {
     //  json[r'localDateTime'] = null;
     }
+      json[r'originalFileName'] = this.originalFileName;
       json[r'ownerId'] = this.ownerId;
     if (this.thumbhash != null) {
       json[r'thumbhash'] = this.thumbhash;
@@ -132,6 +138,7 @@ class SyncAssetV1 {
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         localDateTime: mapDateTime(json, r'localDateTime', r''),
+        originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: SyncAssetV1TypeEnum.fromJson(json[r'type'])!,
@@ -190,6 +197,7 @@ class SyncAssetV1 {
     'id',
     'isFavorite',
     'localDateTime',
+    'originalFileName',
     'ownerId',
     'thumbhash',
     'type',
