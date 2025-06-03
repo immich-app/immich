@@ -110,15 +110,16 @@ class LanguageSettings extends HookConsumerWidget {
                     },
                   ),
           ),
-          _LanguageApplyButton(
-            isDisabled: isButtonDisabled,
-            isLoading: isLoading.value,
-            onPressed: () => _applyLanguageChange(
-              context,
-              selectedLocale,
-              isLoading,
+          if (filteredLocaleEntries.value.isNotEmpty)
+            _LanguageApplyButton(
+              isDisabled: isButtonDisabled,
+              isLoading: isLoading.value,
+              onPressed: () => _applyLanguageChange(
+                context,
+                selectedLocale,
+                isLoading,
+              ),
             ),
-          ),
         ],
       ),
     );
