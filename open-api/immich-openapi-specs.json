@@ -12918,10 +12918,22 @@
           "enabled": {
             "type": "boolean"
           },
-          "minScore": {
+          "minDetectionBoxScore": {
             "format": "double",
             "maximum": 1,
-            "minimum": 0.1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "minDetectionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "minRecognitionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0,
             "type": "number"
           },
           "modelName": {
@@ -12936,7 +12948,9 @@
         },
         "required": [
           "enabled",
-          "minScore",
+          "minDetectionBoxScore",
+          "minDetectionScore",
+          "minRecognitionScore",
           "modelName",
           "orientationClassifyEnabled",
           "unwarpingEnabled"

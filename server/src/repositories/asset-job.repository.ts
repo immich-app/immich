@@ -356,10 +356,10 @@ export class AssetJobRepository {
     .$if(!force, (qb) =>
       qb
         .innerJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
-        .where('asset_job_status.ocrAt', 'is', null)
-        .where('assets.visibility', '!=', AssetVisibility.HIDDEN),
+        .where('asset_job_status.ocrAt', 'is', null),
     )
     .where('assets.deletedAt', 'is', null)
+    .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
     .stream();
   }
 

@@ -322,8 +322,8 @@ export class SearchRepository {
     }
 
     const items = await searchAssetBuilder(this.db, options)
-      .innerJoin('asset_ocr', 'assets.id', 'asset_ocr.assetId')
-      .where('asset_ocr.text', 'ilike', `%${options.ocr}%`)
+      .innerJoin('ocr_search', 'assets.id', 'ocr_search.assetId')
+      .where('ocr_search.text', 'ilike', `%${options.ocr}%`)
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();

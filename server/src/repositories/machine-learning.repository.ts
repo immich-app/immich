@@ -31,7 +31,7 @@ export type ModelPayload = { imagePath: string } | { text: string };
 type ModelOptions = { modelName: string };
 
 export type FaceDetectionOptions = ModelOptions & { minScore: number };
-export type OcrOptions = ModelOptions & { minScore: number, unwarpingEnabled: boolean, orientationClassifyEnabled: boolean };
+export type OcrOptions = ModelOptions & { minDetectionBoxScore: number, minDetectionScore: number, minRecognitionScore: number, unwarpingEnabled: boolean, orientationClassifyEnabled: boolean };
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
 export type ClipVisualResponse = { [ModelTask.SEARCH]: string } & VisualResponse;
@@ -49,9 +49,10 @@ export type OCR = {
   x4: number;
   y4: number;
   text: string;
+  confidence: number;
 };
 
-export type OcrRequest = { [ModelTask.OCR]: { [ModelType.OCR]: ModelOptions & { options: { minScore: number } } } };
+export type OcrRequest = { [ModelTask.OCR]: { [ModelType.OCR]: ModelOptions & { options: { minDetectionScore: number, minRecognitionScore: number } } } };
 export type OcrResponse = { [ModelTask.OCR]: OCR[] } & VisualResponse;
 
 export type FacialRecognitionRequest = {
@@ -210,8 +211,8 @@ export class MachineLearningRepository {
     return formData;
   }
 
-  async ocr(urls: string[], imagePath: string, { modelName, minScore, unwarpingEnabled, orientationClassifyEnabled }: OcrOptions) {
-    const request = { [ModelTask.OCR]: { [ModelType.OCR]: { modelName, options: { minScore, unwarpingEnabled, orientationClassifyEnabled } } } };
+  async ocr(urls: string[], imagePath: string, { modelName, minDetectionBoxScore, minDetectionScore, minRecognitionScore, unwarpingEnabled, orientationClassifyEnabled }: OcrOptions) {
+    const request = { [ModelTask.OCR]: { [ModelType.OCR]: { modelName, options: { minDetectionBoxScore, minDetectionScore, minRecognitionScore, unwarpingEnabled, orientationClassifyEnabled } } } };
     const response = await this.predict<OcrResponse>(urls, { imagePath }, request);
     return response[ModelTask.OCR];
   }
