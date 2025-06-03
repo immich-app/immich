@@ -1,6 +1,6 @@
 <script lang="ts">
   import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
-  import { DateTime } from 'luxon';
+  import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import DateInput from '../elements/date-input.svelte';
   import Combobox, { type ComboBoxOption } from './combobox.svelte';
@@ -65,8 +65,11 @@
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm"));
-  let timezones: ZoneOption[] = knownTimezones
-    .map((zone) => zoneOptionForDate(zone, selectedDate))
+  // Use a fixed modern date to calculate stable timezone offsets for the list
+  // This ensures that the offsets shown in the combobox are always current,
+  // regardless of the historical date selected by the user.
+  const modernReferenceDate = DateTime.now();
+  let timezones: ZoneOption[] = knownTimezones.map((zone) => zoneOptionForDate(zone, modernReferenceDate.toFormat("yyyy-MM-dd'T'HH:mm")))
     .filter((zone) => zone.valid)
     .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB));
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
@@ -127,9 +130,21 @@
   }
 
   const handleConfirm = () => {
-    const value = date.toISO();
-    if (value) {
-      onConfirm(value);
+    if (date.isValid && selectedOption) {
+      const dateInChosenZone = DateTime.fromISO(selectedDate, { zone: selectedOption.value, setZone: true });
+
+      // Get the modern offset from the selectedOption (which we calculated using modernReferenceDate)
+      const modernOffsetMinutes = selectedOption.offsetMinutes;
+
+      // Convert the date to UTC, but adjust it so that when we apply the modern offset,
+      const finalDateForISO = dateInChosenZone.set({
+        hour: dateInChosenZone.hour,
+        minute: dateInChosenZone.minute,
+      }).setZone(`UTC${modernOffsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({ minutes: modernOffsetMinutes }).toFormat('hh:mm')}`);
+
+      const finalDateISO = finalDateForISO.toISO({ includeOffset: true });
+      // we should probably throw an error? or asume finalDateISO will always be non null
+      if (finalDateISO) onConfirm(finalDateISO);
     }
   };
 
