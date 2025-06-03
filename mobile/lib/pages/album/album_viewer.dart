@@ -14,6 +14,7 @@ import 'package:immich_mobile/pages/album/album_shared_user_icons.dart';
 import 'package:immich_mobile/pages/album/album_title.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
@@ -93,6 +94,7 @@ class AlbumViewer extends HookConsumerWidget {
 
     onActivitiesPressed() {
       if (album.remoteId != null) {
+        ref.read(currentAssetProvider.notifier).set(null);
         context.pushRoute(
           const ActivitiesRoute(),
         );

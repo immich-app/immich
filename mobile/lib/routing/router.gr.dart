@@ -1357,6 +1357,22 @@ class RecentlyTakenRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [RemoteMediaSummaryPage]
+class RemoteMediaSummaryRoute extends PageRouteInfo<void> {
+  const RemoteMediaSummaryRoute({List<PageRouteInfo>? children})
+      : super(RemoteMediaSummaryRoute.name, initialChildren: children);
+
+  static const String name = 'RemoteMediaSummaryRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const RemoteMediaSummaryPage();
+    },
+  );
+}
+
+/// generated route for
 /// [SearchPage]
 class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
   SearchRoute({
