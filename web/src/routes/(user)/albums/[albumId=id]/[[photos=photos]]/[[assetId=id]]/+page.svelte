@@ -159,6 +159,10 @@
   };
 
   const updateComments = async () => {
+    if ($showAssetViewer) {
+      return;
+    }
+
     try {
       await activityManager.refreshActivities(album.id);
     } catch (error) {
@@ -383,6 +387,10 @@
   });
 
   $effect(() => {
+    if ($showAssetViewer) {
+      return;
+    }
+
     activityManager.reset();
     activityManager.init(album.id);
   });

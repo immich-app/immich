@@ -140,6 +140,8 @@
 
   const updateComments = async () => {
     if (album) {
+      activityManager.reset();
+      activityManager.init(album.id, asset.id);
       try {
         await activityManager.refreshActivities(album.id, asset.id);
       } catch (error) {
@@ -179,10 +181,6 @@
 
     if (!sharedLink) {
       await handleGetAllAlbums();
-    }
-
-    if (album) {
-      activityManager.init(album.id, asset.id);
     }
   });
 
