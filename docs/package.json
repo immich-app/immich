@@ -16,8 +16,8 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@docusaurus/core": "~3.7.0",
-    "@docusaurus/preset-classic": "~3.7.0",
+    "@docusaurus/core": "~3.8.0",
+    "@docusaurus/preset-classic": "~3.8.0",
     "@mdi/js": "^7.3.67",
     "@mdi/react": "^1.6.1",
     "@mdx-js/react": "^3.0.0",
@@ -35,7 +35,7 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "~3.7.0",
+    "@docusaurus/module-type-aliases": "~3.8.0",
     "@docusaurus/tsconfig": "^3.7.0",
     "@docusaurus/types": "^3.7.0",
     "prettier": "^3.2.4",
