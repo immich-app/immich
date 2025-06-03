@@ -367,8 +367,6 @@ class SyncService {
   ) async {
     remoteAlbums.sortBy((e) => e.remoteId!);
 
-    print("remoteAlbums: $remoteAlbums");
-
     final List<Album> dbAlbums = await _albumRepository.getAll(
       remote: true,
       sortBy: AlbumSort.remoteId,

@@ -5,11 +5,13 @@ import 'package:immich_mobile/entities/album.entity.dart';
 
 class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   AlbumViewerNotifier(this.ref)
-      : super(AlbumViewerPageState(
-          editTitleText: "",
-          isEditAlbum: false,
-          editDescriptionText: "",
-        ));
+      : super(
+          AlbumViewerPageState(
+            editTitleText: "",
+            isEditAlbum: false,
+            editDescriptionText: "",
+          ),
+        );
 
   final Ref ref;
 
