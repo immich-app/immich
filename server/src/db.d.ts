@@ -185,6 +185,20 @@ export interface Assets {
   updateId: Generated<string>;
 }
 
+export interface AssetOcr {
+  id: Generated<string>;
+  assetId: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  x3: number;
+  y3: number;
+  x4: number;
+  text: string;
+  confidence: number;
+}
+
 export interface AssetStack {
   id: Generated<string>;
   ownerId: string;
@@ -198,12 +212,6 @@ export interface Audit {
   entityType: string;
   id: Generated<number>;
   ownerId: string;
-}
-
-export interface AssetOcr {
-  id: Generated<string>;
-  assetId: string;
-  text: string;
 }
 
 export interface Exif {
@@ -328,6 +336,11 @@ export interface NaturalearthCountries {
   coordinates: string;
   id: Generated<number>;
   type: string;
+}
+
+export interface OcrSearch {
+  assetId: string;
+  text: string;
 }
 
 export interface PartnersAudit {
@@ -512,6 +525,7 @@ export interface DB {
   notifications: Notifications;
   move_history: MoveHistory;
   naturalearth_countries: NaturalearthCountries;
+  ocr_search: OcrSearch;
   partners_audit: PartnersAudit;
   partners: Partners;
   person: Person;

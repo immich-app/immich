@@ -18,6 +18,7 @@ import 'src/schema/tables/memory.table';
 import 'src/schema/tables/memory_asset.table';
 import 'src/schema/tables/move.table';
 import 'src/schema/tables/natural-earth-countries.table';
+import 'src/schema/tables/ocr-search.table';
 import 'src/schema/tables/partner-audit.table';
 import 'src/schema/tables/partner.table';
 import 'src/schema/tables/person.table';
