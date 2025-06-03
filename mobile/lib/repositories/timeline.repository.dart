@@ -98,8 +98,10 @@ class TimelineRepository extends DatabaseRepository
   }
 
   @override
-  Stream<RenderList> watchAllVideosTimeline() {
+  Stream<RenderList> watchAllVideosTimeline(String userId) {
     final query = db.assets
+        .where()
+        .ownerIdEqualToAnyChecksum(fastHash(userId))
         .filter()
         .isTrashedEqualTo(false)
         .visibilityEqualTo(AssetVisibilityEnum.timeline)

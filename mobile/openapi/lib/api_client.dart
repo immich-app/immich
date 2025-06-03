@@ -412,6 +412,10 @@ class ApiClient {
           return OcrSearchDto.fromJson(value);
         case 'OnThisDayDto':
           return OnThisDayDto.fromJson(value);
+        case 'OnboardingDto':
+          return OnboardingDto.fromJson(value);
+        case 'OnboardingResponseDto':
+          return OnboardingResponseDto.fromJson(value);
         case 'PartnerDirection':
           return PartnerDirectionTypeTransformer().decode(value);
         case 'PartnerResponseDto':

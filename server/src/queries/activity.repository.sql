@@ -73,3 +73,4 @@ where
   and "activity"."albumId" = $2
   and "activity"."isLiked" = $3
   and "assets"."deletedAt" is null
+  and "assets"."visibility" != 'locked'

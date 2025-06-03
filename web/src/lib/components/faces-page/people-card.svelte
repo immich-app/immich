@@ -65,9 +65,8 @@
     <div class="absolute top-2 end-2 z-1">
       <ButtonContextMenu
         buttonClass="icon-white-drop-shadow focus:opacity-100 {showVerticalDots ? 'opacity-100' : 'opacity-0'}"
-        color="opaque"
-        padding="2"
-        size="20"
+        color="primary"
+        size="medium"
         icon={mdiDotsVertical}
         title={$t('show_person_options')}
       >

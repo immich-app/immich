@@ -113,6 +113,8 @@
     });
   };
 
+  const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
+
   $effect(() => {
     if (isFaceEditMode.value && $photoZoomState.currentZoom > 1) {
       zoomToggle();
@@ -206,6 +208,8 @@
 
 <svelte:document
   use:shortcuts={[
+    { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: true },
+    { shortcut: { key: 's' }, onShortcut: onPlaySlideshow, preventDefault: true },
     { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
     { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: false },

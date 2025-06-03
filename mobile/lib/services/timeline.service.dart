@@ -75,7 +75,9 @@ class TimelineService {
   }
 
   Stream<RenderList> watchAllVideosTimeline() {
-    return _timelineRepository.watchAllVideosTimeline();
+    final user = _userService.getMyUser();
+
+    return _timelineRepository.watchAllVideosTimeline(user.id);
   }
 
   Future<RenderList> getTimelineFromAssets(

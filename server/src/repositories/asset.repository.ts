@@ -301,7 +301,6 @@ export class AssetRepository {
       .select(withFacesAndPeople)
       .select(withTags)
       .$call(withExif)
-      .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
       .where('assets.id', '=', anyUuid(ids))
       .execute();
   }
@@ -524,8 +523,8 @@ export class AssetRepository {
       .selectFrom('assets')
       .selectAll('assets')
       .$call(withExif)
+      .$call(withDefaultVisibility)
       .where('ownerId', '=', anyUuid(userIds))
-      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .orderBy((eb) => eb.fn('random'))
       .limit(take)
@@ -635,8 +634,6 @@ export class AssetRepository {
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-          .$if(options.visibility == undefined, withDefaultVisibility)
-          .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
           .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb
@@ -657,7 +654,7 @@ export class AssetRepository {
                     .select(sql`array[stacked."stackId"::text, count('stacked')::text]`.as('stack'))
                     .whereRef('stacked.stackId', '=', 'assets.stackId')
                     .where('stacked.deletedAt', 'is', null)
-                    .where('stacked.visibility', '!=', AssetVisibility.ARCHIVE)
+                    .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
                     .groupBy('stacked.stackId')
                     .as('stacked_assets'),
                 (join) => join.onTrue(),
@@ -710,6 +707,7 @@ export class AssetRepository {
         .with('duplicates', (qb) =>
           qb
             .selectFrom('assets')
+            .$call(withDefaultVisibility)
             .leftJoinLateral(
               (qb) =>
                 qb
@@ -728,7 +726,6 @@ export class AssetRepository {
             .where('assets.duplicateId', 'is not', null)
             .$narrowType<{ duplicateId: NotNull }>()
             .where('assets.deletedAt', 'is', null)
-            .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
             .where('assets.stackId', 'is', null)
             .groupBy('assets.duplicateId'),
         )

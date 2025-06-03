@@ -14,7 +14,7 @@ abstract class ITimelineRepository {
     Album album,
     GroupAssetsBy groupAssetsBy,
   );
-  Stream<RenderList> watchAllVideosTimeline();
+  Stream<RenderList> watchAllVideosTimeline(String userId);
 
   Stream<RenderList> watchHomeTimeline(
     String userId,

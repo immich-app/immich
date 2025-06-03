@@ -210,9 +210,9 @@ export class UserRepository {
   getUserStats() {
     return this.db
       .selectFrom('users')
-      .leftJoin('assets', 'assets.ownerId', 'users.id')
+      .leftJoin('assets', (join) => join.onRef('assets.ownerId', '=', 'users.id').on('assets.deletedAt', 'is', null))
       .leftJoin('exif', 'exif.assetId', 'assets.id')
-      .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes as quotaSizeInBytes'])
+      .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes'])
       .select((eb) => [
         eb.fn
           .countAll<number>()
@@ -256,7 +256,6 @@ export class UserRepository {
           )
           .as('usageVideos'),
       ])
-      .where('assets.deletedAt', 'is', null)
       .groupBy('users.id')
       .orderBy('users.createdAt', 'asc')
       .execute();

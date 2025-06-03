@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { timeToLoadTheMap } from '$lib/constants';
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
@@ -8,7 +7,7 @@
   import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
-  import { LoadingSpinner, Modal, ModalBody } from '@immich/ui';
+  import { IconButton, LoadingSpinner, Modal, ModalBody } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -104,7 +103,14 @@
   }
 </script>
 
-<CircleIconButton title={$t('map')} onclick={openMap} icon={mdiMapOutline} />
+<IconButton
+  variant="ghost"
+  shape="round"
+  color="secondary"
+  icon={mdiMapOutline}
+  onclick={openMap}
+  aria-label={$t('map')}
+/>
 
 {#if albumMapViewManager.isInMapView}
   <Modal title={$t('map')} size="medium" onClose={closeMap}>
