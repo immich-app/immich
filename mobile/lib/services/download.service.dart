@@ -166,7 +166,7 @@ class DownloadService {
 
   Future<void> download(Asset asset) async {
     final tasks = _createDownloadTasks(asset);
-    await _downloadRepository.download(tasks.first);
+    await _downloadRepository.downloadAll(tasks);
   }
 
   List<DownloadTask> _createDownloadTasks(Asset asset) {
@@ -195,7 +195,7 @@ class DownloadService {
       ];
     }
 
-    if (asset.remoteId == null || asset.remoteId! == "N/A") {
+    if (asset.remoteId == null) {
       return [];
     }
 
