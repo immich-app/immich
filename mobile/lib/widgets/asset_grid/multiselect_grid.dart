@@ -24,6 +24,7 @@ import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
+import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
@@ -255,17 +256,18 @@ class MultiselectGrid extends HookConsumerWidget {
         final successCount = results.where((e) => e).length;
         final failedCount = totalCount - successCount;
 
+        final msg = failedCount > 0
+            ? t('assets_downloaded_failed', {
+                'count': successCount,
+                'error': failedCount,
+              })
+            : t('assets_downloaded_successfully', {
+                'count': successCount,
+              });
+
         ImmichToast.show(
           context: context,
-          msg: (failedCount > 0
-                  ? "assets_downloaded_failed"
-                  : "assets_downloaded_successfully")
-              .tr(
-            namedArgs: {
-              'count': successCount.toString(),
-              if (failedCount > 0) 'error': failedCount.toString(),
-            },
-          ),
+          msg: msg,
           gravity: ToastGravity.BOTTOM,
         );
       } finally {
