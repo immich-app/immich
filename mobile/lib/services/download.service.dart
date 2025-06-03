@@ -160,11 +160,8 @@ class DownloadService {
   }
 
   Future<List<bool>> downloadAll(List<Asset> assets) async {
-    List<DownloadTask> tasks = [];
-    for (var asset in assets) {
-      tasks.addAll(_createDownloadTasks(asset));
-    }
-    return await _downloadRepository.downloadAll(tasks);
+    return await _downloadRepository
+        .downloadAll(assets.expand(_createDownloadTasks).toList());
   }
 
   Future<void> download(Asset asset) async {
