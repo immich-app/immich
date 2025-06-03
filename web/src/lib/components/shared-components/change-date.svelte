@@ -76,12 +76,13 @@
   let selectedOption: ZoneOption | undefined = $state(getPreferredTimeZone(initialDate, userTimeZone, timezones));
 
   function zoneOptionForDate(zone: string, date: string) {
-    const dateAtZone: DateTime = DateTime.fromISO(date, { zone });
-    const zoneOffsetAtDate = dateAtZone.toFormat('ZZ');
-    const valid = dateAtZone.isValid && date.toString() === dateAtZone.toFormat("yyyy-MM-dd'T'HH:mm");
+    const { offsetMinutes, offsetFormat: zoneOffsetAtDate } = getModernOffsetForZoneAndDate(zone, date);
+    // For validity, we still need to check if the exact date/time exists in the *original* timezone (for gaps/overlaps).
+    const dateForValidity = DateTime.fromISO(date, { zone });
+    const valid = dateForValidity.isValid && date === dateForValidity.toFormat("yyyy-MM-dd'T'HH:mm");
     return {
       value: zone,
-      offsetMinutes: dateAtZone.offset,
+      offsetMinutes: offsetMinutes,
       label: zone + ' (' + zoneOffsetAtDate + ')' + (valid ? '' : ' [invalid date!]'),
       valid,
     };
@@ -121,6 +122,21 @@
     return previousSelection ?? fromInitialTimeZone ?? sameAsUserTimeZone ?? firstWithSameOffset ?? utcFallback;
   }
 
+  function getModernOffsetForZoneAndDate(zone: string, dateString: string): { offsetMinutes: number; offsetFormat: string } {
+      const dt = DateTime.fromISO(dateString, { zone });
+
+      // we determine the *modern* offset for this zone based on its current rules.
+      // To do this, we "move" the date to the current year, keeping the local time components.
+      // This allows Luxon to apply current-year DST rules.
+      const modernYearDt = dt.set({ year: DateTime.now().year });
+
+      // Calculate the offset at that modern year's date.
+      const modernOffsetMinutes = modernYearDt.setZone(zone, { keepLocalTime: true }).offset;
+      const modernOffsetFormat = modernYearDt.setZone(zone, { keepLocalTime: true }).toFormat('ZZ');
+
+      return { offsetMinutes: modernOffsetMinutes, offsetFormat: modernOffsetFormat };
+  }
+
   function sortTwoZones(zoneA: ZoneOption, zoneB: ZoneOption) {
     let offsetDifference = zoneA.offsetMinutes - zoneB.offsetMinutes;
     if (offsetDifference != 0) {
@@ -131,20 +147,19 @@
 
   const handleConfirm = () => {
     if (date.isValid && selectedOption) {
-      const dateInChosenZone = DateTime.fromISO(selectedDate, { zone: selectedOption.value, setZone: true });
+      // Get the local date/time components from the selected string using neutral timezone
+      const dtComponents = DateTime.fromISO(selectedDate, { zone: 'utc' });
 
-      // Get the modern offset from the selectedOption (which we calculated using modernReferenceDate)
-      const modernOffsetMinutes = selectedOption.offsetMinutes;
+      // Determine the modern, DST-aware offset for the selected IANA zone
+      const { offsetMinutes } = getModernOffsetForZoneAndDate(selectedOption.value, selectedDate);
 
-      // Convert the date to UTC, but adjust it so that when we apply the modern offset,
-      const finalDateForISO = dateInChosenZone.set({
-        hour: dateInChosenZone.hour,
-        minute: dateInChosenZone.minute,
-      }).setZone(`UTC${modernOffsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({ minutes: modernOffsetMinutes }).toFormat('hh:mm')}`);
+      // Construct the final ISO string with a fixed-offset zone.
+      const fixedOffsetZone = `UTC${offsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({ minutes: offsetMinutes }).toFormat('hh:mm')}`;
 
-      const finalDateISO = finalDateForISO.toISO({ includeOffset: true });
-      // we should probably throw an error? or asume finalDateISO will always be non null
-      if (finalDateISO) onConfirm(finalDateISO);
+      // Create a DateTime object in this fixed-offset zone, preserving the local time.
+      const finalDateTime = DateTime.fromObject(dtComponents.toObject(), { zone: fixedOffsetZone });
+
+      onConfirm(finalDateTime.toISO({ includeOffset: true })!);
     }
   };
 
