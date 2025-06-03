@@ -68,8 +68,8 @@
   // Use a fixed modern date to calculate stable timezone offsets for the list
   // This ensures that the offsets shown in the combobox are always current,
   // regardless of the historical date selected by the user.
-  const modernReferenceDate = DateTime.now();
-  let timezones: ZoneOption[] = knownTimezones.map((zone) => zoneOptionForDate(zone, selectedDate))
+  let timezones: ZoneOption[] = knownTimezones
+    .map((zone) => zoneOptionForDate(zone, selectedDate))
     .filter((zone) => zone.valid)
     .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB));
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
@@ -82,7 +82,7 @@
     const valid = dateForValidity.isValid && date === dateForValidity.toFormat("yyyy-MM-dd'T'HH:mm");
     return {
       value: zone,
-      offsetMinutes: offsetMinutes,
+      offsetMinutes,
       label: zone + ' (' + zoneOffsetAtDate + ')' + (valid ? '' : ' [invalid date!]'),
       valid,
     };
@@ -122,19 +122,22 @@
     return previousSelection ?? fromInitialTimeZone ?? sameAsUserTimeZone ?? firstWithSameOffset ?? utcFallback;
   }
 
-  function getModernOffsetForZoneAndDate(zone: string, dateString: string): { offsetMinutes: number; offsetFormat: string } {
-      const dt = DateTime.fromISO(dateString, { zone });
+  function getModernOffsetForZoneAndDate(
+    zone: string,
+    dateString: string,
+  ): { offsetMinutes: number; offsetFormat: string } {
+    const dt = DateTime.fromISO(dateString, { zone });
 
-      // we determine the *modern* offset for this zone based on its current rules.
-      // To do this, we "move" the date to the current year, keeping the local time components.
-      // This allows Luxon to apply current-year DST rules.
-      const modernYearDt = dt.set({ year: DateTime.now().year });
+    // we determine the *modern* offset for this zone based on its current rules.
+    // To do this, we "move" the date to the current year, keeping the local time components.
+    // This allows Luxon to apply current-year DST rules.
+    const modernYearDt = dt.set({ year: DateTime.now().year });
 
-      // Calculate the offset at that modern year's date.
-      const modernOffsetMinutes = modernYearDt.setZone(zone, { keepLocalTime: true }).offset;
-      const modernOffsetFormat = modernYearDt.setZone(zone, { keepLocalTime: true }).toFormat('ZZ');
+    // Calculate the offset at that modern year's date.
+    const modernOffsetMinutes = modernYearDt.setZone(zone, { keepLocalTime: true }).offset;
+    const modernOffsetFormat = modernYearDt.setZone(zone, { keepLocalTime: true }).toFormat('ZZ');
 
-      return { offsetMinutes: modernOffsetMinutes, offsetFormat: modernOffsetFormat };
+    return { offsetMinutes: modernOffsetMinutes, offsetFormat: modernOffsetFormat };
   }
 
   function sortTwoZones(zoneA: ZoneOption, zoneB: ZoneOption) {
