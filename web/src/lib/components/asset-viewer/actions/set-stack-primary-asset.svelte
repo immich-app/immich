@@ -2,7 +2,6 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 
   import { AssetAction } from '$lib/constants';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { updateStack, type AssetResponseDto, type StackResponseDto } from '@immich/sdk';
   import { mdiImageCheckOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -17,12 +16,10 @@
   let { stack, asset, onAction }: Props = $props();
 
   const handleSetPrimaryAsset = async () => {
-    console.log('changed primary asset');
     const id = stack.id;
     const updatedStack = await updateStack({ id, stackUpdateDto: { primaryAssetId: asset.id } });
-    console.log('stack updated');
     if (updatedStack) {
-      onAction({ type: AssetAction.SET_STACK_PRIMARY_ASSET, asset: toTimelineAsset(asset) });
+      onAction({ type: AssetAction.SET_STACK_PRIMARY_ASSET, stack: updatedStack });
     }
 
     // const isConfirmed = await modalManager.showDialog({

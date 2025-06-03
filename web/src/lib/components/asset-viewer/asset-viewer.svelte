@@ -339,7 +339,7 @@
         break;
       }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
-        handlePromiseError(refreshStack());
+        stack = action.stack;
         break;
       }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
