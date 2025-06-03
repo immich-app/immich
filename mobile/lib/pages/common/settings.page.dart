@@ -30,7 +30,7 @@ enum SettingSection {
     "backup_setting_subtitle",
   ),
   languages(
-    'setting_languages_title',
+    'language',
     Icons.language,
     "setting_languages_subtitle",
   ),
