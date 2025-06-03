@@ -186,8 +186,8 @@ from
   inner join "smart_search" on "assets"."id" = "smart_search"."assetId"
   inner join "asset_job_status" as "job_status" on "job_status"."assetId" = "assets"."id"
 where
-  "assets"."visibility" != $1
-  and "assets"."deletedAt" is null
+  "assets"."deletedAt" is null
+  and "assets"."visibility" in ('archive', 'timeline')
   and "job_status"."duplicatesDetectedAt" is null
 
 -- AssetJobRepository.streamForEncodeClip
@@ -349,7 +349,7 @@ from
       "assets" as "stacked"
     where
       "stacked"."deletedAt" is not null
-      and "stacked"."visibility" != $1
+      and "stacked"."visibility" = $1
       and "stacked"."stackId" = "asset_stack"."id"
     group by
       "asset_stack"."id"
