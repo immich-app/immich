@@ -386,7 +386,7 @@
       !(isTrashEnabled && !force),
       (assetIds) => assetStore.removeAssets(assetIds),
       assetInteraction.selectedAssets,
-      !(isTrashEnabled && !force) ? undefined : (assets) => assetStore.addAssets(assets),
+      !isTrashEnabled || force ? undefined : (assets) => assetStore.addAssets(assets),
     );
     assetInteraction.clearMultiselect();
   };

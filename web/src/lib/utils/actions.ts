@@ -35,7 +35,7 @@ export const deleteAssets = async (
         ? $t('assets_permanently_deleted_count', { values: { count: ids.length } })
         : $t('assets_trashed_count', { values: { count: ids.length } }),
       type: NotificationType.Info,
-      ...(onUndoDelete && {
+      ...(onUndoDelete && !force && {
         button: { text: $t('undo'), onClick: () => undoDeleteAssets(onUndoDelete, assets) },
         timeout: 5000,
       }),
