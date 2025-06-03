@@ -262,14 +262,38 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label={$t('admin.machine_learning_ocr_min_score')}
-            description={$t('admin.machine_learning_ocr_min_score_description')}
-            bind:value={config.machineLearning.ocr.minScore}
+            label={$t('admin.machine_learning_ocr_min_detection_box_score')}
+            description={$t('admin.machine_learning_ocr_min_detection_box_score_description')}
+            bind:value={config.machineLearning.ocr.minDetectionBoxScore}
             step="0.1"
-            min={0.1}
+            min={0}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
-            isEdited={config.machineLearning.ocr.minScore !== savedConfig.machineLearning.ocr.minScore}
+            isEdited={config.machineLearning.ocr.minDetectionBoxScore !== savedConfig.machineLearning.ocr.minDetectionBoxScore}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_ocr_min_detection_score')}
+            description={$t('admin.machine_learning_ocr_min_detection_score_description')}
+            bind:value={config.machineLearning.ocr.minDetectionScore}
+            step="0.1"
+            min={0}
+            max={1}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+            isEdited={config.machineLearning.ocr.minDetectionScore !== savedConfig.machineLearning.ocr.minDetectionScore}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_ocr_min_recognition_score')}
+            description={$t('admin.machine_learning_ocr_min_score_recognition_description')}
+            bind:value={config.machineLearning.ocr.minRecognitionScore}
+            step="0.1"
+            min={0}
+            max={1}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+            isEdited={config.machineLearning.ocr.minRecognitionScore !== savedConfig.machineLearning.ocr.minRecognitionScore}
           />
         </div>
       </SettingAccordion>

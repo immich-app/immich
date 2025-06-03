@@ -77,7 +77,6 @@ export class OcrService extends BaseService {
 
     try {
       const ocrDataList = ocrResults.map(result => ({
-        assetId: id,
         x1: result.x1,
         y1: result.y1,
         x2: result.x2,
@@ -87,10 +86,10 @@ export class OcrService extends BaseService {
         x4: result.x4,
         y4: result.y4,
         text: result.text.trim(),
+        confidence: result.confidence,
       }));
 
-      await this.ocrRepository.insertMany(ocrDataList);
-
+      await this.ocrRepository.upsert(id, ocrDataList);
       await this.assetRepository.upsertJobStatus({
         assetId: asset.id,
         ocrAt: new Date(),

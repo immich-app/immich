@@ -39,4 +39,7 @@ export class AssetOcrTable {
 
   @Column({ type: 'text' })
   text!: string;
+
+  @Column({ type: 'double precision' })
+  confidence!: number;
 }
