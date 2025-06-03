@@ -14,6 +14,7 @@ type ActionMap = {
   [AssetAction.ADD_TO_ALBUM]: { asset: TimelineAsset; album: AlbumResponseDto };
   [AssetAction.UNSTACK]: { assets: TimelineAsset[] };
   [AssetAction.KEEP_THIS_DELETE_OTHERS]: { asset: TimelineAsset };
+  [AssetAction.SET_STACK_PRIMARY_ASSET]: { asset: TimelineAsset };
   [AssetAction.SET_VISIBILITY_LOCKED]: { asset: TimelineAsset };
   [AssetAction.SET_VISIBILITY_TIMELINE]: { asset: TimelineAsset };
 };

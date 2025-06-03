@@ -338,7 +338,10 @@
         await handleGetAllAlbums();
         break;
       }
-
+      case AssetAction.SET_STACK_PRIMARY_ASSET: {
+        handlePromiseError(refreshStack());
+        break;
+      }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
