@@ -17,6 +17,7 @@ class ActivityManager {
   #assetId = $state<string | undefined>();
   #activities = $state<ActivityResponseDto[]>([]);
   #commentCount = $state(0);
+  #likeCount = $state(0);
   #isLiked = $state<ActivityResponseDto | null>(null);
 
   get activities() {
@@ -25,6 +26,10 @@ class ActivityManager {
 
   get commentCount() {
     return this.#commentCount;
+  }
+
+  get likeCount() {
+    return this.#likeCount;
   }
 
   get isLiked() {
@@ -48,6 +53,10 @@ class ActivityManager {
       this.#commentCount++;
     }
 
+    if (activity.type === ReactionType.Like) {
+      this.#likeCount++;
+    }
+
     handlePromiseError(this.refreshActivities(this.#albumId, this.#assetId));
     return activity;
   }
@@ -59,6 +68,10 @@ class ActivityManager {
 
     if (activity.type === ReactionType.Comment) {
       this.#commentCount--;
+    }
+
+    if (activity.type === ReactionType.Like) {
+      this.#likeCount++;
     }
 
     this.#activities = index
@@ -98,8 +111,9 @@ class ActivityManager {
     });
     this.#isLiked = liked ?? null;
 
-    const { comments } = await getActivityStatistics({ albumId, assetId });
+    const { comments, likes } = await getActivityStatistics({ albumId, assetId });
     this.#commentCount = comments;
+    this.#likeCount = likes;
   }
 
   reset() {
@@ -107,6 +121,7 @@ class ActivityManager {
     this.#assetId = undefined;
     this.#activities = [];
     this.#commentCount = 0;
+    this.#likeCount = 0;
   }
 }
 
