@@ -159,9 +159,22 @@ class DownloadService {
     return await FileDownloader().cancelTaskWithId(id);
   }
 
+  Future<List<bool>> downloadAll(List<Asset> assets) async {
+    List<DownloadTask> tasks = [];
+    for (var asset in assets) {
+      tasks.addAll(_createDownloadTasks(asset));
+    }
+    return await _downloadRepository.downloadAll(tasks);
+  }
+
   Future<void> download(Asset asset) async {
+    final tasks = _createDownloadTasks(asset);
+    await _downloadRepository.download(tasks.first);
+  }
+
+  List<DownloadTask> _createDownloadTasks(Asset asset) {
     if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
-      await _downloadRepository.download(
+      return [
         _buildDownloadTask(
           asset.remoteId!,
           asset.fileName,
@@ -171,9 +184,6 @@ class DownloadService {
             id: asset.remoteId!,
           ).toJson(),
         ),
-      );
-
-      await _downloadRepository.download(
         _buildDownloadTask(
           asset.livePhotoVideoId!,
           asset.fileName
@@ -185,16 +195,20 @@ class DownloadService {
             id: asset.remoteId!,
           ).toJson(),
         ),
-      );
-    } else {
-      await _downloadRepository.download(
-        _buildDownloadTask(
-          asset.remoteId!,
-          asset.fileName,
-          group: asset.isImage ? downloadGroupImage : downloadGroupVideo,
-        ),
-      );
+      ];
     }
+
+    if (asset.remoteId == null || asset.remoteId! == "N/A") {
+      return [];
+    }
+
+    return [
+      _buildDownloadTask(
+        asset.remoteId!,
+        asset.fileName,
+        group: asset.isImage ? downloadGroupImage : downloadGroupVideo,
+      ),
+    ];
   }
 
   DownloadTask _buildDownloadTask(

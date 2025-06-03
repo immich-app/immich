@@ -44,6 +44,11 @@ class DownloadRepository implements IDownloadRepository {
   }
 
   @override
+  Future<List<bool>> downloadAll(List<DownloadTask> tasks) {
+    return FileDownloader().enqueueAll(tasks);
+  }
+
+  @override
   Future<void> deleteAllTrackingRecords() {
     return FileDownloader().database.deleteAllRecords();
   }
