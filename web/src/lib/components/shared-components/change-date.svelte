@@ -69,7 +69,7 @@
   // This ensures that the offsets shown in the combobox are always current,
   // regardless of the historical date selected by the user.
   const modernReferenceDate = DateTime.now();
-  let timezones: ZoneOption[] = knownTimezones.map((zone) => zoneOptionForDate(zone, modernReferenceDate.toFormat("yyyy-MM-dd'T'HH:mm")))
+  let timezones: ZoneOption[] = knownTimezones.map((zone) => zoneOptionForDate(zone, selectedDate))
     .filter((zone) => zone.valid)
     .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB));
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
