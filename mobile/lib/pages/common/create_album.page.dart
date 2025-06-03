@@ -11,6 +11,7 @@ import 'package:immich_mobile/providers/album/album_title.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_title_text_field.dart';
+import 'package:immich_mobile/widgets/album/album_viewer_editable_description.dart';
 import 'package:immich_mobile/widgets/album/shared_album_thumbnail_image.dart';
 
 @RoutePage()
@@ -28,6 +29,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     final albumTitleController =
         useTextEditingController.fromValue(TextEditingValue.empty);
     final albumTitleTextFieldFocusNode = useFocusNode();
+    final albumDescriptionTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
     final selectedAssets = useState<Set<Asset>>(
@@ -36,6 +38,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
     void onBackgroundTapped() {
       albumTitleTextFieldFocusNode.unfocus();
+      albumDescriptionTextFieldFocusNode.unfocus();
       isAlbumTitleTextFieldFocus.value = false;
 
       if (albumTitleController.text.isEmpty) {
@@ -73,6 +76,19 @@ class CreateAlbumPage extends HookConsumerWidget {
           albumTitleTextFieldFocusNode: albumTitleTextFieldFocusNode,
           albumTitleController: albumTitleController,
           isAlbumTitleTextFieldFocus: isAlbumTitleTextFieldFocus,
+        ),
+      );
+    }
+
+    buildDescriptionInputField() {
+      return Padding(
+        padding: const EdgeInsets.only(
+          right: 10,
+          left: 10,
+        ),
+        child: AlbumViewerEditableDescription(
+          albumDescription: '',
+          descriptionFocusNode: albumDescriptionTextFieldFocusNode,
         ),
       );
     }
@@ -237,10 +253,11 @@ class CreateAlbumPage extends HookConsumerWidget {
               pinned: true,
               floating: false,
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(96.0),
+                preferredSize: const Size.fromHeight(125.0),
                 child: Column(
                   children: [
                     buildTitleInputField(),
+                    buildDescriptionInputField(),
                     if (selectedAssets.value.isNotEmpty) buildControlButton(),
                   ],
                 ),

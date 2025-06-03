@@ -10,6 +10,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/pages/album/album_control_button.dart';
 import 'package:immich_mobile/pages/album/album_date_range.dart';
+import 'package:immich_mobile/pages/album/album_description.dart';
 import 'package:immich_mobile/pages/album/album_shared_user_icons.dart';
 import 'package:immich_mobile/pages/album/album_title.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
@@ -35,6 +36,7 @@ class AlbumViewer extends HookConsumerWidget {
     }
 
     final titleFocusNode = useFocusNode();
+    final descriptionFocusNode = useFocusNode();
     final userId = ref.watch(authProvider).userId;
     final isMultiselecting = ref.watch(multiselectProvider);
     final isProcessing = useProcessingOverlay();
@@ -112,6 +114,10 @@ class AlbumViewer extends HookConsumerWidget {
                 key: const ValueKey("albumTitle"),
                 titleFocusNode: titleFocusNode,
               ),
+              AlbumDescription(
+                key: const ValueKey("albumDescription"),
+                descriptionFocusNode: descriptionFocusNode,
+              ),
               const AlbumDateRange(),
               const AlbumSharedUserIcons(),
               if (album.isRemote)
@@ -134,6 +140,7 @@ class AlbumViewer extends HookConsumerWidget {
           child: AlbumViewerAppbar(
             key: const ValueKey("albumViewerAppbar"),
             titleFocusNode: titleFocusNode,
+            descriptionFocusNode: descriptionFocusNode,
             userId: userId,
             onAddPhotos: onAddPhotosPressed,
             onAddUsers: onAddUsersPressed,
