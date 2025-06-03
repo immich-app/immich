@@ -10,9 +10,11 @@ import {
   SearchPeopleDto,
   SearchPlacesDto,
   SearchResponseDto,
+  SearchStatisticsResponseDto,
   SearchSuggestionRequestDto,
   SearchSuggestionType,
   SmartSearchDto,
+  StatisticsSearchDto,
 } from 'src/dtos/search.dto';
 import { AssetOrder } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -61,6 +63,15 @@ export class SearchService extends BaseService {
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+  }
+
+  async searchStatistics(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
+    const userIds = await this.getUserIdsToSearch(auth);
+
+    return await this.searchRepository.searchStatistics({
+      ...dto,
+      userIds,
+    });
   }
 
   async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
