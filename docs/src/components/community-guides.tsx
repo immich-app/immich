@@ -60,7 +60,7 @@ const guides: CommunityGuidesProps[] = [
   },
   {
     title: 'Trust Self Signed Certificates with Immich - OAuth Setup',
-    description: 'Set up Certificate Authority trust with Immitch, and your private OAuth2/OpenID service, while using a private CA for HTTPS commication."
+    description: 'Set up Certificate Authority trust with Immitch, and your private OAuth2/OpenID service, while using a private CA for HTTPS commication.",
     url: 'https://github.com/immich-app/immich/discussions/18614',
   },
 ];
