@@ -98,7 +98,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       name: localAlbum.name,
       updatedAt: Value(localAlbum.updatedAt),
       backupSelection: localAlbum.backupSelection,
-      isCloud: Value(localAlbum.isCloud),
+      isIosSharedAlbum: Value(localAlbum.isIosSharedAlbum),
     );
 
     return _db.transaction(() async {
@@ -134,7 +134,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
             name: album.name,
             updatedAt: Value(album.updatedAt),
             backupSelection: album.backupSelection,
-            isCloud: Value(album.isCloud),
+            isIosSharedAlbum: Value(album.isIosSharedAlbum),
             marker_: const Value(null),
           );
 

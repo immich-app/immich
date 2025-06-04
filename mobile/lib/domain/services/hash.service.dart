@@ -46,7 +46,8 @@ class HashService {
         }
 
         // Local albums come before cloud albums
-        return (a.isCloud ? 1 : 0).compareTo(b.isCloud ? 1 : 0);
+        return (a.isIosSharedAlbum ? 1 : 0)
+            .compareTo(b.isIosSharedAlbum ? 1 : 0);
       });
     });
 

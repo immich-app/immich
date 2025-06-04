@@ -13,7 +13,7 @@ class LocalAlbum {
   final String id;
   final String name;
   final DateTime updatedAt;
-  final bool isCloud;
+  final bool isIosSharedAlbum;
 
   final int assetCount;
   final BackupSelection backupSelection;
@@ -24,7 +24,7 @@ class LocalAlbum {
     required this.updatedAt,
     this.assetCount = 0,
     this.backupSelection = BackupSelection.none,
-    this.isCloud = false,
+    this.isIosSharedAlbum = false,
   });
 
   LocalAlbum copyWith({
@@ -33,7 +33,7 @@ class LocalAlbum {
     DateTime? updatedAt,
     int? assetCount,
     BackupSelection? backupSelection,
-    bool? isCloud,
+    bool? isIosSharedAlbum,
   }) {
     return LocalAlbum(
       id: id ?? this.id,
@@ -41,7 +41,7 @@ class LocalAlbum {
       updatedAt: updatedAt ?? this.updatedAt,
       assetCount: assetCount ?? this.assetCount,
       backupSelection: backupSelection ?? this.backupSelection,
-      isCloud: isCloud ?? this.isCloud,
+      isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
     );
   }
 
@@ -55,7 +55,7 @@ class LocalAlbum {
         other.updatedAt == updatedAt &&
         other.assetCount == assetCount &&
         other.backupSelection == backupSelection &&
-        other.isCloud == isCloud;
+        other.isIosSharedAlbum == isIosSharedAlbum;
   }
 
   @override
@@ -65,7 +65,7 @@ class LocalAlbum {
         updatedAt.hashCode ^
         assetCount.hashCode ^
         backupSelection.hashCode ^
-        isCloud.hashCode;
+        isIosSharedAlbum.hashCode;
   }
 
   @override
@@ -76,7 +76,7 @@ name: $name,
 updatedAt: $updatedAt,
 assetCount: $assetCount,
 backupSelection: $backupSelection,
-isCloud: $isCloud
+isIosSharedAlbum: $isIosSharedAlbum
 }''';
   }
 }
