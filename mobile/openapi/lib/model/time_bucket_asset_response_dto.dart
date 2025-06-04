@@ -22,7 +22,7 @@ class TimeBucketAssetResponseDto {
     this.isImage = const [],
     this.isTrashed = const [],
     this.livePhotoVideoId = const [],
-    this.localOffsetMinutes = const [],
+    this.localOffsetHours = const [],
     this.ownerId = const [],
     this.projectionType = const [],
     this.ratio = const [],
@@ -58,8 +58,8 @@ class TimeBucketAssetResponseDto {
   /// Array of live photo video asset IDs (null for non-live photos)
   List<String?> livePhotoVideoId;
 
-  /// Array of UTC offset minutes at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.
-  List<int> localOffsetMinutes;
+  /// Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.
+  List<num> localOffsetHours;
 
   /// Array of owner IDs for each asset
   List<String> ownerId;
@@ -90,7 +90,7 @@ class TimeBucketAssetResponseDto {
     _deepEquality.equals(other.isImage, isImage) &&
     _deepEquality.equals(other.isTrashed, isTrashed) &&
     _deepEquality.equals(other.livePhotoVideoId, livePhotoVideoId) &&
-    _deepEquality.equals(other.localOffsetMinutes, localOffsetMinutes) &&
+    _deepEquality.equals(other.localOffsetHours, localOffsetHours) &&
     _deepEquality.equals(other.ownerId, ownerId) &&
     _deepEquality.equals(other.projectionType, projectionType) &&
     _deepEquality.equals(other.ratio, ratio) &&
@@ -110,7 +110,7 @@ class TimeBucketAssetResponseDto {
     (isImage.hashCode) +
     (isTrashed.hashCode) +
     (livePhotoVideoId.hashCode) +
-    (localOffsetMinutes.hashCode) +
+    (localOffsetHours.hashCode) +
     (ownerId.hashCode) +
     (projectionType.hashCode) +
     (ratio.hashCode) +
@@ -119,7 +119,7 @@ class TimeBucketAssetResponseDto {
     (visibility.hashCode);
 
   @override
-  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, fileCreatedAt=$fileCreatedAt, id=$id, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, localOffsetMinutes=$localOffsetMinutes, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash, visibility=$visibility]';
+  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, fileCreatedAt=$fileCreatedAt, id=$id, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, localOffsetHours=$localOffsetHours, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -132,7 +132,7 @@ class TimeBucketAssetResponseDto {
       json[r'isImage'] = this.isImage;
       json[r'isTrashed'] = this.isTrashed;
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
-      json[r'localOffsetMinutes'] = this.localOffsetMinutes;
+      json[r'localOffsetHours'] = this.localOffsetHours;
       json[r'ownerId'] = this.ownerId;
       json[r'projectionType'] = this.projectionType;
       json[r'ratio'] = this.ratio;
@@ -178,8 +178,8 @@ class TimeBucketAssetResponseDto {
         livePhotoVideoId: json[r'livePhotoVideoId'] is Iterable
             ? (json[r'livePhotoVideoId'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        localOffsetMinutes: json[r'localOffsetMinutes'] is Iterable
-            ? (json[r'localOffsetMinutes'] as Iterable).cast<int>().toList(growable: false)
+        localOffsetHours: json[r'localOffsetHours'] is Iterable
+            ? (json[r'localOffsetHours'] as Iterable).cast<num>().toList(growable: false)
             : const [],
         ownerId: json[r'ownerId'] is Iterable
             ? (json[r'ownerId'] as Iterable).cast<String>().toList(growable: false)
@@ -255,7 +255,7 @@ class TimeBucketAssetResponseDto {
     'isImage',
     'isTrashed',
     'livePhotoVideoId',
-    'localOffsetMinutes',
+    'localOffsetHours',
     'ownerId',
     'projectionType',
     'ratio',

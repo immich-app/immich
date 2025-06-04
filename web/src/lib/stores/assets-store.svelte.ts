@@ -482,7 +482,7 @@ export class AssetBucket {
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime: fromISODateTimeWithOffsetToObject(
           bucketAssets.fileCreatedAt[i],
-          bucketAssets.localOffsetMinutes[i],
+          bucketAssets.localOffsetHours[i],
         ),
         fileCreatedAt: fromISODateTimeUTCToObject(bucketAssets.fileCreatedAt[i]),
         ownerId: bucketAssets.ownerId[i],

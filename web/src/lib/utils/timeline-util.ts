@@ -50,16 +50,16 @@ export const fromISODateTimeTruncateTZToObject = (
     fromISODateTime(isoDateTimeUtc, timeZone ?? 'UTC').setZone('UTC', { keepLocalTime: true }) as DateTime<true>
   ).toObject();
 
-// Used to derive a local date time from an ISO string and a UTC offset in minutes
+// Used to derive a local date time from an ISO string and a UTC offset in hours
 export const fromISODateTimeWithOffsetToObject = (
   isoDateTimeUtc: string,
-  utcOffsetMinutes: number,
+  utcOffsetHours: number,
 ): TimelinePlainDateTime => {
   const utcDateTime = fromISODateTimeUTC(isoDateTimeUtc);
 
   // Apply the offset to get the local time
-  // Note: offset is in minutes, positive for east of UTC, negative for west
-  const localDateTime = utcDateTime.plus({ minutes: utcOffsetMinutes });
+  // Note: offset is in hours (may be fractional), positive for east of UTC, negative for west
+  const localDateTime = utcDateTime.plus({ hours: utcOffsetHours });
 
   // Return as plain object (keeping the local time but in UTC zone context)
   return (localDateTime.setZone('UTC', { keepLocalTime: true }) as DateTime<true>).toObject();

@@ -190,11 +190,11 @@ export class TimeBucketAssetResponseDto {
 
   @ApiProperty({
     type: 'array',
-    items: { type: 'integer' },
+    items: { type: 'number' },
     description:
-      "Array of UTC offset minutes at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
+      "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
   })
-  localOffsetMinutes!: number[];
+  localOffsetHours!: number[];
 
   @ApiProperty({
     type: 'array',

@@ -589,8 +589,8 @@ export class AssetRepository {
             sql`assets.type = 'IMAGE'`.as('isImage'),
             sql`assets."deletedAt" is not null`.as('isTrashed'),
             'assets.livePhotoVideoId',
-            sql`extract(epoch from ("localDateTime" - "fileCreatedAt" at time zone 'UTC')) / 60`.as(
-              'localOffsetMinutes',
+            sql`extract(epoch from (assets."localDateTime" - assets."fileCreatedAt" at time zone 'UTC'))::real / 3600`.as(
+              'localOffsetHours',
             ),
             'assets.ownerId',
             'assets.status',
@@ -679,7 +679,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),
             eb.fn.coalesce(eb.fn('array_agg', ['livePhotoVideoId']), sql.lit('{}')).as('livePhotoVideoId'),
             eb.fn.coalesce(eb.fn('array_agg', ['fileCreatedAt']), sql.lit('{}')).as('fileCreatedAt'),
-            eb.fn.coalesce(eb.fn('array_agg', ['localOffsetMinutes']), sql.lit('{}')).as('localOffsetMinutes'),
+            eb.fn.coalesce(eb.fn('array_agg', ['localOffsetHours']), sql.lit('{}')).as('localOffsetHours'),
             eb.fn.coalesce(eb.fn('array_agg', ['ownerId']), sql.lit('{}')).as('ownerId'),
             eb.fn.coalesce(eb.fn('array_agg', ['projectionType']), sql.lit('{}')).as('projectionType'),
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
