@@ -27,6 +27,7 @@
     type AssetResponseDto,
     type ExifResponseDto,
   } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import {
     mdiCalendar,
     mdiCameraIris,
@@ -42,7 +43,6 @@
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
@@ -158,7 +158,14 @@
 
 <section class="relative p-2">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} onclick={onClose} />
+    <IconButton
+      icon={mdiClose}
+      aria-label={$t('close')}
+      onclick={onClose}
+      shape="round"
+      color="secondary"
+      variant="ghost"
+    />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
   </div>
 
@@ -193,30 +200,34 @@
         <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
           {#if people.some((person) => person.isHidden)}
-            <CircleIconButton
-              title={$t('show_hidden_people')}
+            <IconButton
+              aria-label={$t('show_hidden_people')}
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
-              padding="1"
-              buttonSize="32"
+              size="medium"
+              shape="round"
+              color="secondary"
+              variant="ghost"
               onclick={() => (showingHiddenPeople = !showingHiddenPeople)}
             />
           {/if}
-          <CircleIconButton
-            title={$t('tag_people')}
+          <IconButton
+            aria-label={$t('tag_people')}
             icon={mdiPlus}
-            padding="1"
-            size="20"
-            buttonSize="32"
+            size="medium"
+            shape="round"
+            color="secondary"
+            variant="ghost"
             onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
           />
 
           {#if people.length > 0 || unassignedFaces.length > 0}
-            <CircleIconButton
-              title={$t('edit_people')}
+            <IconButton
+              aria-label={$t('edit_people')}
               icon={mdiPencil}
-              padding="1"
-              size="20"
-              buttonSize="32"
+              size="medium"
+              shape="round"
+              color="secondary"
+              variant="ghost"
               onclick={() => (showEditFaces = true)}
             />
           {/if}
@@ -369,11 +380,13 @@
         <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
           {asset.originalFileName}
           {#if isOwner}
-            <CircleIconButton
+            <IconButton
               icon={mdiInformationOutline}
-              title={$t('show_file_location')}
-              size="16"
-              padding="2"
+              aria-label={$t('show_file_location')}
+              size="small"
+              shape="round"
+              color="secondary"
+              variant="ghost"
               onclick={toggleAssetPath}
             />
           {/if}

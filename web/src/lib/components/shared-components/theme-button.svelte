@@ -1,27 +1,20 @@
 <script lang="ts">
-  import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
-  import CircleIconButton, { type Padding } from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { defaultLang, langs, Theme } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
-  import { t } from 'svelte-i18n';
-
-  let icon = $derived(themeManager.isDark ? sunPath : moonPath);
-  let viewBox = $derived(themeManager.isDark ? sunViewBox : moonViewBox);
-
-  interface Props {
-    padding?: Padding;
-  }
-
-  let { padding = '3' }: Props = $props();
+  import { lang } from '$lib/stores/preferences.store';
+  import { ThemeSwitcher } from '@immich/ui';
+  import { get } from 'svelte/store';
 </script>
 
 {#if !themeManager.theme.system}
-  <CircleIconButton
-    title={$t('toggle_theme')}
-    {icon}
-    {viewBox}
-    role="switch"
-    aria-checked={themeManager.isDark ? 'true' : 'false'}
-    onclick={() => themeManager.toggleTheme()}
-    {padding}
-  />
+  {#await langs
+    .find((item) => item.code === get(lang))
+    ?.loader() ?? defaultLang.loader() then { default: translations }}
+    <ThemeSwitcher
+      size="medium"
+      color="secondary"
+      {translations}
+      onChange={(theme) => themeManager.setTheme(theme == 'dark' ? Theme.DARK : Theme.LIGHT)}
+    />
+  {/await}
 {/if}

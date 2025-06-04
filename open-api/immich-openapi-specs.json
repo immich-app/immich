@@ -5275,9 +5275,9 @@
         ]
       }
     },
-    "/server/android-links": {
+    "/server/apk-links": {
       "get": {
-        "operationId": "getAndroidLinks",
+        "operationId": "getApkLinks",
         "parameters": [],
         "responses": {
           "200": {
@@ -7926,6 +7926,101 @@
         ]
       }
     },
+    "/users/me/onboarding": {
+      "delete": {
+        "operationId": "deleteUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "operationId": "getUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "setUserOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/users/me/preferences": {
       "get": {
         "operationId": "getMyPreferences",
@@ -8409,10 +8504,14 @@
         "properties": {
           "comments": {
             "type": "integer"
+          },
+          "likes": {
+            "type": "integer"
           }
         },
         "required": [
-          "comments"
+          "comments",
+          "likes"
         ],
         "type": "object"
       },
@@ -10416,6 +10515,9 @@
           "isAdmin": {
             "type": "boolean"
           },
+          "isOnboarded": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -10435,6 +10537,7 @@
         "required": [
           "accessToken",
           "isAdmin",
+          "isOnboarded",
           "name",
           "profileImagePath",
           "shouldChangePassword",
@@ -11076,6 +11179,28 @@
         },
         "required": [
           "year"
+        ],
+        "type": "object"
+      },
+      "OnboardingDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "OnboardingResponseDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
         ],
         "type": "object"
       },
@@ -12897,11 +13022,11 @@
             "type": "string"
           },
           "role": {
-            "enum": [
-              "editor",
-              "viewer"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
           },
           "userId": {
             "type": "string"
@@ -13139,6 +13264,9 @@
             "nullable": true,
             "type": "string"
           },
+          "originalFileName": {
+            "type": "string"
+          },
           "ownerId": {
             "type": "string"
           },
@@ -13147,22 +13275,18 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "IMAGE",
-              "VIDEO",
-              "AUDIO",
-              "OTHER"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
           },
           "visibility": {
-            "enum": [
-              "archive",
-              "timeline",
-              "hidden",
-              "locked"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -13173,6 +13297,7 @@
           "id",
           "isFavorite",
           "localDateTime",
+          "originalFileName",
           "ownerId",
           "thumbhash",
           "type",

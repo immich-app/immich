@@ -210,6 +210,17 @@ describe(AlbumService.name, () => {
         false,
       );
     });
+
+    it('should throw an error if the userId is the ownerId', async () => {
+      mocks.user.get.mockResolvedValue(userStub.admin);
+      await expect(
+        sut.create(authStub.admin, {
+          albumName: 'Empty album',
+          albumUsers: [{ userId: userStub.admin.id, role: AlbumUserRole.EDITOR }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.album.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('update', () => {

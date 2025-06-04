@@ -38,6 +38,7 @@
     onPrevious?: (() => Promise<{ id: string } | undefined>) | undefined;
     onNext?: (() => Promise<{ id: string } | undefined>) | undefined;
     onRandom?: (() => Promise<{ id: string } | undefined>) | undefined;
+    onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
   }
@@ -54,6 +55,7 @@
     onPrevious = undefined,
     onNext = undefined,
     onRandom = undefined,
+    onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
   }: Props = $props();
@@ -255,7 +257,8 @@
     await deleteAssets(
       !(isTrashEnabled && !force),
       (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
-      idsSelectedAssets,
+      assetInteraction.selectedAssets,
+      onReload,
     );
     assetInteraction.clearMultiselect();
   };
@@ -426,7 +429,6 @@
   };
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map((selectedAsset) => selectedAsset.id));
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
