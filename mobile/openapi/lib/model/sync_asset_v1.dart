@@ -47,9 +47,9 @@ class SyncAssetV1 {
 
   String? thumbhash;
 
-  SyncAssetV1TypeEnum type;
+  AssetTypeEnum type;
 
-  SyncAssetV1VisibilityEnum visibility;
+  AssetVisibility visibility;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetV1 &&
@@ -141,8 +141,8 @@ class SyncAssetV1 {
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
-        type: SyncAssetV1TypeEnum.fromJson(json[r'type'])!,
-        visibility: SyncAssetV1VisibilityEnum.fromJson(json[r'visibility'])!,
+        type: AssetTypeEnum.fromJson(json[r'type'])!,
+        visibility: AssetVisibility.fromJson(json[r'visibility'])!,
       );
     }
     return null;
@@ -204,164 +204,4 @@ class SyncAssetV1 {
     'visibility',
   };
 }
-
-
-class SyncAssetV1TypeEnum {
-  /// Instantiate a new enum with the provided [value].
-  const SyncAssetV1TypeEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const IMAGE = SyncAssetV1TypeEnum._(r'IMAGE');
-  static const VIDEO = SyncAssetV1TypeEnum._(r'VIDEO');
-  static const AUDIO = SyncAssetV1TypeEnum._(r'AUDIO');
-  static const OTHER = SyncAssetV1TypeEnum._(r'OTHER');
-
-  /// List of all possible values in this [enum][SyncAssetV1TypeEnum].
-  static const values = <SyncAssetV1TypeEnum>[
-    IMAGE,
-    VIDEO,
-    AUDIO,
-    OTHER,
-  ];
-
-  static SyncAssetV1TypeEnum? fromJson(dynamic value) => SyncAssetV1TypeEnumTypeTransformer().decode(value);
-
-  static List<SyncAssetV1TypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncAssetV1TypeEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncAssetV1TypeEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [SyncAssetV1TypeEnum] to String,
-/// and [decode] dynamic data back to [SyncAssetV1TypeEnum].
-class SyncAssetV1TypeEnumTypeTransformer {
-  factory SyncAssetV1TypeEnumTypeTransformer() => _instance ??= const SyncAssetV1TypeEnumTypeTransformer._();
-
-  const SyncAssetV1TypeEnumTypeTransformer._();
-
-  String encode(SyncAssetV1TypeEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a SyncAssetV1TypeEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  SyncAssetV1TypeEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'IMAGE': return SyncAssetV1TypeEnum.IMAGE;
-        case r'VIDEO': return SyncAssetV1TypeEnum.VIDEO;
-        case r'AUDIO': return SyncAssetV1TypeEnum.AUDIO;
-        case r'OTHER': return SyncAssetV1TypeEnum.OTHER;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [SyncAssetV1TypeEnumTypeTransformer] instance.
-  static SyncAssetV1TypeEnumTypeTransformer? _instance;
-}
-
-
-
-class SyncAssetV1VisibilityEnum {
-  /// Instantiate a new enum with the provided [value].
-  const SyncAssetV1VisibilityEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const archive = SyncAssetV1VisibilityEnum._(r'archive');
-  static const timeline = SyncAssetV1VisibilityEnum._(r'timeline');
-  static const hidden = SyncAssetV1VisibilityEnum._(r'hidden');
-  static const locked = SyncAssetV1VisibilityEnum._(r'locked');
-
-  /// List of all possible values in this [enum][SyncAssetV1VisibilityEnum].
-  static const values = <SyncAssetV1VisibilityEnum>[
-    archive,
-    timeline,
-    hidden,
-    locked,
-  ];
-
-  static SyncAssetV1VisibilityEnum? fromJson(dynamic value) => SyncAssetV1VisibilityEnumTypeTransformer().decode(value);
-
-  static List<SyncAssetV1VisibilityEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncAssetV1VisibilityEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncAssetV1VisibilityEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [SyncAssetV1VisibilityEnum] to String,
-/// and [decode] dynamic data back to [SyncAssetV1VisibilityEnum].
-class SyncAssetV1VisibilityEnumTypeTransformer {
-  factory SyncAssetV1VisibilityEnumTypeTransformer() => _instance ??= const SyncAssetV1VisibilityEnumTypeTransformer._();
-
-  const SyncAssetV1VisibilityEnumTypeTransformer._();
-
-  String encode(SyncAssetV1VisibilityEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a SyncAssetV1VisibilityEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  SyncAssetV1VisibilityEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'archive': return SyncAssetV1VisibilityEnum.archive;
-        case r'timeline': return SyncAssetV1VisibilityEnum.timeline;
-        case r'hidden': return SyncAssetV1VisibilityEnum.hidden;
-        case r'locked': return SyncAssetV1VisibilityEnum.locked;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [SyncAssetV1VisibilityEnumTypeTransformer] instance.
-  static SyncAssetV1VisibilityEnumTypeTransformer? _instance;
-}
-
 
