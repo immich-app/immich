@@ -40,7 +40,6 @@ export class ActivityRepository {
       .$if(!!userId, (qb) => qb.where('activity.userId', '=', userId!))
       .$if(assetId === null, (qb) => qb.where('assetId', 'is', null))
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
-      .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
       .$if(!!albumId, (qb) =>
         qb
           .where('activity.albumId', '=', albumId!)
