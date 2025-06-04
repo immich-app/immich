@@ -266,9 +266,9 @@ with
         epoch
         from
           (
-            "localDateTime" - "fileCreatedAt" at time zone 'UTC'
+            assets."localDateTime" - assets."fileCreatedAt" at time zone 'UTC'
           )
-      ) / 60 as "localOffsetMinutes",
+      )::real / 3600 as "localOffsetHours",
       "assets"."ownerId",
       "assets"."status",
       "assets"."fileCreatedAt",
@@ -334,7 +334,7 @@ with
       coalesce(array_agg("isTrashed"), '{}') as "isTrashed",
       coalesce(array_agg("livePhotoVideoId"), '{}') as "livePhotoVideoId",
       coalesce(array_agg("fileCreatedAt"), '{}') as "fileCreatedAt",
-      coalesce(array_agg("localOffsetMinutes"), '{}') as "localOffsetMinutes",
+      coalesce(array_agg("localOffsetHours"), '{}') as "localOffsetHours",
       coalesce(array_agg("ownerId"), '{}') as "ownerId",
       coalesce(array_agg("projectionType"), '{}') as "projectionType",
       coalesce(array_agg("ratio"), '{}') as "ratio",
