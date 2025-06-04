@@ -8,6 +8,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_title.provider.dart';
+import 'package:immich_mobile/providers/album/album_viewer.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_title_text_field.dart';
@@ -194,18 +195,18 @@ class CreateAlbumPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
-    createNonSharedAlbum() async {
+    Future<void> createAlbum() async {
       onBackgroundTapped();
       var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
-            ref.watch(albumTitleProvider),
+            ref.read(albumTitleProvider),
             selectedAssets.value,
           );
 
       if (newAlbum != null) {
-        ref.watch(albumProvider.notifier).refreshRemoteAlbums();
+        ref.read(albumProvider.notifier).refreshRemoteAlbums();
         selectedAssets.value = {};
-        ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
-
+        ref.read(albumTitleProvider.notifier).clearAlbumTitle();
+        ref.read(albumViewerProvider.notifier).disableEditAlbum();
         context.replaceRoute(AlbumViewerRoute(albumId: newAlbum.id));
       }
     }
@@ -227,9 +228,8 @@ class CreateAlbumPage extends HookConsumerWidget {
         ).tr(),
         actions: [
           TextButton(
-            onPressed: albumTitleController.text.isNotEmpty
-                ? createNonSharedAlbum
-                : null,
+            onPressed:
+                albumTitleController.text.isNotEmpty ? createAlbum : null,
             child: Text(
               'create'.tr(),
               style: TextStyle(
