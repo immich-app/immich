@@ -39,7 +39,7 @@
   };
 
   const handleToggleLocaleBrowser = () => {
-    $locale = $locale ? undefined : fallbackLocale.code;
+    $locale = $locale === 'default' ? fallbackLocale.code : 'default';
   };
 
   const handleLocaleChange = (newLocale: string | undefined) => {
@@ -89,13 +89,13 @@
         <SettingSwitch
           title={$t('default_locale')}
           subtitle={$t('default_locale_description')}
-          checked={$locale == undefined}
+          checked={$locale == 'default'}
           onToggle={handleToggleLocaleBrowser}
         >
           <p class="mt-2 dark:text-gray-400">{selectedDate}</p>
         </SettingSwitch>
       </div>
-      {#if $locale !== undefined}
+      {#if $locale !== 'default'}
         <div class="ms-4">
           <SettingCombobox
             comboboxPlaceholder={$t('searching_locales')}
@@ -113,7 +113,6 @@
           title={$t('display_original_photos')}
           subtitle={$t('display_original_photos_setting_description')}
           bind:checked={$alwaysLoadOriginalFile}
-          onToggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
         />
       </div>
       <div class="ms-4">
@@ -121,16 +120,10 @@
           title={$t('video_hover_setting')}
           subtitle={$t('video_hover_setting_description')}
           bind:checked={$playVideoThumbnailOnHover}
-          onToggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
         />
       </div>
       <div class="ms-4">
-        <SettingSwitch
-          title={$t('loop_videos')}
-          subtitle={$t('loop_videos_description')}
-          bind:checked={$loopVideo}
-          onToggle={() => ($loopVideo = !$loopVideo)}
-        />
+        <SettingSwitch title={$t('loop_videos')} subtitle={$t('loop_videos_description')} bind:checked={$loopVideo} />
       </div>
 
       <div class="ms-4">

@@ -13,6 +13,7 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
 
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { AssetVisibility } from '@immich/sdk';
@@ -20,7 +21,6 @@
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
 
   interface Props {
     data: PageData;

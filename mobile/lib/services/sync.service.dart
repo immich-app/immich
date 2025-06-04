@@ -451,6 +451,7 @@ class SyncService {
     final usersToLink = await _userRepository.getByUserIds(userIdsToAdd);
 
     album.name = dto.name;
+    album.description = dto.description;
     album.shared = dto.shared;
     album.createdAt = dto.createdAt;
     album.modifiedAt = dto.modifiedAt;
@@ -643,6 +644,7 @@ class SyncService {
         toUpdate.isEmpty &&
         toDelete.isEmpty &&
         dbAlbum.name == deviceAlbum.name &&
+        dbAlbum.description == deviceAlbum.description &&
         dbAlbum.modifiedAt.isAtSameMomentAs(deviceAlbum.modifiedAt)) {
       // changes only affeted excluded albums
       _log.info(
@@ -670,6 +672,7 @@ class SyncService {
     deleteCandidates.addAll(toDelete);
     existing.addAll(existingInDb);
     dbAlbum.name = deviceAlbum.name;
+    dbAlbum.description = deviceAlbum.description;
     dbAlbum.modifiedAt = deviceAlbum.modifiedAt;
     if (dbAlbum.thumbnail.value != null &&
         toDelete.contains(dbAlbum.thumbnail.value)) {
@@ -943,6 +946,7 @@ class SyncService {
     Album dbAlbum,
   ) async {
     return deviceAlbum.name != dbAlbum.name ||
+        deviceAlbum.description != dbAlbum.description ||
         !deviceAlbum.modifiedAt.isAtSameMomentAs(dbAlbum.modifiedAt) ||
         await _albumMediaRepository.getAssetCount(deviceAlbum.localId!) !=
             (await _eTagRepository.getById(deviceAlbum.eTagKeyAssetCount))
@@ -1101,6 +1105,7 @@ class SyncService {
 bool _hasRemoteAlbumChanged(Album remoteAlbum, Album dbAlbum) {
   return remoteAlbum.remoteAssetCount != dbAlbum.assetCount ||
       remoteAlbum.name != dbAlbum.name ||
+      remoteAlbum.description != dbAlbum.description ||
       remoteAlbum.remoteThumbnailAssetId != dbAlbum.thumbnail.value?.remoteId ||
       remoteAlbum.shared != dbAlbum.shared ||
       remoteAlbum.remoteUsers.length != dbAlbum.sharedUsers.length ||
