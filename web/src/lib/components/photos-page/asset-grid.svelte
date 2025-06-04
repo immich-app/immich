@@ -382,7 +382,12 @@
 
   const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
-    await deleteAssets(!(isTrashEnabled && !force), (assetIds) => assetStore.removeAssets(assetIds), idsSelectedAssets);
+    await deleteAssets(
+      !(isTrashEnabled && !force),
+      (assetIds) => assetStore.removeAssets(assetIds),
+      assetInteraction.selectedAssets,
+      !isTrashEnabled || force ? undefined : (assets) => assetStore.addAssets(assets),
+    );
     assetInteraction.clearMultiselect();
   };
 

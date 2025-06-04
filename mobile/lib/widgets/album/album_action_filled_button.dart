@@ -16,7 +16,7 @@ class AlbumActionFilledButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 16.0),
+      padding: const EdgeInsets.only(right: 8.0),
       child: FilledButton.icon(
         style: FilledButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
@@ -32,9 +32,7 @@ class AlbumActionFilledButton extends StatelessWidget {
         ),
         label: Text(
           labelText,
-          style: context.textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: context.textTheme.labelLarge?.copyWith(),
         ),
         onPressed: onPressed,
       ),

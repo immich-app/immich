@@ -513,6 +513,7 @@
               disabled={!album?.isActivityEnabled}
               isLiked={activityManager.isLiked}
               numberOfComments={activityManager.commentCount}
+              numberOfLikes={activityManager.likeCount}
               onFavorite={handleFavorite}
               onOpenActivityTab={handleOpenActivity}
             />
@@ -569,6 +570,7 @@
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
                 asset = stackedAsset;
+                previewStackedAsset = undefined;
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
               readonly

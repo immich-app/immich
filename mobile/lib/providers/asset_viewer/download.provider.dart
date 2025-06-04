@@ -140,6 +140,10 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
     });
   }
 
+  Future<List<bool>> downloadAllAsset(List<Asset> assets) async {
+    return await _downloadService.downloadAll(assets);
+  }
+
   void downloadAsset(Asset asset, BuildContext context) async {
     await _downloadService.download(asset);
   }
