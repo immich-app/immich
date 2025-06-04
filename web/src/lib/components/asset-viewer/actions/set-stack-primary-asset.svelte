@@ -16,26 +16,10 @@
   let { stack, asset, onAction }: Props = $props();
 
   const handleSetPrimaryAsset = async () => {
-    const id = stack.id;
-    const updatedStack = await updateStack({ id, stackUpdateDto: { primaryAssetId: asset.id } });
+    const updatedStack = await updateStack({ id: stack.id, stackUpdateDto: { primaryAssetId: asset.id } });
     if (updatedStack) {
       onAction({ type: AssetAction.SET_STACK_PRIMARY_ASSET, stack: updatedStack });
     }
-
-    // const isConfirmed = await modalManager.showDialog({
-    //   title: $t('keep_this_delete_others'),
-    //   prompt: $t('confirm_keep_this_delete_others'),
-    //   confirmText: $t('delete_others'),
-    // });
-
-    // if (!isConfirmed) {
-    //   return;
-    // }
-
-    // const keptAsset = await keepThisDeleteOthers(asset, stack);
-    // if (keptAsset) {
-    //   onAction({ type: AssetAction.UNSTACK, assets: [toTimelineAsset(keptAsset)] });
-    // }
   };
 </script>
 

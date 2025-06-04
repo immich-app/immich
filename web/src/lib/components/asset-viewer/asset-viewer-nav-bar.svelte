@@ -193,7 +193,7 @@
           {#if stack}
             <UnstackAction {stack} {onAction} />
             <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
-            {#if stack?.primaryAssetId != asset.id}
+            {#if stack?.primaryAssetId !== asset.id}
               <SetStackPrimaryAsset {stack} {asset} {onAction} />
             {/if}
           {/if}
