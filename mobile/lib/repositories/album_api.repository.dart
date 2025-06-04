@@ -36,6 +36,7 @@ class AlbumApiRepository extends ApiRepository implements IAlbumApiRepository {
     String name, {
     required Iterable<String> assetIds,
     Iterable<String> sharedUserIds = const [],
+    String? description,
   }) async {
     final users = sharedUserIds.map(
       (id) => AlbumUserCreateDto(userId: id, role: AlbumUserRole.editor),
@@ -44,6 +45,7 @@ class AlbumApiRepository extends ApiRepository implements IAlbumApiRepository {
       _api.createAlbum(
         CreateAlbumDto(
           albumName: name,
+          description: description,
           assetIds: assetIds.toList(),
           albumUsers: users.toList(),
         ),
@@ -161,6 +163,7 @@ class AlbumApiRepository extends ApiRepository implements IAlbumApiRepository {
       lastModifiedAssetTimestamp: dto.lastModifiedAssetTimestamp,
       shared: dto.shared,
       startDate: dto.startDate,
+      description: dto.description,
       endDate: dto.endDate,
       activityEnabled: dto.isActivityEnabled,
       sortOrder: dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc,
@@ -174,6 +177,7 @@ class AlbumApiRepository extends ApiRepository implements IAlbumApiRepository {
     album.sharedUsers.addAll(users.map(entity.User.fromDto));
     final assets = dto.assets.map(Asset.remote).toList();
     album.assets.addAll(assets);
+
     return album;
   }
 }

@@ -35,7 +35,7 @@ class AssetSelectionState {
 
   @override
   String toString() =>
-      'SelectionAssetState(hasRemote: $hasRemote, hasMerged: $hasMerged, hasMerged: $hasMerged, selectedCount: $selectedCount)';
+      'SelectionAssetState(hasRemote: $hasRemote, hasLocal: $hasLocal, hasMerged: $hasMerged, selectedCount: $selectedCount)';
 
   @override
   bool operator ==(covariant AssetSelectionState other) {
