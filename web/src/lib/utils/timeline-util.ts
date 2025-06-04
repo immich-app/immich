@@ -62,12 +62,12 @@ export function formatGroupTitle(_date: DateTime): string {
 
   // Today
   if (today.hasSame(date, 'day')) {
-    return date.toRelativeCalendar();
+    return date.toRelativeCalendar({ locale: get(locale) });
   }
 
   // Yesterday
   if (today.minus({ days: 1 }).hasSame(date, 'day')) {
-    return date.toRelativeCalendar();
+    return date.toRelativeCalendar({ locale: get(locale) });
   }
 
   // Last week
