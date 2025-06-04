@@ -17,11 +17,15 @@ class AlbumActionFilledButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
-      child: FilledButton.icon(
-        style: FilledButton.styleFrom(
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+          ),
+          side: BorderSide(
+            color: context.colorScheme.surfaceContainerHighest,
+            width: 1,
           ),
           backgroundColor: context.colorScheme.surfaceContainerHigh,
         ),
