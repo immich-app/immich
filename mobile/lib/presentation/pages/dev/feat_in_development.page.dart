@@ -54,9 +54,36 @@ final _features = [
     },
   ),
   _Feature(
+    name: 'Clear Remote Data',
+    icon: Icons.delete_sweep_rounded,
+    onTap: (_, ref) async {
+      final db = ref.read(driftProvider);
+      await db.remoteAssetEntity.deleteAll();
+      await db.remoteExifEntity.deleteAll();
+    },
+  ),
+  _Feature(
     name: 'Local Media Summary',
     icon: Icons.table_chart_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const LocalMediaSummaryRoute()),
+  ),
+  _Feature(
+    name: 'Remote Media Summary',
+    icon: Icons.summarize_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const RemoteMediaSummaryRoute()),
+  ),
+  _Feature(
+    name: 'Reset Sqlite',
+    icon: Icons.table_view_rounded,
+    onTap: (_, ref) async {
+      final drift = ref.read(driftProvider);
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      final migrator = drift.createMigrator();
+      for (final entity in drift.allSchemaEntities) {
+        await migrator.drop(entity);
+        await migrator.create(entity);
+      }
+    },
   ),
 ];
 

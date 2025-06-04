@@ -63,7 +63,6 @@ class SyncStreamService {
     Iterable<dynamic> data,
   ) async {
     _logger.fine("Processing sync data for $type of length ${data.length}");
-    // ignore: prefer-switch-expression
     switch (type) {
       case SyncEntityType.userV1:
         return _syncStreamRepository.updateUsersV1(data.cast());

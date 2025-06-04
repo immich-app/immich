@@ -3485,14 +3485,12 @@ export function tagAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, page, pageSize, personId, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
-    page?: number;
-    pageSize?: number;
     personId?: string;
     tagId?: string;
     timeBucket: string;
@@ -3510,8 +3508,6 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, page
         isTrashed,
         key,
         order,
-        page,
-        pageSize,
         personId,
         tagId,
         timeBucket,

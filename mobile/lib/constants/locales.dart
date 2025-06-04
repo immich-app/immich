@@ -5,6 +5,7 @@ const Map<String, Locale> locales = {
   'English (en)': Locale('en'),
   // Additional locales
   'Arabic (ar)': Locale('ar'),
+  'Bulgarian (bg)': Locale('bg'),
   'Catalan (ca)': Locale('ca'),
   'Chinese Simplified (zh_CN)':
       Locale.fromSubtags(languageCode: 'zh', scriptCode: 'SIMPLIFIED'),
@@ -31,6 +32,7 @@ const Map<String, Locale> locales = {
   'Mongolian (mn)': Locale('mn'),
   'Norwegian Bokmål (nb_NO)': Locale('nb', 'NO'),
   'Polish (pl)': Locale('pl'),
+  'Brazilian Portuguese (pt_BR)': Locale('pt', 'BR'),
   'Portuguese (pt)': Locale('pt'),
   'Romanian (ro)': Locale('ro'),
   'Russian (ru)': Locale('ru'),
@@ -42,6 +44,8 @@ const Map<String, Locale> locales = {
   'Slovenian (sl)': Locale('sl'),
   'Spanish (es)': Locale('es'),
   'Swedish (sv)': Locale('sv'),
+  'Tamil (ta)': Locale('ta'),
+  'Telugu (te)': Locale('te'),
   'Thai (th)': Locale('th'),
   'Turkish (tr)': Locale('tr'),
   'Ukrainian (uk)': Locale('uk'),

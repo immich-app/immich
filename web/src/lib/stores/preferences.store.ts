@@ -9,9 +9,9 @@ export interface ThemeSetting {
 }
 
 // Locale to use for formatting dates, numbers, etc.
-export const locale = persisted<string | undefined>('locale', undefined, {
+export const locale = persisted<string | undefined>('locale', 'default', {
   serializer: {
-    parse: (text) => (text == '' ? 'en-US' : text),
+    parse: (text) => text || 'default',
     stringify: (object) => object ?? '',
   },
 });

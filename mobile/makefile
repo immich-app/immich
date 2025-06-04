@@ -21,7 +21,7 @@ create_splash:
 build_release_android:
 	flutter build appbundle
 
-migrations:
+migration:
 	dart run drift_dev make-migrations
 
 translation:

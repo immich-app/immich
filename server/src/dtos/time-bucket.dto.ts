@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsEnum, IsInt, IsString, Min } from 'class-validator';
+import { IsEnum, IsString } from 'class-validator';
 import { AssetOrder, AssetVisibility } from 'src/enum';
 import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
 
@@ -41,16 +41,6 @@ export class TimeBucketDto {
 export class TimeBucketAssetDto extends TimeBucketDto {
   @IsString()
   timeBucket!: string;
-
-  @IsInt()
-  @Min(1)
-  @Optional()
-  page?: number;
-
-  @IsInt()
-  @Min(1)
-  @Optional()
-  pageSize?: number;
 }
 
 export class TimelineStackResponseDto {
