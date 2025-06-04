@@ -19,10 +19,6 @@ export function handleFetchEvent(event: FetchEvent): void {
 
   const url = new URL(event.request.url);
 
-  if (isIgnoredFileType(url.pathname) || isIgnoredPath(url.pathname)) {
-    return;
-  }
-
   if (APP_RESOURCES.includes(url.pathname)) {
     event.respondWith(getCachedOrFetch(event.request));
     return;
@@ -30,6 +26,10 @@ export function handleFetchEvent(event: FetchEvent): void {
 
   if (isAssetRequest(url.pathname)) {
     event.respondWith(getCachedOrFetch(event.request, true));
+    return;
+  }
+
+  if (isIgnoredFileType(url.pathname) || isIgnoredPath(url.pathname)) {
     return;
   }
 
