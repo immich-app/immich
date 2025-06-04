@@ -67,20 +67,26 @@ export class ActivityRepository {
   }
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
-  async getStatistics({ albumId, assetId }: { albumId: string; assetId?: string }): Promise<{ comments: number; likes: number }> {
+  async getStatistics({
+    albumId,
+    assetId,
+  }: {
+    albumId: string;
+    assetId?: string;
+  }): Promise<{ comments: number; likes: number }> {
     const result = await this.db
-    .selectFrom('activity')
-    .select((eb) => [
-      eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', false).as('comments'),
-      eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', true).as('likes'),
-    ])
-    .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
-    .leftJoin('assets', 'assets.id', 'activity.assetId')
-    .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
-    .where('activity.albumId', '=', albumId)
-    .where('assets.deletedAt', 'is', null)
-    .where('assets.visibility', '!=', sql.lit(AssetVisibility.LOCKED))
-    .executeTakeFirstOrThrow();
+      .selectFrom('activity')
+      .select((eb) => [
+        eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', false).as('comments'),
+        eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', true).as('likes'),
+      ])
+      .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
+      .leftJoin('assets', 'assets.id', 'activity.assetId')
+      .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
+      .where('activity.albumId', '=', albumId)
+      .where('assets.deletedAt', 'is', null)
+      .where('assets.visibility', '!=', sql.lit(AssetVisibility.LOCKED))
+      .executeTakeFirstOrThrow();
 
     return result;
   }
