@@ -211,6 +211,7 @@ export enum SystemMetadataKey {
 export enum UserMetadataKey {
   PREFERENCES = 'preferences',
   LICENSE = 'license',
+  ONBOARDING = 'onboarding',
 }
 
 export enum UserAvatarColor {

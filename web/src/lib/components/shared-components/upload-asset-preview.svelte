@@ -32,7 +32,7 @@
 
   const handleRetry = async (uploadAsset: UploadAsset) => {
     uploadAssetsStore.removeItem(uploadAsset.id);
-    await fileUploadHandler([uploadAsset.file], uploadAsset.albumId);
+    await fileUploadHandler({ files: [uploadAsset.file], albumId: uploadAsset.albumId });
   };
 
   const asLink = (asset: UploadAsset) => {

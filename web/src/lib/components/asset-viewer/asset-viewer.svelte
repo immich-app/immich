@@ -352,7 +352,9 @@
   const handleUpdateSelectedEditType = (type: string) => {
     selectedEditType = type;
   };
+
   let isFullScreen = $derived(fullscreenElement !== null);
+
   $effect(() => {
     if (asset) {
       previewStackedAsset = undefined;
@@ -567,6 +569,7 @@
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
                 asset = stackedAsset;
+                previewStackedAsset = undefined;
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
               readonly

@@ -1,19 +1,20 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
+  import { tagAssets } from '$lib/utils/asset-utils';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiClose, mdiTag } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-  import Combobox, { type ComboBoxOption } from '../shared-components/combobox.svelte';
+  import Combobox, { type ComboBoxOption } from '../components/shared-components/combobox.svelte';
 
   interface Props {
-    onTag: (tagIds: string[]) => void;
-    onCancel: () => void;
+    onClose: (success?: true) => void;
+    assetIds: string[];
   }
 
-  let { onTag, onCancel }: Props = $props();
+  let { onClose, assetIds }: Props = $props();
 
   let allTags: TagResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
@@ -25,7 +26,10 @@
     allTags = await getAllTags();
   });
 
-  const handleSubmit = () => onTag([...selectedIds]);
+  const handleSubmit = async () => {
+    await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
+    onClose(true);
+  };
 
   const handleSelect = async (option?: ComboBoxOption) => {
     if (!option) {
@@ -45,13 +49,13 @@
     selectedIds.delete(tag);
   };
 
-  const onsubmit = (event: Event) => {
+  const onsubmit = async (event: Event) => {
     event.preventDefault();
-    handleSubmit();
+    await handleSubmit();
   };
 </script>
 
-<Modal size="small" title={$t('tag_assets')} icon={mdiTag} onClose={onCancel}>
+<Modal size="small" title={$t('tag_assets')} icon={mdiTag} {onClose}>
   <ModalBody>
     <form {onsubmit} autocomplete="off" id="create-tag-form">
       <div class="my-4 flex flex-col gap-2">
@@ -95,7 +99,7 @@
 
   <ModalFooter>
     <div class="flex w-full gap-2">
-      <Button shape="round" fullWidth color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
+      <Button shape="round" fullWidth color="secondary" onclick={() => onClose()}>{$t('cancel')}</Button>
       <Button type="submit" shape="round" fullWidth form="create-tag-form" {disabled}>{$t('tag_assets')}</Button>
     </div>
   </ModalFooter>

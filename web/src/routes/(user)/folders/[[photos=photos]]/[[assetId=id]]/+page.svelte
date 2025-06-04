@@ -1,7 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
@@ -30,6 +29,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
+  import { IconButton } from '@immich/ui';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -136,7 +136,14 @@
       clearSelect={() => cancelMultiselect(assetInteraction)}
     >
       <CreateSharedLink />
-      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAllAssets} />
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        aria-label={$t('select_all')}
+        icon={mdiSelectAll}
+        onclick={handleSelectAllAssets}
+      />
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />

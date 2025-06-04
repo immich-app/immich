@@ -167,7 +167,7 @@
                   {$t('role_editor')}
                 {/if}
                 {#if user.id !== album.ownerId}
-                  <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
+                  <ButtonContextMenu icon={mdiDotsVertical} size="medium" title={$t('options')}>
                     {#if role === AlbumUserRole.Viewer}
                       <MenuOption
                         onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Editor)}

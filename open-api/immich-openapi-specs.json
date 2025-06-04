@@ -5275,6 +5275,38 @@
         ]
       }
     },
+    "/server/apk-links": {
+      "get": {
+        "operationId": "getApkLinks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerApkLinksDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
     "/server/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -7349,24 +7381,6 @@
             }
           },
           {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "type": "number"
-            }
-          },
-          {
             "name": "personId",
             "required": false,
             "in": "query",
@@ -7890,6 +7904,101 @@
         ]
       }
     },
+    "/users/me/onboarding": {
+      "delete": {
+        "operationId": "deleteUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "operationId": "getUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "setUserOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/users/me/preferences": {
       "get": {
         "operationId": "getMyPreferences",
@@ -8294,11 +8403,15 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "minItems": 1,
+            "type": "array"
           }
         },
-        "required": [
-          "name"
-        ],
         "type": "object"
       },
       "ActivityCreateDto": {
@@ -9548,6 +9661,26 @@
         ],
         "type": "string"
       },
+      "CastResponse": {
+        "properties": {
+          "gCastEnabled": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gCastEnabled"
+        ],
+        "type": "object"
+      },
+      "CastUpdate": {
+        "properties": {
+          "gCastEnabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "ChangePasswordDto": {
         "properties": {
           "newPassword": {
@@ -10348,6 +10481,9 @@
           "isAdmin": {
             "type": "boolean"
           },
+          "isOnboarded": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -10367,6 +10503,7 @@
         "required": [
           "accessToken",
           "isAdmin",
+          "isOnboarded",
           "name",
           "profileImagePath",
           "shouldChangePassword",
@@ -11008,6 +11145,28 @@
         },
         "required": [
           "year"
+        ],
+        "type": "object"
+      },
+      "OnboardingDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "OnboardingResponseDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
         ],
         "type": "object"
       },
@@ -11931,6 +12090,29 @@
         ],
         "type": "object"
       },
+      "ServerApkLinksDto": {
+        "properties": {
+          "arm64v8a": {
+            "type": "string"
+          },
+          "armeabiv7a": {
+            "type": "string"
+          },
+          "universal": {
+            "type": "string"
+          },
+          "x86_64": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "arm64v8a",
+          "armeabiv7a",
+          "universal",
+          "x86_64"
+        ],
+        "type": "object"
+      },
       "ServerConfigDto": {
         "properties": {
           "externalDomain": {
@@ -12806,11 +12988,11 @@
             "type": "string"
           },
           "role": {
-            "enum": [
-              "editor",
-              "viewer"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
           },
           "userId": {
             "type": "string"
@@ -13048,6 +13230,9 @@
             "nullable": true,
             "type": "string"
           },
+          "originalFileName": {
+            "type": "string"
+          },
           "ownerId": {
             "type": "string"
           },
@@ -13056,22 +13241,18 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "IMAGE",
-              "VIDEO",
-              "AUDIO",
-              "OTHER"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
           },
           "visibility": {
-            "enum": [
-              "archive",
-              "timeline",
-              "hidden",
-              "locked"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -13082,6 +13263,7 @@
           "id",
           "isFavorite",
           "localDateTime",
+          "originalFileName",
           "ownerId",
           "thumbhash",
           "type",
@@ -14798,6 +14980,9 @@
       },
       "UserPreferencesResponseDto": {
         "properties": {
+          "cast": {
+            "$ref": "#/components/schemas/CastResponse"
+          },
           "download": {
             "$ref": "#/components/schemas/DownloadResponse"
           },
@@ -14827,6 +15012,7 @@
           }
         },
         "required": [
+          "cast",
           "download",
           "emailNotifications",
           "folders",
@@ -14843,6 +15029,9 @@
         "properties": {
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "cast": {
+            "$ref": "#/components/schemas/CastUpdate"
           },
           "download": {
             "$ref": "#/components/schemas/DownloadUpdate"

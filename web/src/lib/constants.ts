@@ -273,9 +273,17 @@ export const locales = [
   { code: 'zu-ZA', name: 'Zulu (South Africa)' },
 ];
 
-export const defaultLang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
+interface Lang {
+  name: string;
+  code: string;
+  loader: () => Promise<{ default: object }>;
+  rtl?: boolean;
+  weblateCode?: string;
+}
 
-export const langs = [
+export const defaultLang: Lang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
+
+export const langs: Lang[] = [
   { name: 'Afrikaans', code: 'af', loader: () => import('$i18n/af.json') },
   { name: 'Arabic', code: 'ar', loader: () => import('$i18n/ar.json'), rtl: true },
   { name: 'Azerbaijani', code: 'az', loader: () => import('$i18n/az.json'), rtl: true },
@@ -359,7 +367,7 @@ export const langs = [
     weblateCode: 'zh_SIMPLIFIED',
     loader: () => import('$i18n/zh_SIMPLIFIED.json'),
   },
-  { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
+  { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({ default: {} }) },
 ];
 
 export enum ImmichProduct {

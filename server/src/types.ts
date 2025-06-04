@@ -502,9 +502,13 @@ export interface UserPreferences {
     showSupportBadge: boolean;
     hideBuyButtonUntil: string;
   };
+  cast: {
+    gCastEnabled: boolean;
+  };
 }
 
 export interface UserMetadata extends Record<UserMetadataKey, Record<string, any>> {
   [UserMetadataKey.PREFERENCES]: DeepPartial<UserPreferences>;
   [UserMetadataKey.LICENSE]: { licenseKey: string; activationKey: string; activatedAt: string };
+  [UserMetadataKey.ONBOARDING]: { isOnboarded: boolean };
 }
