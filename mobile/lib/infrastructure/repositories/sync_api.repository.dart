@@ -130,7 +130,6 @@ class SyncApiRepository implements ISyncApiRepository {
   }
 }
 
-// ignore: avoid-dynamic
 const _kResponseMap = <SyncEntityType, Function(dynamic)>{
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,

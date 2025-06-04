@@ -235,7 +235,6 @@ class BottomGalleryBar extends ConsumerWidget {
 
       ref.read(downloadStateProvider.notifier).downloadAsset(
             asset,
-            context,
           );
     }
 

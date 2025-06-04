@@ -140,7 +140,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
     });
   }
 
-  void downloadAsset(Asset asset, BuildContext context) async {
+  void downloadAsset(Asset asset) async {
     await _downloadService.download(asset);
   }
 
