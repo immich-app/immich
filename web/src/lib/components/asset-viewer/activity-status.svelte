@@ -16,10 +16,10 @@
   let { isLiked, numberOfComments, numberOfLikes, disabled, onOpenActivityTab, onFavorite }: Props = $props();
 </script>
 
-<div class="w-full flex p-4 text-white items-center justify-center rounded-full gap-5 bg-immich-dark-bg bg-opacity-60">
+<div class="w-full flex p-4 items-center justify-center rounded-full gap-5 bg-subtle border bg-opacity-60">
   <button type="button" class={disabled ? 'cursor-not-allowed' : ''} onclick={onFavorite} {disabled}>
     <div class="flex gap-2 items-center justify-center">
-      <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={24} />
+      <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={24} class={isLiked ? 'text-red-400' : 'text-fg'} />
       {#if numberOfLikes}
         <div class="text-l">{numberOfLikes.toLocaleString($locale)}</div>
       {/if}
