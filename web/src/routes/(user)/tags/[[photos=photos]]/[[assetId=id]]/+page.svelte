@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
@@ -15,9 +14,9 @@
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
-  import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { joinPaths } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
@@ -31,9 +30,6 @@
 
   let { data }: Props = $props();
 
-  let pathSegments = $derived(data.path ? data.path.split('/') : []);
-  let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
-
   const assetInteraction = new AssetInteraction();
 
   const buildMap = (tags: TagResponseDto[]) => {
@@ -44,20 +40,17 @@
   onDestroy(() => assetStore.destroy());
 
   let tags = $derived<TagResponseDto[]>(data.tags);
-  let tagsMap = $derived(buildMap(tags));
-  let tag = $derived(currentPath ? tagsMap[currentPath] : null);
-  let tagId = $derived(tag?.id);
-  let tree = $derived(buildTree(tags.map((tag) => tag.value)));
+  const tagsMap = $derived(buildMap(tags));
+  const tag = $derived(tagsMap[data.tree.path]);
+  const tagId = $derived(tag?.id);
 
   const handleNavigation = async (tag: string) => {
-    await navigateToView(normalizeTreePath(`${data.path || ''}/${tag}`));
+    await navigateToView(joinPaths([data.tree.path, tag]));
   };
 
   const getLink = (path: string) => {
     const url = new URL(AppRoute.TAGS, globalThis.location.href);
-    if (path) {
-      url.searchParams.set(QueryParameter.PATH, path);
-    }
+    url.searchParams.set(QueryParameter.PATH, path);
     return url.href;
   };
 
@@ -129,8 +122,7 @@
     tags = await getAllTags();
 
     // navigate to parent
-    const parentPath = pathSegments.slice(0, -1).join('/');
-    await navigateToView(parentPath);
+    await navigateToView(data.tree.parent ? data.tree.parent.path : '');
   };
 
   const onsubmit = async (event: Event) => {
@@ -148,8 +140,8 @@
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiTag, active: mdiTag }}
-            items={tree}
-            active={currentPath}
+            node={data.tree}
+            active={data.tree.path}
             {getLink}
             {getColor}
           />
@@ -164,7 +156,7 @@
         <Text class="hidden md:block">{$t('create_tag')}</Text>
       </Button>
 
-      {#if pathSegments.length > 0 && tag}
+      {#if data.tree.path.length > 0 && tag}
         <Button leadingIcon={mdiPencil} onclick={handleEdit} size="small" variant="ghost" color="secondary">
           <Text class="hidden md:block">{$t('edit_tag')}</Text>
         </Button>
@@ -175,17 +167,17 @@
     </HStack>
   {/snippet}
 
-  <Breadcrumbs {pathSegments} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
+  <Breadcrumbs node={data.tree} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
     {#if tag}
       <AssetGrid enableRouting={true} {assetStore} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
         {#snippet empty()}
-          <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation} />
+          <TreeItemThumbnails items={data.tree.children} icon={mdiTag} onClick={handleNavigation} />
         {/snippet}
       </AssetGrid>
     {:else}
-      <TreeItemThumbnails items={Object.keys(tree)} icon={mdiTag} onClick={handleNavigation} />
+      <TreeItemThumbnails items={data.tree.children} icon={mdiTag} onClick={handleNavigation} />
     {/if}
   </section>
 </UserPageLayout>

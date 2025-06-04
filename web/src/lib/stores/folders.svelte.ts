@@ -1,4 +1,5 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { TreeNode } from '$lib/utils/tree-utils';
 import {
   getAssetsByOriginalPath,
   getUniqueOriginalPaths,
@@ -13,47 +14,40 @@ type AssetCache = {
 };
 
 class FoldersStore {
+  folders = $state.raw<TreeNode>();
   private initialized = false;
-  uniquePaths = $state<string[]>([]);
-  assets = $state<AssetCache>({});
+  private assets = $state<AssetCache>({});
 
   constructor() {
     eventManager.on('auth.logout', () => this.clearCache());
   }
 
-  async fetchUniquePaths() {
+  async fetchTree(): Promise<TreeNode> {
     if (this.initialized) {
-      return;
+      return this.folders!;
     }
     this.initialized = true;
 
     const uniquePaths = await getUniqueOriginalPaths();
-    this.uniquePaths.push(...uniquePaths);
+    return (this.folders = TreeNode.fromPaths(uniquePaths));
   }
 
   bustAssetCache() {
     this.assets = {};
   }
 
-  async refreshAssetsByPath(path: string | null) {
-    if (!path) {
-      return;
-    }
-    this.assets[path] = await getAssetsByOriginalPath({ path });
+  async refreshAssetsByPath(path: string) {
+    return (this.assets[path] = await getAssetsByOriginalPath({ path }));
   }
 
   async fetchAssetsByPath(path: string) {
-    if (this.assets[path]) {
-      return;
-    }
-
-    this.assets[path] = await getAssetsByOriginalPath({ path });
+    return (this.assets[path] ??= await getAssetsByOriginalPath({ path }));
   }
 
   clearCache() {
     this.initialized = false;
-    this.uniquePaths = [];
     this.assets = {};
+    this.folders = undefined;
   }
 }
 
