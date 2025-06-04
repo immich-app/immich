@@ -55,7 +55,9 @@ class AlbumViewerEditableDescription extends HookConsumerWidget {
           }
         },
         focusNode: descriptionFocusNode,
-        style: context.textTheme.bodyLarge,
+        style: context.textTheme.bodyMedium,
+        maxLines: 3,
+        minLines: 1,
         controller: descriptionTextEditController,
         onTap: () {
           context.focusScope.requestFocus(descriptionFocusNode);
@@ -70,8 +72,7 @@ class AlbumViewerEditableDescription extends HookConsumerWidget {
           }
         },
         decoration: InputDecoration(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          contentPadding: const EdgeInsets.all(8),
           suffixIcon: descriptionFocusNode.hasFocus
               ? IconButton(
                   onPressed: () {

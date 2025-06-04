@@ -106,27 +106,44 @@ class AlbumViewer extends HookConsumerWidget {
         MultiselectGrid(
           key: const ValueKey("albumViewerMultiselectGrid"),
           renderListProvider: albumTimelineProvider(album.id),
-          topWidget: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AlbumTitle(
-                key: const ValueKey("albumTitle"),
-                titleFocusNode: titleFocusNode,
+          topWidget: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  context.primaryColor.withValues(alpha: 0.04),
+                  context.primaryColor.withValues(alpha: 0.02),
+                  Colors.orange.withValues(alpha: 0.02),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.3, 0.7, 1.0],
               ),
-              AlbumDescription(
-                key: const ValueKey("albumDescription"),
-                descriptionFocusNode: descriptionFocusNode,
-              ),
-              const AlbumDateRange(),
-              const AlbumSharedUserIcons(),
-              if (album.isRemote)
-                AlbumControlButton(
-                  key: const ValueKey("albumControlButton"),
-                  onAddPhotosPressed: onAddPhotosPressed,
-                  onAddUsersPressed: onAddUsersPressed,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 32),
+                const AlbumDateRange(),
+                AlbumTitle(
+                  key: const ValueKey("albumTitle"),
+                  titleFocusNode: titleFocusNode,
                 ),
-            ],
+                AlbumDescription(
+                  key: const ValueKey("albumDescription"),
+                  descriptionFocusNode: descriptionFocusNode,
+                ),
+                const AlbumSharedUserIcons(),
+                if (album.isRemote)
+                  AlbumControlButton(
+                    key: const ValueKey("albumControlButton"),
+                    onAddPhotosPressed: onAddPhotosPressed,
+                    onAddUsersPressed: onAddUsersPressed,
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
           onRemoveFromAlbum: onRemoveFromAlbumPressed,
           editEnabled: album.ownerId == userId,

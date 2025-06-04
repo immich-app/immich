@@ -306,6 +306,10 @@ class AlbumViewerAppbar extends HookConsumerWidget
                 );
               }
               descriptionFocusNode.unfocus();
+            } else {
+              titleFocusNode.unfocus();
+              descriptionFocusNode.unfocus();
+              ref.read(albumViewerProvider.notifier).disableEditAlbum();
             }
           },
           icon: const Icon(Icons.check_rounded),

@@ -41,7 +41,9 @@ class AlbumTitle extends ConsumerWidget {
       padding: const EdgeInsets.only(left: 16, right: 8),
       child: Text(
         albumName,
-        style: context.textTheme.headlineMedium,
+        style: context.textTheme.headlineLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
