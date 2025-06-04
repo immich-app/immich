@@ -1,6 +1,5 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import {
     NotificationType,
     notificationController,
@@ -12,6 +11,7 @@
   import { mdiHeart, mdiHeartOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     asset: AssetResponseDto;
@@ -46,11 +46,13 @@
   };
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'f' }, onShortcut: toggleFavorite }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'f' }, onShortcut: toggleFavorite }} />
 
-<CircleIconButton
-  color="opaque"
+<IconButton
+  color="secondary"
+  shape="round"
+  variant="ghost"
   icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
-  title={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
+  aria-label={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
   onclick={toggleFavorite}
 />

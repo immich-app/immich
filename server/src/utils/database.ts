@@ -153,17 +153,12 @@ export function toJson<DB, TB extends keyof DB & string, T extends TB | Expressi
 }
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
-// TODO come up with a better query that only selects the fields we need
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
-  return qb.where((qb) =>
-    qb.or([
-      qb('assets.visibility', '=', AssetVisibility.TIMELINE),
-      qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
-    ]),
-  );
+  return qb.where('assets.visibility', 'in', [sql.lit(AssetVisibility.ARCHIVE), sql.lit(AssetVisibility.TIMELINE)]);
 }
 
+// TODO come up with a better query that only selects the fields we need
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('exif', 'assets.id', 'exif.assetId')
@@ -271,7 +266,7 @@ export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
 }
 
 export function truncatedDate<O>(size: TimeBucketSize) {
-  return sql<O>`date_trunc(${size}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
+  return sql<O>`date_trunc(${sql.lit(size)}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: string) {
@@ -285,6 +280,7 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: str
     ),
   );
 }
+
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 
@@ -383,14 +379,28 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
 }
 
-type VectorIndexOptions = { vectorExtension: VectorExtension; table: string; indexName: string };
+export type ReindexVectorIndexOptions = { indexName: string; lists?: number };
 
-export function vectorIndexQuery({ vectorExtension, table, indexName }: VectorIndexOptions): string {
+type VectorIndexQueryOptions = { table: string; vectorExtension: VectorExtension } & ReindexVectorIndexOptions;
+
+export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: VectorIndexQueryOptions): string {
   switch (vectorExtension) {
+    case DatabaseExtension.VECTORCHORD: {
+      return `
+        CREATE INDEX IF NOT EXISTS ${indexName} ON ${table} USING vchordrq (embedding vector_cosine_ops) WITH (options = $$
+        residual_quantization = false
+        [build.internal]
+        lists = [${lists ?? 1}]
+        spherical_centroids = true
+        build_threads = 4
+        sampling_factor = 1024
+        $$)`;
+    }
     case DatabaseExtension.VECTORS: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
         USING vectors (embedding vector_cos_ops) WITH (options = $$
+        optimizing.optimizing_threads = 4
         [indexing.hnsw]
         m = 16
         ef_construction = 300

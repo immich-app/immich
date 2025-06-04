@@ -17,6 +17,7 @@ import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
+import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
@@ -85,6 +86,24 @@ export class UserController {
   @Authenticated()
   async deleteUserLicense(@Auth() auth: AuthDto): Promise<void> {
     await this.service.deleteLicense(auth);
+  }
+
+  @Get('me/onboarding')
+  @Authenticated()
+  getUserOnboarding(@Auth() auth: AuthDto): Promise<OnboardingResponseDto> {
+    return this.service.getOnboarding(auth);
+  }
+
+  @Put('me/onboarding')
+  @Authenticated()
+  async setUserOnboarding(@Auth() auth: AuthDto, @Body() Onboarding: OnboardingDto): Promise<OnboardingResponseDto> {
+    return this.service.setOnboarding(auth, Onboarding);
+  }
+
+  @Delete('me/onboarding')
+  @Authenticated()
+  async deleteUserOnboarding(@Auth() auth: AuthDto): Promise<void> {
+    await this.service.deleteOnboarding(auth);
   }
 
   @Get(':id')

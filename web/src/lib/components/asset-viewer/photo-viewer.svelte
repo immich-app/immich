@@ -1,8 +1,9 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
+  import { castManager } from '$lib/managers/cast-manager.svelte';
   import { photoViewerImgElement, type TimelineAsset } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
@@ -64,7 +65,6 @@
     currentPositionX: 0,
     currentPositionY: 0,
   });
-  $zoomed = false;
 
   onDestroy(() => {
     $boundingBoxesArray = [];
@@ -107,8 +107,13 @@
   };
 
   zoomToggle = () => {
-    $zoomed = $zoomed ? false : true;
+    photoZoomState.set({
+      ...$photoZoomState,
+      currentZoom: $photoZoomState.currentZoom > 1 ? 1 : 2,
+    });
   };
+
+  const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
 
   $effect(() => {
     if (isFaceEditMode.value && $photoZoomState.currentZoom > 1) {
@@ -147,6 +152,27 @@
     return AssetMediaSize.Preview;
   });
 
+  $effect(() => {
+    if (assetFileUrl) {
+      // this can't be in an async context with $effect
+      void cast(assetFileUrl);
+    }
+  });
+
+  const cast = async (url: string) => {
+    if (!url || !castManager.isCasting) {
+      return;
+    }
+    const fullUrl = new URL(url, globalThis.location.href);
+
+    try {
+      await castManager.loadMedia(fullUrl.href);
+    } catch (error) {
+      handleError(error, 'Unable to cast');
+      return;
+    }
+  };
+
   const onload = () => {
     imageLoaded = true;
     assetFileUrl = imageLoaderUrl;
@@ -180,10 +206,13 @@
   let containerHeight = $state(0);
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcuts={[
+    { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: true },
+    { shortcut: { key: 's' }, onShortcut: onPlaySlideshow, preventDefault: true },
     { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
+    { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: false },
   ]}
 />
 {#if imageError}
@@ -216,7 +245,7 @@
         <img
           src={assetFileUrl}
           alt=""
-          class="absolute top-0 start-0 object-cover h-full w-full blur-lg"
+          class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
           draggable="false"
         />
       {/if}

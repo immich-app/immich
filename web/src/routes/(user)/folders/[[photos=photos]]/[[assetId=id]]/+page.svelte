@@ -1,7 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
@@ -30,6 +29,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
+  import { IconButton } from '@immich/ui';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -90,49 +90,6 @@
   };
 </script>
 
-{#if assetInteraction.selectionActive}
-  <div class="fixed top-0 start-0 w-full">
-    <AssetSelectControlBar
-      assets={assetInteraction.selectedAssets}
-      clearSelect={() => cancelMultiselect(assetInteraction)}
-    >
-      <CreateSharedLink />
-      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAllAssets} />
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
-        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
-      </ButtonContextMenu>
-      <FavoriteAction
-        removeFavorite={assetInteraction.isAllFavorite}
-        onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
-          if (data.pathAssets && data.pathAssets.length > 0) {
-            for (const id of ids) {
-              const asset = data.pathAssets.find((asset) => asset.id === id);
-              if (asset) {
-                asset.isFavorite = isFavorite;
-              }
-            }
-          }
-        }}
-      />
-
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-        <DownloadAction menuItem />
-        <ChangeDate menuItem />
-        <ChangeDescription menuItem />
-        <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={triggerAssetUpdate} />
-        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
-        <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} />
-        <hr />
-        <AssetJobActions />
-      </ButtonContextMenu>
-    </AssetSelectControlBar>
-  </div>
-{/if}
-
 <UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
     <Sidebar>
@@ -165,8 +122,59 @@
           {viewport}
           showAssetName={true}
           pageHeaderOffset={54}
+          onReload={triggerAssetUpdate}
         />
       </div>
     {/if}
   </section>
 </UserPageLayout>
+
+{#if assetInteraction.selectionActive}
+  <div class="fixed top-0 start-0 w-full">
+    <AssetSelectControlBar
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => cancelMultiselect(assetInteraction)}
+    >
+      <CreateSharedLink />
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        aria-label={$t('select_all')}
+        icon={mdiSelectAll}
+        onclick={handleSelectAllAssets}
+      />
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
+        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
+        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
+      </ButtonContextMenu>
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
+          if (data.pathAssets && data.pathAssets.length > 0) {
+            for (const id of ids) {
+              const asset = data.pathAssets.find((asset) => asset.id === id);
+              if (asset) {
+                asset.isFavorite = isFavorite;
+              }
+            }
+          }
+        }}
+      />
+
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+        <DownloadAction menuItem />
+        <ChangeDate menuItem />
+        <ChangeDescription menuItem />
+        <ChangeLocation menuItem />
+        <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={triggerAssetUpdate} />
+        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
+        <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} onUndoDelete={triggerAssetUpdate} />
+        <hr />
+        <AssetJobActions />
+      </ButtonContextMenu>
+    </AssetSelectControlBar>
+  </div>
+{/if}

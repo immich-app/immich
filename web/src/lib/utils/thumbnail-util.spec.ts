@@ -1,6 +1,6 @@
 import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
 import { getAltText } from '$lib/utils/thumbnail-util';
-import { Visibility } from '@immich/sdk';
+import { AssetVisibility } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
 
 interface Person {
@@ -56,13 +56,22 @@ describe('getAltText', () => {
       people?: Person[];
       expected: string;
     }) => {
+      const testDate = new Date('2024-01-01T12:00:00.000Z');
       const asset: TimelineAsset = {
         id: 'test-id',
         ownerId: 'test-owner',
         ratio: 1,
         thumbhash: null,
-        localDateTime: '2024-01-01T12:00:00.000Z',
-        visibility: Visibility.Timeline,
+        localDateTime: {
+          year: testDate.getUTCFullYear(),
+          month: testDate.getUTCMonth() + 1, // Note: getMonth() is 0-based
+          day: testDate.getUTCDate(),
+          hour: testDate.getUTCHours(),
+          minute: testDate.getUTCMinutes(),
+          second: testDate.getUTCSeconds(),
+          millisecond: testDate.getUTCMilliseconds(),
+        },
+        visibility: AssetVisibility.Timeline,
         isFavorite: false,
         isTrashed: false,
         isVideo,
@@ -71,11 +80,9 @@ describe('getAltText', () => {
         duration: null,
         projectionType: null,
         livePhotoVideoId: null,
-        text: {
-          city: city ?? null,
-          country: country ?? null,
-          people: people?.map((person: Person) => person.name) ?? [],
-        },
+        city: city ?? null,
+        country: country ?? null,
+        people: people?.map((person: Person) => person.name) ?? [],
       };
 
       getAltText.subscribe((fn) => {

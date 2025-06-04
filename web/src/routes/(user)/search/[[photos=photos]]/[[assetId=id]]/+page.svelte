@@ -3,7 +3,6 @@
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -15,6 +14,7 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -25,7 +25,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { TimelineAsset, Viewport } from '$lib/stores/assets-store.svelte';
+  import { AssetStore, type TimelineAsset, type Viewport } from '$lib/stores/assets-store.svelte';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
@@ -44,6 +44,7 @@
     searchSmart,
     type SmartSearchDto,
   } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -78,6 +79,8 @@
       handlePromiseError(onSearchQueryUpdate());
     });
   });
+
+  let assetStore = new AssetStore();
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -125,6 +128,13 @@
     const assetIdSet = new Set(assetIds);
     searchResultAssets = searchResultAssets.filter((asset: TimelineAsset) => !assetIdSet.has(asset.id));
   };
+
+  const handleSetVisibility = (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+    onAssetDelete(assetIds);
+  };
+
   const handleSelectAll = () => {
     assetInteraction.selectAssets(searchResultAssets);
   };
@@ -248,7 +258,8 @@
   }
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} bind:scrollY />
+<svelte:window bind:scrollY />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
 
 <section>
   {#if assetInteraction.selectionActive}
@@ -258,7 +269,14 @@
         clearSelect={() => cancelMultiselect(assetInteraction)}
       >
         <CreateSharedLink />
-        <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          aria-label={$t('select_all')}
+          icon={mdiSelectAll}
+          onclick={handleSelectAll}
+        />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum {onAddToAlbum} />
           <AddToAlbum shared {onAddToAlbum} />
@@ -283,7 +301,7 @@
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
           {/if}
-          <DeleteAssets menuItem {onAssetDelete} />
+          <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
           <hr />
           <AssetJobActions />
         </ButtonContextMenu>
@@ -364,6 +382,7 @@
         showArchiveIcon={true}
         {viewport}
         pageHeaderOffset={54}
+        onReload={onSearchQueryUpdate}
       />
     {:else if !isLoading}
       <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
@@ -390,7 +409,14 @@
           clearSelect={() => cancelMultiselect(assetInteraction)}
         >
           <CreateSharedLink />
-          <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('select_all')}
+            icon={mdiSelectAll}
+            onclick={handleSelectAll}
+          />
           <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
             <AddToAlbum {onAddToAlbum} />
             <AddToAlbum shared {onAddToAlbum} />
@@ -413,10 +439,13 @@
             <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            {#if assetInteraction.isAllUserOwned}
+              <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+            {/if}
             {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
               <TagAction menuItem />
             {/if}
-            <DeleteAssets menuItem {onAssetDelete} />
+            <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
             <hr />
             <AssetJobActions />
           </ButtonContextMenu>

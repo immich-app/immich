@@ -941,6 +941,48 @@ describe(MediaService.name, () => {
       });
     });
 
+    it('should use preview path if video', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.videoThumbnail);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 1000, height: 1000 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.previewPath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        data,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          crop: {
+            left: 238,
+            top: 163,
+            width: 274,
+            height: 274,
+          },
+          raw: info,
+          processInvalidImages: false,
+          size: 250,
+        },
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      );
+      expect(mocks.person.update).toHaveBeenCalledWith({
+        id: 'person-1',
+        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      });
+    });
+
     it('should generate a thumbnail without going negative', async () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailStart);
       mocks.media.generateThumbnail.mockResolvedValue();
@@ -1235,7 +1277,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
 
-    it('should transcode the longest stream', async () => {
+    it('should transcode the highest bitrate video stream', async () => {
       mocks.logger.isLevelEnabled.mockReturnValue(false);
       mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
 
@@ -1249,7 +1291,27 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-map 0:0', '-map 0:1']),
+          outputOptions: expect.arrayContaining(['-map 0:1', '-map 0:3']),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should transcode the highest bitrate audio stream', async () => {
+      mocks.logger.isLevelEnabled.mockReturnValue(false);
+      mocks.media.probe.mockResolvedValue(probeStub.multipleAudioStreams);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mocks.media.probe).toHaveBeenCalledWith('/original/path.ext', { countFrames: false });
+      expect(mocks.systemMetadata.get).toHaveBeenCalled();
+      expect(mocks.storage.mkdirSync).toHaveBeenCalled();
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-map 0:0', '-map 0:2']),
           twoPass: false,
         }),
       );
@@ -1780,7 +1842,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
-            '-map 0:1',
+            '-map 0:3',
             '-v verbose',
             '-vf scale=-2:720',
             '-preset 12',
@@ -1901,7 +1963,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
-            '-map 0:1',
+            '-map 0:3',
             '-g 256',
             '-v verbose',
             '-vf hwupload_cuda,scale_cuda=-2:720:format=nv12',
@@ -2072,7 +2134,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
-            '-map 0:1',
+            '-map 0:3',
             '-bf 7',
             '-refs 5',
             '-g 256',
@@ -2294,7 +2356,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
-            '-map 0:1',
+            '-map 0:3',
             '-g 256',
             '-v verbose',
             '-vf hwupload=extra_hw_frames=64,scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12',
@@ -2581,7 +2643,7 @@ describe(MediaService.name, () => {
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
-            '-map 0:1',
+            '-map 0:3',
             '-g 256',
             '-v verbose',
             '-vf scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4',

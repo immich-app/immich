@@ -4,7 +4,6 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts } from '$lib/actions/shortcut';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
@@ -301,7 +300,7 @@
   });
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcuts={$isViewing
     ? []
     : [
@@ -314,13 +313,21 @@
 />
 
 {#if assetInteraction.selectionActive}
-  <div class="sticky top-0">
+  <div class="sticky top-0 z-1 dark">
     <AssetSelectControlBar
+      forceDark
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
     >
       <CreateSharedLink />
-      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        aria-label={$t('select_all')}
+        icon={mdiSelectAll}
+        onclick={handleSelectAll}
+      />
 
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum />
@@ -361,8 +368,11 @@
       {/snippet}
 
       <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-        <CircleIconButton
-          title={paused ? $t('play_memories') : $t('pause_memories')}
+        <IconButton
+          shape="round"
+          variant="ghost"
+          color="secondary"
+          aria-label={paused ? $t('play_memories') : $t('pause_memories')}
           icon={paused ? mdiPlay : mdiPause}
           onclick={() => handlePromiseError(handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause'))}
           class="hover:text-black"
@@ -380,8 +390,11 @@
             {(current.assetIndex + 1).toLocaleString($locale)}/{current.memory.assets.length.toLocaleString($locale)}
           </p>
         </div>
-        <CircleIconButton
-          title={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
+        <IconButton
+          shape="round"
+          variant="ghost"
+          color="secondary"
+          aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
           icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
           onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
         />
@@ -399,7 +412,14 @@
           onclick={() => memoryWrapper?.scrollIntoView({ behavior: 'smooth' })}
           disabled={!galleryInView}
         >
-          <CircleIconButton title={$t('hide_gallery')} icon={mdiChevronUp} color="light" onclick={() => {}} />
+          <IconButton
+            shape="round"
+            variant="ghost"
+            color="secondary"
+            aria-label={$t('hide_gallery')}
+            icon={mdiChevronUp}
+            onclick={() => {}}
+          />
         </button>
       </div>
     {/if}
@@ -475,7 +495,7 @@
             {/key}
 
             <div
-              class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2"
+              class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2 dark"
               class:opacity-0={galleryInView}
               class:opacity-100={!galleryInView}
             >
@@ -487,7 +507,7 @@
                   color="secondary"
                   aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
                   onclick={() => handleSaveMemory()}
-                  class="text-white dark:text-white w-[48px] h-[48px]"
+                  class="w-[48px] h-[48px]"
                 />
                 <!-- <IconButton
                   icon={mdiShareVariantOutline}
@@ -499,13 +519,11 @@
                 /> -->
                 <ButtonContextMenu
                   icon={mdiDotsVertical}
-                  padding="3"
                   title={$t('menu')}
                   onclick={() => handlePromiseError(handleAction('ContextMenuClick', 'pause'))}
                   direction="left"
-                  size="20"
+                  size="medium"
                   align="bottom-right"
-                  class="text-white dark:text-white"
                 >
                   <MenuOption onClick={() => handleDeleteMemory()} text={$t('remove_memory')} icon={mdiCardsOutline} />
                   <MenuOption
@@ -525,17 +543,18 @@
                   color="secondary"
                   variant="ghost"
                   shape="round"
-                  class="text-white dark:text-white"
                 />
               </div>
             </div>
             <!-- CONTROL BUTTONS -->
             {#if current.previous}
               <div class="absolute top-1/2 start-0 ms-4">
-                <CircleIconButton
-                  title={$t('previous_memory')}
+                <IconButton
+                  shape="round"
+                  aria-label={$t('previous_memory')}
                   icon={mdiChevronLeft}
-                  color="dark"
+                  variant="ghost"
+                  color="secondary"
                   onclick={handlePreviousAsset}
                 />
               </div>
@@ -543,10 +562,12 @@
 
             {#if current.next}
               <div class="absolute top-1/2 end-0 me-4">
-                <CircleIconButton
-                  title={$t('next_memory')}
+                <IconButton
+                  shape="round"
+                  aria-label={$t('next_memory')}
                   icon={mdiChevronRight}
-                  color="dark"
+                  variant="ghost"
+                  color="secondary"
                   onclick={handleNextAsset}
                 />
               </div>
@@ -605,6 +626,7 @@
     </section>
   {/if}
 </section>
+
 {#if current}
   <!-- GALLERY VIEWER -->
   <section class="bg-immich-dark-gray p-4">
@@ -613,10 +635,12 @@
       class:opacity-0={galleryInView}
       class:opacity-100={!galleryInView}
     >
-      <CircleIconButton
-        title={$t('show_gallery')}
+      <IconButton
+        shape="round"
+        variant="ghost"
+        color="secondary"
+        aria-label={$t('show_gallery')}
         icon={mdiChevronDown}
-        color="light"
         onclick={() => memoryGallery?.scrollIntoView({ behavior: 'smooth' })}
       />
     </div>

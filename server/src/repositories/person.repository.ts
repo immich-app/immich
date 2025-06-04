@@ -38,11 +38,6 @@ export interface PersonStatistics {
   assets: number;
 }
 
-export interface PeopleStatistics {
-  total: number;
-  hidden: number;
-}
-
 export interface DeleteFacesOptions {
   sourceType: SourceType;
 }
@@ -151,7 +146,7 @@ export class PersonRepository {
       .innerJoin('assets', (join) =>
         join
           .onRef('asset_faces.assetId', '=', 'assets.id')
-          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE)
+          .on('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
           .on('assets.deletedAt', 'is', null),
       )
       .where('person.ownerId', '=', userId)
@@ -341,7 +336,7 @@ export class PersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('asset_faces.personId', '=', personId)
-          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE)
+          .on('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
           .on('assets.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
@@ -354,35 +349,31 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getNumberOfPeople(userId: string): Promise<PeopleStatistics> {
-    const items = await this.db
+  getNumberOfPeople(userId: string) {
+    const zero = sql.lit(0);
+    return this.db
       .selectFrom('person')
-      .innerJoin('asset_faces', 'asset_faces.personId', 'person.id')
+      .where((eb) =>
+        eb.exists((eb) =>
+          eb
+            .selectFrom('asset_faces')
+            .whereRef('asset_faces.personId', '=', 'person.id')
+            .where('asset_faces.deletedAt', 'is', null)
+            .where((eb) =>
+              eb.exists((eb) =>
+                eb
+                  .selectFrom('assets')
+                  .whereRef('assets.id', '=', 'asset_faces.assetId')
+                  .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+                  .where('assets.deletedAt', 'is', null),
+              ),
+            ),
+        ),
+      )
       .where('person.ownerId', '=', userId)
-      .where('asset_faces.deletedAt', 'is', null)
-      .innerJoin('assets', (join) =>
-        join
-          .onRef('assets.id', '=', 'asset_faces.assetId')
-          .on('assets.deletedAt', 'is', null)
-          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE),
-      )
-      .select((eb) => eb.fn.count(eb.fn('distinct', ['person.id'])).as('total'))
-      .select((eb) =>
-        eb.fn
-          .count(eb.fn('distinct', ['person.id']))
-          .filterWhere('person.isHidden', '=', true)
-          .as('hidden'),
-      )
-      .executeTakeFirst();
-
-    if (items == undefined) {
-      return { total: 0, hidden: 0 };
-    }
-
-    return {
-      total: Number(items.total),
-      hidden: Number(items.hidden),
-    };
+      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
+      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('isHidden', '=', true), zero).as('hidden'))
+      .executeTakeFirstOrThrow();
   }
 
   create(person: Insertable<Person>) {
@@ -398,6 +389,7 @@ export class PersonRepository {
     return results.map(({ id }) => id);
   }
 
+  @GenerateSql({ params: [[], [], [{ faceId: DummyValue.UUID, embedding: DummyValue.VECTOR }]] })
   async refreshFaces(
     facesToAdd: (Insertable<AssetFaces> & { assetId: string })[],
     faceIdsToRemove: string[],

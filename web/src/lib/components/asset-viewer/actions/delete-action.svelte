@@ -1,6 +1,5 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import {
     NotificationType,
@@ -16,6 +15,7 @@
   import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction, PreAction } from './action';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     asset: AssetResponseDto;
@@ -58,6 +58,7 @@
 
   const deleteAsset = async () => {
     try {
+      preAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
       onAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
 
@@ -73,17 +74,19 @@
   };
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcuts={[
     { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
   ]}
 />
 
-<CircleIconButton
-  color="opaque"
+<IconButton
+  color="secondary"
+  shape="round"
+  variant="ghost"
   icon={asset.isTrashed ? mdiDeleteForeverOutline : mdiDeleteOutline}
-  title={asset.isTrashed ? $t('permanently_delete') : $t('delete')}
+  aria-label={asset.isTrashed ? $t('permanently_delete') : $t('delete')}
   onclick={() => trashOrDelete(asset.isTrashed)}
 />
 

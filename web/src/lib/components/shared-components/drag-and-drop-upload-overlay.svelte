@@ -4,12 +4,13 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
-  import { isAlbumsRoute } from '$lib/utils/navigation';
+  import { isAlbumsRoute, isLockedFolderRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import ImmichLogo from './immich-logo.svelte';
 
   let albumId = $derived(isAlbumsRoute(page.route?.id) ? page.params.albumId : undefined);
+  let isInLockedFolder = $derived(isLockedFolderRoute(page.route.id));
 
   let dragStartTarget: EventTarget | null = $state(null);
 
@@ -126,7 +127,7 @@
     if (authManager.key) {
       dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
     } else {
-      await fileUploadHandler(filesArray, albumId);
+      await fileUploadHandler({ files: filesArray, albumId, isLockedAssets: isInLockedFolder });
     }
   };
 

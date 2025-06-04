@@ -504,6 +504,11 @@ jobs:
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
+
+      - name: Generate translation file
+        run: make translation
+        working-directory: ./mobile
+
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -643,7 +648,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
+        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.1
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres

@@ -6,13 +6,22 @@
   import Combobox, { type ComboBoxOption } from './combobox.svelte';
 
   interface Props {
+    title?: string;
     initialDate?: DateTime;
     initialTimeZone?: string;
+    timezoneInput?: boolean;
     onCancel: () => void;
     onConfirm: (date: string) => void;
   }
 
-  let { initialDate = DateTime.now(), initialTimeZone = '', onCancel, onConfirm }: Props = $props();
+  let {
+    initialDate = DateTime.now(),
+    initialTimeZone = '',
+    title = $t('edit_date_and_time'),
+    timezoneInput = true,
+    onCancel,
+    onConfirm,
+  }: Props = $props();
 
   type ZoneOption = {
     /**
@@ -135,7 +144,7 @@
 
 <ConfirmModal
   confirmColor="primary"
-  title={$t('edit_date_and_time')}
+  {title}
   prompt="Please select a new date:"
   disabled={!date.isValid}
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
@@ -148,15 +157,17 @@
         <label for="datetime">{$t('date_and_time')}</label>
         <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
       </div>
-      <div>
-        <Combobox
-          bind:selectedOption
-          label={$t('timezone')}
-          options={timezones}
-          placeholder={$t('search_timezone')}
-          onSelect={(option) => handleOnSelect(option)}
-        />
-      </div>
+      {#if timezoneInput}
+        <div>
+          <Combobox
+            bind:selectedOption
+            label={$t('timezone')}
+            options={timezones}
+            placeholder={$t('search_timezone')}
+            onSelect={(option) => handleOnSelect(option)}
+          />
+        </div>
+      {/if}
     </div>
   {/snippet}
 </ConfirmModal>

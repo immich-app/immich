@@ -2,11 +2,11 @@
   import { browser } from '$app/environment';
 
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import { IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   interface Props {
     showBackButton?: boolean;
@@ -66,7 +66,7 @@
   let buttonClass = $derived(forceDark ? 'hover:text-immich-dark-gray' : undefined);
 </script>
 
-<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full bg-transparent z-1">
+<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full bg-transparent">
   <nav
     id="asset-selection-app-bar"
     class={[
@@ -77,12 +77,21 @@
       appBarBorder,
       'mx-2 my-2 place-items-center rounded-lg p-2 max-md:p-0 transition-all',
       tailwindClasses,
-      forceDark ? 'bg-immich-dark-gray text-white' : 'bg-subtle dark:bg-immich-dark-gray',
+      forceDark ? 'bg-immich-dark-gray! text-white' : 'bg-subtle dark:bg-immich-dark-gray',
     ]}
   >
-    <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
+    <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg {forceDark ? 'dark' : ''}">
       {#if showBackButton}
-        <CircleIconButton title={$t('close')} onclick={handleClose} icon={backIcon} size="24" class={buttonClass} />
+        <IconButton
+          aria-label={$t('close')}
+          onclick={handleClose}
+          color="secondary"
+          shape="round"
+          variant="ghost"
+          icon={backIcon}
+          size="large"
+          class={buttonClass}
+        />
       {/if}
       {@render leading?.()}
     </div>

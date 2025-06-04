@@ -9,6 +9,9 @@ mobile/lib/**/*.g.dart linguist-generated=true
 mobile/lib/**/*.drift.dart -diff -merge
 mobile/lib/**/*.drift.dart linguist-generated=true
 
+mobile/drift_schemas/main/drift_schema_*.json -diff -merge
+mobile/drift_schemas/main/drift_schema_*.json linguist-generated=true
+
 open-api/typescript-sdk/fetch-client.ts -diff -merge
 open-api/typescript-sdk/fetch-client.ts linguist-generated=true
 

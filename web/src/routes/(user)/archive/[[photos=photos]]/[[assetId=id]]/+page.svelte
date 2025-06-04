@@ -13,6 +13,7 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
 
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { AssetVisibility } from '@immich/sdk';
@@ -38,7 +39,26 @@
       return;
     }
   };
+
+  const handleSetVisibility = (assetIds: string[]) => {
+    assetStore.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+  };
 </script>
+
+<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
+  <AssetGrid
+    enableRouting={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.UNARCHIVE}
+    onEscape={handleEscape}
+  >
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
+    {/snippet}
+  </AssetGrid>
+</UserPageLayout>
 
 {#if assetInteraction.selectionActive}
   <AssetSelectControlBar
@@ -69,21 +89,8 @@
     />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
+      <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
-
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  <AssetGrid
-    enableRouting={true}
-    {assetStore}
-    {assetInteraction}
-    removeAction={AssetAction.UNARCHIVE}
-    onEscape={handleEscape}
-  >
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
-    {/snippet}
-  </AssetGrid>
-</UserPageLayout>

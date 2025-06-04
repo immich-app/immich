@@ -54,10 +54,11 @@
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
+    showSimpleControls?: boolean;
   }
 
   let {
-    mapMarkers = $bindable([]),
+    mapMarkers = $bindable(),
     showSettings = true,
     zoom = undefined,
     center = $bindable(undefined),
@@ -70,6 +71,7 @@
     onClickPoint = () => {},
     popup,
     rounded = false,
+    showSimpleControls = true,
   }: Props = $props();
 
   let map: maplibregl.Map | undefined = $state();
@@ -210,11 +212,13 @@
   };
 
   onMount(async () => {
-    mapMarkers = await loadMapMarkers();
+    if (!mapMarkers) {
+      mapMarkers = await loadMapMarkers();
+    }
   });
 
   onDestroy(() => {
-    abortController.abort();
+    abortController?.abort();
   });
 
   $effect(() => {
@@ -264,13 +268,15 @@
   bind:map
 >
   {#snippet children({ map }: { map: maplibregl.Map })}
-    <NavigationControl position="top-left" showCompass={!simplified} />
+    {#if showSimpleControls}
+      <NavigationControl position="top-left" showCompass={!simplified} />
 
-    {#if !simplified}
-      <GeolocateControl position="top-left" />
-      <FullscreenControl position="top-left" />
-      <ScaleControl />
-      <AttributionControl compact={false} />
+      {#if !simplified}
+        <GeolocateControl position="top-left" />
+        <FullscreenControl position="top-left" />
+        <ScaleControl />
+        <AttributionControl compact={false} />
+      {/if}
     {/if}
 
     {#if showSettings}
@@ -283,7 +289,7 @@
       </Control>
     {/if}
 
-    {#if onOpenInMapView}
+    {#if onOpenInMapView && showSimpleControls}
       <Control position="top-right">
         <ControlGroup>
           <ControlButton onclick={() => onOpenInMapView()}>
@@ -296,7 +302,7 @@
     <GeoJSON
       data={{
         type: 'FeatureCollection',
-        features: mapMarkers.map((marker) => asFeature(marker)),
+        features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
       }}
       id="geojson"
       cluster={{ radius: 35, maxZoom: 17 }}

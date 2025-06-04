@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -25,7 +26,6 @@ class SyncApiRepository implements ISyncApiRepository {
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
   }) async {
-    // ignore: avoid-unused-assignment
     final stopwatch = Stopwatch()..start();
     final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
@@ -98,7 +98,7 @@ class SyncApiRepository implements ISyncApiRepository {
         await onData(_parseLines(lines), abort);
       }
     } catch (error, stack) {
-      _logger.severe("error processing stream", error, stack);
+      _logger.severe("Error processing stream", error, stack);
       return Future.error(error, stack);
     } finally {
       client.close();
@@ -106,27 +106,24 @@ class SyncApiRepository implements ISyncApiRepository {
     stopwatch.stop();
     _logger
         .info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
+    DLog.log("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 
   List<SyncEvent> _parseLines(List<String> lines) {
     final List<SyncEvent> data = [];
 
     for (final line in lines) {
-      try {
-        final jsonData = jsonDecode(line);
-        final type = SyncEntityType.fromJson(jsonData['type'])!;
-        final dataJson = jsonData['data'];
-        final ack = jsonData['ack'];
-        final converter = _kResponseMap[type];
-        if (converter == null) {
-          _logger.warning("[_parseSyncResponse] Unknown type $type");
-          continue;
-        }
-
-        data.add(SyncEvent(type: type, data: converter(dataJson), ack: ack));
-      } catch (error, stack) {
-        _logger.severe("[_parseSyncResponse] Error parsing json", error, stack);
+      final jsonData = jsonDecode(line);
+      final type = SyncEntityType.fromJson(jsonData['type'])!;
+      final dataJson = jsonData['data'];
+      final ack = jsonData['ack'];
+      final converter = _kResponseMap[type];
+      if (converter == null) {
+        _logger.warning("Unknown type $type");
+        continue;
       }
+
+      data.add(SyncEvent(type: type, data: converter(dataJson), ack: ack));
     }
 
     return data;

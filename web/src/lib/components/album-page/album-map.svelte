@@ -1,8 +1,4 @@
 <script lang="ts">
-  import { clickOutside } from '$lib/actions/click-outside';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import type Map from '$lib/components/shared-components/map/map.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { timeToLoadTheMap } from '$lib/constants';
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
@@ -11,7 +7,7 @@
   import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
-  import { LoadingSpinner } from '@immich/ui';
+  import { IconButton, LoadingSpinner, Modal, ModalBody } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -25,8 +21,6 @@
   let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
   let viewingAssets: string[] = $state([]);
   let viewingAssetCursor = 0;
-
-  let mapElement = $state<ReturnType<typeof Map>>();
 
   let zoom = $derived(1);
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
@@ -78,6 +72,7 @@
   async function onViewAssets(assetIds: string[]) {
     viewingAssets = assetIds;
     viewingAssetCursor = 0;
+    closeMap();
 
     await setAssetId(assetIds[0]);
   }
@@ -108,12 +103,19 @@
   }
 </script>
 
-<CircleIconButton title={$t('map')} onclick={openMap} icon={mdiMapOutline} />
+<IconButton
+  variant="ghost"
+  shape="round"
+  color="secondary"
+  icon={mdiMapOutline}
+  onclick={openMap}
+  aria-label={$t('map')}
+/>
 
 {#if albumMapViewManager.isInMapView}
-  <div use:clickOutside={{ onOutclick: closeMap }}>
-    <FullScreenModal title={$t('map')} width="wide" onClose={closeMap}>
-      <div class="flex flex-col w-full h-full gap-2">
+  <Modal title={$t('map')} size="medium" onClose={closeMap}>
+    <ModalBody>
+      <div class="flex flex-col w-full h-full gap-2 border border-gray-300 dark:border-light rounded-2xl">
         <div class="h-[500px] min-h-[300px] w-full">
           {#await import('../shared-components/map/map.svelte')}
             {#await delay(timeToLoadTheMap) then}
@@ -124,7 +126,6 @@
             {/await}
           {:then { default: Map }}
             <Map
-              bind:this={mapElement}
               center={undefined}
               {zoom}
               clickable={false}
@@ -136,8 +137,8 @@
           {/await}
         </div>
       </div>
-    </FullScreenModal>
-  </div>
+    </ModalBody>
+  </Modal>
 
   <Portal target="body">
     {#if $showAssetViewer}

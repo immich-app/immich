@@ -249,47 +249,49 @@
         <div>
           <Card color="secondary">
             <CardHeader>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 px-4 py-2 text-primary">
                 <Icon icon={mdiAccountOutline} size="1.5rem" />
                 <CardTitle>{$t('profile')}</CardTitle>
               </div>
             </CardHeader>
             <CardBody>
-              <Stack gap={2}>
-                <div>
-                  <Heading tag="h3" size="tiny">{$t('name')}</Heading>
-                  <Text>{user.name}</Text>
-                </div>
-                <div>
-                  <Heading tag="h3" size="tiny">{$t('email')}</Heading>
-                  <Text>{user.email}</Text>
-                </div>
-                <div>
-                  <Heading tag="h3" size="tiny">{$t('created_at')}</Heading>
-                  <Text>{user.createdAt}</Text>
-                </div>
-                <div>
-                  <Heading tag="h3" size="tiny">{$t('updated_at')}</Heading>
-                  <Text>{user.updatedAt}</Text>
-                </div>
-                <div>
-                  <Heading tag="h3" size="tiny">{$t('id')}</Heading>
-                  <Code>{user.id}</Code>
-                </div>
-              </Stack>
+              <div class="px-4 pb-7">
+                <Stack gap={2}>
+                  <div>
+                    <Heading tag="h3" size="tiny">{$t('name')}</Heading>
+                    <Text>{user.name}</Text>
+                  </div>
+                  <div>
+                    <Heading tag="h3" size="tiny">{$t('email')}</Heading>
+                    <Text>{user.email}</Text>
+                  </div>
+                  <div>
+                    <Heading tag="h3" size="tiny">{$t('created_at')}</Heading>
+                    <Text>{user.createdAt}</Text>
+                  </div>
+                  <div>
+                    <Heading tag="h3" size="tiny">{$t('updated_at')}</Heading>
+                    <Text>{user.updatedAt}</Text>
+                  </div>
+                  <div>
+                    <Heading tag="h3" size="tiny">{$t('id')}</Heading>
+                    <Code>{user.id}</Code>
+                  </div>
+                </Stack>
+              </div>
             </CardBody>
           </Card>
         </div>
         <Card color="secondary">
           <CardHeader>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 px-4 py-2 text-primary">
               <Icon icon={mdiFeatureSearchOutline} size="1.5rem" />
               <CardTitle>{$t('features')}</CardTitle>
             </div>
           </CardHeader>
           <CardBody>
-            <div>
-              <Stack gap={2}>
+            <div class="px-4 pb-4">
+              <Stack gap={3}>
                 <Field readOnly label={$t('email_notifications')}>
                   <Switch checked={userPreferences.emailNotifications.enabled} color="primary" />
                 </Field>
@@ -314,19 +316,22 @@
                 <Field readOnly label={$t('tags')}>
                   <Switch checked={userPreferences.tags.enabled} color="primary" />
                 </Field>
+                <Field readOnly label={$t('gcast_enabled')}>
+                  <Switch checked={userPreferences.cast.gCastEnabled} color="primary" />
+                </Field>
               </Stack>
             </div>
           </CardBody>
         </Card>
         <Card color="secondary">
           <CardHeader>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 px-4 py-2 text-primary">
               <Icon icon={mdiChartPieOutline} size="1.5rem" />
               <CardTitle>{$t('storage_quota')}</CardTitle>
             </div>
           </CardHeader>
           <CardBody>
-            <div>
+            <div class="px-4 pb-4">
               {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
                 <Text>
                   {$t('storage_usage', {

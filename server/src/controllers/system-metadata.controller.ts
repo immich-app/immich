@@ -1,6 +1,10 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AdminOnboardingUpdateDto, ReverseGeocodingStateResponseDto } from 'src/dtos/system-metadata.dto';
+import {
+  AdminOnboardingUpdateDto,
+  ReverseGeocodingStateResponseDto,
+  VersionCheckStateResponseDto,
+} from 'src/dtos/system-metadata.dto';
 import { Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { SystemMetadataService } from 'src/services/system-metadata.service';
@@ -27,5 +31,11 @@ export class SystemMetadataController {
   @Authenticated({ permission: Permission.SYSTEM_METADATA_READ, admin: true })
   getReverseGeocodingState(): Promise<ReverseGeocodingStateResponseDto> {
     return this.service.getReverseGeocodingState();
+  }
+
+  @Get('version-check-state')
+  @Authenticated({ permission: Permission.SYSTEM_METADATA_READ, admin: true })
+  getVersionCheckState(): Promise<VersionCheckStateResponseDto> {
+    return this.service.getVersionCheckState();
   }
 }
