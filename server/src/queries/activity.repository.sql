@@ -26,6 +26,17 @@ from
   and "assets"."deletedAt" is null
 where
   "activity"."albumId" = $1
+  and (
+    "activity"."assetId" is null
+    or exists (
+      select
+      from
+        "albums_assets_assets"
+      where
+        "albums_assets_assets"."assetsId" = "activity"."assetId"
+        and "albums_assets_assets"."albumsId" = $2
+    )
+  )
 order by
   "activity"."createdAt" asc
 
