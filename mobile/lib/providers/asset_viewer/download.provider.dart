@@ -163,25 +163,17 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 
   void shareAsset(Asset asset, BuildContext context) async {
-    showDialog(
-      context: context,
-      builder: (BuildContext buildContext) {
-        _shareService.shareAsset(asset, context).then(
-          (bool status) {
-            if (!status) {
-              ImmichToast.show(
-                context: context,
-                msg: 'image_viewer_page_state_provider_share_error'.tr(),
-                toastType: ToastType.error,
-                gravity: ToastGravity.BOTTOM,
-              );
-            }
-            buildContext.pop();
-          },
-        );
-        return const ShareDialog();
+    _shareService.shareAsset(asset, context).then(
+      (bool status) {
+        if (!status) {
+          ImmichToast.show(
+            context: context,
+            msg: 'image_viewer_page_state_provider_share_error'.tr(),
+            toastType: ToastType.error,
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
       },
-      barrierDismissible: false,
     );
   }
 }
