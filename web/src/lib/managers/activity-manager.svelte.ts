@@ -71,7 +71,7 @@ class ActivityManager {
     }
 
     if (activity.type === ReactionType.Like) {
-      this.#likeCount++;
+      this.#likeCount--;
     }
 
     this.#activities = index
