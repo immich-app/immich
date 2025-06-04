@@ -1,28 +1,25 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class AlbumInfoListTile extends HookConsumerWidget {
-  final AvailableAlbum album;
+class ExpAlbumInfoListTile extends HookConsumerWidget {
+  final LocalAlbum album;
 
-  const AlbumInfoListTile({super.key, required this.album});
+  const ExpAlbumInfoListTile({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isSelected =
-        ref.watch(backupProvider).selectedBackupAlbums.contains(album);
-    final bool isExcluded =
-        ref.watch(backupProvider).excludedBackupAlbums.contains(album);
+    final bool isSelected = album.backupSelection == BackupSelection.selected;
+    final bool isExcluded = album.backupSelection == BackupSelection.excluded;
+
     final syncAlbum = ref
         .watch(appSettingsServiceProvider)
         .getSetting(AppSettingsEnum.syncAlbums);
@@ -67,11 +64,8 @@ class AlbumInfoListTile extends HookConsumerWidget {
         ref.watch(hapticFeedbackProvider.notifier).selectionClick();
 
         if (isExcluded) {
-          // Remove from exclude album list
-          ref.read(backupProvider.notifier).removeExcludedAlbumForBackup(album);
+          ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
         } else {
-          // Add to exclude album list
-
           if (album.id == 'isAll' || album.name == 'Recents') {
             ImmichToast.show(
               context: context,
@@ -82,7 +76,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
             return;
           }
 
-          ref.read(backupProvider.notifier).addExcludedAlbumForBackup(album);
+          ref.read(backupAlbumProvider.notifier).excludeAlbum(album);
         }
       },
       child: ListTile(
@@ -91,9 +85,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
         onTap: () {
           ref.read(hapticFeedbackProvider.notifier).selectionClick();
           if (isSelected) {
-            ref.read(backupProvider.notifier).removeAlbumForBackup(album);
+            ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
           } else {
-            ref.read(backupProvider.notifier).addAlbumForBackup(album);
+            ref.read(backupAlbumProvider.notifier).selectAlbum(album);
             if (syncAlbum) {
               ref.read(albumProvider.notifier).createSyncAlbum(album.name);
             }
@@ -110,9 +104,10 @@ class AlbumInfoListTile extends HookConsumerWidget {
         subtitle: Text(album.assetCount.toString()),
         trailing: IconButton(
           onPressed: () {
-            context.pushRoute(
-              AlbumPreviewRoute(album: album.album),
-            );
+            // TODO: refactor below
+            // context.pushRoute(
+            //   AlbumPreviewRoute(album: album.album),
+            // );
           },
           icon: Icon(
             Icons.image_outlined,
