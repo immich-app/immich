@@ -38,6 +38,7 @@ export type ActivityCreateDto = {
 };
 export type ActivityStatisticsResponseDto = {
     comments: number;
+    likes: number;
 };
 export type NotificationCreateDto = {
     data?: object;

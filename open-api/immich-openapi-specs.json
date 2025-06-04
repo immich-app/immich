@@ -8482,10 +8482,14 @@
         "properties": {
           "comments": {
             "type": "integer"
+          },
+          "likes": {
+            "type": "integer"
           }
         },
         "required": [
-          "comments"
+          "comments",
+          "likes"
         ],
         "type": "object"
       },

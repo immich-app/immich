@@ -576,6 +576,7 @@
             disabled={!album.isActivityEnabled}
             isLiked={activityManager.isLiked}
             numberOfComments={activityManager.commentCount}
+            numberOfLikes={undefined}
             onFavorite={handleFavorite}
             onOpenActivityTab={handleOpenAndCloseActivityTab}
           />
