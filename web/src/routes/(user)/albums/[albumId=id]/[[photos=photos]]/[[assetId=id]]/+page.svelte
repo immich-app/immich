@@ -159,18 +159,6 @@
     }
   };
 
-  const updateComments = async () => {
-    if ($showAssetViewer) {
-      return;
-    }
-
-    try {
-      await activityManager.refreshActivities(album.id);
-    } catch (error) {
-      handleError(error, $t('errors.cant_get_number_of_comments'));
-    }
-  };
-
   const handleOpenAndCloseActivityTab = () => {
     isShowActivity = !isShowActivity;
   };
@@ -392,12 +380,14 @@
     }
   });
 
+  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
+
   $effect(() => {
-    if ($showAssetViewer) {
+    if ($showAssetViewer || !isShared) {
       return;
     }
 
-    activityManager.init(album.id);
+    handlePromiseError(activityManager.init(album.id));
   });
 
   onDestroy(() => {
@@ -416,12 +406,6 @@
   );
 
   let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
-  $effect(() => {
-    if (album.albumUsers.length > 0) {
-      handlePromiseError(updateComments());
-    }
-  });
-  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
   const isSelectionMode = $derived(
     viewMode === AlbumPageViewMode.SELECT_ASSETS ? true : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
   );
