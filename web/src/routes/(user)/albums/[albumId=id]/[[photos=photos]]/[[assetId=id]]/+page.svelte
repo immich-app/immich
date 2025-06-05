@@ -88,6 +88,7 @@
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import MoveToAlbum from '$lib/components/album-page/actions/move-to-album.svelte';
 
   interface Props {
     data: PageData;
@@ -594,6 +595,7 @@
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
+          <MoveToAlbum bind:album onRemove={handleRemoveAssets}/>
         </ButtonContextMenu>
         {#if assetInteraction.isAllUserOwned}
           <FavoriteAction
