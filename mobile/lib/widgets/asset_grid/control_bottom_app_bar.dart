@@ -82,6 +82,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
         ref.watch(albumProvider).where((a) => a.shared).toList();
     const bottomPadding = 0.20;
     final scrollController = useDraggableScrollController();
+    final scrollbarController = useScrollController();
     final isInLockedView = ref.watch(inLockedViewProvider);
 
     void minimize() {
@@ -338,10 +339,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
       minChildSize: bottomPadding,
       maxChildSize: getMaxChildSize(),
       snap: true,
-      builder: (
-        BuildContext context,
-        ScrollController scrollController,
-      ) {
+      builder: (BuildContext context, ScrollController scrollController) {
         return Card(
           color: context.colorScheme.surfaceContainerHigh,
           surfaceTintColor: context.colorScheme.surfaceContainerHigh,
@@ -363,14 +361,16 @@ class ControlBottomAppBar extends HookConsumerWidget {
                     const CustomDraggingHandle(),
                     const SizedBox(height: 12),
                     SizedBox(
-                      height: 120,
+                      height: 150,
                       child: Scrollbar(
                         thumbVisibility: true,
                         thickness: 6,
                         radius: const Radius.circular(3),
+                        controller: scrollbarController,
                         child: ListView(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
+                          controller: scrollbarController,
                           children: renderActionButtons(),
                         ),
                       ),
