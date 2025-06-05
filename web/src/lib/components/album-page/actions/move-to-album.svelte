@@ -27,16 +27,16 @@
     showAlbumPicker = false;
   };
 
-  const handleAddToNewAlbum = async (albumName: string) => {
+  const handleMoveToNewAlbum = async (albumName: string) => {
     const assetIds = [...getAssets()].map((asset) => asset.id);
 
     const isConfirmed = await modalManager.showDialog({
       prompt: $t('move_assets_album_confirmation', { values: { count: assetIds.length } }),
     });
-
     if (!isConfirmed) {
       return;
     }
+
     showAlbumPicker = false;
     const newAlbum = await addAssetsToNewAlbum(albumName, assetIds);
     if (!newAlbum) {
@@ -46,7 +46,7 @@
     await removeFromAlbum(assetIds);
   };
 
-  const handleAddToAlbum = async (toAlbum: AlbumResponseDto) => {
+  const handleMoveToAlbum = async (toAlbum: AlbumResponseDto) => {
     const assetIds = [...getAssets()].map((asset) => asset.id);
 
     const isConfirmed = await modalManager.showDialog({
@@ -58,6 +58,7 @@
     if (!isConfirmed) {
       return;
     }
+
     showAlbumPicker = false;
     await addAssetsToAlbum(toAlbum.id, assetIds);
     await removeFromAlbum(assetIds);
@@ -83,7 +84,7 @@
       clearSelect();
       return;
     } catch (error) {
-      console.error('Error [album-viewer] [removeAssetFromAlbum]', error);
+      console.error('Error [album-viewer] [move-to-album] [removeAssetFromAlbum]', error);
       notificationController.show({
         type: NotificationType.Error,
         message: $t('errors.error_removing_assets_from_album'),
@@ -103,8 +104,8 @@
   <AlbumSelectionModal
     shared={false}
     move
-    onNewAlbum={handleAddToNewAlbum}
-    onAlbumClick={handleAddToAlbum}
+    onNewAlbum={handleMoveToNewAlbum}
+    onAlbumClick={handleMoveToAlbum}
     onClose={handleHideAlbumPicker}
   />
 {/if}
