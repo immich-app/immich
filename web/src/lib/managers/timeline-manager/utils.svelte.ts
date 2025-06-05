@@ -10,6 +10,9 @@ export function updateObject(target: any, source: any): boolean {
     if (!Object.prototype.hasOwnProperty.call(source, key)) {
       continue;
     }
+    if (key === "__proto__" || key === "constructor") {
+      continue;
+    }
     const isDate = target[key] instanceof Date;
     if (typeof target[key] === 'object' && !isDate) {
       updated = updated || updateObject(target[key], source[key]);
