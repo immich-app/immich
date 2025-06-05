@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asset_extensions.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/share.service.dart';
@@ -12,6 +13,7 @@ import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
+import 'package:immich_mobile/widgets/common/share_dialog.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 void handleShareAssets(
@@ -19,17 +21,29 @@ void handleShareAssets(
   BuildContext context,
   Iterable<Asset> selection,
 ) {
-  ref.watch(shareServiceProvider).shareAssets(selection.toList(), context).then(
-    (bool status) {
-      if (!status) {
-        ImmichToast.show(
-          context: context,
-          msg: 'image_viewer_page_state_provider_share_error'.tr(),
-          toastType: ToastType.error,
-          gravity: ToastGravity.BOTTOM,
-        );
-      }
+  showDialog(
+    context: context,
+    builder: (BuildContext buildContext) {
+      ref
+          .watch(shareServiceProvider)
+          .shareAssets(selection.toList(), context)
+          .then(
+        (bool status) {
+          if (!status) {
+            ImmichToast.show(
+              context: context,
+              msg: 'image_viewer_page_state_provider_share_error'.tr(),
+              toastType: ToastType.error,
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
+          buildContext.pop();
+        },
+      );
+      return const ShareDialog();
     },
+    barrierDismissible: false,
+    useRootNavigator: false,
   );
 }
 
