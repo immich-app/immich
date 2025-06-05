@@ -87,25 +87,27 @@ class HashService {
 
   /// Processes a batch of assets.
   Future<void> _processBatch(List<_AssetToPath> toHash) async {
+    if (toHash.isEmpty) {
+      return;
+    }
+
     _log.fine("Hashing ${toHash.length} files");
 
     final hashed = <LocalAsset>[];
-    if (toHash.isNotEmpty) {
-      final hashes =
-          await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
+    final hashes =
+        await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
 
-      for (final (index, hash) in hashes.indexed) {
-        final asset = toHash[index].asset;
-        if (hash?.length == 20) {
-          hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
-        } else {
-          _log.warning("Failed to hash file ${asset.id}");
-        }
+    for (final (index, hash) in hashes.indexed) {
+      final asset = toHash[index].asset;
+      if (hash?.length == 20) {
+        hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
+      } else {
+        _log.warning("Failed to hash file ${asset.id}");
       }
-
-      _log.fine("Hashed ${hashed.length}/${toHash.length} assets");
-      DLog.log("Hashed ${hashed.length}/${toHash.length} assets");
     }
+
+    _log.fine("Hashed ${hashed.length}/${toHash.length} assets");
+    DLog.log("Hashed ${hashed.length}/${toHash.length} assets");
 
     await _localAssetRepository.updateHashes(hashed);
   }
