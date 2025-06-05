@@ -3,7 +3,8 @@ import { AbortError } from '$lib/utils';
 import { fromLocalDateTimeToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
-import { AssetStore, type TimelineAsset } from './assets-store.svelte';
+import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
 async function getAssets(store: AssetStore) {
   const assets = [];
