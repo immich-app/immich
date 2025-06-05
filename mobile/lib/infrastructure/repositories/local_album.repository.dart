@@ -241,20 +241,23 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
 
   @override
   Future<List<LocalAsset>> getAssetsToHash(String albumId) {
-    final query = _db.localAssetEntity.select()
-      ..join(
-        [
-          innerJoin(
-            _db.localAlbumAssetEntity,
-            _db.localAssetEntity.id
-                    .equalsExp(_db.localAlbumAssetEntity.assetId) &
-                _db.localAlbumAssetEntity.albumId.equals(albumId),
-          ),
-        ],
+    final query = _db.localAlbumAssetEntity.select().join(
+      [
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+        ),
+      ],
+    )
+      ..where(
+        _db.localAlbumAssetEntity.albumId.equals(albumId) &
+            _db.localAssetEntity.checksum.isNull(),
       )
-      ..where((row) => row.checksum.isNull())
-      ..orderBy([(o) => OrderingTerm.asc(o.id)]);
-    return query.map((row) => row.toDto()).get();
+      ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
+
+    return query
+        .map((row) => row.readTable(_db.localAssetEntity).toDto())
+        .get();
   }
 
   Future<void> _upsertAssets(Iterable<LocalAsset> localAssets) {
