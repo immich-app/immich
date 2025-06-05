@@ -8482,10 +8482,14 @@
         "properties": {
           "comments": {
             "type": "integer"
+          },
+          "likes": {
+            "type": "integer"
           }
         },
         "required": [
-          "comments"
+          "comments",
+          "likes"
         ],
         "type": "object"
       },
@@ -12988,11 +12992,11 @@
             "type": "string"
           },
           "role": {
-            "enum": [
-              "editor",
-              "viewer"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
           },
           "userId": {
             "type": "string"
@@ -13241,22 +13245,18 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "IMAGE",
-              "VIDEO",
-              "AUDIO",
-              "OTHER"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
           },
           "visibility": {
-            "enum": [
-              "archive",
-              "timeline",
-              "hidden",
-              "locked"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [

@@ -5,38 +5,39 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album_viewer.provider.dart';
 
-class AlbumViewerEditableTitle extends HookConsumerWidget {
-  final String albumName;
-  final FocusNode titleFocusNode;
-  const AlbumViewerEditableTitle({
+class AlbumViewerEditableDescription extends HookConsumerWidget {
+  final String albumDescription;
+  final FocusNode descriptionFocusNode;
+  const AlbumViewerEditableDescription({
     super.key,
-    required this.albumName,
-    required this.titleFocusNode,
+    required this.albumDescription,
+    required this.descriptionFocusNode,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albumViewerState = ref.watch(albumViewerProvider);
 
-    final titleTextEditController = useTextEditingController(
+    final descriptionTextEditController = useTextEditingController(
       text: albumViewerState.isEditAlbum &&
-              albumViewerState.editTitleText.isNotEmpty
-          ? albumViewerState.editTitleText
-          : albumName,
+              albumViewerState.editDescriptionText.isNotEmpty
+          ? albumViewerState.editDescriptionText
+          : albumDescription,
     );
 
     void onFocusModeChange() {
-      if (!titleFocusNode.hasFocus && titleTextEditController.text.isEmpty) {
-        ref.watch(albumViewerProvider.notifier).setEditTitleText("Untitled");
-        titleTextEditController.text = "Untitled";
+      if (!descriptionFocusNode.hasFocus &&
+          descriptionTextEditController.text.isEmpty) {
+        ref.watch(albumViewerProvider.notifier).setEditDescriptionText("");
+        descriptionTextEditController.text = "";
       }
     }
 
     useEffect(
       () {
-        titleFocusNode.addListener(onFocusModeChange);
+        descriptionFocusNode.addListener(onFocusModeChange);
         return () {
-          titleFocusNode.removeListener(onFocusModeChange);
+          descriptionFocusNode.removeListener(onFocusModeChange);
         };
       },
       [],
@@ -48,33 +49,34 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
         onChanged: (value) {
           if (value.isEmpty) {
           } else {
-            ref.watch(albumViewerProvider.notifier).setEditTitleText(value);
+            ref
+                .watch(albumViewerProvider.notifier)
+                .setEditDescriptionText(value);
           }
         },
-        focusNode: titleFocusNode,
-        style: context.textTheme.headlineLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
-        controller: titleTextEditController,
+        focusNode: descriptionFocusNode,
+        style: context.textTheme.bodyLarge,
+        maxLines: 3,
+        minLines: 1,
+        controller: descriptionTextEditController,
         onTap: () {
-          context.focusScope.requestFocus(titleFocusNode);
+          context.focusScope.requestFocus(descriptionFocusNode);
 
-          ref.watch(albumViewerProvider.notifier).setEditTitleText(albumName);
+          ref
+              .watch(albumViewerProvider.notifier)
+              .setEditDescriptionText(albumDescription);
           ref.watch(albumViewerProvider.notifier).enableEditAlbum();
 
-          if (titleTextEditController.text == 'Untitled') {
-            titleTextEditController.clear();
+          if (descriptionTextEditController.text == '') {
+            descriptionTextEditController.clear();
           }
         },
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 0,
-          ),
-          suffixIcon: titleFocusNode.hasFocus
+          contentPadding: const EdgeInsets.all(8),
+          suffixIcon: descriptionFocusNode.hasFocus
               ? IconButton(
                   onPressed: () {
-                    titleTextEditController.clear();
+                    descriptionTextEditController.clear();
                   },
                   icon: Icon(
                     Icons.cancel_rounded,
@@ -91,11 +93,8 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
           ),
           focusColor: Colors.grey[300],
           fillColor: context.scaffoldBackgroundColor,
-          filled: titleFocusNode.hasFocus,
-          hintText: 'add_a_title'.tr(),
-          hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
-            fontSize: 28,
-          ),
+          filled: descriptionFocusNode.hasFocus,
+          hintText: 'add_a_description'.tr(),
         ),
       ),
     );
