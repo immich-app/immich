@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 import { t } from 'svelte-i18n';
