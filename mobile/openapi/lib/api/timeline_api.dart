@@ -31,10 +31,6 @@ class TimelineApi {
   ///
   /// * [AssetOrder] order:
   ///
-  /// * [num] page:
-  ///
-  /// * [num] pageSize:
-  ///
   /// * [String] personId:
   ///
   /// * [String] tagId:
@@ -46,7 +42,7 @@ class TimelineApi {
   /// * [bool] withPartners:
   ///
   /// * [bool] withStacked:
-  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, num? page, num? pageSize, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
+  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/bucket';
 
@@ -71,12 +67,6 @@ class TimelineApi {
     }
     if (order != null) {
       queryParams.addAll(_queryParams('', 'order', order));
-    }
-    if (page != null) {
-      queryParams.addAll(_queryParams('', 'page', page));
-    }
-    if (pageSize != null) {
-      queryParams.addAll(_queryParams('', 'pageSize', pageSize));
     }
     if (personId != null) {
       queryParams.addAll(_queryParams('', 'personId', personId));
@@ -126,10 +116,6 @@ class TimelineApi {
   ///
   /// * [AssetOrder] order:
   ///
-  /// * [num] page:
-  ///
-  /// * [num] pageSize:
-  ///
   /// * [String] personId:
   ///
   /// * [String] tagId:
@@ -141,8 +127,8 @@ class TimelineApi {
   /// * [bool] withPartners:
   ///
   /// * [bool] withStacked:
-  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, num? page, num? pageSize, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
-    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, page: page, pageSize: pageSize, personId: personId, tagId: tagId, userId: userId, visibility: visibility, withPartners: withPartners, withStacked: withStacked, );
+  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
+    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, tagId: tagId, userId: userId, visibility: visibility, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

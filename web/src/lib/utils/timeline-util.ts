@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -62,12 +62,12 @@ export function formatGroupTitle(_date: DateTime): string {
 
   // Today
   if (today.hasSame(date, 'day')) {
-    return date.toRelativeCalendar();
+    return date.toRelativeCalendar({ locale: get(locale) });
   }
 
   // Yesterday
   if (today.minus({ days: 1 }).hasSame(date, 'day')) {
-    return date.toRelativeCalendar();
+    return date.toRelativeCalendar({ locale: get(locale) });
   }
 
   // Last week
