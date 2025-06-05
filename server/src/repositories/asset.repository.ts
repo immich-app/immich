@@ -594,7 +594,7 @@ export class AssetRepository {
             ),
             'assets.ownerId',
             'assets.status',
-            'assets.fileCreatedAt',
+            sql`assets."fileCreatedAt" at time zone 'utc'`.as('fileCreatedAt'),
             eb.fn('encode', ['assets.thumbhash', sql.lit('base64')]).as('thumbhash'),
             'exif.city',
             'exif.country',

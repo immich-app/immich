@@ -271,7 +271,7 @@ with
       )::real / 3600 as "localOffsetHours",
       "assets"."ownerId",
       "assets"."status",
-      "assets"."fileCreatedAt",
+      assets."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
       encode("assets"."thumbhash", 'base64') as "thumbhash",
       "exif"."city",
       "exif"."country",
