@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/services/localization.service.dart';
+import 'package:immich_mobile/extensions/translation_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
@@ -12,15 +12,14 @@ class LanguageSettings extends HookConsumerWidget {
   const LanguageSettings({super.key});
 
   Future<void> _applyLanguageChange(
-    BuildContext context,
     ValueNotifier<Locale> selectedLocale,
     ValueNotifier<bool> isLoading,
   ) async {
     isLoading.value = true;
     await Future.delayed(const Duration(milliseconds: 500));
     try {
-      await context.setLocale(selectedLocale.value);
-      await loadTranslations();
+      await EasyLocalizationService().changeLocale(selectedLocale.value);
+      await EasyLocalizationService().loadTranslations();
     } finally {
       isLoading.value = false;
     }
@@ -29,7 +28,7 @@ class LanguageSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final localeEntries = useMemoized(() => locales.entries.toList(), const []);
-    final currentLocale = context.locale;
+    final currentLocale = EasyLocalizationService().currentLocale;
     final filteredLocaleEntries =
         useState<List<MapEntry<String, Locale>>>(localeEntries);
     final selectedLocale = useState<Locale>(currentLocale);
@@ -115,7 +114,6 @@ class LanguageSettings extends HookConsumerWidget {
               isDisabled: isButtonDisabled,
               isLoading: isLoading.value,
               onPressed: () => _applyLanguageChange(
-                context,
                 selectedLocale,
                 isLoading,
               ),
@@ -162,7 +160,7 @@ class _LanguageSearchBar extends StatelessWidget {
         child: SearchField(
           autofocus: false,
           contentPadding: const EdgeInsets.all(12),
-          hintText: 'language_search_hint'.tr(),
+          hintText: 'language_search_hint'.t(),
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
@@ -196,14 +194,14 @@ class _LanguageNotFound extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'language_no_results_title'.tr(),
+            'language_no_results_title'.t(),
             style: context.textTheme.titleMedium?.copyWith(
               color: context.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'language_no_results_subtitle'.tr(),
+            'language_no_results_subtitle'.t(),
             style: context.textTheme.bodyMedium?.copyWith(
               color: context.colorScheme.onSurface.withValues(alpha: 0.8),
             ),
@@ -246,7 +244,7 @@ class _LanguageApplyButton extends StatelessWidget {
                     ),
                   )
                 : Text(
-                    'setting_languages_apply'.tr(),
+                    'setting_languages_apply'.t(),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16.0,
