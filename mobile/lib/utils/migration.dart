@@ -50,7 +50,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
     await _migrateDeviceAsset(db);
   }
 
-  if (version < 11 && (!kReleaseMode)) {
+  if (version < 12 && (!kReleaseMode)) {
     final backgroundSync = BackgroundSyncManager();
     await backgroundSync.syncLocal();
     final drift = Drift();
