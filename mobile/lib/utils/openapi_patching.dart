@@ -42,6 +42,11 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
       }
       break;
+    case 'LoginResponseDto':
+      if (value is Map) {
+        addDefault(value, 'isOnboarded', false);
+      }
+      break;
   }
 }
 
