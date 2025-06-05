@@ -3,10 +3,10 @@ import { handleError } from '$lib/utils/handle-error';
 import {
   formatBucketTitle,
   formatGroupTitle,
-  fromISODateTimeWithOffsetToObject,
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
+  getTimes,
   type TimelinePlainDateTime,
   type TimelinePlainYearMonth,
 } from '$lib/utils/timeline-util';
@@ -153,8 +153,12 @@ export class AssetBucket {
 
   addAssets(bucketAssets: TimeBucketAssetResponseDto) {
     const addContext = new AddContext();
-    const people: string[] = [];
     for (let i = 0; i < bucketAssets.id.length; i++) {
+      const { localDateTime, fileCreatedAt } = getTimes(
+        bucketAssets.fileCreatedAt[i],
+        bucketAssets.localOffsetHours[i],
+      );
+
       const timelineAsset: TimelineAsset = {
         city: bucketAssets.city[i],
         country: bucketAssets.country[i],
@@ -166,12 +170,9 @@ export class AssetBucket {
         isTrashed: bucketAssets.isTrashed[i],
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
-        localDateTime: fromISODateTimeWithOffsetToObject(
-          bucketAssets.fileCreatedAt[i],
-          bucketAssets.localOffsetHours[i],
-        ),
+        localDateTime,
+        fileCreatedAt,
         ownerId: bucketAssets.ownerId[i],
-        people,
         projectionType: bucketAssets.projectionType[i],
         ratio: bucketAssets.ratio[i],
         stack: bucketAssets.stack?.[i]
@@ -182,6 +183,7 @@ export class AssetBucket {
             }
           : null,
         thumbhash: bucketAssets.thumbhash[i],
+        people: null, // People are not included in the bucket assets
       };
       this.addTimelineAsset(timelineAsset, addContext);
     }
