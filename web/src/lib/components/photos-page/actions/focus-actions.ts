@@ -1,5 +1,5 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { moveFocus } from '$lib/utils/focus-util';
 import { InvocationTracker } from '$lib/utils/invocationTracker';
 import { tick } from 'svelte';

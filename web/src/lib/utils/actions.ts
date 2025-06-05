@@ -1,6 +1,6 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { StackResponse } from '$lib/utils/asset-utils';
 import { AssetVisibility, deleteAssets as deleteBulk, restoreAssets } from '@immich/sdk';
 import { t } from 'svelte-i18n';
