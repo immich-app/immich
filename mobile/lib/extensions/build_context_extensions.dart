@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/utils/translation.dart';
 import 'package:intl/message_format.dart';
 
 extension ContextHelper on BuildContext {
