@@ -18,7 +18,7 @@
 
   import { thumbhash } from '$lib/actions/thumbhash';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';

@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
