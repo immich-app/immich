@@ -2,7 +2,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { downloadFile } from '$lib/utils/asset-utils';
   import { getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';

@@ -25,7 +25,8 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore, type TimelineAsset, type Viewport } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
