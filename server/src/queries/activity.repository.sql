@@ -62,14 +62,21 @@ where
 
 -- ActivityRepository.getStatistics
 select
-  count(*) as "count"
+  count(*) filter (
+    where
+      "activity"."isLiked" = $1
+  ) as "comments",
+  count(*) filter (
+    where
+      "activity"."isLiked" = $2
+  ) as "likes"
 from
   "activity"
   inner join "users" on "users"."id" = "activity"."userId"
   and "users"."deletedAt" is null
   left join "assets" on "assets"."id" = "activity"."assetId"
 where
-  "activity"."assetId" = $1
-  and "activity"."albumId" = $2
-  and "activity"."isLiked" = $3
+  "activity"."assetId" = $3
+  and "activity"."albumId" = $4
   and "assets"."deletedAt" is null
+  and "assets"."visibility" != 'locked'

@@ -7,7 +7,7 @@ import { getKyselyConfig } from 'src/utils/database';
 import { GenericContainer, Wait } from 'testcontainers';
 
 const globalSetup = async () => {
-  const postgresContainer = await new GenericContainer('tensorchord/pgvecto-rs:pg14-v0.2.0')
+  const postgresContainer = await new GenericContainer('ghcr.io/immich-app/postgres:14-vectorchord0.4.1')
     .withExposedPorts(5432)
     .withEnvironment({
       POSTGRES_PASSWORD: 'postgres',
@@ -17,9 +17,7 @@ const globalSetup = async () => {
     .withCommand([
       'postgres',
       '-c',
-      'shared_preload_libraries=vectors.so',
-      '-c',
-      'search_path="$$user", public, vectors',
+      'shared_preload_libraries=vchord.so',
       '-c',
       'max_wal_size=2GB',
       '-c',
@@ -30,6 +28,8 @@ const globalSetup = async () => {
       'full_page_writes=off',
       '-c',
       'synchronous_commit=off',
+      '-c',
+      'config_file=/var/lib/postgresql/data/postgresql.conf',
     ])
     .withWaitStrategy(Wait.forAll([Wait.forLogMessage('database system is ready to accept connections', 2)]))
     .start();
@@ -42,7 +42,7 @@ const globalSetup = async () => {
   const db = new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: postgresUrl }));
 
   const configRepository = new ConfigRepository();
-  const logger = new LoggingRepository(undefined, configRepository);
+  const logger = LoggingRepository.create();
   await new DatabaseRepository(db, logger, configRepository).runMigrations();
 
   await db.destroy();

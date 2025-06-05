@@ -1,13 +1,13 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
+  import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
-  import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
-  import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
-  import { shortcut } from '$lib/actions/shortcut';
 
   onMount(() => {
     return websocketEvents.on('on_asset_update', (assetUpdate) => {
@@ -31,27 +31,38 @@
   setTimeout(() => {
     onUpdateSelectedType(selectedType);
   }, 1);
+
   function selectType(name: string) {
     selectedType = name;
     onUpdateSelectedType(selectedType);
   }
+
+  const onConfirm = () => (typeof $showCancelConfirmDialog === 'boolean' ? null : $showCancelConfirmDialog());
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} onclick={onClose} />
+    <IconButton
+      shape="round"
+      variant="ghost"
+      color="secondary"
+      icon={mdiClose}
+      aria-label={$t('close')}
+      onclick={onClose}
+    />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
   </div>
   <section class="px-4 py-4">
     <ul class="flex w-full justify-around">
       {#each editTypes as etype (etype.name)}
         <li>
-          <CircleIconButton
-            color={etype.name === selectedType ? 'primary' : 'opaque'}
+          <IconButton
+            shape="round"
+            color={etype.name === selectedType ? 'primary' : 'secondary'}
             icon={etype.icon}
-            title={etype.name}
+            aria-label={etype.name}
             onclick={() => selectType(etype.name)}
           />
         </li>
@@ -64,16 +75,11 @@
 </section>
 
 {#if $showCancelConfirmDialog}
-  <ConfirmDialog
+  <ConfirmModal
     title={$t('editor_close_without_save_title')}
     prompt={$t('editor_close_without_save_prompt')}
-    cancelText={$t('no')}
-    cancelColor="secondary"
     confirmColor="danger"
     confirmText={$t('close')}
-    onCancel={() => {
-      $showCancelConfirmDialog = false;
-    }}
-    onConfirm={() => (typeof $showCancelConfirmDialog === 'boolean' ? null : $showCancelConfirmDialog())}
+    onClose={(confirmed) => (confirmed ? onConfirm() : ($showCancelConfirmDialog = false))}
   />
 {/if}

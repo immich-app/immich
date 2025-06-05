@@ -7,15 +7,15 @@
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -43,10 +43,7 @@
   const assetInteraction = new AssetInteraction();
 
   const handleEmptyTrash = async () => {
-    const isConfirmed = await dialogController.show({
-      prompt: $t('empty_trash_confirmation'),
-    });
-
+    const isConfirmed = await modalManager.showDialog({ prompt: $t('empty_trash_confirmation') });
     if (!isConfirmed) {
       return;
     }
@@ -64,10 +61,7 @@
   };
 
   const handleRestoreTrash = async () => {
-    const isConfirmed = await dialogController.show({
-      prompt: $t('assets_restore_confirmation'),
-    });
-
+    const isConfirmed = await modalManager.showDialog({ prompt: $t('assets_restore_confirmation') });
     if (!isConfirmed) {
       return;
     }
@@ -95,17 +89,6 @@
     }
   };
 </script>
-
-{#if assetInteraction.selectionActive}
-  <AssetSelectControlBar
-    assets={assetInteraction.selectedAssets}
-    clearSelect={() => assetInteraction.clearMultiselect()}
-  >
-    <SelectAllAssets {assetStore} {assetInteraction} />
-    <DeleteAssets force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
-    <RestoreAssets onRestore={(assetIds) => assetStore.removeAssets(assetIds)} />
-  </AssetSelectControlBar>
-{/if}
 
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
@@ -143,4 +126,15 @@
       {/snippet}
     </AssetGrid>
   </UserPageLayout>
+{/if}
+
+{#if assetInteraction.selectionActive}
+  <AssetSelectControlBar
+    assets={assetInteraction.selectedAssets}
+    clearSelect={() => assetInteraction.clearMultiselect()}
+  >
+    <SelectAllAssets {assetStore} {assetInteraction} />
+    <DeleteAssets force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+    <RestoreAssets onRestore={(assetIds) => assetStore.removeAssets(assetIds)} />
+  </AssetSelectControlBar>
 {/if}

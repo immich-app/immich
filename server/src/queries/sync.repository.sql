@@ -76,6 +76,7 @@ order by
 select
   "id",
   "ownerId",
+  "originalFileName",
   "thumbhash",
   "checksum",
   "fileCreatedAt",
@@ -84,7 +85,7 @@ select
   "type",
   "deletedAt",
   "isFavorite",
-  "isVisible",
+  "visibility",
   "updateId"
 from
   "assets"
@@ -98,6 +99,7 @@ order by
 select
   "id",
   "ownerId",
+  "originalFileName",
   "thumbhash",
   "checksum",
   "fileCreatedAt",
@@ -106,7 +108,7 @@ select
   "type",
   "deletedAt",
   "isFavorite",
-  "isVisible",
+  "visibility",
   "updateId"
 from
   "assets"
@@ -246,3 +248,98 @@ where
   and "updatedAt" < now() - interval '1 millisecond'
 order by
   "updateId" asc
+
+-- SyncRepository.getAlbumDeletes
+select
+  "id",
+  "albumId"
+from
+  "albums_audit"
+where
+  "userId" = $1
+  and "deletedAt" < now() - interval '1 millisecond'
+order by
+  "id" asc
+
+-- SyncRepository.getAlbumUpserts
+select distinct
+  on ("albums"."id", "albums"."updateId") "albums"."id",
+  "albums"."ownerId",
+  "albums"."albumName" as "name",
+  "albums"."description",
+  "albums"."createdAt",
+  "albums"."updatedAt",
+  "albums"."albumThumbnailAssetId" as "thumbnailAssetId",
+  "albums"."isActivityEnabled",
+  "albums"."order",
+  "albums"."updateId"
+from
+  "albums"
+  left join "albums_shared_users_users" as "album_users" on "albums"."id" = "album_users"."albumsId"
+where
+  "albums"."updatedAt" < now() - interval '1 millisecond'
+  and (
+    "albums"."ownerId" = $1
+    or "album_users"."usersId" = $2
+  )
+order by
+  "albums"."updateId" asc
+
+-- SyncRepository.getAlbumUserDeletes
+select
+  "id",
+  "userId",
+  "albumId"
+from
+  "album_users_audit"
+where
+  "albumId" in (
+    select
+      "id"
+    from
+      "albums"
+    where
+      "ownerId" = $1
+    union
+    (
+      select
+        "albumUsers"."albumsId" as "id"
+      from
+        "albums_shared_users_users" as "albumUsers"
+      where
+        "albumUsers"."usersId" = $2
+    )
+  )
+  and "deletedAt" < now() - interval '1 millisecond'
+order by
+  "id" asc
+
+-- SyncRepository.getAlbumUserUpserts
+select
+  "albums_shared_users_users"."albumsId" as "albumId",
+  "albums_shared_users_users"."usersId" as "userId",
+  "albums_shared_users_users"."role",
+  "albums_shared_users_users"."updateId"
+from
+  "albums_shared_users_users"
+where
+  "albums_shared_users_users"."updatedAt" < now() - interval '1 millisecond'
+  and "albums_shared_users_users"."albumsId" in (
+    select
+      "id"
+    from
+      "albums"
+    where
+      "ownerId" = $1
+    union
+    (
+      select
+        "albumUsers"."albumsId" as "id"
+      from
+        "albums_shared_users_users" as "albumUsers"
+      where
+        "albumUsers"."usersId" = $2
+    )
+  )
+order by
+  "albums_shared_users_users"."updateId" asc

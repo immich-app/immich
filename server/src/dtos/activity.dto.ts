@@ -29,6 +29,9 @@ export class ActivityResponseDto {
 export class ActivityStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   comments!: number;
+
+  @ApiProperty({ type: 'integer' })
+  likes!: number;
 }
 
 export class ActivityDto {

@@ -1,25 +1,28 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
+  import CastButton from '$lib/cast/cast-button.svelte';
+  import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { handlePromiseError } from '$lib/utils';
+  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
-  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
+  import { onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import AssetGrid from '../photos-page/asset-grid.svelte';
-  import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
-  import { shortcut } from '$lib/actions/shortcut';
-  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
-  import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from './album-summary.svelte';
-  import { t } from 'svelte-i18n';
-  import { onDestroy } from 'svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -40,13 +43,13 @@
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
-      handlePromiseError(fileUploadHandler(value.files, album.id));
+      handlePromiseError(fileUploadHandler({ files: value.files, albumId: album.id }));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
@@ -56,6 +59,32 @@
     },
   }}
 />
+
+<main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
+  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
+    <section class="pt-8 md:pt-24 px-2 md:px-0">
+      <!-- ALBUM TITLE -->
+      <h1
+        class="text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary"
+      >
+        {album.albumName}
+      </h1>
+
+      {#if album.assetCount > 0}
+        <AlbumSummary {album} />
+      {/if}
+
+      <!-- ALBUM DESCRIPTION -->
+      {#if album.description}
+        <p
+          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-start font-medium text-base text-black dark:text-gray-300"
+        >
+          {album.description}
+        </p>
+      {/if}
+    </section>
+  </AssetGrid>
+</main>
 
 <header>
   {#if assetInteraction.selectionActive}
@@ -76,52 +105,34 @@
       {/snippet}
 
       {#snippet trailing()}
+        <CastButton />
+
         {#if sharedLink.allowUpload}
-          <CircleIconButton
-            title={$t('add_photos')}
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('add_photos')}
             onclick={() => openFileUploadDialog({ albumId: album.id })}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton
-            title={$t('download')}
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('download')}
             onclick={() => downloadAlbum(album)}
             icon={mdiFolderDownloadOutline}
           />
         {/if}
-
+        {#if sharedLink.showMetadata && $featureFlags.loaded && $featureFlags.map}
+          <AlbumMap {album} />
+        {/if}
         <ThemeButton />
       {/snippet}
     </ControlAppBar>
   {/if}
 </header>
-
-<main
-  class="relative h-dvh overflow-hidden bg-immich-bg px-2 md:px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
->
-  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
-    <section class="pt-8 md:pt-24 px-2 md:px-0">
-      <!-- ALBUM TITLE -->
-      <h1
-        class="bg-immich-bg text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
-      >
-        {album.albumName}
-      </h1>
-
-      {#if album.assetCount > 0}
-        <AlbumSummary {album} />
-      {/if}
-
-      <!-- ALBUM DESCRIPTION -->
-      {#if album.description}
-        <p
-          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-start font-medium text-base text-black dark:text-gray-300"
-        >
-          {album.description}
-        </p>
-      {/if}
-    </section>
-  </AssetGrid>
-</main>

@@ -1,30 +1,21 @@
 <script lang="ts">
-  import OnboardingCard from './onboarding-card.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import { mdiArrowRight } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import { user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';
+  import { OnboardingRole } from '$lib/models/onboarding-role';
+  import { serverConfig } from '$lib/stores/server-config.store';
 
-  interface Props {
-    onDone: () => void;
-  }
-
-  let { onDone }: Props = $props();
+  let userRole = $derived($user.isAdmin && !$serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER);
 </script>
 
-<OnboardingCard>
-  <ImmichLogo noText class="h-[50px]" />
-  <p class="font-medium text-6xl my-6 text-immich-primary dark:text-immich-dark-primary">
+<div class="gap-4">
+  <ImmichLogo noText class="h-[100px] mb-2" />
+  <p class="font-medium mb-6 text-6xl text-immich-primary dark:text-immich-dark-primary">
     {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>
-  <p class="text-3xl pb-6 font-light">{$t('onboarding_welcome_description')}</p>
-
-  <div class="w-full flex place-content-end">
-    <Button class="flex gap-2 place-content-center" onclick={() => onDone()}>
-      <p>{$t('theme')}</p>
-      <Icon path={mdiArrowRight} size="18" />
-    </Button>
-  </div>
-</OnboardingCard>
+  <p class="text-3xl pb-6 font-light">
+    {userRole == OnboardingRole.SERVER
+      ? $t('onboarding_server_welcome_description')
+      : $t('onboarding_user_welcome_description')}
+  </p>
+</div>

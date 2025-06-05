@@ -1,15 +1,15 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import { uploadAssetsStore } from '$lib/stores/upload';
+  import { uploadExecutionQueue } from '$lib/utils/file-uploader';
+  import { IconButton } from '@immich/ui';
+  import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import { quartInOut } from 'svelte/easing';
   import { fade, scale } from 'svelte/transition';
-  import { uploadAssetsStore } from '$lib/stores/upload';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
-  import { uploadExecutionQueue } from '$lib/utils/file-uploader';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { mdiCog, mdiWindowMinimize, mdiCancel, mdiCloudUploadOutline } from '@mdi/js';
-  import { t } from 'svelte-i18n';
-  import { locale } from '$lib/stores/preferences.store';
 
   let showDetail = $state(false);
   let showOptions = $state(false);
@@ -48,7 +48,7 @@
       }
       uploadAssetsStore.reset();
     }}
-    class="fixed bottom-6 end-16 z-[10000]"
+    class="fixed bottom-6 end-16"
   >
     {#if showDetail}
       <div
@@ -79,27 +79,33 @@
           </div>
           <div class="flex flex-col items-end">
             <div class="flex flex-row">
-              <CircleIconButton
-                title={$t('toggle_settings')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
                 icon={mdiCog}
-                size="14"
-                padding="1"
+                size="small"
                 onclick={() => (showOptions = !showOptions)}
+                aria-label={$t('toggle_settings')}
               />
-              <CircleIconButton
-                title={$t('minimize')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label={$t('minimize')}
                 icon={mdiWindowMinimize}
-                size="14"
-                padding="1"
+                size="small"
                 onclick={() => (showDetail = false)}
               />
             </div>
             {#if $isDismissible}
-              <CircleIconButton
-                title={$t('dismiss_all_errors')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label={$t('dismiss_all_errors')}
                 icon={mdiCancel}
-                size="14"
-                padding="1"
+                size="small"
                 onclick={() => uploadAssetsStore.dismissErrors()}
               />
             {/if}

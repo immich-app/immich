@@ -163,7 +163,7 @@ describe(AlbumService.name, () => {
       );
 
       expect(mocks.user.get).toHaveBeenCalledWith('user-id', {});
-      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']));
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']), false);
       expect(mocks.event.emit).toHaveBeenCalledWith('album.invite', {
         id: albumStub.empty.id,
         userId: 'user-id',
@@ -207,7 +207,19 @@ describe(AlbumService.name, () => {
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set(['asset-1', 'asset-2']),
+        false,
       );
+    });
+
+    it('should throw an error if the userId is the ownerId', async () => {
+      mocks.user.get.mockResolvedValue(userStub.admin);
+      await expect(
+        sut.create(authStub.admin, {
+          albumName: 'Empty album',
+          albumUsers: [{ userId: userStub.admin.id, role: AlbumUserRole.EDITOR }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.album.create).not.toHaveBeenCalled();
     });
   });
 
@@ -688,7 +700,11 @@ describe(AlbumService.name, () => {
         { success: false, id: 'asset-1', error: BulkIdErrorReason.NO_PERMISSION },
       ]);
 
-      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1']),
+        false,
+      );
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
     });
 

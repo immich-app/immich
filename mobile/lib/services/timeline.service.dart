@@ -75,7 +75,9 @@ class TimelineService {
   }
 
   Stream<RenderList> watchAllVideosTimeline() {
-    return _timelineRepository.watchAllVideosTimeline();
+    final user = _userService.getMyUser();
+
+    return _timelineRepository.watchAllVideosTimeline(user.id);
   }
 
   Future<RenderList> getTimelineFromAssets(
@@ -104,5 +106,14 @@ class TimelineService {
   GroupAssetsBy _getGroupByOption() {
     return GroupAssetsBy
         .values[_appSettingsService.getSetting(AppSettingsEnum.groupAssetsBy)];
+  }
+
+  Stream<RenderList> watchLockedTimelineProvider() async* {
+    final user = _userService.getMyUser();
+
+    yield* _timelineRepository.watchLockedTimeline(
+      user.id,
+      _getGroupByOption(),
+    );
   }
 }

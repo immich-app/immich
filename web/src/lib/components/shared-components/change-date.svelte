@@ -1,18 +1,27 @@
 <script lang="ts">
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { DateTime } from 'luxon';
-  import ConfirmDialog from './dialog/confirm-dialog.svelte';
-  import Combobox, { type ComboBoxOption } from './combobox.svelte';
-  import DateInput from '../elements/date-input.svelte';
   import { t } from 'svelte-i18n';
+  import DateInput from '../elements/date-input.svelte';
+  import Combobox, { type ComboBoxOption } from './combobox.svelte';
 
   interface Props {
+    title?: string;
     initialDate?: DateTime;
     initialTimeZone?: string;
+    timezoneInput?: boolean;
     onCancel: () => void;
     onConfirm: (date: string) => void;
   }
 
-  let { initialDate = DateTime.now(), initialTimeZone = '', onCancel, onConfirm }: Props = $props();
+  let {
+    initialDate = DateTime.now(),
+    initialTimeZone = '',
+    title = $t('edit_date_and_time'),
+    timezoneInput = true,
+    onCancel,
+    onConfirm,
+  }: Props = $props();
 
   type ZoneOption = {
     /**
@@ -133,13 +142,12 @@
   let date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
 
-<ConfirmDialog
+<ConfirmModal
   confirmColor="primary"
-  title={$t('edit_date_and_time')}
+  {title}
   prompt="Please select a new date:"
   disabled={!date.isValid}
-  onConfirm={handleConfirm}
-  {onCancel}
+  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
 >
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
@@ -149,15 +157,17 @@
         <label for="datetime">{$t('date_and_time')}</label>
         <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
       </div>
-      <div>
-        <Combobox
-          bind:selectedOption
-          label={$t('timezone')}
-          options={timezones}
-          placeholder={$t('search_timezone')}
-          onSelect={(option) => handleOnSelect(option)}
-        />
-      </div>
+      {#if timezoneInput}
+        <div>
+          <Combobox
+            bind:selectedOption
+            label={$t('timezone')}
+            options={timezones}
+            placeholder={$t('search_timezone')}
+            onSelect={(option) => handleOnSelect(option)}
+          />
+        </div>
+      {/if}
     </div>
   {/snippet}
-</ConfirmDialog>
+</ConfirmModal>

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Checkbox from '$lib/components/elements/checkbox.svelte';
+  import { Checkbox, Label } from '@immich/ui';
+  import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     value: string[];
@@ -52,14 +52,16 @@
   {/if}
   <div class="flex flex-col gap-2">
     {#each options as option (option.value)}
-      <Checkbox
-        id="{option.value}-checkbox"
-        label={option.text}
-        checked={value.includes(option.value)}
-        {disabled}
-        labelClass="text-gray-500 dark:text-gray-300"
-        onchange={() => handleCheckboxChange(option.value)}
-      />
+      <div class="flex gap-2 items-center">
+        <Checkbox
+          size="tiny"
+          id="{option.value}-checkbox"
+          checked={value.includes(option.value)}
+          {disabled}
+          onCheckedChange={() => handleCheckboxChange(option.value)}
+        />
+        <Label label={option.text} for="{option.value}-checkbox" />
+      </div>
     {/each}
   </div>
 </div>

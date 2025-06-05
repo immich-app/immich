@@ -27,49 +27,54 @@ const AlbumSchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'endDate': PropertySchema(
+    r'description': PropertySchema(
       id: 2,
+      name: r'description',
+      type: IsarType.string,
+    ),
+    r'endDate': PropertySchema(
+      id: 3,
       name: r'endDate',
       type: IsarType.dateTime,
     ),
     r'lastModifiedAssetTimestamp': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'lastModifiedAssetTimestamp',
       type: IsarType.dateTime,
     ),
     r'localId': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'localId',
       type: IsarType.string,
     ),
     r'modifiedAt': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'modifiedAt',
       type: IsarType.dateTime,
     ),
     r'name': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'name',
       type: IsarType.string,
     ),
     r'remoteId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'shared': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'shared',
       type: IsarType.bool,
     ),
     r'sortOrder': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'sortOrder',
       type: IsarType.byte,
       enumMap: _AlbumsortOrderEnumValueMap,
     ),
     r'startDate': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'startDate',
       type: IsarType.dateTime,
     )
@@ -147,6 +152,12 @@ int _albumEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
+    final value = object.description;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.localId;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -170,15 +181,16 @@ void _albumSerialize(
 ) {
   writer.writeBool(offsets[0], object.activityEnabled);
   writer.writeDateTime(offsets[1], object.createdAt);
-  writer.writeDateTime(offsets[2], object.endDate);
-  writer.writeDateTime(offsets[3], object.lastModifiedAssetTimestamp);
-  writer.writeString(offsets[4], object.localId);
-  writer.writeDateTime(offsets[5], object.modifiedAt);
-  writer.writeString(offsets[6], object.name);
-  writer.writeString(offsets[7], object.remoteId);
-  writer.writeBool(offsets[8], object.shared);
-  writer.writeByte(offsets[9], object.sortOrder.index);
-  writer.writeDateTime(offsets[10], object.startDate);
+  writer.writeString(offsets[2], object.description);
+  writer.writeDateTime(offsets[3], object.endDate);
+  writer.writeDateTime(offsets[4], object.lastModifiedAssetTimestamp);
+  writer.writeString(offsets[5], object.localId);
+  writer.writeDateTime(offsets[6], object.modifiedAt);
+  writer.writeString(offsets[7], object.name);
+  writer.writeString(offsets[8], object.remoteId);
+  writer.writeBool(offsets[9], object.shared);
+  writer.writeByte(offsets[10], object.sortOrder.index);
+  writer.writeDateTime(offsets[11], object.startDate);
 }
 
 Album _albumDeserialize(
@@ -190,16 +202,18 @@ Album _albumDeserialize(
   final object = Album(
     activityEnabled: reader.readBool(offsets[0]),
     createdAt: reader.readDateTime(offsets[1]),
-    endDate: reader.readDateTimeOrNull(offsets[2]),
-    lastModifiedAssetTimestamp: reader.readDateTimeOrNull(offsets[3]),
-    localId: reader.readStringOrNull(offsets[4]),
-    modifiedAt: reader.readDateTime(offsets[5]),
-    name: reader.readString(offsets[6]),
-    remoteId: reader.readStringOrNull(offsets[7]),
-    shared: reader.readBool(offsets[8]),
-    sortOrder: _AlbumsortOrderValueEnumMap[reader.readByteOrNull(offsets[9])] ??
-        SortOrder.desc,
-    startDate: reader.readDateTimeOrNull(offsets[10]),
+    description: reader.readStringOrNull(offsets[2]),
+    endDate: reader.readDateTimeOrNull(offsets[3]),
+    lastModifiedAssetTimestamp: reader.readDateTimeOrNull(offsets[4]),
+    localId: reader.readStringOrNull(offsets[5]),
+    modifiedAt: reader.readDateTime(offsets[6]),
+    name: reader.readString(offsets[7]),
+    remoteId: reader.readStringOrNull(offsets[8]),
+    shared: reader.readBool(offsets[9]),
+    sortOrder:
+        _AlbumsortOrderValueEnumMap[reader.readByteOrNull(offsets[10])] ??
+            SortOrder.desc,
+    startDate: reader.readDateTimeOrNull(offsets[11]),
   );
   object.id = id;
   return object;
@@ -217,23 +231,25 @@ P _albumDeserializeProp<P>(
     case 1:
       return (reader.readDateTime(offset)) as P;
     case 2:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 5:
-      return (reader.readDateTime(offset)) as P;
-    case 6:
-      return (reader.readString(offset)) as P;
-    case 7:
       return (reader.readStringOrNull(offset)) as P;
+    case 6:
+      return (reader.readDateTime(offset)) as P;
+    case 7:
+      return (reader.readString(offset)) as P;
     case 8:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 9:
+      return (reader.readBool(offset)) as P;
+    case 10:
       return (_AlbumsortOrderValueEnumMap[reader.readByteOrNull(offset)] ??
           SortOrder.desc) as P;
-    case 10:
+    case 11:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -531,6 +547,152 @@ extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'description',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'description',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'description',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'description',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'description',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> descriptionIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'description',
+        value: '',
       ));
     });
   }
@@ -1502,6 +1664,18 @@ extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
     });
   }
 
+  QueryBuilder<Album, Album, QAfterSortBy> sortByDescription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByDescriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> sortByEndDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endDate', Sort.asc);
@@ -1634,6 +1808,18 @@ extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
   QueryBuilder<Album, Album, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByDescription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByDescriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.desc);
     });
   }
 
@@ -1772,6 +1958,13 @@ extension AlbumQueryWhereDistinct on QueryBuilder<Album, Album, QDistinct> {
     });
   }
 
+  QueryBuilder<Album, Album, QDistinct> distinctByDescription(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Album, Album, QDistinct> distinctByEndDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'endDate');
@@ -1846,6 +2039,12 @@ extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
   QueryBuilder<Album, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
+    });
+  }
+
+  QueryBuilder<Album, String?, QQueryOperations> descriptionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'description');
     });
   }
 

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import {
+    AssetVisibility,
     getAlbumStatistics,
     getAssetStatistics,
     type AlbumStatisticsResponseDto,
@@ -41,9 +42,9 @@
 
   const getUsage = async () => {
     [timelineStats, favoriteStats, archiveStats, trashStats, albumStats] = await Promise.all([
-      getAssetStatistics({ isArchived: false }),
+      getAssetStatistics({ visibility: AssetVisibility.Timeline }),
       getAssetStatistics({ isFavorite: true }),
-      getAssetStatistics({ isArchived: true }),
+      getAssetStatistics({ visibility: AssetVisibility.Archive }),
       getAssetStatistics({ isTrashed: true }),
       getAlbumStatistics(),
     ]);
@@ -56,7 +57,7 @@
 
 {#snippet row(viewName: string, stats: AssetStatsResponseDto)}
   <tr
-    class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg odd:bg-immich-bg even:bg-immich-gray odd:dark:bg-immich-dark-gray/50 even:dark:bg-immich-dark-gray/75"
+    class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
   >
     <td class="w-1/4 px-4 text-sm">{viewName}</td>
     <td class="w-1/4 px-4 text-sm">{stats.images.toLocaleString($locale)}</td>
@@ -94,7 +95,7 @@
   <div class="overflow-x-auto">
     <table class="w-full text-start mt-4">
       <thead
-        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+        class="mb-4 flex h-12 w-full rounded-md border text-immich-primary dark:border-immich-dark-gray bg-subtle dark:text-immich-dark-primary"
       >
         <tr class="flex w-full place-items-center text-sm font-medium text-center">
           <th class="w-1/2">{$t('owned')}</th>
@@ -102,9 +103,7 @@
         </tr>
       </thead>
       <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-        <tr
-          class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
-        >
+        <tr class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg bg-subtle/20">
           <td class="w-1/2 px-4 text-sm">{albumStats.owned.toLocaleString($locale)}</td>
           <td class="w-1/2 px-4 text-sm">{albumStats.shared.toLocaleString($locale)}</td>
         </tr>

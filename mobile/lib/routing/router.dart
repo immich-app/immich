@@ -39,6 +39,8 @@ import 'package:immich_mobile/pages/library/favorite.page.dart';
 import 'package:immich_mobile/pages/library/folder/folder.page.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
 import 'package:immich_mobile/pages/library/local_albums.page.dart';
+import 'package:immich_mobile/pages/library/locked/locked.page.dart';
+import 'package:immich_mobile/pages/library/locked/pin_auth.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner_detail.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
@@ -61,30 +63,49 @@ import 'package:immich_mobile/pages/search/person_result.page.dart';
 import 'package:immich_mobile/pages/search/recently_taken.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/feat_in_development.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/backup_permission_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
+import 'package:immich_mobile/routing/locked_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/local_auth.service.dart';
+import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 part 'router.gr.dart';
+
+final appRouterProvider = Provider(
+  (ref) => AppRouter(
+    ref.watch(apiServiceProvider),
+    ref.watch(galleryPermissionNotifier.notifier),
+    ref.watch(secureStorageServiceProvider),
+    ref.watch(localAuthServiceProvider),
+  ),
+);
 
 @AutoRouterConfig(replaceInRouteName: 'Page,Route')
 class AppRouter extends RootStackRouter {
   late final AuthGuard _authGuard;
   late final DuplicateGuard _duplicateGuard;
   late final BackupPermissionGuard _backupPermissionGuard;
+  late final LockedGuard _lockedGuard;
 
   AppRouter(
     ApiService apiService,
     GalleryPermissionNotifier galleryPermissionNotifier,
+    SecureStorageService secureStorageService,
+    LocalAuthService localAuthService,
   ) {
     _authGuard = AuthGuard(apiService);
     _duplicateGuard = DuplicateGuard();
+    _lockedGuard =
+        LockedGuard(apiService, secureStorageService, localAuthService);
     _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
   }
 
@@ -289,12 +310,25 @@ class AppRouter extends RootStackRouter {
       page: ShareIntentRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    AutoRoute(
+      page: LockedRoute.page,
+      guards: [_authGuard, _lockedGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: PinAuthRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: FeatInDevRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: LocalMediaSummaryRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: RemoteMediaSummaryRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
   ];
 }
-
-final appRouterProvider = Provider(
-  (ref) => AppRouter(
-    ref.watch(apiServiceProvider),
-    ref.watch(galleryPermissionNotifier.notifier),
-  ),
-);

@@ -1,15 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { AssetOrder } from 'src/enum';
-import { TimeBucketSize } from 'src/repositories/asset.repository';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+
+import { IsEnum, IsString } from 'class-validator';
+import { AssetOrder, AssetVisibility } from 'src/enum';
+import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
-  @IsNotEmpty()
-  @IsEnum(TimeBucketSize)
-  @ApiProperty({ enum: TimeBucketSize, enumName: 'TimeBucketSize' })
-  size!: TimeBucketSize;
-
   @ValidateUUID({ optional: true })
   userId?: string;
 
@@ -21,9 +16,6 @@ export class TimeBucketDto {
 
   @ValidateUUID({ optional: true })
   tagId?: string;
-
-  @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
 
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
@@ -41,6 +33,9 @@ export class TimeBucketDto {
   @Optional()
   @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
   order?: AssetOrder;
+
+  @ValidateAssetVisibility({ optional: true })
+  visibility?: AssetVisibility;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
@@ -48,7 +43,63 @@ export class TimeBucketAssetDto extends TimeBucketDto {
   timeBucket!: string;
 }
 
-export class TimeBucketResponseDto {
+export class TimelineStackResponseDto {
+  id!: string;
+  primaryAssetId!: string;
+  assetCount!: number;
+}
+
+export class TimeBucketAssetResponseDto {
+  id!: string[];
+
+  ownerId!: string[];
+
+  ratio!: number[];
+
+  isFavorite!: boolean[];
+
+  @ApiProperty({ enum: AssetVisibility, enumName: 'AssetVisibility', isArray: true })
+  visibility!: AssetVisibility[];
+
+  isTrashed!: boolean[];
+
+  isImage!: boolean[];
+
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  thumbhash!: (string | null)[];
+
+  localDateTime!: string[];
+
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  duration!: (string | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    items: {
+      type: 'array',
+      items: { type: 'string' },
+      minItems: 2,
+      maxItems: 2,
+      nullable: true,
+    },
+    description: '(stack ID, stack asset count) tuple',
+  })
+  stack?: ([string, string] | null)[];
+
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  projectionType!: (string | null)[];
+
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  livePhotoVideoId!: (string | null)[];
+
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  city!: (string | null)[];
+
+  @ApiProperty({ type: 'array', items: { type: 'string', nullable: true } })
+  country!: (string | null)[];
+}
+
+export class TimeBucketsResponseDto {
   @ApiProperty({ type: 'string' })
   timeBucket!: string;
 

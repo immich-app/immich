@@ -4,7 +4,7 @@ FROM ${BASEIMAGE} AS dev
 # Flutter SDK
 # https://flutter.dev/docs/development/tools/sdk/releases?tab=linux
 ENV FLUTTER_CHANNEL="stable"
-ENV FLUTTER_VERSION="3.29.2"
+ENV FLUTTER_VERSION="3.29.3"
 ENV FLUTTER_HOME=/flutter
 ENV PATH=${PATH}:${FLUTTER_HOME}/bin
 

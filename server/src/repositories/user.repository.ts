@@ -6,7 +6,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB, UserMetadata as DbUserMetadata } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetType, UserStatus } from 'src/enum';
+import { AssetType, AssetVisibility, UserStatus } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import { UserMetadata, UserMetadataItem } from 'src/types';
 import { asUuid } from 'src/utils/database';
@@ -14,6 +14,7 @@ import { asUuid } from 'src/utils/database';
 type Upsert = Insertable<DbUserMetadata>;
 
 export interface UserListFilter {
+  id?: string;
   withDeleted?: boolean;
 }
 
@@ -89,13 +90,23 @@ export class UserRepository {
     return !!admin;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForPinCode(id: string) {
+    return this.db
+      .selectFrom('users')
+      .select(['users.pinCode', 'users.password'])
+      .where('users.id', '=', id)
+      .where('users.deletedAt', 'is', null)
+      .executeTakeFirstOrThrow();
+  }
+
   @GenerateSql({ params: [DummyValue.EMAIL] })
-  getByEmail(email: string, withPassword?: boolean) {
+  getByEmail(email: string, options?: { withPassword?: boolean }) {
     return this.db
       .selectFrom('users')
       .select(columns.userAdmin)
       .select(withMetadata)
-      .$if(!!withPassword, (eb) => eb.select('password'))
+      .$if(!!options?.withPassword, (eb) => eb.select('password'))
       .where('email', '=', email)
       .where('users.deletedAt', 'is', null)
       .executeTakeFirst();
@@ -131,12 +142,13 @@ export class UserRepository {
     { name: 'with deleted', params: [{ withDeleted: true }] },
     { name: 'without deleted', params: [{ withDeleted: false }] },
   )
-  getList({ withDeleted }: UserListFilter = {}) {
+  getList({ id, withDeleted }: UserListFilter = {}) {
     return this.db
       .selectFrom('users')
       .select(columns.userAdmin)
       .select(withMetadata)
       .$if(!withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
+      .$if(!!id, (eb) => eb.where('users.id', '=', id!))
       .orderBy('createdAt', 'desc')
       .execute();
   }
@@ -198,20 +210,26 @@ export class UserRepository {
   getUserStats() {
     return this.db
       .selectFrom('users')
-      .leftJoin('assets', 'assets.ownerId', 'users.id')
+      .leftJoin('assets', (join) => join.onRef('assets.ownerId', '=', 'users.id').on('assets.deletedAt', 'is', null))
       .leftJoin('exif', 'exif.assetId', 'assets.id')
-      .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes as quotaSizeInBytes'])
+      .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes'])
       .select((eb) => [
         eb.fn
           .countAll<number>()
           .filterWhere((eb) =>
-            eb.and([eb('assets.type', '=', sql.lit(AssetType.IMAGE)), eb('assets.isVisible', '=', sql.lit(true))]),
+            eb.and([
+              eb('assets.type', '=', sql.lit(AssetType.IMAGE)),
+              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+            ]),
           )
           .as('photos'),
         eb.fn
           .countAll<number>()
           .filterWhere((eb) =>
-            eb.and([eb('assets.type', '=', sql.lit(AssetType.VIDEO)), eb('assets.isVisible', '=', sql.lit(true))]),
+            eb.and([
+              eb('assets.type', '=', sql.lit(AssetType.VIDEO)),
+              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+            ]),
           )
           .as('videos'),
         eb.fn
@@ -238,7 +256,6 @@ export class UserRepository {
           )
           .as('usageVideos'),
       ])
-      .where('assets.deletedAt', 'is', null)
       .groupBy('users.id')
       .orderBy('users.createdAt', 'asc')
       .execute();

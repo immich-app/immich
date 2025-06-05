@@ -1,19 +1,20 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
+  import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { user } from '$lib/stores/user.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { deleteProfileImage, updateMyUser, type UserAvatarColor } from '@immich/sdk';
+  import { userInteraction } from '$lib/stores/user.svelte';
+  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { NotificationType, notificationController } from '../notification/notification';
   import UserAvatar from '../user-avatar.svelte';
-  import AvatarSelector from './avatar-selector.svelte';
 
   interface Props {
     onLogout: () => void;
@@ -22,48 +23,36 @@
 
   let { onLogout, onClose = () => {} }: Props = $props();
 
-  let isShowSelectAvatar = $state(false);
+  let info: ServerAboutResponseDto | undefined = $state();
 
-  const handleSaveProfile = async (color: UserAvatarColor) => {
-    try {
-      if ($user.profileImagePath !== '') {
-        await deleteProfileImage();
-      }
-
-      $user = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
-      isShowSelectAvatar = false;
-
-      notificationController.show({
-        message: $t('saved_profile'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_profile'));
-    }
-  };
+  onMount(async () => {
+    info = userInteraction.aboutInfo ?? (await getAboutInfo());
+  });
 </script>
 
 <div
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute end-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute z-1 end-[25px] top-[75px] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   use:focusTrap
 >
   <div
-    class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
+    class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-t-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
   >
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
-      <div class="absolute z-10 bottom-0 end-0 rounded-full w-6 h-6">
-        <CircleIconButton
+      <div class="absolute bottom-0 end-0 rounded-full w-6 h-6">
+        <IconButton
           color="primary"
           icon={mdiPencil}
-          title={$t('edit_avatar')}
-          class="border"
-          size="12"
-          padding="2"
-          onclick={() => (isShowSelectAvatar = true)}
+          aria-label={$t('edit_avatar')}
+          size="tiny"
+          shape="round"
+          onclick={async () => {
+            onClose();
+            await modalManager.show(AvatarEditModal, {});
+          }}
         />
       </div>
     </div>
@@ -75,7 +64,15 @@
     </div>
 
     <div class="flex flex-col gap-1">
-      <Button href={AppRoute.USER_SETTINGS} onclick={onClose} color="dark-gray" size="sm" shadow={false} border>
+      <Button
+        href={AppRoute.USER_SETTINGS}
+        onclick={onClose}
+        size="small"
+        color="secondary"
+        variant="ghost"
+        shape="round"
+        class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
+      >
         <div class="flex place-content-center place-items-center text-center gap-2 px-2">
           <Icon path={mdiCog} size="18" ariaHidden />
           {$t('account_settings')}
@@ -83,13 +80,14 @@
       </Button>
       {#if $user.isAdmin}
         <Button
-          href={AppRoute.ADMIN_USER_MANAGEMENT}
+          href={AppRoute.ADMIN_USERS}
           onclick={onClose}
-          color="dark-gray"
-          size="sm"
-          shadow={false}
-          border
+          shape="round"
+          variant="ghost"
+          size="small"
+          color="secondary"
           aria-current={page.url.pathname.includes('/admin') ? 'page' : undefined}
+          class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
         >
           <div class="flex place-content-center place-items-center text-center gap-2 px-2">
             <Icon path={mdiWrench} size="18" ariaHidden />
@@ -101,17 +99,25 @@
   </div>
 
   <div class="mb-4 flex flex-col">
+    <Button
+      class="m-1 mx-4 rounded-none rounded-b-3xl bg-white p-3 dark:bg-immich-dark-primary/10"
+      onclick={onLogout}
+      leadingIcon={mdiLogout}
+      variant="ghost"
+      color="secondary">{$t('sign_out')}</Button
+    >
+
     <button
       type="button"
-      class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
-      onclick={onLogout}
+      class="text-center mt-4 underline text-xs text-immich-primary dark:text-immich-dark-primary"
+      onclick={async () => {
+        onClose();
+        if (info) {
+          await modalManager.show(HelpAndFeedbackModal, { info });
+        }
+      }}
     >
-      <Icon path={mdiLogout} size={24} />
-      {$t('sign_out')}</button
-    >
+      {$t('support_and_feedback')}
+    </button>
   </div>
 </div>
-
-{#if isShowSelectAvatar}
-  <AvatarSelector user={$user} onClose={() => (isShowSelectAvatar = false)} onChoose={handleSaveProfile} />
-{/if}

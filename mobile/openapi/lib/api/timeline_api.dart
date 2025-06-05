@@ -19,13 +19,9 @@ class TimelineApi {
   /// Performs an HTTP 'GET /timeline/bucket' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [TimeBucketSize] size (required):
-  ///
   /// * [String] timeBucket (required):
   ///
   /// * [String] albumId:
-  ///
-  /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
@@ -41,10 +37,12 @@ class TimelineApi {
   ///
   /// * [String] userId:
   ///
+  /// * [AssetVisibility] visibility:
+  ///
   /// * [bool] withPartners:
   ///
   /// * [bool] withStacked:
-  Future<Response> getTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, bool? withPartners, bool? withStacked, }) async {
+  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/bucket';
 
@@ -58,9 +56,6 @@ class TimelineApi {
     if (albumId != null) {
       queryParams.addAll(_queryParams('', 'albumId', albumId));
     }
-    if (isArchived != null) {
-      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
     }
@@ -76,13 +71,15 @@ class TimelineApi {
     if (personId != null) {
       queryParams.addAll(_queryParams('', 'personId', personId));
     }
-      queryParams.addAll(_queryParams('', 'size', size));
     if (tagId != null) {
       queryParams.addAll(_queryParams('', 'tagId', tagId));
     }
       queryParams.addAll(_queryParams('', 'timeBucket', timeBucket));
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
+    }
+    if (visibility != null) {
+      queryParams.addAll(_queryParams('', 'visibility', visibility));
     }
     if (withPartners != null) {
       queryParams.addAll(_queryParams('', 'withPartners', withPartners));
@@ -107,13 +104,9 @@ class TimelineApi {
 
   /// Parameters:
   ///
-  /// * [TimeBucketSize] size (required):
-  ///
   /// * [String] timeBucket (required):
   ///
   /// * [String] albumId:
-  ///
-  /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
@@ -129,11 +122,13 @@ class TimelineApi {
   ///
   /// * [String] userId:
   ///
+  /// * [AssetVisibility] visibility:
+  ///
   /// * [bool] withPartners:
   ///
   /// * [bool] withStacked:
-  Future<List<AssetResponseDto>?> getTimeBucket(TimeBucketSize size, String timeBucket, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, bool? withPartners, bool? withStacked, }) async {
-    final response = await getTimeBucketWithHttpInfo(size, timeBucket,  albumId: albumId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, tagId: tagId, userId: userId, withPartners: withPartners, withStacked: withStacked, );
+  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
+    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, tagId: tagId, userId: userId, visibility: visibility, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -141,11 +136,8 @@ class TimelineApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
-        .cast<AssetResponseDto>()
-        .toList(growable: false);
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TimeBucketAssetResponseDto',) as TimeBucketAssetResponseDto;
+    
     }
     return null;
   }
@@ -153,11 +145,7 @@ class TimelineApi {
   /// Performs an HTTP 'GET /timeline/buckets' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [TimeBucketSize] size (required):
-  ///
   /// * [String] albumId:
-  ///
-  /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
@@ -173,10 +161,12 @@ class TimelineApi {
   ///
   /// * [String] userId:
   ///
+  /// * [AssetVisibility] visibility:
+  ///
   /// * [bool] withPartners:
   ///
   /// * [bool] withStacked:
-  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, bool? withPartners, bool? withStacked, }) async {
+  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/buckets';
 
@@ -190,9 +180,6 @@ class TimelineApi {
     if (albumId != null) {
       queryParams.addAll(_queryParams('', 'albumId', albumId));
     }
-    if (isArchived != null) {
-      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
     }
@@ -208,12 +195,14 @@ class TimelineApi {
     if (personId != null) {
       queryParams.addAll(_queryParams('', 'personId', personId));
     }
-      queryParams.addAll(_queryParams('', 'size', size));
     if (tagId != null) {
       queryParams.addAll(_queryParams('', 'tagId', tagId));
     }
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
+    }
+    if (visibility != null) {
+      queryParams.addAll(_queryParams('', 'visibility', visibility));
     }
     if (withPartners != null) {
       queryParams.addAll(_queryParams('', 'withPartners', withPartners));
@@ -238,11 +227,7 @@ class TimelineApi {
 
   /// Parameters:
   ///
-  /// * [TimeBucketSize] size (required):
-  ///
   /// * [String] albumId:
-  ///
-  /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
@@ -258,11 +243,13 @@ class TimelineApi {
   ///
   /// * [String] userId:
   ///
+  /// * [AssetVisibility] visibility:
+  ///
   /// * [bool] withPartners:
   ///
   /// * [bool] withStacked:
-  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, bool? withPartners, bool? withStacked, }) async {
-    final response = await getTimeBucketsWithHttpInfo(size,  albumId: albumId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, tagId: tagId, userId: userId, withPartners: withPartners, withStacked: withStacked, );
+  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
+    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, tagId: tagId, userId: userId, visibility: visibility, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -271,8 +258,8 @@ class TimelineApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<TimeBucketResponseDto>') as List)
-        .cast<TimeBucketResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<TimeBucketsResponseDto>') as List)
+        .cast<TimeBucketsResponseDto>()
         .toList(growable: false);
 
     }
