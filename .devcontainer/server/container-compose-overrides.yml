@@ -21,7 +21,7 @@ services:
 
   immich-machine-learning:
     env_file: !reset []
-git
+    
   database:
     env_file: !reset []
     volumes:
