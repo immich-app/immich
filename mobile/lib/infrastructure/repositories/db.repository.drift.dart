@@ -13,12 +13,10 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.d
     as i5;
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart'
     as i6;
-import 'package:immich_mobile/infrastructure/entities/local_asset_hash.entity.drift.dart'
-    as i7;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
-    as i8;
+    as i7;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart'
-    as i9;
+    as i8;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -34,12 +32,10 @@ abstract class $Drift extends i0.GeneratedDatabase {
       i5.$LocalAssetEntityTable(this);
   late final i6.$LocalAlbumAssetEntityTable localAlbumAssetEntity =
       i6.$LocalAlbumAssetEntityTable(this);
-  late final i7.$LocalAssetHashEntityTable localAssetHashEntity =
-      i7.$LocalAssetHashEntityTable(this);
-  late final i8.$RemoteAssetEntityTable remoteAssetEntity =
-      i8.$RemoteAssetEntityTable(this);
-  late final i9.$RemoteExifEntityTable remoteExifEntity =
-      i9.$RemoteExifEntityTable(this);
+  late final i7.$RemoteAssetEntityTable remoteAssetEntity =
+      i7.$RemoteAssetEntityTable(this);
+  late final i8.$RemoteExifEntityTable remoteExifEntity =
+      i8.$RemoteExifEntityTable(this);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -51,11 +47,10 @@ abstract class $Drift extends i0.GeneratedDatabase {
         localAlbumEntity,
         localAssetEntity,
         localAlbumAssetEntity,
-        localAssetHashEntity,
         remoteAssetEntity,
         remoteExifEntity,
         i5.idxLocalAssetChecksum,
-        i8.uQRemoteAssetOwnerChecksum
+        i7.uQRemoteAssetOwnerChecksum
       ];
   @override
   i0.StreamQueryUpdateRules get streamUpdateRules =>
@@ -135,10 +130,8 @@ class $DriftManager {
       i5.$$LocalAssetEntityTableTableManager(_db, _db.localAssetEntity);
   i6.$$LocalAlbumAssetEntityTableTableManager get localAlbumAssetEntity => i6
       .$$LocalAlbumAssetEntityTableTableManager(_db, _db.localAlbumAssetEntity);
-  i7.$$LocalAssetHashEntityTableTableManager get localAssetHashEntity =>
-      i7.$$LocalAssetHashEntityTableTableManager(_db, _db.localAssetHashEntity);
-  i8.$$RemoteAssetEntityTableTableManager get remoteAssetEntity =>
-      i8.$$RemoteAssetEntityTableTableManager(_db, _db.remoteAssetEntity);
-  i9.$$RemoteExifEntityTableTableManager get remoteExifEntity =>
-      i9.$$RemoteExifEntityTableTableManager(_db, _db.remoteExifEntity);
+  i7.$$RemoteAssetEntityTableTableManager get remoteAssetEntity =>
+      i7.$$RemoteAssetEntityTableTableManager(_db, _db.remoteAssetEntity);
+  i8.$$RemoteExifEntityTableTableManager get remoteExifEntity =>
+      i8.$$RemoteExifEntityTableTableManager(_db, _db.remoteExifEntity);
 }

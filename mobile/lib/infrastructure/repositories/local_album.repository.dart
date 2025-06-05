@@ -105,7 +105,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       await _db.localAlbumEntity
           .insertOne(companion, onConflict: DoUpdate((_) => companion));
       if (toUpsert.isNotEmpty) {
-        await upsertAssets(toUpsert);
+        await _upsertAssets(toUpsert);
         await _db.localAlbumAssetEntity.insertAll(
           toUpsert.map(
             (a) => LocalAlbumAssetEntityCompanion.insert(
@@ -207,7 +207,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     return _db.transaction(() async {
       await _deleteAssets(deletes);
 
-      await upsertAssets(updates);
+      await _upsertAssets(updates);
       // The ugly casting below is required for now because the generated code
       // casts the returned values from the platform during decoding them
       // and iterating over them causes the type to be List<Object?> instead of
@@ -240,31 +240,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<void> upsertAssets(Iterable<LocalAsset> localAssets) {
-    if (localAssets.isEmpty) {
-      return Future.value();
-    }
-
-    return _db.batch((batch) async {
-      batch.insertAllOnConflictUpdate(
-        _db.localAssetEntity,
-        localAssets.map(
-          (a) => LocalAssetEntityCompanion.insert(
-            name: a.name,
-            type: a.type,
-            createdAt: Value(a.createdAt),
-            updatedAt: Value(a.updatedAt),
-            durationInSeconds: Value.absentIfNull(a.durationInSeconds),
-            id: a.id,
-            checksum: Value.absentIfNull(a.checksum),
-          ),
-        ),
-      );
-    });
-  }
-
-  @override
-  Future<List<LocalAsset>> getUnHashedAssets(String albumId) {
+  Future<List<LocalAsset>> getAssetsToHash(String albumId) {
     final query = _db.localAssetEntity.select()
       ..join(
         [
@@ -279,6 +255,34 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       ..where((row) => row.checksum.isNull())
       ..orderBy([(o) => OrderingTerm.asc(o.id)]);
     return query.map((row) => row.toDto()).get();
+  }
+
+  Future<void> _upsertAssets(Iterable<LocalAsset> localAssets) {
+    if (localAssets.isEmpty) {
+      return Future.value();
+    }
+
+    return _db.batch((batch) async {
+      for (final asset in localAssets) {
+        final companion = LocalAssetEntityCompanion.insert(
+          name: asset.name,
+          type: asset.type,
+          createdAt: Value(asset.createdAt),
+          updatedAt: Value(asset.updatedAt),
+          durationInSeconds: Value.absentIfNull(asset.durationInSeconds),
+          id: asset.id,
+          checksum: const Value(null),
+        );
+        batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
+          _db.localAssetEntity,
+          companion,
+          onConflict: DoUpdate(
+            (_) => companion,
+            where: (old) => old.updatedAt.isNotValue(asset.updatedAt),
+          ),
+        );
+      }
+    });
   }
 
   Future<void> _removeAssets(String albumId, Iterable<String> assetIds) async {

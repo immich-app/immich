@@ -1,13 +1,10 @@
 import 'dart:convert';
 
-import 'package:collection/collection.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/interfaces/device_asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
+import 'package:immich_mobile/domain/interfaces/local_asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/storage.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset/local_asset_hash.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset_hash.entity.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:logging/logging.dart';
@@ -16,20 +13,20 @@ class HashService {
   final int batchSizeLimit;
   final int batchFileLimit;
   final ILocalAlbumRepository _localAlbumRepository;
-  final ILocalAssetHashRepository _localAssetHashRepository;
+  final ILocalAssetRepository _localAssetRepository;
   final IStorageRepository _storageRepository;
   final NativeSyncApi _nativeSyncApi;
   final _log = Logger('HashService');
 
   HashService({
     required ILocalAlbumRepository localAlbumRepository,
-    required ILocalAssetHashRepository localAssetHashRepository,
+    required ILocalAssetRepository localAssetRepository,
     required IStorageRepository storageRepository,
     required NativeSyncApi nativeSyncApi,
     this.batchSizeLimit = kBatchHashSizeLimit,
     this.batchFileLimit = kBatchHashFileLimit,
   })  : _localAlbumRepository = localAlbumRepository,
-        _localAssetHashRepository = localAssetHashRepository,
+        _localAssetRepository = localAssetRepository,
         _storageRepository = storageRepository,
         _nativeSyncApi = nativeSyncApi;
 
@@ -50,10 +47,10 @@ class HashService {
     });
 
     for (final album in localAlbums) {
-      final unHashedAssets =
-          await _localAlbumRepository.getUnHashedAssets(album.id);
-      if (unHashedAssets.isNotEmpty) {
-        await _hashAssets(unHashedAssets);
+      final assetsToHash =
+          await _localAlbumRepository.getAssetsToHash(album.id);
+      if (assetsToHash.isNotEmpty) {
+        await _hashAssets(assetsToHash);
       }
     }
 
@@ -65,97 +62,58 @@ class HashService {
   /// Processes a list of [LocalAsset]s, storing their hash and updating the assets in the DB
   /// with hash for those that were successfully hashed. Hashes are looked up in a table
   /// [LocalAssetHashEntity] by local id. Only missing entries are newly hashed and added to the DB.
-  Future<void> _hashAssets(List<LocalAsset> unHashedAssets) async {
-    final existingHashes = await _localAssetHashRepository
-        .getByIds(unHashedAssets.map((a) => a.id));
-
-    assert(unHashedAssets.isSorted((a, b) => a.id.compareTo(b.id)));
-    assert(existingHashes.isSorted((a, b) => a.id.compareTo(b.id)));
-
-    int dbIndex = 0;
+  Future<void> _hashAssets(List<LocalAsset> assetsToHash) async {
     int bytesProcessed = 0;
-    final hashedAssets = <LocalAsset>[];
-    final toBeHashed = <_AssetPath>[];
-    final toBeDeleted = <String>[];
+    final toHash = <_AssetToPath>[];
 
-    for (final asset in unHashedAssets) {
-      LocalAssetHash? existingHash;
-
-      if (dbIndex < existingHashes.length &&
-          existingHashes[dbIndex].id == asset.id) {
-        existingHash = existingHashes[dbIndex++];
-      }
-
-      // Reuse existing hash if valid
-      if (existingHash?.checksum.isNotEmpty == true &&
-          existingHash!.updatedAt.isAtSameMomentAs(asset.updatedAt)) {
-        hashedAssets.add(asset.copyWith(checksum: existingHash.checksum));
-        continue;
-      }
-
+    for (final asset in assetsToHash) {
       final file = await _storageRepository.getFileForAsset(asset);
       if (file == null) {
-        // Can't access file, delete any DB entry
-        if (existingHash != null) {
-          toBeDeleted.add(existingHash.id);
-        }
         continue;
       }
 
       bytesProcessed += await file.length();
-      toBeHashed.add(_AssetPath(asset: asset, path: file.path));
+      toHash.add(_AssetToPath(asset: asset, path: file.path));
 
-      if (toBeHashed.length >= batchFileLimit ||
-          bytesProcessed >= batchSizeLimit) {
-        await _processBatch(toBeHashed, hashedAssets, toBeDeleted);
-        toBeHashed.clear();
-        toBeDeleted.clear();
-        hashedAssets.clear();
+      if (toHash.length >= batchFileLimit || bytesProcessed >= batchSizeLimit) {
+        await _processBatch(toHash);
+        toHash.clear();
         bytesProcessed = 0;
       }
     }
-    assert(dbIndex == existingHashes.length, "All hashes should be processed");
 
-    // Process any remaining assets
-    await _processBatch(toBeHashed, hashedAssets, toBeDeleted);
+    await _processBatch(toHash);
   }
 
   /// Processes a batch of assets.
-  Future<void> _processBatch(
-    List<_AssetPath> toBeHashed,
-    List<LocalAsset> hashedAssets,
-    List<String> toBeDeleted,
-  ) async {
-    _log.fine("Hashing ${toBeHashed.length} files");
+  Future<void> _processBatch(List<_AssetToPath> toHash) async {
+    _log.fine("Hashing ${toHash.length} files");
 
-    if (toBeHashed.isNotEmpty) {
-      final hashes = await _nativeSyncApi
-          .hashPaths(toBeHashed.map((e) => e.path).toList());
+    final hashed = <LocalAsset>[];
+    if (toHash.isNotEmpty) {
+      final hashes =
+          await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
 
       for (final (index, hash) in hashes.indexed) {
-        final asset = toBeHashed[index].asset;
+        final asset = toHash[index].asset;
         if (hash?.length == 20) {
-          hashedAssets.add(asset.copyWith(checksum: base64.encode(hash!)));
+          hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
         } else {
           _log.warning("Failed to hash file ${asset.id}");
-          toBeDeleted.add(asset.id);
         }
       }
 
-      _log.fine("Hashed ${hashedAssets.length}/${toBeHashed.length} assets");
+      _log.fine("Hashed ${hashed.length}/${toHash.length} assets");
+      DLog.log("Hashed ${hashed.length}/${toHash.length} assets");
     }
 
-    await _localAlbumRepository.upsertAssets(hashedAssets);
-    await _localAssetHashRepository.handleDelta(
-      updates: hashedAssets,
-      deletes: toBeDeleted,
-    );
+    await _localAssetRepository.updateHashes(hashed);
   }
 }
 
-class _AssetPath {
+class _AssetToPath {
   final LocalAsset asset;
   final String path;
 
-  const _AssetPath({required this.asset, required this.path});
+  const _AssetToPath({required this.asset, required this.path});
 }

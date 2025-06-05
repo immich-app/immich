@@ -4,7 +4,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -47,10 +46,6 @@ final _localStats = [
   _Stat(
     name: 'Local Assets',
     load: (db) => db.managers.localAssetEntity.count(),
-  ),
-  _Stat(
-    name: 'Local Asset Hash',
-    load: (db) => db.managers.localAssetHashEntity.count(),
   ),
   _Stat(
     name: 'Local Albums',
@@ -98,9 +93,8 @@ class LocalMediaSummaryPage extends StatelessWidget {
               ),
               FutureBuilder(
                 future: albumsFuture,
-                initialData: <LocalAlbum>[],
                 builder: (_, snap) {
-                  final albums = snap.data!;
+                  final albums = snap.data ?? [];
                   if (albums.isEmpty) {
                     return const SliverToBoxAdapter(child: SizedBox.shrink());
                   }

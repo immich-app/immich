@@ -6,7 +6,3 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 final deviceAssetRepositoryProvider = Provider<IDeviceAssetRepository>(
   (ref) => IsarDeviceAssetRepository(ref.watch(isarProvider)),
 );
-
-final assetHashRepositoryProvider = Provider<ILocalAssetHashRepository>(
-  (ref) => DriftLocalAssetHashRepository(ref.watch(driftProvider)),
-);
