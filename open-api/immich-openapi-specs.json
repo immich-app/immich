@@ -8695,6 +8695,34 @@
         ],
         "type": "string"
       },
+      "AlbumsResponse": {
+        "properties": {
+          "defaultAssetOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrder"
+              }
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "defaultAssetOrder"
+        ],
+        "type": "object"
+      },
+      "AlbumsUpdate": {
+        "properties": {
+          "defaultAssetOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrder"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
       "AllJobStatusResponseDto": {
         "properties": {
           "backgroundTask": {
@@ -14984,6 +15012,9 @@
       },
       "UserPreferencesResponseDto": {
         "properties": {
+          "albums": {
+            "$ref": "#/components/schemas/AlbumsResponse"
+          },
           "cast": {
             "$ref": "#/components/schemas/CastResponse"
           },
@@ -15016,6 +15047,7 @@
           }
         },
         "required": [
+          "albums",
           "cast",
           "download",
           "emailNotifications",
@@ -15031,6 +15063,9 @@
       },
       "UserPreferencesUpdateDto": {
         "properties": {
+          "albums": {
+            "$ref": "#/components/schemas/AlbumsUpdate"
+          },
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"
           },

@@ -129,6 +129,9 @@ export type UserAdminUpdateDto = {
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
 };
+export type AlbumsResponse = {
+    defaultAssetOrder: AssetOrder;
+};
 export type CastResponse = {
     gCastEnabled: boolean;
 };
@@ -168,6 +171,7 @@ export type TagsResponse = {
     sidebarWeb: boolean;
 };
 export type UserPreferencesResponseDto = {
+    albums: AlbumsResponse;
     cast: CastResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
@@ -178,6 +182,9 @@ export type UserPreferencesResponseDto = {
     ratings: RatingsResponse;
     sharedLinks: SharedLinksResponse;
     tags: TagsResponse;
+};
+export type AlbumsUpdate = {
+    defaultAssetOrder?: AssetOrder;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
@@ -221,6 +228,7 @@ export type TagsUpdate = {
     sidebarWeb?: boolean;
 };
 export type UserPreferencesUpdateDto = {
+    albums?: AlbumsUpdate;
     avatar?: AvatarUpdate;
     cast?: CastUpdate;
     download?: DownloadUpdate;
@@ -3727,6 +3735,10 @@ export enum UserStatus {
     Removing = "removing",
     Deleted = "deleted"
 }
+export enum AssetOrder {
+    Asc = "asc",
+    Desc = "desc"
+}
 export enum AssetVisibility {
     Archive = "archive",
     Timeline = "timeline",
@@ -3747,10 +3759,6 @@ export enum AssetTypeEnum {
     Video = "VIDEO",
     Audio = "AUDIO",
     Other = "OTHER"
-}
-export enum AssetOrder {
-    Asc = "asc",
-    Desc = "desc"
 }
 export enum Error {
     Duplicate = "duplicate",
