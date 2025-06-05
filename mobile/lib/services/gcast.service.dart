@@ -270,19 +270,25 @@ class GCastService implements ICastDestinationService {
     currentAssetId = null;
   }
 
+  bool isDisplay(int ca) => (ca & 0x01) != 0;
+
   @override
   Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
     final dests = await _gCastRepository.listDestinations();
 
     return dests
         .map(
-          (device) => (
-            device.extras["fn"] ?? "Google Cast",
-            CastDestinationType.googleCast,
-            device
-          ),
-        )
-        .where((device) => device.$3.extras["md"] != "Chromecast Audio")
-        .toList(growable: false);
+      (device) => (
+        device.extras["fn"] ?? "Google Cast",
+        CastDestinationType.googleCast,
+        device
+      ),
+    )
+        .where((device) {
+      final caString = device.$3.extras["ca"];
+      final caNumber = int.tryParse(caString ?? "0") ?? 0;
+
+      return isDisplay(caNumber);
+    }).toList(growable: false);
   }
 }
