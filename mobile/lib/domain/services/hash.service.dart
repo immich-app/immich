@@ -36,19 +36,17 @@ class HashService {
   Future<void> hashAssets() async {
     final Stopwatch stopwatch = Stopwatch()..start();
     // Sorted by backupSelection followed by isCloud
-    final localAlbums = await _localAlbumRepository.getAll().then((albums) {
-      return albums.sorted((a, b) {
-        final backupComparison =
-            a.backupSelection.sortOrder.compareTo(b.backupSelection.sortOrder);
+    final localAlbums = await _localAlbumRepository.getAll();
+    localAlbums.sort((a, b) {
+      final backupComparison =
+          a.backupSelection.sortOrder.compareTo(b.backupSelection.sortOrder);
 
-        if (backupComparison != 0) {
-          return backupComparison;
-        }
+      if (backupComparison != 0) {
+        return backupComparison;
+      }
 
-        // Local albums come before cloud albums
-        return (a.isIosSharedAlbum ? 1 : 0)
-            .compareTo(b.isIosSharedAlbum ? 1 : 0);
-      });
+      // Local albums come before iCloud albums
+      return (a.isIosSharedAlbum ? 1 : 0).compareTo(b.isIosSharedAlbum ? 1 : 0);
     });
 
     for (final album in localAlbums) {
