@@ -3,7 +3,7 @@ import { handleError } from '$lib/utils/handle-error';
 import {
   formatBucketTitle,
   formatGroupTitle,
-  fromLocalDateTimeToObject,
+  fromISODateTimeWithOffsetToObject,
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
@@ -166,7 +166,10 @@ export class AssetBucket {
         isTrashed: bucketAssets.isTrashed[i],
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
-        localDateTime: fromLocalDateTimeToObject(bucketAssets.localDateTime[i]),
+        localDateTime: fromISODateTimeWithOffsetToObject(
+          bucketAssets.fileCreatedAt[i],
+          bucketAssets.localOffsetHours[i],
+        ),
         ownerId: bucketAssets.ownerId[i],
         people,
         projectionType: bucketAssets.projectionType[i],
