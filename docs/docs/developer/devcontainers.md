@@ -26,7 +26,7 @@ In non-cloud environments, you can optionally use host filesystem paths instead 
 1. Clone the project repo.
 2. Open VS Code
 3. Press ctrl/command-p type ">Dev Containers: Rebuild and Reopen in Container"
-4. Select "Immich - Backend and Frontend"
+4. Select "Immich - Backend, Frontend and ML"
 5. Wait a while - after the builds are done, the server and web processes will be started as tasks, and the browser will be opened (once) to the front page.
 
 :::tip Not Just VSCode
