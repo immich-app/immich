@@ -10,7 +10,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
