@@ -364,10 +364,15 @@ class ControlBottomAppBar extends HookConsumerWidget {
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 120,
-                      child: ListView(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        children: renderActionButtons(),
+                      child: Scrollbar(
+                        thumbVisibility: true,
+                        thickness: 6,
+                        radius: const Radius.circular(3),
+                        child: ListView(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          children: renderActionButtons(),
+                        ),
                       ),
                     ),
                     if (hasRemote && !isInLockedView) ...[
