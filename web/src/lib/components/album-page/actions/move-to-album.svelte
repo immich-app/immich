@@ -50,7 +50,9 @@
     const assetIds = [...getAssets()].map((asset) => asset.id);
 
     const isConfirmed = await modalManager.showDialog({
-      prompt: $t('move_assets_album_confirmation', { values: { count: assetIds.length } }),
+      prompt: $t('move_assets_album_confirmation', {
+        values: { count: assetIds.length, fromAlbum: album.albumName, toAlbum: toAlbum.albumName },
+      }),
       confirmColor: 'warning',
     });
     if (!isConfirmed) {
@@ -90,11 +92,17 @@
   };
 </script>
 
-<MenuOption onClick={() => (showAlbumPicker = true)} text={$t('move_to_album')} icon={mdiImageMove} />
+<MenuOption
+  onClick={() => (showAlbumPicker = true)}
+  text={$t('move_to_album')}
+  icon={mdiImageMove}
+  shortcut={{ key: 'l', shift: true, ctrl: true }}
+/>
 
 {#if showAlbumPicker}
   <AlbumSelectionModal
     shared={false}
+    move
     onNewAlbum={handleAddToNewAlbum}
     onAlbumClick={handleAddToAlbum}
     onClose={handleHideAlbumPicker}

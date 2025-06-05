@@ -23,10 +23,11 @@
     onNewAlbum: (search: string) => void;
     onAlbumClick: (album: AlbumResponseDto) => void;
     shared: boolean;
+    move?: boolean;
     onClose: () => void;
   }
 
-  let { onNewAlbum, onAlbumClick, shared, onClose }: Props = $props();
+  let { onNewAlbum, onAlbumClick, shared, move = false, onClose }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
@@ -80,7 +81,11 @@
   const handleAlbumClick = (album: AlbumResponseDto) => () => onAlbumClick(album);
 </script>
 
-<Modal title={shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose} size="small">
+<Modal
+  title={shared ? $t('add_to_shared_album') : move ? $t('move_to_album') : $t('add_to_album')}
+  {onClose}
+  size="small"
+>
   <ModalBody>
     <div class="mb-2 flex max-h-[400px] flex-col">
       {#if loading}
