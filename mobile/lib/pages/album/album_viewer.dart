@@ -114,9 +114,9 @@ class AlbumViewer extends HookConsumerWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
+                  context.primaryColor.withValues(alpha: 0.06),
                   context.primaryColor.withValues(alpha: 0.04),
-                  context.primaryColor.withValues(alpha: 0.02),
-                  Colors.orange.withValues(alpha: 0.02),
+                  Colors.indigo.withValues(alpha: 0.02),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.3, 0.7, 1.0],

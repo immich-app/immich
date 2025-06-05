@@ -326,6 +326,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
 
     return AppBar(
       elevation: 0,
+      backgroundColor: context.scaffoldBackgroundColor,
       leading: buildLeadingButton(),
       centerTitle: false,
       actions: [
