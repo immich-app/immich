@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import AlbumSelectionModal from '$lib/components/shared-components/album-selection/album-selection-modal.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -6,6 +7,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { addAssetsToAlbum, addAssetsToNewAlbum } from '$lib/utils/asset-utils';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
@@ -31,7 +33,9 @@
     const assetIds = [...getAssets()].map((asset) => asset.id);
 
     const isConfirmed = await modalManager.showDialog({
-      prompt: $t('move_assets_album_confirmation', { values: { count: assetIds.length } }),
+      prompt: $t('move_assets_album_confirmation', {
+        values: { count: assetIds.length, fromAlbum: album.albumName, toAlbum: albumName ?? ' ' },
+      }),
     });
     if (!isConfirmed) {
       return;
@@ -43,7 +47,7 @@
       return;
     }
 
-    await removeFromAlbum(assetIds);
+    await removeFromAlbum(assetIds, newAlbum);
   };
 
   const handleMoveToAlbum = async (toAlbum: AlbumResponseDto) => {
@@ -60,11 +64,11 @@
     }
 
     showAlbumPicker = false;
-    await addAssetsToAlbum(toAlbum.id, assetIds);
-    await removeFromAlbum(assetIds);
+    await addAssetsToAlbum(toAlbum.id, assetIds, false);
+    await removeFromAlbum(assetIds, toAlbum);
   };
 
-  const removeFromAlbum = async (ids: string[]) => {
+  const removeFromAlbum = async (ids: string[], toAlbum: AlbumResponseDto) => {
     try {
       const results = await removeAssetFromAlbum({
         id: album.id,
@@ -78,7 +82,15 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: $t('assets_removed_count', { values: { count } }),
+        message: $t('assets_moved_to_album_count', {
+          values: { count, fromAlbum: album.albumName, toAlbum: toAlbum.albumName },
+        }),
+        button: {
+          text: $t('view_album'),
+          onClick() {
+            return goto(`${AppRoute.ALBUMS}/${toAlbum.id}`);
+          },
+        },
       });
 
       clearSelect();
