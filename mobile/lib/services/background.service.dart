@@ -6,6 +6,7 @@ import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -33,7 +34,6 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:path_provider_foundation/path_provider_foundation.dart';
-import 'package:immich_mobile/extensions/translation_extensions.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 final backgroundServiceProvider = Provider((ref) => BackgroundService());
@@ -76,7 +76,8 @@ class BackgroundService {
   Future<bool> enableService({bool immediate = false}) async {
     try {
       final callback = PluginUtilities.getCallbackHandle(_nativeEntry)!;
-      final String title = 'backup_background_service_default_notification'.t();
+      final String title =
+          "backup_background_service_default_notification".tr();
       final bool ok = await _foregroundChannel
           .invokeMethod('enable', [callback.toRawHandle(), title, immediate]);
       return ok;
@@ -324,8 +325,7 @@ class BackgroundService {
             return false;
           }
 
-          final translationsOk =
-              await EasyLocalizationService().loadTranslations();
+          final translationsOk = await loadTranslations();
           if (!translationsOk) {
             debugPrint("[_callHandler] could not load translations");
           }
@@ -452,8 +452,8 @@ class BackgroundService {
       toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
     } catch (e) {
       _showErrorNotification(
-        title: 'backup_background_service_error_title'.t(),
-        content: 'backup_background_service_connection_failed_message'.t(),
+        title: "backup_background_service_error_title".tr(),
+        content: "backup_background_service_connection_failed_message".tr(),
       );
       return false;
     }
@@ -468,7 +468,7 @@ class BackgroundService {
     _assetsToUploadCount = toUpload.length;
     _uploadedAssetsCount = 0;
     _updateNotification(
-      title: 'backup_background_service_in_progress_notification'.t(),
+      title: "backup_background_service_in_progress_notification".tr(),
       content: notifyTotalProgress
           ? formatAssetBackupProgress(
               _uploadedAssetsCount,
@@ -502,8 +502,8 @@ class BackgroundService {
 
     if (!ok && !_cancellationToken!.isCancelled) {
       _showErrorNotification(
-        title: 'backup_background_service_error_title'.t(),
-        content: 'backup_background_service_backup_failed_message'.t(),
+        title: "backup_background_service_error_title".tr(),
+        content: "backup_background_service_backup_failed_message".tr(),
       );
     }
 
@@ -561,8 +561,8 @@ class BackgroundService {
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     _showErrorNotification(
-      title: 'backup_background_service_upload_failure_notification'
-          .t({'filename': errorAssetInfo.fileName}),
+      title: "backup_background_service_upload_failure_notification"
+          .tr(namedArgs: {'filename': errorAssetInfo.fileName}),
       individualTag: errorAssetInfo.id,
     );
   }
@@ -576,8 +576,8 @@ class BackgroundService {
     }
 
     _throttledDetailNotify.title =
-        'backup_background_service_current_upload_notification'
-            .t({'filename': currentUploadAsset.fileName});
+        "backup_background_service_current_upload_notification"
+            .tr(namedArgs: {'filename': currentUploadAsset.fileName});
     _throttledDetailNotify.progress = 0;
     _throttledDetailNotify.total = 0;
   }
