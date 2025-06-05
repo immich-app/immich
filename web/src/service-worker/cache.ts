@@ -75,8 +75,11 @@ async function fetchWithCancellation(request: URL | Request | string, cache: Cac
 }
 
 async function checkCache(url: URL | Request | string) {
+  if (!useCache) {
+    return;
+  }
   const cache = await caches.open(CACHE);
-  const response = useCache ? await cache.match(url) : undefined;
+  const response = await cache.match(url);
   return { cache, response };
 }
 
