@@ -17,7 +17,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         super(_db);
 
   @override
-  Future<List<LocalAlbum>> getAll({SortLocalAlbumsBy? sortBy}) {
+  Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
     final assetCount = _db.localAlbumAssetEntity.assetId.count();
 
     final query = _db.localAlbumEntity.select().join([
@@ -30,9 +30,23 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     query
       ..addColumns([assetCount])
       ..groupBy([_db.localAlbumEntity.id]);
-    if (sortBy == SortLocalAlbumsBy.id) {
-      query.orderBy([OrderingTerm.asc(_db.localAlbumEntity.id)]);
+
+    if (sortBy.isNotEmpty) {
+      final orderings = <OrderingTerm>[];
+      for (final sort in sortBy) {
+        orderings.add(
+          switch (sort) {
+            SortLocalAlbumsBy.id => OrderingTerm.asc(_db.localAlbumEntity.id),
+            SortLocalAlbumsBy.backupSelection =>
+              OrderingTerm.asc(_db.localAlbumEntity.backupSelection),
+            SortLocalAlbumsBy.isIosSharedAlbum =>
+              OrderingTerm.asc(_db.localAlbumEntity.isIosSharedAlbum),
+          },
+        );
+      }
+      query.orderBy(orderings);
     }
+
     return query
         .map(
           (row) => row

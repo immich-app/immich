@@ -113,7 +113,7 @@ class LocalSyncService {
       }
 
       final dbAlbums =
-          await _localAlbumRepository.getAll(sortBy: SortLocalAlbumsBy.id);
+          await _localAlbumRepository.getAll(sortBy: {SortLocalAlbumsBy.id});
 
       await diffSortedLists(
         dbAlbums,
