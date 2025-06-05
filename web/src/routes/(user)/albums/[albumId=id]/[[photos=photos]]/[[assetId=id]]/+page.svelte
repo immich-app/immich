@@ -397,7 +397,6 @@
       return;
     }
 
-    activityManager.reset();
     activityManager.init(album.id);
   });
 
