@@ -1,5 +1,7 @@
 #!/bin/bash
 
+/immich-devcontainer/container-server-post-create.sh
+
 # Enable multiarch for arm64 if necessary
 if [ "$(dpkg --print-architecture)" = "arm64" ]; then
     sudo dpkg --add-architecture amd64 &&

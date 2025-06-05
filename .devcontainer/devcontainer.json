@@ -1,7 +1,16 @@
 {
-  "name": "Immich - Backend and Frontend",
-  "service": "immich-devcontainer-server",
-  "dockerComposeFile": ["server/docker-compose.yml"],
+  "name": "Immich - Backend, Frontend and ML",
+  "service": "immich-server",
+  "runServices": [
+    "immich-server",
+    "redis",
+    "database",
+    "immich-machine-learning"
+  ],
+  "dockerComposeFile": [
+    "../docker/docker-compose.dev.yml",
+    "./server/container-compose-overrides.yml"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -43,7 +52,7 @@
   "overrideCommand": true,
   "workspaceFolder": "/workspaces/immich",
   "remoteUser": "node",
-  "postCreateCommand": "/immich-devcontainer/postCreate.sh",
+  "postCreateCommand": "/immich-devcontainer/container-server-post-create.sh",
   "userEnvProbe": "loginInteractiveShell",
   "remoteEnv": {
     // The location where your uploaded files are stored

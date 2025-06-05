@@ -1,0 +1,34 @@
+services:
+  immich-server:
+    build:
+      target: dev-container-server
+    environment:
+      - IMMICH_SERVER_URL=http://127.0.0.1:2283/
+    volumes: !override # bind mount host to /workspaces/immich
+      - ..:/workspaces/immich
+      - cli_node_modules:/workspaces/immich/cli/node_modules
+      - e2e_node_modules:/workspaces/immich/e2e/node_modules
+      - open_api_node_modules:/workspaces/immich/open-api/typescript-sdk/node_modules
+      - server_node_modules:/workspaces/immich/server/node_modules
+      - web_node_modules:/workspaces/immich/web/node_modules
+      - ${UPLOAD_LOCATION}/photos:/workspaces/immich/server/upload
+      - ${UPLOAD_LOCATION}/photos/upload:/workspaces/immich/server/upload/upload
+      - /etc/localtime:/etc/localtime:ro
+
+  database:
+    volumes:
+      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+
+volumes:
+  # Node modules for each service to avoid conflicts and ensure consistent dependencies
+  cli_node_modules:
+  e2e_node_modules:
+  open_api_node_modules:
+  server_node_modules:
+  web_node_modules:
+
+  # UPLOAD_LOCATION must be set to a absolute path or vol-upload
+  vol-upload:
+
+  # DB_DATA_LOCATION must be set to a absolute path or vol-database
+  vol-database:

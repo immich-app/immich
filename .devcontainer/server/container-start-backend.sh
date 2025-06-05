@@ -4,6 +4,8 @@
 source /immich-devcontainer/common.sh
 
 echo "Starting Nest API Server"
+echo
+echo "Ignore errors while the postConfigure script is running which installs the node_modules dependncies"
 
 cd "${IMMICH_WORKSPACE}/server" || (
     echo workspace not found
