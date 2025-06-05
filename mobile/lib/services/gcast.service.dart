@@ -270,6 +270,7 @@ class GCastService implements ICastDestinationService {
     currentAssetId = null;
   }
 
+  // 0x01 is display capability bitmask
   bool isDisplay(int ca) => (ca & 0x01) != 0;
 
   @override
