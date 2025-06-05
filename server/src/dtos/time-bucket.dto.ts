@@ -5,72 +5,37 @@ import { AssetOrder, AssetVisibility } from 'src/enum';
 import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
-  @ApiProperty({
-    type: 'string',
-    format: 'uuid',
-    required: false,
-    description: 'Filter assets by specific user ID',
-  })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter assets by specific user ID' })
   userId?: string;
 
-  @ApiProperty({
-    type: 'string',
-    format: 'uuid',
-    required: false,
-    description: 'Filter assets belonging to a specific album',
-  })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter assets belonging to a specific album' })
   albumId?: string;
 
-  @ApiProperty({
-    type: 'string',
-    format: 'uuid',
-    required: false,
-    description: 'Filter assets containing a specific person (face recognition)',
-  })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter assets containing a specific person (face recognition)' })
   personId?: string;
 
-  @ApiProperty({
-    type: 'string',
-    format: 'uuid',
-    required: false,
-    description: 'Filter assets with a specific tag',
-  })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter assets with a specific tag' })
   tagId?: string;
 
-  @ApiProperty({
-    type: 'boolean',
-    required: false,
+  @ValidateBoolean({
+    optional: true,
     description: 'Filter by favorite status (true for favorites only, false for non-favorites only)',
   })
-  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @ApiProperty({
-    type: 'boolean',
-    required: false,
+  @ValidateBoolean({
+    optional: true,
     description: 'Filter by trash status (true for trashed assets only, false for non-trashed only)',
   })
-  @ValidateBoolean({ optional: true })
   isTrashed?: boolean;
 
-  @ApiProperty({
-    type: 'boolean',
-    required: false,
+  @ValidateBoolean({
+    optional: true,
     description: 'Include stacked assets in the response. When true, only primary assets from stacks are returned.',
   })
-  @ValidateBoolean({ optional: true })
   withStacked?: boolean;
 
-  @ApiProperty({
-    type: 'boolean',
-    required: false,
-    description: 'Include assets shared by partners',
-  })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include assets shared by partners' })
   withPartners?: boolean;
 
   @IsEnum(AssetOrder)
@@ -78,18 +43,14 @@ export class TimeBucketDto {
   @ApiProperty({
     enum: AssetOrder,
     enumName: 'AssetOrder',
-    required: false,
     description: 'Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)',
   })
   order?: AssetOrder;
 
-  @ApiProperty({
-    enum: AssetVisibility,
-    enumName: 'AssetVisibility',
-    required: false,
+  @ValidateAssetVisibility({
+    optional: true,
     description: 'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
   })
-  @ValidateAssetVisibility({ optional: true })
   visibility?: AssetVisibility;
 }
 
@@ -101,26 +62,6 @@ export class TimeBucketAssetDto extends TimeBucketDto {
   })
   @IsString()
   timeBucket!: string;
-}
-
-export class TimelineStackResponseDto {
-  @ApiProperty({
-    type: 'string',
-    description: 'Unique identifier for the asset stack',
-  })
-  id!: string;
-
-  @ApiProperty({
-    type: 'string',
-    description: 'Asset ID of the primary (representative) asset in the stack',
-  })
-  primaryAssetId!: string;
-
-  @ApiProperty({
-    type: 'integer',
-    description: 'Total number of assets in this stack',
-  })
-  assetCount!: number;
 }
 
 export class TimeBucketAssetResponseDto {
@@ -184,7 +125,7 @@ export class TimeBucketAssetResponseDto {
   @ApiProperty({
     type: 'array',
     items: { type: 'string' },
-    description: 'Array of file creation timestamps in UTC (ISO 8601 format)',
+    description: 'Array of file creation timestamps in UTC (ISO 8601 format, without timezone)',
   })
   fileCreatedAt!: string[];
 

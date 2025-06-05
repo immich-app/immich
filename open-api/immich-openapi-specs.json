@@ -14478,7 +14478,7 @@
             "type": "array"
           },
           "fileCreatedAt": {
-            "description": "Array of file creation timestamps in UTC (ISO 8601 format)",
+            "description": "Array of file creation timestamps in UTC (ISO 8601 format, without timezone)",
             "items": {
               "type": "string"
             },

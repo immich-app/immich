@@ -1452,7 +1452,7 @@ export type TimeBucketAssetResponseDto = {
     country: (string | null)[];
     /** Array of video durations in HH:MM:SS format (null for images) */
     duration: (string | null)[];
-    /** Array of file creation timestamps in UTC (ISO 8601 format) */
+    /** Array of file creation timestamps in UTC (ISO 8601 format, without timezone) */
     fileCreatedAt: string[];
     /** Array of asset IDs in the time bucket */
     id: string[];

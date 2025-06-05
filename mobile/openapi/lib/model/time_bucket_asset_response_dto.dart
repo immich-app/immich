@@ -40,7 +40,7 @@ class TimeBucketAssetResponseDto {
   /// Array of video durations in HH:MM:SS format (null for images)
   List<String?> duration;
 
-  /// Array of file creation timestamps in UTC (ISO 8601 format)
+  /// Array of file creation timestamps in UTC (ISO 8601 format, without timezone)
   List<String> fileCreatedAt;
 
   /// Array of asset IDs in the time bucket
