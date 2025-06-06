@@ -432,7 +432,7 @@ While the Dev Container focuses on server and web development, you can connect m
    - Server URL: `http://YOUR_IP:2283/api`
    - Ensure firewall allows port 2283
 
-3. **For full mobile development**, see the [mobile development guide](/docs/setup#mobile-app) which covers:
+3. **For full mobile development**, see the [mobile development guide](/docs/developer/setup) which covers:
    - Flutter setup
    - Running on simulators/devices
    - Mobile-specific debugging
@@ -477,5 +477,5 @@ Recommended minimums:
 
 - Read the [architecture overview](/docs/developer/architecture)
 - Learn about [database migrations](/docs/developer/database-migrations)
-- Explore [API documentation](https://immich.app/docs/api)
+- Explore [API documentation](/docs/api)
 - Join `#immich` on [Discord](https://discord.immich.app)
