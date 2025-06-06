@@ -56,7 +56,7 @@
   "userEnvProbe": "loginInteractiveShell",
   "remoteEnv": {
     // The location where your uploaded files are stored
-    "UPLOAD_LOCATION": "${localEnv:UPLOAD_LOCATION}",
+    "UPLOAD_LOCATION": "${localEnv:UPLOAD_LOCATION:./Library}",
     //  Connection secret for postgres. You should change it to a random password
     //  Please use only the characters `A-Za-z0-9`, without special characters or spaces
     "DB_PASSWORD": "${localEnv:DB_PASSWORD:postgres}",
