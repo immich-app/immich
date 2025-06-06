@@ -435,6 +435,7 @@
   "asset_action_share_err_offline": "Cannot fetch offline asset(s), skipping",
   "asset_added_to_album": "Added to album",
   "asset_adding_to_album": "Adding to album…",
+  "assets_cannot_be_added_to_album_count": "{count, plural, one {Asset} other {Assets}} cannot be added to the album",
   "asset_description_updated": "Asset description has been updated",
   "asset_filename_is_offline": "Asset {filename} is offline",
   "asset_has_unassigned_faces": "Asset has unassigned faces",
