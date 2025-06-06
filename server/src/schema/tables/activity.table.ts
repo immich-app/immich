@@ -1,4 +1,5 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AlbumAssetTable } from 'src/schema/tables/album-asset.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -43,6 +44,13 @@ export class ActivityTable {
 
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })
   assetId!: string | null;
+
+  @ForeignKeyColumn(() => AlbumAssetTable, {
+    onDelete: 'CASCADE',
+    nullable: true,
+    constraintName: 'fk_activity_album_asset_composite',
+  })
+  albumAsset!: AlbumAssetTable;
 
   @Column({ type: 'text', default: null })
   comment!: string | null;
