@@ -118,12 +118,9 @@
   };
 </script>
 
-<div class="overflow-y-hidden relative h-full" bind:offsetHeight={innerHeight}>
-  <div class="dark:bg-immich-dark-bg dark:text-immich-dark-fg w-full h-full">
-    <div
-      class="flex w-full h-fit dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white"
-      bind:clientHeight={activityHeight}
-    >
+<div class="overflow-y-hidden relative h-full border-l border-subtle bg-subtle" bind:offsetHeight={innerHeight}>
+  <div class="w-full h-full">
+    <div class="flex w-full h-fit dark:text-immich-dark-fg p-2 bg-subtle" bind:clientHeight={activityHeight}>
       <div class="flex place-items-center gap-2">
         <IconButton
           shape="round"

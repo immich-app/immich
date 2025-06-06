@@ -16,7 +16,7 @@
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';

@@ -27,14 +27,15 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { type TimelineAsset, type Viewport } from '$lib/stores/assets-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { fromLocalDateTime, toTimelineAsset } from '$lib/utils/timeline-util';
+  import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import {
@@ -575,7 +576,7 @@
 
             <div class="absolute start-8 top-4 text-sm font-medium text-white">
               <p>
-                {fromLocalDateTime(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL, {
+                {fromISODateTimeUTC(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL, {
                   locale: $locale,
                 })}
               </p>

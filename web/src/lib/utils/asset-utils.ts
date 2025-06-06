@@ -5,13 +5,11 @@ import { notificationController, NotificationType } from '$lib/components/shared
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
+import type { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-import {
-  assetsSnapshot,
-  isSelectingAllAssets,
-  type AssetStore,
-  type TimelineAsset,
-} from '$lib/stores/assets-store.svelte';
+import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';

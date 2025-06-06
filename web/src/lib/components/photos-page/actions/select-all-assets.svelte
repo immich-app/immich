@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { type AssetStore, isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { cancelMultiselect, selectAllAssets } from '$lib/utils/asset-utils';
   import { Button, IconButton } from '@immich/ui';
   import { mdiSelectAll, mdiSelectRemove } from '@mdi/js';

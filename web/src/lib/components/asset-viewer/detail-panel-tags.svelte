@@ -70,7 +70,9 @@
         title="Add tag"
         onclick={handleAddTag}
       >
-        <span class="text-sm px-1 flex place-items-center place-content-center gap-1"><Icon path={mdiPlus} />Add</span>
+        <span class="text-sm px-1 flex place-items-center place-content-center gap-1"
+          ><Icon path={mdiPlus} />{$t('add')}</span
+        >
       </button>
     </section>
   </section>

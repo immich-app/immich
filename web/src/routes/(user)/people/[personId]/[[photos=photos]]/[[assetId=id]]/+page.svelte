@@ -36,7 +36,8 @@
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore, type TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -351,6 +352,11 @@
     await updateAssetCount();
   };
 
+  const handleUndoDeleteAssets = async (assets: TimelineAsset[]) => {
+    assetStore.addAssets(assets);
+    await updateAssetCount();
+  };
+
   let person = $derived(data.person);
 
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
@@ -532,7 +538,11 @@
           <TagAction menuItem />
         {/if}
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-        <DeleteAssets menuItem onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)} />
+        <DeleteAssets
+          menuItem
+          onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)}
+          onUndoDelete={(assets) => handleUndoDeleteAssets(assets)}
+        />
       </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}

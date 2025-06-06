@@ -13,6 +13,9 @@ import {
   mdiTrashCan,
   mdiWeb,
   mdiWrap,
+  mdiCloudKeyOutline,
+  mdiRegex,
+  mdiCodeJson,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
@@ -24,6 +27,30 @@ type Item = Omit<TimelineItem, 'done' | 'getDateLabel'> & { date: Date };
 
 const items: Item[] = [
   {
+    icon: mdiRegex,
+    iconColor: 'purple',
+    title: 'Zitadel Actions are cursed',
+    description:
+      "Zitadel is cursed because its custom scripting feature is executed with a JS engine that doesn't support regex named capture groups.",
+    link: {
+      url: 'https://github.com/dop251/goja',
+      text: 'Go JS engine',
+    },
+    date: new Date(2025, 5, 4),
+  },
+  {
+    icon: mdiCloudKeyOutline,
+    iconColor: '#0078d4',
+    title: 'Entra is cursed',
+    description:
+      "Microsoft Entra supports PKCE, but doesn't include it in its OpenID discovery document. This leads to clients thinking PKCE isn't available.",
+    link: {
+      url: 'https://github.com/immich-app/immich/pull/18725',
+      text: '#18725',
+    },
+    date: new Date(2025, 4, 30),
+  },
+  {
     icon: mdiCrop,
     iconColor: 'tomato',
     title: 'Image dimensions in EXIF metadata are cursed',
@@ -34,6 +61,17 @@ const items: Item[] = [
       text: '#17974',
     },
     date: new Date(2025, 4, 5),
+  },
+  {
+    icon: mdiCodeJson,
+    iconColor: 'yellow',
+    title: 'YAML whitespace is cursed',
+    description: 'YAML whitespaces are often handled in unintuitive ways.',
+    link: {
+      url: 'https://github.com/immich-app/immich/pull/17309',
+      text: '#17309',
+    },
+    date: new Date(2025, 3, 1),
   },
   {
     icon: mdiMicrosoftWindows,

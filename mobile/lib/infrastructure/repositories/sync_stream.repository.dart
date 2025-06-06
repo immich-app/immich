@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart' as api show AssetVisibility;
 import 'package:openapi/api.dart' hide AssetVisibility;
 
 class DriftSyncStreamRepository extends DriftDatabaseRepository
@@ -231,22 +232,22 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
       });
 }
 
-extension on SyncAssetV1TypeEnum {
+extension on AssetTypeEnum {
   AssetType toAssetType() => switch (this) {
-        SyncAssetV1TypeEnum.IMAGE => AssetType.image,
-        SyncAssetV1TypeEnum.VIDEO => AssetType.video,
-        SyncAssetV1TypeEnum.AUDIO => AssetType.audio,
-        SyncAssetV1TypeEnum.OTHER => AssetType.other,
-        _ => throw Exception('Unknown SyncAssetV1TypeEnum value: $this'),
+        AssetTypeEnum.IMAGE => AssetType.image,
+        AssetTypeEnum.VIDEO => AssetType.video,
+        AssetTypeEnum.AUDIO => AssetType.audio,
+        AssetTypeEnum.OTHER => AssetType.other,
+        _ => throw Exception('Unknown AssetType value: $this'),
       };
 }
 
-extension on SyncAssetV1VisibilityEnum {
+extension on api.AssetVisibility {
   AssetVisibility toAssetVisibility() => switch (this) {
-        SyncAssetV1VisibilityEnum.timeline => AssetVisibility.timeline,
-        SyncAssetV1VisibilityEnum.hidden => AssetVisibility.hidden,
-        SyncAssetV1VisibilityEnum.archive => AssetVisibility.archive,
-        SyncAssetV1VisibilityEnum.locked => AssetVisibility.locked,
-        _ => throw Exception('Unknown SyncAssetV1VisibilityEnum value: $this'),
+        api.AssetVisibility.timeline => AssetVisibility.timeline,
+        api.AssetVisibility.hidden => AssetVisibility.hidden,
+        api.AssetVisibility.archive => AssetVisibility.archive,
+        api.AssetVisibility.locked => AssetVisibility.locked,
+        _ => throw Exception('Unknown AssetVisibility value: $this'),
       };
 }

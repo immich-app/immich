@@ -24,7 +24,7 @@
   import { AssetAction } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import {
@@ -150,7 +150,11 @@
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
       {/if}
-      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <DeleteAssets
+        menuItem
+        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
+        onUndoDelete={(assets) => assetStore.addAssets(assets)}
+      />
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <hr />
       <AssetJobActions />

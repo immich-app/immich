@@ -65,9 +65,11 @@ export class SyncAssetV1 {
   fileCreatedAt!: Date | null;
   fileModifiedAt!: Date | null;
   localDateTime!: Date | null;
+  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   deletedAt!: Date | null;
   isFavorite!: boolean;
+  @ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility })
   visibility!: AssetVisibility;
 }
 
@@ -125,6 +127,7 @@ export class SyncAlbumUserDeleteV1 {
 export class SyncAlbumUserV1 {
   albumId!: string;
   userId!: string;
+  @ApiProperty({ enumName: 'AlbumUserRole', enum: AlbumUserRole })
   role!: AlbumUserRole;
 }
 

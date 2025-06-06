@@ -242,7 +242,7 @@ with
       and "assets"."visibility" in ('archive', 'timeline')
   )
 select
-  "timeBucket",
+  "timeBucket"::date::text as "timeBucket",
   count(*) as "count"
 from
   "assets"
@@ -262,9 +262,16 @@ with
       assets.type = 'IMAGE' as "isImage",
       assets."deletedAt" is not null as "isTrashed",
       "assets"."livePhotoVideoId",
-      "assets"."localDateTime",
+      extract(
+        epoch
+        from
+          (
+            assets."localDateTime" - assets."fileCreatedAt" at time zone 'UTC'
+          )
+      )::real / 3600 as "localOffsetHours",
       "assets"."ownerId",
       "assets"."status",
+      assets."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
       encode("assets"."thumbhash", 'base64') as "thumbhash",
       "exif"."city",
       "exif"."country",
@@ -313,7 +320,7 @@ with
           and "asset_stack"."primaryAssetId" != "assets"."id"
       )
     order by
-      "assets"."localDateTime" desc
+      "assets"."fileCreatedAt" desc
   ),
   "agg" as (
     select
@@ -326,7 +333,8 @@ with
       coalesce(array_agg("isImage"), '{}') as "isImage",
       coalesce(array_agg("isTrashed"), '{}') as "isTrashed",
       coalesce(array_agg("livePhotoVideoId"), '{}') as "livePhotoVideoId",
-      coalesce(array_agg("localDateTime"), '{}') as "localDateTime",
+      coalesce(array_agg("fileCreatedAt"), '{}') as "fileCreatedAt",
+      coalesce(array_agg("localOffsetHours"), '{}') as "localOffsetHours",
       coalesce(array_agg("ownerId"), '{}') as "ownerId",
       coalesce(array_agg("projectionType"), '{}') as "projectionType",
       coalesce(array_agg("ratio"), '{}') as "ratio",

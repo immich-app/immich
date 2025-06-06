@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { AlbumUserRole } from 'src/enum';
+import { AlbumUserRole, AssetOrder, UserMetadataKey } from 'src/enum';
 import { AlbumService } from 'src/services/album.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -141,6 +141,7 @@ describe(AlbumService.name, () => {
     it('creates album', async () => {
       mocks.album.create.mockResolvedValue(albumStub.empty);
       mocks.user.get.mockResolvedValue(userStub.user1);
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['123']));
 
       await sut.create(authStub.admin, {
@@ -155,7 +156,7 @@ describe(AlbumService.name, () => {
           ownerId: authStub.admin.user.id,
           albumName: albumStub.empty.albumName,
           description: albumStub.empty.description,
-
+          order: 'desc',
           albumThumbnailAssetId: '123',
         },
         ['123'],
@@ -163,6 +164,50 @@ describe(AlbumService.name, () => {
       );
 
       expect(mocks.user.get).toHaveBeenCalledWith('user-id', {});
+      expect(mocks.user.getMetadata).toHaveBeenCalledWith(authStub.admin.user.id);
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']), false);
+      expect(mocks.event.emit).toHaveBeenCalledWith('album.invite', {
+        id: albumStub.empty.id,
+        userId: 'user-id',
+      });
+    });
+
+    it('creates album with assetOrder from user preferences', async () => {
+      mocks.album.create.mockResolvedValue(albumStub.empty);
+      mocks.user.get.mockResolvedValue(userStub.user1);
+      mocks.user.getMetadata.mockResolvedValue([
+        {
+          key: UserMetadataKey.PREFERENCES,
+          value: {
+            albums: {
+              defaultAssetOrder: AssetOrder.ASC,
+            },
+          },
+        },
+      ]);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['123']));
+
+      await sut.create(authStub.admin, {
+        albumName: 'Empty album',
+        albumUsers: [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
+        description: '',
+        assetIds: ['123'],
+      });
+
+      expect(mocks.album.create).toHaveBeenCalledWith(
+        {
+          ownerId: authStub.admin.user.id,
+          albumName: albumStub.empty.albumName,
+          description: albumStub.empty.description,
+          order: 'asc',
+          albumThumbnailAssetId: '123',
+        },
+        ['123'],
+        [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
+      );
+
+      expect(mocks.user.get).toHaveBeenCalledWith('user-id', {});
+      expect(mocks.user.getMetadata).toHaveBeenCalledWith(authStub.admin.user.id);
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']), false);
       expect(mocks.event.emit).toHaveBeenCalledWith('album.invite', {
         id: albumStub.empty.id,
@@ -185,6 +230,7 @@ describe(AlbumService.name, () => {
     it('should only add assets the user is allowed to access', async () => {
       mocks.user.get.mockResolvedValue(userStub.user1);
       mocks.album.create.mockResolvedValue(albumStub.oneAsset);
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
 
       await sut.create(authStub.admin, {
@@ -198,7 +244,7 @@ describe(AlbumService.name, () => {
           ownerId: authStub.admin.user.id,
           albumName: 'Test album',
           description: '',
-
+          order: 'desc',
           albumThumbnailAssetId: 'asset-1',
         },
         ['asset-1'],

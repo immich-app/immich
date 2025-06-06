@@ -9,7 +9,7 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { AppRoute } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiArrowLeft, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';

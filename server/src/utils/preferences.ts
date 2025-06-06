@@ -1,12 +1,15 @@
 import _ from 'lodash';
 import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
-import { UserMetadataKey } from 'src/enum';
+import { AssetOrder, UserMetadataKey } from 'src/enum';
 import { DeepPartial, UserMetadataItem, UserPreferences } from 'src/types';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { getKeysDeep } from 'src/utils/misc';
 
 const getDefaultPreferences = (): UserPreferences => {
   return {
+    albums: {
+      defaultAssetOrder: AssetOrder.DESC,
+    },
     folders: {
       enabled: false,
       sidebarWeb: false,

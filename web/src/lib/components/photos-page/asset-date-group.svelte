@@ -1,20 +1,17 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import {
-    type AssetBucket,
-    assetSnapshot,
-    assetsSnapshot,
-    type AssetStore,
-    isSelectingAllAssets,
-    type TimelineAsset,
-  } from '$lib/stores/assets-store.svelte';
+  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import type { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { assetSnapshot, assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { navigate } from '$lib/utils/navigation';
 
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { fly, scale } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
+  import type { AssetBucket } from '$lib/managers/timeline-manager/asset-bucket.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { flip } from 'svelte/animate';
 

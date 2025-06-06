@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import type { AssetStore, LiteBucket } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import type { LiteBucket } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getTabbable } from '$lib/utils/focus-util';
   import { type ScrubberListener } from '$lib/utils/timeline-util';

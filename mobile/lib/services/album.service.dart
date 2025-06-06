@@ -422,6 +422,25 @@ class AlbumService {
     }
   }
 
+  Future<bool> changeDescriptionAlbum(
+    Album album,
+    String newAlbumDescription,
+  ) async {
+    try {
+      final updatedAlbum = await _albumApiRepository.update(
+        album.remoteId!,
+        description: newAlbumDescription,
+      );
+
+      album.description = updatedAlbum.description;
+      await _albumRepository.update(album);
+      return true;
+    } catch (e) {
+      debugPrint("Error changeDescriptionAlbum  ${e.toString()}");
+      return false;
+    }
+  }
+
   Future<Album?> getAlbumByName(
     String name, {
     bool? remote,

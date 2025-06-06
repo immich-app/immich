@@ -14,6 +14,7 @@ import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -23,6 +24,7 @@ import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
+import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
@@ -44,6 +46,7 @@ class MultiselectGrid extends HookConsumerWidget {
     this.editEnabled = false,
     this.unarchive = false,
     this.unfavorite = false,
+    this.downloadEnabled = true,
     this.emptyIndicator,
   });
 
@@ -57,6 +60,7 @@ class MultiselectGrid extends HookConsumerWidget {
   final bool archiveEnabled;
   final bool unarchive;
   final bool deleteEnabled;
+  final bool downloadEnabled;
   final bool favoriteEnabled;
   final bool unfavorite;
   final bool editEnabled;
@@ -236,6 +240,39 @@ class MultiselectGrid extends HookConsumerWidget {
         }
       } finally {
         processing.value = false;
+      }
+    }
+
+    void onDownload() async {
+      processing.value = true;
+      try {
+        final toDownload = selection.value.toList();
+
+        final results = await ref
+            .read(downloadStateProvider.notifier)
+            .downloadAllAsset(toDownload);
+
+        final totalCount = toDownload.length;
+        final successCount = results.where((e) => e).length;
+        final failedCount = totalCount - successCount;
+
+        final msg = failedCount > 0
+            ? t('assets_downloaded_failed', {
+                'count': successCount,
+                'error': failedCount,
+              })
+            : t('assets_downloaded_successfully', {
+                'count': successCount,
+              });
+
+        ImmichToast.show(
+          context: context,
+          msg: msg,
+          gravity: ToastGravity.BOTTOM,
+        );
+      } finally {
+        processing.value = false;
+        selectionEnabledHook.value = false;
       }
     }
 
@@ -474,6 +511,7 @@ class MultiselectGrid extends HookConsumerWidget {
               onArchive: archiveEnabled ? onArchiveAsset : null,
               onDelete: deleteEnabled ? onDelete : null,
               onDeleteServer: deleteEnabled ? onDeleteRemote : null,
+              onDownload: downloadEnabled ? onDownload : null,
 
               /// local file deletion is allowed irrespective of [deleteEnabled] since it has
               /// nothing to do with the state of the asset in the Immich server

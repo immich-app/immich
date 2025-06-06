@@ -2,7 +2,7 @@
 // note: it's important that this is not imported in more than one file due to https://github.com/sveltejs/kit/issues/7805
 // import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
 
-import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { isTimelineAsset } from '$lib/utils/timeline-util';
 import type { AssetResponseDto } from '@immich/sdk';

@@ -12,6 +12,7 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'tags', TagsResponse().toJson());
         addDefault(value, 'sharedLinks', SharedLinksResponse().toJson());
         addDefault(value, 'cast', CastResponse().toJson());
+        addDefault(value, 'albums', {'defaultAssetOrder': 'desc'});
       }
       break;
     case 'ServerConfigDto':
@@ -40,6 +41,11 @@ dynamic upgradeDto(dynamic value, String targetType) {
     case 'UserAdminResponseDto':
       if (value is Map) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
+      }
+      break;
+    case 'LoginResponseDto':
+      if (value is Map) {
+        addDefault(value, 'isOnboarded', false);
       }
       break;
   }

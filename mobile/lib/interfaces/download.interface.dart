@@ -7,7 +7,8 @@ abstract interface class IDownloadRepository {
   void Function(TaskProgressUpdate)? onTaskProgress;
 
   Future<List<TaskRecord>> getLiveVideoTasks();
-  Future<bool> download(DownloadTask task);
+  Future<List<bool>> downloadAll(List<DownloadTask> tasks);
+
   Future<bool> cancel(String id);
   Future<void> deleteAllTrackingRecords();
   Future<void> deleteRecordsWithIds(List<String> id);

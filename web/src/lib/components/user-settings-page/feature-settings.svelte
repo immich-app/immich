@@ -4,13 +4,17 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
-  import { updateMyPreferences } from '@immich/sdk';
+  import { AssetOrder, updateMyPreferences } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
+
+  // Albums
+  let defaultAssetOrder = $state($preferences?.albums?.defaultAssetOrder ?? AssetOrder.Desc);
 
   // Folders
   let foldersEnabled = $state($preferences?.folders?.enabled ?? false);
@@ -41,6 +45,7 @@
     try {
       const data = await updateMyPreferences({
         userPreferencesUpdateDto: {
+          albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
           memories: { enabled: memoriesEnabled },
           people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
@@ -68,6 +73,20 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
       <div class="ms-4 mt-4 flex flex-col">
+        <SettingAccordion key="albums" title={$t('albums')} subtitle={$t('albums_feature_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSelect
+              label={$t('albums_default_sort_order')}
+              desc={$t('albums_default_sort_order_description')}
+              options={[
+                { value: AssetOrder.Asc, text: $t('oldest_first') },
+                { value: AssetOrder.Desc, text: $t('newest_first') },
+              ]}
+              bind:value={defaultAssetOrder}
+            />
+          </div>
+        </SettingAccordion>
+
         <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
           <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={foldersEnabled} />

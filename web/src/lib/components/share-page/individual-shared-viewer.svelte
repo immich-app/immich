@@ -5,7 +5,7 @@
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import type { Viewport } from '$lib/stores/assets-store.svelte';
+  import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';

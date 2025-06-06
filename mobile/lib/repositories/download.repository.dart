@@ -39,8 +39,8 @@ class DownloadRepository implements IDownloadRepository {
   }
 
   @override
-  Future<bool> download(DownloadTask task) {
-    return FileDownloader().enqueue(task);
+  Future<List<bool>> downloadAll(List<DownloadTask> tasks) {
+    return FileDownloader().enqueueAll(tasks);
   }
 
   @override
