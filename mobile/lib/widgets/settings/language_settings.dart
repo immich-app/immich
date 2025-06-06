@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
@@ -91,6 +92,7 @@ class LanguageSettings extends HookConsumerWidget {
                     padding: const EdgeInsets.all(8),
                     itemCount: filteredLocaleEntries.value.length,
                     itemExtent: 64.0,
+                    cacheExtent: 100,
                     itemBuilder: (context, index) {
                       final countryName =
                           filteredLocaleEntries.value[index].key;
@@ -100,6 +102,7 @@ class LanguageSettings extends HookConsumerWidget {
                           selectedLocale.value == localeValue;
 
                       return _LanguageItem(
+                        key: ValueKey(localeValue.toString()),
                         countryName: countryName,
                         localeValue: localeValue,
                         isSelected: isSelected,
@@ -162,7 +165,7 @@ class _LanguageSearchBar extends StatelessWidget {
         child: SearchField(
           autofocus: false,
           contentPadding: const EdgeInsets.all(12),
-          hintText: context.t('language_search_hint'),
+          hintText: 'language_search_hint'.t(context),
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
@@ -196,14 +199,14 @@ class _LanguageNotFound extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            context.t('language_no_results_title'),
+            'language_no_results_title'.t(context),
             style: context.textTheme.titleMedium?.copyWith(
               color: context.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            context.t('language_no_results_subtitle'),
+            'language_no_results_subtitle'.t(context),
             style: context.textTheme.bodyMedium?.copyWith(
               color: context.colorScheme.onSurface.withValues(alpha: 0.8),
             ),
@@ -245,13 +248,13 @@ class _LanguageApplyButton extends StatelessWidget {
                       strokeWidth: 2,
                     ),
                   )
-                : Text(
-                    context.t('setting_languages_apply'),
-                    style: const TextStyle(
+                : const Text(
+                    'setting_languages_apply',
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16.0,
                     ),
-                  ),
+                  ).t(context),
           ),
         ),
       ),
@@ -261,6 +264,7 @@ class _LanguageApplyButton extends StatelessWidget {
 
 class _LanguageItem extends StatelessWidget {
   const _LanguageItem({
+    super.key,
     required this.countryName,
     required this.localeValue,
     required this.isSelected,

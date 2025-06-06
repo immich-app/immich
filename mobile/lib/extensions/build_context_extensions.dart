@@ -1,6 +1,4 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/message_format.dart';
 
 extension ContextHelper on BuildContext {
   // Returns the current padding from MediaQuery
@@ -60,17 +58,4 @@ extension ContextHelper on BuildContext {
   // Show SnackBars from the current context
   void showSnackBar(SnackBar snackBar) =>
       ScaffoldMessenger.of(this).showSnackBar(snackBar);
-
-  String t(String key, [Map<String, Object>? args]) {
-    try {
-      String message = this.tr(key);
-      if (args != null) {
-        return MessageFormat(message, locale: Intl.defaultLocale ?? 'en')
-            .format(args);
-      }
-      return message;
-    } catch (e) {
-      return key;
-    }
-  }
 }
