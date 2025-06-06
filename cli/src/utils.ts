@@ -1,7 +1,7 @@
 import { getMyUser, init, isHttpError } from '@immich/sdk';
 import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
-import { createReadStream } from 'node:fs';
+import { createReadStream, existsSync } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import { platform } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -231,5 +231,77 @@ export class Batcher<T = unknown> {
     this.onBatch(this.items);
 
     this.items = [];
+  }
+}
+
+interface HashCacheEntry {
+  hash: string;
+  mtime: number;
+  size: number;
+}
+
+interface HashCache {
+  [filepath: string]: HashCacheEntry;
+}
+
+export class FileHashCache {
+  private cache: HashCache = {};
+  private cacheFile: string;
+  private isDirty = false;
+
+  constructor(configDir: string) {
+    this.cacheFile = join(configDir, 'hash-cache.json');
+  }
+
+  async load() {
+    if (existsSync(this.cacheFile)) {
+      try {
+        const content = await readFile(this.cacheFile, 'utf-8');
+        this.cache = JSON.parse(content);
+      } catch (error) {
+        console.warn('Failed to load hash cache, starting fresh');
+        this.cache = {};
+      }
+    }
+  }
+
+  async save() {
+    if (this.isDirty) {
+      try {
+        await writeFile(this.cacheFile, JSON.stringify(this.cache, null, 2));
+        this.isDirty = false;
+      } catch (error) {
+        console.warn('Failed to save hash cache');
+      }
+    }
+  }
+
+  async getHash(filepath: string, stats: { mtime: Date; size: number }): Promise<string> {
+    const entry = this.cache[filepath];
+    
+    // Check if we have a valid cached hash
+    if (entry && 
+        entry.mtime === stats.mtime.getTime() && 
+        entry.size === stats.size) {
+      return entry.hash;
+    }
+
+    // Calculate new hash
+    const hash = await sha1(filepath);
+    
+    // Cache the new hash
+    this.cache[filepath] = {
+      hash,
+      mtime: stats.mtime.getTime(),
+      size: stats.size
+    };
+    this.isDirty = true;
+
+    return hash;
+  }
+
+  clear() {
+    this.cache = {};
+    this.isDirty = true;
   }
 }
