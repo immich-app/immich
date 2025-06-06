@@ -1,6 +1,7 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
 import {
+  AssetOrder,
   AssetType,
   DatabaseSslMode,
   ExifOrientation,
@@ -467,6 +468,9 @@ export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
 };
 
 export interface UserPreferences {
+  albums: {
+    defaultAssetOrder: AssetOrder;
+  };
   folders: {
     enabled: boolean;
     sidebarWeb: boolean;
