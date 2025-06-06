@@ -3,7 +3,7 @@ import { websocketEvents } from '$lib/stores/websocket';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
   plainDateTimeCompare,
-  toISOLocalDateTime,
+  toISOYearMonthUTC,
   toTimelineAsset,
   type TimelinePlainDate,
   type TimelinePlainDateTime,
@@ -573,7 +573,7 @@ export class AssetStore {
       if (bucket.getFirstAsset()) {
         return;
       }
-      const timeBucket = toISOLocalDateTime(bucket.yearMonth);
+      const timeBucket = toISOYearMonthUTC(bucket.yearMonth);
       const key = authManager.key;
       const bucketResponse = await getTimeBucket(
         {
