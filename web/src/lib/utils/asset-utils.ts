@@ -27,6 +27,7 @@ import {
   getBaseUrl,
   getDownloadInfo,
   getStack,
+  removeAssetFromAlbum,
   untagAssets,
   updateAsset,
   updateAssets,
@@ -70,6 +71,53 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
       },
     });
   }
+};
+
+export const moveAssetsToAlbum = async (fromAlbum: AlbumResponseDto, toAlbum: AlbumResponseDto, assetIds: string[]) => {
+  const result = await addAssets({
+    id: toAlbum.id,
+    bulkIdsDto: {
+      ids: assetIds,
+    },
+    key: authManager.key,
+  });
+  const count = result.filter(({ success }) => success).length;
+  //Only remove the assets from the source album if they succeeded, or failed due to duplicate. Don't remove assets that failed for permission/sharing issues
+  const assetIdsToRemove: string[] = [];
+  for (const res of result) {
+    if (res.success || res.error === 'duplicate') {
+      assetIdsToRemove.push(res.id);
+    }
+  }
+  //Remove the assets
+  const removeResults = await removeAssetFromAlbum({
+    id: fromAlbum.id,
+    bulkIdsDto: { ids: assetIdsToRemove },
+  });
+
+  const $t = get(t);
+  notificationController.show({
+    type: NotificationType.Info,
+    message: $t('assets_moved_to_album_count', {
+      values: { count, fromAlbum: fromAlbum.albumName, toAlbum: toAlbum.albumName },
+    }),
+    button: {
+      text: $t('view_album'),
+      onClick() {
+        return goto(`${AppRoute.ALBUMS}/${toAlbum.id}`);
+      },
+    },
+  });
+
+  return removeResults.filter(({ success }) => success).map((dto) => dto.id);
+};
+
+export const moveAssetsToNewAlbum = async (fromAlbum: AlbumResponseDto, albumName: string, assetIds: string[]) => {
+  const album = await createAlbum(albumName);
+  if (!album) {
+    return;
+  }
+  return await moveAssetsToAlbum(fromAlbum, album, assetIds);
 };
 
 export const tagAssets = async ({
