@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable unicorn/no-this-assignment */
+/* eslint-disable unicorn/prefer-at */
 import type { TagResponseDto } from '@immich/sdk';
 
 export class TreeNode extends Map<string, TreeNode> {

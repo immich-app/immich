@@ -7,8 +7,9 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
   await authenticate(url);
-  let [tree, asset, $t] = await Promise.all([foldersStore.fetchTree(), getAssetInfoFromParam(params), getFormatter()]);
+  const [, asset, $t] = await Promise.all([foldersStore.fetchTree(), getAssetInfoFromParam(params), getFormatter()]);
 
+  let tree = foldersStore.folders!;
   const path = url.searchParams.get(QueryParameter.PATH);
   if (path) {
     tree = tree.traverse(path);
