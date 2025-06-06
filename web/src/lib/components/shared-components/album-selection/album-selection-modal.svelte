@@ -23,14 +23,17 @@
     onNewAlbum: (search: string) => void;
     onAlbumClick: (album: AlbumResponseDto) => void;
     shared: boolean;
-    move?: boolean;
+    moveFromAlbum?: AlbumResponseDto | undefined;
     onClose: () => void;
   }
 
-  let { onNewAlbum, onAlbumClick, shared, move = false, onClose }: Props = $props();
+  let { onNewAlbum, onAlbumClick, shared, moveFromAlbum = undefined, onClose }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
+    if (moveFromAlbum) {
+      albums = albums.filter((album) => album.id !== moveFromAlbum.id);
+    }
     recentAlbums = albums.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? -1 : 1)).slice(0, 3);
     loading = false;
   });
@@ -82,7 +85,7 @@
 </script>
 
 <Modal
-  title={shared ? $t('add_to_shared_album') : move ? $t('move_to_album') : $t('add_to_album')}
+  title={shared ? $t('add_to_shared_album') : moveFromAlbum ? $t('move_to_album') : $t('add_to_album')}
   {onClose}
   size="small"
 >

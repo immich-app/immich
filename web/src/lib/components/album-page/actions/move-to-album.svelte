@@ -72,7 +72,7 @@
 {#if showAlbumPicker}
   <AlbumSelectionModal
     shared={false}
-    move
+    moveFromAlbum={album}
     onNewAlbum={handleMoveToNewAlbum}
     onAlbumClick={handleMoveToAlbum}
     onClose={handleHideAlbumPicker}
