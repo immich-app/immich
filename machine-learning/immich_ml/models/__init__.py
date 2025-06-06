@@ -8,7 +8,7 @@ from immich_ml.schemas import ModelSource, ModelTask, ModelType
 from .constants import get_model_source
 from .facial_recognition.detection import FaceDetector
 from .facial_recognition.recognition import FaceRecognizer
-
+from .ocr.paddle import PaddleOCRecognizer
 
 def get_model_class(model_name: str, model_type: ModelType, model_task: ModelTask) -> type[InferenceModel]:
     source = get_model_source(model_name)
@@ -27,6 +27,9 @@ def get_model_class(model_name: str, model_type: ModelType, model_task: ModelTas
 
         case ModelSource.INSIGHTFACE, ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION:
             return FaceRecognizer
+
+        case ModelSource.PADDLE, ModelType.OCR, ModelTask.OCR:
+            return PaddleOCRecognizer
 
         case _:
             raise ValueError(f"Unknown model combination: {source}, {model_type}, {model_task}")

@@ -79,6 +79,12 @@ class SearchService {
             size: 1000,
           ),
         );
+      } else if (filter.ocr != null && filter.ocr!.isNotEmpty) {
+        response = await _apiService.searchApi.searchOcr(
+          OcrSearchDto(
+            ocr: filter.ocr!,
+          ),
+        );
       } else {
         response = await _apiService.searchApi.searchAssets(
           MetadataSearchDto(

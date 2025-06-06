@@ -20,4 +20,7 @@ export class AssetJobStatusTable {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   thumbnailAt!: Date | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  ocrAt!: Date | null;
 }
