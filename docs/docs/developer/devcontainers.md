@@ -51,12 +51,12 @@ While this guide focuses on VS Code, you have many options for Dev Container dev
 
 The Dev Container environment consists of the following services:
 
-| Service          | Container Name            | Description                                               | Ports                                                                |
-| ---------------- | ------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------- |
-| Server & Web     | `immich-server`           | Runs both API server and web frontend in development mode | 2283 (API)<br>3000 (Web)<br>9230 (Workers Debug)<br>9231 (API Debug) |
-| Database         | `database`                | PostgreSQL database                                       | 5432                                                                 |
-| Cache            | `redis`                   | Valkey cache server                                       | 6379                                                                 |
-| Machine Learning | `immich-machine-learning` | Immich ML model inference server                          | 3003                                                                 |
+| Service          | Container Name            | Description                                               | Ports                                                                   |
+| ---------------- | ------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Server & Web     | `immich-server`           | Runs both API server and web frontend in development mode | 2283 (API)<br/>3000 (Web)<br/>9230 (Workers Debug)<br/>9231 (API Debug) |
+| Database         | `database`                | PostgreSQL database                                       | 5432                                                                    |
+| Cache            | `redis`                   | Valkey cache server                                       | 6379                                                                    |
+| Machine Learning | `immich-machine-learning` | Immich ML model inference server                          | 3003                                                                    |
 
 ## Getting Started
 
