@@ -465,7 +465,7 @@
   "assets_deleted_permanently_from_server": "{count} asset(s) deleted permanently from the Immich server",
   "assets_downloaded_failed": "{count, plural, one {Downloaded # file - {error} file failed} other {Downloaded # files - {error} files failed}}",
   "assets_downloaded_successfully": "{count, plural, one {Downloaded # file successfully} other {Downloaded # files successfully}}",
-  "assets_moved_to_album_count": "Moved {count, plural, one {# asset} other {# assets}} from {fromAlbum} to {toAlbum}",
+  "assets_moved_to_album_count": "Moved {count, plural, one {# asset} other {# assets}} from \"{fromAlbum}\" to \"{toAlbum}\"",
   "assets_moved_to_trash_count": "Moved {count, plural, one {# asset} other {# assets}} to trash",
   "assets_permanently_deleted_count": "Permanently deleted {count, plural, one {# asset} other {# assets}}",
   "assets_removed_count": "Removed {count, plural, one {# asset} other {# assets}}",
