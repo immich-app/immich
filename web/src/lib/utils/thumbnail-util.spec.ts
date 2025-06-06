@@ -62,6 +62,15 @@ describe('getAltText', () => {
         ownerId: 'test-owner',
         ratio: 1,
         thumbhash: null,
+        fileCreatedAt: {
+          year: testDate.getUTCFullYear(),
+          month: testDate.getUTCMonth() + 1, // Note: getMonth() is 0-based
+          day: testDate.getUTCDate(),
+          hour: testDate.getUTCHours(),
+          minute: testDate.getUTCMinutes(),
+          second: testDate.getUTCSeconds(),
+          millisecond: testDate.getUTCMilliseconds(),
+        },
         localDateTime: {
           year: testDate.getUTCFullYear(),
           month: testDate.getUTCMonth() + 1, // Note: getMonth() is 0-based
@@ -71,6 +80,7 @@ describe('getAltText', () => {
           second: testDate.getUTCSeconds(),
           millisecond: testDate.getUTCMilliseconds(),
         },
+
         visibility: AssetVisibility.Timeline,
         isFavorite: false,
         isTrashed: false,
