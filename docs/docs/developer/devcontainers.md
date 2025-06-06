@@ -407,7 +407,7 @@ If you encounter issues:
 1. Check container logs: View → Output → Select "Dev Containers"
 2. Rebuild without cache: "Dev Containers: Rebuild Container Without Cache"
 3. Review [common Docker issues](https://docs.docker.com/desktop/troubleshoot/)
-4. Ask in [Discord](https://discord.immich.app) `#dev-talk` channel
+4. Ask in [Discord](https://discord.immich.app) `#help-desk-support` channel
 
 ## Mobile Development
 
@@ -432,7 +432,7 @@ While the Dev Container focuses on server and web development, you can connect m
    - Server URL: `http://YOUR_IP:2283/api`
    - Ensure firewall allows port 2283
 
-3. **For full mobile development**, see the [mobile development guide](/docs/developer/mobile-app) which covers:
+3. **For full mobile development**, see the [mobile development guide](/docs/setup#mobile-app) which covers:
    - Flutter setup
    - Running on simulators/devices
    - Mobile-specific debugging
@@ -477,5 +477,5 @@ Recommended minimums:
 
 - Read the [architecture overview](/docs/developer/architecture)
 - Learn about [database migrations](/docs/developer/database-migrations)
-- Explore [API documentation](http://localhost:2283/doc)
-- Join `#dev-talk` on [Discord](https://discord.immich.app)
+- Explore [API documentation](https://immich.app/docs/api)
+- Join `#immich` on [Discord](https://discord.immich.app)
