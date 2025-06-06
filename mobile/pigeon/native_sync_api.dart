@@ -86,4 +86,7 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<PlatformAsset> getAssetsForAlbum(String albumId, {int? updatedTimeCond});
+
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  List<Uint8List?> hashPaths(List<String> paths);
 }

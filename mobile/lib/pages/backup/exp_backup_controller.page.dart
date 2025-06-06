@@ -193,7 +193,7 @@ class ExpBackupPage extends HookConsumerWidget {
             ),
             trailing: ElevatedButton(
               onPressed: () async {
-                await context.pushRoute(const BackupAlbumSelectionRoute());
+                await context.pushRoute(const ExpBackupAlbumSelectionRoute());
                 // waited until returning from selection
                 await ref
                     .read(backupProvider.notifier)

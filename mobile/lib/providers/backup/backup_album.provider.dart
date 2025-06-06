@@ -19,6 +19,7 @@ class BackupAlbumNotifier extends StateNotifier<List<LocalAlbum>> {
 
   Future<void> getAll() async {
     state = await _localAlbumService.getAll();
+    print("Backup albums loaded: ${state.length}");
   }
 
   Future<void> selectAlbum(LocalAlbum album) async {

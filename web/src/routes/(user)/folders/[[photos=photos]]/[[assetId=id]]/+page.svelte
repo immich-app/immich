@@ -23,7 +23,7 @@
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import type { Viewport } from '$lib/stores/assets-store.svelte';
+  import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { cancelMultiselect } from '$lib/utils/asset-utils';

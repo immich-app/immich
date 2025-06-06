@@ -55,7 +55,7 @@ class AlbumViewerEditableDescription extends HookConsumerWidget {
           }
         },
         focusNode: descriptionFocusNode,
-        style: context.textTheme.bodyMedium,
+        style: context.textTheme.bodyLarge,
         maxLines: 3,
         minLines: 1,
         controller: descriptionTextEditController,
