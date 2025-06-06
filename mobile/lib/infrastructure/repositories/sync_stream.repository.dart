@@ -12,8 +12,10 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' as api show AssetVisibility, AssetOrder, AlbumUserRole;
-import 'package:openapi/api.dart' hide AssetVisibility, AssetOrder, AlbumUserRole;
+import 'package:openapi/api.dart' as api
+    show AssetVisibility, AssetOrder, AlbumUserRole;
+import 'package:openapi/api.dart'
+    hide AssetVisibility, AssetOrder, AlbumUserRole;
 
 class DriftSyncStreamRepository extends DriftDatabaseRepository
     implements ISyncStreamRepository {
