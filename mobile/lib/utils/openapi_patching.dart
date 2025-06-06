@@ -12,6 +12,7 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'tags', TagsResponse().toJson());
         addDefault(value, 'sharedLinks', SharedLinksResponse().toJson());
         addDefault(value, 'cast', CastResponse().toJson());
+        addDefault(value, 'albums', {'defaultAssetOrder': 'desc'});
       }
       break;
     case 'ServerConfigDto':
