@@ -27,7 +27,8 @@
 
   <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
-    android:largeHeap="true" android:enableOnBackInvokedCallback="false">
+    android:largeHeap="true" android:enableOnBackInvokedCallback="false"
+    android:networkSecurityConfig="@xml/network_security_config">
 
     <service
       android:name="androidx.work.impl.foreground.SystemForegroundService"
