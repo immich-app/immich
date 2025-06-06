@@ -165,7 +165,7 @@ class _LanguageSearchBar extends StatelessWidget {
         child: SearchField(
           autofocus: false,
           contentPadding: const EdgeInsets.all(12),
-          hintText: 'language_search_hint'.t(context),
+          hintText: 'language_search_hint'.t(context: context),
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
@@ -199,14 +199,14 @@ class _LanguageNotFound extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'language_no_results_title'.t(context),
+            'language_no_results_title'.t(context: context),
             style: context.textTheme.titleMedium?.copyWith(
               color: context.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'language_no_results_subtitle'.t(context),
+            'language_no_results_subtitle'.t(context: context),
             style: context.textTheme.bodyMedium?.copyWith(
               color: context.colorScheme.onSurface.withValues(alpha: 0.8),
             ),
@@ -254,7 +254,7 @@ class _LanguageApplyButton extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       fontSize: 16.0,
                     ),
-                  ).t(context),
+                  ).t(context: context),
           ),
         ),
       ),

@@ -3,13 +3,13 @@ import 'package:intl/message_format.dart';
 import 'package:flutter/material.dart';
 
 extension StringTranslateExtension on String {
-  String t(BuildContext context, [Map<String, Object>? args]) {
+  String t({BuildContext? context, Map<String, Object>? args}) {
     return _translateHelper(context, this, args);
   }
 }
 
 extension TextTranslateExtension on Text {
-  Text t(BuildContext context, [Map<String, Object>? args]) {
+  Text t({BuildContext? context, Map<String, Object>? args}) {
     return Text(
       _translateHelper(context, data ?? '', args),
       key: key,
@@ -30,7 +30,7 @@ extension TextTranslateExtension on Text {
 }
 
 String _translateHelper(
-  BuildContext context,
+  BuildContext? context,
   String key, [
   Map<String, Object>? args,
 ]) {
@@ -38,7 +38,7 @@ String _translateHelper(
     return '';
   }
   try {
-    final translatedMessage = context.tr(key);
+    final translatedMessage = context != null ? context.tr(key) : key.tr();
     return args != null
         ? MessageFormat(translatedMessage, locale: Intl.defaultLocale ?? 'en')
             .format(args)
