@@ -113,6 +113,7 @@ export const moveAssetsToAlbum = async (fromAlbum: AlbumResponseDto, toAlbum: Al
 };
 
 export const moveAssetsToNewAlbum = async (fromAlbum: AlbumResponseDto, albumName: string, assetIds: string[]) => {
+  //Album created without assets because we need to add the assets later in order to track success/failure for removal
   const album = await createAlbum(albumName);
   if (!album) {
     return;
