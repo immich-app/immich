@@ -5,9 +5,9 @@ import 'package:immich_mobile/domain/models/local_album.model.dart';
 abstract interface class ILocalAlbumRepository implements IDatabaseRepository {
   Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}});
 
-  Future<List<LocalAsset>> getAssetsForAlbum(String albumId);
+  Future<List<LocalAsset>> getAssets(String albumId);
 
-  Future<List<String>> getAssetIdsForAlbum(String albumId);
+  Future<List<String>> getAssetIds(String albumId);
 
   Future<void> upsert(
     LocalAlbum album, {
@@ -25,10 +25,7 @@ abstract interface class ILocalAlbumRepository implements IDatabaseRepository {
     required Map<String, List<String>> assetAlbums,
   });
 
-  Future<void> syncAlbumDeletes(
-    String albumId,
-    Iterable<String> assetIdsToKeep,
-  );
+  Future<void> syncDeletes(String albumId, Iterable<String> assetIdsToKeep);
 
   Future<List<LocalAsset>> getAssetsToHash(String albumId);
 }

@@ -63,7 +63,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         // That is not the case on Android since asset <-> album has one:one mapping
         final assetsToDelete = _platform.isIOS
             ? await _getUniqueAssetsInAlbum(albumId)
-            : await getAssetIdsForAlbum(albumId);
+            : await getAssetIds(albumId);
         await _deleteAssets(assetsToDelete);
 
         // All the other assets that are still associated will be unlinked automatically on-cascade
@@ -73,7 +73,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       });
 
   @override
-  Future<void> syncAlbumDeletes(
+  Future<void> syncDeletes(
     String albumId,
     Iterable<String> assetIdsToKeep,
   ) async {
@@ -186,7 +186,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<List<LocalAsset>> getAssetsForAlbum(String albumId) {
+  Future<List<LocalAsset>> getAssets(String albumId) {
     final query = _db.localAlbumAssetEntity.select().join(
       [
         innerJoin(
@@ -203,7 +203,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<List<String>> getAssetIdsForAlbum(String albumId) {
+  Future<List<String>> getAssetIds(String albumId) {
     final query = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId));

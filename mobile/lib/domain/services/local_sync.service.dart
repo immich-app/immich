@@ -66,7 +66,7 @@ class LocalSyncService {
       if (_platform.isAndroid) {
         for (final album in dbAlbums) {
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
-          await _localAlbumRepository.syncAlbumDeletes(album.id, deviceIds);
+          await _localAlbumRepository.syncDeletes(album.id, deviceIds);
         }
       }
 
@@ -252,7 +252,7 @@ class LocalSyncService {
               .then((a) => a.toLocalAssets())
           : <LocalAsset>[];
       final assetsInDb = dbAlbum.assetCount > 0
-          ? await _localAlbumRepository.getAssetsForAlbum(dbAlbum.id)
+          ? await _localAlbumRepository.getAssets(dbAlbum.id)
           : <LocalAsset>[];
 
       if (deviceAlbum.assetCount == 0) {
