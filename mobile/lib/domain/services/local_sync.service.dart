@@ -365,6 +365,7 @@ extension on Iterable<PlatformAsset> {
       (e) => LocalAsset(
         id: e.id,
         name: e.name,
+        checksum: null,
         type: AssetType.values.elementAtOrNull(e.type) ?? AssetType.other,
         createdAt: e.createdAt == null
             ? DateTime.now()

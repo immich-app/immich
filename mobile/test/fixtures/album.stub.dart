@@ -1,3 +1,4 @@
+import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 
@@ -99,5 +100,18 @@ final class AlbumStub {
     activityEnabled: false,
     startDate: DateTime(2020),
     endDate: DateTime(2026),
+  );
+}
+
+abstract final class LocalAlbumStub {
+  const LocalAlbumStub._();
+
+  static final recent = LocalAlbum(
+    id: "recent-local-id",
+    name: "Recent",
+    updatedAt: DateTime(2023),
+    assetCount: 1000,
+    backupSelection: BackupSelection.none,
+    isIosSharedAlbum: false,
   );
 }

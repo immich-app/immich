@@ -463,6 +463,7 @@
   "assets_added_count": "Added {count, plural, one {# asset} other {# assets}}",
   "assets_added_to_album_count": "Added {count, plural, one {# asset} other {# assets}} to the album",
   "assets_added_to_name_count": "Added {count, plural, one {# asset} other {# assets}} to {hasName, select, true {<b>{name}</b>} other {new album}}",
+  "assets_cannot_be_added_to_album_count": "{count, plural, one {Asset} other {Assets}} cannot be added to the album",
   "assets_count": "{count, plural, one {# asset} other {# assets}}",
   "assets_deleted_permanently": "{count} asset(s) deleted permanently",
   "assets_deleted_permanently_from_server": "{count} asset(s) deleted permanently from the Immich server",
