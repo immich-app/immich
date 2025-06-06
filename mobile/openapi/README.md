@@ -289,6 +289,8 @@ Class | Method | HTTP request | Description
  - [AlbumUserCreateDto](doc//AlbumUserCreateDto.md)
  - [AlbumUserResponseDto](doc//AlbumUserResponseDto.md)
  - [AlbumUserRole](doc//AlbumUserRole.md)
+ - [AlbumsResponse](doc//AlbumsResponse.md)
+ - [AlbumsUpdate](doc//AlbumsUpdate.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
