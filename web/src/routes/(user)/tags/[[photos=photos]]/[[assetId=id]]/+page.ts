@@ -1,7 +1,7 @@
+import { QueryParameter } from '$lib/constants';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
-import { TreeNode } from '$lib/utils/tree-utils';
 import { getAllTags } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
@@ -11,12 +11,11 @@ export const load = (async ({ params, url }) => {
   const $t = await getFormatter();
 
   const tags = await getAllTags();
-  const tree = TreeNode.fromPaths(tags.map((tag) => tag.value));
 
   return {
+    path: url.searchParams.get(QueryParameter.PATH) ?? '',
     tags,
     asset,
-    tree,
     meta: {
       title: $t('tags'),
     },

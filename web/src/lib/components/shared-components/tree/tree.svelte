@@ -9,14 +9,12 @@
     active: string;
     icons: { default: string; active: string };
     getLink: (path: string) => string;
-    getColor?: (path: string) => string | undefined;
   }
 
-  let { node, active, icons, getLink, getColor }: Props = $props();
+  let { node, active, icons, getLink }: Props = $props();
 
   const isTarget = $derived(active === node.path);
   const isActive = $derived(active === node.path || active.startsWith(`${node.path}/`) || (node.value === '/' && active.startsWith('/')));
-  const color = $derived(getColor?.(node.path));
   let isOpen = $derived(isActive);
 
   const onclick = (event: MouseEvent) => {
@@ -40,7 +38,7 @@
     <Icon
       path={isActive ? icons.active : icons.default}
       class={isActive ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400'}
-      {color}
+      color={node.color}
       size={20}
     />
   </div>
@@ -48,5 +46,5 @@
 </a>
 
 {#if isOpen}
-  <TreeItems {node} {icons} {active} {getLink} {getColor} />
+  <TreeItems tree={node} {icons} {active} {getLink} />
 {/if}

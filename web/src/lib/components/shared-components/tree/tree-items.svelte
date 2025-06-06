@@ -3,20 +3,19 @@
   import { type TreeNode } from '$lib/utils/tree-utils';
 
   interface Props {
-    node: TreeNode;
+    tree: TreeNode;
     active: string;
     icons: { default: string; active: string };
     getLink: (path: string) => string;
-    getColor?: (path: string) => string | undefined;
   }
 
-  let { node, active, icons, getLink, getColor }: Props = $props();
+  let { tree, active, icons, getLink }: Props = $props();
 </script>
 
 <ul class="list-none ms-2">
-  {#each node.children as childNode (getColor ? childNode.path + getColor(childNode.path) : childNode.path)}
+  {#each tree.children as node (node.color ? node.path + node.color : node.path)}
     <li>
-      <Tree node={childNode} {icons} {active} {getLink} {getColor} />
+      <Tree {node} {icons} {active} {getLink} />
     </li>
   {/each}
 </ul>

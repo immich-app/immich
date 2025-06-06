@@ -86,7 +86,7 @@
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiFolderOutline, active: mdiFolder }}
-            node={foldersStore.folders!}
+            tree={foldersStore.folders!}
             active={data.tree.path}
             getLink={getLinkForPath}
           />

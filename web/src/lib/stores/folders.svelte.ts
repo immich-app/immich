@@ -14,7 +14,7 @@ type AssetCache = {
 };
 
 class FoldersStore {
-  folders = $state.raw<TreeNode>();
+  folders = $state.raw<TreeNode | null>(null);
   private initialized = false;
   private assets = $state<AssetCache>({});
 
@@ -29,7 +29,7 @@ class FoldersStore {
     this.initialized = true;
 
     this.folders = TreeNode.fromPaths(await getUniqueOriginalPaths());
-    this.folders.collapseTree();
+    this.folders.collapse();
     return this.folders;
   }
 
@@ -48,7 +48,7 @@ class FoldersStore {
   clearCache() {
     this.initialized = false;
     this.assets = {};
-    this.folders = undefined;
+    this.folders = null;
   }
 }
 

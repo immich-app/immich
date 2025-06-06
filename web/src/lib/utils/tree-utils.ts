@@ -1,58 +1,49 @@
+import type { TagResponseDto } from '@immich/sdk';
+
 export class TreeNode extends Map<string, TreeNode> {
   value: string;
   path: string;
   parent: TreeNode | null;
-  hasLeaf: boolean;
-  #parents: TreeNode[] | null;
-  #children: TreeNode[] | null;
+  hasAssets: boolean;
+  id: string | undefined;
+  color: string | undefined;
+  private _parents: TreeNode[] | undefined;
+  private _children: TreeNode[] | undefined;
 
   private constructor(value: string, path: string, parent: TreeNode | null) {
     super();
     this.value = value;
     this.parent = parent;
     this.path = path;
-    this.hasLeaf = false;
-    this.#parents = null;
-    this.#children = null;
+    this.hasAssets = false;
   }
 
   static fromPaths(paths: string[]) {
     const root = new TreeNode('', '', null);
     for (const path of paths) {
-      let current = root;
-      for (const part of getPathParts(path)) {
-        if (!current.has(part)) {
-          const child = new TreeNode(part, joinPaths(current.path, part), current);
-          current.set(part, child);
-        }
-        current = current.get(part)!;
-      }
-      current.hasLeaf = true;
+      const current = root.add(path);
+      current.hasAssets = true;
     }
     return root;
   }
 
-  collapseTree() {
-    if (this.size === 1 && !this.hasLeaf) {
-      const child = this.values().next().value!;
-      child.value = joinPaths(this.value, child.value);
-      child.parent = this.parent;
-      if (this.parent !== null) {
-        this.parent.delete(this.value);
-        this.parent.set(child.value, child);
-      }
+  static fromTags(tags: TagResponseDto[]) {
+    const root = new TreeNode('', '', null);
+    for (const tag of tags) {
+      const current = root.add(tag.value);
+      current.hasAssets = true;
+      current.id = tag.id;
+      current.color = tag.color;
     }
-
-    for (const child of this.values()) {
-      child.collapseTree();
-    }
+    return root;
   }
 
-  closestRelativeNode(path: string) {
+  traverse(path: string) {
     const parts = getPathParts(path);
     let current: TreeNode = this;
     let curPart = null;
     for (const part of parts) {
+      // segments common to all subtrees can be collapsed together
       curPart = curPart === null ? part : joinPaths(curPart, part);
       const next = current.get(curPart);
       if (next) {
@@ -63,9 +54,38 @@ export class TreeNode extends Map<string, TreeNode> {
     return current;
   }
 
+  collapse() {
+    if (this.size === 1 && !this.hasAssets) {
+      const child = this.values().next().value!;
+      child.value = joinPaths(this.value, child.value);
+      child.parent = this.parent;
+      if (this.parent !== null) {
+        this.parent.delete(this.value);
+        this.parent.set(child.value, child);
+      }
+    }
+
+    for (const child of this.values()) {
+      child.collapse();
+    }
+  }
+
+  private add(path: string) {
+    let current: TreeNode = this;
+    for (const part of getPathParts(path)) {
+      let next = current.get(part);
+      if (next === undefined) {
+        next = new TreeNode(part, joinPaths(current.path, part), current);
+        current.set(part, next);
+      }
+      current = next;
+    }
+    return current;
+  }
+
   get parents(): TreeNode[] {
-    if (this.#parents) {
-      return this.#parents;
+    if (this._parents) {
+      return this._parents;
     }
     const parents: TreeNode[] = [];
     let current: TreeNode | null = this.parent;
@@ -73,11 +93,11 @@ export class TreeNode extends Map<string, TreeNode> {
       parents.push(current);
       current = current.parent;
     }
-    return (this.#parents = parents.reverse());
+    return (this._parents = parents.reverse());
   }
 
   get children(): TreeNode[] {
-    return (this.#children ??= this.values().toArray());
+    return (this._children ??= this.values().toArray());
   }
 }
 

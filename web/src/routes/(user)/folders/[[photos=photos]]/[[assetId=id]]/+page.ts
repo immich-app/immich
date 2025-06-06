@@ -11,7 +11,7 @@ export const load = (async ({ params, url }) => {
 
   const path = url.searchParams.get(QueryParameter.PATH);
   if (path) {
-    tree = tree.closestRelativeNode(path);
+    tree = tree.traverse(path);
   } else if (path === null) {
     // If no path is provided, we've just navigated to the folders page.
     // We should bust the asset cache of the folder store, to make sure we don't show stale data
@@ -19,7 +19,7 @@ export const load = (async ({ params, url }) => {
   }
 
   // only fetch assets if the folder has assets
-  const pathAssets = tree.hasLeaf ? await foldersStore.fetchAssetsByPath(tree.path) : null;
+  const pathAssets = tree.hasAssets ? await foldersStore.fetchAssetsByPath(tree.path) : null;
 
   return {
     asset,
