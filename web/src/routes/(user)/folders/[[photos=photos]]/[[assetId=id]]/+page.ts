@@ -15,9 +15,7 @@ export const load = (async ({ params, url }) => {
   } else if (path === null) {
     // If no path is provided, we've just navigated to the folders page.
     // We should bust the asset cache of the folder store, to make sure we don't show stale data
-    // and default to the lowest common folder
     foldersStore.bustAssetCache();
-    tree = tree.lowestCommonNode();
   }
 
   // only fetch assets if the folder has assets

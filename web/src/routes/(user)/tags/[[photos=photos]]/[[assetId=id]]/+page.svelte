@@ -45,7 +45,7 @@
   const tagId = $derived(tag?.id);
 
   const handleNavigation = async (tag: string) => {
-    await navigateToView(joinPaths([data.tree.path, tag]));
+    await navigateToView(joinPaths(data.tree.path, tag));
   };
 
   const getLink = (path: string) => {

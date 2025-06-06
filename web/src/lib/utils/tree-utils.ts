@@ -1,8 +1,8 @@
 export class TreeNode extends Map<string, TreeNode> {
-  readonly value: string;
-  readonly path: string;
-  readonly parent: TreeNode | null;
-  readonly hasLeaf: boolean;
+  value: string;
+  path: string;
+  parent: TreeNode | null;
+  hasLeaf: boolean;
   #parents: TreeNode[] | null;
   #children: TreeNode[] | null;
 
@@ -22,33 +22,43 @@ export class TreeNode extends Map<string, TreeNode> {
       let current = root;
       for (const part of getPathParts(path)) {
         if (!current.has(part)) {
-          const child = new TreeNode(part, joinPaths([current.path, part]), current);
+          const child = new TreeNode(part, joinPaths(current.path, part), current);
           current.set(part, child);
         }
         current = current.get(part)!;
       }
-      (current.hasLeaf as boolean) = true; // allow reading but not modifying properties externally
+      current.hasLeaf = true;
     }
     return root;
   }
 
-  lowestCommonNode() {
-    let curNode: TreeNode = this;
-    while (curNode.size === 1) {
-      const nextNode = curNode.values().next().value!;
-      curNode = nextNode;
+  collapseTree() {
+    if (this.size === 1 && !this.hasLeaf) {
+      const child = this.values().next().value!;
+      child.value = joinPaths(this.value, child.value);
+      child.parent = this.parent;
+      if (this.parent !== null) {
+        this.parent.delete(this.value);
+        this.parent.set(child.value, child);
+      }
     }
-    return curNode;
+
+    for (const child of this.values()) {
+      child.collapseTree();
+    }
   }
 
-  closestRelativeNode(path: string): TreeNode {
-    const parts = getPathParts(normalizeTreePath(path));
+  closestRelativeNode(path: string) {
+    const parts = getPathParts(path);
     let current: TreeNode = this;
+    let curPart = null;
     for (const part of parts) {
-      if (!current || !current.has(part)) {
-        break;
+      curPart = curPart === null ? part : joinPaths(curPart, part);
+      const next = current.get(curPart);
+      if (next) {
+        current = next;
+        curPart = null;
       }
-      current = current.get(part)!;
     }
     return current;
   }
@@ -87,17 +97,20 @@ export function getPathParts(path: string) {
   return parts;
 }
 
-export function joinPaths(inputPaths: string[]) {
-  const paths = new Array(inputPaths.length);
-  for (let i = 0; i < inputPaths.length; i++) {
-    const path = inputPaths[i];
-    if (path === '/') {
-      paths[i] = '';
-    } else if (path.length > 0) {
-      paths[i] = path;
-    }
+export function joinPaths(path1: string, path2: string) {
+  if (!path1) {
+    return path2;
   }
-  return paths.join('/');
+
+  if (!path2) {
+    return path1;
+  }
+
+  if (path1[path1.length - 1] === '/') {
+    return path1 + path2;
+  }
+
+  return path1 + '/' + path2;
 }
 
 export function getParentPath(path: string) {

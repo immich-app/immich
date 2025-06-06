@@ -43,7 +43,7 @@
 
   const assetInteraction = new AssetInteraction();
 
-  const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths([data.tree.path, folderName]));
+  const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
   function getLinkForPath(path: string) {
     const url = new URL(AppRoute.FOLDERS, globalThis.location.href);

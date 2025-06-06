@@ -28,8 +28,9 @@ class FoldersStore {
     }
     this.initialized = true;
 
-    const uniquePaths = await getUniqueOriginalPaths();
-    return (this.folders = TreeNode.fromPaths(uniquePaths));
+    this.folders = TreeNode.fromPaths(await getUniqueOriginalPaths());
+    this.folders.collapseTree();
+    return this.folders;
   }
 
   bustAssetCache() {
