@@ -862,7 +862,11 @@ export type MetadataSearchDto = {
     deviceAssetId?: string;
     deviceId?: string;
     encodedVideoPath?: string;
+    /** List of album IDs the assets must not belong to (none of) */
+    excludeAlbumIds?: string[];
     id?: string;
+    /** List of album IDs the assets must belong to (any of) */
+    includeAlbumIds?: string[];
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
@@ -934,6 +938,10 @@ export type RandomSearchDto = {
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
+    /** List of album IDs the assets must not belong to (none of) */
+    excludeAlbumIds?: string[];
+    /** List of album IDs the assets must belong to (any of) */
+    includeAlbumIds?: string[];
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
@@ -967,6 +975,10 @@ export type SmartSearchDto = {
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
+    /** List of album IDs the assets must not belong to (none of) */
+    excludeAlbumIds?: string[];
+    /** List of album IDs the assets must belong to (any of) */
+    includeAlbumIds?: string[];
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;

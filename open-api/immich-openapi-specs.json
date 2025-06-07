@@ -10897,9 +10897,25 @@
           "encodedVideoPath": {
             "type": "string"
           },
+          "excludeAlbumIds": {
+            "description": "List of album IDs the assets must not belong to (none of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "id": {
             "format": "uuid",
             "type": "string"
+          },
+          "includeAlbumIds": {
+            "description": "List of album IDs the assets must belong to (any of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           },
           "isEncoded": {
             "type": "boolean"
@@ -11803,6 +11819,22 @@
           },
           "deviceId": {
             "type": "string"
+          },
+          "excludeAlbumIds": {
+            "description": "List of album IDs the assets must not belong to (none of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "includeAlbumIds": {
+            "description": "List of album IDs the assets must belong to (any of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           },
           "isEncoded": {
             "type": "boolean"
@@ -12851,6 +12883,22 @@
           },
           "deviceId": {
             "type": "string"
+          },
+          "excludeAlbumIds": {
+            "description": "List of album IDs the assets must not belong to (none of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "includeAlbumIds": {
+            "description": "List of album IDs the assets must belong to (any of)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           },
           "isEncoded": {
             "type": "boolean"
