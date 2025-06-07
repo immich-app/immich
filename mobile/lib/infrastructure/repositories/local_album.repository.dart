@@ -272,7 +272,9 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
           type: asset.type,
           createdAt: Value(asset.createdAt),
           updatedAt: Value(asset.updatedAt),
-          durationInSeconds: Value.absentIfNull(asset.durationInSeconds),
+          width: Value(asset.width),
+          height: Value(asset.height),
+          durationInSeconds: Value(asset.durationInSeconds),
           id: asset.id,
           checksum: const Value(null),
         );
