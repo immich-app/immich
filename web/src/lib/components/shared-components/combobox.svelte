@@ -5,6 +5,7 @@
     id?: string;
     label: string;
     value: string;
+    thumbnail?: string;
   };
 
   export const asComboboxOptions = (values: string[]) =>
@@ -380,12 +381,34 @@
         <li
           aria-selected={index === selectedIndex}
           bind:this={optionRefs[index]}
-          class="text-start w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700 break-words"
           id={`${listboxId}-${index}`}
           onclick={() => handleSelect(option)}
           role="option"
         >
-          {option.label}
+          {#if option.thumbnail}
+            <div
+              class="text-start flex w-full place-items-center gap-4 rounded-e-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-subtle hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary px-4"
+            >
+              {#if option.thumbnail === 'no-thumbnail'}
+                <div class="h-6 w-6 bg-cover rounded hover:shadow-lg"></div>
+              {:else}
+                <img
+                  src={option.thumbnail}
+                  alt={option.label}
+                  class="h-6 w-6 bg-cover rounded hover:shadow-lg"
+                  data-testid="album-image"
+                  draggable="false"
+                />
+              {/if}
+              {option.label}
+            </div>
+          {:else}
+            <div
+              class="text-start w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700 break-words"
+            >
+              {option.label}
+            </div>
+          {/if}
         </li>
       {/each}
     {/if}

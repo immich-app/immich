@@ -23,10 +23,10 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
@@ -38,6 +38,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     type AlbumResponseDto,
+    getAlbumInfo,
     getPerson,
     getTagById,
     type MetadataSearchDto,
@@ -210,6 +211,7 @@
       model: $t('camera_model'),
       lensModel: $t('lens_model'),
       personIds: $t('people'),
+      albumIds: $t('albums'),
       tagIds: $t('tags'),
       originalFileName: $t('file_name'),
       description: $t('description'),
@@ -231,6 +233,18 @@
     );
 
     return personNames.join(', ');
+  }
+
+  async function getAlbumNames(albumIds: string[]) {
+    const albumNames = await Promise.all(
+      albumIds.map(async (albumId) => {
+        const album = await getAlbumInfo({ id: albumId, withoutAssets: true });
+
+        return album.albumName;
+      }),
+    );
+
+    return albumNames.join(', ');
   }
 
   async function getTagNames(tagIds: string[]) {
@@ -342,6 +356,10 @@
             {:else if searchKey === 'personIds' && Array.isArray(value)}
               {#await getPersonName(value) then personName}
                 {personName}
+              {/await}
+            {:else if searchKey === 'albumIds' && Array.isArray(value)}
+              {#await getAlbumNames(value) then albumNames}
+                {albumNames}
               {/await}
             {:else if searchKey === 'tagIds' && Array.isArray(value)}
               {#await getTagNames(value) then tagNames}
