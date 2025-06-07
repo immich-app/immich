@@ -63,8 +63,10 @@ final _features = [
     icon: Icons.delete_sweep_rounded,
     onTap: (_, ref) async {
       final db = ref.read(driftProvider);
-      await db.remoteAssetEntity.deleteAll();
       await db.remoteExifEntity.deleteAll();
+      await db.remoteAssetEntity.deleteAll();
+      await db.remoteAlbumEntity.deleteAll();
+      await db.remoteAlbumAssetEntity.deleteAll();
     },
   ),
   _Feature(
