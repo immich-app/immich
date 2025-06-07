@@ -4,8 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 class AlbumThumbnailCard extends ConsumerWidget {
@@ -62,7 +62,12 @@ class AlbumThumbnailCard extends ConsumerWidget {
             if (album.ownerId == ref.read(currentUserProvider)?.id) {
               owner = 'owned'.tr();
             } else if (album.ownerName != null) {
-              owner = t('shared_by_user', {'user': album.ownerName!});
+              owner = 'shared_by_user'.t(
+                context: context,
+                args: {
+                  'user': album.ownerName!,
+                },
+              );
             }
           }
 
@@ -70,7 +75,12 @@ class AlbumThumbnailCard extends ConsumerWidget {
             TextSpan(
               children: [
                 TextSpan(
-                  text: t('items_count', {'count': album.assetCount}),
+                  text: 'items_count'.t(
+                    context: context,
+                    args: {
+                      'count': album.assetCount,
+                    },
+                  ),
                 ),
                 if (owner != null) const TextSpan(text: ' • '),
                 if (owner != null) TextSpan(text: owner),

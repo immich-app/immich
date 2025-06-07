@@ -38,7 +38,7 @@ String _translateHelper(
     return '';
   }
   try {
-    final translatedMessage = context != null ? context.tr(key) : key.tr();
+    final translatedMessage = key.tr(context: context);
     return args != null
         ? MessageFormat(translatedMessage, locale: Intl.defaultLocale ?? 'en')
             .format(args)
