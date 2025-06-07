@@ -100,7 +100,7 @@ export class TreeNode extends Map<string, TreeNode> {
   }
 
   get children(): TreeNode[] {
-    return (this._children ??= this.values().toArray());
+    return (this._children ??= Array.from(this.values()));
   }
 }
 
