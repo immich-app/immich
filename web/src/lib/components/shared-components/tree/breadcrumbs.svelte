@@ -51,8 +51,7 @@
           aria-current={isRoot ? 'page' : undefined}
         />
       </li>
-      <!-- eslint-disable-next-line svelte/require-each-key -->
-      {#each parents as parent}
+      {#each parents as parent (parent)}
         <li
           class="flex gap-2 items-center font-mono text-sm text-nowrap text-immich-primary dark:text-immich-dark-primary"
         >
