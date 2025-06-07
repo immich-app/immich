@@ -13,6 +13,7 @@ part of openapi.api;
 class MetadataSearchDto {
   /// Returns a new [MetadataSearchDto] instance.
   MetadataSearchDto({
+    this.albumIds = const [],
     this.checksum,
     this.city,
     this.country,
@@ -56,6 +57,8 @@ class MetadataSearchDto {
     this.withPeople,
     this.withStacked,
   });
+
+  List<String> albumIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -346,6 +349,7 @@ class MetadataSearchDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MetadataSearchDto &&
+    _deepEquality.equals(other.albumIds, albumIds) &&
     other.checksum == checksum &&
     other.city == city &&
     other.country == country &&
@@ -392,6 +396,7 @@ class MetadataSearchDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (albumIds.hashCode) +
     (checksum == null ? 0 : checksum!.hashCode) +
     (city == null ? 0 : city!.hashCode) +
     (country == null ? 0 : country!.hashCode) +
@@ -436,10 +441,11 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'albumIds'] = this.albumIds;
     if (this.checksum != null) {
       json[r'checksum'] = this.checksum;
     } else {
@@ -650,6 +656,9 @@ class MetadataSearchDto {
       final json = value.cast<String, dynamic>();
 
       return MetadataSearchDto(
+        albumIds: json[r'albumIds'] is Iterable
+            ? (json[r'albumIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         checksum: mapValueOfType<String>(json, r'checksum'),
         city: mapValueOfType<String>(json, r'city'),
         country: mapValueOfType<String>(json, r'country'),
