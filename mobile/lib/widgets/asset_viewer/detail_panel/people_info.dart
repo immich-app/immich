@@ -31,6 +31,7 @@ class PeopleInfo extends ConsumerWidget {
     ) {
       return showDialog(
         context: context,
+        useRootNavigator: false,
         builder: (BuildContext context) {
           return PersonNameEditForm(personId: personId, personName: personName);
         },
@@ -82,15 +83,16 @@ class PeopleInfo extends ConsumerWidget {
               child: CuratedPeopleRow(
                 padding: padding,
                 content: curatedPeople,
-                onTap: (content, index) {
-                  context
-                      .pushRoute(
-                        PersonResultRoute(
-                          personId: content.id,
-                          personName: content.label,
-                        ),
-                      )
-                      .then((_) => peopleProvider.refresh());
+                onTap: (content, index) async {
+                  await context.pushRoute(
+                    PersonResultRoute(
+                      personId: content.id,
+                      personName: content.label,
+                    ),
+                  );
+
+
+                  peopleProvider.refresh();
                 },
                 onNameTap: (person, index) => {
                   showPersonNameEditModel(person.id, person.label),
