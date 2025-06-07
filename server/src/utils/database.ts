@@ -235,7 +235,6 @@ export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, albumIds: s
         .selectFrom('albums_assets_assets')
         .select('assetsId')
         .where('albumsId', '=', anyUuid(albumIds!))
-        .groupBy('assetsId')
         .as('has_album'),
     (join) => join.onRef('has_album.assetsId', '=', 'assets.id'),
   );
@@ -304,7 +303,6 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('assets')
-    .selectAll('assets')
     .where('assets.visibility', '=', visibility)
     .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
