@@ -19,6 +19,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
+  import { getParentPath } from '$lib/utils/tree-utils';
   import {
     AssetMediaSize,
     getAssetInfo,
@@ -137,7 +138,7 @@
   const getAssetFolderHref = (asset: AssetResponseDto) => {
     const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
     // Remove the last part of the path to get the parent path
-    const assetParentPath = asset.originalPath.split('/').slice(0, -1).join('/');
+    const assetParentPath = getParentPath(asset.originalPath);
     folderUrl.searchParams.set(QueryParameter.PATH, assetParentPath);
     return folderUrl.href;
   };
