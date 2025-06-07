@@ -37,7 +37,7 @@ describe('ChangeDate component', () => {
 
     await fireEvent.click(getConfirmButton());
 
-    expect(onConfirm).toHaveBeenCalledWith('2024-01-01T00:00:00.000+01:00');
+    expect(onConfirm).toHaveBeenCalledWith('2024-01-01T00:00:00.000+01:00', 0);
   });
 
   test('calls onCancel on cancel', async () => {
@@ -66,7 +66,7 @@ describe('ChangeDate component', () => {
 
       await fireEvent.click(getConfirmButton());
 
-      expect(onConfirm).toHaveBeenCalledWith('2024-07-01T00:00:00.000+02:00');
+      expect(onConfirm).toHaveBeenCalledWith('2024-07-01T00:00:00.000+02:00', 0);
     });
   });
 });
