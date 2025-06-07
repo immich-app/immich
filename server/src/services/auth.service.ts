@@ -300,7 +300,7 @@ export class AuthService extends BaseService {
         name: userName,
         email: profile.email,
         oauthId: profile.sub,
-        quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
+        quotaSizeInBytes: storageQuota === undefined ? null : storageQuota * HumanReadableSize.GiB,
         storageLabel: storageLabel || null,
       });
     }
