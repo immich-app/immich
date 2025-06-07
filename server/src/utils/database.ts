@@ -236,7 +236,6 @@ export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, albumIds: s
         .select('assetsId')
         .where('albumsId', '=', anyUuid(albumIds!))
         .groupBy('assetsId')
-        .having((eb) => eb.fn.count('albumsId').distinct(), '=', albumIds.length)
         .as('has_album'),
     (join) => join.onRef('has_album.assetsId', '=', 'assets.id'),
   );
