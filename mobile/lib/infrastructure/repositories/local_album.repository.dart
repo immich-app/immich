@@ -354,6 +354,22 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       batch.deleteWhere(_db.localAssetEntity, (f) => f.id.isIn(ids));
     });
   }
+
+  @override
+  Future<void> update(LocalAlbum album) {
+    return (_db.update(_db.localAlbumEntity)
+          ..where(
+            (a) => a.id.equals(album.id),
+          ))
+        .write(
+      LocalAlbumEntityCompanion.insert(
+        id: album.id,
+        name: album.name,
+        updatedAt: Value(album.updatedAt),
+        backupSelection: album.backupSelection,
+      ),
+    );
+  }
 }
 
 extension on LocalAlbumEntityData {

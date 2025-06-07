@@ -15,6 +15,7 @@ abstract interface class ILocalAlbumRepository implements IDatabaseRepository {
     Iterable<String> toDelete = const [],
   });
 
+  Future<void> update(LocalAlbum album);
   Future<void> updateAll(Iterable<LocalAlbum> albums);
 
   Future<void> delete(String albumId);

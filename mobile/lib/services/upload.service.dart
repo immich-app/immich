@@ -42,19 +42,51 @@ class UploadService {
     return FileDownloader().cancelTaskWithId(id);
   }
 
-  Future<void> upload(File file) async {
-    final task = await _buildUploadTask(
-      hash(file.path).toString(),
-      file,
-    );
-
-    await _uploadRepository.upload(task);
+  void cancelAllUpload() {
+    return _uploadRepository.cancelAll();
   }
 
-  Future<UploadTask> _buildUploadTask(
+  Future<void> pauseAllUploads() {
+    return _uploadRepository.pauseAll();
+  }
+
+  Future<void> deleteAllUploadTasks() {
+    return _uploadRepository.deleteAllTrackingRecords();
+  }
+
+  Future<List<TaskRecord>> getRecords() async {
+    final all = await _uploadRepository.getRecords();
+    print('all record: all: ${all.length} records found');
+    final enqueue = await _uploadRepository.getRecords(TaskStatus.enqueued);
+    print(
+      'all record: enqueue: ${enqueue.length} records found',
+    );
+    return all;
+  }
+
+  void upload(List<UploadTask> tasks) {
+    _uploadRepository.enqueueAll(tasks);
+  }
+
+  Future<UploadTask> buildUploadTask(
+    File file, {
+    Map<String, String>? fields,
+    String? originalFileName,
+    String? deviceAssetId,
+  }) async {
+    return _buildTask(
+      deviceAssetId ?? hash(file.path).toString(),
+      file,
+      fields: fields,
+      originalFileName: originalFileName,
+    );
+  }
+
+  Future<UploadTask> _buildTask(
     String id,
     File file, {
     Map<String, String>? fields,
+    String? originalFileName,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -66,9 +98,8 @@ class UploadService {
     final stats = await file.stat();
     final fileCreatedAt = stats.changed;
     final fileModifiedAt = stats.modified;
-
     final fieldsMap = {
-      'filename': filename,
+      'filename': originalFileName ?? filename,
       'deviceAssetId': id,
       'deviceId': deviceId,
       'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
@@ -88,7 +119,7 @@ class UploadService {
       baseDirectory: baseDirectory,
       directory: directory,
       fileField: 'assetData',
-      group: uploadGroup,
+      group: kUploadGroup,
       updates: Updates.statusAndProgress,
     );
   }
