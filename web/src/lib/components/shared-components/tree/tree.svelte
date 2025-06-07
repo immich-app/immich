@@ -14,9 +14,7 @@
   let { node, active, icons, getLink }: Props = $props();
 
   const isTarget = $derived(active === node.path);
-  const isActive = $derived(
-    active === node.path || active.startsWith(`${node.path}/`) || (node.value === '/' && active.startsWith('/')),
-  );
+  const isActive = $derived(active === node.path || active.startsWith(node.value === '/' ? '/' : `${node.path}/`));
   let isOpen = $derived(isActive);
 
   const onclick = (event: MouseEvent) => {
