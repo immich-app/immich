@@ -29,12 +29,21 @@ RUN mkdir -p /workspaces/immich
 RUN chown node -R /workspaces
 
 RUN mkdir /immich-devcontainer && chown node -R /immich-devcontainer
-COPY --chmod=777 ../.devcontainer/server/container-common.sh /immich-devcontainer/common.sh
-COPY --chmod=777 ../.devcontainer/server/container-server-post-create.sh /immich-devcontainer/container-server-post-create.sh
-COPY --chmod=777 ../.devcontainer/server/container-start-backend.sh /immich-devcontainer/container-start-backend.sh
-COPY --chmod=777 ../.devcontainer/server/container-start-frontend.sh /immich-devcontainer/container-start-frontend.sh
+COPY --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
 
 FROM dev-container-server AS dev-container-mobile
+
+# Enable multiarch for arm64 if necessary
+RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
+    dpkg --add-architecture amd64 && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        qemu-user-static \
+        libc6:amd64 \
+        libstdc++6:amd64 \
+        libgcc1:amd64; \
+    fi
+
 # Flutter SDK
 # https://flutter.dev/docs/development/tools/sdk/releases?tab=linux
 ENV FLUTTER_CHANNEL="stable"

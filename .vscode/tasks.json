@@ -2,7 +2,27 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Fix Permissions, Install Dependencies",
+      "type": "shell",
+      "command": "[ -f /immich-devcontainer/container-start.sh ] && /immich-devcontainer/container-start.sh || exit 0",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false,
+        "group": "Devcontainer tasks",
+        "close": true
+      },
+      "runOptions": {
+        "runOn": "default"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Immich API Server (Nest)",
+      "dependsOn": ["Fix Permissions, Install Dependencies"],
       "type": "shell",
       "command": "[ -f /immich-devcontainer/container-start-backend.sh ] && /immich-devcontainer/container-start-backend.sh || exit 0",
       "presentation": {
@@ -22,6 +42,7 @@
     },
     {
       "label": "Immich Web Server (Vite)",
+      "dependsOn": ["Fix Permissions, Install Dependencies"],
       "type": "shell",
       "command": "[ -f /immich-devcontainer/container-start-frontend.sh ] && /immich-devcontainer/container-start-frontend.sh || exit 0",
       "presentation": {

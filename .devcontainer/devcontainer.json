@@ -52,7 +52,6 @@
   "overrideCommand": true,
   "workspaceFolder": "/workspaces/immich",
   "remoteUser": "node",
-  "postCreateCommand": "/immich-devcontainer/container-server-post-create.sh",
   "userEnvProbe": "loginInteractiveShell",
   "remoteEnv": {
     // The location where your uploaded files are stored

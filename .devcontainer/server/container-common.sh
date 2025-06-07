@@ -21,3 +21,37 @@ else
 fi
 
 echo "Found immich workspace in $IMMICH_WORKSPACE"
+
+run_cmd() {
+    echo "$@"
+    "$@"
+}
+
+fix_permissions() {
+
+    echo "Fixing permissions for ${IMMICH_WORKSPACE}"
+
+    run_cmd sudo find "${IMMICH_WORKSPACE}/server/upload" -not -path "${IMMICH_WORKSPACE}/server/upload/postgres/*" -not -path "${IMMICH_WORKSPACE}/server/upload/postgres" -exec chown node {} +
+
+    run_cmd sudo chown node -R "${IMMICH_WORKSPACE}/.vscode" \
+        "${IMMICH_WORKSPACE}/cli/node_modules" \
+        "${IMMICH_WORKSPACE}/e2e/node_modules" \
+        "${IMMICH_WORKSPACE}/open-api/typescript-sdk/node_modules" \
+        "${IMMICH_WORKSPACE}/server/node_modules" \
+        "${IMMICH_WORKSPACE}/server/dist" \
+        "${IMMICH_WORKSPACE}/web/node_modules" \
+        "${IMMICH_WORKSPACE}/web/dist"
+}
+
+install_dependencies() {
+
+    echo "Installing dependencies"
+
+    (
+        cd "${IMMICH_WORKSPACE}" || exit 1
+        run_cmd make install-server
+        run_cmd make install-open-api
+        run_cmd make build-open-api
+        run_cmd make install-web
+    )
+}
