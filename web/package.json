@@ -15,7 +15,7 @@
     "check:code": "npm run format && npm run lint:p && npm run check:svelte && npm run check:typescript",
     "check:all": "npm run check:code && npm run test:cov",
     "lint": "eslint . --max-warnings 0",
-    "lint:p-lite": "eslint-p . --max-warnings 0  --concurrency 4 --rule '@typescript-eslint/no-misused-promises: off' --rule '@typescript-eslint/no-floating-promises: off' --rule 'svelte/require-store-reactive-access: off' --rule 'svelte/no-unused-props: off' --rule '@typescript-eslint/await-thenable: off'",
+    "lint:ci": "eslint-p . --max-warnings 0  --concurrency 4 --rule '@typescript-eslint/no-misused-promises: error' --rule '@typescript-eslint/no-floating-promises: error'",
     "lint:p": "eslint-p . --max-warnings 0 --concurrency 4",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --check .",
