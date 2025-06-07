@@ -190,12 +190,29 @@ export class SearchRepository {
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     const items = await searchAssetBuilder(this.db, options)
+      .selectAll('assets')
       .orderBy('assets.fileCreatedAt', orderDirection)
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();
 
     return paginationHelper(items, pagination.size);
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        takenAfter: DummyValue.DATE,
+        lensModel: DummyValue.STRING,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  searchStatistics(options: AssetSearchOptions) {
+    return searchAssetBuilder(this.db, options)
+      .select((qb) => qb.fn.countAll<number>().as('total'))
+      .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({
@@ -214,10 +231,12 @@ export class SearchRepository {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
     const lessThan = builder
+      .selectAll('assets')
       .where('assets.id', '<', uuid)
       .orderBy(sql`random()`)
       .limit(size);
     const greaterThan = builder
+      .selectAll('assets')
       .where('assets.id', '>', uuid)
       .orderBy(sql`random()`)
       .limit(size);
@@ -246,6 +265,7 @@ export class SearchRepository {
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
       const items = await searchAssetBuilder(trx, options)
+        .selectAll('assets')
         .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
         .limit(pagination.size + 1)
