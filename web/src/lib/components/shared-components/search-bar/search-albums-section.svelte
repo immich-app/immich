@@ -43,13 +43,14 @@
       <div class="my-4 flex flex-col gap-2">
         <Combobox
           onSelect={handleSelect}
+          hasThumbnails
           label={$t('albums').toUpperCase()}
           defaultFirstOption
           options={allAlbums.map((album) => ({
             id: album.id,
             label: album.albumName,
             value: album.id,
-            thumbnail: album.albumThumbnailAssetId ? getAssetThumbnailUrl(album.albumThumbnailAssetId) : 'no-thumbnail',
+            thumbnail: album.albumThumbnailAssetId ? getAssetThumbnailUrl(album.albumThumbnailAssetId) : undefined,
           }))}
           bind:selectedOption
           placeholder={$t('search_albums')}

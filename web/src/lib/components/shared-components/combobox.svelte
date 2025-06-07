@@ -46,6 +46,7 @@
      * select first matching option on enter key.
      */
     defaultFirstOption?: boolean;
+    hasThumbnails?: boolean;
     onSelect?: (option: ComboBoxOption | undefined) => void;
   }
 
@@ -57,6 +58,7 @@
     placeholder = '',
     allowCreate = false,
     defaultFirstOption = false,
+    hasThumbnails = false,
     onSelect = () => {},
   }: Props = $props();
 
@@ -385,13 +387,11 @@
           onclick={() => handleSelect(option)}
           role="option"
         >
-          {#if option.thumbnail}
+          {#if hasThumbnails}
             <div
               class="text-start flex w-full place-items-center gap-4 rounded-e-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-subtle hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary px-4"
             >
-              {#if option.thumbnail === 'no-thumbnail'}
-                <div class="h-6 w-6 bg-cover rounded hover:shadow-lg"></div>
-              {:else}
+              {#if option.thumbnail}
                 <img
                   src={option.thumbnail}
                   alt={option.label}
@@ -399,6 +399,8 @@
                   data-testid="album-image"
                   draggable="false"
                 />
+              {:else}
+                <div class="h-6 w-6 bg-cover rounded hover:shadow-lg"></div>
               {/if}
               {option.label}
             </div>
