@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
+import android.util.Log
 import java.io.File
+import java.io.FileInputStream
+import java.security.MessageDigest
 
 sealed class AssetResult {
   data class ValidAsset(val asset: PlatformAsset, val albumId: String) : AssetResult()
@@ -16,6 +19,8 @@ open class NativeSyncApiImplBase(context: Context) {
   private val ctx: Context = context.applicationContext
 
   companion object {
+    private const val TAG = "NativeSyncApiImplBase"
+
     const val MEDIA_SELECTION =
       "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?)"
     val MEDIA_SELECTION_ARGS = arrayOf(
@@ -34,6 +39,8 @@ open class NativeSyncApiImplBase(context: Context) {
       MediaStore.MediaColumns.BUCKET_ID,
       MediaStore.MediaColumns.DURATION
     )
+
+    const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
   }
 
   protected fun getCursor(
@@ -173,5 +180,25 @@ open class NativeSyncApiImplBase(context: Context) {
     return getAssets(getCursor(MediaStore.VOLUME_EXTERNAL, selection, selectionArgs.toTypedArray()))
       .mapNotNull { result -> (result as? AssetResult.ValidAsset)?.asset }
       .toList()
+  }
+
+  fun hashPaths(paths: List<String>): List<ByteArray?> {
+    val buffer = ByteArray(HASH_BUFFER_SIZE)
+    val digest = MessageDigest.getInstance("SHA-1")
+
+    return paths.map { path ->
+      try {
+        FileInputStream(path).use { file ->
+          var bytesRead: Int
+          while (file.read(buffer).also { bytesRead = it } > 0) {
+            digest.update(buffer, 0, bytesRead)
+          }
+        }
+        digest.digest()
+      } catch (e: Exception) {
+        Log.w(TAG, "Failed to hash file $path: $e")
+        null
+      }
+    }
   }
 }

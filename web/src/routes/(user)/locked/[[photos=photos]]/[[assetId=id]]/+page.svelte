@@ -13,7 +13,7 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { AssetVisibility, lockAuthSession } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiDotsVertical, mdiLockOutline } from '@mdi/js';

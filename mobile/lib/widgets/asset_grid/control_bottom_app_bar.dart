@@ -39,6 +39,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
   final void Function()? onEditLocation;
   final void Function()? onRemoveFromAlbum;
   final void Function()? onToggleLocked;
+  final void Function()? onDownload;
 
   final bool enabled;
   final bool unfavorite;
@@ -56,6 +57,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
     required this.onUpload,
+    this.onDownload,
     this.onStack,
     this.onEditTime,
     this.onEditLocation,
@@ -157,6 +159,15 @@ class ControlBottomAppBar extends HookConsumerWidget {
                 : Icons.favorite_rounded,
             label: (unfavorite ? "unfavorite" : "favorite").tr(),
             onPressed: enabled ? onFavorite : null,
+          ),
+        if (hasRemote && onDownload != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.download,
+              label: "download".tr(),
+              onPressed: onDownload,
+            ),
           ),
         if (hasLocal && hasRemote && onDelete != null && !isInLockedView)
           ConstrainedBox(

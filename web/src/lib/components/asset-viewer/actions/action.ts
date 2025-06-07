@@ -1,5 +1,5 @@
 import type { AssetAction } from '$lib/constants';
-import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { AlbumResponseDto, StackResponseDto } from '@immich/sdk';
 
 type ActionMap = {

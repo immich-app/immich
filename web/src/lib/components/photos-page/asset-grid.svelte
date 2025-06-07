@@ -18,17 +18,15 @@
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import {
-    AssetBucket,
-    assetsSnapshot,
-    AssetStore,
-    isSelectingAllAssets,
-    type TimelineAsset,
-  } from '$lib/stores/assets-store.svelte';
+  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import type { AssetBucket } from '$lib/managers/timeline-manager/asset-bucket.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
@@ -382,7 +380,12 @@
 
   const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
-    await deleteAssets(!(isTrashEnabled && !force), (assetIds) => assetStore.removeAssets(assetIds), idsSelectedAssets);
+    await deleteAssets(
+      !(isTrashEnabled && !force),
+      (assetIds) => assetStore.removeAssets(assetIds),
+      assetInteraction.selectedAssets,
+      !isTrashEnabled || force ? undefined : (assets) => assetStore.addAssets(assets),
+    );
     assetInteraction.clearMultiselect();
   };
 
