@@ -373,6 +373,8 @@ extension on Iterable<PlatformAsset> {
         updatedAt: e.updatedAt == null
             ? DateTime.now()
             : DateTime.fromMillisecondsSinceEpoch(e.updatedAt! * 1000),
+        width: e.width,
+        height: e.height,
         durationInSeconds: e.durationInSeconds,
       ),
     ).toList();
