@@ -130,12 +130,7 @@
       <section>
         <div class="text-xs ps-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
         <div class="h-full">
-          <TreeItems
-            icons={{ default: mdiTag, active: mdiTag }}
-            tree={tree}
-            active={tag.path}
-            {getLink}
-          />
+          <TreeItems icons={{ default: mdiTag, active: mdiTag }} {tree} active={tag.path} {getLink} />
         </div>
       </section>
     </Sidebar>
