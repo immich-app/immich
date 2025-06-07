@@ -83,16 +83,15 @@ class PeopleInfo extends ConsumerWidget {
               child: CuratedPeopleRow(
                 padding: padding,
                 content: curatedPeople,
-                onTap: (content, index) async {
-                  await context.pushRoute(
-                    PersonResultRoute(
-                      personId: content.id,
-                      personName: content.label,
-                    ),
-                  );
-
-
-                  peopleProvider.refresh();
+                onTap: (content, index) {
+                  context
+                      .pushRoute(
+                        PersonResultRoute(
+                          personId: content.id,
+                          personName: content.label,
+                        ),
+                      )
+                      .then((_) => peopleProvider.refresh());
                 },
                 onNameTap: (person, index) => {
                   showPersonNameEditModel(person.id, person.label),
