@@ -14,10 +14,13 @@
   }
 
   let { selectedAlbums = $bindable() }: Props = $props();
+  
 
   let allAlbums: AlbumResponseDto[] = $state([]);
   let albumMap = $derived(Object.fromEntries(allAlbums.map((album) => [album.id, album])));
   let selectedOption = $state(undefined);
+
+  let sortedSelectedAlbums = $derived(Array.from(selectedAlbums).sort((a, b) => albumMap[b]?.albumName?.length - albumMap[a]?.albumName?.length));
 
   onMount(async () => {
     allAlbums = await getAllAlbums({});
@@ -29,6 +32,7 @@
     }
 
     selectedAlbums.add(option.value);
+
     selectedOption = undefined;
   };
 
@@ -59,7 +63,7 @@
     </form>
 
     <section class="flex flex-wrap pt-2 gap-1">
-      {#each selectedAlbums as albumId (albumId)}
+      {#each sortedSelectedAlbums as albumId (albumId)}
         {@const album = albumMap[albumId]}
         {#if album}
           <div class="flex group transition-all">
