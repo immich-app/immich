@@ -205,24 +205,27 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       overrides: [
         localeProvider.overrideWithValue(context.locale),
       ],
-      child: MaterialApp.router(
-        title: 'Immich',
-        debugShowCheckedModeBanner: true,
+      child: MaterialApp(
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        themeMode: ref.watch(immichThemeModeProvider),
-        darkTheme: getThemeData(
-          colorScheme: immichTheme.dark,
-          locale: context.locale,
-        ),
-        theme: getThemeData(
-          colorScheme: immichTheme.light,
-          locale: context.locale,
-        ),
-        routeInformationParser: router.defaultRouteParser(),
-        routerDelegate: router.delegate(
-          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
+        debugShowCheckedModeBanner: true,
+        home: MaterialApp.router(
+          title: 'Immich',
+          debugShowCheckedModeBanner: false,
+          themeMode: ref.watch(immichThemeModeProvider),
+          darkTheme: getThemeData(
+            colorScheme: immichTheme.dark,
+            locale: context.locale,
+          ),
+          theme: getThemeData(
+            colorScheme: immichTheme.light,
+            locale: context.locale,
+          ),
+          routeInformationParser: router.defaultRouteParser(),
+          routerDelegate: router.delegate(
+            navigatorObservers: () => [AppNavigationObserver(ref: ref)],
+          ),
         ),
       ),
     );
