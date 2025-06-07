@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
@@ -15,7 +16,6 @@ abstract final class DLog {
   static Stream<List<LogMessage>> watchLog() {
     final db = Isar.getInstance();
     if (db == null) {
-      debugPrint('Isar is not initialized');
       return const Stream.empty();
     }
 
@@ -30,7 +30,6 @@ abstract final class DLog {
   static void clearLog() {
     final db = Isar.getInstance();
     if (db == null) {
-      debugPrint('Isar is not initialized');
       return;
     }
 
@@ -40,7 +39,9 @@ abstract final class DLog {
   }
 
   static void log(String message, [Object? error, StackTrace? stackTrace]) {
-    debugPrint('[$kDevLoggerTag] [${DateTime.now()}] $message');
+    if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+      debugPrint('[$kDevLoggerTag] [${DateTime.now()}] $message');
+    }
     if (error != null) {
       debugPrint('Error: $error');
     }
@@ -50,7 +51,6 @@ abstract final class DLog {
 
     final isar = Isar.getInstance();
     if (isar == null) {
-      debugPrint('Isar is not initialized');
       return;
     }
 

@@ -12,8 +12,9 @@
 </script>
 
 <IconButton
+  color="secondary"
+  variant="ghost"
   shape="round"
-  color="primary"
   icon={isPlaying ? mdiMotionPauseOutline : mdiPlaySpeed}
   aria-label={isPlaying ? $t('stop_motion_photo') : $t('play_motion_photo')}
   onclick={() => onClick(!isPlaying)}

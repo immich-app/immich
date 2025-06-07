@@ -20,6 +20,20 @@ limit
 offset
   $7
 
+-- SearchRepository.searchStatistics
+select
+  count(*) as "total"
+from
+  "assets"
+  inner join "exif" on "assets"."id" = "exif"."assetId"
+where
+  "assets"."visibility" = $1
+  and "assets"."fileCreatedAt" >= $2
+  and "exif"."lensModel" = $3
+  and "assets"."ownerId" = any ($4::uuid[])
+  and "assets"."isFavorite" = $5
+  and "assets"."deletedAt" is null
+
 -- SearchRepository.searchRandom
 (
   select

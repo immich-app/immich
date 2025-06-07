@@ -14,6 +14,7 @@ typedef $$LocalAlbumEntityTableCreateCompanionBuilder
   required String name,
   i0.Value<DateTime> updatedAt,
   required i2.BackupSelection backupSelection,
+  i0.Value<bool> isIosSharedAlbum,
   i0.Value<bool?> marker_,
 });
 typedef $$LocalAlbumEntityTableUpdateCompanionBuilder
@@ -22,6 +23,7 @@ typedef $$LocalAlbumEntityTableUpdateCompanionBuilder
   i0.Value<String> name,
   i0.Value<DateTime> updatedAt,
   i0.Value<i2.BackupSelection> backupSelection,
+  i0.Value<bool> isIosSharedAlbum,
   i0.Value<bool?> marker_,
 });
 
@@ -47,6 +49,10 @@ class $$LocalAlbumEntityTableFilterComposer
       get backupSelection => $composableBuilder(
           column: $table.backupSelection,
           builder: (column) => i0.ColumnWithTypeConverterFilters(column));
+
+  i0.ColumnFilters<bool> get isIosSharedAlbum => $composableBuilder(
+      column: $table.isIosSharedAlbum,
+      builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<bool> get marker_ => $composableBuilder(
       column: $table.marker_, builder: (column) => i0.ColumnFilters(column));
@@ -75,6 +81,10 @@ class $$LocalAlbumEntityTableOrderingComposer
       column: $table.backupSelection,
       builder: (column) => i0.ColumnOrderings(column));
 
+  i0.ColumnOrderings<bool> get isIosSharedAlbum => $composableBuilder(
+      column: $table.isIosSharedAlbum,
+      builder: (column) => i0.ColumnOrderings(column));
+
   i0.ColumnOrderings<bool> get marker_ => $composableBuilder(
       column: $table.marker_, builder: (column) => i0.ColumnOrderings(column));
 }
@@ -100,6 +110,9 @@ class $$LocalAlbumEntityTableAnnotationComposer
   i0.GeneratedColumnWithTypeConverter<i2.BackupSelection, int>
       get backupSelection => $composableBuilder(
           column: $table.backupSelection, builder: (column) => column);
+
+  i0.GeneratedColumn<bool> get isIosSharedAlbum => $composableBuilder(
+      column: $table.isIosSharedAlbum, builder: (column) => column);
 
   i0.GeneratedColumn<bool> get marker_ =>
       $composableBuilder(column: $table.marker_, builder: (column) => column);
@@ -139,6 +152,7 @@ class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<i2.BackupSelection> backupSelection =
                 const i0.Value.absent(),
+            i0.Value<bool> isIosSharedAlbum = const i0.Value.absent(),
             i0.Value<bool?> marker_ = const i0.Value.absent(),
           }) =>
               i1.LocalAlbumEntityCompanion(
@@ -146,6 +160,7 @@ class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
             name: name,
             updatedAt: updatedAt,
             backupSelection: backupSelection,
+            isIosSharedAlbum: isIosSharedAlbum,
             marker_: marker_,
           ),
           createCompanionCallback: ({
@@ -153,6 +168,7 @@ class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
             required String name,
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             required i2.BackupSelection backupSelection,
+            i0.Value<bool> isIosSharedAlbum = const i0.Value.absent(),
             i0.Value<bool?> marker_ = const i0.Value.absent(),
           }) =>
               i1.LocalAlbumEntityCompanion.insert(
@@ -160,6 +176,7 @@ class $$LocalAlbumEntityTableTableManager extends i0.RootTableManager<
             name: name,
             updatedAt: updatedAt,
             backupSelection: backupSelection,
+            isIosSharedAlbum: isIosSharedAlbum,
             marker_: marker_,
           ),
           withReferenceMapper: (p0) => p0
@@ -218,6 +235,16 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
               type: i0.DriftSqlType.int, requiredDuringInsert: true)
           .withConverter<i2.BackupSelection>(
               i1.$LocalAlbumEntityTable.$converterbackupSelection);
+  static const i0.VerificationMeta _isIosSharedAlbumMeta =
+      const i0.VerificationMeta('isIosSharedAlbum');
+  @override
+  late final i0.GeneratedColumn<bool> isIosSharedAlbum =
+      i0.GeneratedColumn<bool>('is_ios_shared_album', aliasedName, false,
+          type: i0.DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+              'CHECK ("is_ios_shared_album" IN (0, 1))'),
+          defaultValue: const i4.Constant(false));
   static const i0.VerificationMeta _marker_Meta =
       const i0.VerificationMeta('marker_');
   @override
@@ -229,7 +256,7 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
           i0.GeneratedColumn.constraintIsAlways('CHECK ("marker" IN (0, 1))'));
   @override
   List<i0.GeneratedColumn> get $columns =>
-      [id, name, updatedAt, backupSelection, marker_];
+      [id, name, updatedAt, backupSelection, isIosSharedAlbum, marker_];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -256,6 +283,12 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
+    if (data.containsKey('is_ios_shared_album')) {
+      context.handle(
+          _isIosSharedAlbumMeta,
+          isIosSharedAlbum.isAcceptableOrUnknown(
+              data['is_ios_shared_album']!, _isIosSharedAlbumMeta));
+    }
     if (data.containsKey('marker')) {
       context.handle(_marker_Meta,
           marker_.isAcceptableOrUnknown(data['marker']!, _marker_Meta));
@@ -279,6 +312,8 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
       backupSelection: i1.$LocalAlbumEntityTable.$converterbackupSelection
           .fromSql(attachedDatabase.typeMapping.read(i0.DriftSqlType.int,
               data['${effectivePrefix}backup_selection'])!),
+      isIosSharedAlbum: attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.bool, data['${effectivePrefix}is_ios_shared_album'])!,
       marker_: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.bool, data['${effectivePrefix}marker']),
     );
@@ -305,12 +340,14 @@ class LocalAlbumEntityData extends i0.DataClass
   final String name;
   final DateTime updatedAt;
   final i2.BackupSelection backupSelection;
+  final bool isIosSharedAlbum;
   final bool? marker_;
   const LocalAlbumEntityData(
       {required this.id,
       required this.name,
       required this.updatedAt,
       required this.backupSelection,
+      required this.isIosSharedAlbum,
       this.marker_});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -323,6 +360,7 @@ class LocalAlbumEntityData extends i0.DataClass
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toSql(backupSelection));
     }
+    map['is_ios_shared_album'] = i0.Variable<bool>(isIosSharedAlbum);
     if (!nullToAbsent || marker_ != null) {
       map['marker'] = i0.Variable<bool>(marker_);
     }
@@ -338,6 +376,7 @@ class LocalAlbumEntityData extends i0.DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       backupSelection: i1.$LocalAlbumEntityTable.$converterbackupSelection
           .fromJson(serializer.fromJson<int>(json['backupSelection'])),
+      isIosSharedAlbum: serializer.fromJson<bool>(json['isIosSharedAlbum']),
       marker_: serializer.fromJson<bool?>(json['marker_']),
     );
   }
@@ -351,6 +390,7 @@ class LocalAlbumEntityData extends i0.DataClass
       'backupSelection': serializer.toJson<int>(i1
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toJson(backupSelection)),
+      'isIosSharedAlbum': serializer.toJson<bool>(isIosSharedAlbum),
       'marker_': serializer.toJson<bool?>(marker_),
     };
   }
@@ -360,12 +400,14 @@ class LocalAlbumEntityData extends i0.DataClass
           String? name,
           DateTime? updatedAt,
           i2.BackupSelection? backupSelection,
+          bool? isIosSharedAlbum,
           i0.Value<bool?> marker_ = const i0.Value.absent()}) =>
       i1.LocalAlbumEntityData(
         id: id ?? this.id,
         name: name ?? this.name,
         updatedAt: updatedAt ?? this.updatedAt,
         backupSelection: backupSelection ?? this.backupSelection,
+        isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
         marker_: marker_.present ? marker_.value : this.marker_,
       );
   LocalAlbumEntityData copyWithCompanion(i1.LocalAlbumEntityCompanion data) {
@@ -376,6 +418,9 @@ class LocalAlbumEntityData extends i0.DataClass
       backupSelection: data.backupSelection.present
           ? data.backupSelection.value
           : this.backupSelection,
+      isIosSharedAlbum: data.isIosSharedAlbum.present
+          ? data.isIosSharedAlbum.value
+          : this.isIosSharedAlbum,
       marker_: data.marker_.present ? data.marker_.value : this.marker_,
     );
   }
@@ -387,14 +432,15 @@ class LocalAlbumEntityData extends i0.DataClass
           ..write('name: $name, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('backupSelection: $backupSelection, ')
+          ..write('isIosSharedAlbum: $isIosSharedAlbum, ')
           ..write('marker_: $marker_')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, updatedAt, backupSelection, marker_);
+  int get hashCode => Object.hash(
+      id, name, updatedAt, backupSelection, isIosSharedAlbum, marker_);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -403,6 +449,7 @@ class LocalAlbumEntityData extends i0.DataClass
           other.name == this.name &&
           other.updatedAt == this.updatedAt &&
           other.backupSelection == this.backupSelection &&
+          other.isIosSharedAlbum == this.isIosSharedAlbum &&
           other.marker_ == this.marker_);
 }
 
@@ -412,12 +459,14 @@ class LocalAlbumEntityCompanion
   final i0.Value<String> name;
   final i0.Value<DateTime> updatedAt;
   final i0.Value<i2.BackupSelection> backupSelection;
+  final i0.Value<bool> isIosSharedAlbum;
   final i0.Value<bool?> marker_;
   const LocalAlbumEntityCompanion({
     this.id = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     this.backupSelection = const i0.Value.absent(),
+    this.isIosSharedAlbum = const i0.Value.absent(),
     this.marker_ = const i0.Value.absent(),
   });
   LocalAlbumEntityCompanion.insert({
@@ -425,6 +474,7 @@ class LocalAlbumEntityCompanion
     required String name,
     this.updatedAt = const i0.Value.absent(),
     required i2.BackupSelection backupSelection,
+    this.isIosSharedAlbum = const i0.Value.absent(),
     this.marker_ = const i0.Value.absent(),
   })  : id = i0.Value(id),
         name = i0.Value(name),
@@ -434,6 +484,7 @@ class LocalAlbumEntityCompanion
     i0.Expression<String>? name,
     i0.Expression<DateTime>? updatedAt,
     i0.Expression<int>? backupSelection,
+    i0.Expression<bool>? isIosSharedAlbum,
     i0.Expression<bool>? marker_,
   }) {
     return i0.RawValuesInsertable({
@@ -441,6 +492,7 @@ class LocalAlbumEntityCompanion
       if (name != null) 'name': name,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (backupSelection != null) 'backup_selection': backupSelection,
+      if (isIosSharedAlbum != null) 'is_ios_shared_album': isIosSharedAlbum,
       if (marker_ != null) 'marker': marker_,
     });
   }
@@ -450,12 +502,14 @@ class LocalAlbumEntityCompanion
       i0.Value<String>? name,
       i0.Value<DateTime>? updatedAt,
       i0.Value<i2.BackupSelection>? backupSelection,
+      i0.Value<bool>? isIosSharedAlbum,
       i0.Value<bool?>? marker_}) {
     return i1.LocalAlbumEntityCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       updatedAt: updatedAt ?? this.updatedAt,
       backupSelection: backupSelection ?? this.backupSelection,
+      isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
       marker_: marker_ ?? this.marker_,
     );
   }
@@ -477,6 +531,9 @@ class LocalAlbumEntityCompanion
           .$LocalAlbumEntityTable.$converterbackupSelection
           .toSql(backupSelection.value));
     }
+    if (isIosSharedAlbum.present) {
+      map['is_ios_shared_album'] = i0.Variable<bool>(isIosSharedAlbum.value);
+    }
     if (marker_.present) {
       map['marker'] = i0.Variable<bool>(marker_.value);
     }
@@ -490,6 +547,7 @@ class LocalAlbumEntityCompanion
           ..write('name: $name, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('backupSelection: $backupSelection, ')
+          ..write('isIosSharedAlbum: $isIosSharedAlbum, ')
           ..write('marker_: $marker_')
           ..write(')'))
         .toString();

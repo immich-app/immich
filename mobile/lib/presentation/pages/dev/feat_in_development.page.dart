@@ -27,6 +27,11 @@ final _features = [
     onTap: (_, ref) => ref.read(backgroundSyncProvider).syncLocal(full: true),
   ),
   _Feature(
+    name: 'Hash Local Assets',
+    icon: Icons.numbers_outlined,
+    onTap: (_, ref) => ref.read(backgroundSyncProvider).hashAssets(),
+  ),
+  _Feature(
     name: 'Sync Remote',
     icon: Icons.refresh_rounded,
     onTap: (_, ref) => ref.read(backgroundSyncProvider).syncRemote(),

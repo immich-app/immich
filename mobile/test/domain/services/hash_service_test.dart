@@ -1,425 +1,292 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
+import 'dart:typed_data';
 
-import 'package:collection/collection.dart';
-import 'package:file/memory.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/device_asset.interface.dart';
-import 'package:immich_mobile/domain/models/device_asset.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/services/background.service.dart';
-import 'package:immich_mobile/services/hash.service.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/local_album.model.dart';
+import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:photo_manager/photo_manager.dart';
 
+import '../../fixtures/album.stub.dart';
 import '../../fixtures/asset.stub.dart';
 import '../../infrastructure/repository.mock.dart';
-import '../../service.mocks.dart';
+import '../service.mock.dart';
 
-class MockAsset extends Mock implements Asset {}
-
-class MockAssetEntity extends Mock implements AssetEntity {}
+class MockFile extends Mock implements File {}
 
 void main() {
   late HashService sut;
-  late BackgroundService mockBackgroundService;
-  late IDeviceAssetRepository mockDeviceAssetRepository;
+  late MockLocalAlbumRepository mockAlbumRepo;
+  late MockLocalAssetRepository mockAssetRepo;
+  late MockStorageRepository mockStorageRepo;
+  late MockNativeSyncApi mockNativeApi;
 
   setUp(() {
-    mockBackgroundService = MockBackgroundService();
-    mockDeviceAssetRepository = MockDeviceAssetRepository();
+    mockAlbumRepo = MockLocalAlbumRepository();
+    mockAssetRepo = MockLocalAssetRepository();
+    mockStorageRepo = MockStorageRepository();
+    mockNativeApi = MockNativeSyncApi();
 
     sut = HashService(
-      deviceAssetRepository: mockDeviceAssetRepository,
-      backgroundService: mockBackgroundService,
+      localAlbumRepository: mockAlbumRepo,
+      localAssetRepository: mockAssetRepo,
+      storageRepository: mockStorageRepo,
+      nativeSyncApi: mockNativeApi,
     );
 
-    when(() => mockDeviceAssetRepository.transaction<Null>(any()))
-        .thenAnswer((_) async {
-      final capturedCallback = verify(
-        () => mockDeviceAssetRepository.transaction<Null>(captureAny()),
-      ).captured;
-      // Invoke the transaction callback
-      await (capturedCallback.firstOrNull as Future<Null> Function()?)?.call();
-    });
-    when(() => mockDeviceAssetRepository.updateAll(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockDeviceAssetRepository.deleteIds(any()))
-        .thenAnswer((_) async => true);
+    registerFallbackValue(LocalAlbumStub.recent);
+    registerFallbackValue(LocalAssetStub.image1);
+
+    when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
   });
 
-  group("HashService: No DeviceAsset entry", () {
-    test("hash successfully", () async {
-      final (mockAsset, file, deviceAsset, hash) =
-          await _createAssetMock(AssetStub.image1);
-
-      when(() => mockBackgroundService.digestFiles([file.path]))
-          .thenAnswer((_) async => [hash]);
-      // No DB entries for this asset
-      when(
-        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
-      ).thenAnswer((_) async => []);
-
-      final result = await sut.hashAssets([mockAsset]);
-
-      // Verify we stored the new hash in DB
-      when(() => mockDeviceAssetRepository.transaction<Null>(any()))
-          .thenAnswer((_) async {
-        final capturedCallback = verify(
-          () => mockDeviceAssetRepository.transaction<Null>(captureAny()),
-        ).captured;
-        // Invoke the transaction callback
-        await (capturedCallback.firstOrNull as Future<Null> Function()?)
-            ?.call();
-        verify(
-          () => mockDeviceAssetRepository.updateAll([
-            deviceAsset.copyWith(modifiedTime: AssetStub.image1.fileModifiedAt),
-          ]),
-        ).called(1);
-        verify(() => mockDeviceAssetRepository.deleteIds([])).called(1);
-      });
-      expect(
-        result,
-        [AssetStub.image1.copyWith(checksum: base64.encode(hash))],
+  group('HashService hashAssets', () {
+    test('processes albums in correct order', () async {
+      final album1 = LocalAlbumStub.recent
+          .copyWith(id: "1", backupSelection: BackupSelection.none);
+      final album2 = LocalAlbumStub.recent
+          .copyWith(id: "2", backupSelection: BackupSelection.excluded);
+      final album3 = LocalAlbumStub.recent
+          .copyWith(id: "3", backupSelection: BackupSelection.selected);
+      final album4 = LocalAlbumStub.recent.copyWith(
+        id: "4",
+        backupSelection: BackupSelection.selected,
+        isIosSharedAlbum: true,
       );
-    });
-  });
 
-  group("HashService: Has DeviceAsset entry", () {
-    test("when the asset is not modified", () async {
-      final hash = utf8.encode("image1-hash");
+      when(() => mockAlbumRepo.getAll())
+          .thenAnswer((_) async => [album1, album2, album4, album3]);
+      when(() => mockAlbumRepo.getAssetsToHash(any()))
+          .thenAnswer((_) async => []);
 
-      when(
-        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
-      ).thenAnswer(
-        (_) async => [
-          DeviceAsset(
-            assetId: AssetStub.image1.localId!,
-            hash: hash,
-            modifiedTime: AssetStub.image1.fileModifiedAt,
-          ),
-        ],
-      );
-      final result = await sut.hashAssets([AssetStub.image1]);
+      await sut.hashAssets();
 
-      verifyNever(() => mockBackgroundService.digestFiles(any()));
-      verifyNever(() => mockBackgroundService.digestFile(any()));
-      verifyNever(() => mockDeviceAssetRepository.updateAll(any()));
-      verifyNever(() => mockDeviceAssetRepository.deleteIds(any()));
-
-      expect(result, [
-        AssetStub.image1.copyWith(checksum: base64.encode(hash)),
+      verifyInOrder([
+        () => mockAlbumRepo.getAll(),
+        () => mockAlbumRepo.getAssetsToHash(album3.id),
+        () => mockAlbumRepo.getAssetsToHash(album4.id),
+        () => mockAlbumRepo.getAssetsToHash(album1.id),
+        () => mockAlbumRepo.getAssetsToHash(album2.id),
       ]);
     });
 
-    test("hashed successful when asset is modified", () async {
-      final (mockAsset, file, deviceAsset, hash) =
-          await _createAssetMock(AssetStub.image1);
+    test('skips albums with no assets to hash', () async {
+      when(() => mockAlbumRepo.getAll()).thenAnswer(
+        (_) async => [LocalAlbumStub.recent.copyWith(assetCount: 0)],
+      );
+      when(() => mockAlbumRepo.getAssetsToHash(LocalAlbumStub.recent.id))
+          .thenAnswer((_) async => []);
 
-      when(() => mockBackgroundService.digestFiles([file.path]))
-          .thenAnswer((_) async => [hash]);
-      when(
-        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
-      ).thenAnswer((_) async => [deviceAsset]);
+      await sut.hashAssets();
 
-      final result = await sut.hashAssets([mockAsset]);
-
-      when(() => mockDeviceAssetRepository.transaction<Null>(any()))
-          .thenAnswer((_) async {
-        final capturedCallback = verify(
-          () => mockDeviceAssetRepository.transaction<Null>(captureAny()),
-        ).captured;
-        // Invoke the transaction callback
-        await (capturedCallback.firstOrNull as Future<Null> Function()?)
-            ?.call();
-        verify(
-          () => mockDeviceAssetRepository.updateAll([
-            deviceAsset.copyWith(modifiedTime: AssetStub.image1.fileModifiedAt),
-          ]),
-        ).called(1);
-        verify(() => mockDeviceAssetRepository.deleteIds([])).called(1);
-      });
-
-      verify(() => mockBackgroundService.digestFiles([file.path])).called(1);
-
-      expect(result, [
-        AssetStub.image1.copyWith(checksum: base64.encode(hash)),
-      ]);
+      verifyNever(() => mockStorageRepo.getFileForAsset(any()));
+      verifyNever(() => mockNativeApi.hashPaths(any()));
     });
   });
 
-  group("HashService: Cleanup", () {
-    late Asset mockAsset;
-    late Uint8List hash;
-    late DeviceAsset deviceAsset;
-    late File file;
+  group('HashService _hashAssets', () {
+    test('skips assets without files', () async {
+      final album = LocalAlbumStub.recent;
+      final asset = LocalAssetStub.image1;
+      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAssetsToHash(album.id))
+          .thenAnswer((_) async => [asset]);
+      when(() => mockStorageRepo.getFileForAsset(asset))
+          .thenAnswer((_) async => null);
 
-    setUp(() async {
-      (mockAsset, file, deviceAsset, hash) =
-          await _createAssetMock(AssetStub.image1);
+      await sut.hashAssets();
 
-      when(() => mockBackgroundService.digestFiles([file.path]))
-          .thenAnswer((_) async => [hash]);
-      when(
-        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
-      ).thenAnswer((_) async => [deviceAsset]);
+      verifyNever(() => mockNativeApi.hashPaths(any()));
     });
 
-    test("cleanups DeviceAsset when local file cannot be obtained", () async {
-      when(() => mockAsset.local).thenThrow(Exception("File not found"));
-      final result = await sut.hashAssets([mockAsset]);
+    test('processes assets when available', () async {
+      final album = LocalAlbumStub.recent;
+      final asset = LocalAssetStub.image1;
+      final mockFile = MockFile();
+      final hash = Uint8List.fromList(List.generate(20, (i) => i));
 
-      verifyNever(() => mockBackgroundService.digestFiles(any()));
-      verifyNever(() => mockBackgroundService.digestFile(any()));
-      verifyNever(() => mockDeviceAssetRepository.updateAll(any()));
-      verify(
-        () => mockDeviceAssetRepository.deleteIds([AssetStub.image1.localId!]),
-      ).called(1);
+      when(() => mockFile.length()).thenAnswer((_) async => 1000);
+      when(() => mockFile.path).thenReturn('image-path');
 
-      expect(result, isEmpty);
-    });
-
-    test("cleanups DeviceAsset when hashing failed", () async {
-      when(() => mockDeviceAssetRepository.transaction<Null>(any()))
-          .thenAnswer((_) async {
-        final capturedCallback = verify(
-          () => mockDeviceAssetRepository.transaction<Null>(captureAny()),
-        ).captured;
-        // Invoke the transaction callback
-        await (capturedCallback.firstOrNull as Future<Null> Function()?)
-            ?.call();
-
-        // Verify the callback inside the transaction because, doing it outside results
-        // in a small delay before the callback is invoked, resulting in other LOCs getting executed
-        // resulting in an incorrect state
-        //
-        // i.e, consider the following piece of code
-        //   await _deviceAssetRepository.transaction(() async {
-        //      await _deviceAssetRepository.updateAll(toBeAdded);
-        //      await _deviceAssetRepository.deleteIds(toBeDeleted);
-        //   });
-        //   toBeDeleted.clear();
-        // since the transaction method is mocked, the callback is not invoked until it is captured
-        // and executed manually in the next event loop. However, the toBeDeleted.clear() is executed
-        // immediately once the transaction stub is executed, resulting in the deleteIds method being
-        // called with an empty list.
-        //
-        // To avoid this, we capture the callback and execute it within the transaction stub itself
-        // and verify the results inside the transaction stub
-        verify(() => mockDeviceAssetRepository.updateAll([])).called(1);
-        verify(
-          () =>
-              mockDeviceAssetRepository.deleteIds([AssetStub.image1.localId!]),
-        ).called(1);
-      });
-
-      when(() => mockBackgroundService.digestFiles([file.path])).thenAnswer(
-        // Invalid hash, length != 20
-        (_) async => [Uint8List.fromList(hash.slice(2).toList())],
+      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAssetsToHash(album.id))
+          .thenAnswer((_) async => [asset]);
+      when(() => mockStorageRepo.getFileForAsset(asset))
+          .thenAnswer((_) async => mockFile);
+      when(() => mockNativeApi.hashPaths(['image-path'])).thenAnswer(
+        (_) async => [hash],
       );
 
-      final result = await sut.hashAssets([mockAsset]);
+      await sut.hashAssets();
 
-      verify(() => mockBackgroundService.digestFiles([file.path])).called(1);
-      expect(result, isEmpty);
-    });
-  });
-
-  group("HashService: Batch processing", () {
-    test("processes assets in batches when size limit is reached", () async {
-      // Setup multiple assets with large file sizes
-      final (mock1, mock2, mock3) = await (
-        _createAssetMock(AssetStub.image1),
-        _createAssetMock(AssetStub.image2),
-        _createAssetMock(AssetStub.image3),
-      ).wait;
-
-      final (asset1, file1, deviceAsset1, hash1) = mock1;
-      final (asset2, file2, deviceAsset2, hash2) = mock2;
-      final (asset3, file3, deviceAsset3, hash3) = mock3;
-
-      when(() => mockDeviceAssetRepository.getByIds(any()))
-          .thenAnswer((_) async => []);
-
-      // Setup for multiple batch processing calls
-      when(() => mockBackgroundService.digestFiles([file1.path, file2.path]))
-          .thenAnswer((_) async => [hash1, hash2]);
-      when(() => mockBackgroundService.digestFiles([file3.path]))
-          .thenAnswer((_) async => [hash3]);
-
-      final size = await file1.length() + await file2.length();
-
-      sut = HashService(
-        deviceAssetRepository: mockDeviceAssetRepository,
-        backgroundService: mockBackgroundService,
-        batchSizeLimit: size,
-      );
-      final result = await sut.hashAssets([asset1, asset2, asset3]);
-
-      // Verify multiple batch process calls
-      verify(() => mockBackgroundService.digestFiles([file1.path, file2.path]))
-          .called(1);
-      verify(() => mockBackgroundService.digestFiles([file3.path])).called(1);
-
-      expect(
-        result,
-        [
-          AssetStub.image1.copyWith(checksum: base64.encode(hash1)),
-          AssetStub.image2.copyWith(checksum: base64.encode(hash2)),
-          AssetStub.image3.copyWith(checksum: base64.encode(hash3)),
-        ],
-      );
+      verify(() => mockNativeApi.hashPaths(['image-path'])).called(1);
+      final captured = verify(() => mockAssetRepo.updateHashes(captureAny()))
+          .captured
+          .first as List<LocalAsset>;
+      expect(captured.length, 1);
+      expect(captured[0].checksum, base64.encode(hash));
     });
 
-    test("processes assets in batches when file limit is reached", () async {
-      // Setup multiple assets with large file sizes
-      final (mock1, mock2, mock3) = await (
-        _createAssetMock(AssetStub.image1),
-        _createAssetMock(AssetStub.image2),
-        _createAssetMock(AssetStub.image3),
-      ).wait;
+    test('handles failed hashes', () async {
+      final album = LocalAlbumStub.recent;
+      final asset = LocalAssetStub.image1;
+      final mockFile = MockFile();
+      when(() => mockFile.length()).thenAnswer((_) async => 1000);
+      when(() => mockFile.path).thenReturn('image-path');
 
-      final (asset1, file1, deviceAsset1, hash1) = mock1;
-      final (asset2, file2, deviceAsset2, hash2) = mock2;
-      final (asset3, file3, deviceAsset3, hash3) = mock3;
+      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAssetsToHash(album.id))
+          .thenAnswer((_) async => [asset]);
+      when(() => mockStorageRepo.getFileForAsset(asset))
+          .thenAnswer((_) async => mockFile);
+      when(() => mockNativeApi.hashPaths(['image-path']))
+          .thenAnswer((_) async => [null]);
+      when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
 
-      when(() => mockDeviceAssetRepository.getByIds(any()))
-          .thenAnswer((_) async => []);
+      await sut.hashAssets();
 
-      when(() => mockBackgroundService.digestFiles([file1.path]))
-          .thenAnswer((_) async => [hash1]);
-      when(() => mockBackgroundService.digestFiles([file2.path]))
-          .thenAnswer((_) async => [hash2]);
-      when(() => mockBackgroundService.digestFiles([file3.path]))
-          .thenAnswer((_) async => [hash3]);
+      final captured = verify(() => mockAssetRepo.updateHashes(captureAny()))
+          .captured
+          .first as List<LocalAsset>;
+      expect(captured.length, 0);
+    });
 
-      sut = HashService(
-        deviceAssetRepository: mockDeviceAssetRepository,
-        backgroundService: mockBackgroundService,
+    test('handles invalid hash length', () async {
+      final album = LocalAlbumStub.recent;
+      final asset = LocalAssetStub.image1;
+      final mockFile = MockFile();
+      when(() => mockFile.length()).thenAnswer((_) async => 1000);
+      when(() => mockFile.path).thenReturn('image-path');
+
+      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAssetsToHash(album.id))
+          .thenAnswer((_) async => [asset]);
+      when(() => mockStorageRepo.getFileForAsset(asset))
+          .thenAnswer((_) async => mockFile);
+
+      final invalidHash = Uint8List.fromList([1, 2, 3]);
+      when(() => mockNativeApi.hashPaths(['image-path']))
+          .thenAnswer((_) async => [invalidHash]);
+      when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
+
+      await sut.hashAssets();
+
+      final captured = verify(() => mockAssetRepo.updateHashes(captureAny()))
+          .captured
+          .first as List<LocalAsset>;
+      expect(captured.length, 0);
+    });
+
+    test('batches by file count limit', () async {
+      final sut = HashService(
+        localAlbumRepository: mockAlbumRepo,
+        localAssetRepository: mockAssetRepo,
+        storageRepository: mockStorageRepo,
+        nativeSyncApi: mockNativeApi,
         batchFileLimit: 1,
       );
-      final result = await sut.hashAssets([asset1, asset2, asset3]);
 
-      // Verify multiple batch process calls
-      verify(() => mockBackgroundService.digestFiles([file1.path])).called(1);
-      verify(() => mockBackgroundService.digestFiles([file2.path])).called(1);
-      verify(() => mockBackgroundService.digestFiles([file3.path])).called(1);
+      final album = LocalAlbumStub.recent;
+      final asset1 = LocalAssetStub.image1;
+      final asset2 = LocalAssetStub.image2;
+      final mockFile1 = MockFile();
+      final mockFile2 = MockFile();
+      when(() => mockFile1.length()).thenAnswer((_) async => 100);
+      when(() => mockFile1.path).thenReturn('path-1');
+      when(() => mockFile2.length()).thenAnswer((_) async => 100);
+      when(() => mockFile2.path).thenReturn('path-2');
 
-      expect(
-        result,
-        [
-          AssetStub.image1.copyWith(checksum: base64.encode(hash1)),
-          AssetStub.image2.copyWith(checksum: base64.encode(hash2)),
-          AssetStub.image3.copyWith(checksum: base64.encode(hash3)),
-        ],
-      );
+      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAssetsToHash(album.id))
+          .thenAnswer((_) async => [asset1, asset2]);
+      when(() => mockStorageRepo.getFileForAsset(asset1))
+          .thenAnswer((_) async => mockFile1);
+      when(() => mockStorageRepo.getFileForAsset(asset2))
+          .thenAnswer((_) async => mockFile2);
+
+      final hash = Uint8List.fromList(List.generate(20, (i) => i));
+      when(() => mockNativeApi.hashPaths(any()))
+          .thenAnswer((_) async => [hash]);
+      when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
+
+      await sut.hashAssets();
+
+      verify(() => mockNativeApi.hashPaths(['path-1'])).called(1);
+      verify(() => mockNativeApi.hashPaths(['path-2'])).called(1);
+      verify(() => mockAssetRepo.updateHashes(any())).called(2);
     });
 
-    test("HashService: Sort & Process different states", () async {
-      final (asset1, file1, deviceAsset1, hash1) =
-          await _createAssetMock(AssetStub.image1); // Will need rehashing
-      final (asset2, file2, deviceAsset2, hash2) =
-          await _createAssetMock(AssetStub.image2); // Will have matching hash
-      final (asset3, file3, deviceAsset3, hash3) =
-          await _createAssetMock(AssetStub.image3); // No DB entry
-      final asset4 =
-          AssetStub.image3.copyWith(localId: "image4"); // Cannot be hashed
-
-      when(() => mockBackgroundService.digestFiles([file1.path, file3.path]))
-          .thenAnswer((_) async => [hash1, hash3]);
-      // DB entries are not sorted and a dummy entry added
-      when(
-        () => mockDeviceAssetRepository.getByIds([
-          AssetStub.image1.localId!,
-          AssetStub.image2.localId!,
-          AssetStub.image3.localId!,
-          asset4.localId!,
-        ]),
-      ).thenAnswer(
-        (_) async => [
-          // Same timestamp to reuse deviceAsset
-          deviceAsset2.copyWith(modifiedTime: asset2.fileModifiedAt),
-          deviceAsset1,
-          deviceAsset3.copyWith(assetId: asset4.localId!),
-        ],
+    test('batches by size limit', () async {
+      final sut = HashService(
+        localAlbumRepository: mockAlbumRepo,
+        localAssetRepository: mockAssetRepo,
+        storageRepository: mockStorageRepo,
+        nativeSyncApi: mockNativeApi,
+        batchSizeLimit: 80,
       );
 
-      final result = await sut.hashAssets([asset1, asset2, asset3, asset4]);
+      final album = LocalAlbumStub.recent;
+      final asset1 = LocalAssetStub.image1;
+      final asset2 = LocalAssetStub.image2;
+      final mockFile1 = MockFile();
+      final mockFile2 = MockFile();
+      when(() => mockFile1.length()).thenAnswer((_) async => 100);
+      when(() => mockFile1.path).thenReturn('path-1');
+      when(() => mockFile2.length()).thenAnswer((_) async => 100);
+      when(() => mockFile2.path).thenReturn('path-2');
 
-      // Verify correct processing of all assets
-      verify(() => mockBackgroundService.digestFiles([file1.path, file3.path]))
-          .called(1);
-      expect(result.length, 3);
-      expect(result, [
-        AssetStub.image2.copyWith(checksum: base64.encode(hash2)),
-        AssetStub.image1.copyWith(checksum: base64.encode(hash1)),
-        AssetStub.image3.copyWith(checksum: base64.encode(hash3)),
-      ]);
+      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAssetsToHash(album.id))
+          .thenAnswer((_) async => [asset1, asset2]);
+      when(() => mockStorageRepo.getFileForAsset(asset1))
+          .thenAnswer((_) async => mockFile1);
+      when(() => mockStorageRepo.getFileForAsset(asset2))
+          .thenAnswer((_) async => mockFile2);
+
+      final hash = Uint8List.fromList(List.generate(20, (i) => i));
+      when(() => mockNativeApi.hashPaths(any()))
+          .thenAnswer((_) async => [hash]);
+      when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
+
+      await sut.hashAssets();
+
+      verify(() => mockNativeApi.hashPaths(['path-1'])).called(1);
+      verify(() => mockNativeApi.hashPaths(['path-2'])).called(1);
+      verify(() => mockAssetRepo.updateHashes(any())).called(2);
     });
 
-    group("HashService: Edge cases", () {
-      test("handles empty list of assets", () async {
-        when(() => mockDeviceAssetRepository.getByIds(any()))
-            .thenAnswer((_) async => []);
+    test('handles mixed success and failure in batch', () async {
+      final album = LocalAlbumStub.recent;
+      final asset1 = LocalAssetStub.image1;
+      final asset2 = LocalAssetStub.image2;
+      final mockFile1 = MockFile();
+      final mockFile2 = MockFile();
+      when(() => mockFile1.length()).thenAnswer((_) async => 100);
+      when(() => mockFile1.path).thenReturn('path-1');
+      when(() => mockFile2.length()).thenAnswer((_) async => 100);
+      when(() => mockFile2.path).thenReturn('path-2');
 
-        final result = await sut.hashAssets([]);
+      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAssetsToHash(album.id))
+          .thenAnswer((_) async => [asset1, asset2]);
+      when(() => mockStorageRepo.getFileForAsset(asset1))
+          .thenAnswer((_) async => mockFile1);
+      when(() => mockStorageRepo.getFileForAsset(asset2))
+          .thenAnswer((_) async => mockFile2);
 
-        verifyNever(() => mockBackgroundService.digestFiles(any()));
-        verifyNever(() => mockDeviceAssetRepository.updateAll(any()));
-        verifyNever(() => mockDeviceAssetRepository.deleteIds(any()));
+      final validHash = Uint8List.fromList(List.generate(20, (i) => i));
+      when(() => mockNativeApi.hashPaths(['path-1', 'path-2']))
+          .thenAnswer((_) async => [validHash, null]);
+      when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
 
-        expect(result, isEmpty);
-      });
+      await sut.hashAssets();
 
-      test("handles all file access failures", () async {
-        // No DB entries
-        when(
-          () => mockDeviceAssetRepository.getByIds(
-            [AssetStub.image1.localId!, AssetStub.image2.localId!],
-          ),
-        ).thenAnswer((_) async => []);
-
-        final result = await sut.hashAssets([
-          AssetStub.image1,
-          AssetStub.image2,
-        ]);
-
-        verifyNever(() => mockBackgroundService.digestFiles(any()));
-        verifyNever(() => mockDeviceAssetRepository.updateAll(any()));
-        expect(result, isEmpty);
-      });
+      final captured = verify(() => mockAssetRepo.updateHashes(captureAny()))
+          .captured
+          .first as List<LocalAsset>;
+      expect(captured.length, 1);
+      expect(captured.first.id, asset1.id);
     });
   });
-}
-
-Future<(Asset, File, DeviceAsset, Uint8List)> _createAssetMock(
-  Asset asset,
-) async {
-  final random = Random();
-  final hash =
-      Uint8List.fromList(List.generate(20, (i) => random.nextInt(255)));
-  final mockAsset = MockAsset();
-  final mockAssetEntity = MockAssetEntity();
-  final fs = MemoryFileSystem();
-  final deviceAsset = DeviceAsset(
-    assetId: asset.localId!,
-    hash: Uint8List.fromList(hash),
-    modifiedTime: DateTime.now(),
-  );
-  final tmp = await fs.systemTempDirectory.createTemp();
-  final file = tmp.childFile("${asset.fileName}-path");
-  await file.writeAsString("${asset.fileName}-content");
-
-  when(() => mockAsset.localId).thenReturn(asset.localId);
-  when(() => mockAsset.fileName).thenReturn(asset.fileName);
-  when(() => mockAsset.fileCreatedAt).thenReturn(asset.fileCreatedAt);
-  when(() => mockAsset.fileModifiedAt).thenReturn(asset.fileModifiedAt);
-  when(() => mockAsset.copyWith(checksum: any(named: "checksum")))
-      .thenReturn(asset.copyWith(checksum: base64.encode(hash)));
-  when(() => mockAsset.local).thenAnswer((_) => mockAssetEntity);
-  when(() => mockAssetEntity.originFile).thenAnswer((_) async => file);
-
-  return (mockAsset, file, deviceAsset, hash);
 }
