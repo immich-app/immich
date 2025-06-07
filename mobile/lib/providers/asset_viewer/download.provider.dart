@@ -186,6 +186,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
         return const ShareDialog();
       },
       barrierDismissible: false,
+      useRootNavigator: false,
     );
   }
 }
