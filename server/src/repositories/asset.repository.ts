@@ -579,7 +579,7 @@ export class AssetRepository {
         )
         .selectFrom('assets')
         .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
-        .select((eb: any) => eb.fn.countAll<number>().as('count'))
+        .select((eb: any) => eb.fn.countAll().as('count'))
         .groupBy('timeBucket')
         .orderBy('timeBucket', options.order ?? 'desc')
         .execute() as any as Promise<TimeBucketItem[]>
