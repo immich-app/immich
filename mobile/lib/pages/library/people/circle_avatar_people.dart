@@ -8,18 +8,16 @@ class CircleAvatarPeople extends HookConsumerWidget {
   const CircleAvatarPeople({
     super.key,
     required this.personId,
-    this.maxRadius = 50,
     this.imageSize = 100,
   });
 
   final String personId;
-  final double maxRadius;
   final double imageSize;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CircleAvatar(
-      maxRadius: maxRadius,
+      maxRadius: imageSize / 2,
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(100)),
         child: CachedNetworkImage(

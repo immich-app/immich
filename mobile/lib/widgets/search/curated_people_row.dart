@@ -48,7 +48,6 @@ class CuratedPeopleRow extends StatelessWidget {
                         elevation: 3,
                         child: CircleAvatarPeople(
                           personId: person.id,
-                          maxRadius: imageSize / 2,
                           imageSize: imageSize,
                         ),
                       ),

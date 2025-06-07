@@ -119,7 +119,6 @@ class PersonResultPage extends HookConsumerWidget {
           child: Row(
             children: [
               CircleAvatarPeople(
-                maxRadius: 36,
                 imageSize: 72,
                 personId: personId,
               ),

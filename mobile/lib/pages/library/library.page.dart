@@ -222,7 +222,7 @@ class PeopleCollectionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-  final people = ref.watch(getAllPeopleProvider);
+    final people = ref.watch(getAllPeopleProvider);
     return LayoutBuilder(
       builder: (context, constraints) {
         final isTablet = constraints.maxWidth > 600;
@@ -262,7 +262,6 @@ class PeopleCollectionCard extends ConsumerWidget {
                       physics: const NeverScrollableScrollPhysics(),
                       children: people.take(4).map((person) {
                         return CircleAvatarPeople(
-                          maxRadius: imageSize / 2,
                           imageSize: imageSize,
                           personId: person.id,
                         );
