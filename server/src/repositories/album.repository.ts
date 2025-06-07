@@ -160,6 +160,7 @@ export class AlbumRepository {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
+      .select(withAssets)
       .where((eb) =>
         eb.or([
           eb.exists(
@@ -180,10 +181,10 @@ export class AlbumRepository {
       .select(withAlbumUsers)
       .select(withOwner)
       .select(withSharedLink)
+      .$narrowType<{ assets: NotNull }>()
       .orderBy('albums.createdAt', 'desc')
       .execute();
   }
-
   /**
    * Get albums of owner that are _not_ shared
    */

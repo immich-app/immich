@@ -533,43 +533,56 @@ export class AssetRepository {
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     return this.db
-      .with('assets', (qb) =>
-        qb
-          .selectFrom('assets')
-          .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
-          .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
-          .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-          .$if(options.visibility === undefined, withDefaultVisibility)
-          .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
-          .$if(!!options.albumId, (qb) =>
-            qb
-              .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
-              .where('albums_assets_assets.albumsId', '=', asUuid(options.albumId!)),
-          )
-          .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.withStacked, (qb) =>
-            qb
-              .leftJoin('asset_stack', (join) =>
-                join
-                  .onRef('asset_stack.id', '=', 'assets.stackId')
-                  .onRef('asset_stack.primaryAssetId', '=', 'assets.id'),
+        .with('assets', (qb: any) =>
+          qb
+            .selectFrom('assets')
+            .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
+            .$if(!!options.isTrashed, (qb: any) => qb.where('assets.status', '!=', AssetStatus.DELETED))
+            .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+            .$if(options.visibility === undefined, withDefaultVisibility)
+            .$if(!!options.visibility, (qb: any) => qb.where('assets.visibility', '=', options.visibility!))
+            .$if(!!options.albumId, (qb: any) =>
+              qb
+                .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
+                .where('albums_assets_assets.albumsId', '=', asUuid(options.albumId!)),
+            )
+            .$if(!!options.personId, (qb: any) => hasPeople(qb, [options.personId!]))
+            .$if(!!options.userIds, (qb: any) =>
+              qb.where((eb: any) =>
+                eb.or([
+                  eb('assets.ownerId', '=', anyUuid(options.userIds!)),
+                  eb.exists(
+                    eb
+                      .selectFrom('albums_assets_assets')
+                      .innerJoin('albums_shared_users_users', 'albums_assets_assets.albumsId', 'albums_shared_users_users.albumsId')
+                      .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
+                      .where('albums_shared_users_users.usersId', '=', anyUuid(options.userIds!))
+                  ),
+                ])
               )
-              .where((eb) => eb.or([eb('assets.stackId', 'is', null), eb(eb.table('asset_stack'), 'is not', null)])),
-          )
-          .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-          .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
-          .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
-          .$if(options.isDuplicate !== undefined, (qb) =>
-            qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
-          )
-          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
-      )
-      .selectFrom('assets')
-      .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
-      .select((eb) => eb.fn.countAll<number>().as('count'))
-      .groupBy('timeBucket')
-      .orderBy('timeBucket', options.order ?? 'desc')
-      .execute() as any as Promise<TimeBucketItem[]>;
+            )
+            .$if(!!options.withStacked, (qb: any) =>
+              qb
+                .leftJoin('asset_stack', (join: any) =>
+                  join
+                    .onRef('asset_stack.id', '=', 'assets.stackId')
+                    .onRef('asset_stack.primaryAssetId', '=', 'assets.id'),
+                )
+                .where((eb: any) => eb.or([eb('assets.stackId', 'is', null), eb(eb.table('asset_stack'), 'is not', null)])),
+            )
+            .$if(options.isFavorite !== undefined, (qb: any) => qb.where('assets.isFavorite', '=', options.isFavorite!))
+            .$if(!!options.assetType, (qb: any) => qb.where('assets.type', '=', options.assetType!))
+            .$if(options.isDuplicate !== undefined, (qb: any) =>
+              qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
+            )
+            .$if(!!options.tagId, (qb: any) => withTagId(qb, options.tagId!)),
+        )
+        .selectFrom('assets')
+        .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
+        .select((eb: any) => eb.fn.countAll<number>().as('count'))
+        .groupBy('timeBucket')
+        .orderBy('timeBucket', options.order ?? 'desc')
+        .execute() as any as Promise<TimeBucketItem[]>
   }
 
   @GenerateSql({
@@ -577,11 +590,11 @@ export class AssetRepository {
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions) {
     const query = this.db
-      .with('cte', (qb) =>
+      .with('cte', (qb: any) =>
         qb
           .selectFrom('assets')
           .innerJoin('exif', 'assets.id', 'exif.assetId')
-          .select((eb) => [
+          .select((eb: any) => [
             'assets.duration',
             'assets.id',
             'assets.visibility',
@@ -615,10 +628,10 @@ export class AssetRepository {
           ])
           .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
-          .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
+          .$if(!!options.visibility, (qb: any) => qb.where('assets.visibility', '=', options.visibility!))
           .where(truncatedDate(TimeBucketSize.MONTH), '=', timeBucket.replace(/^[+-]/, ''))
-          .$if(!!options.albumId, (qb) =>
-            qb.where((eb) =>
+          .$if(!!options.albumId, (qb: any) =>
+            qb.where((eb: any) =>
               eb.exists(
                 eb
                   .selectFrom('albums_assets_assets')
@@ -627,12 +640,25 @@ export class AssetRepository {
               ),
             ),
           )
-          .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-          .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
-          .$if(!!options.withStacked, (qb) =>
+          .$if(!!options.personId, (qb: any) => hasPeople(qb, [options.personId!]))
+          .$if(!!options.userIds, (qb: any) =>
+            qb.where((eb: any) =>
+              eb.or([
+                eb('assets.ownerId', '=', anyUuid(options.userIds!)),
+                eb.exists(
+                  eb
+                    .selectFrom('albums_assets_assets')
+                    .innerJoin('albums_shared_users_users', 'albums_assets_assets.albumsId', 'albums_shared_users_users.albumsId')
+                    .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
+                    .where('albums_shared_users_users.usersId', '=', anyUuid(options.userIds!))
+                ),
+              ])
+            )
+          )
+          .$if(options.isFavorite !== undefined, (qb: any) => qb.where('assets.isFavorite', '=', options.isFavorite!))
+          .$if(!!options.withStacked, (qb: any) =>
             qb
-              .where((eb) =>
+              .where((eb: any) =>
                 eb.not(
                   eb.exists(
                     eb
@@ -643,7 +669,7 @@ export class AssetRepository {
                 ),
               )
               .leftJoinLateral(
-                (eb) =>
+                (eb: any) =>
                   eb
                     .selectFrom('assets as stacked')
                     .select(sql`array[stacked."stackId"::text, count('stacked')::text]`.as('stack'))
@@ -652,22 +678,22 @@ export class AssetRepository {
                     .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
                     .groupBy('stacked.stackId')
                     .as('stacked_assets'),
-                (join) => join.onTrue(),
+                (join: any) => join.onTrue(),
               )
               .select('stack'),
           )
-          .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
-          .$if(options.isDuplicate !== undefined, (qb) =>
+          .$if(!!options.assetType, (qb: any) => qb.where('assets.type', '=', options.assetType!))
+          .$if(options.isDuplicate !== undefined, (qb: any) =>
             qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
           )
-          .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
-          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .$if(!!options.isTrashed, (qb: any) => qb.where('assets.status', '!=', AssetStatus.DELETED))
+          .$if(!!options.tagId, (qb: any) => withTagId(qb, options.tagId!))
           .orderBy('assets.fileCreatedAt', options.order ?? 'desc'),
       )
-      .with('agg', (qb) =>
+      .with('agg', (qb: any) =>
         qb
           .selectFrom('cte')
-          .select((eb) => [
+          .select((eb: any) => [
             eb.fn.coalesce(eb.fn('array_agg', ['city']), sql.lit('{}')).as('city'),
             eb.fn.coalesce(eb.fn('array_agg', ['country']), sql.lit('{}')).as('country'),
             eb.fn.coalesce(eb.fn('array_agg', ['duration']), sql.lit('{}')).as('duration'),
@@ -686,8 +712,8 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
           ])
-          .$if(!!options.withStacked, (qb) =>
-            qb.select((eb) => eb.fn.coalesce(eb.fn('json_agg', ['stack']), sql.lit('[]')).as('stack')),
+          .$if(!!options.withStacked, (qb: any) =>
+            qb.select((eb: any) => eb.fn.coalesce(eb.fn('json_agg', ['stack']), sql.lit('[]')).as('stack')),
           ),
       )
       .selectFrom('agg')

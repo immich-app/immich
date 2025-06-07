@@ -450,18 +450,55 @@ class TagAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, tagIds: Set<string>) {
+  /**
+   * Return the subset of tagIds that the user either:
+   *  a) Owns (tags.userId = userId), or
+   *  b) Applies to assets in albums the user owns or has been shared to.
+   */
+  async checkOwnerAccess(userId: string, tagIds: Set<string>): Promise<Set<string>> {
     if (tagIds.size === 0) {
       return new Set<string>();
     }
 
-    return this.db
+    const ids = [...tagIds];
+
+    // 1) Tags owned by the user
+    const ownedRows = await this.db
       .selectFrom('tags')
+      .select('id')
+      .where('id', 'in', ids)
+      .where('userId', '=', userId)
+      .execute();
+
+    // 2) Tags used on assets in albums the user owns or that are shared with them
+    const sharedRows = await this.db
+      .selectFrom('tags')
+      .innerJoin('tag_asset', 'tag_asset.tagsId', 'tags.id')
+      .innerJoin('albums_assets_assets as aa', 'aa.assetsId', 'tag_asset.assetsId')
+      .innerJoin('albums', 'albums.id', 'aa.albumsId')
+      .leftJoin(
+        'albums_shared_users_users as au',
+        'au.albumsId',
+        'albums.id'
+      )
       .select('tags.id')
-      .where('tags.id', 'in', [...tagIds])
-      .where('tags.userId', '=', userId)
-      .execute()
-      .then((tags) => new Set(tags.map((tag) => tag.id)));
+      .where('tags.id', 'in', ids)
+      .where('albums.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.or([
+          eb('albums.ownerId', '=', userId),
+          eb('au.usersId', '=', userId),
+        ])
+      )
+      .execute();
+
+    // Merge owned and shared results
+    const result = new Set<string>();
+    for (const row of [...ownedRows, ...sharedRows]) {
+      result.add(row.id);
+    }
+
+    return result;
   }
 }
 

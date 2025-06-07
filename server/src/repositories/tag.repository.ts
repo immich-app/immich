@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
-import { DB, TagAsset, Tags } from 'src/db';
+import { columns, Tag } from 'src/database';
+import { DB, TagAsset, Tags } from 'src/db'; // Added TagEntity here if not already present
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -178,5 +178,23 @@ export class TagRepository {
         this.logger.log(`Deleted ${ids.length} empty tags`);
       }
     });
+  }
+
+   /**
+   * Fetch all distinct tags that are attached to any of the given asset IDs.
+   */
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async getByAssetIds(assetIds: string[]): Promise<Tag[]> {  // ← return Tag[] not full Tags[]
+    if (assetIds.length === 0) {
+      return [];
+    }
+    return this.db
+      .selectFrom('tags')
+      .innerJoin('tag_asset', 'tag_asset.tagsId', 'tags.id')
+      .where('tag_asset.assetsId', 'in', assetIds)
+      .select(columns.tag)
+      .distinct()
+      .orderBy('tags.value')
+      .execute();
   }
 }

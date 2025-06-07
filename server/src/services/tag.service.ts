@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
-import { TagAsset } from 'src/db';
+import { Tag } from 'src/database';
+import { TagAsset } from 'src/db'; // Assuming TagEntity is the type returned by repository
 import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -20,11 +21,28 @@ import { upsertTags } from 'src/utils/tag';
 
 @Injectable()
 export class TagService extends BaseService {
-  async getAll(auth: AuthDto) {
-    const tags = await this.tagRepository.getAll(auth.user.id);
-    return tags.map((tag) => mapTag(tag));
-  }
 
+
+   /**
+   * Return all tags the user owns plus tags on assets in albums shared with them.
+   */
+  async getAll(auth: AuthDto): Promise<TagResponseDto[]> {
+    const userId = auth.user.id;
+    const ownTags = await this.tagRepository.getAll(userId);
+    const sharedAlbums = await this.albumRepository.getShared(userId);
+    const assetIds = sharedAlbums.flatMap(album =>
+      album.assets.map((asset: { id: string }) => asset.id),
+    );
+    const sharedTags = assetIds.length > 0
+      ? await this.tagRepository.getByAssetIds(assetIds)
+      : [];
+    const merged = [...ownTags, ...sharedTags];
+    const uniqueById = Array.from(new Map(merged.map(t => [t.id, t])).values());
+    return uniqueById
+      .map(t => t as unknown as Tag)
+      .map(tag => mapTag(tag));
+  }
+  
   async get(auth: AuthDto, id: string): Promise<TagResponseDto> {
     await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [id] });
     const tag = await this.findOrFail(id);

@@ -235,9 +235,9 @@ export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: stri
         .selectFrom('tag_asset')
         .select('assetsId')
         .innerJoin('tags_closure', 'tag_asset.tagsId', 'tags_closure.id_descendant')
-        .where('tags_closure.id_ancestor', '=', anyUuid(tagIds))
+        .where('tags_closure.id_ancestor', 'in', tagIds)
         .groupBy('assetsId')
-        .having((eb) => eb.fn.count('tags_closure.id_ancestor').distinct(), '>=', tagIds.length)
+        // .having((eb) => eb.fn.count('tags_closure.id_ancestor').distinct(), '>=', tagIds.length)
         .as('has_tags'),
     (join) => join.onRef('has_tags.assetsId', '=', 'assets.id'),
   );
@@ -342,7 +342,20 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.deviceId, (qb) => qb.where('assets.deviceId', '=', options.deviceId!))
     .$if(!!options.id, (qb) => qb.where('assets.id', '=', asUuid(options.id!)))
     .$if(!!options.libraryId, (qb) => qb.where('assets.libraryId', '=', asUuid(options.libraryId!)))
-    .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
+    .$if(!!options.userIds, (qb: any) =>
+      qb.where((eb: any) =>
+        eb.or([
+          eb('assets.ownerId', '=', anyUuid(options.userIds!)),
+          eb.exists(
+            eb
+              .selectFrom('albums_assets_assets')
+              .innerJoin('albums_shared_users_users', 'albums_assets_assets.albumsId', 'albums_shared_users_users.albumsId')
+              .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
+              .where('albums_shared_users_users.usersId', '=', anyUuid(options.userIds!))
+          ),
+        ])
+      )
+    )
     .$if(!!options.encodedVideoPath, (qb) => qb.where('assets.encodedVideoPath', '=', options.encodedVideoPath!))
     .$if(!!options.originalPath, (qb) =>
       qb.where(sql`f_unaccent(assets."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
