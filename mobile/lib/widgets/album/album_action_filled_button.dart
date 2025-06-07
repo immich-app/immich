@@ -16,12 +16,16 @@ class AlbumActionFilledButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 16.0),
-      child: FilledButton.icon(
-        style: FilledButton.styleFrom(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+          ),
+          side: BorderSide(
+            color: context.colorScheme.surfaceContainerHighest,
+            width: 1,
           ),
           backgroundColor: context.colorScheme.surfaceContainerHigh,
         ),
@@ -32,9 +36,7 @@ class AlbumActionFilledButton extends StatelessWidget {
         ),
         label: Text(
           labelText,
-          style: context.textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: context.textTheme.labelLarge?.copyWith(),
         ),
         onPressed: onPressed,
       ),

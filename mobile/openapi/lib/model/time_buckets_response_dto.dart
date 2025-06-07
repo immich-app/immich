@@ -17,8 +17,10 @@ class TimeBucketsResponseDto {
     required this.timeBucket,
   });
 
+  /// Number of assets in this time bucket
   int count;
 
+  /// Time bucket identifier in YYYY-MM-DD format representing the start of the time period
   String timeBucket;
 
   @override
