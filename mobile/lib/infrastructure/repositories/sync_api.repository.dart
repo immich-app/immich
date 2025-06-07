@@ -65,8 +65,7 @@ class SyncApiRepository implements ISyncApiRepository {
     }
 
     try {
-      final response =
-          await client.send(request).timeout(const Duration(seconds: 20));
+      final response = await client.send(request);
 
       if (response.statusCode != 200) {
         final errorBody = await response.stream.bytesToString();
@@ -130,8 +129,7 @@ class SyncApiRepository implements ISyncApiRepository {
   }
 }
 
-// ignore: avoid-dynamic
-const _kResponseMap = <SyncEntityType, Function(dynamic)>{
+const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,
