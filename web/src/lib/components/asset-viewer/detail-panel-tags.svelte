@@ -67,7 +67,7 @@
       <button
         type="button"
         class="rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 flex place-items-center place-content-center gap-1 px-2 py-1"
-        title="Add tag"
+        title={$t('add_tag')}
         onclick={handleAddTag}
       >
         <span class="text-sm px-1 flex place-items-center place-content-center gap-1"
