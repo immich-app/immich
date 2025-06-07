@@ -119,6 +119,16 @@ export class SyncAlbumDeleteV1 {
   albumId!: string;
 }
 
+export class SyncAlbumAssetDeleteV1 {
+  albumId!: string;
+  assetId!: string;
+}
+
+export class SyncAlbumAssetV1 {
+  albumId!: string;
+  assetId!: string;
+}
+
 export class SyncAlbumUserDeleteV1 {
   albumId!: string;
   userId!: string;
@@ -157,6 +167,8 @@ export type SyncItem = {
   [SyncEntityType.PartnerAssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumV1]: SyncAlbumV1;
   [SyncEntityType.AlbumDeleteV1]: SyncAlbumDeleteV1;
+  [SyncEntityType.AlbumAssetV1]: SyncAlbumAssetV1;
+  [SyncEntityType.AlbumAssetDeleteV1]: SyncAlbumAssetDeleteV1;
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
 };

@@ -285,6 +285,46 @@ where
 order by
   "albums"."updateId" asc
 
+-- SyncRepository.getAlbumAssetDeletes
+select
+  "id",
+  "albumId",
+  "assetId"
+from
+  "albums_assets_assets_audit"
+where
+  "albumId" = (
+    select
+      "id"
+    from
+      "albums"
+    where
+      "ownerId" = $1
+  )
+  and "deletedAt" < now() - interval '1 millisecond'
+order by
+  "id" asc
+
+-- SyncRepository.getAlbumAssetUpserts
+select
+  "albumsId" as "albumId",
+  "assetsId" as "assetId",
+  "updateId"
+from
+  "albums_assets_assets"
+where
+  "albumsId" = (
+    select
+      "id"
+    from
+      "albums_audit"
+    where
+      "userId" = $1
+  )
+  and "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc
+
 -- SyncRepository.getAlbumUserDeletes
 select
   "id",
