@@ -17,6 +17,7 @@ export class AuthDto {
   apiKey?: AuthApiKey;
   sharedLink?: AuthSharedLink;
   session?: AuthSession;
+  basicAuth?: boolean;
 }
 
 export class LoginCredentialDto {

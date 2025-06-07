@@ -46,6 +46,7 @@ export type ValidateRequest = {
   headers: IncomingHttpHeaders;
   queryParams: Record<string, string>;
   metadata: {
+    webDavRoute: boolean;
     sharedLinkRoute: boolean;
     adminRoute: boolean;
     permission?: Permission;
@@ -178,7 +179,12 @@ export class AuthService extends BaseService {
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
     const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, permission, uri } = metadata;
+    const { adminRoute, sharedLinkRoute, webDavRoute, permission, uri } = metadata;
+
+    if (authDto.basicAuth && !webDavRoute) {
+      // basic auth is only allowed for WebDAV routes
+      throw new ForbiddenException('Forbidden');
+    }
 
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
@@ -204,6 +210,7 @@ export class AuthService extends BaseService {
       queryParams[ImmichQuery.SESSION_KEY] ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
+    const basicToken = this.getBasicToken(headers);
     const apiKey = (headers[ImmichHeader.API_KEY] || queryParams[ImmichQuery.API_KEY]) as string;
 
     if (shareKey) {
@@ -216,6 +223,10 @@ export class AuthService extends BaseService {
 
     if (apiKey) {
       return this.validateApiKey(apiKey);
+    }
+
+    if (basicToken) {
+      return this.validateBasicAuth(basicToken, { isApiKey: false });
     }
 
     throw new UnauthorizedException('Authentication required');
@@ -385,6 +396,15 @@ export class AuthService extends BaseService {
     return null;
   }
 
+  private getBasicToken(headers: IncomingHttpHeaders): string | null {
+    const [type, token] = (headers.authorization || '').split(' ');
+    if (type.toLowerCase() === 'basic') {
+      return token;
+    }
+
+    return null;
+  }
+
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
     return cookies[ImmichCookie.ACCESS_TOKEN] || null;
@@ -425,6 +445,36 @@ export class AuthService extends BaseService {
     }
 
     throw new UnauthorizedException('Invalid API key');
+  }
+
+  private async validateBasicAuth(token: string, { isApiKey }: { isApiKey: boolean }): Promise<AuthDto> {
+    let base64decodedToken;
+    try {
+      base64decodedToken = Buffer.from(token, 'base64').toString('utf8');
+    } catch {
+      this.logger.warn(`Invalid token format: ${token}`);
+      throw new ForbiddenException();
+    }
+    const [email, password] = base64decodedToken.split(':');
+    if (isApiKey) {
+      const apiKey = await this.validateApiKey(password);
+      return {
+        ...apiKey,
+        basicAuth: true,
+      };
+    }
+
+    const user = await this.userRepository.getByEmail(email, { withPassword: true });
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    if (this.validateSecret(password, user.password)) {
+      return {
+        user,
+        basicAuth: true,
+      };
+    }
+    throw new UnauthorizedException();
   }
 
   private validateSecret(inputSecret: string, existingHash?: string | null): boolean {

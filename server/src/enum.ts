@@ -367,6 +367,7 @@ export enum MetadataKey {
 export enum RouteKey {
   ASSET = 'assets',
   USER = 'users',
+  WEBDAV = 'webdav',
 }
 
 export enum CacheControl {

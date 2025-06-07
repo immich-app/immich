@@ -8322,6 +8322,538 @@
           "View"
         ]
       }
+    },
+    "/webdav": {
+      "delete": {
+        "operationId": "handleRootWebDavMethods_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for root resource",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "get": {
+        "operationId": "handleRootWebDavMethods_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for root resource",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "head": {
+        "operationId": "handleRootWebDavMethods_head",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for root resource",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "options": {
+        "operationId": "handleRootWebDavMethods_options",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for root resource",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "patch": {
+        "operationId": "handleRootWebDavMethods_patch",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for root resource",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "post": {
+        "operationId": "handleRootWebDavMethods_post",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for root resource",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "put": {
+        "operationId": "handleRootWebDavMethods_put",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for root resource",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "search": {
+        "operationId": "handleRootWebDavMethods_search",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for root resource",
+        "tags": [
+          "WebDAV"
+        ]
+      }
+    },
+    "/webdav/{path}": {
+      "delete": {
+        "operationId": "handleCustomMethod_delete",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for path resources",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "get": {
+        "operationId": "handleCustomMethod_get",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for path resources",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "head": {
+        "operationId": "handleCustomMethod_head",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for path resources",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "options": {
+        "operationId": "handleCustomMethod_options",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for path resources",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "patch": {
+        "operationId": "handleCustomMethod_patch",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for path resources",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "post": {
+        "operationId": "handleCustomMethod_post",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for path resources",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "put": {
+        "operationId": "handleCustomMethod_put",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for path resources",
+        "tags": [
+          "WebDAV"
+        ]
+      },
+      "search": {
+        "operationId": "handleCustomMethod_search",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "207": {
+            "description": "Multi-status response"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "WebDAV methods for path resources",
+        "tags": [
+          "WebDAV"
+        ]
+      }
     }
   },
   "info": {

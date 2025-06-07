@@ -3,6 +3,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
@@ -36,7 +37,20 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   if (isDev) {
-    app.enableCors();
+    // Dynamic CORS configuration to exclude WebDAV paths
+    app.use(
+      cors((req, callback) => {
+        const corsOptions = (req as unknown as Request).url?.startsWith('/api/webdav')
+          ? { origin: false }
+          : {
+              origin: '*',
+              methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+              preflightContinue: false,
+              optionsSuccessStatus: 204,
+            };
+        callback(null, corsOptions);
+      }),
+    );
   }
   app.useWebSocketAdapter(new WebSocketAdapter(app));
   useSwagger(app, { write: isDev });

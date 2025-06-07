@@ -31,6 +31,7 @@ import { TrashController } from 'src/controllers/trash.controller';
 import { UserAdminController } from 'src/controllers/user-admin.controller';
 import { UserController } from 'src/controllers/user.controller';
 import { ViewController } from 'src/controllers/view.controller';
+import { WebDavController } from 'src/controllers/webdav.controller';
 
 export const controllers = [
   APIKeyController,
@@ -66,4 +67,5 @@ export const controllers = [
   UserAdminController,
   UserController,
   ViewController,
+  WebDavController,
 ];

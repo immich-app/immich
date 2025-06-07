@@ -39,6 +39,7 @@ import { UserAdminService } from 'src/services/user-admin.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
+import { WebDavService } from 'src/services/webdav.service';
 
 export const services = [
   ApiKeyService,
@@ -82,4 +83,5 @@ export const services = [
   UserService,
   VersionService,
   ViewService,
+  WebDavService,
 ];
