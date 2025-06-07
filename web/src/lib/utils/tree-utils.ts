@@ -58,14 +58,12 @@ export class TreeNode extends Map<string, TreeNode> {
   }
 
   collapse() {
-    if (this.size === 1 && !this.hasAssets) {
+    if (this.size === 1 && !this.hasAssets && this.parent !== null) {
       const child = this.values().next().value!;
       child.value = joinPaths(this.value, child.value);
       child.parent = this.parent;
-      if (this.parent !== null) {
-        this.parent.delete(this.value);
-        this.parent.set(child.value, child);
-      }
+      this.parent.delete(this.value);
+      this.parent.set(child.value, child);
     }
 
     for (const child of this.values()) {
