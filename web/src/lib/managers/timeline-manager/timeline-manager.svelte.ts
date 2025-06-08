@@ -1,10 +1,9 @@
 import { getAssetInfo, getTimeBucket, getTimeBuckets } from '@immich/sdk';
 
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { websocketEvents } from '$lib/stores/websocket';
+
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
-  plainDateTimeCompare,
   toISOYearMonthUTC,
   toTimelineAsset,
   type TimelinePlainDate,
@@ -13,18 +12,24 @@ import {
 } from '$lib/utils/timeline-util';
 import { TUNABLES } from '$lib/utils/tunables';
 
-import { clamp, debounce, isEqual, throttle } from 'lodash-es';
+import { clamp, debounce, isEqual } from 'lodash-es';
 import { SvelteSet } from 'svelte/reactivity';
-import type { Unsubscriber } from 'svelte/store';
 
+import {
+  findMonthGroupForDate,
+  getAssetWithOffset,
+  getMonthGroupByDate,
+  retrieveRange as retrieveRangeUtil,
+} from '$lib/managers/timeline-manager/internal/search-support.svelte';
+import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
+import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
 import type {
   AssetDescriptor,
   AssetOperation,
   Direction,
-  PendingChange,
   ScrubberMonth,
   TimelineAsset,
   TimelineManagerLayoutOptions,
@@ -32,7 +37,6 @@ import type {
   UpdateGeometryOptions,
   Viewport,
 } from './types';
-import { isMismatched, updateObject } from './utils.svelte';
 
 const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
@@ -76,8 +80,7 @@ export class TimelineManager {
   #viewportHeight = $state(0);
   #viewportWidth = $state(0);
   #scrollTop = $state(0);
-  #pendingChanges: PendingChange[] = [];
-  #unsubscribers: Unsubscriber[] = [];
+  #websocketSupport: WebsocketSupport | undefined;
 
   #rowHeight = $state(235);
   #headerHeight = $state(48);
@@ -220,59 +223,20 @@ export class TimelineManager {
     }
   }
 
-  #addPendingChanges(...changes: PendingChange[]) {
-    this.#pendingChanges.push(...changes);
-    this.#processPendingChanges();
-  }
-
   connect() {
-    this.#unsubscribers.push(
-      websocketEvents.on('on_upload_success', (asset) =>
-        this.#addPendingChanges({ type: 'add', values: [toTimelineAsset(asset)] }),
-      ),
-      websocketEvents.on('on_asset_trash', (ids) => this.#addPendingChanges({ type: 'trash', values: ids })),
-      websocketEvents.on('on_asset_update', (asset) =>
-        this.#addPendingChanges({ type: 'update', values: [toTimelineAsset(asset)] }),
-      ),
-      websocketEvents.on('on_asset_delete', (id: string) => this.#addPendingChanges({ type: 'delete', values: [id] })),
-    );
+    if (this.#websocketSupport) {
+      throw new Error('TimelineManager already connected');
+    }
+    this.#websocketSupport = new WebsocketSupport(this);
+    this.#websocketSupport.connectWebsocketEvents();
   }
 
   disconnect() {
-    for (const unsubscribe of this.#unsubscribers) {
-      unsubscribe();
+    if (!this.#websocketSupport) {
+      return;
     }
-    this.#unsubscribers = [];
-  }
-
-  #getPendingChangeBatches() {
-    const batch: {
-      add: TimelineAsset[];
-      update: TimelineAsset[];
-      remove: string[];
-    } = {
-      add: [],
-      update: [],
-      remove: [],
-    };
-    for (const { type, values } of this.#pendingChanges) {
-      switch (type) {
-        case 'add': {
-          batch.add.push(...values);
-          break;
-        }
-        case 'update': {
-          batch.update.push(...values);
-          break;
-        }
-        case 'delete':
-        case 'trash': {
-          batch.remove.push(...values);
-          break;
-        }
-      }
-    }
-    return batch;
+    this.#websocketSupport.disconnectWebsocketEvents();
+    this.#websocketSupport = undefined;
   }
 
   #findMonthGroupForAsset(id: string) {
@@ -280,15 +244,6 @@ export class TimelineManager {
       const asset = month.findAssetById({ id });
       if (asset) {
         return { monthGroup: month, asset };
-      }
-    }
-  }
-
-  #findMonthGroupForDate(targetYearMonth: TimelinePlainYearMonth) {
-    for (const month of this.months) {
-      const { year, month: monthNum } = month.yearMonth;
-      if (monthNum === targetYearMonth.month && year === targetYearMonth.year) {
-        return month;
       }
     }
   }
@@ -370,20 +325,6 @@ export class TimelineManager {
       this.clearDeferredLayout(month);
     }
   }
-
-  #processPendingChanges = throttle(() => {
-    const { add, update, remove } = this.#getPendingChangeBatches();
-    if (add.length > 0) {
-      this.addAssets(add);
-    }
-    if (update.length > 0) {
-      this.updateAssets(update);
-    }
-    if (remove.length > 0) {
-      this.removeAssets(remove);
-    }
-    this.#pendingChanges = [];
-  }, 2500);
 
   async #initializeMonthGroups() {
     const timebuckets = await getTimeBuckets({
@@ -561,7 +502,7 @@ export class TimelineManager {
     if (options) {
       cancelable = options.cancelable;
     }
-    const monthGroup = this.getMonthGroupByDate(yearMonth);
+    const monthGroup = getMonthGroupByDate(this, yearMonth);
     if (!monthGroup) {
       return;
     }
@@ -640,7 +581,7 @@ export class TimelineManager {
     const updatedMonthGroups = new Set<MonthGroup>();
     const monthCount = this.months.length;
     for (const asset of assets) {
-      let month = this.getMonthGroupByDate(asset.localDateTime);
+      let month = getMonthGroupByDate(this, asset.localDateTime);
 
       if (!month) {
         month = new MonthGroup(this, asset.localDateTime, 1, this.#options.order);
@@ -675,12 +616,6 @@ export class TimelineManager {
     this.updateIntersections();
   }
 
-  getMonthGroupByDate(targetYearMonth: TimelinePlainYearMonth): MonthGroup | undefined {
-    return this.months.find(
-      (month) => month.yearMonth.year === targetYearMonth.year && month.yearMonth.month === targetYearMonth.month,
-    );
-  }
-
   async findMonthGroupForAsset(id: string) {
     if (!this.isInitialized) {
       await this.initTask.waitUntilCompletion();
@@ -701,7 +636,7 @@ export class TimelineManager {
 
   async #loadMonthGroupAtTime(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }) {
     await this.loadMonthGroup(yearMonth, options);
-    return this.getMonthGroupByDate(yearMonth);
+    return getMonthGroupByDate(this, yearMonth);
   }
 
   getMonthGroupIndexByAssetId(assetId: string) {
@@ -793,18 +728,18 @@ export class TimelineManager {
     assetDescriptor: AssetDescriptor,
     interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   ): Promise<TimelineAsset | undefined> {
-    return await this.#getAssetWithOffset(assetDescriptor, interval, 'later');
+    return await getAssetWithOffset(this, assetDescriptor, interval, 'later');
   }
 
   async getEarlierAsset(
     assetDescriptor: AssetDescriptor,
     interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   ): Promise<TimelineAsset | undefined> {
-    return await this.#getAssetWithOffset(assetDescriptor, interval, 'earlier');
+    return await getAssetWithOffset(this, assetDescriptor, interval, 'earlier');
   }
 
   async getClosestAssetToDate(dateTime: TimelinePlainDateTime) {
-    const monthGroup = this.#findMonthGroupForDate(dateTime);
+    const monthGroup = findMonthGroupForDate(this, dateTime);
     if (!monthGroup) {
       return;
     }
@@ -819,110 +754,7 @@ export class TimelineManager {
   }
 
   async retrieveRange(start: AssetDescriptor, end: AssetDescriptor) {
-    let { asset: startAsset, monthGroup: startMonthGroup } = this.#findMonthGroupForAsset(start.id) ?? {};
-    if (!startMonthGroup || !startAsset) {
-      return [];
-    }
-    let { asset: endAsset, monthGroup: endMonthGroup } = this.#findMonthGroupForAsset(end.id) ?? {};
-    if (!endMonthGroup || !endAsset) {
-      return [];
-    }
-    let direction: Direction = 'earlier';
-    if (plainDateTimeCompare(true, startAsset.localDateTime, endAsset.localDateTime) < 0) {
-      [startAsset, endAsset] = [endAsset, startAsset];
-      [startMonthGroup, endMonthGroup] = [endMonthGroup, startMonthGroup];
-      direction = 'earlier';
-    }
-
-    const range: TimelineAsset[] = [];
-    const startDayGroup = startMonthGroup.findDayGroupForAsset(startAsset);
-    for await (const targetAsset of this.assetsIterator({
-      startMonthGroup,
-      startDayGroup,
-      startAsset,
-      direction,
-    })) {
-      range.push(targetAsset);
-      if (targetAsset.id === endAsset.id) {
-        break;
-      }
-    }
-    return range;
-  }
-
-  async #getAssetWithOffset(
-    assetDescriptor: AssetDescriptor,
-    interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
-    direction: Direction,
-  ): Promise<TimelineAsset | undefined> {
-    const { asset, monthGroup } = this.#findMonthGroupForAsset(assetDescriptor.id) ?? {};
-    if (!monthGroup || !asset) {
-      return;
-    }
-
-    switch (interval) {
-      case 'asset': {
-        return this.#getAssetByAssetOffset(asset, monthGroup, direction);
-      }
-      case 'day': {
-        return this.#getAssetByDayOffset(asset, monthGroup, direction);
-      }
-      case 'month': {
-        return this.#getAssetByMonthOffset(monthGroup, direction);
-      }
-      case 'year': {
-        return this.#getAssetByYearOffset(monthGroup, direction);
-      }
-    }
-  }
-
-  async #getAssetByAssetOffset(asset: TimelineAsset, monthGroup: MonthGroup, direction: Direction) {
-    const dayGroup = monthGroup.findDayGroupForAsset(asset);
-    for await (const targetAsset of this.assetsIterator({
-      startMonthGroup: monthGroup,
-      startDayGroup: dayGroup,
-      startAsset: asset,
-      direction,
-    })) {
-      if (asset.id === targetAsset.id) {
-        continue;
-      }
-      return targetAsset;
-    }
-  }
-
-  async #getAssetByDayOffset(asset: TimelineAsset, monthGroup: MonthGroup, direction: Direction) {
-    const dayGroup = monthGroup.findDayGroupForAsset(asset);
-    for await (const targetAsset of this.assetsIterator({
-      startMonthGroup: monthGroup,
-      startDayGroup: dayGroup,
-      startAsset: asset,
-      direction,
-    })) {
-      if (targetAsset.localDateTime.day !== asset.localDateTime.day) {
-        return targetAsset;
-      }
-    }
-  }
-
-  async #getAssetByMonthOffset(month: MonthGroup, direction: Direction) {
-    for (const targetMonth of this.monthGroupIterator({ startMonthGroup: month, direction })) {
-      if (targetMonth.yearMonth.month !== month.yearMonth.month) {
-        for await (const targetAsset of this.assetsIterator({ startMonthGroup: targetMonth, direction })) {
-          return targetAsset;
-        }
-      }
-    }
-  }
-
-  async #getAssetByYearOffset(month: MonthGroup, direction: Direction) {
-    for (const targetMonth of this.monthGroupIterator({ startMonthGroup: month, direction })) {
-      if (targetMonth.yearMonth.year !== month.yearMonth.year) {
-        for await (const targetAsset of this.assetsIterator({ startMonthGroup: targetMonth, direction })) {
-          return targetAsset;
-        }
-      }
-    }
+    return retrieveRangeUtil(this, start, end);
   }
 
   isExcluded(asset: TimelineAsset) {
