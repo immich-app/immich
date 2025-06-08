@@ -418,11 +418,12 @@
   };
 
   const toggleArchive = async () => {
-    await archiveAssets(
-      assetInteraction.selectedAssets,
-      assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
-    );
-    timelineManager.updateAssets(assetInteraction.selectedAssets);
+    const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;
+    const ids = await archiveAssets(assetInteraction.selectedAssets, visibility);
+    timelineManager.updateAssetOperation(ids, (asset) => {
+      asset.visibility = visibility;
+      return { remove: false };
+    });
     deselectAllAssets();
   };
 

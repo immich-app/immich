@@ -86,6 +86,7 @@ export const shortcuts = <T extends HTMLElement>(
       }
 
       if (matchesShortcut(event, shortcut)) {
+        debugger;
         if (preventDefault) {
           event.preventDefault();
         }
