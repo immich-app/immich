@@ -10,12 +10,13 @@ import {
   type TimelinePlainDateTime,
   type TimelinePlainYearMonth,
 } from '$lib/utils/timeline-util';
-import { TUNABLES } from '$lib/utils/tunables';
 
 import { clamp, debounce, isEqual } from 'lodash-es';
 import { SvelteSet } from 'svelte/reactivity';
 
+import { updateIntersection } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import {
+  findMonthGroupForAsset as findMonthGroupForAssetUtil,
   findMonthGroupForDate,
   getAssetWithOffset,
   getMonthGroupByDate,
@@ -37,10 +38,6 @@ import type {
   UpdateGeometryOptions,
   Viewport,
 } from './types';
-
-const {
-  TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
-} = TUNABLES;
 
 export class TimelineManager {
   isInitialized = $state(false);
@@ -239,15 +236,6 @@ export class TimelineManager {
     this.#websocketSupport = undefined;
   }
 
-  #findMonthGroupForAsset(id: string) {
-    for (const month of this.months) {
-      const asset = month.findAssetById({ id });
-      if (asset) {
-        return { monthGroup: month, asset };
-      }
-    }
-  }
-
   updateSlidingWindow(scrollTop: number) {
     if (this.#scrollTop !== scrollTop) {
       this.#scrollTop = scrollTop;
@@ -269,7 +257,7 @@ export class TimelineManager {
     }
     let topIntersectingMonthGroup = undefined;
     for (const month of this.months) {
-      this.#updateIntersection(month);
+      updateIntersection(this, month);
       if (!topIntersectingMonthGroup && month.actuallyIntersecting) {
         topIntersectingMonthGroup = month;
       }
@@ -290,19 +278,6 @@ export class TimelineManager {
     }
   }
 
-  #calculateIntersecting(monthGroup: MonthGroup, expandTop: number, expandBottom: number) {
-    const monthGroupTop = monthGroup.top;
-    const monthGroupBottom = monthGroupTop + monthGroup.height;
-    const topWindow = this.visibleWindow.top - expandTop;
-    const bottomWindow = this.visibleWindow.bottom + expandBottom;
-
-    return (
-      (monthGroupTop >= topWindow && monthGroupTop < bottomWindow) ||
-      (monthGroupBottom >= topWindow && monthGroupBottom < bottomWindow) ||
-      (monthGroupTop < topWindow && monthGroupBottom >= bottomWindow)
-    );
-  }
-
   clearDeferredLayout(month: MonthGroup) {
     const hasDeferred = month.dayGroups.some((group) => group.deferredLayout);
     if (hasDeferred) {
@@ -310,19 +285,6 @@ export class TimelineManager {
       for (const group of month.dayGroups) {
         group.deferredLayout = false;
       }
-    }
-  }
-
-  #updateIntersection(month: MonthGroup) {
-    const actuallyIntersecting = this.#calculateIntersecting(month, 0, 0);
-    let preIntersecting = false;
-    if (!actuallyIntersecting) {
-      preIntersecting = this.#calculateIntersecting(month, INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM);
-    }
-    month.intersecting = actuallyIntersecting || preIntersecting;
-    month.actuallyIntersecting = actuallyIntersecting;
-    if (preIntersecting || actuallyIntersecting) {
-      this.clearDeferredLayout(month);
     }
   }
 
@@ -554,7 +516,7 @@ export class TimelineManager {
       }
     }, cancelable);
     if (result === 'LOADED') {
-      this.#updateIntersection(monthGroup);
+      updateIntersection(this, monthGroup);
     }
   }
 
@@ -620,7 +582,7 @@ export class TimelineManager {
     if (!this.isInitialized) {
       await this.initTask.waitUntilCompletion();
     }
-    let { monthGroup } = this.#findMonthGroupForAsset(id) ?? {};
+    let { monthGroup } = findMonthGroupForAssetUtil(this, id) ?? {};
     if (monthGroup) {
       return monthGroup;
     }
@@ -640,7 +602,7 @@ export class TimelineManager {
   }
 
   getMonthGroupIndexByAssetId(assetId: string) {
-    const monthGroupInfo = this.#findMonthGroupForAsset(assetId);
+    const monthGroupInfo = findMonthGroupForAssetUtil(this, assetId);
     return monthGroupInfo?.monthGroup;
   }
 
