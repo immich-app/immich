@@ -65,19 +65,19 @@ describe('AssetStore', () => {
       await assetStore.updateViewport({ width: 1588, height: 1000 });
     });
 
-    it('should load buckets in viewport', () => {
+    it('should load months in viewport', () => {
       expect(sdkMock.getTimeBuckets).toBeCalledTimes(1);
       expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
     });
 
-    it('calculates bucket height', () => {
-      const plainBuckets = assetStore.buckets.map((bucket) => ({
-        year: bucket.yearMonth.year,
-        month: bucket.yearMonth.month,
-        bucketHeight: bucket.bucketHeight,
+    it('calculates month height', () => {
+      const plainMonths = assetStore.months.map((month) => ({
+        year: month.yearMonth.year,
+        month: month.yearMonth.month,
+        bucketHeight: month.bucketHeight,
       }));
 
-      expect(plainBuckets).toEqual(
+      expect(plainMonths).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ year: 2024, month: 3, bucketHeight: 185.5 }),
           expect.objectContaining({ year: 2024, month: 2, bucketHeight: 12_016 }),
@@ -126,29 +126,29 @@ describe('AssetStore', () => {
       await assetStore.updateViewport({ width: 1588, height: 0 });
     });
 
-    it('loads a bucket', async () => {
+    it('loads a month', async () => {
       expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(0);
       await assetStore.loadMonthGroup({ year: 2024, month: 1 });
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
       expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
-    it('ignores invalid buckets', async () => {
+    it('ignores invalid months', async () => {
       await assetStore.loadMonthGroup({ year: 2023, month: 1 });
       expect(sdkMock.getTimeBucket).toBeCalledTimes(0);
     });
 
-    it('cancels bucket loading', async () => {
-      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 1 })!;
+    it('cancels month loading', async () => {
+      const month = assetStore.getMonthGroupByDate({ year: 2024, month: 1 })!;
       void assetStore.loadMonthGroup({ year: 2024, month: 1 });
-      const abortSpy = vi.spyOn(bucket!.loader!.cancelToken!, 'abort');
-      bucket?.cancel();
+      const abortSpy = vi.spyOn(month!.loader!.cancelToken!, 'abort');
+      month?.cancel();
       expect(abortSpy).toBeCalledTimes(1);
       await assetStore.loadMonthGroup({ year: 2024, month: 1 });
       expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
-    it('prevents loading buckets multiple times', async () => {
+    it('prevents loading months multiple times', async () => {
       await Promise.all([
         assetStore.loadMonthGroup({ year: 2024, month: 1 }),
         assetStore.loadMonthGroup({ year: 2024, month: 1 }),
@@ -159,16 +159,16 @@ describe('AssetStore', () => {
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
     });
 
-    it('allows loading a canceled bucket', async () => {
-      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 1 })!;
+    it('allows loading a canceled month', async () => {
+      const month = assetStore.getMonthGroupByDate({ year: 2024, month: 1 })!;
       const loadPromise = assetStore.loadMonthGroup({ year: 2024, month: 1 });
 
-      bucket.cancel();
+      month.cancel();
       await loadPromise;
-      expect(bucket?.getAssets().length).toEqual(0);
+      expect(month?.getAssets().length).toEqual(0);
 
       await assetStore.loadMonthGroup({ year: 2024, month: 1 });
-      expect(bucket!.getAssets().length).toEqual(3);
+      expect(month!.getAssets().length).toEqual(3);
     });
   });
 
@@ -183,11 +183,11 @@ describe('AssetStore', () => {
     });
 
     it('is empty initially', () => {
-      expect(assetStore.buckets.length).toEqual(0);
+      expect(assetStore.months.length).toEqual(0);
       expect(assetStore.count).toEqual(0);
     });
 
-    it('adds assets to new bucket', () => {
+    it('adds assets to new month', () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -195,15 +195,15 @@ describe('AssetStore', () => {
       );
       assetStore.addAssets([asset]);
 
-      expect(assetStore.buckets.length).toEqual(1);
+      expect(assetStore.months.length).toEqual(1);
       expect(assetStore.count).toEqual(1);
-      expect(assetStore.buckets[0].getAssets().length).toEqual(1);
-      expect(assetStore.buckets[0].yearMonth.year).toEqual(2024);
-      expect(assetStore.buckets[0].yearMonth.month).toEqual(1);
-      expect(assetStore.buckets[0].getFirstAsset().id).toEqual(asset.id);
+      expect(assetStore.months[0].getAssets().length).toEqual(1);
+      expect(assetStore.months[0].yearMonth.year).toEqual(2024);
+      expect(assetStore.months[0].yearMonth.month).toEqual(1);
+      expect(assetStore.months[0].getFirstAsset().id).toEqual(asset.id);
     });
 
-    it('adds assets to existing bucket', () => {
+    it('adds assets to existing month', () => {
       const [assetOne, assetTwo] = timelineAssetFactory
         .buildList(2, {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -212,14 +212,14 @@ describe('AssetStore', () => {
       assetStore.addAssets([assetOne]);
       assetStore.addAssets([assetTwo]);
 
-      expect(assetStore.buckets.length).toEqual(1);
+      expect(assetStore.months.length).toEqual(1);
       expect(assetStore.count).toEqual(2);
-      expect(assetStore.buckets[0].getAssets().length).toEqual(2);
-      expect(assetStore.buckets[0].yearMonth.year).toEqual(2024);
-      expect(assetStore.buckets[0].yearMonth.month).toEqual(1);
+      expect(assetStore.months[0].getAssets().length).toEqual(2);
+      expect(assetStore.months[0].yearMonth.year).toEqual(2024);
+      expect(assetStore.months[0].yearMonth.month).toEqual(1);
     });
 
-    it('orders assets in buckets by descending date', () => {
+    it('orders assets in months by descending date', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -237,15 +237,15 @@ describe('AssetStore', () => {
       );
       assetStore.addAssets([assetOne, assetTwo, assetThree]);
 
-      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 1 });
-      expect(bucket).not.toBeNull();
-      expect(bucket?.getAssets().length).toEqual(3);
-      expect(bucket?.getAssets()[0].id).toEqual(assetOne.id);
-      expect(bucket?.getAssets()[1].id).toEqual(assetThree.id);
-      expect(bucket?.getAssets()[2].id).toEqual(assetTwo.id);
+      const month = assetStore.getMonthGroupByDate({ year: 2024, month: 1 });
+      expect(month).not.toBeNull();
+      expect(month?.getAssets().length).toEqual(3);
+      expect(month?.getAssets()[0].id).toEqual(assetOne.id);
+      expect(month?.getAssets()[1].id).toEqual(assetThree.id);
+      expect(month?.getAssets()[2].id).toEqual(assetTwo.id);
     });
 
-    it('orders buckets by descending date', () => {
+    it('orders months by descending date', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -263,15 +263,15 @@ describe('AssetStore', () => {
       );
       assetStore.addAssets([assetOne, assetTwo, assetThree]);
 
-      expect(assetStore.buckets.length).toEqual(3);
-      expect(assetStore.buckets[0].yearMonth.year).toEqual(2024);
-      expect(assetStore.buckets[0].yearMonth.month).toEqual(4);
+      expect(assetStore.months.length).toEqual(3);
+      expect(assetStore.months[0].yearMonth.year).toEqual(2024);
+      expect(assetStore.months[0].yearMonth.month).toEqual(4);
 
-      expect(assetStore.buckets[1].yearMonth.year).toEqual(2024);
-      expect(assetStore.buckets[1].yearMonth.month).toEqual(1);
+      expect(assetStore.months[1].yearMonth.year).toEqual(2024);
+      expect(assetStore.months[1].yearMonth.month).toEqual(1);
 
-      expect(assetStore.buckets[2].yearMonth.year).toEqual(2023);
-      expect(assetStore.buckets[2].yearMonth.month).toEqual(1);
+      expect(assetStore.months[2].yearMonth.year).toEqual(2023);
+      expect(assetStore.months[2].yearMonth.month).toEqual(1);
     });
 
     it('updates existing asset', () => {
@@ -309,7 +309,7 @@ describe('AssetStore', () => {
     it('ignores non-existing assets', () => {
       assetStore.updateAssets([deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build())]);
 
-      expect(assetStore.buckets.length).toEqual(0);
+      expect(assetStore.months.length).toEqual(0);
       expect(assetStore.count).toEqual(0);
     });
 
@@ -319,14 +319,14 @@ describe('AssetStore', () => {
 
       assetStore.addAssets([asset]);
       expect(assetStore.count).toEqual(1);
-      expect(assetStore.buckets[0].getFirstAsset().isFavorite).toEqual(false);
+      expect(assetStore.months[0].getFirstAsset().isFavorite).toEqual(false);
 
       assetStore.updateAssets([updatedAsset]);
       expect(assetStore.count).toEqual(1);
-      expect(assetStore.buckets[0].getFirstAsset().isFavorite).toEqual(true);
+      expect(assetStore.months[0].getFirstAsset().isFavorite).toEqual(true);
     });
 
-    it('asset moves buckets when asset date changes', () => {
+    it('asset moves months when asset date changes', () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -338,12 +338,12 @@ describe('AssetStore', () => {
       });
 
       assetStore.addAssets([asset]);
-      expect(assetStore.buckets.length).toEqual(1);
+      expect(assetStore.months.length).toEqual(1);
       expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })).not.toBeUndefined();
       expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(1);
 
       assetStore.updateAssets([updatedAsset]);
-      expect(assetStore.buckets.length).toEqual(2);
+      expect(assetStore.months.length).toEqual(2);
       expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })).not.toBeUndefined();
       expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(0);
       expect(assetStore.getMonthGroupByDate({ year: 2024, month: 3 })).not.toBeUndefined();
@@ -372,11 +372,11 @@ describe('AssetStore', () => {
       assetStore.removeAssets(['', 'invalid', '4c7d9acc']);
 
       expect(assetStore.count).toEqual(2);
-      expect(assetStore.buckets.length).toEqual(1);
-      expect(assetStore.buckets[0].getAssets().length).toEqual(2);
+      expect(assetStore.months.length).toEqual(1);
+      expect(assetStore.months[0].getAssets().length).toEqual(2);
     });
 
-    it('removes asset from bucket', () => {
+    it('removes asset from month', () => {
       const [assetOne, assetTwo] = timelineAssetFactory
         .buildList(2, {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -386,11 +386,11 @@ describe('AssetStore', () => {
       assetStore.removeAssets([assetOne.id]);
 
       expect(assetStore.count).toEqual(1);
-      expect(assetStore.buckets.length).toEqual(1);
-      expect(assetStore.buckets[0].getAssets().length).toEqual(1);
+      expect(assetStore.months.length).toEqual(1);
+      expect(assetStore.months[0].getAssets().length).toEqual(1);
     });
 
-    it('does not remove bucket when empty', () => {
+    it('does not remove month when empty', () => {
       const assets = timelineAssetFactory
         .buildList(2, {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -400,7 +400,7 @@ describe('AssetStore', () => {
       assetStore.removeAssets(assets.map((asset) => asset.id));
 
       expect(assetStore.count).toEqual(0);
-      expect(assetStore.buckets.length).toEqual(1);
+      expect(assetStore.months.length).toEqual(1);
     });
   });
 
@@ -477,38 +477,38 @@ describe('AssetStore', () => {
 
     it('returns previous assetId', async () => {
       await assetStore.loadMonthGroup({ year: 2024, month: 1 });
-      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 1 });
+      const month = assetStore.getMonthGroupByDate({ year: 2024, month: 1 });
 
-      const a = bucket!.getAssets()[0];
-      const b = bucket!.getAssets()[1];
+      const a = month!.getAssets()[0];
+      const b = month!.getAssets()[1];
       const previous = await assetStore.getLaterAsset(b);
       expect(previous).toEqual(a);
     });
 
-    it('returns previous assetId spanning multiple buckets', async () => {
+    it('returns previous assetId spanning multiple months', async () => {
       await assetStore.loadMonthGroup({ year: 2024, month: 2 });
       await assetStore.loadMonthGroup({ year: 2024, month: 3 });
 
-      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 2 });
-      const previousBucket = assetStore.getMonthGroupByDate({ year: 2024, month: 3 });
-      const a = bucket!.getAssets()[0];
-      const b = previousBucket!.getAssets()[0];
+      const month = assetStore.getMonthGroupByDate({ year: 2024, month: 2 });
+      const previousMonth = assetStore.getMonthGroupByDate({ year: 2024, month: 3 });
+      const a = month!.getAssets()[0];
+      const b = previousMonth!.getAssets()[0];
       const previous = await assetStore.getLaterAsset(a);
       expect(previous).toEqual(b);
     });
 
-    it('loads previous bucket', async () => {
+    it('loads previous month', async () => {
       await assetStore.loadMonthGroup({ year: 2024, month: 2 });
-      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 2 });
-      const previousBucket = assetStore.getMonthGroupByDate({ year: 2024, month: 3 });
-      const a = bucket!.getFirstAsset();
-      const b = previousBucket!.getFirstAsset();
-      const loadMonthGroupSpy = vi.spyOn(bucket!.loader!, 'execute');
-      const previousBucketSpy = vi.spyOn(previousBucket!.loader!, 'execute');
+      const month = assetStore.getMonthGroupByDate({ year: 2024, month: 2 });
+      const previousMonth = assetStore.getMonthGroupByDate({ year: 2024, month: 3 });
+      const a = month!.getFirstAsset();
+      const b = previousMonth!.getFirstAsset();
+      const loadMonthGroupSpy = vi.spyOn(month!.loader!, 'execute');
+      const previousMonthSpy = vi.spyOn(previousMonth!.loader!, 'execute');
       const previous = await assetStore.getLaterAsset(a);
       expect(previous).toEqual(b);
       expect(loadMonthGroupSpy).toBeCalledTimes(0);
-      expect(previousBucketSpy).toBeCalledTimes(0);
+      expect(previousMonthSpy).toBeCalledTimes(0);
     });
 
     it('skips removed assets', async () => {
@@ -523,7 +523,7 @@ describe('AssetStore', () => {
 
     it('returns null when no more assets', async () => {
       await assetStore.loadMonthGroup({ year: 2024, month: 3 });
-      expect(await assetStore.getLaterAsset(assetStore.buckets[0].getFirstAsset())).toBeUndefined();
+      expect(await assetStore.getLaterAsset(assetStore.months[0].getFirstAsset())).toBeUndefined();
     });
   });
 
@@ -537,12 +537,12 @@ describe('AssetStore', () => {
       await assetStore.updateViewport({ width: 0, height: 0 });
     });
 
-    it('returns null for invalid buckets', () => {
+    it('returns null for invalid months', () => {
       expect(assetStore.getMonthGroupByDate({ year: -1, month: -1 })).toBeUndefined();
       expect(assetStore.getMonthGroupByDate({ year: 2024, month: 3 })).toBeUndefined();
     });
 
-    it('returns the bucket index', () => {
+    it('returns the month index', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -561,7 +561,7 @@ describe('AssetStore', () => {
       expect(assetStore.getMonthGroupIndexByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
     });
 
-    it('ignores removed buckets', () => {
+    it('ignores removed months', () => {
       const assetOne = deriveLocalDateTimeFromFileCreatedAt(
         timelineAssetFactory.build({
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),

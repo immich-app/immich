@@ -492,7 +492,7 @@ export const selectAllAssets = async (assetStore: TimelineManager, assetInteract
   isSelectingAllAssets.set(true);
 
   try {
-    for (const bucket of assetStore.buckets) {
+    for (const bucket of assetStore.months) {
       await assetStore.loadMonthGroup(bucket.yearMonth);
 
       if (!get(isSelectingAllAssets)) {

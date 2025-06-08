@@ -245,25 +245,25 @@ export class MonthGroup {
       return;
     }
     const { store, percent } = this;
-    const index = store.buckets.indexOf(this);
+    const index = store.months.indexOf(this);
     const bucketHeightDelta = height - this.#bucketHeight;
     this.#bucketHeight = height;
-    const prevBucket = store.buckets[index - 1];
+    const prevBucket = store.months[index - 1];
     if (prevBucket) {
       const newTop = prevBucket.#top + prevBucket.#bucketHeight;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
     }
-    for (let cursor = index + 1; cursor < store.buckets.length; cursor++) {
-      const bucket = this.store.buckets[cursor];
+    for (let cursor = index + 1; cursor < store.months.length; cursor++) {
+      const bucket = this.store.months[cursor];
       const newTop = bucket.#top + bucketHeightDelta;
       if (bucket.#top !== newTop) {
         bucket.#top = newTop;
       }
     }
     if (store.topIntersectingBucket) {
-      const currentIndex = store.buckets.indexOf(store.topIntersectingBucket);
+      const currentIndex = store.months.indexOf(store.topIntersectingBucket);
       if (currentIndex > 0) {
         if (index < currentIndex) {
           store.scrollCompensation = {

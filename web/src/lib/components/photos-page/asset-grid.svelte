@@ -295,7 +295,7 @@
       const offset = maxScroll * scrollPercent;
       scrollTop(offset);
     } else {
-      const monthGroup = assetStore.buckets.find(
+      const monthGroup = assetStore.months.find(
         (monthGroup) =>
           monthGroup.yearMonth.year === bucketDate.year && monthGroup.yearMonth.month === bucketDate.month,
       );
@@ -336,19 +336,19 @@
       let maxScrollPercent = getMaxScrollPercent();
       let found = false;
 
-      const bucketsLength = assetStore.buckets.length;
-      for (let i = -1; i < bucketsLength + 1; i++) {
+      const monthsLength = assetStore.months.length;
+      for (let i = -1; i < monthsLength + 1; i++) {
         let monthGroup: TimelinePlainYearMonth | undefined;
         let monthGroupHeight = 0;
         if (i === -1) {
           // lead-in
           monthGroupHeight = assetStore.topSectionHeight;
-        } else if (i === bucketsLength) {
+        } else if (i === monthsLength) {
           // lead-out
           monthGroupHeight = bottomSectionHeight;
         } else {
-          monthGroup = assetStore.buckets[i].yearMonth;
-          monthGroupHeight = assetStore.buckets[i].bucketHeight;
+          monthGroup = assetStore.months[i].yearMonth;
+          monthGroupHeight = assetStore.months[i].bucketHeight;
         }
 
         let next = top - monthGroupHeight * maxScrollPercent;
@@ -360,8 +360,8 @@
           scrubBucketPercent = Math.max(0, top / (monthGroupHeight * maxScrollPercent));
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
-          if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
-            scrubBucket = assetStore.buckets[i + 1].yearMonth;
+          if (scrubBucketPercent > 0.9999 && i + 1 < monthsLength - 1) {
+            scrubBucket = assetStore.months[i + 1].yearMonth;
             scrubBucketPercent = 0;
           }
 
@@ -611,7 +611,7 @@
 
       // Select/deselect assets in range (start,end)
       let started = false;
-      for (const monthGroup of assetStore.buckets) {
+      for (const monthGroup of assetStore.months) {
         if (monthGroup === endBucket) {
           break;
         }
@@ -632,7 +632,7 @@
 
       // Update date group selection in range [start,end]
       started = false;
-      for (const monthGroup of assetStore.buckets) {
+      for (const monthGroup of assetStore.months) {
         if (monthGroup === startBucket) {
           started = true;
         }
@@ -677,7 +677,7 @@
   };
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
+  let isEmpty = $derived(assetStore.isInitialized && assetStore.months.length === 0);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
   let isShortcutModalOpen = false;
 
@@ -781,7 +781,7 @@
   />
 {/if}
 
-{#if assetStore.buckets.length > 0}
+{#if assetStore.months.length > 0}
   <Scrubber
     {assetStore}
     height={assetStore.viewportHeight}
@@ -842,7 +842,7 @@
       {/if}
     </section>
 
-    {#each assetStore.buckets as monthGroup (monthGroup.viewId)}
+    {#each assetStore.months as monthGroup (monthGroup.viewId)}
       {@const display = monthGroup.intersecting}
       {@const absoluteHeight = monthGroup.top}
 

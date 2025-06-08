@@ -40,12 +40,12 @@ const {
 
 export class TimelineManager {
   isInitialized = $state(false);
-  buckets: MonthGroup[] = $state([]);
+  months: MonthGroup[] = $state([]);
   topSectionHeight = $state(0);
   timelineHeight = $derived(
-    this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0) + this.topSectionHeight,
+    this.months.reduce((accumulator, b) => accumulator + b.bucketHeight, 0) + this.topSectionHeight,
   );
-  count = $derived(this.buckets.reduce((accumulator, b) => accumulator + b.bucketCount, 0));
+  count = $derived(this.months.reduce((accumulator, b) => accumulator + b.bucketCount, 0));
 
   albumAssets: Set<string> = new SvelteSet();
 
@@ -211,13 +211,13 @@ export class TimelineManager {
   *bucketsIterator(options?: { direction?: Direction; startMonthGroup?: MonthGroup }) {
     const isEarlier = options?.direction === 'earlier';
     let startIndex = options?.startMonthGroup
-      ? this.buckets.indexOf(options.startMonthGroup)
+      ? this.months.indexOf(options.startMonthGroup)
       : isEarlier
         ? 0
-        : this.buckets.length - 1;
+        : this.months.length - 1;
 
-    while (startIndex >= 0 && startIndex < this.buckets.length) {
-      yield this.buckets[startIndex];
+    while (startIndex >= 0 && startIndex < this.months.length) {
+      yield this.months[startIndex];
       startIndex += isEarlier ? 1 : -1;
     }
   }
@@ -278,19 +278,19 @@ export class TimelineManager {
   }
 
   #findMonthGroupForAsset(id: string) {
-    for (const monthGroup of this.buckets) {
-      const asset = monthGroup.findAssetById({ id });
+    for (const month of this.months) {
+      const asset = month.findAssetById({ id });
       if (asset) {
-        return { monthGroup, asset };
+        return { monthGroup: month, asset };
       }
     }
   }
 
   #findMonthGroupForDate(targetYearMonth: TimelinePlainYearMonth) {
-    for (const monthGroup of this.buckets) {
-      const { year, month } = monthGroup.yearMonth;
-      if (month === targetYearMonth.month && year === targetYearMonth.year) {
-        return monthGroup;
+    for (const month of this.months) {
+      const { year, month: monthNum } = month.yearMonth;
+      if (monthNum === targetYearMonth.month && year === targetYearMonth.year) {
+        return month;
       }
     }
   }
@@ -315,24 +315,24 @@ export class TimelineManager {
       return;
     }
     let topIntersectingMonthGroup = undefined;
-    for (const monthGroup of this.buckets) {
-      this.#updateIntersection(monthGroup);
-      if (!topIntersectingMonthGroup && monthGroup.actuallyIntersecting) {
-        topIntersectingMonthGroup = monthGroup;
+    for (const month of this.months) {
+      this.#updateIntersection(month);
+      if (!topIntersectingMonthGroup && month.actuallyIntersecting) {
+        topIntersectingMonthGroup = month;
       }
     }
     if (topIntersectingMonthGroup !== undefined && this.topIntersectingBucket !== topIntersectingMonthGroup) {
       this.topIntersectingBucket = topIntersectingMonthGroup;
     }
-    for (const monthGroup of this.buckets) {
-      if (monthGroup === this.topIntersectingBucket) {
+    for (const month of this.months) {
+      if (month === this.topIntersectingBucket) {
         this.topIntersectingBucket.percent = clamp(
           (this.visibleWindow.top - this.topIntersectingBucket.top) / this.topIntersectingBucket.bucketHeight,
           0,
           1,
         );
       } else {
-        monthGroup.percent = 0;
+        month.percent = 0;
       }
     }
   }
@@ -350,26 +350,26 @@ export class TimelineManager {
     );
   }
 
-  clearDeferredLayout(monthGroup: MonthGroup) {
-    const hasDeferred = monthGroup.dayGroups.some((group) => group.deferredLayout);
+  clearDeferredLayout(month: MonthGroup) {
+    const hasDeferred = month.dayGroups.some((group) => group.deferredLayout);
     if (hasDeferred) {
-      this.#updateGeometry(monthGroup, { invalidateHeight: true, noDefer: true });
-      for (const group of monthGroup.dayGroups) {
+      this.#updateGeometry(month, { invalidateHeight: true, noDefer: true });
+      for (const group of month.dayGroups) {
         group.deferredLayout = false;
       }
     }
   }
 
-  #updateIntersection(monthGroup: MonthGroup) {
-    const actuallyIntersecting = this.#calculateIntersecting(monthGroup, 0, 0);
+  #updateIntersection(month: MonthGroup) {
+    const actuallyIntersecting = this.#calculateIntersecting(month, 0, 0);
     let preIntersecting = false;
     if (!actuallyIntersecting) {
-      preIntersecting = this.#calculateIntersecting(monthGroup, INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM);
+      preIntersecting = this.#calculateIntersecting(month, INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM);
     }
-    monthGroup.intersecting = actuallyIntersecting || preIntersecting;
-    monthGroup.actuallyIntersecting = actuallyIntersecting;
+    month.intersecting = actuallyIntersecting || preIntersecting;
+    month.actuallyIntersecting = actuallyIntersecting;
     if (preIntersecting || actuallyIntersecting) {
-      this.clearDeferredLayout(monthGroup);
+      this.clearDeferredLayout(month);
     }
   }
 
@@ -393,7 +393,7 @@ export class TimelineManager {
       key: authManager.key,
     });
 
-    this.buckets = timebuckets.map((timeBucket) => {
+    this.months = timebuckets.map((timeBucket) => {
       const date = new Date(timeBucket.timeBucket);
       return new MonthGroup(
         this,
@@ -420,7 +420,7 @@ export class TimelineManager {
 
   async #init(options: AssetStoreOptions) {
     this.isInitialized = false;
-    this.buckets = [];
+    this.months = [];
     this.albumAssets.clear();
     await this.initTask.execute(async () => {
       this.#options = options;
@@ -459,20 +459,20 @@ export class TimelineManager {
     if (this.viewportWidth === 0 || this.viewportHeight === 0) {
       return;
     }
-    for (const monthGroup of this.buckets) {
-      this.#updateGeometry(monthGroup, { invalidateHeight: changedWidth });
+    for (const month of this.months) {
+      this.#updateGeometry(month, { invalidateHeight: changedWidth });
     }
     this.updateIntersections();
     this.#createScrubBuckets();
   }
 
   #createScrubBuckets() {
-    this.scrubberBuckets = this.buckets.map((monthGroup) => ({
-      assetCount: monthGroup.bucketCount,
-      year: monthGroup.yearMonth.year,
-      month: monthGroup.yearMonth.month,
-      bucketDateFormattted: monthGroup.bucketDateFormatted,
-      bucketHeight: monthGroup.bucketHeight,
+    this.scrubberBuckets = this.months.map((month) => ({
+      assetCount: month.bucketCount,
+      year: month.yearMonth.year,
+      month: month.yearMonth.month,
+      bucketDateFormattted: month.bucketDateFormatted,
+      bucketHeight: month.bucketHeight,
     }));
     this.scrubberTimelineHeight = this.timelineHeight;
   }
@@ -488,25 +488,25 @@ export class TimelineManager {
     };
   }
 
-  #updateGeometry(monthGroup: MonthGroup, options: UpdateGeometryOptions) {
+  #updateGeometry(month: MonthGroup, options: UpdateGeometryOptions) {
     const { invalidateHeight, noDefer = false } = options;
     if (invalidateHeight) {
-      monthGroup.isBucketHeightActual = false;
+      month.isBucketHeightActual = false;
     }
-    if (!monthGroup.isLoaded) {
+    if (!month.isLoaded) {
       const viewportWidth = this.viewportWidth;
-      if (!monthGroup.isBucketHeightActual) {
-        const unwrappedWidth = (3 / 2) * monthGroup.bucketCount * this.#rowHeight * (7 / 10);
+      if (!month.isBucketHeightActual) {
+        const unwrappedWidth = (3 / 2) * month.bucketCount * this.#rowHeight * (7 / 10);
         const rows = Math.ceil(unwrappedWidth / viewportWidth);
         const height = 51 + Math.max(1, rows) * this.#rowHeight;
-        monthGroup.bucketHeight = height;
+        month.bucketHeight = height;
       }
       return;
     }
-    this.#layoutMonthGroup(monthGroup, noDefer);
+    this.#layoutMonthGroup(month, noDefer);
   }
 
-  #layoutMonthGroup(monthGroup: MonthGroup, noDefer: boolean = false) {
+  #layoutMonthGroup(month: MonthGroup, noDefer: boolean = false) {
     let cummulativeHeight = 0;
     let cummulativeWidth = 0;
     let lastRowHeight = 0;
@@ -515,10 +515,10 @@ export class TimelineManager {
     let dayGroupRow = 0;
     let dayGroupCol = 0;
 
-    const rowSpaceRemaining: number[] = Array.from({ length: monthGroup.dayGroups.length });
-    rowSpaceRemaining.fill(this.viewportWidth, 0, monthGroup.dayGroups.length);
+    const rowSpaceRemaining: number[] = Array.from({ length: month.dayGroups.length });
+    rowSpaceRemaining.fill(this.viewportWidth, 0, month.dayGroups.length);
     const options = this.createLayoutOptions();
-    for (const assetGroup of monthGroup.dayGroups) {
+    for (const assetGroup of month.dayGroups) {
       assetGroup.layout(options, noDefer);
       rowSpaceRemaining[dayGroupRow] -= assetGroup.width - 1;
       if (dayGroupCol > 0) {
@@ -550,12 +550,12 @@ export class TimelineManager {
       }
       lastRowHeight = assetGroup.height + this.headerHeight;
     }
-    if (lastRow === 0 || lastRow !== monthGroup.lastDayGroup?.row) {
+    if (lastRow === 0 || lastRow !== month.lastDayGroup?.row) {
       cummulativeHeight += lastRowHeight;
     }
 
-    monthGroup.bucketHeight = cummulativeHeight;
-    monthGroup.isBucketHeightActual = true;
+    month.bucketHeight = cummulativeHeight;
+    month.isBucketHeightActual = true;
   }
 
   async loadMonthGroup(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }): Promise<void> {
@@ -640,22 +640,22 @@ export class TimelineManager {
 
     const addContext = new GroupInsertionCache();
     const updatedMonthGroups = new Set<MonthGroup>();
-    const bucketCount = this.buckets.length;
+    const monthCount = this.months.length;
     for (const asset of assets) {
-      let monthGroup = this.getMonthGroupByDate(asset.localDateTime);
+      let month = this.getMonthGroupByDate(asset.localDateTime);
 
-      if (!monthGroup) {
-        monthGroup = new MonthGroup(this, asset.localDateTime, 1, this.#options.order);
-        monthGroup.isLoaded = true;
-        this.buckets.push(monthGroup);
+      if (!month) {
+        month = new MonthGroup(this, asset.localDateTime, 1, this.#options.order);
+        month.isLoaded = true;
+        this.months.push(month);
       }
 
-      monthGroup.addTimelineAsset(asset, addContext);
-      updatedMonthGroups.add(monthGroup);
+      month.addTimelineAsset(asset, addContext);
+      updatedMonthGroups.add(month);
     }
 
-    if (this.buckets.length !== bucketCount) {
-      this.buckets.sort((a, b) => {
+    if (this.months.length !== monthCount) {
+      this.months.sort((a, b) => {
         return a.yearMonth.year === b.yearMonth.year
           ? b.yearMonth.month - a.yearMonth.month
           : b.yearMonth.year - a.yearMonth.year;
@@ -670,17 +670,16 @@ export class TimelineManager {
       monthGroup.sortDayGroups();
     }
 
-    for (const monthGroup of addContext.updatedBuckets) {
-      monthGroup.sortDayGroups();
-      this.#updateGeometry(monthGroup, { invalidateHeight: true });
+    for (const month of addContext.updatedBuckets) {
+      month.sortDayGroups();
+      this.#updateGeometry(month, { invalidateHeight: true });
     }
     this.updateIntersections();
   }
 
   getMonthGroupByDate(targetYearMonth: TimelinePlainYearMonth): MonthGroup | undefined {
-    return this.buckets.find(
-      (monthGroup) =>
-        monthGroup.yearMonth.year === targetYearMonth.year && monthGroup.yearMonth.month === targetYearMonth.month,
+    return this.months.find(
+      (month) => month.yearMonth.year === targetYearMonth.year && month.yearMonth.month === targetYearMonth.month,
     );
   }
 
@@ -713,15 +712,15 @@ export class TimelineManager {
   }
 
   async getRandomMonthGroup() {
-    const random = Math.floor(Math.random() * this.buckets.length);
-    const monthGroup = this.buckets[random];
-    await this.loadMonthGroup(monthGroup.yearMonth, { cancelable: false });
-    return monthGroup;
+    const random = Math.floor(Math.random() * this.months.length);
+    const month = this.months[random];
+    await this.loadMonthGroup(month.yearMonth, { cancelable: false });
+    return month;
   }
 
   async getRandomAsset() {
-    const monthGroup = await this.getRandomMonthGroup();
-    return monthGroup?.getRandomAsset();
+    const month = await this.getRandomMonthGroup();
+    return month?.getRandomAsset();
   }
 
   #runAssetOperation(ids: Set<string>, operation: AssetOperation) {
@@ -733,9 +732,9 @@ export class TimelineManager {
     let idsToProcess = new Set(ids);
     const idsProcessed = new Set<string>();
     const combinedMoveAssets: { asset: TimelineAsset; date: TimelinePlainDate }[][] = [];
-    for (const monthGroup of this.buckets) {
+    for (const month of this.months) {
       if (idsToProcess.size > 0) {
-        const { moveAssets, processedIds, changedGeometry } = monthGroup.runAssetOperation(idsToProcess, operation);
+        const { moveAssets, processedIds, changedGeometry } = month.runAssetOperation(idsToProcess, operation);
         if (moveAssets.length > 0) {
           combinedMoveAssets.push(moveAssets);
         }
@@ -744,7 +743,7 @@ export class TimelineManager {
           idsProcessed.add(id);
         }
         if (changedGeometry) {
-          changedMonthGroups.add(monthGroup);
+          changedMonthGroups.add(month);
         }
       }
     }
@@ -752,8 +751,8 @@ export class TimelineManager {
       this.#addAssetsToMonthGroups(combinedMoveAssets.flat().map((a) => a.asset));
     }
     const changedGeometry = changedMonthGroups.size > 0;
-    for (const monthGroup of changedMonthGroups) {
-      this.#updateGeometry(monthGroup, { invalidateHeight: true });
+    for (const month of changedMonthGroups) {
+      this.#updateGeometry(month, { invalidateHeight: true });
     }
     if (changedGeometry) {
       this.updateIntersections();
@@ -782,14 +781,14 @@ export class TimelineManager {
   }
 
   refreshLayout() {
-    for (const monthGroup of this.buckets) {
-      this.#updateGeometry(monthGroup, { invalidateHeight: true });
+    for (const month of this.months) {
+      this.#updateGeometry(month, { invalidateHeight: true });
     }
     this.updateIntersections();
   }
 
   getFirstAsset(): TimelineAsset | undefined {
-    return this.buckets[0]?.getFirstAsset();
+    return this.months[0]?.getFirstAsset();
   }
 
   async getLaterAsset(
@@ -908,20 +907,20 @@ export class TimelineManager {
     }
   }
 
-  async #getAssetByMonthOffset(monthGroup: MonthGroup, direction: Direction) {
-    for (const targetMonthGroup of this.bucketsIterator({ startMonthGroup: monthGroup, direction })) {
-      if (targetMonthGroup.yearMonth.month !== monthGroup.yearMonth.month) {
-        for await (const targetAsset of this.assetsIterator({ startMonthGroup: targetMonthGroup, direction })) {
+  async #getAssetByMonthOffset(month: MonthGroup, direction: Direction) {
+    for (const targetMonth of this.bucketsIterator({ startMonthGroup: month, direction })) {
+      if (targetMonth.yearMonth.month !== month.yearMonth.month) {
+        for await (const targetAsset of this.assetsIterator({ startMonthGroup: targetMonth, direction })) {
           return targetAsset;
         }
       }
     }
   }
 
-  async #getAssetByYearOffset(monthGroup: MonthGroup, direction: Direction) {
-    for (const targetMonthGroup of this.bucketsIterator({ startMonthGroup: monthGroup, direction })) {
-      if (targetMonthGroup.yearMonth.year !== monthGroup.yearMonth.year) {
-        for await (const targetAsset of this.assetsIterator({ startMonthGroup: targetMonthGroup, direction })) {
+  async #getAssetByYearOffset(month: MonthGroup, direction: Direction) {
+    for (const targetMonth of this.bucketsIterator({ startMonthGroup: month, direction })) {
+      if (targetMonth.yearMonth.year !== month.yearMonth.year) {
+        for await (const targetAsset of this.assetsIterator({ startMonthGroup: targetMonth, direction })) {
           return targetAsset;
         }
       }
