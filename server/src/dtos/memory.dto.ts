@@ -102,6 +102,6 @@ export const mapMemory = (entity: Memory, auth: AuthDto): MemoryResponseDto => {
     type: entity.type as MemoryType,
     data: entity.data as unknown as MemoryData,
     isSaved: entity.isSaved,
-    assets: ('assets' in entity ? entity.assets : []).map((asset) => mapAsset(asset, { auth })),
+    assets: ('assets' in entity ? entity.assets : []).map((asset) => mapAsset(asset, { userId: auth.user.id })),
   };
 };

@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Selectable } from 'kysely';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
 import {
   AssetFaceWithoutPersonResponseDto,
@@ -136,7 +135,7 @@ export class AssetStackResponseDto {
 export type AssetMapOptions = {
   stripMetadata?: boolean;
   withStack?: boolean;
-  auth?: AuthDto;
+  userId?: string;
 };
 
 // TODO: this is inefficient
@@ -203,7 +202,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     fileModifiedAt: entity.fileModifiedAt,
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
-    isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
+    isFavorite: options.userId === entity.ownerId ? entity.isFavorite : false,
     isArchived: entity.visibility === AssetVisibility.ARCHIVE,
     isTrashed: !!entity.deletedAt,
     visibility: entity.visibility,

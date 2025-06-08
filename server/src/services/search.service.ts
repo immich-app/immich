@@ -38,7 +38,10 @@ export class SearchService extends BaseService {
     const options = { maxFields: 12, minAssetsPerField: 5 };
     const cities = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
     const assets = await this.assetRepository.getByIdsWithAllRelationsButStacks(cities.items.map(({ data }) => data));
-    const items = assets.map((asset) => ({ value: asset.exifInfo!.city!, data: mapAsset(asset, { auth }) }));
+    const items = assets.map((asset) => ({
+      value: asset.exifInfo!.city!,
+      data: mapAsset(asset, { userId: auth.user.id }),
+    }));
     return [{ fieldName: cities.fieldName, items }];
   }
 
@@ -66,7 +69,7 @@ export class SearchService extends BaseService {
       },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { userId: auth.user.id });
   }
 
   async searchStatistics(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
@@ -85,7 +88,7 @@ export class SearchService extends BaseService {
 
     const userIds = await this.getUserIdsToSearch(auth);
     const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
-    return items.map((item) => mapAsset(item, { auth }));
+    return items.map((item) => mapAsset(item, { userId: auth.user.id }));
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
@@ -110,7 +113,7 @@ export class SearchService extends BaseService {
       { ...dto, userIds, embedding },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { userId: auth.user.id });
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
