@@ -1,4 +1,4 @@
-import { getAssetInfo, getTimeBucket, getTimeBuckets } from '@immich/sdk';
+import { AssetOrder, getAssetInfo, getTimeBucket, getTimeBuckets } from '@immich/sdk';
 
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
@@ -6,7 +6,6 @@ import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
   toISOYearMonthUTC,
   toTimelineAsset,
-  type TimelinePlainDate,
   type TimelinePlainDateTime,
   type TimelinePlainYearMonth,
 } from '$lib/utils/timeline-util';
@@ -17,6 +16,10 @@ import { SvelteSet } from 'svelte/reactivity';
 import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { layoutMonthGroup, updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import {
+  addAssetsToMonthGroups,
+  runAssetOperation,
+} from '$lib/managers/timeline-manager/internal/operations-support.svelte';
+import {
   findMonthGroupForAsset as findMonthGroupForAssetUtil,
   findMonthGroupForDate,
   getAssetWithOffset,
@@ -25,7 +28,6 @@ import {
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { DayGroup } from './day-group.svelte';
-import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
 import type {
@@ -389,7 +391,6 @@ export class TimelineManager {
     };
   }
 
-
   async loadMonthGroup(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }): Promise<void> {
     let cancelable = true;
     if (options) {
@@ -462,51 +463,7 @@ export class TimelineManager {
     }
 
     const notUpdated = this.updateAssets(assetsToUpdate);
-    this.#addAssetsToMonthGroups([...notUpdated]);
-  }
-
-  #addAssetsToMonthGroups(assets: TimelineAsset[]) {
-    if (assets.length === 0) {
-      return;
-    }
-
-    const addContext = new GroupInsertionCache();
-    const updatedMonthGroups = new Set<MonthGroup>();
-    const monthCount = this.months.length;
-    for (const asset of assets) {
-      let month = getMonthGroupByDate(this, asset.localDateTime);
-
-      if (!month) {
-        month = new MonthGroup(this, asset.localDateTime, 1, this.#options.order);
-        month.isLoaded = true;
-        this.months.push(month);
-      }
-
-      month.addTimelineAsset(asset, addContext);
-      updatedMonthGroups.add(month);
-    }
-
-    if (this.months.length !== monthCount) {
-      this.months.sort((a, b) => {
-        return a.yearMonth.year === b.yearMonth.year
-          ? b.yearMonth.month - a.yearMonth.month
-          : b.yearMonth.year - a.yearMonth.year;
-      });
-    }
-
-    for (const group of addContext.existingDayGroups) {
-      group.sortAssets(this.#options.order);
-    }
-
-    for (const monthGroup of addContext.bucketsWithNewDayGroups) {
-      monthGroup.sortDayGroups();
-    }
-
-    for (const month of addContext.updatedBuckets) {
-      month.sortDayGroups();
-      updateGeometry(this, month, { invalidateHeight: true });
-    }
-    this.updateIntersections();
+    addAssetsToMonthGroups(this, [...notUpdated], { order: this.#options.order ?? AssetOrder.Desc });
   }
 
   async findMonthGroupForAsset(id: string) {
@@ -532,7 +489,7 @@ export class TimelineManager {
     return getMonthGroupByDate(this, yearMonth);
   }
 
-  getMonthGroupIndexByAssetId(assetId: string) {
+  getMonthGroupByAssetId(assetId: string) {
     const monthGroupInfo = findMonthGroupForAssetUtil(this, assetId);
     return monthGroupInfo?.monthGroup;
   }
@@ -549,60 +506,33 @@ export class TimelineManager {
     return month?.getRandomAsset();
   }
 
-  #runAssetOperation(ids: Set<string>, operation: AssetOperation) {
-    if (ids.size === 0) {
-      return { processedIds: new Set(), unprocessedIds: ids, changedGeometry: false };
-    }
-
-    const changedMonthGroups = new Set<MonthGroup>();
-    let idsToProcess = new Set(ids);
-    const idsProcessed = new Set<string>();
-    const combinedMoveAssets: { asset: TimelineAsset; date: TimelinePlainDate }[][] = [];
-    for (const month of this.months) {
-      if (idsToProcess.size > 0) {
-        const { moveAssets, processedIds, changedGeometry } = month.runAssetOperation(idsToProcess, operation);
-        if (moveAssets.length > 0) {
-          combinedMoveAssets.push(moveAssets);
-        }
-        idsToProcess = idsToProcess.difference(processedIds);
-        for (const id of processedIds) {
-          idsProcessed.add(id);
-        }
-        if (changedGeometry) {
-          changedMonthGroups.add(month);
-        }
-      }
-    }
-    if (combinedMoveAssets.length > 0) {
-      this.#addAssetsToMonthGroups(combinedMoveAssets.flat().map((a) => a.asset));
-    }
-    const changedGeometry = changedMonthGroups.size > 0;
-    for (const month of changedMonthGroups) {
-      updateGeometry(this, month, { invalidateHeight: true });
-    }
-    if (changedGeometry) {
-      this.updateIntersections();
-    }
-    return { unprocessedIds: idsToProcess, processedIds: idsProcessed, changedGeometry };
-  }
-
   updateAssetOperation(ids: string[], operation: AssetOperation) {
-    this.#runAssetOperation(new Set(ids), operation);
+    runAssetOperation(this, new Set(ids), operation, { order: this.#options.order ?? AssetOrder.Desc });
   }
 
   updateAssets(assets: TimelineAsset[]) {
     const lookup = new Map<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
-    const { unprocessedIds } = this.#runAssetOperation(new Set(lookup.keys()), (asset) => {
-      updateObject(asset, lookup.get(asset.id));
-      return { remove: false };
-    });
+    const { unprocessedIds } = runAssetOperation(
+      this,
+      new Set(lookup.keys()),
+      (asset) => {
+        updateObject(asset, lookup.get(asset.id));
+        return { remove: false };
+      },
+      { order: this.#options.order ?? AssetOrder.Desc },
+    );
     return unprocessedIds.values().map((id) => lookup.get(id)!);
   }
 
   removeAssets(ids: string[]) {
-    const { unprocessedIds } = this.#runAssetOperation(new Set(ids), () => {
-      return { remove: true };
-    });
+    const { unprocessedIds } = runAssetOperation(
+      this,
+      new Set(ids),
+      () => {
+        return { remove: true };
+      },
+      { order: this.#options.order ?? AssetOrder.Desc },
+    );
     return [...unprocessedIds];
   }
 

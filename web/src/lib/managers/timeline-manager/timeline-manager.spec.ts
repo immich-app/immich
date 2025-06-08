@@ -556,10 +556,10 @@ describe('TimelineManager', () => {
       );
       timelineManager.addAssets([assetOne, assetTwo]);
 
-      expect(timelineManager.getMonthGroupIndexByAssetId(assetTwo.id)?.yearMonth.year).toEqual(2024);
-      expect(timelineManager.getMonthGroupIndexByAssetId(assetTwo.id)?.yearMonth.month).toEqual(2);
-      expect(timelineManager.getMonthGroupIndexByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
-      expect(timelineManager.getMonthGroupIndexByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
+      expect(timelineManager.getMonthGroupByAssetId(assetTwo.id)?.yearMonth.year).toEqual(2024);
+      expect(timelineManager.getMonthGroupByAssetId(assetTwo.id)?.yearMonth.month).toEqual(2);
+      expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
+      expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
     });
 
     it('ignores removed months', () => {
@@ -576,8 +576,8 @@ describe('TimelineManager', () => {
       timelineManager.addAssets([assetOne, assetTwo]);
 
       timelineManager.removeAssets([assetTwo.id]);
-      expect(timelineManager.getMonthGroupIndexByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
-      expect(timelineManager.getMonthGroupIndexByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
+      expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
+      expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
     });
   });
 });

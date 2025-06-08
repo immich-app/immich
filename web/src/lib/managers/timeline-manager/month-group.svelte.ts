@@ -248,18 +248,18 @@ export class MonthGroup {
     const index = store.months.indexOf(this);
     const heightDelta = height - this.#height;
     this.#height = height;
-    const prevBucket = store.months[index - 1];
-    if (prevBucket) {
-      const newTop = prevBucket.#top + prevBucket.#height;
+    const prevMonthGroup = store.months[index - 1];
+    if (prevMonthGroup) {
+      const newTop = prevMonthGroup.#top + prevMonthGroup.#height;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
     }
     for (let cursor = index + 1; cursor < store.months.length; cursor++) {
-      const bucket = this.timelineManager.months[cursor];
-      const newTop = bucket.#top + heightDelta;
-      if (bucket.#top !== newTop) {
-        bucket.#top = newTop;
+      const monthGroup = this.timelineManager.months[cursor];
+      const newTop = monthGroup.#top + heightDelta;
+      if (monthGroup.#top !== newTop) {
+        monthGroup.#top = newTop;
       }
     }
     if (store.topIntersectingMonthGroup) {

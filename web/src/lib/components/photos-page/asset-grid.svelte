@@ -162,7 +162,7 @@
   };
 
   const scrollToAsset = (asset: TimelineAsset) => {
-    const monthGroup = timelineManager.getMonthGroupIndexByAssetId(asset.id);
+    const monthGroup = timelineManager.getMonthGroupByAssetId(asset.id);
     if (!monthGroup) {
       return false;
     }
@@ -603,8 +603,8 @@
     assetInteraction.clearAssetSelectionCandidates();
 
     if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = timelineManager.getMonthGroupIndexByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucket = timelineManager.getMonthGroupIndexByAssetId(asset.id);
+      let startBucket = timelineManager.getMonthGroupByAssetId(assetInteraction.assetSelectionStart.id);
+      let endBucket = timelineManager.getMonthGroupByAssetId(asset.id);
 
       if (startBucket === null || endBucket === null) {
         return;

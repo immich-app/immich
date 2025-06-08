@@ -2,11 +2,7 @@ import type { MonthGroup } from '../month-group.svelte';
 import type { TimelineManager } from '../timeline-manager.svelte';
 import type { UpdateGeometryOptions } from '../types';
 
-export function updateGeometry(
-  timelineManager: TimelineManager,
-  month: MonthGroup,
-  options: UpdateGeometryOptions,
-) {
+export function updateGeometry(timelineManager: TimelineManager, month: MonthGroup, options: UpdateGeometryOptions) {
   const { invalidateHeight, noDefer = false } = options;
   if (invalidateHeight) {
     month.isHeightActual = false;
