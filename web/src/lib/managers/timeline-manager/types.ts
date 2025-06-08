@@ -74,12 +74,12 @@ export interface UpdateStackAssets {
 
 export type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets | UpdateStackAssets;
 
-export type LiteBucket = {
+export type ScrubberMonth = {
   height: number;
   assetCount: number;
   year: number;
   month: number;
-  bucketDateFormattted: string;
+  title: string;
 };
 
 export type TimelineManagerLayoutOptions = {

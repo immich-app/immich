@@ -94,8 +94,8 @@
   let timelineElement: HTMLElement | undefined = $state();
   let showSkeleton = $state(true);
   let isShowSelectDate = $state(false);
-  let scrubBucketPercent = $state(0);
-  let scrubBucket: TimelinePlainYearMonth | undefined = $state();
+  let scrubberMonthPercent = $state(0);
+  let scrubberMonth: TimelinePlainYearMonth | undefined = $state();
   let scrubOverallPercent: number = $state(0);
   let scrubberWidth = $state(0);
 
@@ -321,14 +321,14 @@
       const maxScroll = getMaxScroll();
       scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
 
-      scrubBucket = undefined;
-      scrubBucketPercent = 0;
+      scrubberMonth = undefined;
+      scrubberMonthPercent = 0;
     } else {
       let top = element.scrollTop;
       if (top < timelineManager.topSectionHeight) {
         // in the lead-in area
-        scrubBucket = undefined;
-        scrubBucketPercent = 0;
+        scrubberMonth = undefined;
+        scrubberMonthPercent = 0;
         const maxScroll = getMaxScroll();
 
         scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
@@ -356,15 +356,15 @@
         let next = top - monthGroupHeight * maxScrollPercent;
         // instead of checking for < 0, add a little wiggle room for subpixel resolution
         if (next < -1 && monthGroup) {
-          scrubBucket = monthGroup;
+          scrubberMonth = monthGroup;
 
           // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
-          scrubBucketPercent = Math.max(0, top / (monthGroupHeight * maxScrollPercent));
+          scrubberMonthPercent = Math.max(0, top / (monthGroupHeight * maxScrollPercent));
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
-          if (scrubBucketPercent > 0.9999 && i + 1 < monthsLength - 1) {
-            scrubBucket = timelineManager.months[i + 1].yearMonth;
-            scrubBucketPercent = 0;
+          if (scrubberMonthPercent > 0.9999 && i + 1 < monthsLength - 1) {
+            scrubberMonth = timelineManager.months[i + 1].yearMonth;
+            scrubberMonthPercent = 0;
           }
 
           found = true;
@@ -374,8 +374,8 @@
       }
       if (!found) {
         leadout = true;
-        scrubBucket = undefined;
-        scrubBucketPercent = 0;
+        scrubberMonth = undefined;
+        scrubberMonthPercent = 0;
         scrubOverallPercent = 1;
       }
     }
@@ -793,8 +793,8 @@
     timelineBottomOffset={bottomSectionHeight}
     {leadout}
     {scrubOverallPercent}
-    {scrubBucketPercent}
-    {scrubBucket}
+    {scrubberMonthPercent}
+    {scrubberMonth}
     {onScrub}
     bind:scrubberWidth
     onScrubKeyDown={(evt) => {
@@ -815,7 +815,7 @@
   />
 {/if}
 
-<!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
+<!-- Right margin MUST be equal to the width of scrubber -->
 <section
   id="asset-grid"
   class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}

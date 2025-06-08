@@ -24,8 +24,8 @@ import type {
   AssetDescriptor,
   AssetOperation,
   Direction,
-  LiteBucket,
   PendingChange,
+  ScrubberMonth,
   TimelineAsset,
   TimelineManagerLayoutOptions,
   TimelineManagerOptions,
@@ -47,7 +47,7 @@ export class TimelineManager {
 
   albumAssets: Set<string> = new SvelteSet();
 
-  scrubberBuckets: LiteBucket[] = $state([]);
+  scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
 
   topIntersectingMonthGroup: MonthGroup | undefined = $state();
@@ -465,11 +465,11 @@ export class TimelineManager {
   }
 
   #createScrubBuckets() {
-    this.scrubberBuckets = this.months.map((month) => ({
+    this.scrubberMonths = this.months.map((month) => ({
       assetCount: month.assetsCount,
       year: month.yearMonth.year,
       month: month.yearMonth.month,
-      bucketDateFormattted: month.monthGroupTitle,
+      title: month.monthGroupTitle,
       height: month.height,
     }));
     this.scrubberTimelineHeight = this.timelineHeight;
