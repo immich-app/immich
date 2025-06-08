@@ -15,6 +15,7 @@ import { clamp, debounce, isEqual } from 'lodash-es';
 import { SvelteSet } from 'svelte/reactivity';
 
 import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
+import { layoutMonthGroup, updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import {
   findMonthGroupForAsset as findMonthGroupForAssetUtil,
   findMonthGroupForDate,
@@ -35,7 +36,6 @@ import type {
   TimelineAsset,
   TimelineManagerLayoutOptions,
   TimelineManagerOptions,
-  UpdateGeometryOptions,
   Viewport,
 } from './types';
 
@@ -281,7 +281,7 @@ export class TimelineManager {
   clearDeferredLayout(month: MonthGroup) {
     const hasDeferred = month.dayGroups.some((group) => group.deferredLayout);
     if (hasDeferred) {
-      this.#updateGeometry(month, { invalidateHeight: true, noDefer: true });
+      updateGeometry(this, month, { invalidateHeight: true, noDefer: true });
       for (const group of month.dayGroups) {
         group.deferredLayout = false;
       }
@@ -361,7 +361,7 @@ export class TimelineManager {
       return;
     }
     for (const month of this.months) {
-      this.#updateGeometry(month, { invalidateHeight: changedWidth });
+      updateGeometry(this, month, { invalidateHeight: changedWidth });
     }
     this.updateIntersections();
     this.#createScrubberMonths();
@@ -389,75 +389,6 @@ export class TimelineManager {
     };
   }
 
-  #updateGeometry(month: MonthGroup, options: UpdateGeometryOptions) {
-    const { invalidateHeight, noDefer = false } = options;
-    if (invalidateHeight) {
-      month.isHeightActual = false;
-    }
-    if (!month.isLoaded) {
-      const viewportWidth = this.viewportWidth;
-      if (!month.isHeightActual) {
-        const unwrappedWidth = (3 / 2) * month.assetsCount * this.#rowHeight * (7 / 10);
-        const rows = Math.ceil(unwrappedWidth / viewportWidth);
-        const height = 51 + Math.max(1, rows) * this.#rowHeight;
-        month.height = height;
-      }
-      return;
-    }
-    this.#layoutMonthGroup(month, noDefer);
-  }
-
-  #layoutMonthGroup(month: MonthGroup, noDefer: boolean = false) {
-    let cummulativeHeight = 0;
-    let cummulativeWidth = 0;
-    let lastRowHeight = 0;
-    let lastRow = 0;
-
-    let dayGroupRow = 0;
-    let dayGroupCol = 0;
-
-    const rowSpaceRemaining: number[] = Array.from({ length: month.dayGroups.length });
-    rowSpaceRemaining.fill(this.viewportWidth, 0, month.dayGroups.length);
-    const options = this.createLayoutOptions();
-    for (const assetGroup of month.dayGroups) {
-      assetGroup.layout(options, noDefer);
-      rowSpaceRemaining[dayGroupRow] -= assetGroup.width - 1;
-      if (dayGroupCol > 0) {
-        rowSpaceRemaining[dayGroupRow] -= this.gap;
-      }
-      if (rowSpaceRemaining[dayGroupRow] >= 0) {
-        assetGroup.row = dayGroupRow;
-        assetGroup.col = dayGroupCol;
-        assetGroup.left = cummulativeWidth;
-        assetGroup.top = cummulativeHeight;
-
-        dayGroupCol++;
-
-        cummulativeWidth += assetGroup.width + this.gap;
-      } else {
-        cummulativeWidth = 0;
-        dayGroupRow++;
-        dayGroupCol = 0;
-        assetGroup.row = dayGroupRow;
-        assetGroup.col = dayGroupCol;
-        assetGroup.left = cummulativeWidth;
-
-        rowSpaceRemaining[dayGroupRow] -= assetGroup.width;
-        dayGroupCol++;
-        cummulativeHeight += lastRowHeight;
-        assetGroup.top = cummulativeHeight;
-        cummulativeWidth += assetGroup.width + this.gap;
-        lastRow = assetGroup.row - 1;
-      }
-      lastRowHeight = assetGroup.height + this.headerHeight;
-    }
-    if (lastRow === 0 || lastRow !== month.lastDayGroup?.row) {
-      cummulativeHeight += lastRowHeight;
-    }
-
-    month.height = cummulativeHeight;
-    month.isHeightActual = true;
-  }
 
   async loadMonthGroup(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }): Promise<void> {
     let cancelable = true;
@@ -512,7 +443,7 @@ export class TimelineManager {
             )}`,
           );
         }
-        this.#layoutMonthGroup(monthGroup);
+        layoutMonthGroup(this, monthGroup);
       }
     }, cancelable);
     if (result === 'LOADED') {
@@ -573,7 +504,7 @@ export class TimelineManager {
 
     for (const month of addContext.updatedBuckets) {
       month.sortDayGroups();
-      this.#updateGeometry(month, { invalidateHeight: true });
+      updateGeometry(this, month, { invalidateHeight: true });
     }
     this.updateIntersections();
   }
@@ -647,7 +578,7 @@ export class TimelineManager {
     }
     const changedGeometry = changedMonthGroups.size > 0;
     for (const month of changedMonthGroups) {
-      this.#updateGeometry(month, { invalidateHeight: true });
+      updateGeometry(this, month, { invalidateHeight: true });
     }
     if (changedGeometry) {
       this.updateIntersections();
@@ -677,7 +608,7 @@ export class TimelineManager {
 
   refreshLayout() {
     for (const month of this.months) {
-      this.#updateGeometry(month, { invalidateHeight: true });
+      updateGeometry(this, month, { invalidateHeight: true });
     }
     this.updateIntersections();
   }
