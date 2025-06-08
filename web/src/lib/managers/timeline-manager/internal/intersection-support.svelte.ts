@@ -7,10 +7,10 @@ const {
 } = TUNABLES;
 
 export function updateIntersectionMonthGroup(timelineManager: TimelineManager, month: MonthGroup) {
-  const actuallyIntersecting = calculateIntersecting(timelineManager, month, 0, 0);
+  const actuallyIntersecting = calculateMonthGroupIntersecting(timelineManager, month, 0, 0);
   let preIntersecting = false;
   if (!actuallyIntersecting) {
-    preIntersecting = calculateIntersecting(
+    preIntersecting = calculateMonthGroupIntersecting(
       timelineManager,
       month,
       INTERSECTION_EXPAND_TOP,
@@ -40,7 +40,7 @@ export function isIntersecting(regionTop: number, regionBottom: number, windowTo
   );
 }
 
-export function calculateIntersecting(
+export function calculateMonthGroupIntersecting(
   timelineManager: TimelineManager,
   monthGroup: MonthGroup,
   expandTop: number,
