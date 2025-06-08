@@ -14,7 +14,7 @@ import {
 import { clamp, debounce, isEqual } from 'lodash-es';
 import { SvelteSet } from 'svelte/reactivity';
 
-import { updateIntersection } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
+import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import {
   findMonthGroupForAsset as findMonthGroupForAssetUtil,
   findMonthGroupForDate,
@@ -257,7 +257,7 @@ export class TimelineManager {
     }
     let topIntersectingMonthGroup = undefined;
     for (const month of this.months) {
-      updateIntersection(this, month);
+      updateIntersectionMonthGroup(this, month);
       if (!topIntersectingMonthGroup && month.actuallyIntersecting) {
         topIntersectingMonthGroup = month;
       }
@@ -516,7 +516,7 @@ export class TimelineManager {
       }
     }, cancelable);
     if (result === 'LOADED') {
-      updateIntersection(this, monthGroup);
+      updateIntersectionMonthGroup(this, monthGroup);
     }
   }
 
