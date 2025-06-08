@@ -1,10 +1,10 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { TimelineManager } from './timeline-manager.svelte';
-import type { TimelineAsset } from './types';
 import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
+import { TimelineManager } from './timeline-manager.svelte';
+import type { TimelineAsset } from './types';
 
 async function getAssets(timelineManager: TimelineManager) {
   const assets = [];

@@ -501,7 +501,7 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
       }
       assetInteraction.selectAssets(assetsSnapshot([...monthGroup.assetsIterator()]));
 
-      for (const dateGroup of monthGroup.dateGroups) {
+      for (const dateGroup of monthGroup.dayGroups) {
         assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);
       }
     }

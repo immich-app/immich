@@ -51,7 +51,12 @@
 
   const transitionDuration = $derived.by(() => (bucket.store.suspendTransitions && !$isUploading ? 0 : 150));
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-  const onClick = (timelineManager: TimelineManager, assets: TimelineAsset[], groupTitle: string, asset: TimelineAsset) => {
+  const onClick = (
+    timelineManager: TimelineManager,
+    assets: TimelineAsset[],
+    groupTitle: string,
+    asset: TimelineAsset,
+  ) => {
     if (isSelectionMode || assetInteraction.selectionActive) {
       assetSelectHandler(timelineManager, asset, assets, groupTitle);
       return;
@@ -162,11 +167,11 @@
       style:height={dayGroup.height + 'px'}
       style:width={dayGroup.width + 'px'}
     >
-      {#each filterIntersecting(dayGroup.intersectingAssets) as intersectingAsset (intersectingAsset.id)}
-        {@const position = intersectingAsset.position!}
-        {@const asset = intersectingAsset.asset!}
+      {#each filterIntersecting(dayGroup.viewerAssets) as viewerAsset (viewerAsset.id)}
+        {@const position = viewerAsset.position!}
+        {@const asset = viewerAsset.asset!}
 
-        <!-- {#if intersectingAsset.intersecting} -->
+        <!-- {#if viewerAsset.intersecting} -->
         <!-- note: don't remove data-asset-id - its used by web e2e tests -->
         <div
           data-asset-id={asset.id}

@@ -271,7 +271,9 @@
     if (!element || !timelineElement) {
       return 0;
     }
-    return timelineManager.topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
+    return (
+      timelineManager.topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight)
+    );
   };
 
   const scrollToMonthGroupAndOffset = (monthGroup: MonthGroup, monthGroupScrollPercent: number) => {
@@ -772,7 +774,9 @@
     timezoneInput={false}
     onConfirm={async (dateString: string) => {
       isShowSelectDate = false;
-      const asset = await timelineManager.getClosestAssetToDate((DateTime.fromISO(dateString) as DateTime<true>).toObject());
+      const asset = await timelineManager.getClosestAssetToDate(
+        (DateTime.fromISO(dateString) as DateTime<true>).toObject(),
+      );
       if (asset) {
         setFocusAsset(asset);
       }

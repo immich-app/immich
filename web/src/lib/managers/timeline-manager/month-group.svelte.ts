@@ -38,7 +38,7 @@ export class MonthGroup {
 
   bucketCount: number = $derived(
     this.isLoaded
-      ? this.dayGroups.reduce((accumulator, g) => accumulator + g.intersectingAssets.length, 0)
+      ? this.dayGroups.reduce((accumulator, g) => accumulator + g.viewerAssets.length, 0)
       : this.#initialCount,
   );
   loader: CancellableTask | undefined;
@@ -137,7 +137,7 @@ export class MonthGroup {
           idsProcessed.add(id);
         }
         combinedChangedGeometry = combinedChangedGeometry || changedGeometry;
-        if (group.intersectingAssets.length === 0) {
+        if (group.viewerAssets.length === 0) {
           dayGroups.splice(index, 1);
           combinedChangedGeometry = true;
         }
@@ -221,8 +221,8 @@ export class MonthGroup {
       addContext.newDayGroups.add(dayGroup);
     }
 
-    const intersectingAsset = new ViewerAsset(dayGroup, timelineAsset);
-    dayGroup.intersectingAssets.push(intersectingAsset);
+    const viewerAsset = new ViewerAsset(dayGroup, timelineAsset);
+    dayGroup.viewerAssets.push(viewerAsset);
     addContext.changedDayGroups.add(dayGroup);
   }
 
@@ -262,8 +262,8 @@ export class MonthGroup {
         bucket.#top = newTop;
       }
     }
-    if (store.topIntersectingBucket) {
-      const currentIndex = store.months.indexOf(store.topIntersectingBucket);
+    if (store.topIntersectingMonthGroup) {
+      const currentIndex = store.months.indexOf(store.topIntersectingMonthGroup);
       if (currentIndex > 0) {
         if (index < currentIndex) {
           store.scrollCompensation = {
@@ -298,7 +298,7 @@ export class MonthGroup {
 
   findDayGroupForAsset(asset: TimelineAsset) {
     for (const group of this.dayGroups) {
-      if (group.intersectingAssets.some((IntersectingAsset) => IntersectingAsset.id === asset.id)) {
+      if (group.viewerAssets.some((viewerAsset) => viewerAsset.id === asset.id)) {
         return group;
       }
     }
@@ -311,13 +311,13 @@ export class MonthGroup {
   findAssetAbsolutePosition(assetId: string) {
     this.store.clearDeferredLayout(this);
     for (const group of this.dayGroups) {
-      const intersectingAsset = group.intersectingAssets.find((asset) => asset.id === assetId);
-      if (intersectingAsset) {
-        if (!intersectingAsset.position) {
+      const viewerAsset = group.viewerAssets.find((viewAsset) => viewAsset.id === assetId);
+      if (viewerAsset) {
+        if (!viewerAsset.position) {
           console.warn('No position for asset');
           break;
         }
-        return this.top + group.top + intersectingAsset.position.top + this.store.headerHeight;
+        return this.top + group.top + viewerAsset.position.top + this.store.headerHeight;
       }
     }
     return -1;

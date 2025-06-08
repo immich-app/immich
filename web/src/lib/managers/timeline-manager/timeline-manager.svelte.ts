@@ -23,12 +23,12 @@ import { MonthGroup } from './month-group.svelte';
 import type {
   AssetDescriptor,
   AssetOperation,
-  TimelineManagerLayoutOptions,
-  TimelineManagerOptions,
   Direction,
   LiteBucket,
   PendingChange,
   TimelineAsset,
+  TimelineManagerLayoutOptions,
+  TimelineManagerOptions,
   UpdateGeometryOptions,
   Viewport,
 } from './types';
@@ -52,7 +52,7 @@ export class TimelineManager {
   scrubberBuckets: LiteBucket[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
 
-  topIntersectingBucket: MonthGroup | undefined = $state();
+  topIntersectingMonthGroup: MonthGroup | undefined = $state();
 
   visibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
@@ -321,13 +321,13 @@ export class TimelineManager {
         topIntersectingMonthGroup = month;
       }
     }
-    if (topIntersectingMonthGroup !== undefined && this.topIntersectingBucket !== topIntersectingMonthGroup) {
-      this.topIntersectingBucket = topIntersectingMonthGroup;
+    if (topIntersectingMonthGroup !== undefined && this.topIntersectingMonthGroup !== topIntersectingMonthGroup) {
+      this.topIntersectingMonthGroup = topIntersectingMonthGroup;
     }
     for (const month of this.months) {
-      if (month === this.topIntersectingBucket) {
-        this.topIntersectingBucket.percent = clamp(
-          (this.visibleWindow.top - this.topIntersectingBucket.top) / this.topIntersectingBucket.bucketHeight,
+      if (month === this.topIntersectingMonthGroup) {
+        this.topIntersectingMonthGroup.percent = clamp(
+          (this.visibleWindow.top - this.topIntersectingMonthGroup.top) / this.topIntersectingMonthGroup.bucketHeight,
           0,
           1,
         );
