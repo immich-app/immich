@@ -381,6 +381,7 @@ export enum SettingInputFieldType {
   NUMBER = 'number',
   PASSWORD = 'password',
   COLOR = 'color',
+  NAME = 'name',
 }
 
 export const AlbumPageViewMode = {
