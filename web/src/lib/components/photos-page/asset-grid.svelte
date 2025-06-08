@@ -15,18 +15,18 @@
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import type { AssetBucket } from '$lib/managers/timeline-manager/asset-bucket.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
@@ -47,7 +47,7 @@
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
      additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
-    assetStore: AssetStore;
+    assetStore: TimelineManager;
     assetInteraction: AssetInteraction;
     removeAction?:
       | AssetAction.UNARCHIVE
@@ -138,7 +138,7 @@
     scrollTo(0);
   };
 
-  const getAssetHeight = (assetId: string, bucket: AssetBucket) => {
+  const getAssetHeight = (assetId: string, bucket: TimelineMonth) => {
     // the following method may trigger any layouts, so need to
     // handle any scroll compensation that may have been set
     const height = bucket!.findAssetAbsolutePosition(assetId);
@@ -274,7 +274,7 @@
     return assetStore.topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
   };
 
-  const scrollToBucketAndOffset = (bucket: AssetBucket, bucketScrollPercent: number) => {
+  const scrollToBucketAndOffset = (bucket: TimelineMonth, bucketScrollPercent: number) => {
     const topOffset = bucket.top;
     const maxScrollPercent = getMaxScrollPercent();
     const delta = bucket.bucketHeight * bucketScrollPercent;
@@ -551,7 +551,7 @@
     lastAssetMouseEvent = asset;
   };
 
-  const handleGroupSelect = (assetStore: AssetStore, group: string, assets: TimelineAsset[]) => {
+  const handleGroupSelect = (assetStore: TimelineManager, group: string, assets: TimelineAsset[]) => {
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
@@ -637,12 +637,12 @@
         }
         if (started) {
           // Split bucket into date groups and check each group
-          for (const dateGroup of bucket.dateGroups) {
-            const dateGroupTitle = dateGroup.groupTitle;
-            if (dateGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-              assetInteraction.addGroupToMultiselectGroup(dateGroupTitle);
+          for (const dayGroup of bucket.dayGroups) {
+            const dayGroupTitle = dayGroup.groupTitle;
+            if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
+              assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
             } else {
-              assetInteraction.removeGroupFromMultiselectGroup(dateGroupTitle);
+              assetInteraction.removeGroupFromMultiselectGroup(dayGroupTitle);
             }
           }
         }

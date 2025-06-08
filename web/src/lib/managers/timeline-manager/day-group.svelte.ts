@@ -1,17 +1,19 @@
+import { AssetOrder } from '@immich/sdk';
+
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
-import { AssetOrder } from '@immich/sdk';
-import type { AssetBucket } from './asset-bucket.svelte';
-import { IntersectingAsset } from './intersecting-asset.svelte';
-import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
 
-export class AssetDateGroup {
-  readonly bucket: AssetBucket;
+import type { TimelineMonth } from './timeline-month.svelte';
+import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import { ViewerAsset } from './viewer-asset.svelte';
+
+export class DayGroup {
+  readonly bucket: TimelineMonth;
   readonly index: number;
   readonly groupTitle: string;
   readonly day: number;
-  intersectingAssets: IntersectingAsset[] = $state([]);
+  intersectingAssets: ViewerAsset[] = $state([]);
 
   height = $state(0);
   width = $state(0);
@@ -23,7 +25,7 @@ export class AssetDateGroup {
   #col = $state(0);
   #deferredLayout = false;
 
-  constructor(bucket: AssetBucket, index: number, day: number, groupTitle: string) {
+  constructor(bucket: TimelineMonth, index: number, day: number, groupTitle: string) {
     this.index = index;
     this.bucket = bucket;
     this.day = day;
@@ -156,7 +158,7 @@ export class AssetDateGroup {
     }
   }
 
-  get absoluteDateGroupTop() {
+  get absoluteDayGroupTop() {
     return this.bucket.top + this.#top;
   }
 }

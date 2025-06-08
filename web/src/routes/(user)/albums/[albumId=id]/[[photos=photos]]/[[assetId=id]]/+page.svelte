@@ -36,13 +36,14 @@
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
@@ -87,7 +88,6 @@
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
   interface Props {
     data: PageData;
@@ -374,7 +374,7 @@
     }
   });
 
-  let assetStore = new AssetStore();
+  let assetStore = new TimelineManager();
 
   $effect(() => {
     if (viewMode === AlbumPageViewMode.VIEW) {

@@ -14,8 +14,8 @@
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -36,7 +36,7 @@
     handlePromiseError(goto(AppRoute.PHOTOS));
   }
 
-  const assetStore = new AssetStore();
+  const assetStore = new TimelineManager();
   void assetStore.updateOptions({ isTrashed: true });
   onDestroy(() => assetStore.destroy());
 

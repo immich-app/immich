@@ -22,9 +22,9 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import {
@@ -41,7 +41,7 @@
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  const assetStore = new AssetStore();
+  const assetStore = new TimelineManager();
   void assetStore.updateOptions({ visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true });
   onDestroy(() => assetStore.destroy());
 

@@ -1,12 +1,12 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 
-async function getAssets(store: AssetStore) {
+async function getAssets(store: TimelineManager) {
   const assets = [];
   for await (const asset of store.assetsIterator()) {
     assets.push(asset);
@@ -27,7 +27,7 @@ describe('AssetStore', () => {
   });
 
   describe('init', () => {
-    let assetStore: AssetStore;
+    let assetStore: TimelineManager;
     const bucketAssets: Record<string, TimelineAsset[]> = {
       '2024-03-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
@@ -54,7 +54,7 @@ describe('AssetStore', () => {
     );
 
     beforeEach(async () => {
-      assetStore = new AssetStore();
+      assetStore = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([
         { count: 1, timeBucket: '2024-03-01' },
         { count: 100, timeBucket: '2024-02-01' },
@@ -92,7 +92,7 @@ describe('AssetStore', () => {
   });
 
   describe('loadBucket', () => {
-    let assetStore: AssetStore;
+    let assetStore: TimelineManager;
     const bucketAssets: Record<string, TimelineAsset[]> = {
       '2024-01-03T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
@@ -111,7 +111,7 @@ describe('AssetStore', () => {
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
     );
     beforeEach(async () => {
-      assetStore = new AssetStore();
+      assetStore = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([
         { count: 1, timeBucket: '2024-03-01T00:00:00.000Z' },
         { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
@@ -173,10 +173,10 @@ describe('AssetStore', () => {
   });
 
   describe('addAssets', () => {
-    let assetStore: AssetStore;
+    let assetStore: TimelineManager;
 
     beforeEach(async () => {
-      assetStore = new AssetStore();
+      assetStore = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
 
       await assetStore.updateViewport({ width: 1588, height: 1000 });
@@ -289,7 +289,7 @@ describe('AssetStore', () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ isTrashed: false }));
       const trashedAsset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ isTrashed: true }));
 
-      const assetStore = new AssetStore();
+      const assetStore = new TimelineManager();
       await assetStore.updateOptions({ isTrashed: true });
       assetStore.addAssets([asset, trashedAsset]);
       expect(await getAssets(assetStore)).toEqual([trashedAsset]);
@@ -297,10 +297,10 @@ describe('AssetStore', () => {
   });
 
   describe('updateAssets', () => {
-    let assetStore: AssetStore;
+    let assetStore: TimelineManager;
 
     beforeEach(async () => {
-      assetStore = new AssetStore();
+      assetStore = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
 
       await assetStore.updateViewport({ width: 1588, height: 1000 });
@@ -352,10 +352,10 @@ describe('AssetStore', () => {
   });
 
   describe('removeAssets', () => {
-    let assetStore: AssetStore;
+    let assetStore: TimelineManager;
 
     beforeEach(async () => {
-      assetStore = new AssetStore();
+      assetStore = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
 
       await assetStore.updateViewport({ width: 1588, height: 1000 });
@@ -405,10 +405,10 @@ describe('AssetStore', () => {
   });
 
   describe('firstAsset', () => {
-    let assetStore: AssetStore;
+    let assetStore: TimelineManager;
 
     beforeEach(async () => {
-      assetStore = new AssetStore();
+      assetStore = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
       await assetStore.updateViewport({ width: 0, height: 0 });
     });
@@ -434,7 +434,7 @@ describe('AssetStore', () => {
   });
 
   describe('getLaterAsset', () => {
-    let assetStore: AssetStore;
+    let assetStore: TimelineManager;
     const bucketAssets: Record<string, TimelineAsset[]> = {
       '2024-03-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
@@ -460,7 +460,7 @@ describe('AssetStore', () => {
     );
 
     beforeEach(async () => {
-      assetStore = new AssetStore();
+      assetStore = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([
         { count: 1, timeBucket: '2024-03-01T00:00:00.000Z' },
         { count: 6, timeBucket: '2024-02-01T00:00:00.000Z' },
@@ -528,10 +528,10 @@ describe('AssetStore', () => {
   });
 
   describe('getBucketIndexByAssetId', () => {
-    let assetStore: AssetStore;
+    let assetStore: TimelineManager;
 
     beforeEach(async () => {
-      assetStore = new AssetStore();
+      assetStore = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
 
       await assetStore.updateViewport({ width: 0, height: 0 });

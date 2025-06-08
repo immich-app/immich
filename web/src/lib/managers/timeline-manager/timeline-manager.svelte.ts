@@ -1,3 +1,5 @@
+import { getAssetInfo, getTimeBucket, getTimeBuckets } from '@immich/sdk';
+
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { websocketEvents } from '$lib/stores/websocket';
 import { CancellableTask } from '$lib/utils/cancellable-task';
@@ -10,13 +12,14 @@ import {
   type TimelinePlainYearMonth,
 } from '$lib/utils/timeline-util';
 import { TUNABLES } from '$lib/utils/tunables';
-import { getAssetInfo, getTimeBucket, getTimeBuckets } from '@immich/sdk';
+
 import { clamp, debounce, isEqual, throttle } from 'lodash-es';
 import { SvelteSet } from 'svelte/reactivity';
 import type { Unsubscriber } from 'svelte/store';
-import { AddContext } from './add-context.svelte';
-import { AssetBucket } from './asset-bucket.svelte';
-import { AssetDateGroup } from './asset-date-group.svelte';
+
+import { DayGroup } from './day-group.svelte';
+import { GroupInsertionCache } from './group-insertion-cache.svelte';
+import { TimelineMonth } from './timeline-month.svelte';
 import type {
   AssetDescriptor,
   AssetOperation,
@@ -35,9 +38,9 @@ const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
 } = TUNABLES;
 
-export class AssetStore {
+export class TimelineManager {
   isInitialized = $state(false);
-  buckets: AssetBucket[] = $state([]);
+  buckets: TimelineMonth[] = $state([]);
   topSectionHeight = $state(0);
   timelineHeight = $derived(
     this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0) + this.topSectionHeight,
@@ -49,7 +52,7 @@ export class AssetStore {
   scrubberBuckets: LiteBucket[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
 
-  topIntersectingBucket: AssetBucket | undefined = $state();
+  topIntersectingBucket: TimelineMonth | undefined = $state();
 
   visibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
@@ -82,7 +85,7 @@ export class AssetStore {
   #headerHeight = $state(48);
   #gap = $state(12);
 
-  #options: AssetStoreOptions = AssetStore.#INIT_OPTIONS;
+  #options: AssetStoreOptions = TimelineManager.#INIT_OPTIONS;
 
   #scrolling = $state(false);
   #suspendTransitions = $state(false);
@@ -91,7 +94,7 @@ export class AssetStore {
   scrollCompensation: {
     heightDelta: number | undefined;
     scrollTop: number | undefined;
-    bucket: AssetBucket | undefined;
+    bucket: TimelineMonth | undefined;
   } = $state({
     heightDelta: 0,
     scrollTop: 0,
@@ -191,21 +194,21 @@ export class AssetStore {
   }
 
   async *assetsIterator(options?: {
-    startBucket?: AssetBucket;
-    startDateGroup?: AssetDateGroup;
+    startBucket?: TimelineMonth;
+    startDayGroup?: DayGroup;
     startAsset?: TimelineAsset;
     direction?: Direction;
   }) {
     const direction = options?.direction ?? 'earlier';
-    let { startDateGroup, startAsset } = options ?? {};
+    let { startDayGroup, startAsset } = options ?? {};
     for (const bucket of this.bucketsIterator({ direction, startBucket: options?.startBucket })) {
       await this.loadBucket(bucket.yearMonth, { cancelable: false });
-      yield* bucket.assetsIterator({ startDateGroup, startAsset, direction });
-      startDateGroup = startAsset = undefined;
+      yield* bucket.assetsIterator({ startDayGroup, startAsset, direction });
+      startDayGroup = startAsset = undefined;
     }
   }
 
-  *bucketsIterator(options?: { direction?: Direction; startBucket?: AssetBucket }) {
+  *bucketsIterator(options?: { direction?: Direction; startBucket?: TimelineMonth }) {
     const isEarlier = options?.direction === 'earlier';
     let startIndex = options?.startBucket
       ? this.buckets.indexOf(options.startBucket)
@@ -334,7 +337,7 @@ export class AssetStore {
     }
   }
 
-  #calculateIntersecting(bucket: AssetBucket, expandTop: number, expandBottom: number) {
+  #calculateIntersecting(bucket: TimelineMonth, expandTop: number, expandBottom: number) {
     const bucketTop = bucket.top;
     const bucketBottom = bucketTop + bucket.bucketHeight;
     const topWindow = this.visibleWindow.top - expandTop;
@@ -347,17 +350,17 @@ export class AssetStore {
     );
   }
 
-  clearDeferredLayout(bucket: AssetBucket) {
-    const hasDeferred = bucket.dateGroups.some((group) => group.deferredLayout);
+  clearDeferredLayout(bucket: TimelineMonth) {
+    const hasDeferred = bucket.dayGroups.some((group) => group.deferredLayout);
     if (hasDeferred) {
       this.#updateGeometry(bucket, { invalidateHeight: true, noDefer: true });
-      for (const group of bucket.dateGroups) {
+      for (const group of bucket.dayGroups) {
         group.deferredLayout = false;
       }
     }
   }
 
-  #updateIntersection(bucket: AssetBucket) {
+  #updateIntersection(bucket: TimelineMonth) {
     const actuallyIntersecting = this.#calculateIntersecting(bucket, 0, 0);
     let preIntersecting = false;
     if (!actuallyIntersecting) {
@@ -392,7 +395,7 @@ export class AssetStore {
 
     this.buckets = timebuckets.map((bucket) => {
       const date = new Date(bucket.timeBucket);
-      return new AssetBucket(
+      return new TimelineMonth(
         this,
         { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 },
         bucket.count,
@@ -407,7 +410,7 @@ export class AssetStore {
     if (options.deferInit) {
       return;
     }
-    if (this.#options !== AssetStore.#INIT_OPTIONS && isEqual(this.#options, options)) {
+    if (this.#options !== TimelineManager.#INIT_OPTIONS && isEqual(this.#options, options)) {
       return;
     }
     await this.initTask.reset();
@@ -485,7 +488,7 @@ export class AssetStore {
     };
   }
 
-  #updateGeometry(bucket: AssetBucket, options: UpdateGeometryOptions) {
+  #updateGeometry(bucket: TimelineMonth, options: UpdateGeometryOptions) {
     const { invalidateHeight, noDefer = false } = options;
     if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
@@ -503,43 +506,43 @@ export class AssetStore {
     this.#layoutBucket(bucket, noDefer);
   }
 
-  #layoutBucket(bucket: AssetBucket, noDefer: boolean = false) {
+  #layoutBucket(bucket: TimelineMonth, noDefer: boolean = false) {
     let cummulativeHeight = 0;
     let cummulativeWidth = 0;
     let lastRowHeight = 0;
     let lastRow = 0;
 
-    let dateGroupRow = 0;
-    let dateGroupCol = 0;
+    let dayGroupRow = 0;
+    let dayGroupCol = 0;
 
-    const rowSpaceRemaining: number[] = Array.from({ length: bucket.dateGroups.length });
-    rowSpaceRemaining.fill(this.viewportWidth, 0, bucket.dateGroups.length);
+    const rowSpaceRemaining: number[] = Array.from({ length: bucket.dayGroups.length });
+    rowSpaceRemaining.fill(this.viewportWidth, 0, bucket.dayGroups.length);
     const options = this.createLayoutOptions();
-    for (const assetGroup of bucket.dateGroups) {
+    for (const assetGroup of bucket.dayGroups) {
       assetGroup.layout(options, noDefer);
-      rowSpaceRemaining[dateGroupRow] -= assetGroup.width - 1;
-      if (dateGroupCol > 0) {
-        rowSpaceRemaining[dateGroupRow] -= this.gap;
+      rowSpaceRemaining[dayGroupRow] -= assetGroup.width - 1;
+      if (dayGroupCol > 0) {
+        rowSpaceRemaining[dayGroupRow] -= this.gap;
       }
-      if (rowSpaceRemaining[dateGroupRow] >= 0) {
-        assetGroup.row = dateGroupRow;
-        assetGroup.col = dateGroupCol;
+      if (rowSpaceRemaining[dayGroupRow] >= 0) {
+        assetGroup.row = dayGroupRow;
+        assetGroup.col = dayGroupCol;
         assetGroup.left = cummulativeWidth;
         assetGroup.top = cummulativeHeight;
 
-        dateGroupCol++;
+        dayGroupCol++;
 
         cummulativeWidth += assetGroup.width + this.gap;
       } else {
         cummulativeWidth = 0;
-        dateGroupRow++;
-        dateGroupCol = 0;
-        assetGroup.row = dateGroupRow;
-        assetGroup.col = dateGroupCol;
+        dayGroupRow++;
+        dayGroupCol = 0;
+        assetGroup.row = dayGroupRow;
+        assetGroup.col = dayGroupCol;
         assetGroup.left = cummulativeWidth;
 
-        rowSpaceRemaining[dateGroupRow] -= assetGroup.width;
-        dateGroupCol++;
+        rowSpaceRemaining[dayGroupRow] -= assetGroup.width;
+        dayGroupCol++;
         cummulativeHeight += lastRowHeight;
         assetGroup.top = cummulativeHeight;
         cummulativeWidth += assetGroup.width + this.gap;
@@ -547,7 +550,7 @@ export class AssetStore {
       }
       lastRowHeight = assetGroup.height + this.headerHeight;
     }
-    if (lastRow === 0 || lastRow !== bucket.lastDateGroup?.row) {
+    if (lastRow === 0 || lastRow !== bucket.lastDayGroup?.row) {
       cummulativeHeight += lastRowHeight;
     }
 
@@ -635,14 +638,14 @@ export class AssetStore {
       return;
     }
 
-    const addContext = new AddContext();
-    const updatedBuckets = new Set<AssetBucket>();
+    const addContext = new GroupInsertionCache();
+    const updatedBuckets = new Set<TimelineMonth>();
     const bucketCount = this.buckets.length;
     for (const asset of assets) {
       let bucket = this.getBucketByDate(asset.localDateTime);
 
       if (!bucket) {
-        bucket = new AssetBucket(this, asset.localDateTime, 1, this.#options.order);
+        bucket = new TimelineMonth(this, asset.localDateTime, 1, this.#options.order);
         bucket.isLoaded = true;
         this.buckets.push(bucket);
       }
@@ -659,22 +662,22 @@ export class AssetStore {
       });
     }
 
-    for (const group of addContext.existingDateGroups) {
+    for (const group of addContext.existingDayGroups) {
       group.sortAssets(this.#options.order);
     }
 
-    for (const bucket of addContext.bucketsWithNewDateGroups) {
-      bucket.sortDateGroups();
+    for (const bucket of addContext.bucketsWithNewDayGroups) {
+      bucket.sortDayGroups();
     }
 
     for (const bucket of addContext.updatedBuckets) {
-      bucket.sortDateGroups();
+      bucket.sortDayGroups();
       this.#updateGeometry(bucket, { invalidateHeight: true });
     }
     this.updateIntersections();
   }
 
-  getBucketByDate(targetYearMonth: TimelinePlainYearMonth): AssetBucket | undefined {
+  getBucketByDate(targetYearMonth: TimelinePlainYearMonth): TimelineMonth | undefined {
     return this.buckets.find(
       (bucket) => bucket.yearMonth.year === targetYearMonth.year && bucket.yearMonth.month === targetYearMonth.month,
     );
@@ -725,7 +728,7 @@ export class AssetStore {
       return { processedIds: new Set(), unprocessedIds: ids, changedGeometry: false };
     }
 
-    const changedBuckets = new Set<AssetBucket>();
+    const changedBuckets = new Set<TimelineMonth>();
     let idsToProcess = new Set(ids);
     const idsProcessed = new Set<string>();
     const combinedMoveAssets: { asset: TimelineAsset; date: TimelinePlainDate }[][] = [];
@@ -834,10 +837,10 @@ export class AssetStore {
     }
 
     const range: TimelineAsset[] = [];
-    const startDateGroup = startBucket.findDateGroupForAsset(startAsset);
+    const startDayGroup = startBucket.findDayGroupForAsset(startAsset);
     for await (const targetAsset of this.assetsIterator({
       startBucket,
-      startDateGroup,
+      startDayGroup,
       startAsset,
       direction,
     })) {
@@ -875,11 +878,11 @@ export class AssetStore {
     }
   }
 
-  async #getAssetByAssetOffset(asset: TimelineAsset, bucket: AssetBucket, direction: Direction) {
-    const dateGroup = bucket.findDateGroupForAsset(asset);
+  async #getAssetByAssetOffset(asset: TimelineAsset, bucket: TimelineMonth, direction: Direction) {
+    const dayGroup = bucket.findDayGroupForAsset(asset);
     for await (const targetAsset of this.assetsIterator({
       startBucket: bucket,
-      startDateGroup: dateGroup,
+      startDayGroup: dayGroup,
       startAsset: asset,
       direction,
     })) {
@@ -890,11 +893,11 @@ export class AssetStore {
     }
   }
 
-  async #getAssetByDayOffset(asset: TimelineAsset, bucket: AssetBucket, direction: Direction) {
-    const dateGroup = bucket.findDateGroupForAsset(asset);
+  async #getAssetByDayOffset(asset: TimelineAsset, bucket: TimelineMonth, direction: Direction) {
+    const dayGroup = bucket.findDayGroupForAsset(asset);
     for await (const targetAsset of this.assetsIterator({
       startBucket: bucket,
-      startDateGroup: dateGroup,
+      startDayGroup: dayGroup,
       startAsset: asset,
       direction,
     })) {
@@ -904,7 +907,7 @@ export class AssetStore {
     }
   }
 
-  async #getAssetByMonthOffset(bucket: AssetBucket, direction: Direction) {
+  async #getAssetByMonthOffset(bucket: TimelineMonth, direction: Direction) {
     for (const targetBucket of this.bucketsIterator({ startBucket: bucket, direction })) {
       if (targetBucket.yearMonth.month !== bucket.yearMonth.month) {
         for await (const targetAsset of this.assetsIterator({ startBucket: targetBucket, direction })) {
@@ -914,7 +917,7 @@ export class AssetStore {
     }
   }
 
-  async #getAssetByYearOffset(bucket: AssetBucket, direction: Direction) {
+  async #getAssetByYearOffset(bucket: TimelineMonth, direction: Direction) {
     for (const targetBucket of this.bucketsIterator({ startBucket: bucket, direction })) {
       if (targetBucket.yearMonth.year !== bucket.yearMonth.year) {
         for await (const targetAsset of this.assetsIterator({ startBucket: targetBucket, direction })) {

@@ -1,3 +1,5 @@
+import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
+
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { handleError } from '$lib/utils/handle-error';
 import {
@@ -10,21 +12,22 @@ import {
   type TimelinePlainDateTime,
   type TimelinePlainYearMonth,
 } from '$lib/utils/timeline-util';
-import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
+
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import { AddContext } from './add-context.svelte';
-import { AssetDateGroup } from './asset-date-group.svelte';
-import type { AssetStore } from './asset-store.svelte';
-import { IntersectingAsset } from './intersecting-asset.svelte';
-import type { AssetDescriptor, AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
 
-export class AssetBucket {
+import { DayGroup } from './day-group.svelte';
+import { GroupInsertionCache } from './group-insertion-cache.svelte';
+import type { TimelineManager } from './timeline-manager.svelte';
+import type { AssetDescriptor, AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import { ViewerAsset } from './viewer-asset.svelte';
+
+export class TimelineMonth {
   #intersecting: boolean = $state(false);
   actuallyIntersecting: boolean = $state(false);
   isLoaded: boolean = $state(false);
-  dateGroups: AssetDateGroup[] = $state([]);
-  readonly store: AssetStore;
+  dayGroups: DayGroup[] = $state([]);
+  readonly store: TimelineManager;
 
   #bucketHeight: number = $state(0);
   #top: number = $state(0);
@@ -35,7 +38,7 @@ export class AssetBucket {
 
   bucketCount: number = $derived(
     this.isLoaded
-      ? this.dateGroups.reduce((accumulator, g) => accumulator + g.intersectingAssets.length, 0)
+      ? this.dayGroups.reduce((accumulator, g) => accumulator + g.intersectingAssets.length, 0)
       : this.#initialCount,
   );
   loader: CancellableTask | undefined;
@@ -45,7 +48,7 @@ export class AssetBucket {
   readonly yearMonth: TimelinePlainYearMonth;
 
   constructor(
-    store: AssetStore,
+    store: TimelineManager,
     yearMonth: TimelinePlainYearMonth,
     initialCount: number,
     order: AssetOrder = AssetOrder.Desc,
@@ -62,7 +65,7 @@ export class AssetBucket {
         this.isLoaded = true;
       },
       () => {
-        this.dateGroups = [];
+        this.dayGroups = [];
         this.isLoaded = false;
       },
       this.#handleLoadError,
@@ -86,28 +89,25 @@ export class AssetBucket {
     return this.#intersecting;
   }
 
-  get lastDateGroup() {
-    return this.dateGroups.at(-1);
+  get lastDayGroup() {
+    return this.dayGroups.at(-1);
   }
 
   getFirstAsset() {
-    return this.dateGroups[0]?.getFirstAsset();
+    return this.dayGroups[0]?.getFirstAsset();
   }
 
   getAssets() {
     // eslint-disable-next-line unicorn/no-array-reduce
-    return this.dateGroups.reduce(
-      (accumulator: TimelineAsset[], g: AssetDateGroup) => accumulator.concat(g.getAssets()),
-      [],
-    );
+    return this.dayGroups.reduce((accumulator: TimelineAsset[], g: DayGroup) => accumulator.concat(g.getAssets()), []);
   }
 
-  sortDateGroups() {
+  sortDayGroups() {
     if (this.#sortOrder === AssetOrder.Asc) {
-      return this.dateGroups.sort((a, b) => a.day - b.day);
+      return this.dayGroups.sort((a, b) => a.day - b.day);
     }
 
-    return this.dateGroups.sort((a, b) => b.day - a.day);
+    return this.dayGroups.sort((a, b) => b.day - a.day);
   }
 
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
@@ -119,15 +119,15 @@ export class AssetBucket {
         changedGeometry: false,
       };
     }
-    const { dateGroups } = this;
+    const { dayGroups } = this;
     let combinedChangedGeometry = false;
     let idsToProcess = new Set(ids);
     const idsProcessed = new Set<string>();
     const combinedMoveAssets: MoveAsset[][] = [];
-    let index = dateGroups.length;
+    let index = dayGroups.length;
     while (index--) {
       if (idsToProcess.size > 0) {
-        const group = dateGroups[index];
+        const group = dayGroups[index];
         const { moveAssets, processedIds, changedGeometry } = group.runAssetOperation(ids, operation);
         if (moveAssets.length > 0) {
           combinedMoveAssets.push(moveAssets);
@@ -138,7 +138,7 @@ export class AssetBucket {
         }
         combinedChangedGeometry = combinedChangedGeometry || changedGeometry;
         if (group.intersectingAssets.length === 0) {
-          dateGroups.splice(index, 1);
+          dayGroups.splice(index, 1);
           combinedChangedGeometry = true;
         }
       }
@@ -152,7 +152,7 @@ export class AssetBucket {
   }
 
   addAssets(bucketAssets: TimeBucketAssetResponseDto) {
-    const addContext = new AddContext();
+    const addContext = new GroupInsertionCache();
     for (let i = 0; i < bucketAssets.id.length; i++) {
       const { localDateTime, fileCreatedAt } = getTimes(
         bucketAssets.fileCreatedAt[i],
@@ -188,12 +188,12 @@ export class AssetBucket {
       this.addTimelineAsset(timelineAsset, addContext);
     }
 
-    for (const group of addContext.existingDateGroups) {
+    for (const group of addContext.existingDayGroups) {
       group.sortAssets(this.#sortOrder);
     }
 
-    if (addContext.newDateGroups.size > 0) {
-      this.sortDateGroups();
+    if (addContext.newDayGroups.size > 0) {
+      this.sortDayGroups();
     }
 
     addContext.sort(this, this.#sortOrder);
@@ -201,7 +201,7 @@ export class AssetBucket {
     return addContext.unprocessedAssets;
   }
 
-  addTimelineAsset(timelineAsset: TimelineAsset, addContext: AddContext) {
+  addTimelineAsset(timelineAsset: TimelineAsset, addContext: GroupInsertionCache) {
     const { localDateTime } = timelineAsset;
 
     const { year, month } = this.yearMonth;
@@ -210,29 +210,29 @@ export class AssetBucket {
       return;
     }
 
-    let dateGroup = addContext.getDateGroup(localDateTime) || this.findDateGroupByDay(localDateTime.day);
-    if (dateGroup) {
-      addContext.setDateGroup(dateGroup, localDateTime);
+    let dayGroup = addContext.getDayGroup(localDateTime) || this.findDayGroupByDay(localDateTime.day);
+    if (dayGroup) {
+      addContext.setDayGroup(dayGroup, localDateTime);
     } else {
       const groupTitle = formatGroupTitle(fromTimelinePlainDate(localDateTime));
-      dateGroup = new AssetDateGroup(this, this.dateGroups.length, localDateTime.day, groupTitle);
-      this.dateGroups.push(dateGroup);
-      addContext.setDateGroup(dateGroup, localDateTime);
-      addContext.newDateGroups.add(dateGroup);
+      dayGroup = new DayGroup(this, this.dayGroups.length, localDateTime.day, groupTitle);
+      this.dayGroups.push(dayGroup);
+      addContext.setDayGroup(dayGroup, localDateTime);
+      addContext.newDayGroups.add(dayGroup);
     }
 
-    const intersectingAsset = new IntersectingAsset(dateGroup, timelineAsset);
-    dateGroup.intersectingAssets.push(intersectingAsset);
-    addContext.changedDateGroups.add(dateGroup);
+    const intersectingAsset = new ViewerAsset(dayGroup, timelineAsset);
+    dayGroup.intersectingAssets.push(intersectingAsset);
+    addContext.changedDayGroups.add(dayGroup);
   }
 
-  getRandomDateGroup() {
-    const random = Math.floor(Math.random() * this.dateGroups.length);
-    return this.dateGroups[random];
+  getRandomDayGroup() {
+    const random = Math.floor(Math.random() * this.dayGroups.length);
+    return this.dayGroups[random];
   }
 
   getRandomAsset() {
-    return this.getRandomDateGroup()?.getRandomAsset()?.asset;
+    return this.getRandomDayGroup()?.getRandomAsset()?.asset;
   }
 
   get viewId() {
@@ -296,21 +296,21 @@ export class AssetBucket {
     handleError(error, _$t('errors.failed_to_load_assets'));
   }
 
-  findDateGroupForAsset(asset: TimelineAsset) {
-    for (const group of this.dateGroups) {
+  findDayGroupForAsset(asset: TimelineAsset) {
+    for (const group of this.dayGroups) {
       if (group.intersectingAssets.some((IntersectingAsset) => IntersectingAsset.id === asset.id)) {
         return group;
       }
     }
   }
 
-  findDateGroupByDay(day: number) {
-    return this.dateGroups.find((group) => group.day === day);
+  findDayGroupByDay(day: number) {
+    return this.dayGroups.find((group) => group.day === day);
   }
 
   findAssetAbsolutePosition(assetId: string) {
     this.store.clearDeferredLayout(this);
-    for (const group of this.dateGroups) {
+    for (const group of this.dayGroups) {
       const intersectingAsset = group.intersectingAssets.find((asset) => asset.id === assetId);
       if (intersectingAsset) {
         if (!intersectingAsset.position) {
@@ -323,18 +323,18 @@ export class AssetBucket {
     return -1;
   }
 
-  *assetsIterator(options?: { startDateGroup?: AssetDateGroup; startAsset?: TimelineAsset; direction?: Direction }) {
+  *assetsIterator(options?: { startDayGroup?: DayGroup; startAsset?: TimelineAsset; direction?: Direction }) {
     const direction = options?.direction ?? 'earlier';
     let { startAsset } = options ?? {};
     const isEarlier = direction === 'earlier';
-    let groupIndex = options?.startDateGroup
-      ? this.dateGroups.indexOf(options.startDateGroup)
+    let groupIndex = options?.startDayGroup
+      ? this.dayGroups.indexOf(options.startDayGroup)
       : isEarlier
         ? 0
-        : this.dateGroups.length - 1;
+        : this.dayGroups.length - 1;
 
-    while (groupIndex >= 0 && groupIndex < this.dateGroups.length) {
-      const group = this.dateGroups[groupIndex];
+    while (groupIndex >= 0 && groupIndex < this.dayGroups.length) {
+      const group = this.dayGroups[groupIndex];
       yield* group.assetsIterator({ startAsset, direction });
       startAsset = undefined;
       groupIndex += isEarlier ? 1 : -1;

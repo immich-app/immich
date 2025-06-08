@@ -17,8 +17,8 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
@@ -31,7 +31,7 @@
 
   let { data }: Props = $props();
 
-  const assetStore = new AssetStore();
+  const assetStore = new TimelineManager();
   void assetStore.updateOptions({ isFavorite: true, withStacked: true });
   onDestroy(() => assetStore.destroy());
 

@@ -1,5 +1,5 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
-import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { StackResponse } from '$lib/utils/asset-utils';
 import { AssetVisibility, deleteAssets as deleteBulk, restoreAssets } from '@immich/sdk';
@@ -63,10 +63,10 @@ const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsse
  * This function updates the stack information so that the icon is shown for the primary asset
  * and removes any assets from the timeline that are marked for deletion.
  *
- * @param {AssetStore} assetStore - The asset store to update.
+ * @param {TimelineManager} assetStore - The asset store to update.
  * @param {StackResponse} stackResponse - The stack response containing the stack and assets to delete.
  */
-export function updateStackedAssetInTimeline(assetStore: AssetStore, { stack, toDeleteIds }: StackResponse) {
+export function updateStackedAssetInTimeline(assetStore: TimelineManager, { stack, toDeleteIds }: StackResponse) {
   if (stack != undefined) {
     assetStore.updateAssetOperation([stack.primaryAssetId], (asset) => {
       asset.stack = {
@@ -89,7 +89,7 @@ export function updateStackedAssetInTimeline(assetStore: AssetStore, { stack, to
  * @param assetStore - The asset store to update.
  * @param assets - The array of asset response DTOs to update in the asset store.
  */
-export function updateUnstackedAssetInTimeline(assetStore: AssetStore, assets: TimelineAsset[]) {
+export function updateUnstackedAssetInTimeline(assetStore: TimelineManager, assets: TimelineAsset[]) {
   assetStore.updateAssetOperation(
     assets.map((asset) => asset.id),
     (asset) => {

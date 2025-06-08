@@ -5,7 +5,7 @@ import { notificationController, NotificationType } from '$lib/components/shared
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
-import type { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -484,7 +484,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
   }
 };
 
-export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: AssetInteraction) => {
+export const selectAllAssets = async (assetStore: TimelineManager, assetInteraction: AssetInteraction) => {
   if (get(isSelectingAllAssets)) {
     // Selection is already ongoing
     return;

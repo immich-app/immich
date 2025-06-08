@@ -32,12 +32,12 @@
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -77,7 +77,7 @@
   let numberOfAssets = $state(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new AssetStore();
+  const assetStore = new TimelineManager();
   $effect(() => void assetStore.updateOptions({ visibility: AssetVisibility.Timeline, personId: data.person.id }));
   onDestroy(() => assetStore.destroy());
 

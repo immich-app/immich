@@ -12,8 +12,8 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { AssetVisibility, lockAuthSession } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiDotsVertical, mdiLockOutline } from '@mdi/js';
@@ -27,7 +27,7 @@
 
   let { data }: Props = $props();
 
-  const assetStore = new AssetStore();
+  const assetStore = new TimelineManager();
   void assetStore.updateOptions({ visibility: AssetVisibility.Locked });
   onDestroy(() => assetStore.destroy());
 

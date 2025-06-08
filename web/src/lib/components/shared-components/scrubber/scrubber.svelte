@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { LiteBucket } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getTabbable } from '$lib/utils/focus-util';
@@ -14,7 +14,7 @@
     timelineTopOffset?: number;
     timelineBottomOffset?: number;
     height?: number;
-    assetStore: AssetStore;
+    assetStore: TimelineManager;
     scrubOverallPercent?: number;
     scrubBucketPercent?: number;
     scrubBucket?: { year: number; month: number };

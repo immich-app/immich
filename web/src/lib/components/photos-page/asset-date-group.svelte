@@ -1,19 +1,19 @@
 <script lang="ts">
+  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
-  import type { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetSnapshot, assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
+  import { uploadAssetsStore } from '$lib/stores/upload';
   import { navigate } from '$lib/utils/navigation';
 
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { fly, scale } from 'svelte/transition';
-  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
-  import type { AssetBucket } from '$lib/managers/timeline-manager/asset-bucket.svelte';
-  import { uploadAssetsStore } from '$lib/stores/upload';
   import { flip } from 'svelte/animate';
+  import { fly, scale } from 'svelte/transition';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -22,8 +22,8 @@
     singleSelect: boolean;
     withStacked: boolean;
     showArchiveIcon: boolean;
-    bucket: AssetBucket;
-    assetStore: AssetStore;
+    bucket: TimelineMonth;
+    assetStore: TimelineManager;
     assetInteraction: AssetInteraction;
 
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
@@ -47,11 +47,11 @@
   }: Props = $props();
 
   let isMouseOverGroup = $state(false);
-  let hoveredDateGroup = $state();
+  let hoveredDayGroup = $state();
 
   const transitionDuration = $derived.by(() => (bucket.store.suspendTransitions && !$isUploading ? 0 : 150));
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-  const onClick = (assetStore: AssetStore, assets: TimelineAsset[], groupTitle: string, asset: TimelineAsset) => {
+  const onClick = (assetStore: TimelineManager, assets: TimelineAsset[], groupTitle: string, asset: TimelineAsset) => {
     if (isSelectionMode || assetInteraction.selectionActive) {
       assetSelectHandler(assetStore, asset, assets, groupTitle);
       return;
@@ -62,20 +62,20 @@
   const handleSelectGroup = (title: string, assets: TimelineAsset[]) => onSelect({ title, assets });
 
   const assetSelectHandler = (
-    assetStore: AssetStore,
+    assetStore: TimelineManager,
     asset: TimelineAsset,
-    assetsInDateGroup: TimelineAsset[],
+    assetsInDayGroup: TimelineAsset[],
     groupTitle: string,
   ) => {
     onSelectAssets(asset);
 
     // Check if all assets are selected in a group to toggle the group selection's icon
-    let selectedAssetsInGroupCount = assetsInDateGroup.filter((asset) =>
+    let selectedAssetsInGroupCount = assetsInDayGroup.filter((asset) =>
       assetInteraction.hasSelectedAsset(asset.id),
     ).length;
 
     // if all assets are selected in a group, add the group to selected group
-    if (selectedAssetsInGroupCount == assetsInDateGroup.length) {
+    if (selectedAssetsInGroupCount == assetsInDayGroup.length) {
       assetInteraction.addGroupToMultiselectGroup(groupTitle);
     } else {
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
@@ -90,7 +90,7 @@
 
   const assetMouseEventHandler = (groupTitle: string, asset: TimelineAsset | null) => {
     // Show multi select icon on hover on date group
-    hoveredDateGroup = groupTitle;
+    hoveredDayGroup = groupTitle;
 
     if (assetInteraction.selectionActive) {
       onSelectAssetCandidates(asset);
@@ -109,8 +109,8 @@
   });
 </script>
 
-{#each filterIntersecting(bucket.dateGroups) as dateGroup, groupIndex (dateGroup.day)}
-  {@const absoluteWidth = dateGroup.left}
+{#each filterIntersecting(bucket.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
+  {@const absoluteWidth = dayGroup.left}
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
@@ -120,29 +120,29 @@
     ]}
     data-group
     style:position="absolute"
-    style:transform={`translate3d(${absoluteWidth}px,${dateGroup.top}px,0)`}
+    style:transform={`translate3d(${absoluteWidth}px,${dayGroup.top}px,0)`}
     onmouseenter={() => {
       isMouseOverGroup = true;
-      assetMouseEventHandler(dateGroup.groupTitle, null);
+      assetMouseEventHandler(dayGroup.groupTitle, null);
     }}
     onmouseleave={() => {
       isMouseOverGroup = false;
-      assetMouseEventHandler(dateGroup.groupTitle, null);
+      assetMouseEventHandler(dayGroup.groupTitle, null);
     }}
   >
     <!-- Date group title -->
     <div
       class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
-      style:width={dateGroup.width + 'px'}
+      style:width={dayGroup.width + 'px'}
     >
-      {#if !singleSelect && ((hoveredDateGroup === dateGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dateGroup.groupTitle))}
+      {#if !singleSelect && ((hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dayGroup.groupTitle))}
         <div
           transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
           class="inline-block px-2 hover:cursor-pointer"
-          onclick={() => handleSelectGroup(dateGroup.groupTitle, assetsSnapshot(dateGroup.getAssets()))}
-          onkeydown={() => handleSelectGroup(dateGroup.groupTitle, assetsSnapshot(dateGroup.getAssets()))}
+          onclick={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
+          onkeydown={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
         >
-          {#if assetInteraction.selectedGroup.has(dateGroup.groupTitle)}
+          {#if assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
             <Icon path={mdiCheckCircle} size="24" color="#4250af" />
           {:else}
             <Icon path={mdiCircleOutline} size="24" color="#757575" />
@@ -150,8 +150,8 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize ms-2.5" title={dateGroup.groupTitle}>
-        {dateGroup.groupTitle}
+      <span class="w-full truncate first-letter:capitalize ms-2.5" title={dayGroup.groupTitle}>
+        {dayGroup.groupTitle}
       </span>
     </div>
 
@@ -159,10 +159,10 @@
     <div
       data-image-grid
       class="relative overflow-clip"
-      style:height={dateGroup.height + 'px'}
-      style:width={dateGroup.width + 'px'}
+      style:height={dayGroup.height + 'px'}
+      style:width={dayGroup.width + 'px'}
     >
-      {#each filterIntersecting(dateGroup.intersectingAssets) as intersectingAsset (intersectingAsset.id)}
+      {#each filterIntersecting(dayGroup.intersectingAssets) as intersectingAsset (intersectingAsset.id)}
         {@const position = intersectingAsset.position!}
         {@const asset = intersectingAsset.asset!}
 
@@ -183,12 +183,12 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            onClick={(asset) => onClick(assetStore, dateGroup.getAssets(), dateGroup.groupTitle, asset)}
-            onSelect={(asset) => assetSelectHandler(assetStore, asset, dateGroup.getAssets(), dateGroup.groupTitle)}
-            onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, assetSnapshot(asset))}
-            selected={assetInteraction.hasSelectedAsset(asset.id) || dateGroup.bucket.store.albumAssets.has(asset.id)}
+            onClick={(asset) => onClick(assetStore, dayGroup.getAssets(), dayGroup.groupTitle, asset)}
+            onSelect={(asset) => assetSelectHandler(assetStore, asset, dayGroup.getAssets(), dayGroup.groupTitle)}
+            onMouseEvent={() => assetMouseEventHandler(dayGroup.groupTitle, assetSnapshot(asset))}
+            selected={assetInteraction.hasSelectedAsset(asset.id) || dayGroup.bucket.store.albumAssets.has(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            disabled={dateGroup.bucket.store.albumAssets.has(asset.id)}
+            disabled={dayGroup.bucket.store.albumAssets.has(asset.id)}
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
           />

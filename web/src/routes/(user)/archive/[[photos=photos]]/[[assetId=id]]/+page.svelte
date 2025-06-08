@@ -14,8 +14,8 @@
   import { AssetAction } from '$lib/constants';
 
   import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
@@ -27,7 +27,7 @@
   }
 
   let { data }: Props = $props();
-  const assetStore = new AssetStore();
+  const assetStore = new TimelineManager();
   void assetStore.updateOptions({ visibility: AssetVisibility.Archive });
   onDestroy(() => assetStore.destroy());
 
