@@ -99,7 +99,7 @@ export const fromTimelinePlainYearMonth = (timelineYearMonth: TimelinePlainYearM
 export const toISOYearMonthUTC = (timelineYearMonth: TimelinePlainYearMonth): string =>
   (fromTimelinePlainYearMonth(timelineYearMonth).setZone('UTC', { keepLocalTime: true }) as DateTime<true>).toISO();
 
-export function formatBucketTitle(_date: DateTime): string {
+export function formatMonthGroupTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
   }

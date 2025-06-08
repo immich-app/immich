@@ -3,8 +3,8 @@ import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { handleError } from '$lib/utils/handle-error';
 import {
-  formatBucketTitle,
   formatGroupTitle,
+  formatMonthGroupTitle,
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
@@ -36,13 +36,13 @@ export class MonthGroup {
   #sortOrder: AssetOrder = AssetOrder.Desc;
   percent: number = $state(0);
 
-  bucketCount: number = $derived(
+  assetsCount: number = $derived(
     this.isLoaded
       ? this.dayGroups.reduce((accumulator, g) => accumulator + g.viewerAssets.length, 0)
       : this.#initialCount,
   );
   loader: CancellableTask | undefined;
-  isBucketHeightActual: boolean = $state(false);
+  isHeightActual: boolean = $state(false);
 
   readonly monthGroupTitle: string;
   readonly yearMonth: TimelinePlainYearMonth;
@@ -58,7 +58,7 @@ export class MonthGroup {
     this.#sortOrder = order;
 
     this.yearMonth = yearMonth;
-    this.monthGroupTitle = formatBucketTitle(fromTimelinePlainYearMonth(yearMonth));
+    this.monthGroupTitle = formatMonthGroupTitle(fromTimelinePlainYearMonth(yearMonth));
 
     this.loader = new CancellableTask(
       () => {

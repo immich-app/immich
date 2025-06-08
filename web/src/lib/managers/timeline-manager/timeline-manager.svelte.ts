@@ -1,4 +1,4 @@
-import { getAssetInfo, getTimeBucket, getTimeBuckets } from '@immich/sdk';
+import { getTimeBucket, getTimeBuckets } from '@immich/sdk';
 
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { websocketEvents } from '$lib/stores/websocket';
@@ -43,7 +43,7 @@ export class TimelineManager {
   months: MonthGroup[] = $state([]);
   topSectionHeight = $state(0);
   timelineHeight = $derived(this.months.reduce((accumulator, b) => accumulator + b.height, 0) + this.topSectionHeight);
-  count = $derived(this.months.reduce((accumulator, b) => accumulator + b.bucketCount, 0));
+  count = $derived(this.months.reduce((accumulator, b) => accumulator + b.assetsCount, 0));
 
   albumAssets: Set<string> = new SvelteSet();
 
@@ -199,14 +199,14 @@ export class TimelineManager {
   }) {
     const direction = options?.direction ?? 'earlier';
     let { startDayGroup, startAsset } = options ?? {};
-    for (const monthGroup of this.bucketsIterator({ direction, startMonthGroup: options?.startMonthGroup })) {
+    for (const monthGroup of this.monthGroupIterator({ direction, startMonthGroup: options?.startMonthGroup })) {
       await this.loadMonthGroup(monthGroup.yearMonth, { cancelable: false });
       yield* monthGroup.assetsIterator({ startDayGroup, startAsset, direction });
       startDayGroup = startAsset = undefined;
     }
   }
 
-  *bucketsIterator(options?: { direction?: Direction; startMonthGroup?: MonthGroup }) {
+  *monthGroupIterator(options?: { direction?: Direction; startMonthGroup?: MonthGroup }) {
     const isEarlier = options?.direction === 'earlier';
     let startIndex = options?.startMonthGroup
       ? this.months.indexOf(options.startMonthGroup)
@@ -466,7 +466,7 @@ export class TimelineManager {
 
   #createScrubBuckets() {
     this.scrubberBuckets = this.months.map((month) => ({
-      assetCount: month.bucketCount,
+      assetCount: month.assetsCount,
       year: month.yearMonth.year,
       month: month.yearMonth.month,
       bucketDateFormattted: month.monthGroupTitle,
@@ -489,12 +489,12 @@ export class TimelineManager {
   #updateGeometry(month: MonthGroup, options: UpdateGeometryOptions) {
     const { invalidateHeight, noDefer = false } = options;
     if (invalidateHeight) {
-      month.isBucketHeightActual = false;
+      month.isHeightActual = false;
     }
     if (!month.isLoaded) {
       const viewportWidth = this.viewportWidth;
-      if (!month.isBucketHeightActual) {
-        const unwrappedWidth = (3 / 2) * month.bucketCount * this.#rowHeight * (7 / 10);
+      if (!month.isHeightActual) {
+        const unwrappedWidth = (3 / 2) * month.assetsCount * this.#rowHeight * (7 / 10);
         const rows = Math.ceil(unwrappedWidth / viewportWidth);
         const height = 51 + Math.max(1, rows) * this.#rowHeight;
         month.height = height;
@@ -553,7 +553,7 @@ export class TimelineManager {
     }
 
     month.height = cummulativeHeight;
-    month.isBucketHeightActual = true;
+    month.isHeightActual = true;
   }
 
   async loadMonthGroup(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }): Promise<void> {
@@ -679,29 +679,6 @@ export class TimelineManager {
     return this.months.find(
       (month) => month.yearMonth.year === targetYearMonth.year && month.yearMonth.month === targetYearMonth.month,
     );
-  }
-
-  async findBucketForAsset(id: string) {
-    if (!this.isInitialized) {
-      await this.initTask.waitUntilCompletion();
-    }
-    let { monthGroup } = this.#findMonthGroupForAsset(id) ?? {};
-    if (monthGroup) {
-      return monthGroup;
-    }
-    const asset = toTimelineAsset(await getAssetInfo({ id, key: authManager.key }));
-    if (!asset || this.isExcluded(asset)) {
-      return;
-    }
-    monthGroup = await this.#loadMonthGroupAtTime(asset.localDateTime, { cancelable: false });
-    if (monthGroup?.findAssetById({ id })) {
-      return monthGroup;
-    }
-  }
-
-  async #loadMonthGroupAtTime(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }) {
-    await this.loadMonthGroup(yearMonth, options);
-    return this.getMonthGroupByDate(yearMonth);
   }
 
   getMonthGroupIndexByAssetId(assetId: string) {
@@ -906,7 +883,7 @@ export class TimelineManager {
   }
 
   async #getAssetByMonthOffset(month: MonthGroup, direction: Direction) {
-    for (const targetMonth of this.bucketsIterator({ startMonthGroup: month, direction })) {
+    for (const targetMonth of this.monthGroupIterator({ startMonthGroup: month, direction })) {
       if (targetMonth.yearMonth.month !== month.yearMonth.month) {
         for await (const targetAsset of this.assetsIterator({ startMonthGroup: targetMonth, direction })) {
           return targetAsset;
@@ -916,7 +893,7 @@ export class TimelineManager {
   }
 
   async #getAssetByYearOffset(month: MonthGroup, direction: Direction) {
-    for (const targetMonth of this.bucketsIterator({ startMonthGroup: month, direction })) {
+    for (const targetMonth of this.monthGroupIterator({ startMonthGroup: month, direction })) {
       if (targetMonth.yearMonth.year !== month.yearMonth.year) {
         for await (const targetAsset of this.assetsIterator({ startMonthGroup: targetMonth, direction })) {
           return targetAsset;
