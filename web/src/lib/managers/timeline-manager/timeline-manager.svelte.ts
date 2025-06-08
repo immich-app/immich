@@ -1,4 +1,4 @@
-import { getTimeBucket, getTimeBuckets } from '@immich/sdk';
+import { getAssetInfo, getTimeBucket, getTimeBuckets } from '@immich/sdk';
 
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { websocketEvents } from '$lib/stores/websocket';
@@ -461,10 +461,10 @@ export class TimelineManager {
       this.#updateGeometry(month, { invalidateHeight: changedWidth });
     }
     this.updateIntersections();
-    this.#createScrubBuckets();
+    this.#createScrubberMonths();
   }
 
-  #createScrubBuckets() {
+  #createScrubberMonths() {
     this.scrubberMonths = this.months.map((month) => ({
       assetCount: month.assetsCount,
       year: month.yearMonth.year,
@@ -679,6 +679,29 @@ export class TimelineManager {
     return this.months.find(
       (month) => month.yearMonth.year === targetYearMonth.year && month.yearMonth.month === targetYearMonth.month,
     );
+  }
+
+  async findMonthGroupForAsset(id: string) {
+    if (!this.isInitialized) {
+      await this.initTask.waitUntilCompletion();
+    }
+    let { monthGroup } = this.#findMonthGroupForAsset(id) ?? {};
+    if (monthGroup) {
+      return monthGroup;
+    }
+    const asset = toTimelineAsset(await getAssetInfo({ id, key: authManager.key }));
+    if (!asset || this.isExcluded(asset)) {
+      return;
+    }
+    monthGroup = await this.#loadMonthGroupAtTime(asset.localDateTime, { cancelable: false });
+    if (monthGroup?.findAssetById({ id })) {
+      return monthGroup;
+    }
+  }
+
+  async #loadMonthGroupAtTime(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }) {
+    await this.loadMonthGroup(yearMonth, options);
+    return this.getMonthGroupByDate(yearMonth);
   }
 
   getMonthGroupIndexByAssetId(assetId: string) {

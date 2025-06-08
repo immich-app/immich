@@ -245,7 +245,7 @@
     }
     // Yes, updateSlideWindow() is called by the onScroll event triggered as a result of
     // the above calls. However, this delay is enough time to set the intersecting property
-    // of the bucket to false, then true, which causes the DOM nodes to be recreated,
+    // of the monthGroup to false, then true, which causes the DOM nodes to be recreated,
     // causing bad perf, and also, disrupting focus of those elements.
     updateSlidingWindow();
   };
@@ -287,24 +287,23 @@
 
   // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
   const onScrub: ScrubberListener = (
-    bucketDate: { year: number; month: number } | undefined,
-    scrollPercent: number,
-    bucketScrollPercent: number,
+    scrubberMonth: { year: number; month: number },
+    overallScrollPercent: number,
+    scrubberMonthScrollPercent: number,
   ) => {
-    if (!bucketDate || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
+    if (!scrubberMonth || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = getMaxScroll();
-      const offset = maxScroll * scrollPercent;
+      const offset = maxScroll * overallScrollPercent;
       scrollTop(offset);
     } else {
       const monthGroup = timelineManager.months.find(
-        (monthGroup) =>
-          monthGroup.yearMonth.year === bucketDate.year && monthGroup.yearMonth.month === bucketDate.month,
+        ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
       );
       if (!monthGroup) {
         return;
       }
-      scrollToMonthGroupAndOffset(monthGroup, bucketScrollPercent);
+      scrollToMonthGroupAndOffset(monthGroup, scrubberMonthScrollPercent);
     }
   };
 
@@ -604,8 +603,8 @@
     assetInteraction.clearAssetSelectionCandidates();
 
     if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = timelineManager.getBucketIndexByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucket = timelineManager.getBucketIndexByAssetId(asset.id);
+      let startBucket = timelineManager.getMonthGroupIndexByAssetId(assetInteraction.assetSelectionStart.id);
+      let endBucket = timelineManager.getMonthGroupIndexByAssetId(asset.id);
 
       if (startBucket === null || endBucket === null) {
         return;
@@ -877,7 +876,7 @@
             {timelineManager}
             {isSelectionMode}
             {singleSelect}
-            bucket={monthGroup}
+            {monthGroup}
             onSelect={({ title, assets }) => handleGroupSelect(timelineManager, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}

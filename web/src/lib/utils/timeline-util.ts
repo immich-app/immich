@@ -23,9 +23,9 @@ export type TimelinePlainDateTime = TimelinePlainDate & {
 };
 
 export type ScrubberListener = (
-  bucketDate: { year: number; month: number },
+  scrubberMonth: { year: number; month: number },
   overallScrollPercent: number,
-  bucketScrollPercent: number,
+  scrubberMonthScrollPercent: number,
 ) => void | Promise<void>;
 
 // used for AssetResponseDto.dateTimeOriginal, amongst others

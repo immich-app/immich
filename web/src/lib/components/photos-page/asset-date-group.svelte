@@ -22,7 +22,7 @@
     singleSelect: boolean;
     withStacked: boolean;
     showArchiveIcon: boolean;
-    bucket: MonthGroup;
+    monthGroup: MonthGroup;
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
 
@@ -37,7 +37,7 @@
     singleSelect,
     withStacked,
     showArchiveIcon,
-    bucket = $bindable(),
+    monthGroup = $bindable(),
     assetInteraction,
     timelineManager,
     onSelect,
@@ -49,7 +49,9 @@
   let isMouseOverGroup = $state(false);
   let hoveredDayGroup = $state();
 
-  const transitionDuration = $derived.by(() => (bucket.timelineManager.suspendTransitions && !$isUploading ? 0 : 150));
+  const transitionDuration = $derived.by(() =>
+    monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150,
+  );
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
   const onClick = (
     timelineManager: TimelineManager,
@@ -107,21 +109,21 @@
   }
 
   $effect.root(() => {
-    if (timelineManager.scrollCompensation.monthGroup === bucket) {
+    if (timelineManager.scrollCompensation.monthGroup === monthGroup) {
       onScrollCompensation(timelineManager.scrollCompensation);
       timelineManager.clearScrollCompensation();
     }
   });
 </script>
 
-{#each filterIntersecting(bucket.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
+{#each filterIntersecting(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
   {@const absoluteWidth = dayGroup.left}
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
     class={[
-      { 'transition-all': !bucket.timelineManager.suspendTransitions },
-      !bucket.timelineManager.suspendTransitions && `delay-${transitionDuration}`,
+      { 'transition-all': !monthGroup.timelineManager.suspendTransitions },
+      !monthGroup.timelineManager.suspendTransitions && `delay-${transitionDuration}`,
     ]}
     data-group
     style:position="absolute"
