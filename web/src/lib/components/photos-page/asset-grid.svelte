@@ -16,7 +16,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
+  import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -138,12 +138,12 @@
     scrollTo(0);
   };
 
-  const getAssetHeight = (assetId: string, bucket: TimelineMonth) => {
+  const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => {
     // the following method may trigger any layouts, so need to
     // handle any scroll compensation that may have been set
-    const height = bucket!.findAssetAbsolutePosition(assetId);
+    const height = monthGroup!.findAssetAbsolutePosition(assetId);
 
-    while (assetStore.scrollCompensation.bucket) {
+    while (assetStore.scrollCompensation.monthGroup) {
       handleScrollCompensation(assetStore.scrollCompensation);
       assetStore.clearScrollCompensation();
     }
@@ -151,22 +151,22 @@
   };
 
   const scrollToAssetId = async (assetId: string) => {
-    const bucket = await assetStore.findBucketForAsset(assetId);
-    if (!bucket) {
+    const monthGroup = await assetStore.findMonthGroupForAsset(assetId);
+    if (!monthGroup) {
       return false;
     }
-    const height = getAssetHeight(assetId, bucket);
+    const height = getAssetHeight(assetId, monthGroup);
     scrollTo(height);
     updateSlidingWindow();
     return true;
   };
 
   const scrollToAsset = (asset: TimelineAsset) => {
-    const bucket = assetStore.getBucketIndexByAssetId(asset.id);
-    if (!bucket) {
+    const monthGroup = assetStore.getMonthGroupIndexByAssetId(asset.id);
+    if (!monthGroup) {
       return false;
     }
-    const height = getAssetHeight(asset.id, bucket);
+    const height = getAssetHeight(asset.id, monthGroup);
     scrollTo(height);
     updateSlidingWindow();
     return true;
@@ -274,10 +274,10 @@
     return assetStore.topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
   };
 
-  const scrollToBucketAndOffset = (bucket: TimelineMonth, bucketScrollPercent: number) => {
-    const topOffset = bucket.top;
+  const scrollToMonthGroupAndOffset = (monthGroup: MonthGroup, monthGroupScrollPercent: number) => {
+    const topOffset = monthGroup.top;
     const maxScrollPercent = getMaxScrollPercent();
-    const delta = bucket.bucketHeight * bucketScrollPercent;
+    const delta = monthGroup.bucketHeight * monthGroupScrollPercent;
     const scrollToTop = (topOffset + delta) * maxScrollPercent;
 
     scrollTop(scrollToTop);
@@ -295,13 +295,14 @@
       const offset = maxScroll * scrollPercent;
       scrollTop(offset);
     } else {
-      const bucket = assetStore.buckets.find(
-        (bucket) => bucket.yearMonth.year === bucketDate.year && bucket.yearMonth.month === bucketDate.month,
+      const monthGroup = assetStore.buckets.find(
+        (monthGroup) =>
+          monthGroup.yearMonth.year === bucketDate.year && monthGroup.yearMonth.month === bucketDate.month,
       );
-      if (!bucket) {
+      if (!monthGroup) {
         return;
       }
-      scrollToBucketAndOffset(bucket, bucketScrollPercent);
+      scrollToMonthGroupAndOffset(monthGroup, bucketScrollPercent);
     }
   };
 
@@ -337,26 +338,26 @@
 
       const bucketsLength = assetStore.buckets.length;
       for (let i = -1; i < bucketsLength + 1; i++) {
-        let bucket: TimelinePlainYearMonth | undefined;
-        let bucketHeight = 0;
+        let monthGroup: TimelinePlainYearMonth | undefined;
+        let monthGroupHeight = 0;
         if (i === -1) {
           // lead-in
-          bucketHeight = assetStore.topSectionHeight;
+          monthGroupHeight = assetStore.topSectionHeight;
         } else if (i === bucketsLength) {
           // lead-out
-          bucketHeight = bottomSectionHeight;
+          monthGroupHeight = bottomSectionHeight;
         } else {
-          bucket = assetStore.buckets[i].yearMonth;
-          bucketHeight = assetStore.buckets[i].bucketHeight;
+          monthGroup = assetStore.buckets[i].yearMonth;
+          monthGroupHeight = assetStore.buckets[i].bucketHeight;
         }
 
-        let next = top - bucketHeight * maxScrollPercent;
+        let next = top - monthGroupHeight * maxScrollPercent;
         // instead of checking for < 0, add a little wiggle room for subpixel resolution
-        if (next < -1 && bucket) {
-          scrubBucket = bucket;
+        if (next < -1 && monthGroup) {
+          scrubBucket = monthGroup;
 
           // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
-          scrubBucketPercent = Math.max(0, top / (bucketHeight * maxScrollPercent));
+          scrubBucketPercent = Math.max(0, top / (monthGroupHeight * maxScrollPercent));
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
           if (scrubBucketPercent > 0.9999 && i + 1 < bucketsLength - 1) {
@@ -610,13 +611,13 @@
 
       // Select/deselect assets in range (start,end)
       let started = false;
-      for (const bucket of assetStore.buckets) {
-        if (bucket === endBucket) {
+      for (const monthGroup of assetStore.buckets) {
+        if (monthGroup === endBucket) {
           break;
         }
         if (started) {
-          await assetStore.loadBucket(bucket.yearMonth);
-          for (const asset of bucket.assetsIterator()) {
+          await assetStore.loadMonthGroup(monthGroup.yearMonth);
+          for (const asset of monthGroup.assetsIterator()) {
             if (deselect) {
               assetInteraction.removeAssetFromMultiselectGroup(asset.id);
             } else {
@@ -624,20 +625,20 @@
             }
           }
         }
-        if (bucket === startBucket) {
+        if (monthGroup === startBucket) {
           started = true;
         }
       }
 
       // Update date group selection in range [start,end]
       started = false;
-      for (const bucket of assetStore.buckets) {
-        if (bucket === startBucket) {
+      for (const monthGroup of assetStore.buckets) {
+        if (monthGroup === startBucket) {
           started = true;
         }
         if (started) {
-          // Split bucket into date groups and check each group
-          for (const dayGroup of bucket.dayGroups) {
+          // Split month group into day groups and check each group
+          for (const dayGroup of monthGroup.dayGroups) {
             const dayGroupTitle = dayGroup.groupTitle;
             if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
               assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
@@ -646,7 +647,7 @@
             }
           }
         }
-        if (bucket === endBucket) {
+        if (monthGroup === endBucket) {
           break;
         }
       }
@@ -841,23 +842,26 @@
       {/if}
     </section>
 
-    {#each assetStore.buckets as bucket (bucket.viewId)}
-      {@const display = bucket.intersecting}
-      {@const absoluteHeight = bucket.top}
+    {#each assetStore.buckets as monthGroup (monthGroup.viewId)}
+      {@const display = monthGroup.intersecting}
+      {@const absoluteHeight = monthGroup.top}
 
-      {#if !bucket.isLoaded}
+      {#if !monthGroup.isLoaded}
         <div
-          style:height={bucket.bucketHeight + 'px'}
+          style:height={monthGroup.bucketHeight + 'px'}
           style:position="absolute"
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <Skeleton height={bucket.bucketHeight - bucket.store.headerHeight} title={bucket.bucketDateFormatted} />
+          <Skeleton
+            height={monthGroup.bucketHeight - monthGroup.store.headerHeight}
+            title={monthGroup.bucketDateFormatted}
+          />
         </div>
       {:else if display}
         <div
-          class="bucket"
-          style:height={bucket.bucketHeight + 'px'}
+          class="month-group"
+          style:height={monthGroup.bucketHeight + 'px'}
           style:position="absolute"
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
@@ -869,7 +873,7 @@
             {assetStore}
             {isSelectionMode}
             {singleSelect}
-            {bucket}
+            bucket={monthGroup}
             onSelect={({ title, assets }) => handleGroupSelect(assetStore, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
@@ -918,7 +922,7 @@
     scrollbar-width: none;
   }
 
-  .bucket {
+  .month-group {
     contain: layout size paint;
     transform-style: flat;
     backface-visibility: hidden;

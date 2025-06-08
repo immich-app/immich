@@ -22,7 +22,7 @@ import type { TimelineManager } from './timeline-manager.svelte';
 import type { AssetDescriptor, AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
-export class TimelineMonth {
+export class MonthGroup {
   #intersecting: boolean = $state(false);
   actuallyIntersecting: boolean = $state(false);
   isLoaded: boolean = $state(false);
@@ -79,7 +79,7 @@ export class TimelineMonth {
     }
     this.#intersecting = newValue;
     if (newValue) {
-      void this.store.loadBucket(this.yearMonth);
+      void this.store.loadMonthGroup(this.yearMonth);
     } else {
       this.cancel();
     }
@@ -269,14 +269,14 @@ export class TimelineMonth {
           store.scrollCompensation = {
             heightDelta: bucketHeightDelta,
             scrollTop: undefined,
-            bucket: this,
+            monthGroup: this,
           };
         } else if (percent > 0) {
           const top = this.top + height * percent;
           store.scrollCompensation = {
             heightDelta: undefined,
             scrollTop: top,
-            bucket: this,
+            monthGroup: this,
           };
         }
       }

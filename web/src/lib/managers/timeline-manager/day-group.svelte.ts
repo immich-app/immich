@@ -4,12 +4,12 @@ import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
 
-import type { TimelineMonth } from './timeline-month.svelte';
+import type { MonthGroup } from './month-group.svelte';
 import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class DayGroup {
-  readonly bucket: TimelineMonth;
+  readonly monthGroup: MonthGroup;
   readonly index: number;
   readonly groupTitle: string;
   readonly day: number;
@@ -25,9 +25,9 @@ export class DayGroup {
   #col = $state(0);
   #deferredLayout = false;
 
-  constructor(bucket: TimelineMonth, index: number, day: number, groupTitle: string) {
+  constructor(monthGroup: MonthGroup, index: number, day: number, groupTitle: string) {
     this.index = index;
-    this.bucket = bucket;
+    this.monthGroup = monthGroup;
     this.day = day;
     this.groupTitle = groupTitle;
   }
@@ -135,7 +135,7 @@ export class DayGroup {
       }
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);
-      if (remove || this.bucket.store.isExcluded(asset)) {
+      if (remove || this.monthGroup.store.isExcluded(asset)) {
         this.intersectingAssets.splice(index, 1);
         changedGeometry = true;
       }
@@ -144,7 +144,7 @@ export class DayGroup {
   }
 
   layout(options: CommonLayoutOptions, noDefer: boolean) {
-    if (!noDefer && !this.bucket.intersecting) {
+    if (!noDefer && !this.monthGroup.intersecting) {
       this.#deferredLayout = true;
       return;
     }
@@ -159,6 +159,6 @@ export class DayGroup {
   }
 
   get absoluteDayGroupTop() {
-    return this.bucket.top + this.#top;
+    return this.monthGroup.top + this.#top;
   }
 }

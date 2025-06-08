@@ -91,7 +91,7 @@ describe('AssetStore', () => {
     });
   });
 
-  describe('loadBucket', () => {
+  describe('loadMonthGroup', () => {
     let assetStore: TimelineManager;
     const bucketAssets: Record<string, TimelineAsset[]> = {
       '2024-01-03T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
@@ -127,47 +127,47 @@ describe('AssetStore', () => {
     });
 
     it('loads a bucket', async () => {
-      expect(assetStore.getBucketByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(0);
-      await assetStore.loadBucket({ year: 2024, month: 1 });
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(0);
+      await assetStore.loadMonthGroup({ year: 2024, month: 1 });
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
-      expect(assetStore.getBucketByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(3);
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
     it('ignores invalid buckets', async () => {
-      await assetStore.loadBucket({ year: 2023, month: 1 });
+      await assetStore.loadMonthGroup({ year: 2023, month: 1 });
       expect(sdkMock.getTimeBucket).toBeCalledTimes(0);
     });
 
     it('cancels bucket loading', async () => {
-      const bucket = assetStore.getBucketByDate({ year: 2024, month: 1 })!;
-      void assetStore.loadBucket({ year: 2024, month: 1 });
+      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 1 })!;
+      void assetStore.loadMonthGroup({ year: 2024, month: 1 });
       const abortSpy = vi.spyOn(bucket!.loader!.cancelToken!, 'abort');
       bucket?.cancel();
       expect(abortSpy).toBeCalledTimes(1);
-      await assetStore.loadBucket({ year: 2024, month: 1 });
-      expect(assetStore.getBucketByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(3);
+      await assetStore.loadMonthGroup({ year: 2024, month: 1 });
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
     it('prevents loading buckets multiple times', async () => {
       await Promise.all([
-        assetStore.loadBucket({ year: 2024, month: 1 }),
-        assetStore.loadBucket({ year: 2024, month: 1 }),
+        assetStore.loadMonthGroup({ year: 2024, month: 1 }),
+        assetStore.loadMonthGroup({ year: 2024, month: 1 }),
       ]);
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
 
-      await assetStore.loadBucket({ year: 2024, month: 1 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 1 });
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
     });
 
     it('allows loading a canceled bucket', async () => {
-      const bucket = assetStore.getBucketByDate({ year: 2024, month: 1 })!;
-      const loadPromise = assetStore.loadBucket({ year: 2024, month: 1 });
+      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 1 })!;
+      const loadPromise = assetStore.loadMonthGroup({ year: 2024, month: 1 });
 
       bucket.cancel();
       await loadPromise;
       expect(bucket?.getAssets().length).toEqual(0);
 
-      await assetStore.loadBucket({ year: 2024, month: 1 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 1 });
       expect(bucket!.getAssets().length).toEqual(3);
     });
   });
@@ -237,7 +237,7 @@ describe('AssetStore', () => {
       );
       assetStore.addAssets([assetOne, assetTwo, assetThree]);
 
-      const bucket = assetStore.getBucketByDate({ year: 2024, month: 1 });
+      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 1 });
       expect(bucket).not.toBeNull();
       expect(bucket?.getAssets().length).toEqual(3);
       expect(bucket?.getAssets()[0].id).toEqual(assetOne.id);
@@ -339,15 +339,15 @@ describe('AssetStore', () => {
 
       assetStore.addAssets([asset]);
       expect(assetStore.buckets.length).toEqual(1);
-      expect(assetStore.getBucketByDate({ year: 2024, month: 1 })).not.toBeUndefined();
-      expect(assetStore.getBucketByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(1);
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })).not.toBeUndefined();
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(1);
 
       assetStore.updateAssets([updatedAsset]);
       expect(assetStore.buckets.length).toEqual(2);
-      expect(assetStore.getBucketByDate({ year: 2024, month: 1 })).not.toBeUndefined();
-      expect(assetStore.getBucketByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(0);
-      expect(assetStore.getBucketByDate({ year: 2024, month: 3 })).not.toBeUndefined();
-      expect(assetStore.getBucketByDate({ year: 2024, month: 3 })?.getAssets().length).toEqual(1);
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })).not.toBeUndefined();
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 1 })?.getAssets().length).toEqual(0);
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 3 })).not.toBeUndefined();
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 3 })?.getAssets().length).toEqual(1);
     });
   });
 
@@ -476,8 +476,8 @@ describe('AssetStore', () => {
     });
 
     it('returns previous assetId', async () => {
-      await assetStore.loadBucket({ year: 2024, month: 1 });
-      const bucket = assetStore.getBucketByDate({ year: 2024, month: 1 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 1 });
+      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 1 });
 
       const a = bucket!.getAssets()[0];
       const b = bucket!.getAssets()[1];
@@ -486,11 +486,11 @@ describe('AssetStore', () => {
     });
 
     it('returns previous assetId spanning multiple buckets', async () => {
-      await assetStore.loadBucket({ year: 2024, month: 2 });
-      await assetStore.loadBucket({ year: 2024, month: 3 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 2 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 3 });
 
-      const bucket = assetStore.getBucketByDate({ year: 2024, month: 2 });
-      const previousBucket = assetStore.getBucketByDate({ year: 2024, month: 3 });
+      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 2 });
+      const previousBucket = assetStore.getMonthGroupByDate({ year: 2024, month: 3 });
       const a = bucket!.getAssets()[0];
       const b = previousBucket!.getAssets()[0];
       const previous = await assetStore.getLaterAsset(a);
@@ -498,23 +498,23 @@ describe('AssetStore', () => {
     });
 
     it('loads previous bucket', async () => {
-      await assetStore.loadBucket({ year: 2024, month: 2 });
-      const bucket = assetStore.getBucketByDate({ year: 2024, month: 2 });
-      const previousBucket = assetStore.getBucketByDate({ year: 2024, month: 3 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 2 });
+      const bucket = assetStore.getMonthGroupByDate({ year: 2024, month: 2 });
+      const previousBucket = assetStore.getMonthGroupByDate({ year: 2024, month: 3 });
       const a = bucket!.getFirstAsset();
       const b = previousBucket!.getFirstAsset();
-      const loadBucketSpy = vi.spyOn(bucket!.loader!, 'execute');
+      const loadMonthGroupSpy = vi.spyOn(bucket!.loader!, 'execute');
       const previousBucketSpy = vi.spyOn(previousBucket!.loader!, 'execute');
       const previous = await assetStore.getLaterAsset(a);
       expect(previous).toEqual(b);
-      expect(loadBucketSpy).toBeCalledTimes(0);
+      expect(loadMonthGroupSpy).toBeCalledTimes(0);
       expect(previousBucketSpy).toBeCalledTimes(0);
     });
 
     it('skips removed assets', async () => {
-      await assetStore.loadBucket({ year: 2024, month: 1 });
-      await assetStore.loadBucket({ year: 2024, month: 2 });
-      await assetStore.loadBucket({ year: 2024, month: 3 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 1 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 2 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 3 });
 
       const [assetOne, assetTwo, assetThree] = await getAssets(assetStore);
       assetStore.removeAssets([assetTwo.id]);
@@ -522,12 +522,12 @@ describe('AssetStore', () => {
     });
 
     it('returns null when no more assets', async () => {
-      await assetStore.loadBucket({ year: 2024, month: 3 });
+      await assetStore.loadMonthGroup({ year: 2024, month: 3 });
       expect(await assetStore.getLaterAsset(assetStore.buckets[0].getFirstAsset())).toBeUndefined();
     });
   });
 
-  describe('getBucketIndexByAssetId', () => {
+  describe('getMonthGroupIndexByAssetId', () => {
     let assetStore: TimelineManager;
 
     beforeEach(async () => {
@@ -538,8 +538,8 @@ describe('AssetStore', () => {
     });
 
     it('returns null for invalid buckets', () => {
-      expect(assetStore.getBucketByDate({ year: -1, month: -1 })).toBeUndefined();
-      expect(assetStore.getBucketByDate({ year: 2024, month: 3 })).toBeUndefined();
+      expect(assetStore.getMonthGroupByDate({ year: -1, month: -1 })).toBeUndefined();
+      expect(assetStore.getMonthGroupByDate({ year: 2024, month: 3 })).toBeUndefined();
     });
 
     it('returns the bucket index', () => {
@@ -555,10 +555,10 @@ describe('AssetStore', () => {
       );
       assetStore.addAssets([assetOne, assetTwo]);
 
-      expect(assetStore.getBucketIndexByAssetId(assetTwo.id)?.yearMonth.year).toEqual(2024);
-      expect(assetStore.getBucketIndexByAssetId(assetTwo.id)?.yearMonth.month).toEqual(2);
-      expect(assetStore.getBucketIndexByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
-      expect(assetStore.getBucketIndexByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
+      expect(assetStore.getMonthGroupIndexByAssetId(assetTwo.id)?.yearMonth.year).toEqual(2024);
+      expect(assetStore.getMonthGroupIndexByAssetId(assetTwo.id)?.yearMonth.month).toEqual(2);
+      expect(assetStore.getMonthGroupIndexByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
+      expect(assetStore.getMonthGroupIndexByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
     });
 
     it('ignores removed buckets', () => {
@@ -575,8 +575,8 @@ describe('AssetStore', () => {
       assetStore.addAssets([assetOne, assetTwo]);
 
       assetStore.removeAssets([assetTwo.id]);
-      expect(assetStore.getBucketIndexByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
-      expect(assetStore.getBucketIndexByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
+      expect(assetStore.getMonthGroupIndexByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
+      expect(assetStore.getMonthGroupIndexByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
     });
   });
 });

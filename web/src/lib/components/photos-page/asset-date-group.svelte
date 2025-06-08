@@ -2,7 +2,7 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
+  import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetSnapshot, assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -22,7 +22,7 @@
     singleSelect: boolean;
     withStacked: boolean;
     showArchiveIcon: boolean;
-    bucket: TimelineMonth;
+    bucket: MonthGroup;
     assetStore: TimelineManager;
     assetInteraction: AssetInteraction;
 
@@ -102,7 +102,7 @@
   }
 
   $effect.root(() => {
-    if (assetStore.scrollCompensation.bucket === bucket) {
+    if (assetStore.scrollCompensation.monthGroup === bucket) {
       onScrollCompensation(assetStore.scrollCompensation);
       assetStore.clearScrollCompensation();
     }
@@ -186,9 +186,10 @@
             onClick={(asset) => onClick(assetStore, dayGroup.getAssets(), dayGroup.groupTitle, asset)}
             onSelect={(asset) => assetSelectHandler(assetStore, asset, dayGroup.getAssets(), dayGroup.groupTitle)}
             onMouseEvent={() => assetMouseEventHandler(dayGroup.groupTitle, assetSnapshot(asset))}
-            selected={assetInteraction.hasSelectedAsset(asset.id) || dayGroup.bucket.store.albumAssets.has(asset.id)}
+            selected={assetInteraction.hasSelectedAsset(asset.id) ||
+              dayGroup.monthGroup.store.albumAssets.has(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            disabled={dayGroup.bucket.store.albumAssets.has(asset.id)}
+            disabled={dayGroup.monthGroup.store.albumAssets.has(asset.id)}
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
           />

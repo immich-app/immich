@@ -1,7 +1,7 @@
 import type { TimelinePlainDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
 import type { DayGroup } from './day-group.svelte';
-import type { TimelineMonth } from './timeline-month.svelte';
+import type { MonthGroup } from './month-group.svelte';
 import type { TimelineAsset } from './types';
 
 export class GroupInsertionCache {
@@ -31,22 +31,22 @@ export class GroupInsertionCache {
   }
 
   get updatedBuckets() {
-    const updated = new Set<TimelineMonth>();
+    const updated = new Set<MonthGroup>();
     for (const group of this.changedDayGroups) {
-      updated.add(group.bucket);
+      updated.add(group.monthGroup);
     }
     return updated;
   }
 
   get bucketsWithNewDayGroups() {
-    const updated = new Set<TimelineMonth>();
+    const updated = new Set<MonthGroup>();
     for (const group of this.newDayGroups) {
-      updated.add(group.bucket);
+      updated.add(group.monthGroup);
     }
     return updated;
   }
 
-  sort(bucket: TimelineMonth, sortOrder: AssetOrder = AssetOrder.Desc) {
+  sort(monthGroup: MonthGroup, sortOrder: AssetOrder = AssetOrder.Desc) {
     for (const group of this.changedDayGroups) {
       group.sortAssets(sortOrder);
     }
@@ -54,7 +54,7 @@ export class GroupInsertionCache {
       group.sortAssets(sortOrder);
     }
     if (this.newDayGroups.size > 0) {
-      bucket.sortDayGroups();
+      monthGroup.sortDayGroups();
     }
   }
 }

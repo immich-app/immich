@@ -493,7 +493,7 @@ export const selectAllAssets = async (assetStore: TimelineManager, assetInteract
 
   try {
     for (const bucket of assetStore.buckets) {
-      await assetStore.loadBucket(bucket.yearMonth);
+      await assetStore.loadMonthGroup(bucket.yearMonth);
 
       if (!get(isSelectingAllAssets)) {
         assetInteraction.clearMultiselect();
