@@ -1,20 +1,16 @@
-import { AssetOrder, getAssetInfo, getTimeBucket, getTimeBuckets } from '@immich/sdk';
+import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
 
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import {
-  toISOYearMonthUTC,
-  toTimelineAsset,
-  type TimelinePlainDateTime,
-  type TimelinePlainYearMonth,
-} from '$lib/utils/timeline-util';
+import { toTimelineAsset, type TimelinePlainDateTime, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
 
 import { clamp, debounce, isEqual } from 'lodash-es';
 import { SvelteSet } from 'svelte/reactivity';
 
 import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
-import { layoutMonthGroup, updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
+import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
+import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
 import {
   addAssetsToMonthGroups,
   runAssetOperation,
@@ -406,46 +402,7 @@ export class TimelineManager {
     }
 
     const result = await monthGroup.loader?.execute(async (signal: AbortSignal) => {
-      if (monthGroup.getFirstAsset()) {
-        return;
-      }
-      const timeBucket = toISOYearMonthUTC(monthGroup.yearMonth);
-      const key = authManager.key;
-      const bucketResponse = await getTimeBucket(
-        {
-          ...this.#options,
-          timeBucket,
-          key,
-        },
-        { signal },
-      );
-      if (bucketResponse) {
-        if (this.#options.timelineAlbumId) {
-          const albumAssets = await getTimeBucket(
-            {
-              albumId: this.#options.timelineAlbumId,
-              timeBucket,
-              key,
-            },
-            { signal },
-          );
-          for (const id of albumAssets.id) {
-            this.albumAssets.add(id);
-          }
-        }
-        const unprocessedAssets = monthGroup.addAssets(bucketResponse);
-        if (unprocessedAssets.length > 0) {
-          console.error(
-            `Warning: getTimeBucket API returning assets not in requested month: ${monthGroup.yearMonth.month}, ${JSON.stringify(
-              unprocessedAssets.map((unprocessed) => ({
-                id: unprocessed.id,
-                localDateTime: unprocessed.localDateTime,
-              })),
-            )}`,
-          );
-        }
-        layoutMonthGroup(this, monthGroup);
-      }
+      await loadFromTimeBuckets(this, monthGroup, this.#options, signal);
     }, cancelable);
     if (result === 'LOADED') {
       updateIntersectionMonthGroup(this, monthGroup);
