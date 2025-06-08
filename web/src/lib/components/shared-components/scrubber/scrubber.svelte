@@ -14,7 +14,7 @@
     timelineTopOffset?: number;
     timelineBottomOffset?: number;
     height?: number;
-    assetStore: TimelineManager;
+    timelineManager: TimelineManager;
     scrubOverallPercent?: number;
     scrubBucketPercent?: number;
     scrubBucket?: { year: number; month: number };
@@ -30,7 +30,7 @@
     timelineTopOffset = 0,
     timelineBottomOffset = 0,
     height = 0,
-    assetStore,
+    timelineManager,
     scrubOverallPercent = 0,
     scrubBucketPercent = 0,
     scrubBucket = undefined,
@@ -69,7 +69,7 @@
       return '100vw';
     }
     if (usingMobileDevice) {
-      if (assetStore.scrolling) {
+      if (timelineManager.scrolling) {
         return MOBILE_WIDTH + 'px';
       }
       return '0px';
@@ -112,7 +112,7 @@
     }
   };
   let scrollY = $derived(toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent));
-  let timelineFullHeight = $derived(assetStore.scrubberTimelineHeight + timelineTopOffset + timelineBottomOffset);
+  let timelineFullHeight = $derived(timelineManager.scrubberTimelineHeight + timelineTopOffset + timelineBottomOffset);
   let relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
   let relativeBottomOffset = $derived(toScrollY(timelineBottomOffset / timelineFullHeight));
 
@@ -172,7 +172,7 @@
     return segments;
   };
   let activeSegment: HTMLElement | undefined = $state();
-  const segments = $derived(calculateSegments(assetStore.scrubberBuckets));
+  const segments = $derived(calculateSegments(timelineManager.scrubberBuckets));
   const hoverLabel = $derived.by(() => {
     if (isHoverOnPaddingTop) {
       return segments.at(0)?.dateFormatted;
@@ -477,7 +477,7 @@
       {hoverLabel}
     </div>
   {/if}
-  {#if usingMobileDevice && ((assetStore.scrolling && scrollHoverLabel) || isHover || isDragging)}
+  {#if usingMobileDevice && ((timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging)}
     <div
       id="time-label"
       class="rounded-s-full w-[32px] ps-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
@@ -490,7 +490,7 @@
     >
       <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -end-[2px]" />
       <Icon path={mdiPlay} size="20" class="rotate-90 relative top-px -end-[2px]" />
-      {#if (assetStore.scrolling && scrollHoverLabel) || isHover || isDragging}
+      {#if (timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging}
         <p
           transition:fade={{ duration: 200 }}
           style:bottom={50 / 2 - 30 / 2 + 'px'}
@@ -509,7 +509,7 @@
       class="absolute end-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
       style:top="{scrollY + PADDING_TOP - 2}px"
     >
-      {#if assetStore.scrolling && scrollHoverLabel && !isHover}
+      {#if timelineManager.scrolling && scrollHoverLabel && !isHover}
         <p
           transition:fade={{ duration: 200 }}
           class="truncate pointer-events-none absolute end-0 bottom-0 min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-subtle/90 z-1 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:text-immich-dark-fg"

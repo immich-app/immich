@@ -77,9 +77,9 @@
   let numberOfAssets = $state(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new TimelineManager();
-  $effect(() => void assetStore.updateOptions({ visibility: AssetVisibility.Timeline, personId: data.person.id }));
-  onDestroy(() => assetStore.destroy());
+  const timelineManager = new TimelineManager();
+  $effect(() => void timelineManager.updateOptions({ visibility: AssetVisibility.Timeline, personId: data.person.id }));
+  onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -152,7 +152,7 @@
   });
 
   const handleUnmerge = () => {
-    assetStore.removeAssets(assetInteraction.selectedAssets.map((a) => a.id));
+    timelineManager.removeAssets(assetInteraction.selectedAssets.map((a) => a.id));
     assetInteraction.clearMultiselect();
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
@@ -348,12 +348,12 @@
   };
 
   const handleDeleteAssets = async (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     await updateAssetCount();
   };
 
   const handleUndoDeleteAssets = async (assets: TimelineAsset[]) => {
-    assetStore.addAssets(assets);
+    timelineManager.addAssets(assets);
     await updateAssetCount();
   };
 
@@ -368,7 +368,7 @@
   });
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
   };
 </script>
@@ -386,7 +386,7 @@
     <AssetGrid
       enableRouting={true}
       {person}
-      {assetStore}
+      {timelineManager}
       {assetInteraction}
       isSelectionMode={viewMode === PersonPageViewMode.SELECT_PERSON}
       singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
@@ -506,7 +506,7 @@
       clearSelect={() => assetInteraction.clearMultiselect()}
     >
       <CreateSharedLink />
-      <SelectAllAssets {assetStore} {assetInteraction} />
+      <SelectAllAssets {timelineManager} {assetInteraction} />
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum />
         <AddToAlbum shared />
@@ -514,7 +514,7 @@
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
         onFavorite={(ids, isFavorite) =>
-          assetStore.updateAssetOperation(ids, (asset) => {
+          timelineManager.updateAssetOperation(ids, (asset) => {
             asset.isFavorite = isFavorite;
             return { remove: false };
           })}
@@ -532,7 +532,7 @@
         <ArchiveAction
           menuItem
           unarchive={assetInteraction.isAllArchived}
-          onArchive={(assetIds) => assetStore.removeAssets(assetIds)}
+          onArchive={(assetIds) => timelineManager.removeAssets(assetIds)}
         />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />

@@ -39,9 +39,9 @@
   const buildMap = (tags: TagResponseDto[]) => {
     return Object.fromEntries(tags.map((tag) => [tag.value, tag]));
   };
-  const assetStore = new TimelineManager();
-  $effect(() => void assetStore.updateOptions({ deferInit: !tag, tagId }));
-  onDestroy(() => assetStore.destroy());
+  const timelineManager = new TimelineManager();
+  $effect(() => void timelineManager.updateOptions({ deferInit: !tag, tagId }));
+  onDestroy(() => timelineManager.destroy());
 
   let tags = $derived<TagResponseDto[]>(data.tags);
   let tagsMap = $derived(buildMap(tags));
@@ -179,7 +179,7 @@
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
     {#if tag}
-      <AssetGrid enableRouting={true} {assetStore} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
+      <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
         {#snippet empty()}
           <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation} />
         {/snippet}

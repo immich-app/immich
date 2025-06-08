@@ -81,7 +81,7 @@
     });
   });
 
-  let assetStore = new TimelineManager();
+  let timelineManager = new TimelineManager();
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -131,7 +131,7 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
     onAssetDelete(assetIds);
   };

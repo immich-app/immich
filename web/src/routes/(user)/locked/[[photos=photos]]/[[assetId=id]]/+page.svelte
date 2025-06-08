@@ -27,9 +27,9 @@
 
   let { data }: Props = $props();
 
-  const assetStore = new TimelineManager();
-  void assetStore.updateOptions({ visibility: AssetVisibility.Locked });
-  onDestroy(() => assetStore.destroy());
+  const timelineManager = new TimelineManager();
+  void timelineManager.updateOptions({ visibility: AssetVisibility.Locked });
+  onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -42,7 +42,7 @@
 
   const handleMoveOffLockedFolder = (assetIds: string[]) => {
     assetInteraction.clearMultiselect();
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
   };
 
   const handleLock = async () => {
@@ -60,7 +60,7 @@
 
   <AssetGrid
     enableRouting={true}
-    {assetStore}
+    {timelineManager}
     {assetInteraction}
     onEscape={handleEscape}
     removeAction={AssetAction.SET_VISIBILITY_TIMELINE}
@@ -77,13 +77,13 @@
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
-    <SelectAllAssets withText {assetStore} {assetInteraction} />
+    <SelectAllAssets withText {timelineManager} {assetInteraction} />
     <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
-      <DeleteAssets menuItem force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <DeleteAssets menuItem force onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}

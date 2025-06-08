@@ -23,8 +23,8 @@ import { MonthGroup } from './month-group.svelte';
 import type {
   AssetDescriptor,
   AssetOperation,
-  AssetStoreLayoutOptions,
-  AssetStoreOptions,
+  TimelineManagerLayoutOptions,
+  TimelineManagerOptions,
   Direction,
   LiteBucket,
   PendingChange,
@@ -85,7 +85,7 @@ export class TimelineManager {
   #headerHeight = $state(48);
   #gap = $state(12);
 
-  #options: AssetStoreOptions = TimelineManager.#INIT_OPTIONS;
+  #options: TimelineManagerOptions = TimelineManager.#INIT_OPTIONS;
 
   #scrolling = $state(false);
   #suspendTransitions = $state(false);
@@ -103,7 +103,7 @@ export class TimelineManager {
 
   constructor() {}
 
-  setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: AssetStoreLayoutOptions) {
+  setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
     let changed = false;
     changed ||= this.#setHeaderHeight(headerHeight);
     changed ||= this.#setGap(gap);
@@ -406,7 +406,7 @@ export class TimelineManager {
     this.#updateViewportGeometry(false);
   }
 
-  async updateOptions(options: AssetStoreOptions) {
+  async updateOptions(options: TimelineManagerOptions) {
     if (options.deferInit) {
       return;
     }
@@ -418,7 +418,7 @@ export class TimelineManager {
     this.#updateViewportGeometry(false);
   }
 
-  async #init(options: AssetStoreOptions) {
+  async #init(options: TimelineManagerOptions) {
     this.isInitialized = false;
     this.months = [];
     this.albumAssets.clear();

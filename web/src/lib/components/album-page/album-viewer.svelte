@@ -35,9 +35,9 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new TimelineManager();
-  $effect(() => void assetStore.updateOptions({ albumId: album.id, order: album.order }));
-  onDestroy(() => assetStore.destroy());
+  const timelineManager = new TimelineManager();
+  $effect(() => void timelineManager.updateOptions({ albumId: album.id, order: album.order }));
+  onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -61,7 +61,7 @@
 />
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
+  <AssetGrid enableRouting={true} {album} {timelineManager} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
       <h1
@@ -93,7 +93,7 @@
       assets={assetInteraction.selectedAssets}
       clearSelect={() => assetInteraction.clearMultiselect()}
     >
-      <SelectAllAssets {assetStore} {assetInteraction} />
+      <SelectAllAssets {timelineManager} {assetInteraction} />
       {#if sharedLink.allowDownload}
         <DownloadAction filename="{album.albumName}.zip" />
       {/if}

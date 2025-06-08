@@ -47,7 +47,7 @@
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
      additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
-    assetStore: TimelineManager;
+    timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
     removeAction?:
       | AssetAction.UNARCHIVE
@@ -72,7 +72,7 @@
     isSelectionMode = false,
     singleSelect = false,
     enableRouting,
-    assetStore = $bindable(),
+    timelineManager = $bindable(),
     assetInteraction,
     removeAction = null,
     withStacked = false,
@@ -116,7 +116,7 @@
           rowHeight: 235,
           headerHeight: 48,
         };
-    assetStore.setLayoutOptions(layoutOptions);
+    timelineManager.setLayoutOptions(layoutOptions);
   });
 
   const scrollTo = (top: number) => {
@@ -143,15 +143,15 @@
     // handle any scroll compensation that may have been set
     const height = monthGroup!.findAssetAbsolutePosition(assetId);
 
-    while (assetStore.scrollCompensation.monthGroup) {
-      handleScrollCompensation(assetStore.scrollCompensation);
-      assetStore.clearScrollCompensation();
+    while (timelineManager.scrollCompensation.monthGroup) {
+      handleScrollCompensation(timelineManager.scrollCompensation);
+      timelineManager.clearScrollCompensation();
     }
     return height;
   };
 
   const scrollToAssetId = async (assetId: string) => {
-    const monthGroup = await assetStore.findMonthGroupForAsset(assetId);
+    const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
     if (!monthGroup) {
       return false;
     }
@@ -162,7 +162,7 @@
   };
 
   const scrollToAsset = (asset: TimelineAsset) => {
-    const monthGroup = assetStore.getMonthGroupIndexByAssetId(asset.id);
+    const monthGroup = timelineManager.getMonthGroupIndexByAssetId(asset.id);
     if (!monthGroup) {
       return false;
     }
@@ -185,7 +185,7 @@
     showSkeleton = false;
   };
 
-  beforeNavigate(() => (assetStore.suspendTransitions = true));
+  beforeNavigate(() => (timelineManager.suspendTransitions = true));
 
   afterNavigate((nav) => {
     const { complete } = nav;
@@ -224,7 +224,7 @@
       import.meta.hot?.on('vite:beforeUpdate', (payload) => {
         const assetGridUpdate = payload.updates.some((update) => update.path.endsWith('asset-grid.svelte'));
         if (assetGridUpdate) {
-          assetStore.destroy();
+          timelineManager.destroy();
         }
       });
 
@@ -233,9 +233,9 @@
     return () => void 0;
   };
 
-  const updateIsScrolling = () => (assetStore.scrolling = true);
+  const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
-  const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
+  const updateSlidingWindow = () => timelineManager.updateSlidingWindow(element?.scrollTop || 0);
 
   const handleScrollCompensation = ({ heightDelta, scrollTop }: { heightDelta?: number; scrollTop?: number }) => {
     if (heightDelta !== undefined) {
@@ -250,7 +250,7 @@
     updateSlidingWindow();
   };
 
-  const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
+  const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
 
   onMount(() => {
     if (!enableRouting) {
@@ -263,15 +263,15 @@
   });
 
   const getMaxScrollPercent = () => {
-    const totalHeight = assetStore.timelineHeight + bottomSectionHeight + assetStore.topSectionHeight;
-    return (totalHeight - assetStore.viewportHeight) / totalHeight;
+    const totalHeight = timelineManager.timelineHeight + bottomSectionHeight + timelineManager.topSectionHeight;
+    return (totalHeight - timelineManager.viewportHeight) / totalHeight;
   };
 
   const getMaxScroll = () => {
     if (!element || !timelineElement) {
       return 0;
     }
-    return assetStore.topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
+    return timelineManager.topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
   };
 
   const scrollToMonthGroupAndOffset = (monthGroup: MonthGroup, monthGroupScrollPercent: number) => {
@@ -289,13 +289,13 @@
     scrollPercent: number,
     bucketScrollPercent: number,
   ) => {
-    if (!bucketDate || assetStore.timelineHeight < assetStore.viewportHeight * 2) {
+    if (!bucketDate || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = getMaxScroll();
       const offset = maxScroll * scrollPercent;
       scrollTop(offset);
     } else {
-      const monthGroup = assetStore.months.find(
+      const monthGroup = timelineManager.months.find(
         (monthGroup) =>
           monthGroup.yearMonth.year === bucketDate.year && monthGroup.yearMonth.month === bucketDate.month,
       );
@@ -314,7 +314,7 @@
       return;
     }
 
-    if (assetStore.timelineHeight < assetStore.viewportHeight * 2) {
+    if (timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
       const maxScroll = getMaxScroll();
       scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
@@ -323,7 +323,7 @@
       scrubBucketPercent = 0;
     } else {
       let top = element.scrollTop;
-      if (top < assetStore.topSectionHeight) {
+      if (top < timelineManager.topSectionHeight) {
         // in the lead-in area
         scrubBucket = undefined;
         scrubBucketPercent = 0;
@@ -336,19 +336,19 @@
       let maxScrollPercent = getMaxScrollPercent();
       let found = false;
 
-      const monthsLength = assetStore.months.length;
+      const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
         let monthGroup: TimelinePlainYearMonth | undefined;
         let monthGroupHeight = 0;
         if (i === -1) {
           // lead-in
-          monthGroupHeight = assetStore.topSectionHeight;
+          monthGroupHeight = timelineManager.topSectionHeight;
         } else if (i === monthsLength) {
           // lead-out
           monthGroupHeight = bottomSectionHeight;
         } else {
-          monthGroup = assetStore.months[i].yearMonth;
-          monthGroupHeight = assetStore.months[i].bucketHeight;
+          monthGroup = timelineManager.months[i].yearMonth;
+          monthGroupHeight = timelineManager.months[i].bucketHeight;
         }
 
         let next = top - monthGroupHeight * maxScrollPercent;
@@ -361,7 +361,7 @@
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
           if (scrubBucketPercent > 0.9999 && i + 1 < monthsLength - 1) {
-            scrubBucket = assetStore.months[i + 1].yearMonth;
+            scrubBucket = timelineManager.months[i + 1].yearMonth;
             scrubBucketPercent = 0;
           }
 
@@ -383,9 +383,9 @@
     isShowDeleteConfirmation = false;
     await deleteAssets(
       !(isTrashEnabled && !force),
-      (assetIds) => assetStore.removeAssets(assetIds),
+      (assetIds) => timelineManager.removeAssets(assetIds),
       assetInteraction.selectedAssets,
-      !isTrashEnabled || force ? undefined : (assets) => assetStore.addAssets(assets),
+      !isTrashEnabled || force ? undefined : (assets) => timelineManager.addAssets(assets),
     );
     assetInteraction.clearMultiselect();
   };
@@ -411,7 +411,7 @@
   const onStackAssets = async () => {
     const result = await stackAssets(assetInteraction.selectedAssets);
 
-    updateStackedAssetInTimeline(assetStore, result);
+    updateStackedAssetInTimeline(timelineManager, result);
 
     onEscape();
   };
@@ -421,21 +421,21 @@
       assetInteraction.selectedAssets,
       assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
-    assetStore.updateAssets(assetInteraction.selectedAssets);
+    timelineManager.updateAssets(assetInteraction.selectedAssets);
     deselectAllAssets();
   };
 
   const handleSelectAsset = (asset: TimelineAsset) => {
-    if (!assetStore.albumAssets.has(asset.id)) {
+    if (!timelineManager.albumAssets.has(asset.id)) {
       assetInteraction.selectAsset(asset);
     }
   };
 
   const handlePrevious = async () => {
-    const laterAsset = await assetStore.getLaterAsset($viewingAsset);
+    const laterAsset = await timelineManager.getLaterAsset($viewingAsset);
 
     if (laterAsset) {
-      const preloadAsset = await assetStore.getLaterAsset(laterAsset);
+      const preloadAsset = await timelineManager.getLaterAsset(laterAsset);
       const asset = await getAssetInfo({ id: laterAsset.id, key: authManager.key });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: laterAsset.id });
@@ -445,9 +445,9 @@
   };
 
   const handleNext = async () => {
-    const earlierAsset = await assetStore.getEarlierAsset($viewingAsset);
+    const earlierAsset = await timelineManager.getEarlierAsset($viewingAsset);
     if (earlierAsset) {
-      const preloadAsset = await assetStore.getEarlierAsset(earlierAsset);
+      const preloadAsset = await timelineManager.getEarlierAsset(earlierAsset);
       const asset = await getAssetInfo({ id: earlierAsset.id, key: authManager.key });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
@@ -457,7 +457,7 @@
   };
 
   const handleRandom = async () => {
-    const randomAsset = await assetStore.getRandomAsset();
+    const randomAsset = await timelineManager.getRandomAsset();
 
     if (randomAsset) {
       const asset = await getAssetInfo({ id: randomAsset.id, key: authManager.key });
@@ -488,7 +488,7 @@
         (await handleNext()) || (await handlePrevious()) || (await handleClose(action.asset));
 
         // delete after find the next one
-        assetStore.removeAssets([action.asset.id]);
+        timelineManager.removeAssets([action.asset.id]);
         break;
       }
     }
@@ -499,17 +499,17 @@
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
       case AssetAction.UNFAVORITE: {
-        assetStore.updateAssets([action.asset]);
+        timelineManager.updateAssets([action.asset]);
         break;
       }
 
       case AssetAction.ADD: {
-        assetStore.addAssets([action.asset]);
+        timelineManager.addAssets([action.asset]);
         break;
       }
 
       case AssetAction.UNSTACK: {
-        updateUnstackedAssetInTimeline(assetStore, action.assets);
+        updateUnstackedAssetInTimeline(timelineManager, action.assets);
         break;
       }
     }
@@ -552,7 +552,7 @@
     lastAssetMouseEvent = asset;
   };
 
-  const handleGroupSelect = (assetStore: TimelineManager, group: string, assets: TimelineAsset[]) => {
+  const handleGroupSelect = (timelineManager: TimelineManager, group: string, assets: TimelineAsset[]) => {
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
@@ -565,7 +565,7 @@
       }
     }
 
-    if (assetStore.count == assetInteraction.selectedAssets.length) {
+    if (timelineManager.count == assetInteraction.selectedAssets.length) {
       isSelectingAllAssets.set(true);
     } else {
       isSelectingAllAssets.set(false);
@@ -602,8 +602,8 @@
     assetInteraction.clearAssetSelectionCandidates();
 
     if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = assetStore.getBucketIndexByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucket = assetStore.getBucketIndexByAssetId(asset.id);
+      let startBucket = timelineManager.getBucketIndexByAssetId(assetInteraction.assetSelectionStart.id);
+      let endBucket = timelineManager.getBucketIndexByAssetId(asset.id);
 
       if (startBucket === null || endBucket === null) {
         return;
@@ -611,12 +611,12 @@
 
       // Select/deselect assets in range (start,end)
       let started = false;
-      for (const monthGroup of assetStore.months) {
+      for (const monthGroup of timelineManager.months) {
         if (monthGroup === endBucket) {
           break;
         }
         if (started) {
-          await assetStore.loadMonthGroup(monthGroup.yearMonth);
+          await timelineManager.loadMonthGroup(monthGroup.yearMonth);
           for (const asset of monthGroup.assetsIterator()) {
             if (deselect) {
               assetInteraction.removeAssetFromMultiselectGroup(asset.id);
@@ -632,7 +632,7 @@
 
       // Update date group selection in range [start,end]
       started = false;
-      for (const monthGroup of assetStore.months) {
+      for (const monthGroup of timelineManager.months) {
         if (monthGroup === startBucket) {
           started = true;
         }
@@ -666,7 +666,7 @@
       return;
     }
 
-    const assets = assetsSnapshot(await assetStore.retrieveRange(startAsset, endAsset));
+    const assets = assetsSnapshot(await timelineManager.retrieveRange(startAsset, endAsset));
     assetInteraction.setAssetSelectionCandidates(assets);
   };
 
@@ -677,7 +677,7 @@
   };
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let isEmpty = $derived(assetStore.isInitialized && assetStore.months.length === 0);
+  let isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
   let isShortcutModalOpen = false;
 
@@ -697,7 +697,7 @@
     }
   });
 
-  const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, assetStore);
+  const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, timelineManager);
   const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
 
   let shortcutList = $derived(
@@ -710,7 +710,7 @@
         { shortcut: { key: 'Escape' }, onShortcut: onEscape },
         { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
-        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteraction) },
+        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(timelineManager, assetInteraction) },
         { shortcut: { key: 'ArrowRight' }, onShortcut: () => setFocusTo('earlier', 'asset') },
         { shortcut: { key: 'ArrowLeft' }, onShortcut: () => setFocusTo('later', 'asset') },
         { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('earlier', 'day') },
@@ -772,7 +772,7 @@
     timezoneInput={false}
     onConfirm={async (dateString: string) => {
       isShowSelectDate = false;
-      const asset = await assetStore.getClosestAssetToDate((DateTime.fromISO(dateString) as DateTime<true>).toObject());
+      const asset = await timelineManager.getClosestAssetToDate((DateTime.fromISO(dateString) as DateTime<true>).toObject());
       if (asset) {
         setFocusAsset(asset);
       }
@@ -781,11 +781,11 @@
   />
 {/if}
 
-{#if assetStore.months.length > 0}
+{#if timelineManager.months.length > 0}
   <Scrubber
-    {assetStore}
-    height={assetStore.viewportHeight}
-    timelineTopOffset={assetStore.topSectionHeight}
+    {timelineManager}
+    height={timelineManager.viewportHeight}
+    timelineTopOffset={timelineManager.topSectionHeight}
     timelineBottomOffset={bottomSectionHeight}
     {leadout}
     {scrubOverallPercent}
@@ -817,8 +817,8 @@
   class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
   style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
-  bind:clientHeight={assetStore.viewportHeight}
-  bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
+  bind:clientHeight={timelineManager.viewportHeight}
+  bind:clientWidth={null, (v) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}
   bind:this={element}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >
@@ -826,7 +826,7 @@
     bind:this={timelineElement}
     id="virtual-timeline"
     class:invisible={showSkeleton}
-    style:height={assetStore.timelineHeight + 'px'}
+    style:height={timelineManager.timelineHeight + 'px'}
   >
     <section
       use:resizeObserver={topSectionResizeObserver}
@@ -842,7 +842,7 @@
       {/if}
     </section>
 
-    {#each assetStore.months as monthGroup (monthGroup.viewId)}
+    {#each timelineManager.months as monthGroup (monthGroup.viewId)}
       {@const display = monthGroup.intersecting}
       {@const absoluteHeight = monthGroup.top}
 
@@ -870,11 +870,11 @@
             {withStacked}
             {showArchiveIcon}
             {assetInteraction}
-            {assetStore}
+            {timelineManager}
             {isSelectionMode}
             {singleSelect}
             bucket={monthGroup}
-            onSelect={({ title, assets }) => handleGroupSelect(assetStore, title, assets)}
+            onSelect={({ title, assets }) => handleGroupSelect(timelineManager, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
             onScrollCompensation={handleScrollCompensation}
@@ -888,7 +888,7 @@
       style:position="absolute"
       style:left="0"
       style:right="0"
-      style:transform={`translate3d(0,${assetStore.timelineHeight}px,0)`}
+      style:transform={`translate3d(0,${timelineManager.timelineHeight}px,0)`}
     ></div>
   </section>
 </section>

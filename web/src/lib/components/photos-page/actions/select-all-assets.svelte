@@ -8,15 +8,15 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    assetStore: TimelineManager;
+    timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
     withText?: boolean;
   }
 
-  let { assetStore, assetInteraction, withText = false }: Props = $props();
+  let { timelineManager, assetInteraction, withText = false }: Props = $props();
 
   const handleSelectAll = async () => {
-    await selectAllAssets(assetStore, assetInteraction);
+    await selectAllAssets(timelineManager, assetInteraction);
   };
 
   const handleCancel = () => {

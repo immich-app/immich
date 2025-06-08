@@ -484,7 +484,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
   }
 };
 
-export const selectAllAssets = async (assetStore: TimelineManager, assetInteraction: AssetInteraction) => {
+export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetInteraction) => {
   if (get(isSelectingAllAssets)) {
     // Selection is already ongoing
     return;
@@ -492,16 +492,16 @@ export const selectAllAssets = async (assetStore: TimelineManager, assetInteract
   isSelectingAllAssets.set(true);
 
   try {
-    for (const bucket of assetStore.months) {
-      await assetStore.loadMonthGroup(bucket.yearMonth);
+    for (const monthGroup of timelineManager.months) {
+      await timelineManager.loadMonthGroup(monthGroup.yearMonth);
 
       if (!get(isSelectingAllAssets)) {
         assetInteraction.clearMultiselect();
         break; // Cancelled
       }
-      assetInteraction.selectAssets(assetsSnapshot([...bucket.assetsIterator()]));
+      assetInteraction.selectAssets(assetsSnapshot([...monthGroup.assetsIterator()]));
 
-      for (const dateGroup of bucket.dateGroups) {
+      for (const dateGroup of monthGroup.dateGroups) {
         assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);
       }
     }

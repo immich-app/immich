@@ -23,7 +23,7 @@
     withStacked: boolean;
     showArchiveIcon: boolean;
     bucket: MonthGroup;
-    assetStore: TimelineManager;
+    timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
 
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
@@ -39,7 +39,7 @@
     showArchiveIcon,
     bucket = $bindable(),
     assetInteraction,
-    assetStore,
+    timelineManager,
     onSelect,
     onSelectAssets,
     onSelectAssetCandidates,
@@ -51,9 +51,9 @@
 
   const transitionDuration = $derived.by(() => (bucket.store.suspendTransitions && !$isUploading ? 0 : 150));
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-  const onClick = (assetStore: TimelineManager, assets: TimelineAsset[], groupTitle: string, asset: TimelineAsset) => {
+  const onClick = (timelineManager: TimelineManager, assets: TimelineAsset[], groupTitle: string, asset: TimelineAsset) => {
     if (isSelectionMode || assetInteraction.selectionActive) {
-      assetSelectHandler(assetStore, asset, assets, groupTitle);
+      assetSelectHandler(timelineManager, asset, assets, groupTitle);
       return;
     }
     void navigate({ targetRoute: 'current', assetId: asset.id });
@@ -62,7 +62,7 @@
   const handleSelectGroup = (title: string, assets: TimelineAsset[]) => onSelect({ title, assets });
 
   const assetSelectHandler = (
-    assetStore: TimelineManager,
+    timelineManager: TimelineManager,
     asset: TimelineAsset,
     assetsInDayGroup: TimelineAsset[],
     groupTitle: string,
@@ -81,7 +81,7 @@
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
 
-    if (assetStore.count == assetInteraction.selectedAssets.length) {
+    if (timelineManager.count == assetInteraction.selectedAssets.length) {
       isSelectingAllAssets.set(true);
     } else {
       isSelectingAllAssets.set(false);
@@ -102,9 +102,9 @@
   }
 
   $effect.root(() => {
-    if (assetStore.scrollCompensation.monthGroup === bucket) {
-      onScrollCompensation(assetStore.scrollCompensation);
-      assetStore.clearScrollCompensation();
+    if (timelineManager.scrollCompensation.monthGroup === bucket) {
+      onScrollCompensation(timelineManager.scrollCompensation);
+      timelineManager.clearScrollCompensation();
     }
   });
 </script>
@@ -183,8 +183,8 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            onClick={(asset) => onClick(assetStore, dayGroup.getAssets(), dayGroup.groupTitle, asset)}
-            onSelect={(asset) => assetSelectHandler(assetStore, asset, dayGroup.getAssets(), dayGroup.groupTitle)}
+            onClick={(asset) => onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset)}
+            onSelect={(asset) => assetSelectHandler(timelineManager, asset, dayGroup.getAssets(), dayGroup.groupTitle)}
             onMouseEvent={() => assetMouseEventHandler(dayGroup.groupTitle, assetSnapshot(asset))}
             selected={assetInteraction.hasSelectedAsset(asset.id) ||
               dayGroup.monthGroup.store.albumAssets.has(asset.id)}

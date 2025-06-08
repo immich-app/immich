@@ -22,16 +22,16 @@
 
   let { data }: Props = $props();
 
-  const assetStore = new TimelineManager();
+  const timelineManager = new TimelineManager();
   $effect(
     () =>
-      void assetStore.updateOptions({
+      void timelineManager.updateOptions({
         userId: data.partner.id,
         visibility: AssetVisibility.Timeline,
         withStacked: true,
       }),
   );
-  onDestroy(() => assetStore.destroy());
+  onDestroy(() => timelineManager.destroy());
   const assetInteraction = new AssetInteraction();
 
   const handleEscape = () => {
@@ -43,7 +43,7 @@
 </script>
 
 <main class="grid h-dvh pt-18">
-  <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={handleEscape} />
+  <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape} />
 
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar

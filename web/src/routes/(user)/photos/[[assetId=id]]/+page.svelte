@@ -41,9 +41,9 @@
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  const assetStore = new TimelineManager();
-  void assetStore.updateOptions({ visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true });
-  onDestroy(() => assetStore.destroy());
+  const timelineManager = new TimelineManager();
+  void timelineManager.updateOptions({ visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true });
+  onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -69,17 +69,17 @@
   };
 
   const handleLink: OnLink = ({ still, motion }) => {
-    assetStore.removeAssets([motion.id]);
-    assetStore.updateAssets([still]);
+    timelineManager.removeAssets([motion.id]);
+    timelineManager.updateAssets([still]);
   };
 
   const handleUnlink: OnUnlink = ({ still, motion }) => {
-    assetStore.addAssets([motion]);
-    assetStore.updateAssets([still]);
+    timelineManager.addAssets([motion]);
+    timelineManager.updateAssets([still]);
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
   };
 
@@ -91,7 +91,7 @@
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
   <AssetGrid
     enableRouting={true}
-    {assetStore}
+    {timelineManager}
     {assetInteraction}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
@@ -113,7 +113,7 @@
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
     <CreateSharedLink />
-    <SelectAllAssets {assetStore} {assetInteraction} />
+    <SelectAllAssets {timelineManager} {assetInteraction} />
     <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
@@ -121,7 +121,7 @@
     <FavoriteAction
       removeFavorite={assetInteraction.isAllFavorite}
       onFavorite={(ids, isFavorite) =>
-        assetStore.updateAssetOperation(ids, (asset) => {
+        timelineManager.updateAssetOperation(ids, (asset) => {
           asset.isFavorite = isFavorite;
           return { remove: false };
         })}
@@ -131,8 +131,8 @@
       {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
         <StackAction
           unstack={isAssetStackSelected}
-          onStack={(result) => updateStackedAssetInTimeline(assetStore, result)}
-          onUnstack={(assets) => updateUnstackedAssetInTimeline(assetStore, assets)}
+          onStack={(result) => updateStackedAssetInTimeline(timelineManager, result)}
+          onUnstack={(assets) => updateUnstackedAssetInTimeline(timelineManager, assets)}
         />
       {/if}
       {#if isLinkActionAvailable}
@@ -146,14 +146,14 @@
       <ChangeDate menuItem />
       <ChangeDescription menuItem />
       <ChangeLocation menuItem />
-      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <ArchiveAction menuItem onArchive={(assetIds) => timelineManager.removeAssets(assetIds)} />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
       {/if}
       <DeleteAssets
         menuItem
-        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
-        onUndoDelete={(assets) => assetStore.addAssets(assets)}
+        onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
+        onUndoDelete={(assets) => timelineManager.addAssets(assets)}
       />
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <hr />
