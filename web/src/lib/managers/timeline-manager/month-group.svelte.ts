@@ -27,7 +27,7 @@ export class MonthGroup {
   actuallyIntersecting: boolean = $state(false);
   isLoaded: boolean = $state(false);
   dayGroups: DayGroup[] = $state([]);
-  readonly store: TimelineManager;
+  readonly timelineManager: TimelineManager;
 
   #bucketHeight: number = $state(0);
   #top: number = $state(0);
@@ -44,7 +44,7 @@ export class MonthGroup {
   loader: CancellableTask | undefined;
   isBucketHeightActual: boolean = $state(false);
 
-  readonly bucketDateFormatted: string;
+  readonly monthGroupTitle: string;
   readonly yearMonth: TimelinePlainYearMonth;
 
   constructor(
@@ -53,12 +53,12 @@ export class MonthGroup {
     initialCount: number,
     order: AssetOrder = AssetOrder.Desc,
   ) {
-    this.store = store;
+    this.timelineManager = store;
     this.#initialCount = initialCount;
     this.#sortOrder = order;
 
     this.yearMonth = yearMonth;
-    this.bucketDateFormatted = formatBucketTitle(fromTimelinePlainYearMonth(yearMonth));
+    this.monthGroupTitle = formatBucketTitle(fromTimelinePlainYearMonth(yearMonth));
 
     this.loader = new CancellableTask(
       () => {
@@ -79,7 +79,7 @@ export class MonthGroup {
     }
     this.#intersecting = newValue;
     if (newValue) {
-      void this.store.loadMonthGroup(this.yearMonth);
+      void this.timelineManager.loadMonthGroup(this.yearMonth);
     } else {
       this.cancel();
     }
@@ -244,7 +244,7 @@ export class MonthGroup {
     if (this.#bucketHeight === height) {
       return;
     }
-    const { store, percent } = this;
+    const { timelineManager: store, percent } = this;
     const index = store.months.indexOf(this);
     const bucketHeightDelta = height - this.#bucketHeight;
     this.#bucketHeight = height;
@@ -256,7 +256,7 @@ export class MonthGroup {
       }
     }
     for (let cursor = index + 1; cursor < store.months.length; cursor++) {
-      const bucket = this.store.months[cursor];
+      const bucket = this.timelineManager.months[cursor];
       const newTop = bucket.#top + bucketHeightDelta;
       if (bucket.#top !== newTop) {
         bucket.#top = newTop;
@@ -288,7 +288,7 @@ export class MonthGroup {
   }
 
   get top(): number {
-    return this.#top + this.store.topSectionHeight;
+    return this.#top + this.timelineManager.topSectionHeight;
   }
 
   #handleLoadError(error: unknown) {
@@ -309,7 +309,7 @@ export class MonthGroup {
   }
 
   findAssetAbsolutePosition(assetId: string) {
-    this.store.clearDeferredLayout(this);
+    this.timelineManager.clearDeferredLayout(this);
     for (const group of this.dayGroups) {
       const viewerAsset = group.viewerAssets.find((viewAsset) => viewAsset.id === assetId);
       if (viewerAsset) {
@@ -317,7 +317,7 @@ export class MonthGroup {
           console.warn('No position for asset');
           break;
         }
-        return this.top + group.top + viewerAsset.position.top + this.store.headerHeight;
+        return this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight;
       }
     }
     return -1;

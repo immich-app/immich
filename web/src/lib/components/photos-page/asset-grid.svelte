@@ -15,8 +15,8 @@
   import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -858,8 +858,8 @@
           style:width="100%"
         >
           <Skeleton
-            height={monthGroup.bucketHeight - monthGroup.store.headerHeight}
-            title={monthGroup.bucketDateFormatted}
+            height={monthGroup.bucketHeight - monthGroup.timelineManager.headerHeight}
+            title={monthGroup.monthGroupTitle}
           />
         </div>
       {:else if display}

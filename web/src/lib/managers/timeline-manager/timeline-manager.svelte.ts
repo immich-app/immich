@@ -387,7 +387,7 @@ export class TimelineManager {
     this.#pendingChanges = [];
   }, 2500);
 
-  async #initializeTimeBuckets() {
+  async #initializeMonthGroups() {
     const timebuckets = await getTimeBuckets({
       ...this.#options,
       key: authManager.key,
@@ -424,7 +424,7 @@ export class TimelineManager {
     this.albumAssets.clear();
     await this.initTask.execute(async () => {
       this.#options = options;
-      await this.#initializeTimeBuckets();
+      await this.#initializeMonthGroups();
     }, true);
   }
 
@@ -471,7 +471,7 @@ export class TimelineManager {
       assetCount: month.bucketCount,
       year: month.yearMonth.year,
       month: month.yearMonth.month,
-      bucketDateFormattted: month.bucketDateFormatted,
+      bucketDateFormattted: month.monthGroupTitle,
       bucketHeight: month.bucketHeight,
     }));
     this.scrubberTimelineHeight = this.timelineHeight;
