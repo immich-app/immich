@@ -74,14 +74,14 @@ describe('TimelineManager', () => {
       const plainMonths = timelineManager.months.map((month) => ({
         year: month.yearMonth.year,
         month: month.yearMonth.month,
-        bucketHeight: month.bucketHeight,
+        height: month.height,
       }));
 
       expect(plainMonths).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ year: 2024, month: 3, bucketHeight: 185.5 }),
-          expect.objectContaining({ year: 2024, month: 2, bucketHeight: 12_016 }),
-          expect.objectContaining({ year: 2024, month: 1, bucketHeight: 286 }),
+          expect.objectContaining({ year: 2024, month: 3, height: 185.5 }),
+          expect.objectContaining({ year: 2024, month: 2, height: 12_016 }),
+          expect.objectContaining({ year: 2024, month: 1, height: 286 }),
         ]),
       );
     });

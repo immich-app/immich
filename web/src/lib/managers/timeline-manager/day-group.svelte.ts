@@ -135,7 +135,7 @@ export class DayGroup {
       }
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);
-      if (remove || this.monthGroup.store.isExcluded(asset)) {
+      if (remove || this.monthGroup.timelineManager.isExcluded(asset)) {
         this.viewerAssets.splice(index, 1);
         changedGeometry = true;
       }

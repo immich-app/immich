@@ -279,7 +279,7 @@
   const scrollToMonthGroupAndOffset = (monthGroup: MonthGroup, monthGroupScrollPercent: number) => {
     const topOffset = monthGroup.top;
     const maxScrollPercent = getMaxScrollPercent();
-    const delta = monthGroup.bucketHeight * monthGroupScrollPercent;
+    const delta = monthGroup.height * monthGroupScrollPercent;
     const scrollToTop = (topOffset + delta) * maxScrollPercent;
 
     scrollTop(scrollToTop);
@@ -350,7 +350,7 @@
           monthGroupHeight = bottomSectionHeight;
         } else {
           monthGroup = timelineManager.months[i].yearMonth;
-          monthGroupHeight = timelineManager.months[i].bucketHeight;
+          monthGroupHeight = timelineManager.months[i].height;
         }
 
         let next = top - monthGroupHeight * maxScrollPercent;
@@ -852,20 +852,20 @@
 
       {#if !monthGroup.isLoaded}
         <div
-          style:height={monthGroup.bucketHeight + 'px'}
+          style:height={monthGroup.height + 'px'}
           style:position="absolute"
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
           <Skeleton
-            height={monthGroup.bucketHeight - monthGroup.timelineManager.headerHeight}
+            height={monthGroup.height - monthGroup.timelineManager.headerHeight}
             title={monthGroup.monthGroupTitle}
           />
         </div>
       {:else if display}
         <div
           class="month-group"
-          style:height={monthGroup.bucketHeight + 'px'}
+          style:height={monthGroup.height + 'px'}
           style:position="absolute"
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"

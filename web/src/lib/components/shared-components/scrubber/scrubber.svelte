@@ -135,7 +135,7 @@
 
     let top = 0;
     for (const [i, bucket] of buckets.entries()) {
-      const scrollBarPercentage = bucket.bucketHeight / timelineFullHeight;
+      const scrollBarPercentage = bucket.height / timelineFullHeight;
 
       const segment = {
         top,

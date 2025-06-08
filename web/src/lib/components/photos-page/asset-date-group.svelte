@@ -1,8 +1,8 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
+  import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetSnapshot, assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -49,7 +49,7 @@
   let isMouseOverGroup = $state(false);
   let hoveredDayGroup = $state();
 
-  const transitionDuration = $derived.by(() => (bucket.store.suspendTransitions && !$isUploading ? 0 : 150));
+  const transitionDuration = $derived.by(() => (bucket.timelineManager.suspendTransitions && !$isUploading ? 0 : 150));
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
   const onClick = (
     timelineManager: TimelineManager,
@@ -120,8 +120,8 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
     class={[
-      { 'transition-all': !bucket.store.suspendTransitions },
-      !bucket.store.suspendTransitions && `delay-${transitionDuration}`,
+      { 'transition-all': !bucket.timelineManager.suspendTransitions },
+      !bucket.timelineManager.suspendTransitions && `delay-${transitionDuration}`,
     ]}
     data-group
     style:position="absolute"
@@ -192,9 +192,9 @@
             onSelect={(asset) => assetSelectHandler(timelineManager, asset, dayGroup.getAssets(), dayGroup.groupTitle)}
             onMouseEvent={() => assetMouseEventHandler(dayGroup.groupTitle, assetSnapshot(asset))}
             selected={assetInteraction.hasSelectedAsset(asset.id) ||
-              dayGroup.monthGroup.store.albumAssets.has(asset.id)}
+              dayGroup.monthGroup.timelineManager.albumAssets.has(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            disabled={dayGroup.monthGroup.store.albumAssets.has(asset.id)}
+            disabled={dayGroup.monthGroup.timelineManager.albumAssets.has(asset.id)}
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
           />

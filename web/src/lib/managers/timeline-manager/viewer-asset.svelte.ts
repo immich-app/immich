@@ -16,7 +16,7 @@ export class ViewerAsset {
       return false;
     }
 
-    const store = this.#group.monthGroup.store;
+    const store = this.#group.monthGroup.timelineManager;
 
     const scrollCompensation = store.scrollCompensation;
     const scrollCompensationHeightDelta = scrollCompensation?.heightDelta ?? 0;

@@ -29,7 +29,7 @@ export class MonthGroup {
   dayGroups: DayGroup[] = $state([]);
   readonly timelineManager: TimelineManager;
 
-  #bucketHeight: number = $state(0);
+  #height: number = $state(0);
   #top: number = $state(0);
 
   #initialCount: number = 0;
@@ -240,24 +240,24 @@ export class MonthGroup {
     return year + '-' + month;
   }
 
-  set bucketHeight(height: number) {
-    if (this.#bucketHeight === height) {
+  set height(height: number) {
+    if (this.#height === height) {
       return;
     }
     const { timelineManager: store, percent } = this;
     const index = store.months.indexOf(this);
-    const bucketHeightDelta = height - this.#bucketHeight;
-    this.#bucketHeight = height;
+    const heightDelta = height - this.#height;
+    this.#height = height;
     const prevBucket = store.months[index - 1];
     if (prevBucket) {
-      const newTop = prevBucket.#top + prevBucket.#bucketHeight;
+      const newTop = prevBucket.#top + prevBucket.#height;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
     }
     for (let cursor = index + 1; cursor < store.months.length; cursor++) {
       const bucket = this.timelineManager.months[cursor];
-      const newTop = bucket.#top + bucketHeightDelta;
+      const newTop = bucket.#top + heightDelta;
       if (bucket.#top !== newTop) {
         bucket.#top = newTop;
       }
@@ -267,7 +267,7 @@ export class MonthGroup {
       if (currentIndex > 0) {
         if (index < currentIndex) {
           store.scrollCompensation = {
-            heightDelta: bucketHeightDelta,
+            heightDelta,
             scrollTop: undefined,
             monthGroup: this,
           };
@@ -283,8 +283,8 @@ export class MonthGroup {
     }
   }
 
-  get bucketHeight() {
-    return this.#bucketHeight;
+  get height() {
+    return this.#height;
   }
 
   get top(): number {

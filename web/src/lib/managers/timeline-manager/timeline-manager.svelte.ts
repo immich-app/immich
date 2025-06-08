@@ -42,9 +42,7 @@ export class TimelineManager {
   isInitialized = $state(false);
   months: MonthGroup[] = $state([]);
   topSectionHeight = $state(0);
-  timelineHeight = $derived(
-    this.months.reduce((accumulator, b) => accumulator + b.bucketHeight, 0) + this.topSectionHeight,
-  );
+  timelineHeight = $derived(this.months.reduce((accumulator, b) => accumulator + b.height, 0) + this.topSectionHeight);
   count = $derived(this.months.reduce((accumulator, b) => accumulator + b.bucketCount, 0));
 
   albumAssets: Set<string> = new SvelteSet();
@@ -327,7 +325,7 @@ export class TimelineManager {
     for (const month of this.months) {
       if (month === this.topIntersectingMonthGroup) {
         this.topIntersectingMonthGroup.percent = clamp(
-          (this.visibleWindow.top - this.topIntersectingMonthGroup.top) / this.topIntersectingMonthGroup.bucketHeight,
+          (this.visibleWindow.top - this.topIntersectingMonthGroup.top) / this.topIntersectingMonthGroup.height,
           0,
           1,
         );
@@ -339,7 +337,7 @@ export class TimelineManager {
 
   #calculateIntersecting(monthGroup: MonthGroup, expandTop: number, expandBottom: number) {
     const monthGroupTop = monthGroup.top;
-    const monthGroupBottom = monthGroupTop + monthGroup.bucketHeight;
+    const monthGroupBottom = monthGroupTop + monthGroup.height;
     const topWindow = this.visibleWindow.top - expandTop;
     const bottomWindow = this.visibleWindow.bottom + expandBottom;
 
@@ -472,7 +470,7 @@ export class TimelineManager {
       year: month.yearMonth.year,
       month: month.yearMonth.month,
       bucketDateFormattted: month.monthGroupTitle,
-      bucketHeight: month.bucketHeight,
+      height: month.height,
     }));
     this.scrubberTimelineHeight = this.timelineHeight;
   }
@@ -499,7 +497,7 @@ export class TimelineManager {
         const unwrappedWidth = (3 / 2) * month.bucketCount * this.#rowHeight * (7 / 10);
         const rows = Math.ceil(unwrappedWidth / viewportWidth);
         const height = 51 + Math.max(1, rows) * this.#rowHeight;
-        month.bucketHeight = height;
+        month.height = height;
       }
       return;
     }
@@ -554,7 +552,7 @@ export class TimelineManager {
       cummulativeHeight += lastRowHeight;
     }
 
-    month.bucketHeight = cummulativeHeight;
+    month.height = cummulativeHeight;
     month.isBucketHeightActual = true;
   }
 
