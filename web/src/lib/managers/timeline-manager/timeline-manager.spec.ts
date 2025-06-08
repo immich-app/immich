@@ -184,7 +184,7 @@ describe('TimelineManager', () => {
 
     it('is empty initially', () => {
       expect(timelineManager.months.length).toEqual(0);
-      expect(timelineManager.count).toEqual(0);
+      expect(timelineManager.assetCount).toEqual(0);
     });
 
     it('adds assets to new month', () => {
@@ -196,7 +196,7 @@ describe('TimelineManager', () => {
       timelineManager.addAssets([asset]);
 
       expect(timelineManager.months.length).toEqual(1);
-      expect(timelineManager.count).toEqual(1);
+      expect(timelineManager.assetCount).toEqual(1);
       expect(timelineManager.months[0].getAssets().length).toEqual(1);
       expect(timelineManager.months[0].yearMonth.year).toEqual(2024);
       expect(timelineManager.months[0].yearMonth.month).toEqual(1);
@@ -213,7 +213,7 @@ describe('TimelineManager', () => {
       timelineManager.addAssets([assetTwo]);
 
       expect(timelineManager.months.length).toEqual(1);
-      expect(timelineManager.count).toEqual(2);
+      expect(timelineManager.assetCount).toEqual(2);
       expect(timelineManager.months[0].getAssets().length).toEqual(2);
       expect(timelineManager.months[0].yearMonth.year).toEqual(2024);
       expect(timelineManager.months[0].yearMonth.month).toEqual(1);
@@ -281,7 +281,7 @@ describe('TimelineManager', () => {
 
       timelineManager.addAssets([asset]);
       expect(updateAssetsSpy).toBeCalledWith([asset]);
-      expect(timelineManager.count).toEqual(1);
+      expect(timelineManager.assetCount).toEqual(1);
     });
 
     // disabled due to the wasm Justified Layout import
@@ -310,7 +310,7 @@ describe('TimelineManager', () => {
       timelineManager.updateAssets([deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build())]);
 
       expect(timelineManager.months.length).toEqual(0);
-      expect(timelineManager.count).toEqual(0);
+      expect(timelineManager.assetCount).toEqual(0);
     });
 
     it('updates an asset', () => {
@@ -318,11 +318,11 @@ describe('TimelineManager', () => {
       const updatedAsset = { ...asset, isFavorite: true };
 
       timelineManager.addAssets([asset]);
-      expect(timelineManager.count).toEqual(1);
+      expect(timelineManager.assetCount).toEqual(1);
       expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(false);
 
       timelineManager.updateAssets([updatedAsset]);
-      expect(timelineManager.count).toEqual(1);
+      expect(timelineManager.assetCount).toEqual(1);
       expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(true);
     });
 
@@ -371,7 +371,7 @@ describe('TimelineManager', () => {
       );
       timelineManager.removeAssets(['', 'invalid', '4c7d9acc']);
 
-      expect(timelineManager.count).toEqual(2);
+      expect(timelineManager.assetCount).toEqual(2);
       expect(timelineManager.months.length).toEqual(1);
       expect(timelineManager.months[0].getAssets().length).toEqual(2);
     });
@@ -385,7 +385,7 @@ describe('TimelineManager', () => {
       timelineManager.addAssets([assetOne, assetTwo]);
       timelineManager.removeAssets([assetOne.id]);
 
-      expect(timelineManager.count).toEqual(1);
+      expect(timelineManager.assetCount).toEqual(1);
       expect(timelineManager.months.length).toEqual(1);
       expect(timelineManager.months[0].getAssets().length).toEqual(1);
     });
@@ -399,7 +399,7 @@ describe('TimelineManager', () => {
       timelineManager.addAssets(assets);
       timelineManager.removeAssets(assets.map((asset) => asset.id));
 
-      expect(timelineManager.count).toEqual(0);
+      expect(timelineManager.assetCount).toEqual(0);
       expect(timelineManager.months.length).toEqual(1);
     });
   });

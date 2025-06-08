@@ -567,7 +567,7 @@
       }
     }
 
-    if (timelineManager.count == assetInteraction.selectedAssets.length) {
+    if (timelineManager.assetCount == assetInteraction.selectedAssets.length) {
       isSelectingAllAssets.set(true);
     } else {
       isSelectingAllAssets.set(false);
