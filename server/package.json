@@ -75,7 +75,7 @@
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
     "nest-commander": "^3.16.0",
-    "nestjs-cls": "^5.0.0",
+    "nestjs-cls": "^6.0.0",
     "nestjs-kysely": "^1.1.0",
     "nestjs-otel": "^6.0.0",
     "nodemailer": "^6.9.13",
