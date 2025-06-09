@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/person.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
@@ -30,12 +31,12 @@ class PersonService {
     this._assetRepository,
   );
 
-  Future<List<Person>> getAllPeople() async {
+  Future<List<Person>> getAllPeople({bool withHidden = false}) {
     try {
-      return await _personApiRepository.getAll();
+      return _personApiRepository.getAll(withHidden: withHidden);
     } catch (error, stack) {
       _log.severe("Error while fetching curated people", error, stack);
-      return [];
+      return Future.value([]);
     }
   }
 
@@ -53,6 +54,15 @@ class PersonService {
   Future<Person?> updateName(String id, String name) async {
     try {
       return await _personApiRepository.update(id, name: name);
+    } catch (error, stack) {
+      _log.severe("Error while updating person name", error, stack);
+    }
+    return null;
+  }
+
+  Future<Person?> updateIsHidden(String id, bool isHidden) async {
+    try {
+      return await _personApiRepository.update(id, isHidden: isHidden);
     } catch (error, stack) {
       _log.severe("Error while updating person name", error, stack);
     }

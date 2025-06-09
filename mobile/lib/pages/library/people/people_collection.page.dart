@@ -16,7 +16,9 @@ class PeopleCollectionPage extends HookConsumerWidget {
   const PeopleCollectionPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final people = ref.watch(getAllPeopleProvider);
+    final withHidden = useState(false);
+    final people =
+        ref.watch(getAllPeopleProvider(withHidden: withHidden.value));
     final headers = ApiService.getRequestHeaders();
     final formFocus = useFocusNode();
     final ValueNotifier<String?> search = useState(null);
@@ -51,8 +53,18 @@ class PeopleCollectionPage extends HookConsumerWidget {
                     hintText: 'filter_people'.tr(),
                     autofocus: true,
                   )
-                : Text('people'.tr()),
+                : Text(withHidden.value ? 'people_hidden'.tr() : 'people'.tr()),
             actions: [
+              IconButton(
+                icon: Icon(
+                  withHidden.value
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                ),
+                onPressed: () {
+                  withHidden.value = !withHidden.value;
+                },
+              ),
               IconButton(
                 icon: Icon(search.value != null ? Icons.close : Icons.search),
                 onPressed: () {
@@ -93,16 +105,31 @@ class PeopleCollectionPage extends HookConsumerWidget {
                               ),
                             );
                           },
-                          child: Material(
-                            shape: const CircleBorder(side: BorderSide.none),
-                            elevation: 3,
-                            child: CircleAvatar(
-                              maxRadius: isTablet ? 120 / 2 : 96 / 2,
-                              backgroundImage: NetworkImage(
-                                getFaceThumbnailUrl(person.id),
-                                headers: headers,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CircleAvatar(
+                                maxRadius: isTablet ? 120 / 2 : 96 / 2,
+                                backgroundImage: NetworkImage(
+                                  getFaceThumbnailUrl(person.id),
+                                  headers: headers,
+                                ),
                               ),
-                            ),
+                              if (person.isHidden)
+                                Container(
+                                  width: isTablet ? 120 : 96,
+                                  height: isTablet ? 120 : 96,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.black.withValues(alpha: 0.5),
+                                  ),
+                                  child: const Icon(
+                                    Icons.visibility_off_outlined,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 12),

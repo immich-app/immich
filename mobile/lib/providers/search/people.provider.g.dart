@@ -6,23 +6,7 @@ part of 'people.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getAllPeopleHash() => r'226947af3b09ce62224916543958dd1d5e2ba651';
-
-/// See also [getAllPeople].
-@ProviderFor(getAllPeople)
-final getAllPeopleProvider = AutoDisposeFutureProvider<List<Person>>.internal(
-  getAllPeople,
-  name: r'getAllPeopleProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$getAllPeopleHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef GetAllPeopleRef = AutoDisposeFutureProviderRef<List<Person>>;
-String _$personAssetsHash() => r'c1d35ee0e024bd6915e21bc724be4b458a14bc24';
+String _$getAllPeopleHash() => r'cae10fb6b8dd3aedab7d750ae2e3095a87b7ae3d';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -44,6 +28,137 @@ class _SystemHash {
     return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
   }
 }
+
+/// See also [getAllPeople].
+@ProviderFor(getAllPeople)
+const getAllPeopleProvider = GetAllPeopleFamily();
+
+/// See also [getAllPeople].
+class GetAllPeopleFamily extends Family<AsyncValue<List<Person>>> {
+  /// See also [getAllPeople].
+  const GetAllPeopleFamily();
+
+  /// See also [getAllPeople].
+  GetAllPeopleProvider call({
+    bool withHidden = false,
+  }) {
+    return GetAllPeopleProvider(
+      withHidden: withHidden,
+    );
+  }
+
+  @override
+  GetAllPeopleProvider getProviderOverride(
+    covariant GetAllPeopleProvider provider,
+  ) {
+    return call(
+      withHidden: provider.withHidden,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'getAllPeopleProvider';
+}
+
+/// See also [getAllPeople].
+class GetAllPeopleProvider extends AutoDisposeFutureProvider<List<Person>> {
+  /// See also [getAllPeople].
+  GetAllPeopleProvider({
+    bool withHidden = false,
+  }) : this._internal(
+          (ref) => getAllPeople(
+            ref as GetAllPeopleRef,
+            withHidden: withHidden,
+          ),
+          from: getAllPeopleProvider,
+          name: r'getAllPeopleProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$getAllPeopleHash,
+          dependencies: GetAllPeopleFamily._dependencies,
+          allTransitiveDependencies:
+              GetAllPeopleFamily._allTransitiveDependencies,
+          withHidden: withHidden,
+        );
+
+  GetAllPeopleProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.withHidden,
+  }) : super.internal();
+
+  final bool withHidden;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<Person>> Function(GetAllPeopleRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: GetAllPeopleProvider._internal(
+        (ref) => create(ref as GetAllPeopleRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        withHidden: withHidden,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<Person>> createElement() {
+    return _GetAllPeopleProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GetAllPeopleProvider && other.withHidden == withHidden;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, withHidden.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin GetAllPeopleRef on AutoDisposeFutureProviderRef<List<Person>> {
+  /// The parameter `withHidden` of this provider.
+  bool get withHidden;
+}
+
+class _GetAllPeopleProviderElement
+    extends AutoDisposeFutureProviderElement<List<Person>>
+    with GetAllPeopleRef {
+  _GetAllPeopleProviderElement(super.provider);
+
+  @override
+  bool get withHidden => (origin as GetAllPeopleProvider).withHidden;
+}
+
+String _$personAssetsHash() => r'c1d35ee0e024bd6915e21bc724be4b458a14bc24';
 
 /// See also [personAssets].
 @ProviderFor(personAssets)
@@ -318,6 +433,155 @@ class _UpdatePersonNameProviderElement
   String get personId => (origin as UpdatePersonNameProvider).personId;
   @override
   String get updatedName => (origin as UpdatePersonNameProvider).updatedName;
+}
+
+String _$updatePersonIsHiddenHash() =>
+    r'7c4fbe3f7af047e0520b53754806382e8b837c61';
+
+/// See also [updatePersonIsHidden].
+@ProviderFor(updatePersonIsHidden)
+const updatePersonIsHiddenProvider = UpdatePersonIsHiddenFamily();
+
+/// See also [updatePersonIsHidden].
+class UpdatePersonIsHiddenFamily extends Family<AsyncValue<bool>> {
+  /// See also [updatePersonIsHidden].
+  const UpdatePersonIsHiddenFamily();
+
+  /// See also [updatePersonIsHidden].
+  UpdatePersonIsHiddenProvider call(
+    String personId,
+    bool isHidden,
+  ) {
+    return UpdatePersonIsHiddenProvider(
+      personId,
+      isHidden,
+    );
+  }
+
+  @override
+  UpdatePersonIsHiddenProvider getProviderOverride(
+    covariant UpdatePersonIsHiddenProvider provider,
+  ) {
+    return call(
+      provider.personId,
+      provider.isHidden,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'updatePersonIsHiddenProvider';
+}
+
+/// See also [updatePersonIsHidden].
+class UpdatePersonIsHiddenProvider extends AutoDisposeFutureProvider<bool> {
+  /// See also [updatePersonIsHidden].
+  UpdatePersonIsHiddenProvider(
+    String personId,
+    bool isHidden,
+  ) : this._internal(
+          (ref) => updatePersonIsHidden(
+            ref as UpdatePersonIsHiddenRef,
+            personId,
+            isHidden,
+          ),
+          from: updatePersonIsHiddenProvider,
+          name: r'updatePersonIsHiddenProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$updatePersonIsHiddenHash,
+          dependencies: UpdatePersonIsHiddenFamily._dependencies,
+          allTransitiveDependencies:
+              UpdatePersonIsHiddenFamily._allTransitiveDependencies,
+          personId: personId,
+          isHidden: isHidden,
+        );
+
+  UpdatePersonIsHiddenProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.personId,
+    required this.isHidden,
+  }) : super.internal();
+
+  final String personId;
+  final bool isHidden;
+
+  @override
+  Override overrideWith(
+    FutureOr<bool> Function(UpdatePersonIsHiddenRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: UpdatePersonIsHiddenProvider._internal(
+        (ref) => create(ref as UpdatePersonIsHiddenRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        personId: personId,
+        isHidden: isHidden,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<bool> createElement() {
+    return _UpdatePersonIsHiddenProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UpdatePersonIsHiddenProvider &&
+        other.personId == personId &&
+        other.isHidden == isHidden;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, personId.hashCode);
+    hash = _SystemHash.combine(hash, isHidden.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin UpdatePersonIsHiddenRef on AutoDisposeFutureProviderRef<bool> {
+  /// The parameter `personId` of this provider.
+  String get personId;
+
+  /// The parameter `isHidden` of this provider.
+  bool get isHidden;
+}
+
+class _UpdatePersonIsHiddenProviderElement
+    extends AutoDisposeFutureProviderElement<bool>
+    with UpdatePersonIsHiddenRef {
+  _UpdatePersonIsHiddenProviderElement(super.provider);
+
+  @override
+  String get personId => (origin as UpdatePersonIsHiddenProvider).personId;
+  @override
+  bool get isHidden => (origin as UpdatePersonIsHiddenProvider).isHidden;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

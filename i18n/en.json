@@ -1360,6 +1360,7 @@
   "paused": "Paused",
   "pending": "Pending",
   "people": "People",
+  "people_hidden": "People (with hidden)",
   "people_edits_count": "Edited {count, plural, one {# person} other {# people}}",
   "people_feature_description": "Browsing photos and videos grouped by people",
   "people_sidebar_description": "Display a link to People in the sidebar",

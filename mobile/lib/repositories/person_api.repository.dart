@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/person.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -15,15 +16,15 @@ class PersonApiRepository extends ApiRepository
   PersonApiRepository(this._api);
 
   @override
-  Future<List<Person>> getAll() async {
-    final dto = await checkNull(_api.getAllPeople());
+  Future<List<Person>> getAll({bool withHidden = false}) async {
+    final dto = await checkNull(_api.getAllPeople(withHidden: withHidden));
     return dto.people.map(_toPerson).toList();
   }
 
   @override
-  Future<Person> update(String id, {String? name}) async {
+  Future<Person> update(String id, {String? name, bool? isHidden}) async {
     final dto = await checkNull(
-      _api.updatePerson(id, PersonUpdateDto(name: name)),
+      _api.updatePerson(id, PersonUpdateDto(name: name, isHidden: isHidden)),
     );
     return _toPerson(dto);
   }

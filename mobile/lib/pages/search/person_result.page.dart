@@ -61,6 +61,16 @@ class PersonResultPage extends HookConsumerWidget {
                   ).tr(),
                   onTap: showEditNameDialog,
                 ),
+                ListTile(
+                  leading: const Icon(Icons.visibility_off_outlined),
+                  title: const Text(
+                    'hide_person',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ).tr(),
+                  onTap: () {
+                    ref.read(updatePersonIsHiddenProvider(personId, true));
+                  },
+                ),
               ],
             ),
           );
