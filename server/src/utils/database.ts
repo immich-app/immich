@@ -228,6 +228,20 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds:
   );
 }
 
+export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, albumIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('albums_assets_assets')
+        .select('assetsId')
+        .where('albumsId', '=', anyUuid(albumIds!))
+        .groupBy('assetsId')
+        .having((eb) => eb.fn.count('albumsId').distinct(), '=', albumIds.length)
+        .as('has_album'),
+    (join) => join.onRef('has_album.assetsId', '=', 'assets.id'),
+  );
+}
+
 export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: string[]) {
   return qb.innerJoin(
     (eb) =>
@@ -291,8 +305,8 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('assets')
-    .selectAll('assets')
     .where('assets.visibility', '=', visibility)
+    .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
@@ -369,7 +383,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(options.isMotion !== undefined, (qb) =>
       qb.where('assets.livePhotoVideoId', options.isMotion ? 'is not' : 'is', null),
     )
-    .$if(!!options.isNotInAlbum, (qb) =>
+    .$if(!!options.isNotInAlbum && (!options.albumIds || options.albumIds.length === 0), (qb) =>
       qb.where((eb) =>
         eb.not(eb.exists((eb) => eb.selectFrom('albums_assets_assets').whereRef('assetsId', '=', 'assets.id'))),
       ),

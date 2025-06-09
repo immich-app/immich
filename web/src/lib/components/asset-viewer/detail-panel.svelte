@@ -18,7 +18,8 @@
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
+  import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
+  import { getParentPath } from '$lib/utils/tree-utils';
   import {
     AssetMediaSize,
     getAssetInfo,
@@ -112,8 +113,8 @@
   let timeZone = $derived(asset.exifInfo?.timeZone);
   let dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
-      ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromLocalDateTime(asset.localDateTime),
+      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromISODateTimeUTC(asset.localDateTime),
   );
 
   const getMegapixel = (width: number, height: number): number | undefined => {
@@ -137,7 +138,7 @@
   const getAssetFolderHref = (asset: AssetResponseDto) => {
     const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
     // Remove the last part of the path to get the parent path
-    const assetParentPath = asset.originalPath.split('/').slice(0, -1).join('/');
+    const assetParentPath = getParentPath(asset.originalPath);
     folderUrl.searchParams.set(QueryParameter.PATH, assetParentPath);
     return folderUrl.href;
   };

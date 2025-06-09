@@ -18,8 +18,8 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
@@ -205,34 +205,30 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       overrides: [
         localeProvider.overrideWithValue(context.locale),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
+        title: 'Immich',
+        debugShowCheckedModeBanner: true,
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        debugShowCheckedModeBanner: true,
-        home: MaterialApp.router(
-          title: 'Immich',
-          debugShowCheckedModeBanner: false,
-          themeMode: ref.watch(immichThemeModeProvider),
-          darkTheme: getThemeData(
-            colorScheme: immichTheme.dark,
-            locale: context.locale,
-          ),
-          theme: getThemeData(
-            colorScheme: immichTheme.light,
-            locale: context.locale,
-          ),
-          routeInformationParser: router.defaultRouteParser(),
-          routerDelegate: router.delegate(
-            navigatorObservers: () => [AppNavigationObserver(ref: ref)],
-          ),
+        themeMode: ref.watch(immichThemeModeProvider),
+        darkTheme: getThemeData(
+          colorScheme: immichTheme.dark,
+          locale: context.locale,
+        ),
+        theme: getThemeData(
+          colorScheme: immichTheme.light,
+          locale: context.locale,
+        ),
+        routeInformationParser: router.defaultRouteParser(),
+        routerDelegate: router.delegate(
+          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
         ),
       ),
     );
   }
 }
 
-// ignore: prefer-single-widget-per-file
 class MainWidget extends StatelessWidget {
   const MainWidget({super.key});
 

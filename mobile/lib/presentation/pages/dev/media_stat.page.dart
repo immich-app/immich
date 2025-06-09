@@ -1,10 +1,7 @@
-// ignore_for_file: prefer-single-widget-per-file
-
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -94,9 +91,8 @@ class LocalMediaSummaryPage extends StatelessWidget {
               ),
               FutureBuilder(
                 future: albumsFuture,
-                initialData: <LocalAlbum>[],
                 builder: (_, snap) {
-                  final albums = snap.data!;
+                  final albums = snap.data ?? [];
                   if (albums.isEmpty) {
                     return const SliverToBoxAdapter(child: SizedBox.shrink());
                   }
@@ -133,6 +129,10 @@ final _remoteStats = [
   _Stat(
     name: 'Exif Entities',
     load: (db) => db.managers.remoteExifEntity.count(),
+  ),
+  _Stat(
+    name: 'Remote Albums',
+    load: (db) => db.managers.remoteAlbumEntity.count(),
   ),
 ];
 

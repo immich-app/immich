@@ -21,4 +21,6 @@ abstract interface class IAssetApiRepository {
     List<String> list,
     AssetVisibilityEnum visibility,
   );
+
+  Future<String?> getAssetMIMEType(String id);
 }

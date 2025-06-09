@@ -1,4 +1,5 @@
 import Photos
+import CryptoKit
 
 struct AssetWrapper: Hashable, Equatable {
   let asset: PlatformAsset
@@ -24,6 +25,8 @@ extension PHAsset {
       type: Int64(mediaType.rawValue),
       createdAt: creationDate.map { Int64($0.timeIntervalSince1970) },
       updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
+      width: Int64(pixelWidth),
+      height: Int64(pixelHeight),
       durationInSeconds: Int64(duration)
     )
   }
@@ -33,6 +36,8 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let defaults: UserDefaults
   private let changeTokenKey = "immich:changeToken"
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
+  
+  private let hashBufferSize = 2 * 1024 * 1024
   
   init(with defaults: UserDefaults = .standard) {
     self.defaults = defaults
@@ -153,8 +158,6 @@ class NativeSyncApiImpl: NativeSyncApi {
             id: asset.localIdentifier,
             name: "",
             type: 0,
-            createdAt: nil,
-            updatedAt: nil,
             durationInSeconds: 0
           )
           if (updatedAssets.contains(AssetWrapper(with: predicate))) {
@@ -242,5 +245,25 @@ class NativeSyncApiImpl: NativeSyncApi {
       assets.append(asset.toPlatformAsset())
     }
     return assets
+  }
+  
+  func hashPaths(paths: [String]) throws -> [FlutterStandardTypedData?] {
+      return paths.map { path in
+          guard let file = FileHandle(forReadingAtPath: path) else {
+              print("Cannot open file: \(path)")
+              return nil
+          }
+          
+          var hasher = Insecure.SHA1()
+          while autoreleasepool(invoking: {
+              let chunk = file.readData(ofLength: hashBufferSize)
+              guard !chunk.isEmpty else { return false }
+              hasher.update(data: chunk)
+              return true
+          }) { }
+          
+          let digest = hasher.finalize()
+          return FlutterStandardTypedData(bytes: Data(digest))
+      }
   }
 }

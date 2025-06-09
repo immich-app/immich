@@ -1,5 +1,3 @@
-// ignore_for_file: add-copy-with
-
 sealed class MapEvent {
   const MapEvent();
 }

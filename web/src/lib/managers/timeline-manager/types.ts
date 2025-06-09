@@ -18,6 +18,7 @@ export type TimelineAsset = {
   ratio: number;
   thumbhash: string | null;
   localDateTime: TimelinePlainDateTime;
+  fileCreatedAt: TimelinePlainDateTime;
   visibility: AssetVisibility;
   isFavorite: boolean;
   isTrashed: boolean;
@@ -29,7 +30,7 @@ export type TimelineAsset = {
   livePhotoVideoId: string | null;
   city: string | null;
   country: string | null;
-  people: string[];
+  people: string[] | null;
 };
 
 export type AssetOperation = (asset: TimelineAsset) => { remove: boolean };
