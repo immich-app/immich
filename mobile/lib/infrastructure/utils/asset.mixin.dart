@@ -6,5 +6,7 @@ mixin AssetEntityMixin on Table {
   IntColumn get type => intEnum<AssetType>()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  IntColumn get width => integer().nullable()();
+  IntColumn get height => integer().nullable()();
   IntColumn get durationInSeconds => integer().nullable()();
 }
