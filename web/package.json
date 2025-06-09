@@ -88,7 +88,7 @@
     "prettier-plugin-organize-imports": "^4.0.0",
     "prettier-plugin-sort-json": "^4.1.1",
     "prettier-plugin-svelte": "^3.3.3",
-    "rollup-plugin-visualizer": "^5.14.0",
+    "rollup-plugin-visualizer": "^6.0.0",
     "svelte": "^5.25.3",
     "svelte-check": "^4.1.5",
     "tailwindcss": "^4.1.7",
