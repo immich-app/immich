@@ -24,6 +24,7 @@ abstract class IntlKeys {
   static const add_partner = 'add_partner';
   static const add_path = 'add_path';
   static const add_photos = 'add_photos';
+  static const add_tag = 'add_tag';
   static const add_to = 'add_to';
   static const add_to_album = 'add_to_album';
   static const add_to_album_bottom_sheet_added =
@@ -654,6 +655,10 @@ abstract class IntlKeys {
   static const album_with_link_access = 'album_with_link_access';
   static const albums = 'albums';
   static const albums_count = 'albums_count';
+  static const albums_default_sort_order = 'albums_default_sort_order';
+  static const albums_default_sort_order_description =
+      'albums_default_sort_order_description';
+  static const albums_feature_description = 'albums_feature_description';
   static const all = 'all';
   static const all_albums = 'all_albums';
   static const all_people = 'all_people';
@@ -721,6 +726,8 @@ abstract class IntlKeys {
   static const assets_added_count = 'assets_added_count';
   static const assets_added_to_album_count = 'assets_added_to_album_count';
   static const assets_added_to_name_count = 'assets_added_to_name_count';
+  static const assets_cannot_be_added_to_album_count =
+      'assets_cannot_be_added_to_album_count';
   static const assets_count = 'assets_count';
   static const assets_deleted_permanently = 'assets_deleted_permanently';
   static const assets_deleted_permanently_from_server =
@@ -987,6 +994,7 @@ abstract class IntlKeys {
   static const confirm_password = 'confirm_password';
   static const confirm_tag_face = 'confirm_tag_face';
   static const confirm_tag_face_unnamed = 'confirm_tag_face_unnamed';
+  static const connected_device = 'connected_device';
   static const connected_to = 'connected_to';
   static const contain = 'contain';
   static const context = 'context';
@@ -1105,6 +1113,7 @@ abstract class IntlKeys {
   static const disallow_edits = 'disallow_edits';
   static const discord = 'discord';
   static const discover = 'discover';
+  static const discovered_devices = 'discovered_devices';
   static const dismiss_all_errors = 'dismiss_all_errors';
   static const dismiss_error = 'dismiss_error';
   static const display_options = 'display_options';
@@ -1607,6 +1616,7 @@ abstract class IntlKeys {
   static const list = 'list';
   static const loading = 'loading';
   static const loading_search_results_failed = 'loading_search_results_failed';
+  static const local_asset_cast_failed = 'local_asset_cast_failed';
   static const local_network = 'local_network';
   static const local_network_sheet_info = 'local_network_sheet_info';
   static const location_permission = 'location_permission';
@@ -1774,6 +1784,7 @@ abstract class IntlKeys {
   static const no_archived_assets_message = 'no_archived_assets_message';
   static const no_assets_message = 'no_assets_message';
   static const no_assets_to_show = 'no_assets_to_show';
+  static const no_cast_devices_found = 'no_cast_devices_found';
   static const no_duplicates_found = 'no_duplicates_found';
   static const no_exif_info_available = 'no_exif_info_available';
   static const no_explore_results_message = 'no_explore_results_message';
@@ -2177,6 +2188,7 @@ abstract class IntlKeys {
   static const set_date_of_birth = 'set_date_of_birth';
   static const set_profile_picture = 'set_profile_picture';
   static const set_slideshow_to_fullscreen = 'set_slideshow_to_fullscreen';
+  static const set_stack_primary_asset = 'set_stack_primary_asset';
   static const setting_image_viewer_help = 'setting_image_viewer_help';
   static const setting_image_viewer_original_subtitle =
       'setting_image_viewer_original_subtitle';
@@ -2359,6 +2371,7 @@ abstract class IntlKeys {
   static const start_date = 'start_date';
   static const state = 'state';
   static const status = 'status';
+  static const stop_casting = 'stop_casting';
   static const stop_motion_photo = 'stop_motion_photo';
   static const stop_photo_sharing = 'stop_photo_sharing';
   static const stop_photo_sharing_description =
