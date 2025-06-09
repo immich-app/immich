@@ -42,16 +42,13 @@ class UploadService {
     return FileDownloader().cancelTaskWithId(id);
   }
 
-  void cancelAllUpload() {
-    return _uploadRepository.cancelAll();
+  Future<void> cancel() async {
+    await _uploadRepository.cancelAll();
+    await _uploadRepository.deleteAllTrackingRecords();
   }
 
-  Future<void> pauseAllUploads() {
+  Future<void> pause() {
     return _uploadRepository.pauseAll();
-  }
-
-  Future<void> deleteAllUploadTasks() {
-    return _uploadRepository.deleteAllTrackingRecords();
   }
 
   Future<List<TaskRecord>> getRecords() async {
@@ -64,7 +61,7 @@ class UploadService {
     return all;
   }
 
-  void upload(List<UploadTask> tasks) {
+  void enqueueTasks(List<UploadTask> tasks) {
     _uploadRepository.enqueueAll(tasks);
   }
 
@@ -111,6 +108,7 @@ class UploadService {
 
     return UploadTask(
       taskId: id,
+      displayName: filename,
       httpRequestMethod: 'POST',
       url: url,
       headers: headers,

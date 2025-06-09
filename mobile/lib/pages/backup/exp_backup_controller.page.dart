@@ -95,55 +95,34 @@ class ExpBackupPage extends HookConsumerWidget {
       [backupState.backupProgress],
     );
 
-    void startBackup() {
-      ref.watch(errorBackupListProvider.notifier).empty();
-      if (ref.watch(backupProvider).backupProgress !=
-          BackUpProgressEnum.inBackground) {
-        ref.watch(backupProvider.notifier).startBackupProcess();
-      }
-    }
-
-    Widget buildBackupButton() {
+    Widget buildControlButtons() {
       return Padding(
         padding: const EdgeInsets.only(
           top: 24,
         ),
-        child: Container(
-          child: backupState.backupProgress == BackUpProgressEnum.inProgress ||
-                  backupState.backupProgress ==
-                      BackUpProgressEnum.manualInProgress
-              ? ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.grey[50],
-                    backgroundColor: Colors.red[300],
-                    // padding: const EdgeInsets.all(14),
-                  ),
-                  onPressed: () {
-                    if (backupState.backupProgress ==
-                        BackUpProgressEnum.manualInProgress) {
-                      ref.read(manualUploadProvider.notifier).cancelBackup();
-                    } else {
-                      ref.read(backupProvider.notifier).cancelBackup();
-                    }
-                  },
-                  child: const Text(
-                    "cancel",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ).tr(),
-                )
-              : ElevatedButton(
-                  onPressed: shouldBackup ? startBackup : null,
-                  child: const Text(
-                    "backup_controller_page_start_backup",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ).tr(),
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: () => ref.read(expBackupProvider.notifier).backup(),
+              child: const Text(
+                "backup_controller_page_start_backup",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
+              ).tr(),
+            ),
+            OutlinedButton(
+              onPressed: () => ref.read(expBackupProvider.notifier).cancel(),
+              child: const Text(
+                "cancel",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ).tr(),
+            ),
+          ],
         ),
       );
     }
@@ -214,11 +193,11 @@ class ExpBackupPage extends HookConsumerWidget {
                       const SizedBox(height: 8),
                       const BackupAlbumSelectionCard(),
                       const TotalCard(),
+                      const BackupCard(),
                       const RemainderCard(),
                       const Divider(),
+                      buildControlButtons(),
                       const CurrentUploadingAssetInfoBox(),
-                      if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
-                      buildBackupButton(),
                     ]
                   : [
                       const BackupAlbumSelectionCard(),
@@ -369,18 +348,33 @@ class TotalCard extends ConsumerWidget {
   }
 }
 
+class BackupCard extends ConsumerWidget {
+  const BackupCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final backupCount =
+        ref.watch(expBackupProvider.select((p) => p.backupCount));
+
+    return BackupInfoCard(
+      title: "backup_controller_page_backup".tr(),
+      subtitle: "backup_controller_page_backup_sub".tr(),
+      info: backupCount.toString(),
+    );
+  }
+}
+
 class RemainderCard extends ConsumerWidget {
   const RemainderCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final backupState = ref.watch(backupProvider);
+    final remainderCount =
+        ref.watch(expBackupProvider.select((p) => p.remainderCount));
     return BackupInfoCard(
       title: "backup_controller_page_remainder".tr(),
       subtitle: "backup_controller_page_remainder_sub".tr(),
-      info: backupState.availableAlbums.isEmpty
-          ? "..."
-          : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
+      info: remainderCount.toString(),
     );
   }
 }

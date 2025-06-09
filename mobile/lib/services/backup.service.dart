@@ -298,7 +298,7 @@ class BackupService {
 
     print("Uploading ${uploadTasks.length} assets");
 
-    _uploadService.upload(uploadTasks);
+    _uploadService.enqueueTasks(uploadTasks);
   }
 
   Future<bool> backupAsset(

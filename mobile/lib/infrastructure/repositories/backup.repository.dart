@@ -51,7 +51,9 @@ class DriftBackupRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<int> getTotalCount(BackupSelection selection) {
+  Future<int> getTotalCount() async {
+    final excludedAssetIds = await _getExcludedAssetIds();
+
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..join([
@@ -61,28 +63,146 @@ class DriftBackupRepository extends DriftDatabaseRepository
         ),
       ])
       ..where(
-        _db.localAlbumEntity.backupSelection.equals(selection.index),
+        _db.localAlbumEntity.backupSelection
+                .equals(BackupSelection.selected.index) &
+            (excludedAssetIds.isEmpty
+                ? const Constant(true)
+                : _db.localAlbumAssetEntity.assetId.isNotIn(excludedAssetIds)),
       );
 
     return query.get().then((rows) => rows.length);
   }
 
   @override
-  Future<int> getBackupCount() {
-    final query = _db.localAlbumEntity.select().join(
-      [
+  Future<int> getRemainderCount() async {
+    final excludedAssetIds = await _getExcludedAssetIds();
+
+    final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
+      ..addColumns(
+        [_db.localAlbumAssetEntity.assetId],
+      )
+      ..join([
         innerJoin(
-          _db.localAlbumAssetEntity,
+          _db.localAlbumEntity,
           _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
         ),
-      ],
-    )..where(
-        _db.localAlbumEntity.backupSelection.equals(
-          BackupSelection.selected.index,
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
         ),
+        leftOuterJoin(
+          _db.remoteAssetEntity,
+          _db.localAssetEntity.checksum
+              .equalsExp(_db.remoteAssetEntity.checksum),
+        ),
+      ])
+      ..where(
+        _db.localAlbumEntity.backupSelection
+                .equals(BackupSelection.selected.index) &
+            _db.remoteAssetEntity.checksum.isNull() &
+            (excludedAssetIds.isEmpty
+                ? const Constant(true)
+                : _db.localAlbumAssetEntity.assetId.isNotIn(excludedAssetIds)),
       );
 
     return query.get().then((rows) => rows.length);
+  }
+
+  @override
+  Future<int> getBackupCount() async {
+    final excludedAssetIds = await _getExcludedAssetIds();
+    final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
+      ..addColumns(
+        [_db.localAlbumAssetEntity.assetId],
+      )
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+        ),
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+        ),
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.localAssetEntity.checksum
+              .equalsExp(_db.remoteAssetEntity.checksum),
+        ),
+      ])
+      ..where(
+        _db.localAlbumEntity.backupSelection
+                .equals(BackupSelection.selected.index) &
+            _db.remoteAssetEntity.checksum.isNotNull() &
+            (excludedAssetIds.isEmpty
+                ? const Constant(true)
+                : _db.localAlbumAssetEntity.assetId.isNotIn(excludedAssetIds)),
+      );
+
+    return query.get().then((rows) => rows.length);
+  }
+
+  Future<List<String>> _getExcludedAssetIds() async {
+    final query = _db.localAlbumAssetEntity.selectOnly()
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+        ),
+      ])
+      ..where(
+        _db.localAlbumEntity.backupSelection
+            .equals(BackupSelection.excluded.index),
+      );
+
+    return query
+        .map((row) => row.read(_db.localAlbumAssetEntity.assetId)!)
+        .get();
+  }
+
+  @override
+  Future<List<LocalAlbum>> getBackupAlbums(BackupSelection selectionType) {
+    final query = _db.localAlbumEntity.select()
+      ..where(
+        (tbl) => tbl.backupSelection.equals(selectionType.index),
+      );
+
+    return query.map((localAlbum) => localAlbum.toDto(assetCount: 0)).get();
+  }
+
+  @override
+  Future<List<LocalAsset>> getCandidates() async {
+    final excludedAssetIds = await _getExcludedAssetIds();
+
+    final query = _db.localAlbumAssetEntity.select(distinct: true).join(
+      [
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+        ),
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+        ),
+        leftOuterJoin(
+          _db.remoteAssetEntity,
+          _db.localAssetEntity.checksum
+              .equalsExp(_db.remoteAssetEntity.checksum),
+        ),
+      ],
+    )..where(
+        _db.localAlbumEntity.backupSelection
+                .equals(BackupSelection.selected.index) &
+            _db.remoteAssetEntity.checksum.isNull() &
+            (excludedAssetIds.isEmpty
+                ? const Constant(true)
+                : _db.localAlbumAssetEntity.assetId.isNotIn(excludedAssetIds)),
+      );
+
+    return query
+        .map((row) => row.readTable(_db.localAssetEntity).toDto())
+        .get();
   }
 }
 

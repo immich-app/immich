@@ -33,7 +33,7 @@ class UploadRepository implements IUploadRepository {
 
   @override
   Future<void> deleteAllTrackingRecords() {
-    return FileDownloader().database.deleteAllRecords();
+    return FileDownloader().database.deleteAllRecords(group: kUploadGroup);
   }
 
   @override
@@ -42,8 +42,9 @@ class UploadRepository implements IUploadRepository {
   }
 
   @override
-  void cancelAll() {
-    return taskQueue.removeAll();
+  Future<bool> cancelAll() {
+    taskQueue.removeTasksWithGroup(kUploadGroup);
+    return FileDownloader().cancelAll(group: kUploadGroup);
   }
 
   @override

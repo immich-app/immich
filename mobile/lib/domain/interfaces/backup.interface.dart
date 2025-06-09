@@ -7,8 +7,10 @@ abstract interface class IBackupRepository implements IDatabaseRepository {
 
   Future<List<String>> getAssetIds(String albumId);
 
-  /// Returns the total number of assets that are selected for backup.
-  Future<int> getTotalCount(BackupSelection selection);
-
+  Future<int> getTotalCount();
+  Future<int> getRemainderCount();
   Future<int> getBackupCount();
+
+  Future<List<LocalAlbum>> getBackupAlbums(BackupSelection selectionType);
+  Future<List<LocalAsset>> getCandidates();
 }
