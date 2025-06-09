@@ -197,6 +197,14 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   ).as('files');
 }
 
+export function withFile(eb: ExpressionBuilder<DB, 'assets'>, type: AssetFileType) {
+  return eb
+    .selectFrom('asset_files')
+    .select(columns.assetFiles)
+    .whereRef('asset_files.assetId', '=', 'assets.id')
+    .where('asset_files.type', '=', type);
+}
+
 export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
   return jsonArrayFrom(
     eb
@@ -373,6 +381,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       qb
         .innerJoin('exif', 'assets.id', 'exif.assetId')
         .where(sql`f_unaccent(exif.description)`, 'ilike', sql`'%' || f_unaccent(${options.description}) || '%'`),
+    )
+    .$if(!!options.ocr, (qb) =>
+      qb
+        .innerJoin('ocr_search', 'assets.id', 'ocr_search.assetId')
+        .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${options.ocr!})`),
     )
     .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
