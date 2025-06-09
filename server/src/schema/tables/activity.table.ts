@@ -1,5 +1,4 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AlbumAssetTable } from 'src/schema/tables/album-asset.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -26,6 +25,7 @@ import {
   name: 'CHK_2ab1e70f113f450eb40c1e3ec8',
   expression: `("comment" IS NULL AND "isLiked" = true) OR ("comment" IS NOT NULL AND "isLiked" = false)`,
 })
+// TODO: create mapping for FOREIGN KEY ("albumId", "assetId") REFERENCES "albums_assets_assets" once sql-tools add support for it
 export class ActivityTable {
   @PrimaryGeneratedColumn()
   id!: string;
@@ -44,13 +44,6 @@ export class ActivityTable {
 
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })
   assetId!: string | null;
-
-  @ForeignKeyColumn(() => AlbumAssetTable, {
-    onDelete: 'CASCADE',
-    nullable: true,
-    constraintName: 'fk_activity_album_asset_composite',
-  })
-  albumAsset!: AlbumAssetTable;
 
   @Column({ type: 'text', default: null })
   comment!: string | null;
