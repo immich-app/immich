@@ -21,53 +21,50 @@ export function updateGeometry(timelineManager: TimelineManager, month: MonthGro
 }
 
 export function layoutMonthGroup(timelineManager: TimelineManager, month: MonthGroup, noDefer: boolean = false) {
-  let cummulativeHeight = 0;
-  let cummulativeWidth = 0;
-  let lastRowHeight = 0;
-  let lastRow = 0;
+  let cumulativeHeight = 0;
+  let cumulativeWidth = 0;
+  let currentRowHeight = 0;
 
   let dayGroupRow = 0;
   let dayGroupCol = 0;
 
-  const rowSpaceRemaining: number[] = Array.from({ length: month.dayGroups.length });
-  rowSpaceRemaining.fill(timelineManager.viewportWidth, 0, month.dayGroups.length);
   const options = timelineManager.createLayoutOptions();
-  for (const assetGroup of month.dayGroups) {
-    assetGroup.layout(options, noDefer);
-    rowSpaceRemaining[dayGroupRow] -= assetGroup.width - 1;
-    if (dayGroupCol > 0) {
-      rowSpaceRemaining[dayGroupRow] -= timelineManager.gap;
-    }
-    if (rowSpaceRemaining[dayGroupRow] >= 0) {
-      assetGroup.row = dayGroupRow;
-      assetGroup.col = dayGroupCol;
-      assetGroup.left = cummulativeWidth;
-      assetGroup.top = cummulativeHeight;
+  for (const dayGroup of month.dayGroups) {
+    dayGroup.layout(options, noDefer);
 
-      dayGroupCol++;
+    // Calculate space needed for this item (including gap if not first in row)
+    const spaceNeeded = dayGroup.width + (dayGroupCol > 0 ? timelineManager.gap : 0);
+    const fitsInCurrentRow = cumulativeWidth + spaceNeeded <= timelineManager.viewportWidth;
 
-      cummulativeWidth += assetGroup.width + timelineManager.gap;
+    if (fitsInCurrentRow) {
+      dayGroup.row = dayGroupRow;
+      dayGroup.col = dayGroupCol++;
+      dayGroup.left = cumulativeWidth;
+      dayGroup.top = cumulativeHeight;
+
+      cumulativeWidth += dayGroup.width + timelineManager.gap;
     } else {
-      cummulativeWidth = 0;
+      // Move to next row
+      cumulativeHeight += currentRowHeight;
+      cumulativeWidth = 0;
       dayGroupRow++;
       dayGroupCol = 0;
-      assetGroup.row = dayGroupRow;
-      assetGroup.col = dayGroupCol;
-      assetGroup.left = cummulativeWidth;
 
-      rowSpaceRemaining[dayGroupRow] -= assetGroup.width;
+      // Position at start of new row
+      dayGroup.row = dayGroupRow;
+      dayGroup.col = dayGroupCol;
+      dayGroup.left = 0;
+      dayGroup.top = cumulativeHeight;
+
       dayGroupCol++;
-      cummulativeHeight += lastRowHeight;
-      assetGroup.top = cummulativeHeight;
-      cummulativeWidth += assetGroup.width + timelineManager.gap;
-      lastRow = assetGroup.row - 1;
+      cumulativeWidth += dayGroup.width + timelineManager.gap;
     }
-    lastRowHeight = assetGroup.height + timelineManager.headerHeight;
-  }
-  if (lastRow === 0 || lastRow !== month.lastDayGroup?.row) {
-    cummulativeHeight += lastRowHeight;
+    currentRowHeight = dayGroup.height + timelineManager.headerHeight;
   }
 
-  month.height = cummulativeHeight;
+  // Add the height of the final row
+  cumulativeHeight += currentRowHeight;
+
+  month.height = cumulativeHeight;
   month.isHeightActual = true;
 }
