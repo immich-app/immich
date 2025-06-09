@@ -25,6 +25,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
     ) {
       return showDialog(
         context: context,
+        useRootNavigator: false,
         builder: (BuildContext context) {
           return PersonNameEditForm(personId: personId, personName: personName);
         },
@@ -58,25 +59,26 @@ class PeopleCollectionPage extends HookConsumerWidget {
               ),
             ],
           ),
-          body: people.when(
-            data: (people) {
-              if (search.value != null) {
-                people = people.where((person) {
-                  return person.name
-                      .toLowerCase()
-                      .contains(search.value!.toLowerCase());
-                }).toList();
-              }
-              return GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: isTablet ? 6 : 3,
-                  childAspectRatio: 0.85,
-                  mainAxisSpacing: isPortrait && isTablet ? 36 : 0,
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                itemCount: people.length,
-                itemBuilder: (context, index) {
-                  final person = people[index];
+          body: SafeArea(
+            child: people.when(
+              data: (people) {
+                if (search.value != null) {
+                  people = people.where((person) {
+                    return person.name
+                        .toLowerCase()
+                        .contains(search.value!.toLowerCase());
+                  }).toList();
+                }
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isTablet ? 6 : 3,
+                    childAspectRatio: 0.85,
+                    mainAxisSpacing: isPortrait && isTablet ? 36 : 0,
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  itemCount: people.length,
+                  itemBuilder: (context, index) {
+                    final person = people[index];
 
                   return Column(
                     children: [
