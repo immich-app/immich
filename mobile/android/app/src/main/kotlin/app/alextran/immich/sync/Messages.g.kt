@@ -85,6 +85,8 @@ data class PlatformAsset (
   val type: Long,
   val createdAt: Long? = null,
   val updatedAt: Long? = null,
+  val width: Long? = null,
+  val height: Long? = null,
   val durationInSeconds: Long
 )
  {
@@ -95,8 +97,10 @@ data class PlatformAsset (
       val type = pigeonVar_list[2] as Long
       val createdAt = pigeonVar_list[3] as Long?
       val updatedAt = pigeonVar_list[4] as Long?
-      val durationInSeconds = pigeonVar_list[5] as Long
-      return PlatformAsset(id, name, type, createdAt, updatedAt, durationInSeconds)
+      val width = pigeonVar_list[5] as Long?
+      val height = pigeonVar_list[6] as Long?
+      val durationInSeconds = pigeonVar_list[7] as Long
+      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds)
     }
   }
   fun toList(): List<Any?> {
@@ -106,6 +110,8 @@ data class PlatformAsset (
       type,
       createdAt,
       updatedAt,
+      width,
+      height,
       durationInSeconds,
     )
   }
