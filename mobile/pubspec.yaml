@@ -28,7 +28,7 @@ dependencies:
   dynamic_color: ^1.7.0
   easy_image_viewer: ^1.5.1
   easy_localization: ^3.0.7+1
-  file_picker: ^8.0.0+1
+  file_picker: ^10.0.0
   flutter_cache_manager: ^3.4.1
   flutter_displaymode: ^0.6.0
   flutter_hooks: ^0.21.2
