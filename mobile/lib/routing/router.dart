@@ -336,5 +336,9 @@ class AppRouter extends RootStackRouter {
       page: ExpBackupRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    AutoRoute(
+      page: ExpBackupAlbumSelectionRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
   ];
 }

@@ -10,15 +10,14 @@ import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
+import 'package:immich_mobile/providers/backup/exp_backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 import 'package:immich_mobile/widgets/backup/current_backup_asset_info_box.dart';
 import 'package:immich_mobile/widgets/backup/exp_upload_option_toggle.dart';
@@ -42,6 +41,14 @@ class ExpBackupPage extends HookConsumerWidget {
             !hasExclusiveAccess
         ? false
         : true;
+
+    useEffect(
+      () {
+        ref.read(expBackupProvider.notifier).getBackupStatus();
+        return null;
+      },
+      [],
+    );
 
     useEffect(
       () {
@@ -87,131 +94,6 @@ class ExpBackupPage extends HookConsumerWidget {
       },
       [backupState.backupProgress],
     );
-
-    Widget buildSelectedAlbumName() {
-      String text = "backup_controller_page_backup_selected".tr();
-      final albums = ref
-          .watch(backupAlbumProvider)
-          .where(
-            (album) => album.backupSelection == BackupSelection.selected,
-          )
-          .toList();
-
-      if (albums.isNotEmpty) {
-        for (var album in albums) {
-          if (album.name == "Recent" || album.name == "Recents") {
-            text += "${album.name} (${'all'.tr()}), ";
-          } else {
-            text += "${album.name}, ";
-          }
-        }
-
-        return Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            text.trim().substring(0, text.length - 2),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: context.primaryColor,
-            ),
-          ),
-        );
-      } else {
-        return Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            "backup_controller_page_none_selected".tr(),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: context.primaryColor,
-            ),
-          ),
-        );
-      }
-    }
-
-    Widget buildExcludedAlbumName() {
-      String text = "backup_controller_page_excluded".tr();
-      final albums = ref
-          .watch(backupAlbumProvider)
-          .where(
-            (album) => album.backupSelection == BackupSelection.excluded,
-          )
-          .toList();
-
-      if (albums.isNotEmpty) {
-        for (var album in albums) {
-          text += "${album.name}, ";
-        }
-
-        return Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            text.trim().substring(0, text.length - 2),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: Colors.red[300],
-            ),
-          ),
-        );
-      } else {
-        return const SizedBox();
-      }
-    }
-
-    buildFolderSelectionTile() {
-      return Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(
-              color: context.colorScheme.outlineVariant,
-              width: 1,
-            ),
-          ),
-          elevation: 0,
-          borderOnForeground: false,
-          child: ListTile(
-            minVerticalPadding: 18,
-            title: Text(
-              "backup_controller_page_albums",
-              style: context.textTheme.titleMedium,
-            ).tr(),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "backup_controller_page_to_backup",
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.colorScheme.onSurfaceSecondary,
-                    ),
-                  ).tr(),
-                  buildSelectedAlbumName(),
-                  buildExcludedAlbumName(),
-                ],
-              ),
-            ),
-            trailing: ElevatedButton(
-              onPressed: () async {
-                await context.pushRoute(const ExpBackupAlbumSelectionRoute());
-                // waited until returning from selection
-                await ref
-                    .read(backupProvider.notifier)
-                    .backupAlbumSelectionDone();
-                // waited until backup albums are stored in DB
-                ref.read(albumProvider.notifier).refreshDeviceAlbums();
-              },
-              child: const Text(
-                "select",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
-            ),
-          ),
-        ),
-      );
-    }
 
     void startBackup() {
       ref.watch(errorBackupListProvider.notifier).empty();
@@ -329,67 +211,176 @@ class ExpBackupPage extends HookConsumerWidget {
                         onToggle: () =>
                             context.replaceRoute(const BackupControllerRoute()),
                       ),
-                      buildFolderSelectionTile(),
-                      BackupInfoCard(
-                        title: "total".tr(),
-                        subtitle: "backup_controller_page_total_sub".tr(),
-                        info: ref.watch(backupProvider).availableAlbums.isEmpty
-                            ? "..."
-                            : "${backupState.allUniqueAssets.length}",
-                      ),
-                      BackupInfoCard(
-                        title: "backup_controller_page_backup".tr(),
-                        subtitle: "backup_controller_page_backup_sub".tr(),
-                        info: ref.watch(backupProvider).availableAlbums.isEmpty
-                            ? "..."
-                            : "${backupState.selectedAlbumsBackupAssetsIds.length}",
-                      ),
-                      BackupInfoCard(
-                        title: "backup_controller_page_remainder".tr(),
-                        subtitle: "backup_controller_page_remainder_sub".tr(),
-                        info: ref.watch(backupProvider).availableAlbums.isEmpty
-                            ? "..."
-                            : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
-                      ),
+                      const SizedBox(height: 8),
+                      const BackupAlbumSelectionCard(),
+                      const TotalCard(),
+                      const RemainderCard(),
                       const Divider(),
                       const CurrentUploadingAssetInfoBox(),
                       if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
                       buildBackupButton(),
-                      ElevatedButton(
-                        onPressed: () {
-                          ref.watch(uploadServiceProvider).getRecords();
-                        },
-                        child: const Text(
-                          "get record",
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          ref
-                              .watch(uploadServiceProvider)
-                              .deleteAllUploadTasks();
-                        },
-                        child: const Text(
-                          "clear records",
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          ref.watch(uploadServiceProvider).cancelAllUpload();
-                        },
-                        child: const Text(
-                          "cancel all uploads",
-                        ),
-                      ),
                     ]
                   : [
-                      buildFolderSelectionTile(),
+                      const BackupAlbumSelectionCard(),
                       if (!didGetBackupInfo.value) buildLoadingIndicator(),
                     ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class BackupAlbumSelectionCard extends ConsumerWidget {
+  const BackupAlbumSelectionCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    Widget buildSelectedAlbumName() {
+      String text = "backup_controller_page_backup_selected".tr();
+      final albums = ref
+          .watch(backupAlbumProvider)
+          .where(
+            (album) => album.backupSelection == BackupSelection.selected,
+          )
+          .toList();
+
+      if (albums.isNotEmpty) {
+        for (var album in albums) {
+          if (album.name == "Recent" || album.name == "Recents") {
+            text += "${album.name} (${'all'.tr()}), ";
+          } else {
+            text += "${album.name}, ";
+          }
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            text.trim().substring(0, text.length - 2),
+            style: context.textTheme.labelLarge?.copyWith(
+              color: context.primaryColor,
+            ),
+          ),
+        );
+      } else {
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            "backup_controller_page_none_selected".tr(),
+            style: context.textTheme.labelLarge?.copyWith(
+              color: context.primaryColor,
+            ),
+          ),
+        );
+      }
+    }
+
+    Widget buildExcludedAlbumName() {
+      String text = "backup_controller_page_excluded".tr();
+      final albums = ref
+          .watch(backupAlbumProvider)
+          .where(
+            (album) => album.backupSelection == BackupSelection.excluded,
+          )
+          .toList();
+
+      if (albums.isNotEmpty) {
+        for (var album in albums) {
+          text += "${album.name}, ";
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            text.trim().substring(0, text.length - 2),
+            style: context.textTheme.labelLarge?.copyWith(
+              color: Colors.red[300],
+            ),
+          ),
+        );
+      } else {
+        return const SizedBox();
+      }
+    }
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: context.colorScheme.outlineVariant,
+          width: 1,
+        ),
+      ),
+      elevation: 0,
+      borderOnForeground: false,
+      child: ListTile(
+        minVerticalPadding: 18,
+        title: Text(
+          "backup_controller_page_albums",
+          style: context.textTheme.titleMedium,
+        ).tr(),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "backup_controller_page_to_backup",
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colorScheme.onSurfaceSecondary,
+                ),
+              ).tr(),
+              buildSelectedAlbumName(),
+              buildExcludedAlbumName(),
+            ],
+          ),
+        ),
+        trailing: ElevatedButton(
+          onPressed: () async {
+            await context.pushRoute(const ExpBackupAlbumSelectionRoute());
+            ref.read(expBackupProvider.notifier).getBackupStatus();
+          },
+          child: const Text(
+            "select",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ).tr(),
+        ),
+      ),
+    );
+  }
+}
+
+class TotalCard extends ConsumerWidget {
+  const TotalCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final totalCount = ref.watch(expBackupProvider.select((p) => p.totalCount));
+
+    return BackupInfoCard(
+      title: "total".tr(),
+      subtitle: "backup_controller_page_total_sub".tr(),
+      info: totalCount.toString(),
+    );
+  }
+}
+
+class RemainderCard extends ConsumerWidget {
+  const RemainderCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final backupState = ref.watch(backupProvider);
+    return BackupInfoCard(
+      title: "backup_controller_page_remainder".tr(),
+      subtitle: "backup_controller_page_remainder_sub".tr(),
+      info: backupState.availableAlbums.isEmpty
+          ? "..."
+          : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
     );
   }
 }
