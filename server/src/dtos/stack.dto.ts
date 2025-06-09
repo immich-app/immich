@@ -34,6 +34,6 @@ export const mapStack = (stack: Stack, { auth }: { auth?: AuthDto }) => {
   return {
     id: stack.id,
     primaryAssetId: stack.primaryAssetId,
-    assets: [...primary, ...others].map((asset) => mapAsset(asset, { userId: auth?.user.id })),
+    assets: [...primary, ...others].map((asset) => mapAsset(asset, { auth })),
   };
 };

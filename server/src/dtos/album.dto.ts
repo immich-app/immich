@@ -199,7 +199,7 @@ export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDt
     hasSharedLink,
     startDate,
     endDate,
-    assets: (withAssets ? assets : []).map((asset) => mapAsset(asset, { userId: auth?.user.id })),
+    assets: (withAssets ? assets : []).map((asset) => mapAsset(asset, { auth })),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,

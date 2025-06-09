@@ -38,7 +38,7 @@ export class AssetService extends BaseService {
       timelineEnabled: true,
     });
     const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
-    return assets.map((a) => mapAsset(a, { userId: auth.user.id }));
+    return assets.map((a) => mapAsset(a, { auth }));
   }
 
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
@@ -61,10 +61,10 @@ export class AssetService extends BaseService {
     }
 
     if (auth.sharedLink && !auth.sharedLink.showExif) {
-      return mapAsset(asset, { stripMetadata: true, withStack: true, userId: auth.user.id });
+      return mapAsset(asset, { stripMetadata: true, withStack: true, auth });
     }
 
-    const data = mapAsset(asset, { withStack: true, userId: auth.user.id });
+    const data = mapAsset(asset, { withStack: true, auth });
 
     if (auth.sharedLink) {
       delete data.owner;
@@ -97,9 +97,11 @@ export class AssetService extends BaseService {
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
-    await this.eventRepository.emit('asset.updated', { assetId: id, userId: auth.user.id });
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
 
-    if (previousMotion && asset) {
+    if (previousMotion) {
       await onAfterUnlink(repos, {
         userId: auth.user.id,
         livePhotoVideoId: previousMotion.id,
@@ -107,11 +109,9 @@ export class AssetService extends BaseService {
       });
     }
 
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
-    }
-
-    return mapAsset(asset, { userId: auth.user.id });
+    const mapped = mapAsset(asset, { auth });
+    await this.eventRepository.emit('asset.update', { asset: mapped, userId: auth.user.id });
+    return mapped;
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {

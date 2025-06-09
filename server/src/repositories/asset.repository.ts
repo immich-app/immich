@@ -432,6 +432,7 @@ export class AssetRepository {
   }
 
   async update(asset: Updateable<Assets> & { id: string }) {
+    debugger;
     const value = omitBy(asset, isUndefined);
     delete value.id;
     if (!isEmpty(value)) {

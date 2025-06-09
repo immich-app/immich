@@ -165,12 +165,9 @@ export class NotificationService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'asset.updated' })
-  async onAssetUpdated({ assetId, userId }: ArgOf<'asset.updated'>) {
-    const asset = await this.assetRepository.getById(assetId, { exifInfo: true, owner: true });
-    if (asset) {
-      this.eventRepository.clientSend('on_asset_update', userId, mapAsset(asset, { userId }));
-    }
+  @OnEvent({ name: 'asset.update' })
+  onAssetUpdate({ userId, asset }: ArgOf<'asset.update'>) {
+    this.eventRepository.clientSend('on_asset_update', userId, asset);
   }
 
   @OnEvent({ name: 'assets.restore' })

@@ -16,7 +16,7 @@ export class DuplicateService extends BaseService {
     const duplicates = await this.assetRepository.getDuplicates(auth.user.id);
     return duplicates.map(({ duplicateId, assets }) => ({
       duplicateId,
-      assets: assets.map((asset) => mapAsset(asset, { userId: auth.user.id })),
+      assets: assets.map((asset) => mapAsset(asset, { auth })),
     }));
   }
 

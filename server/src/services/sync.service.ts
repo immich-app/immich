@@ -264,7 +264,7 @@ export class SyncService extends BaseService {
       lastId: dto.lastId,
       limit: dto.limit,
     });
-    return assets.map((a) => mapAsset(a, { userId: auth.user.id, stripMetadata: false, withStack: true }));
+    return assets.map((a) => mapAsset(a, { auth, stripMetadata: false, withStack: true }));
   }
 
   async getDeltaSync(auth: AuthDto, dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
@@ -307,7 +307,7 @@ export class SyncService extends BaseService {
         )
         .map((a) =>
           mapAsset(a, {
-            userId: auth.user.id,
+            auth,
             stripMetadata: false,
             // ignore stacks for non partner users
             withStack: a.ownerId === auth.user.id,

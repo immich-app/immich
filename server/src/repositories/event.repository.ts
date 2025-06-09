@@ -52,7 +52,7 @@ type EventMap = {
   'album.invite': [{ id: string; userId: string }];
 
   // asset events
-  'asset.updated': [{ assetId: string; userId: string }];
+  'asset.update': [{ asset: AssetResponseDto; userId: string }];
   'asset.tag': [{ assetId: string }];
   'asset.untag': [{ assetId: string }];
   'asset.hide': [{ assetId: string; userId: string }];
