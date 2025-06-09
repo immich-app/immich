@@ -5,7 +5,7 @@ import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/pages/library/people/circle_avatar_people.dart';
 
 class CuratedPeopleRow extends StatelessWidget {
-  static const double imageSize = 60.0;
+  static const int imageSize = 60;
 
   final List<SearchCuratedContent> content;
   final EdgeInsets? padding;
@@ -41,21 +41,18 @@ class CuratedPeopleRow extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () => onTap?.call(person, index),
-                    child: SizedBox(
-                      height: imageSize,
-                      child: Material(
-                        shape: const CircleBorder(side: BorderSide.none),
-                        elevation: 3,
-                        child: CircleAvatarPeople(
-                          personId: person.id,
-                          imageSize: imageSize,
-                        ),
+                    child: Material(
+                      shape: const CircleBorder(side: BorderSide.none),
+                      elevation: 3,
+                      child: CirclePeopleAvatar(
+                        personId: person.id,
+                        imageSize: imageSize,
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    width: imageSize,
+                    width: imageSize.toDouble(),
                     child: _buildPersonLabel(context, person, index),
                   ),
                 ],

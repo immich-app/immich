@@ -228,7 +228,7 @@ class PeopleCollectionCard extends ConsumerWidget {
         final isTablet = constraints.maxWidth > 600;
         final widthFactor = isTablet ? 0.25 : 0.5;
         final size = context.width * widthFactor - 20.0;
-        final imageSize = isTablet ? 120.0 : 96.0;
+        final imageSize = isTablet ? 120 : 96;
 
         return GestureDetector(
           onTap: () => context.pushRoute(const PeopleCollectionRoute()),
@@ -261,7 +261,7 @@ class PeopleCollectionCard extends ConsumerWidget {
                       mainAxisSpacing: 8,
                       physics: const NeverScrollableScrollPhysics(),
                       children: people.take(4).map((person) {
-                        return CircleAvatarPeople(
+                        return CirclePeopleAvatar(
                           imageSize: imageSize,
                           personId: person.id,
                         );

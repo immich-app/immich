@@ -19,7 +19,7 @@ class PeoplePicker extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formFocus = useFocusNode();
-    final imageSize = 60.0;
+    final imageSize = 60;
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
     final selectedPeople = useState<Set<Person>>(filter ?? {});
@@ -79,16 +79,9 @@ class PeoplePicker extends HookConsumerWidget {
                               : context.colorScheme.onSurface,
                         ),
                       ),
-                      leading: SizedBox(
-                        height: imageSize,
-                        child: Material(
-                          shape: const CircleBorder(side: BorderSide.none),
-                          elevation: 3,
-                          child: CircleAvatarPeople(
-                            personId: person.id,
-                            imageSize: imageSize,
-                          ),
-                        ),
+                      leading: CirclePeopleAvatar(
+                        personId: person.id,
+                        imageSize: imageSize,
                       ),
                       onTap: () {
                         if (selectedPeople.value.contains(person)) {

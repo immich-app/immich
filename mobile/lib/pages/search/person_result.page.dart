@@ -118,7 +118,7 @@ class PersonResultPage extends HookConsumerWidget {
           padding: const EdgeInsets.only(left: 8.0, top: 24),
           child: Row(
             children: [
-              CircleAvatarPeople(
+              CirclePeopleAvatar(
                 imageSize: 72,
                 personId: personId,
               ),

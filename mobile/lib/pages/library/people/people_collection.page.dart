@@ -92,7 +92,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
                         child: Material(
                           shape: const CircleBorder(side: BorderSide.none),
                           elevation: 3,
-                          child: CircleAvatarPeople(
+                          child: CirclePeopleAvatar(
                             imageSize: 120,
                             personId: person.id,
                           ),

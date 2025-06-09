@@ -4,29 +4,28 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
-class CircleAvatarPeople extends HookConsumerWidget {
-  const CircleAvatarPeople({
+class CirclePeopleAvatar extends HookConsumerWidget {
+  const CirclePeopleAvatar({
     super.key,
     required this.personId,
     this.imageSize = 100,
   });
 
   final String personId;
-  final double imageSize;
+  final int imageSize;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final imageUrl = getFaceThumbnailUrl(personId);
+
     return CircleAvatar(
       maxRadius: imageSize / 2,
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(100)),
-        child: CachedNetworkImage(
-          width: imageSize,
-          height: imageSize,
-          fit: BoxFit.contain,
-          imageUrl: getFaceThumbnailUrl(personId),
-          httpHeaders: ApiService.getRequestHeaders(),
-        ),
+      foregroundImage: CachedNetworkImageProvider(
+        imageUrl,
+        cacheKey: imageUrl,
+        maxWidth: imageSize,
+        maxHeight: imageSize,
+        headers: ApiService.getRequestHeaders(),
       ),
     );
   }
