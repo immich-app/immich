@@ -115,7 +115,6 @@ export function formatMonthGroupTitle(_date: DateTime): string {
 }
 
 export function formatGroupTitle(_date: DateTime): string {
-  debugger;
   if (!_date.isValid) {
     return _date.toString();
   }
