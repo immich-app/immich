@@ -43,6 +43,7 @@ void handleShareAssets(
       return const ShareDialog();
     },
     barrierDismissible: false,
+    useRootNavigator: false,
   );
 }
 
