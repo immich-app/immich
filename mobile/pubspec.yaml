@@ -61,7 +61,7 @@ dependencies:
   riverpod_annotation: ^2.6.1
   scrollable_positioned_list: ^0.3.8
   share_handler: ^0.0.22
-  share_plus: ^10.1.4
+  share_plus: ^11.0.0
   socket_io_client: ^2.0.3+1
   thumbhash: 0.1.0+1
   timezone: ^0.9.4
