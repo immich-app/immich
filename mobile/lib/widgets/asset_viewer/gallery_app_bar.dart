@@ -96,7 +96,7 @@ class GalleryAppBar extends ConsumerWidget {
     }
 
     handleDownloadAsset() {
-      ref.read(downloadStateProvider.notifier).downloadAsset(asset, context);
+      ref.read(downloadStateProvider.notifier).downloadAsset(asset);
     }
 
     handleLocateAsset() async {
