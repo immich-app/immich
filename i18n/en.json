@@ -1631,6 +1631,7 @@
   "set_date_of_birth": "Set date of birth",
   "set_profile_picture": "Set profile picture",
   "set_slideshow_to_fullscreen": "Set Slideshow to fullscreen",
+  "set_stack_primary_asset": "Set as primary asset",
   "setting_image_viewer_help": "The detail viewer loads the small thumbnail first, then loads the medium-size preview (if enabled), finally loads the original (if enabled).",
   "setting_image_viewer_original_subtitle": "Enable to load the original full-resolution image (large!). Disable to reduce data usage (both network and on device cache).",
   "setting_image_viewer_original_title": "Load original image",
