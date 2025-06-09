@@ -135,6 +135,8 @@ struct PlatformAsset: Hashable {
   var type: Int64
   var createdAt: Int64? = nil
   var updatedAt: Int64? = nil
+  var width: Int64? = nil
+  var height: Int64? = nil
   var durationInSeconds: Int64
 
 
@@ -145,7 +147,9 @@ struct PlatformAsset: Hashable {
     let type = pigeonVar_list[2] as! Int64
     let createdAt: Int64? = nilOrValue(pigeonVar_list[3])
     let updatedAt: Int64? = nilOrValue(pigeonVar_list[4])
-    let durationInSeconds = pigeonVar_list[5] as! Int64
+    let width: Int64? = nilOrValue(pigeonVar_list[5])
+    let height: Int64? = nilOrValue(pigeonVar_list[6])
+    let durationInSeconds = pigeonVar_list[7] as! Int64
 
     return PlatformAsset(
       id: id,
@@ -153,6 +157,8 @@ struct PlatformAsset: Hashable {
       type: type,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      width: width,
+      height: height,
       durationInSeconds: durationInSeconds
     )
   }
@@ -163,6 +169,8 @@ struct PlatformAsset: Hashable {
       type,
       createdAt,
       updatedAt,
+      width,
+      height,
       durationInSeconds,
     ]
   }

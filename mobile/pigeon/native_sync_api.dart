@@ -20,6 +20,8 @@ class PlatformAsset {
   // Seconds since epoch
   final int? createdAt;
   final int? updatedAt;
+  final int? width;
+  final int? height;
   final int durationInSeconds;
 
   const PlatformAsset({
@@ -28,6 +30,8 @@ class PlatformAsset {
     required this.type,
     this.createdAt,
     this.updatedAt,
+    this.width,
+    this.height,
     this.durationInSeconds = 0,
   });
 }

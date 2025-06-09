@@ -1,4 +1,4 @@
-ARG BASEIMAGE=mcr.microsoft.com/devcontainers/typescript-node:22@sha256:fb211a0ea31a6177507498c084682aae8c9c31ca27668ea122246aa16a4723a0
+ARG BASEIMAGE=mcr.microsoft.com/devcontainers/typescript-node:22@sha256:7c2e711a4f7b02f32d2da16192d5e05aa7c95279be4ce889cff5df316f251c1d
 FROM ${BASEIMAGE}
 
 # Flutter SDK

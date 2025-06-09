@@ -31,7 +31,7 @@
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+  import { toTimelineAsset, type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
@@ -512,6 +512,20 @@
 
       case AssetAction.UNSTACK: {
         updateUnstackedAssetInTimeline(timelineManager, action.assets);
+        break;
+      }
+      case AssetAction.SET_STACK_PRIMARY_ASSET: {
+        //Have to unstack then restack assets in timeline in order for the currently removed new primary asset to be made visible.
+        updateUnstackedAssetInTimeline(
+          assetStore,
+          action.stack.assets.map((asset) => toTimelineAsset(asset)),
+        );
+        updateStackedAssetInTimeline(assetStore, {
+          stack: action.stack,
+          toDeleteIds: action.stack.assets
+            .filter((asset) => asset.id !== action.stack.primaryAssetId)
+            .map((asset) => asset.id),
+        });
         break;
       }
     }
