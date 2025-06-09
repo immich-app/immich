@@ -67,10 +67,10 @@ PODS:
   - local_auth_darwin (0.0.1):
     - Flutter
     - FlutterMacOS
-  - MapLibre (6.5.0)
+  - MapLibre (6.14.0)
   - maplibre_gl (0.0.1):
     - Flutter
-    - MapLibre (= 6.5.0)
+    - MapLibre (= 6.14.0)
   - native_video_player (1.0.0):
     - Flutter
   - network_info_plus (0.0.1):
@@ -260,8 +260,8 @@ SPEC CHECKSUMS:
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   isar_flutter_libs: bc909e72c3d756c2759f14c8776c13b5b0556e26
   local_auth_darwin: 553ce4f9b16d3fdfeafce9cf042e7c9f77c1c391
-  MapLibre: 0ebfa9329d313cec8bf0a5ba5a336a1dc903785e
-  maplibre_gl: eab61cca6e1cfa9187249bacd3f08b51e8cd8ae9
+  MapLibre: 69e572367f4ef6287e18246cfafc39c80cdcabcd
+  maplibre_gl: 3c924e44725147b03dda33430ad216005b40555f
   native_video_player: b65c58951ede2f93d103a25366bdebca95081265
   network_info_plus: cf61925ab5205dce05a4f0895989afdb6aade5fc
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499

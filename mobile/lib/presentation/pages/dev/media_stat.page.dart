@@ -132,6 +132,10 @@ final _remoteStats = [
     name: 'Exif Entities',
     load: (db) => db.managers.remoteExifEntity.count(),
   ),
+  _Stat(
+    name: 'Remote Albums',
+    load: (db) => db.managers.remoteAlbumEntity.count(),
+  ),
 ];
 
 @RoutePage()
