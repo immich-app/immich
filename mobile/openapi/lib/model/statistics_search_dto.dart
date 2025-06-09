@@ -13,6 +13,7 @@ part of openapi.api;
 class StatisticsSearchDto {
   /// Returns a new [StatisticsSearchDto] instance.
   StatisticsSearchDto({
+    this.albumIds = const [],
     this.city,
     this.country,
     this.createdAfter,
@@ -41,6 +42,8 @@ class StatisticsSearchDto {
     this.updatedBefore,
     this.visibility,
   });
+
+  List<String> albumIds;
 
   String? city;
 
@@ -214,6 +217,7 @@ class StatisticsSearchDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is StatisticsSearchDto &&
+    _deepEquality.equals(other.albumIds, albumIds) &&
     other.city == city &&
     other.country == country &&
     other.createdAfter == createdAfter &&
@@ -245,6 +249,7 @@ class StatisticsSearchDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (albumIds.hashCode) +
     (city == null ? 0 : city!.hashCode) +
     (country == null ? 0 : country!.hashCode) +
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
@@ -274,10 +279,11 @@ class StatisticsSearchDto {
     (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'StatisticsSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility]';
+  String toString() => 'StatisticsSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'albumIds'] = this.albumIds;
     if (this.city != null) {
       json[r'city'] = this.city;
     } else {
@@ -417,6 +423,9 @@ class StatisticsSearchDto {
       final json = value.cast<String, dynamic>();
 
       return StatisticsSearchDto(
+        albumIds: json[r'albumIds'] is Iterable
+            ? (json[r'albumIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         city: mapValueOfType<String>(json, r'city'),
         country: mapValueOfType<String>(json, r'country'),
         createdAfter: mapDateTime(json, r'createdAfter', r''),
