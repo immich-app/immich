@@ -42,7 +42,7 @@
     "@nestjs/event-emitter": "^3.0.0",
     "@nestjs/platform-express": "^11.0.4",
     "@nestjs/platform-socket.io": "^11.0.4",
-    "@nestjs/schedule": "^5.0.0",
+    "@nestjs/schedule": "^6.0.0",
     "@nestjs/swagger": "^11.0.2",
     "@nestjs/websockets": "^11.0.4",
     "@opentelemetry/auto-instrumentations-node": "^0.59.0",
