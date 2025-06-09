@@ -89,9 +89,8 @@ async function getAssetByDayOffset(
 async function getAssetByMonthOffset(timelineManager: TimelineManager, month: MonthGroup, direction: Direction) {
   for (const targetMonth of timelineManager.monthGroupIterator({ startMonthGroup: month, direction })) {
     if (targetMonth.yearMonth.month !== month.yearMonth.month) {
-      for await (const targetAsset of timelineManager.assetsIterator({ startMonthGroup: targetMonth, direction })) {
-        return targetAsset;
-      }
+      const { value, done } = await timelineManager.assetsIterator({ startMonthGroup: targetMonth, direction }).next();
+      return done ? undefined : value;
     }
   }
 }
@@ -99,9 +98,8 @@ async function getAssetByMonthOffset(timelineManager: TimelineManager, month: Mo
 async function getAssetByYearOffset(timelineManager: TimelineManager, month: MonthGroup, direction: Direction) {
   for (const targetMonth of timelineManager.monthGroupIterator({ startMonthGroup: month, direction })) {
     if (targetMonth.yearMonth.year !== month.yearMonth.year) {
-      for await (const targetAsset of timelineManager.assetsIterator({ startMonthGroup: targetMonth, direction })) {
-        return targetAsset;
-      }
+      const { value, done } = await timelineManager.assetsIterator({ startMonthGroup: targetMonth, direction }).next();
+      return done ? undefined : value;
     }
   }
 }
