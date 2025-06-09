@@ -17,7 +17,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         super(_db);
 
   @override
-  Future<List<LocalAlbum>> getAll({SortLocalAlbumsBy? sortBy}) {
+  Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
     final assetCount = _db.localAlbumAssetEntity.assetId.count();
 
     final query = _db.localAlbumEntity.select().join([
@@ -30,9 +30,23 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     query
       ..addColumns([assetCount])
       ..groupBy([_db.localAlbumEntity.id]);
-    if (sortBy == SortLocalAlbumsBy.id) {
-      query.orderBy([OrderingTerm.asc(_db.localAlbumEntity.id)]);
+
+    if (sortBy.isNotEmpty) {
+      final orderings = <OrderingTerm>[];
+      for (final sort in sortBy) {
+        orderings.add(
+          switch (sort) {
+            SortLocalAlbumsBy.id => OrderingTerm.asc(_db.localAlbumEntity.id),
+            SortLocalAlbumsBy.backupSelection =>
+              OrderingTerm.asc(_db.localAlbumEntity.backupSelection),
+            SortLocalAlbumsBy.isIosSharedAlbum =>
+              OrderingTerm.asc(_db.localAlbumEntity.isIosSharedAlbum),
+          },
+        );
+      }
+      query.orderBy(orderings);
     }
+
     return query
         .map(
           (row) => row
@@ -49,7 +63,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         // That is not the case on Android since asset <-> album has one:one mapping
         final assetsToDelete = _platform.isIOS
             ? await _getUniqueAssetsInAlbum(albumId)
-            : await getAssetIdsForAlbum(albumId);
+            : await getAssetIds(albumId);
         await _deleteAssets(assetsToDelete);
 
         // All the other assets that are still associated will be unlinked automatically on-cascade
@@ -59,7 +73,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       });
 
   @override
-  Future<void> syncAlbumDeletes(
+  Future<void> syncDeletes(
     String albumId,
     Iterable<String> assetIdsToKeep,
   ) async {
@@ -172,7 +186,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<List<LocalAsset>> getAssetsForAlbum(String albumId) {
+  Future<List<LocalAsset>> getAssets(String albumId) {
     final query = _db.localAlbumAssetEntity.select().join(
       [
         innerJoin(
@@ -189,7 +203,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<List<String>> getAssetIdsForAlbum(String albumId) {
+  Future<List<String>> getAssetIds(String albumId) {
     final query = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId));
