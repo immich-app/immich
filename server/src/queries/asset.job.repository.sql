@@ -285,6 +285,25 @@ from
 where
   "asset"."id" = $2
 
+-- AssetJobRepository.getForOcr
+select
+  "assets"."visibility",
+  (
+    select
+      "asset_files"."id",
+      "asset_files"."path",
+      "asset_files"."type"
+    from
+      "asset_files"
+    where
+      "asset_files"."assetId" = "assets"."id"
+      and "asset_files"."type" = $1
+  ) as "previewFile"
+from
+  "assets"
+where
+  "assets"."id" = $2
+
 -- AssetJobRepository.getForSyncAssets
 select
   "asset"."id",
@@ -482,6 +501,17 @@ where
   and "job_status"."previewAt" is not null
 order by
   "asset"."fileCreatedAt" desc
+
+-- AssetJobRepository.streamForOcrJob
+select
+  "assets"."id"
+from
+  "assets"
+  inner join "asset_job_status" on "asset_job_status"."assetId" = "assets"."id"
+where
+  "asset_job_status"."ocrAt" is null
+  and "assets"."deletedAt" is null
+  and "assets"."visibility" != $1
 
 -- AssetJobRepository.streamForMigrationJob
 select

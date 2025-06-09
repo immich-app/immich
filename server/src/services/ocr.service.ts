@@ -1,19 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import {
-  JobName,
-  JobStatus,
-  QueueName,
-} from 'src/enum';
+import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
 import { isOcrEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class OcrService extends BaseService {
-
   @OnJob({ name: JobName.QUEUE_OCR, queue: QueueName.OCR })
   async handleQueueOcr({ force, nightly }: JobOf<JobName.QUEUE_OCR>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
@@ -48,35 +42,24 @@ export class OcrService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = { files: true };
-    const asset = await this.assetRepository.getById(id, relations);
-    if (!asset) {
+    const asset = await this.assetJobRepository.getForOcr(id);
+    if (!asset || !asset.previewFile) {
       return JobStatus.FAILED;
     }
-    if (!asset.files) {
-      return JobStatus.FAILED;
+
+    if (asset.visibility === AssetVisibility.HIDDEN) {
+      return JobStatus.SKIPPED;
     }
-    const { previewFile } = getAssetFiles(asset.files);
-    if (!previewFile) {
-      return JobStatus.FAILED;
-    }
+
     const ocrResults = await this.machineLearningRepository.ocr(
       machineLearning.urls,
-      previewFile.path,
-      machineLearning.ocr
+      asset.previewFile,
+      machineLearning.ocr,
     );
 
-    if (ocrResults.length === 0) {
-      this.logger.warn(`No valid OCR results for document ${id}`);
-      await this.assetRepository.upsertJobStatus({
-        assetId: asset.id,
-        ocrAt: new Date(),
-      });
-      return JobStatus.SUCCESS;
-    }
-
-    try {
-      const ocrDataList = ocrResults.map(result => ({
+    if (ocrResults.length > 0) {
+      const ocrDataList = ocrResults.map((result) => ({
+        assetId: id,
         x1: result.x1,
         y1: result.y1,
         x2: result.x2,
@@ -85,22 +68,16 @@ export class OcrService extends BaseService {
         y3: result.y3,
         x4: result.x4,
         y4: result.y4,
-        text: result.text.trim(),
+        text: result.text,
         confidence: result.confidence,
       }));
 
       await this.ocrRepository.upsert(id, ocrDataList);
-      await this.assetRepository.upsertJobStatus({
-        assetId: asset.id,
-        ocrAt: new Date(),
-      });
-      
-      this.logger.debug(`Processed ${ocrResults.length} OCR result(s) for ${id}`);
-      return JobStatus.SUCCESS;
-    } catch (error) {
-      this.logger.error(`Failed to insert OCR results for ${id}:`, error);
-      return JobStatus.FAILED;
     }
-  }
 
+    await this.assetRepository.upsertJobStatus({ assetId: id, ocrAt: new Date() });
+
+    this.logger.debug(`Processed ${ocrResults.length} OCR result(s) for ${id}`);
+    return JobStatus.SUCCESS;
+  }
 }
