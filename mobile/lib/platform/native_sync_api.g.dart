@@ -37,6 +37,8 @@ class PlatformAsset {
     required this.type,
     this.createdAt,
     this.updatedAt,
+    this.width,
+    this.height,
     required this.durationInSeconds,
   });
 
@@ -50,6 +52,10 @@ class PlatformAsset {
 
   int? updatedAt;
 
+  int? width;
+
+  int? height;
+
   int durationInSeconds;
 
   List<Object?> _toList() {
@@ -59,6 +65,8 @@ class PlatformAsset {
       type,
       createdAt,
       updatedAt,
+      width,
+      height,
       durationInSeconds,
     ];
   }
@@ -75,7 +83,9 @@ class PlatformAsset {
       type: result[2]! as int,
       createdAt: result[3] as int?,
       updatedAt: result[4] as int?,
-      durationInSeconds: result[5]! as int,
+      width: result[5] as int?,
+      height: result[6] as int?,
+      durationInSeconds: result[7]! as int,
     );
   }
 

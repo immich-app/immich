@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -21,6 +21,10 @@ void main() {
   late MockLocalAssetRepository mockAssetRepo;
   late MockStorageRepository mockStorageRepo;
   late MockNativeSyncApi mockNativeApi;
+  final sortBy = {
+    SortLocalAlbumsBy.backupSelection,
+    SortLocalAlbumsBy.isIosSharedAlbum,
+  };
 
   setUp(() {
     mockAlbumRepo = MockLocalAlbumRepository();
@@ -42,37 +46,8 @@ void main() {
   });
 
   group('HashService hashAssets', () {
-    test('processes albums in correct order', () async {
-      final album1 = LocalAlbumStub.recent
-          .copyWith(id: "1", backupSelection: BackupSelection.none);
-      final album2 = LocalAlbumStub.recent
-          .copyWith(id: "2", backupSelection: BackupSelection.excluded);
-      final album3 = LocalAlbumStub.recent
-          .copyWith(id: "3", backupSelection: BackupSelection.selected);
-      final album4 = LocalAlbumStub.recent.copyWith(
-        id: "4",
-        backupSelection: BackupSelection.selected,
-        isIosSharedAlbum: true,
-      );
-
-      when(() => mockAlbumRepo.getAll())
-          .thenAnswer((_) async => [album1, album2, album4, album3]);
-      when(() => mockAlbumRepo.getAssetsToHash(any()))
-          .thenAnswer((_) async => []);
-
-      await sut.hashAssets();
-
-      verifyInOrder([
-        () => mockAlbumRepo.getAll(),
-        () => mockAlbumRepo.getAssetsToHash(album3.id),
-        () => mockAlbumRepo.getAssetsToHash(album4.id),
-        () => mockAlbumRepo.getAssetsToHash(album1.id),
-        () => mockAlbumRepo.getAssetsToHash(album2.id),
-      ]);
-    });
-
     test('skips albums with no assets to hash', () async {
-      when(() => mockAlbumRepo.getAll()).thenAnswer(
+      when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer(
         (_) async => [LocalAlbumStub.recent.copyWith(assetCount: 0)],
       );
       when(() => mockAlbumRepo.getAssetsToHash(LocalAlbumStub.recent.id))
@@ -89,7 +64,8 @@ void main() {
     test('skips assets without files', () async {
       final album = LocalAlbumStub.recent;
       final asset = LocalAssetStub.image1;
-      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAll(sortBy: sortBy))
+          .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset]);
       when(() => mockStorageRepo.getFileForAsset(asset))
@@ -109,7 +85,8 @@ void main() {
       when(() => mockFile.length()).thenAnswer((_) async => 1000);
       when(() => mockFile.path).thenReturn('image-path');
 
-      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAll(sortBy: sortBy))
+          .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset]);
       when(() => mockStorageRepo.getFileForAsset(asset))
@@ -135,7 +112,8 @@ void main() {
       when(() => mockFile.length()).thenAnswer((_) async => 1000);
       when(() => mockFile.path).thenReturn('image-path');
 
-      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAll(sortBy: sortBy))
+          .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset]);
       when(() => mockStorageRepo.getFileForAsset(asset))
@@ -159,7 +137,8 @@ void main() {
       when(() => mockFile.length()).thenAnswer((_) async => 1000);
       when(() => mockFile.path).thenReturn('image-path');
 
-      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAll(sortBy: sortBy))
+          .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset]);
       when(() => mockStorageRepo.getFileForAsset(asset))
@@ -197,7 +176,8 @@ void main() {
       when(() => mockFile2.length()).thenAnswer((_) async => 100);
       when(() => mockFile2.path).thenReturn('path-2');
 
-      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAll(sortBy: sortBy))
+          .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset1, asset2]);
       when(() => mockStorageRepo.getFileForAsset(asset1))
@@ -236,7 +216,8 @@ void main() {
       when(() => mockFile2.length()).thenAnswer((_) async => 100);
       when(() => mockFile2.path).thenReturn('path-2');
 
-      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAll(sortBy: sortBy))
+          .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset1, asset2]);
       when(() => mockStorageRepo.getFileForAsset(asset1))
@@ -267,7 +248,8 @@ void main() {
       when(() => mockFile2.length()).thenAnswer((_) async => 100);
       when(() => mockFile2.path).thenReturn('path-2');
 
-      when(() => mockAlbumRepo.getAll()).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getAll(sortBy: sortBy))
+          .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset1, asset2]);
       when(() => mockStorageRepo.getFileForAsset(asset1))

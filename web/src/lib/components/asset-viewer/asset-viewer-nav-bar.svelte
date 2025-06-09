@@ -13,6 +13,7 @@
   import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/set-person-featured-action.svelte';
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/set-profile-picture-action.svelte';
+  import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/set-stack-primary-asset.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/set-visibility-action.svelte';
   import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
@@ -192,6 +193,9 @@
           {#if stack}
             <UnstackAction {stack} {onAction} />
             <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
+            {#if stack?.primaryAssetId !== asset.id}
+              <SetStackPrimaryAsset {stack} {asset} {onAction} />
+            {/if}
           {/if}
           {#if album}
             <SetAlbumCoverAction {asset} {album} />
