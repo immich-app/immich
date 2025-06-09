@@ -42,21 +42,6 @@ export class MemoryRepository implements IBulkAsset {
       .where('ownerId', '=', ownerId);
   }
 
-  searchBuilderWithAssets(ownerId: string, dto: MemorySearchDto) {
-    return this.searchBuilder(ownerId, dto).select((eb) =>
-      jsonArrayFrom(
-        eb
-          .selectFrom('assets')
-          .selectAll('assets')
-          .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
-          .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
-          .orderBy('assets.fileCreatedAt', 'asc')
-          .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
-          .where('assets.deletedAt', 'is', null),
-      ).as('assets'),
-    );
-  }
-
   @GenerateSql(
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
@@ -72,7 +57,22 @@ export class MemoryRepository implements IBulkAsset {
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
   )
   search(ownerId: string, dto: MemorySearchDto) {
-    return this.searchBuilderWithAssets(ownerId, dto).selectAll('memories').orderBy('memoryAt', 'desc').execute();
+    return this.searchBuilder(ownerId, dto)
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('assets')
+            .selectAll('assets')
+            .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
+            .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
+            .orderBy('assets.fileCreatedAt', 'asc')
+            .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+            .where('assets.deletedAt', 'is', null),
+        ).as('assets'),
+      )
+      .selectAll('memories')
+      .orderBy('memoryAt', 'desc')
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
