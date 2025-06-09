@@ -80,57 +80,60 @@ class PeopleCollectionPage extends HookConsumerWidget {
                   itemBuilder: (context, index) {
                     final person = people[index];
 
-                  return Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          context.pushRoute(
-                            PersonResultRoute(
+                    return Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            context.pushRoute(
+                              PersonResultRoute(
+                                personId: person.id,
+                                personName: person.name,
+                              ),
+                            );
+                          },
+                          child: Material(
+                            shape: const CircleBorder(side: BorderSide.none),
+                            elevation: 3,
+                            child: CirclePeopleAvatar(
+                              imageSize: 120,
                               personId: person.id,
-                              personName: person.name,
                             ),
-                          );
-                        },
-                        child: Material(
-                          shape: const CircleBorder(side: BorderSide.none),
-                          elevation: 3,
-                          child: CirclePeopleAvatar(
-                            imageSize: 120,
-                            personId: person.id,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: () => showNameEditModel(person.id, person.name),
-                        child: person.name.isEmpty
-                            ? Text(
-                                'add_a_name'.tr(),
-                                style: context.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: context.colorScheme.primary,
-                                ),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                ),
-                                child: Text(
-                                  person.name,
-                                  overflow: TextOverflow.ellipsis,
+                        const SizedBox(height: 12),
+                        GestureDetector(
+                          onTap: () =>
+                              showNameEditModel(person.id, person.name),
+                          child: person.name.isEmpty
+                              ? Text(
+                                  'add_a_name'.tr(),
                                   style: context.textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w500,
+                                    color: context.colorScheme.primary,
+                                  ),
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                  ),
+                                  child: Text(
+                                    person.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        context.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
-                              ),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-            error: (error, stack) => const Text("error"),
-            loading: () => const Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              error: (error, stack) => const Text("error"),
+              loading: () => const Center(child: CircularProgressIndicator()),
+            ),
           ),
         );
       },
