@@ -52,7 +52,7 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.5
   path_provider_foundation: ^2.4.1
-  permission_handler: ^11.4.0
+  permission_handler: ^12.0.0
   photo_manager: ^3.6.4
   photo_manager_image_provider: ^2.2.0
   pinput: ^5.0.1
