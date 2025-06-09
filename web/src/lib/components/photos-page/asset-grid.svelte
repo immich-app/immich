@@ -517,10 +517,10 @@
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         //Have to unstack then restack assets in timeline in order for the currently removed new primary asset to be made visible.
         updateUnstackedAssetInTimeline(
-          assetStore,
+          timelineManager,
           action.stack.assets.map((asset) => toTimelineAsset(asset)),
         );
-        updateStackedAssetInTimeline(assetStore, {
+        updateStackedAssetInTimeline(timelineManager, {
           stack: action.stack,
           toDeleteIds: action.stack.assets
             .filter((asset) => asset.id !== action.stack.primaryAssetId)
