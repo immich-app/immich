@@ -37,6 +37,8 @@ open class NativeSyncApiImplBase(context: Context) {
       MediaStore.MediaColumns.DATE_MODIFIED,
       MediaStore.Files.FileColumns.MEDIA_TYPE,
       MediaStore.MediaColumns.BUCKET_ID,
+      MediaStore.MediaColumns.WIDTH,
+      MediaStore.MediaColumns.HEIGHT,
       MediaStore.MediaColumns.DURATION
     )
 
@@ -68,6 +70,8 @@ open class NativeSyncApiImplBase(context: Context) {
         val dateModifiedColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED)
         val mediaTypeColumn = c.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE)
         val bucketIdColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.BUCKET_ID)
+        val widthColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH)
+        val heightColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT)
         val durationColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION)
 
         while (c.moveToNext()) {
@@ -86,12 +90,23 @@ open class NativeSyncApiImplBase(context: Context) {
             ?: c.getLong(dateAddedColumn)
           // Date modified is seconds since epoch
           val modifiedAt = c.getLong(dateModifiedColumn)
+          val width = c.getInt(widthColumn).toLong()
+          val height = c.getInt(heightColumn).toLong()
           // Duration is milliseconds
           val duration = if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0
           else c.getLong(durationColumn) / 1000
           val bucketId = c.getString(bucketIdColumn)
 
-          val asset = PlatformAsset(id, name, mediaType.toLong(), createdAt, modifiedAt, duration)
+          val asset = PlatformAsset(
+            id,
+            name,
+            mediaType.toLong(),
+            createdAt,
+            modifiedAt,
+            width,
+            height,
+            duration
+          )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }
       }
