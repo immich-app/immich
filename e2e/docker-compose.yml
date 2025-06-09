@@ -36,7 +36,7 @@ services:
       - 2285:2285
 
   redis:
-    image: redis:6.2-alpine@sha256:3211c33a618c457e5d241922c975dbc4f446d0bdb2dc75694f5573ef8e2d01fa
+    image: redis:8.0-alpine@sha256:48501c5ad00d5563bc30c075c7bcef41d7d98de3e9a1e6c752068c66f0a8463b
 
   database:
     image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0@sha256:9c704fb49ce27549df00f1b096cc93f8b0c959ef087507704d74954808f78a82
