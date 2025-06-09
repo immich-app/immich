@@ -28,26 +28,9 @@ export class MemoryRepository implements IBulkAsset {
       .execute();
   }
 
-  @GenerateSql(
-    { params: [DummyValue.UUID, {}] },
-    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
-  )
-  search(ownerId: string, dto: MemorySearchDto) {
+  searchBuilder(ownerId: string, dto: MemorySearchDto) {
     return this.db
       .selectFrom('memories')
-      .selectAll('memories')
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('assets')
-            .selectAll('assets')
-            .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
-            .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
-            .orderBy('assets.fileCreatedAt', 'asc')
-            .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
-            .where('assets.deletedAt', 'is', null),
-        ).as('assets'),
-      )
       .$if(dto.isSaved !== undefined, (qb) => qb.where('isSaved', '=', dto.isSaved!))
       .$if(dto.type !== undefined, (qb) => qb.where('type', '=', dto.type!))
       .$if(dto.for !== undefined, (qb) =>
@@ -56,9 +39,40 @@ export class MemoryRepository implements IBulkAsset {
           .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
       )
       .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
-      .where('ownerId', '=', ownerId)
-      .orderBy('memoryAt', 'desc')
-      .execute();
+      .where('ownerId', '=', ownerId);
+  }
+
+  searchBuilderWithAssets(ownerId: string, dto: MemorySearchDto) {
+    return this.searchBuilder(ownerId, dto).select((eb) =>
+      jsonArrayFrom(
+        eb
+          .selectFrom('assets')
+          .selectAll('assets')
+          .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
+          .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
+          .orderBy('assets.fileCreatedAt', 'asc')
+          .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+          .where('assets.deletedAt', 'is', null),
+      ).as('assets'),
+    );
+  }
+
+  @GenerateSql(
+    { params: [DummyValue.UUID, {}] },
+    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+  )
+  statistics(ownerId: string, dto: MemorySearchDto) {
+    return this.searchBuilder(ownerId, dto)
+      .select((qb) => qb.fn.countAll<number>().as('total'))
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql(
+    { params: [DummyValue.UUID, {}] },
+    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+  )
+  search(ownerId: string, dto: MemorySearchDto) {
+    return this.searchBuilderWithAssets(ownerId, dto).selectAll('memories').orderBy('memoryAt', 'desc').execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

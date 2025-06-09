@@ -378,6 +378,8 @@ class ApiClient {
           return MemoryCreateDto.fromJson(value);
         case 'MemoryResponseDto':
           return MemoryResponseDto.fromJson(value);
+        case 'MemoryStatisticsResponseDto':
+          return MemoryStatisticsResponseDto.fromJson(value);
         case 'MemoryType':
           return MemoryTypeTypeTransformer().decode(value);
         case 'MemoryUpdateDto':

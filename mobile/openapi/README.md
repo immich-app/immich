@@ -144,6 +144,7 @@ Class | Method | HTTP request | Description
 *MemoriesApi* | [**createMemory**](doc//MemoriesApi.md#creatememory) | **POST** /memories | 
 *MemoriesApi* | [**deleteMemory**](doc//MemoriesApi.md#deletememory) | **DELETE** /memories/{id} | 
 *MemoriesApi* | [**getMemory**](doc//MemoriesApi.md#getmemory) | **GET** /memories/{id} | 
+*MemoriesApi* | [**memoriesStatistics**](doc//MemoriesApi.md#memoriesstatistics) | **GET** /memories/statistics | 
 *MemoriesApi* | [**removeMemoryAssets**](doc//MemoriesApi.md#removememoryassets) | **DELETE** /memories/{id}/assets | 
 *MemoriesApi* | [**searchMemories**](doc//MemoriesApi.md#searchmemories) | **GET** /memories | 
 *MemoriesApi* | [**updateMemory**](doc//MemoriesApi.md#updatememory) | **PUT** /memories/{id} | 
@@ -372,6 +373,7 @@ Class | Method | HTTP request | Description
  - [MemoriesUpdate](doc//MemoriesUpdate.md)
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
  - [MemoryResponseDto](doc//MemoryResponseDto.md)
+ - [MemoryStatisticsResponseDto](doc//MemoryStatisticsResponseDto.md)
  - [MemoryType](doc//MemoryType.md)
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
