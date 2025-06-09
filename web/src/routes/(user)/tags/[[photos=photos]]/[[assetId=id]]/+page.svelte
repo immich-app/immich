@@ -32,11 +32,8 @@
 
   const assetInteraction = new AssetInteraction();
 
-  const buildMap = (tags: TagResponseDto[]) => {
-    return Object.fromEntries(tags.map((tag) => [tag.value, tag]));
-  };
   const timelineManager = new TimelineManager();
-  $effect(() => void timelineManager.updateOptions({ deferInit: !tag, tagId }));
+  $effect(() => void timelineManager.updateOptions({ deferInit: !tag, tagId: tag?.id }));
   onDestroy(() => timelineManager.destroy());
 
   let tags = $derived<TagResponseDto[]>(data.tags);
