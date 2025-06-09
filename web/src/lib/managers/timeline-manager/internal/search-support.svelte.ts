@@ -61,10 +61,9 @@ async function getAssetByAssetOffset(
     startAsset: asset,
     direction,
   })) {
-    if (asset.id === targetAsset.id) {
-      continue;
+    if (asset.id !== targetAsset.id) {
+      return targetAsset;
     }
-    return targetAsset;
   }
 }
 

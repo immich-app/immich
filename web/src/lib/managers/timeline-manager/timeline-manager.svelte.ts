@@ -410,15 +410,7 @@ export class TimelineManager {
   }
 
   addAssets(assets: TimelineAsset[]) {
-    const assetsToUpdate: TimelineAsset[] = [];
-
-    for (const asset of assets) {
-      if (this.isExcluded(asset)) {
-        continue;
-      }
-      assetsToUpdate.push(asset);
-    }
-
+    const assetsToUpdate = assets.filter((asset) => !this.isExcluded(asset));
     const notUpdated = this.updateAssets(assetsToUpdate);
     addAssetsToMonthGroups(this, [...notUpdated], { order: this.#options.order ?? AssetOrder.Desc });
   }

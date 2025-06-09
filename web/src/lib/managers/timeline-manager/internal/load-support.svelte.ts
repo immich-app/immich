@@ -16,6 +16,7 @@ export async function loadFromTimeBuckets(
   if (monthGroup.getFirstAsset()) {
     return;
   }
+
   const timeBucket = toISOYearMonthUTC(monthGroup.yearMonth);
   const key = authManager.key;
   const bucketResponse = await getTimeBucket(
@@ -26,31 +27,36 @@ export async function loadFromTimeBuckets(
     },
     { signal },
   );
-  if (bucketResponse) {
-    if (options.timelineAlbumId) {
-      const albumAssets = await getTimeBucket(
-        {
-          albumId: options.timelineAlbumId,
-          timeBucket,
-          key,
-        },
-        { signal },
-      );
-      for (const id of albumAssets.id) {
-        timelineManager.albumAssets.add(id);
-      }
-    }
-    const unprocessedAssets = monthGroup.addAssets(bucketResponse);
-    if (unprocessedAssets.length > 0) {
-      console.error(
-        `Warning: getTimeBucket API returning assets not in requested month: ${monthGroup.yearMonth.month}, ${JSON.stringify(
-          unprocessedAssets.map((unprocessed) => ({
-            id: unprocessed.id,
-            localDateTime: unprocessed.localDateTime,
-          })),
-        )}`,
-      );
-    }
-    layoutMonthGroup(timelineManager, monthGroup);
+
+  if (!bucketResponse) {
+    return;
   }
+
+  if (options.timelineAlbumId) {
+    const albumAssets = await getTimeBucket(
+      {
+        albumId: options.timelineAlbumId,
+        timeBucket,
+        key,
+      },
+      { signal },
+    );
+    for (const id of albumAssets.id) {
+      timelineManager.albumAssets.add(id);
+    }
+  }
+
+  const unprocessedAssets = monthGroup.addAssets(bucketResponse);
+  if (unprocessedAssets.length > 0) {
+    console.error(
+      `Warning: getTimeBucket API returning assets not in requested month: ${monthGroup.yearMonth.month}, ${JSON.stringify(
+        unprocessedAssets.map((unprocessed) => ({
+          id: unprocessed.id,
+          localDateTime: unprocessed.localDateTime,
+        })),
+      )}`,
+    );
+  }
+
+  layoutMonthGroup(timelineManager, monthGroup);
 }

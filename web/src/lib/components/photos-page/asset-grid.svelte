@@ -95,7 +95,7 @@
   let showSkeleton = $state(true);
   let isShowSelectDate = $state(false);
   let scrubberMonthPercent = $state(0);
-  let scrubberMonth: TimelinePlainYearMonth | undefined = $state();
+  let scrubberMonth: { year: number; month: number } | undefined = $state(undefined);
   let scrubOverallPercent: number = $state(0);
   let scrubberWidth = $state(0);
 
@@ -287,18 +287,18 @@
 
   // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
   const onScrub: ScrubberListener = (
-    scrubberMonth: { year: number; month: number },
+    scrubMonth: { year: number; month: number },
     overallScrollPercent: number,
     scrubberMonthScrollPercent: number,
   ) => {
-    if (!scrubberMonth || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
+    if (!scrubMonth || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = getMaxScroll();
       const offset = maxScroll * overallScrollPercent;
       scrollTop(offset);
     } else {
       const monthGroup = timelineManager.months.find(
-        ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
+        ({ yearMonth: { year, month } }) => year === scrubMonth.year && month === scrubMonth.month,
       );
       if (!monthGroup) {
         return;
