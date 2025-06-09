@@ -248,13 +248,13 @@ class _LanguageApplyButton extends StatelessWidget {
                       strokeWidth: 2,
                     ),
                   )
-                : const Text(
-                    'setting_languages_apply',
-                    style: TextStyle(
+                : Text(
+                    'setting_languages_apply'.t(context: context),
+                    style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16.0,
                     ),
-                  ).t(context: context),
+                  ),
           ),
         ),
       ),
