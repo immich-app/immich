@@ -102,10 +102,9 @@ class TimelineStateNotifier extends Notifier<TimelineState> {
       kTimelineAssetLoadBatchSize,
       count + kTimelineAssetLoadOppositeSize,
     );
-    // when scrolling forward, start shortly before the requested offset...
-    // when scrolling backward, end shortly after the requested offset...
-    // ... to guard against the user scrolling in the other direction
-    // a tiny bit resulting in a another required load from the DB
+    // when scrolling forward, start shortly before the requested offset
+    // when scrolling backward, end shortly after the requested offset to guard against the user scrolling
+    // in the other direction a tiny bit resulting in another required load from the DB
     final start = math.max(
       0,
       forward
