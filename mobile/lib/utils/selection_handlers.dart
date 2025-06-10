@@ -95,7 +95,7 @@ Future<void> handleFavoriteAssets(
       ImmichToast.show(
         context: context,
         msg: toastMessage,
-        gravity: ToastGravity.BOTTOM,
+        gravity: toastGravity,
       );
     }
   }
@@ -165,9 +165,8 @@ Future<void> handleSetAssetsVisibility(
   WidgetRef ref,
   BuildContext context,
   AssetVisibilityEnum visibility,
-  List<Asset> selection, {
-  ToastGravity toastGravity = ToastGravity.BOTTOM,
-}) async {
+  List<Asset> selection,
+) async {
   if (selection.isNotEmpty) {
     await ref
         .watch(assetProvider.notifier)

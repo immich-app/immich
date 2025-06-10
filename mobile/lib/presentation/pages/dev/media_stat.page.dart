@@ -1,5 +1,3 @@
-// ignore_for_file: prefer-single-widget-per-file
-
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -131,6 +129,10 @@ final _remoteStats = [
   _Stat(
     name: 'Exif Entities',
     load: (db) => db.managers.remoteExifEntity.count(),
+  ),
+  _Stat(
+    name: 'Remote Albums',
+    load: (db) => db.managers.remoteAlbumEntity.count(),
   ),
 ];
 

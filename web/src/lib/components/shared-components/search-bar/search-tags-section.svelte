@@ -67,7 +67,7 @@
             <button
               type="button"
               class="text-gray-100 dark:text-immich-dark-gray bg-immich-primary/95 dark:bg-immich-dark-primary/95 rounded-e-full place-items-center place-content-center pe-2 ps-1 py-1 hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
-              title="Remove tag"
+              title={$t('remove_tag')}
               onclick={() => handleRemove(tagId)}
             >
               <Icon path={mdiClose} />
