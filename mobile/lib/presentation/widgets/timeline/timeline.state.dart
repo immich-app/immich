@@ -67,7 +67,6 @@ class TimelineState {
   @override
   int get hashCode => segments.valueOrNull.hashCode ^ isScrubbing.hashCode;
 
-  // ignore: avoid-incomplete-copy-with
   TimelineState copyWith({bool? isScrubbing}) {
     return TimelineState(
       isScrubbing: isScrubbing ?? this.isScrubbing,
