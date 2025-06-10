@@ -33,18 +33,12 @@ class HashService {
   Future<void> hashAssets() async {
     final Stopwatch stopwatch = Stopwatch()..start();
     // Sorted by backupSelection followed by isCloud
-    final localAlbums = await _localAlbumRepository.getAll();
-    localAlbums.sort((a, b) {
-      final backupComparison =
-          a.backupSelection.sortOrder.compareTo(b.backupSelection.sortOrder);
-
-      if (backupComparison != 0) {
-        return backupComparison;
-      }
-
-      // Local albums come before iCloud albums
-      return (a.isIosSharedAlbum ? 1 : 0).compareTo(b.isIosSharedAlbum ? 1 : 0);
-    });
+    final localAlbums = await _localAlbumRepository.getAll(
+      sortBy: {
+        SortLocalAlbumsBy.backupSelection,
+        SortLocalAlbumsBy.isIosSharedAlbum,
+      },
+    );
 
     for (final album in localAlbums) {
       final assetsToHash =
@@ -96,13 +90,18 @@ class HashService {
     final hashed = <LocalAsset>[];
     final hashes =
         await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
+    assert(
+      hashes.length == toHash.length,
+      "Hashes length does not match toHash length: ${hashes.length} != ${toHash.length}",
+    );
 
-    for (final (index, hash) in hashes.indexed) {
-      final asset = toHash[index].asset;
+    for (int i = 0; i < hashes.length; i++) {
+      final hash = hashes[i];
+      final asset = toHash[i].asset;
       if (hash?.length == 20) {
         hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
       } else {
-        _log.warning("Failed to hash file ${asset.id}");
+        _log.warning("Failed to hash file for ${asset.id}");
       }
     }
 

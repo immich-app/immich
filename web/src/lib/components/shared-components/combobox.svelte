@@ -48,6 +48,7 @@
     defaultFirstOption?: boolean;
     hasThumbnails?: boolean;
     onSelect?: (option: ComboBoxOption | undefined) => void;
+    forceFocus?: boolean;
   }
 
   let {
@@ -60,6 +61,7 @@
     defaultFirstOption = false,
     hasThumbnails = false,
     onSelect = () => {},
+    forceFocus = false,
   }: Props = $props();
 
   /**
@@ -117,6 +119,12 @@
       window.visualViewport?.removeEventListener('scroll', onPositionChange);
     };
   });
+
+  const forceFocusInput = (el: HTMLDivElement) => {
+    if (forceFocus) {
+      el.focus();
+    }
+  };
 
   const activate = () => {
     isActive = true;
@@ -287,6 +295,7 @@
       role="combobox"
       type="text"
       value={searchQuery}
+      use:forceFocusInput
       use:shortcuts={[
         {
           shortcut: { key: 'ArrowUp' },
