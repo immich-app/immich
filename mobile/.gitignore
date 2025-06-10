@@ -59,4 +59,4 @@ libisar.so
 .fvm/
 
 # Translation file
-lib/generated/codegen_loader.g.dart
+lib/generated/

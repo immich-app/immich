@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-unsafe-collection-methods
-
 import 'dart:convert';
 import 'dart:io';
 

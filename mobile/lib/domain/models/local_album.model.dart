@@ -1,12 +1,10 @@
 enum BackupSelection {
-  none._(1),
-  selected._(0),
-  excluded._(2);
-
   // Used to sort albums based on the backupSelection
   // selected -> none -> excluded
-  final int sortOrder;
-  const BackupSelection._(this.sortOrder);
+  // Do not change the order of these values
+  selected,
+  none,
+  excluded,
 }
 
 class LocalAlbum {
