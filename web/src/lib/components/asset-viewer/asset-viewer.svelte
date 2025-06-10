@@ -91,8 +91,6 @@
     slideshowState,
     slideshowTransition,
   } = slideshowStore;
-  const stackThumbnailSize = 60;
-  const stackSelectedThumbnailSize = 65;
 
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let shouldPlayMotionPhoto = $state(false);
@@ -360,6 +358,19 @@
 
   let isFullScreen = $derived(fullscreenElement !== null);
 
+  /**
+   * Stack slide show size & scroll
+   */
+  const stackThumbnailSize = 60;
+  const stackSelectedThumbnailSize = 65;
+  let stackSlideShowContainerMaxHeight = $state(stackSelectedThumbnailSize * 2 + 'px');
+  let stackSlideshowContainer = $state<HTMLElement>();
+  const parseScroll = () => {
+    let yScroll = stackSlideshowContainer?.scrollTop ?? 0;
+    stackSlideShowContainerMaxHeight =
+      Math.min(stackSelectedThumbnailSize * 2 + yScroll, stackSelectedThumbnailSize * 4) + 'px';
+  };
+
   $effect(() => {
     if (asset) {
       previewStackedAsset = undefined;
@@ -561,7 +572,9 @@
     <div
       id="stack-slideshow"
       class="flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
-      style:max-height={stackSelectedThumbnailSize * 2 + 'px'}
+      style:max-height={stackSlideShowContainerMaxHeight}
+      bind:this={stackSlideshowContainer}
+      onscroll={parseScroll}
     >
       <div class="relative w-full">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
