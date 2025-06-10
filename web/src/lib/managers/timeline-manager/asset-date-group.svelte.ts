@@ -72,7 +72,7 @@ export class AssetDateGroup {
 
   sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
     const sortFn = plainDateTimeCompare.bind(undefined, sortOrder === AssetOrder.Asc);
-    this.intersectingAssets.sort((a, b) => sortFn(a.asset.localDateTime, b.asset.localDateTime));
+    this.intersectingAssets.sort((a, b) => sortFn(a.asset.fileCreatedAt, b.asset.fileCreatedAt));
   }
 
   getFirstAsset() {

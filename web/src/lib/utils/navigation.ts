@@ -23,7 +23,7 @@ export const isAssetViewerRoute = (target?: NavigationTarget | null) =>
   !!(target?.route.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
 
 export function getAssetInfoFromParam({ assetId, key }: { assetId?: string; key?: string }) {
-  return assetId && getAssetInfo({ id: assetId, key });
+  return assetId ? getAssetInfo({ id: assetId, key }) : undefined;
 }
 
 function currentUrlWithoutAsset() {

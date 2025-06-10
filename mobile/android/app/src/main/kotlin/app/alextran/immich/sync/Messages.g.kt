@@ -85,6 +85,8 @@ data class PlatformAsset (
   val type: Long,
   val createdAt: Long? = null,
   val updatedAt: Long? = null,
+  val width: Long? = null,
+  val height: Long? = null,
   val durationInSeconds: Long
 )
  {
@@ -95,8 +97,10 @@ data class PlatformAsset (
       val type = pigeonVar_list[2] as Long
       val createdAt = pigeonVar_list[3] as Long?
       val updatedAt = pigeonVar_list[4] as Long?
-      val durationInSeconds = pigeonVar_list[5] as Long
-      return PlatformAsset(id, name, type, createdAt, updatedAt, durationInSeconds)
+      val width = pigeonVar_list[5] as Long?
+      val height = pigeonVar_list[6] as Long?
+      val durationInSeconds = pigeonVar_list[7] as Long
+      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds)
     }
   }
   fun toList(): List<Any?> {
@@ -106,6 +110,8 @@ data class PlatformAsset (
       type,
       createdAt,
       updatedAt,
+      width,
+      height,
       durationInSeconds,
     )
   }
@@ -247,6 +253,7 @@ interface NativeSyncApi {
   fun getAlbums(): List<PlatformAlbum>
   fun getAssetsCountSince(albumId: String, timestamp: Long): Long
   fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
+  fun hashPaths(paths: List<String>): List<ByteArray?>
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -379,6 +386,23 @@ interface NativeSyncApi {
             val updatedTimeCondArg = args[1] as Long?
             val wrapped: List<Any?> = try {
               listOf(api.getAssetsForAlbum(albumIdArg, updatedTimeCondArg))
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashPaths$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pathsArg = args[0] as List<String>
+            val wrapped: List<Any?> = try {
+              listOf(api.hashPaths(pathsArg))
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }
