@@ -180,15 +180,13 @@
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
 
-        
-         <div class="grid grid-auto-fit-40 gap-5">
+        <div class="grid grid-auto-fit-40 gap-5">
           <!-- ALBUMS -->
           <SearchAlbumsSection bind:selectedAlbums={filter.albumIds} />
 
           <!-- TAGS -->
           <SearchTagsSection bind:selectedTags={filter.tagIds} />
-         </div>
-        
+        </div>
 
         <!-- LOCATION -->
         <SearchLocationSection bind:filters={filter.location} />
