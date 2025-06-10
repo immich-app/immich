@@ -8,8 +8,8 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { AppRoute } from '$lib/constants';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiArrowLeft, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
@@ -22,16 +22,16 @@
 
   let { data }: Props = $props();
 
-  const assetStore = new AssetStore();
+  const timelineManager = new TimelineManager();
   $effect(
     () =>
-      void assetStore.updateOptions({
+      void timelineManager.updateOptions({
         userId: data.partner.id,
         visibility: AssetVisibility.Timeline,
         withStacked: true,
       }),
   );
-  onDestroy(() => assetStore.destroy());
+  onDestroy(() => timelineManager.destroy());
   const assetInteraction = new AssetInteraction();
 
   const handleEscape = () => {
@@ -43,7 +43,7 @@
 </script>
 
 <main class="grid h-dvh pt-18">
-  <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={handleEscape} />
+  <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape} />
 
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
