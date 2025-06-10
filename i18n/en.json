@@ -1507,6 +1507,7 @@
   "removed_from_favorites_count": "{count, plural, other {Removed #}} from favorites",
   "removed_memory": "Removed memory",
   "removed_photo_from_memory": "Removed photo from memory",
+  "remove_tag": "Remove tag",
   "removed_tagged_assets": "Removed tag from {count, plural, one {# asset} other {# assets}}",
   "rename": "Rename",
   "repair": "Repair",
