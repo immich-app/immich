@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 
@@ -82,10 +83,13 @@ abstract class Segment {
 }
 
 extension SegmentListExtension on List<Segment> {
-  bool equals(List<Segment> other) {
-    if (length != other.length) {
-      return false;
-    }
-    return lastOrNull?.endOffset == other.lastOrNull?.endOffset;
-  }
+  bool equals(List<Segment> other) =>
+      length == other.length &&
+      lastOrNull?.endOffset == other.lastOrNull?.endOffset;
+
+  Segment? findByIndex(int index) =>
+      firstWhereOrNull((s) => s.containsIndex(index));
+
+  Segment? findByOffset(double offset) =>
+      firstWhereOrNull((s) => s.isWithinOffset(offset)) ?? lastOrNull;
 }

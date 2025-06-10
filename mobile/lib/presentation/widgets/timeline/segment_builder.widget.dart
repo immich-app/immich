@@ -32,7 +32,7 @@ abstract class SegmentBuilder {
           'Header builder must be provided if header extent is greater than 0',
         );
 
-  Widget buildAssetRow(BuildContext context, List<Asset> assets);
+  Widget buildAssetRow(BuildContext context, List<BaseAsset> assets);
 
   Widget buildPlaceholder(BuildContext context, int count, Size size) =>
       RepaintBoundary(

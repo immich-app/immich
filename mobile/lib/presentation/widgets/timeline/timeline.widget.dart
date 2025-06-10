@@ -91,8 +91,7 @@ class _SliverTimelineState extends State<_SliverTimeline> {
                     delegate: SliverChildBuilderDelegate(
                       (ctx, index) {
                         if (index >= childCount) return null;
-                        final segment = segments
-                            .firstWhereOrNull((s) => s.containsIndex(index));
+                        final segment = segments.findByIndex(index);
                         return segment?.builder(ctx, index) ??
                             const SizedBox.shrink();
                       },
@@ -153,25 +152,16 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     required List<Segment> segments,
   }) : _segments = segments;
 
-  Segment? _getSegmentAtIndex(int index) =>
-      _segments.firstWhereOrNull((s) => s.containsIndex(index));
-
-  Segment? _getSegmentForOffset(double offset) =>
-      _segments.firstWhereOrNull((s) => s.isWithinOffset(offset)) ??
-      _segments.lastOrNull;
-
-  int getMinChildIndexForScrollOffset(double scrollOffset) =>
-      _getSegmentForOffset(scrollOffset)
-          ?.getMinChildIndexForScrollOffset(scrollOffset) ??
+  int getMinChildIndexForScrollOffset(double offset) =>
+      _segments.findByOffset(offset)?.getMinChildIndexForScrollOffset(offset) ??
       0;
 
-  int getMaxChildIndexForScrollOffset(double scrollOffset) =>
-      _getSegmentForOffset(scrollOffset)
-          ?.getMaxChildIndexForScrollOffset(scrollOffset) ??
+  int getMaxChildIndexForScrollOffset(double offset) =>
+      _segments.findByOffset(offset)?.getMaxChildIndexForScrollOffset(offset) ??
       0;
 
   double indexToLayoutOffset(int index) =>
-      (_getSegmentAtIndex(index) ?? _segments.lastOrNull)
+      (_segments.findByIndex(index) ?? _segments.lastOrNull)
           ?.indexToLayoutOffset(index) ??
       0;
 
@@ -248,7 +238,7 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
         // If a child is missing where we expect one, it indicates
         // an inconsistency in offset that needs correction.
         final Segment? segment =
-            _getSegmentAtIndex(currentIndex) ?? _segments.firstOrNull;
+            _segments.findByIndex(currentIndex) ?? _segments.firstOrNull;
         geometry = SliverGeometry(
           // Request a scroll correction based on where the missing child should have been.
           scrollOffsetCorrection:
@@ -286,7 +276,6 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     double calculatedMaxScrollOffset = double.infinity;
 
     for (int currentIndex = indexOf(mostRecentlyLaidOutChild!) + 1;
-        // ignore: avoid-complex-loop-conditions
         lastRequiredChildIndex == null ||
             currentIndex <= lastRequiredChildIndex;
         ++currentIndex) {
@@ -299,7 +288,7 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
         );
         if (child == null) {
           final Segment? segment =
-              _getSegmentAtIndex(currentIndex) ?? _segments.lastOrNull;
+              _segments.findByIndex(currentIndex) ?? _segments.lastOrNull;
           calculatedMaxScrollOffset =
               segment?.indexToLayoutOffset(currentIndex) ??
                   computeMaxScrollOffset();
@@ -334,7 +323,6 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
           lastLaidOutChildIndex <= lastRequiredChildIndex,
     );
 
-    // ignore: avoid-unnecessary-reassignment
     calculatedMaxScrollOffset = math.min(
       calculatedMaxScrollOffset,
       estimateMaxScrollOffset(),
