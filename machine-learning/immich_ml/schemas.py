@@ -25,12 +25,14 @@ class ModelTask(StrEnum):
     SEARCH = "clip"
     OCR = "ocr"
 
+
 class ModelType(StrEnum):
     DETECTION = "detection"
     RECOGNITION = "recognition"
     TEXTUAL = "textual"
     VISUAL = "visual"
     OCR = "ocr"
+
 
 class ModelFormat(StrEnum):
     ARMNN = "armnn"
@@ -43,6 +45,7 @@ class ModelSource(StrEnum):
     MCLIP = "mclip"
     OPENCLIP = "openclip"
     PADDLE = "paddle"
+
 
 ModelIdentity = tuple[ModelType, ModelTask]
 
@@ -85,19 +88,6 @@ class DetectedFace(TypedDict):
 
 
 FacialRecognitionOutput = list[DetectedFace]
-
-
-class OCROutput(TypedDict):
-    text: str
-    confidence: float
-    x1: int
-    y1: int
-    x2: int
-    y2: int
-    x3: int
-    y3: int
-    x4: int
-    y4: int
 
 
 class PipelineEntry(TypedDict):

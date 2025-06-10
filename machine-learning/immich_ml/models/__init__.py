@@ -3,12 +3,14 @@ from typing import Any
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
+from immich_ml.models.ocr.detection import TextDetector
+from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelSource, ModelTask, ModelType
 
 from .constants import get_model_source
 from .facial_recognition.detection import FaceDetector
 from .facial_recognition.recognition import FaceRecognizer
-from .ocr.paddle import PaddleOCRecognizer
+
 
 def get_model_class(model_name: str, model_type: ModelType, model_task: ModelTask) -> type[InferenceModel]:
     source = get_model_source(model_name)
@@ -28,8 +30,11 @@ def get_model_class(model_name: str, model_type: ModelType, model_task: ModelTas
         case ModelSource.INSIGHTFACE, ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION:
             return FaceRecognizer
 
-        case ModelSource.PADDLE, ModelType.OCR, ModelTask.OCR:
-            return PaddleOCRecognizer
+        case ModelSource.PADDLE, ModelType.DETECTION, ModelTask.OCR:
+            return TextDetector
+
+        case ModelSource.PADDLE, ModelType.RECOGNITION, ModelTask.OCR:
+            return TextRecognizer
 
         case _:
             raise ValueError(f"Unknown model combination: {source}, {model_type}, {model_task}")
