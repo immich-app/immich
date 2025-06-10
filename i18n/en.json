@@ -1500,6 +1500,7 @@
   "remove_from_shared_link": "Remove from shared link",
   "remove_memory": "Remove memory",
   "remove_photo_from_memory": "Remove photo from this memory",
+  "remove_tag": "Remove tag",
   "remove_url": "Remove URL",
   "remove_user": "Remove user",
   "removed_api_key": "Removed API Key: {name}",
