@@ -262,11 +262,6 @@
   };
 
   afterNavigate(({ from, to, type }) => {
-    if (type === 'enter') {
-      // afterNavigate triggers twice on first page load (once when mounted with 'enter' and then a second time
-      // with the actual 'goto' to URL).
-      // return;
-    }
     memoryStore.initialize().then(
       () => {
         let target = null;
