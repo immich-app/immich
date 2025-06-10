@@ -1,20 +1,21 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { type OnDelete, deleteAssets } from '$lib/utils/actions';
+  import { type OnDelete, type OnUndoDelete, deleteAssets } from '$lib/utils/actions';
   import { mdiDeleteForeverOutline, mdiDeleteOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import DeleteAssetDialog from '../delete-asset-dialog.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     onAssetDelete: OnDelete;
+    onUndoDelete?: OnUndoDelete | undefined;
     menuItem?: boolean;
     force?: boolean;
   }
 
-  let { onAssetDelete, menuItem = false, force = !$featureFlags.trash }: Props = $props();
+  let { onAssetDelete, onUndoDelete = undefined, menuItem = false, force = !$featureFlags.trash }: Props = $props();
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
@@ -34,8 +35,8 @@
 
   const handleDelete = async () => {
     loading = true;
-    const ids = [...getOwnedAssets()].map((a) => a.id);
-    await deleteAssets(force, onAssetDelete, ids);
+    const assets = [...getOwnedAssets()];
+    await deleteAssets(force, onAssetDelete, assets, onUndoDelete);
     clearSelect();
     isShowConfirmation = false;
     loading = false;
@@ -45,9 +46,23 @@
 {#if menuItem}
   <MenuOption text={label} icon={mdiDeleteOutline} onClick={handleTrash} />
 {:else if loading}
-  <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
+  <IconButton
+    shape="round"
+    color="secondary"
+    variant="ghost"
+    aria-label={$t('loading')}
+    icon={mdiTimerSand}
+    onclick={() => {}}
+  />
 {:else}
-  <CircleIconButton title={label} icon={mdiDeleteForeverOutline} onclick={handleTrash} />
+  <IconButton
+    shape="round"
+    color="secondary"
+    variant="ghost"
+    aria-label={label}
+    icon={mdiDeleteForeverOutline}
+    onclick={handleTrash}
+  />
 {/if}
 
 {#if isShowConfirmation}

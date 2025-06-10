@@ -20,7 +20,7 @@ class SyncAlbumUserV1 {
 
   String albumId;
 
-  SyncAlbumUserV1RoleEnum role;
+  AlbumUserRole role;
 
   String userId;
 
@@ -58,7 +58,7 @@ class SyncAlbumUserV1 {
 
       return SyncAlbumUserV1(
         albumId: mapValueOfType<String>(json, r'albumId')!,
-        role: SyncAlbumUserV1RoleEnum.fromJson(json[r'role'])!,
+        role: AlbumUserRole.fromJson(json[r'role'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }
@@ -112,78 +112,4 @@ class SyncAlbumUserV1 {
     'userId',
   };
 }
-
-
-class SyncAlbumUserV1RoleEnum {
-  /// Instantiate a new enum with the provided [value].
-  const SyncAlbumUserV1RoleEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const editor = SyncAlbumUserV1RoleEnum._(r'editor');
-  static const viewer = SyncAlbumUserV1RoleEnum._(r'viewer');
-
-  /// List of all possible values in this [enum][SyncAlbumUserV1RoleEnum].
-  static const values = <SyncAlbumUserV1RoleEnum>[
-    editor,
-    viewer,
-  ];
-
-  static SyncAlbumUserV1RoleEnum? fromJson(dynamic value) => SyncAlbumUserV1RoleEnumTypeTransformer().decode(value);
-
-  static List<SyncAlbumUserV1RoleEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncAlbumUserV1RoleEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncAlbumUserV1RoleEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [SyncAlbumUserV1RoleEnum] to String,
-/// and [decode] dynamic data back to [SyncAlbumUserV1RoleEnum].
-class SyncAlbumUserV1RoleEnumTypeTransformer {
-  factory SyncAlbumUserV1RoleEnumTypeTransformer() => _instance ??= const SyncAlbumUserV1RoleEnumTypeTransformer._();
-
-  const SyncAlbumUserV1RoleEnumTypeTransformer._();
-
-  String encode(SyncAlbumUserV1RoleEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a SyncAlbumUserV1RoleEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  SyncAlbumUserV1RoleEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'editor': return SyncAlbumUserV1RoleEnum.editor;
-        case r'viewer': return SyncAlbumUserV1RoleEnum.viewer;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [SyncAlbumUserV1RoleEnumTypeTransformer] instance.
-  static SyncAlbumUserV1RoleEnumTypeTransformer? _instance;
-}
-
 

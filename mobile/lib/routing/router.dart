@@ -63,6 +63,8 @@ import 'package:immich_mobile/pages/search/person_result.page.dart';
 import 'package:immich_mobile/pages/search/recently_taken.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/feat_in_development.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
@@ -314,6 +316,18 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(
       page: PinAuthRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: FeatInDevRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: LocalMediaSummaryRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: RemoteMediaSummaryRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
   ];

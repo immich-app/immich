@@ -1,103 +1,107 @@
 plugins {
-    id "com.android.application"
-    id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin"
-    id 'com.google.devtools.ksp'
+  id "com.android.application"
+  id "kotlin-android"
+  id "dev.flutter.flutter-gradle-plugin"
+  id 'com.google.devtools.ksp'
 }
 
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
-    localPropertiesFile.withInputStream { localProperties.load(it) }
+  localPropertiesFile.withInputStream { localProperties.load(it) }
 }
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
+  flutterVersionCode = '1'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
+  flutterVersionName = '1.0'
 }
 
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
-    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+  keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
 
 android {
-    compileSdkVersion 35
+  compileSdkVersion 35
+  ndkVersion = "28.1.13356709"
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-        coreLibraryDesugaringEnabled true
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+    coreLibraryDesugaringEnabled true
+  }
+
+  kotlinOptions {
+    jvmTarget = '17'
+  }
+
+  sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+  }
+
+  defaultConfig {
+    applicationId "app.alextran.immich"
+    minSdkVersion 26
+    targetSdkVersion 35
+    versionCode flutterVersionCode.toInteger()
+    versionName flutterVersionName
+  }
+
+  signingConfigs {
+    release {
+      def keyAliasVal = System.getenv("ALIAS")
+      def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
+      def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
+
+      keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
+      keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
+      storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
+      storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
+    }
+  }
+
+  buildTypes {
+    debug {
+      applicationIdSuffix '.debug'
+      versionNameSuffix '-DEBUG'
     }
 
-    kotlinOptions {
-        jvmTarget = '17'
+    release {
+      signingConfig signingConfigs.release
     }
-
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
-
-    defaultConfig {
-        applicationId "app.alextran.immich"
-        minSdkVersion 26
-        targetSdkVersion 35
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
-    }
-
-   signingConfigs {
-       release {
-            def keyAliasVal = System.getenv("ALIAS")
-            def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
-            def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
-
-            keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
-            keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
-            storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
-            storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
-       }
-   }
-
-    buildTypes {
-        debug {
-            applicationIdSuffix '.debug'
-            versionNameSuffix '-DEBUG'
-        }
-
-        release {
-            signingConfig signingConfigs.release
-        }
-    }
-    namespace 'app.alextran.immich'
+  }
+  namespace 'app.alextran.immich'
 }
 
 flutter {
-    source '../..'
+  source '../..'
 }
 
 dependencies {
-    def kotlin_version = '2.0.20'
-    def kotlin_coroutines_version = '1.9.0'
-    def work_version = '2.9.1'
-    def concurrent_version = '1.2.0'
-    def guava_version = '33.3.1-android'
-    def glide_version = '4.16.0'
+  def kotlin_version = '2.0.20'
+  def kotlin_coroutines_version = '1.9.0'
+  def work_version = '2.9.1'
+  def concurrent_version = '1.2.0'
+  def guava_version = '33.3.1-android'
+  def glide_version = '4.16.0'
+  def serialization_version = '1.8.1'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
-    implementation "androidx.work:work-runtime-ktx:$work_version"
-    implementation "androidx.concurrent:concurrent-futures:$concurrent_version"
-    implementation "com.google.guava:guava:$guava_version"
-    implementation "com.github.bumptech.glide:glide:$glide_version"
-    ksp "com.github.bumptech.glide:ksp:$glide_version"
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
+  implementation "androidx.work:work-runtime-ktx:$work_version"
+  implementation "androidx.concurrent:concurrent-futures:$concurrent_version"
+  implementation "com.google.guava:guava:$guava_version"
+  implementation "com.github.bumptech.glide:glide:$glide_version"
+  implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version"
+
+  ksp "com.github.bumptech.glide:ksp:$glide_version"
+  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
 }
 
 // This is uncommented in F-Droid build script

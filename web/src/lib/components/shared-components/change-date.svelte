@@ -1,18 +1,27 @@
 <script lang="ts">
   import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
-  import { DateTime } from 'luxon';
+  import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import DateInput from '../elements/date-input.svelte';
   import Combobox, { type ComboBoxOption } from './combobox.svelte';
 
   interface Props {
+    title?: string;
     initialDate?: DateTime;
     initialTimeZone?: string;
+    timezoneInput?: boolean;
     onCancel: () => void;
     onConfirm: (date: string) => void;
   }
 
-  let { initialDate = DateTime.now(), initialTimeZone = '', onCancel, onConfirm }: Props = $props();
+  let {
+    initialDate = DateTime.now(),
+    initialTimeZone = '',
+    title = $t('edit_date_and_time'),
+    timezoneInput = true,
+    onCancel,
+    onConfirm,
+  }: Props = $props();
 
   type ZoneOption = {
     /**
@@ -56,6 +65,9 @@
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm"));
+  // Use a fixed modern date to calculate stable timezone offsets for the list
+  // This ensures that the offsets shown in the combobox are always current,
+  // regardless of the historical date selected by the user.
   let timezones: ZoneOption[] = knownTimezones
     .map((zone) => zoneOptionForDate(zone, selectedDate))
     .filter((zone) => zone.valid)
@@ -64,12 +76,13 @@
   let selectedOption: ZoneOption | undefined = $state(getPreferredTimeZone(initialDate, userTimeZone, timezones));
 
   function zoneOptionForDate(zone: string, date: string) {
-    const dateAtZone: DateTime = DateTime.fromISO(date, { zone });
-    const zoneOffsetAtDate = dateAtZone.toFormat('ZZ');
-    const valid = dateAtZone.isValid && date.toString() === dateAtZone.toFormat("yyyy-MM-dd'T'HH:mm");
+    const { offsetMinutes, offsetFormat: zoneOffsetAtDate } = getModernOffsetForZoneAndDate(zone, date);
+    // For validity, we still need to check if the exact date/time exists in the *original* timezone (for gaps/overlaps).
+    const dateForValidity = DateTime.fromISO(date, { zone });
+    const valid = dateForValidity.isValid && date === dateForValidity.toFormat("yyyy-MM-dd'T'HH:mm");
     return {
       value: zone,
-      offsetMinutes: dateAtZone.offset,
+      offsetMinutes,
       label: zone + ' (' + zoneOffsetAtDate + ')' + (valid ? '' : ' [invalid date!]'),
       valid,
     };
@@ -109,6 +122,24 @@
     return previousSelection ?? fromInitialTimeZone ?? sameAsUserTimeZone ?? firstWithSameOffset ?? utcFallback;
   }
 
+  function getModernOffsetForZoneAndDate(
+    zone: string,
+    dateString: string,
+  ): { offsetMinutes: number; offsetFormat: string } {
+    const dt = DateTime.fromISO(dateString, { zone });
+
+    // we determine the *modern* offset for this zone based on its current rules.
+    // To do this, we "move" the date to the current year, keeping the local time components.
+    // This allows Luxon to apply current-year DST rules.
+    const modernYearDt = dt.set({ year: DateTime.now().year });
+
+    // Calculate the offset at that modern year's date.
+    const modernOffsetMinutes = modernYearDt.setZone(zone, { keepLocalTime: true }).offset;
+    const modernOffsetFormat = modernYearDt.setZone(zone, { keepLocalTime: true }).toFormat('ZZ');
+
+    return { offsetMinutes: modernOffsetMinutes, offsetFormat: modernOffsetFormat };
+  }
+
   function sortTwoZones(zoneA: ZoneOption, zoneB: ZoneOption) {
     let offsetDifference = zoneA.offsetMinutes - zoneB.offsetMinutes;
     if (offsetDifference != 0) {
@@ -118,9 +149,20 @@
   }
 
   const handleConfirm = () => {
-    const value = date.toISO();
-    if (value) {
-      onConfirm(value);
+    if (date.isValid && selectedOption) {
+      // Get the local date/time components from the selected string using neutral timezone
+      const dtComponents = DateTime.fromISO(selectedDate, { zone: 'utc' });
+
+      // Determine the modern, DST-aware offset for the selected IANA zone
+      const { offsetMinutes } = getModernOffsetForZoneAndDate(selectedOption.value, selectedDate);
+
+      // Construct the final ISO string with a fixed-offset zone.
+      const fixedOffsetZone = `UTC${offsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({ minutes: offsetMinutes }).toFormat('hh:mm')}`;
+
+      // Create a DateTime object in this fixed-offset zone, preserving the local time.
+      const finalDateTime = DateTime.fromObject(dtComponents.toObject(), { zone: fixedOffsetZone });
+
+      onConfirm(finalDateTime.toISO({ includeOffset: true })!);
     }
   };
 
@@ -135,7 +177,7 @@
 
 <ConfirmModal
   confirmColor="primary"
-  title={$t('edit_date_and_time')}
+  {title}
   prompt="Please select a new date:"
   disabled={!date.isValid}
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
@@ -148,15 +190,17 @@
         <label for="datetime">{$t('date_and_time')}</label>
         <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
       </div>
-      <div>
-        <Combobox
-          bind:selectedOption
-          label={$t('timezone')}
-          options={timezones}
-          placeholder={$t('search_timezone')}
-          onSelect={(option) => handleOnSelect(option)}
-        />
-      </div>
+      {#if timezoneInput}
+        <div>
+          <Combobox
+            bind:selectedOption
+            label={$t('timezone')}
+            options={timezones}
+            placeholder={$t('search_timezone')}
+            onSelect={(option) => handleOnSelect(option)}
+          />
+        </div>
+      {/if}
     </div>
   {/snippet}
 </ConfirmModal>

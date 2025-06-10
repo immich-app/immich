@@ -78,7 +78,7 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.133.1</string>
+    <string>1.134.0</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -93,7 +93,7 @@
       </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>207</string>
+    <string>208</string>
     <key>FLTEnableImpeller</key>
     <true />
     <key>ITSAppUsesNonExemptEncryption</key>
@@ -113,6 +113,11 @@
       <key>NSAllowsArbitraryLoads</key>
       <true />
     </dict>
+    <key>NSBonjourServices</key>
+    <array>
+    <string>_googlecast._tcp</string>
+    <string>_CC1AD845._googlecast._tcp</string>
+    </array>
     <key>NSCameraUsageDescription</key>
     <string>We need to access the camera to let you take beautiful video using this app</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

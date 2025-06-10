@@ -1,8 +1,8 @@
-import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
+import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 import { t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
-import { fromLocalDateTime } from './timeline-util';
 
 /**
  * Calculate thumbnail size based on number of assets and viewport width
@@ -40,19 +40,22 @@ export function getThumbnailSize(assetCount: number, viewWidth: number): number 
 
 export const getAltText = derived(t, ($t) => {
   return (asset: TimelineAsset) => {
-    const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' }, { locale: get(locale) });
+    const date = fromTimelinePlainDateTime(asset.localDateTime).toJSDate().toLocaleString(get(locale), {
+      dateStyle: 'long',
+      timeZone: 'UTC',
+    });
     const hasPlace = asset.city && asset.country;
 
-    const peopleCount = asset.people.length;
+    const peopleCount = asset.people?.length ?? 0;
     const isVideo = asset.isVideo;
 
     const values = {
       date,
       city: asset.city,
       country: asset.country,
-      person1: asset.people[0],
-      person2: asset.people[1],
-      person3: asset.people[2],
+      person1: asset.people?.[0],
+      person2: asset.people?.[1],
+      person3: asset.people?.[2],
       isVideo,
       additionalCount: peopleCount > 3 ? peopleCount - 2 : 0,
     };

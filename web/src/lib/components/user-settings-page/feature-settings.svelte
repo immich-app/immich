@@ -4,13 +4,17 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
-  import { updateMyPreferences } from '@immich/sdk';
+  import { AssetOrder, updateMyPreferences } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
+
+  // Albums
+  let defaultAssetOrder = $state($preferences?.albums?.defaultAssetOrder ?? AssetOrder.Desc);
 
   // Folders
   let foldersEnabled = $state($preferences?.folders?.enabled ?? false);
@@ -34,16 +38,21 @@
   let tagsEnabled = $state($preferences?.tags?.enabled ?? false);
   let tagsSidebar = $state($preferences?.tags?.sidebarWeb ?? false);
 
+  // Cast
+  let gCastEnabled = $state($preferences?.cast?.gCastEnabled ?? false);
+
   const handleSave = async () => {
     try {
       const data = await updateMyPreferences({
         userPreferencesUpdateDto: {
+          albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
           memories: { enabled: memoriesEnabled },
           people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
           ratings: { enabled: ratingsEnabled },
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
+          cast: { gCastEnabled },
         },
       });
 
@@ -64,6 +73,20 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
       <div class="ms-4 mt-4 flex flex-col">
+        <SettingAccordion key="albums" title={$t('albums')} subtitle={$t('albums_feature_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSelect
+              label={$t('albums_default_sort_order')}
+              desc={$t('albums_default_sort_order_description')}
+              options={[
+                { value: AssetOrder.Asc, text: $t('oldest_first') },
+                { value: AssetOrder.Desc, text: $t('newest_first') },
+              ]}
+              bind:value={defaultAssetOrder}
+            />
+          </div>
+        </SettingAccordion>
+
         <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
           <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={foldersEnabled} />
@@ -136,6 +159,16 @@
               />
             </div>
           {/if}
+        </SettingAccordion>
+
+        <SettingAccordion key="cast" title={$t('cast')} subtitle={$t('cast_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSwitch
+              title={$t('gcast_enabled')}
+              subtitle={$t('gcast_enabled_description')}
+              bind:checked={gCastEnabled}
+            />
+          </div>
         </SettingAccordion>
 
         <div class="flex justify-end">

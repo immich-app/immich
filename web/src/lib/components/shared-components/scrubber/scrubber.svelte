@@ -1,12 +1,12 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import type { AssetStore, LiteBucket } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import type { LiteBucket } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getTabbable } from '$lib/utils/focus-util';
-  import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
+  import { type ScrubberListener } from '$lib/utils/timeline-util';
   import { mdiPlay } from '@mdi/js';
   import { clamp } from 'lodash-es';
-  import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { fade, fly } from 'svelte/transition';
 
@@ -17,7 +17,7 @@
     assetStore: AssetStore;
     scrubOverallPercent?: number;
     scrubBucketPercent?: number;
-    scrubBucket?: { bucketDate: string | undefined };
+    scrubBucket?: { year: number; month: number };
     leadout?: boolean;
     scrubberWidth?: number;
     onScrub?: ScrubberListener;
@@ -81,7 +81,7 @@
   });
 
   const toScrollFromBucketPercentage = (
-    scrubBucket: { bucketDate: string | undefined } | undefined,
+    scrubBucket: { year: number; month: number } | undefined,
     scrubBucketPercent: number,
     scrubOverallPercent: number,
   ) => {
@@ -89,7 +89,7 @@
       let offset = relativeTopOffset;
       let match = false;
       for (const segment of segments) {
-        if (segment.bucketDate === scrubBucket.bucketDate) {
+        if (segment.month === scrubBucket.month && segment.year === scrubBucket.year) {
           offset += scrubBucketPercent * segment.height;
           match = true;
           break;
@@ -120,8 +120,8 @@
     count: number;
     height: number;
     dateFormatted: string;
-    bucketDate: string;
-    date: DateTime;
+    year: number;
+    month: number;
     hasLabel: boolean;
     hasDot: boolean;
   };
@@ -141,9 +141,9 @@
         top,
         count: bucket.assetCount,
         height: toScrollY(scrollBarPercentage),
-        bucketDate: bucket.bucketDate,
-        date: fromLocalDateTime(bucket.bucketDate),
         dateFormatted: bucket.bucketDateFormattted,
+        year: bucket.year,
+        month: bucket.month,
         hasLabel: false,
         hasDot: false,
       };
@@ -153,7 +153,7 @@
         segment.hasLabel = true;
         previousLabeledSegment = segment;
       } else {
-        if (previousLabeledSegment?.date?.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
+        if (previousLabeledSegment?.year !== segment.year && height > MIN_YEAR_LABEL_DISTANCE) {
           height = 0;
           segment.hasLabel = true;
           previousLabeledSegment = segment;
@@ -182,7 +182,13 @@
     }
     return activeSegment?.dataset.label;
   });
-  const bucketDate = $derived(activeSegment?.dataset.timeSegmentBucketDate);
+  const bucketDate = $derived.by(() => {
+    if (!activeSegment?.dataset.timeSegmentBucketDate) {
+      return undefined;
+    }
+    const [year, month] = activeSegment.dataset.timeSegmentBucketDate.split('-').map(Number);
+    return { year, month };
+  });
   const scrollSegment = $derived.by(() => {
     const y = scrollY;
     let cur = relativeTopOffset;
@@ -289,12 +295,12 @@
 
     const scrollPercent = toTimelineY(hoverY);
     if (wasDragging === false && isDragging) {
-      void startScrub?.(bucketDate, scrollPercent, bucketPercentY);
-      void onScrub?.(bucketDate, scrollPercent, bucketPercentY);
+      void startScrub?.(bucketDate!, scrollPercent, bucketPercentY);
+      void onScrub?.(bucketDate!, scrollPercent, bucketPercentY);
     }
 
     if (wasDragging && !isDragging) {
-      void stopScrub?.(bucketDate, scrollPercent, bucketPercentY);
+      void stopScrub?.(bucketDate!, scrollPercent, bucketPercentY);
       return;
     }
 
@@ -302,7 +308,7 @@
       return;
     }
 
-    void onScrub?.(bucketDate, scrollPercent, bucketPercentY);
+    void onScrub?.(bucketDate!, scrollPercent, bucketPercentY);
   };
   const getTouch = (event: TouchEvent) => {
     if (event.touches.length === 1) {
@@ -404,7 +410,7 @@
       }
       if (next) {
         event.preventDefault();
-        void onScrub?.(next.bucketDate, -1, 0);
+        void onScrub?.({ year: next.year, month: next.month }, -1, 0);
         return true;
       }
     }
@@ -414,7 +420,7 @@
         const next = segments[idx + 1];
         if (next) {
           event.preventDefault();
-          void onScrub?.(next.bucketDate, -1, 0);
+          void onScrub?.({ year: next.year, month: next.month }, -1, 0);
           return true;
         }
       }
@@ -517,7 +523,7 @@
     class="relative"
     style:height={relativeTopOffset + 'px'}
     data-id="lead-in"
-    data-time-segment-bucket-date={segments.at(0)?.date}
+    data-time-segment-bucket-date={segments.at(0)?.year + '-' + segments.at(0)?.month}
     data-label={segments.at(0)?.dateFormatted}
   >
     {#if relativeTopOffset > 6}
@@ -525,18 +531,18 @@
     {/if}
   </div>
   <!-- Time Segment -->
-  {#each segments as segment (segment.date)}
+  {#each segments as segment (segment.year + '-' + segment.month)}
     <div
       class="relative"
       data-id="time-segment"
-      data-time-segment-bucket-date={segment.date}
+      data-time-segment-bucket-date={segment.year + '-' + segment.month}
       data-label={segment.dateFormatted}
       style:height={segment.height + 'px'}
     >
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
           <div class="absolute end-5 top-[-16px] text-[12px] dark:text-immich-dark-fg font-immich-mono">
-            {segment.date.year}
+            {segment.year}
           </div>
         {/if}
         {#if segment.hasDot}

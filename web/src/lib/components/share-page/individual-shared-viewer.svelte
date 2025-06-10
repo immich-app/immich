@@ -5,7 +5,7 @@
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import type { Viewport } from '$lib/stores/assets-store.svelte';
+  import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
@@ -16,13 +16,13 @@
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
   import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -52,7 +52,7 @@
       let results: (string | undefined)[] = [];
       results = await (!files || files.length === 0 || !Array.isArray(files)
         ? openFileUploadDialog()
-        : fileUploadHandler(files));
+        : fileUploadHandler({ files }));
       const data = await addSharedLinkAssets({
         id: sharedLink.id,
         assetIdsDto: {
@@ -95,7 +95,14 @@
         assets={assetInteraction.selectedAssets}
         clearSelect={() => cancelMultiselect(assetInteraction)}
       >
-        <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          aria-label={$t('select_all')}
+          icon={mdiSelectAll}
+          onclick={handleSelectAll}
+        />
         {#if sharedLink?.allowDownload}
           <DownloadAction filename="immich-shared.zip" />
         {/if}
@@ -111,15 +118,25 @@
 
         {#snippet trailing()}
           {#if sharedLink?.allowUpload}
-            <CircleIconButton
-              title={$t('add_photos')}
+            <IconButton
+              shape="round"
+              color="secondary"
+              variant="ghost"
+              aria-label={$t('add_photos')}
               onclick={() => handleUploadAssets()}
               icon={mdiFileImagePlusOutline}
             />
           {/if}
 
           {#if sharedLink?.allowDownload}
-            <CircleIconButton title={$t('download')} onclick={downloadAssets} icon={mdiFolderDownloadOutline} />
+            <IconButton
+              shape="round"
+              color="secondary"
+              variant="ghost"
+              aria-label={$t('download')}
+              onclick={downloadAssets}
+              icon={mdiFolderDownloadOutline}
+            />
           {/if}
         {/snippet}
       </ControlAppBar>

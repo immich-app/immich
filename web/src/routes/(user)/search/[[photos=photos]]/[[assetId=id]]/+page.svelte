@@ -3,7 +3,6 @@
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -26,7 +25,8 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore, type TimelineAsset, type Viewport } from '$lib/stores/assets-store.svelte';
+  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
@@ -45,6 +45,7 @@
     searchSmart,
     type SmartSearchDto,
   } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -269,7 +270,14 @@
         clearSelect={() => cancelMultiselect(assetInteraction)}
       >
         <CreateSharedLink />
-        <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          aria-label={$t('select_all')}
+          icon={mdiSelectAll}
+          onclick={handleSelectAll}
+        />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum {onAddToAlbum} />
           <AddToAlbum shared {onAddToAlbum} />
@@ -294,7 +302,7 @@
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
           {/if}
-          <DeleteAssets menuItem {onAssetDelete} />
+          <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
           <hr />
           <AssetJobActions />
         </ButtonContextMenu>
@@ -375,6 +383,7 @@
         showArchiveIcon={true}
         {viewport}
         pageHeaderOffset={54}
+        onReload={onSearchQueryUpdate}
       />
     {:else if !isLoading}
       <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
@@ -401,7 +410,14 @@
           clearSelect={() => cancelMultiselect(assetInteraction)}
         >
           <CreateSharedLink />
-          <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('select_all')}
+            icon={mdiSelectAll}
+            onclick={handleSelectAll}
+          />
           <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
             <AddToAlbum {onAddToAlbum} />
             <AddToAlbum shared {onAddToAlbum} />
@@ -430,7 +446,7 @@
             {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
               <TagAction menuItem />
             {/if}
-            <DeleteAssets menuItem {onAssetDelete} />
+            <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
             <hr />
             <AssetJobActions />
           </ButtonContextMenu>

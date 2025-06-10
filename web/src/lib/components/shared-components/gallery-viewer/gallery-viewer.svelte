@@ -8,13 +8,14 @@
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { TimelineAsset, Viewport } from '$lib/stores/assets-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
-  import { focusNext } from '$lib/utils/focus-util';
+  import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
   import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -38,6 +39,7 @@
     onPrevious?: (() => Promise<{ id: string } | undefined>) | undefined;
     onNext?: (() => Promise<{ id: string } | undefined>) | undefined;
     onRandom?: (() => Promise<{ id: string } | undefined>) | undefined;
+    onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
   }
@@ -54,6 +56,7 @@
     onPrevious = undefined,
     onNext = undefined,
     onRandom = undefined,
+    onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
   }: Props = $props();
@@ -255,7 +258,8 @@
     await deleteAssets(
       !(isTrashEnabled && !force),
       (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
-      idsSelectedAssets,
+      assetInteraction.selectedAssets,
+      onReload,
     );
     assetInteraction.clearMultiselect();
   };
@@ -271,8 +275,9 @@
     }
   };
 
-  const focusNextAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, true);
-  const focusPreviousAsset = () => focusNext((element) => element.dataset.thumbnailFocusContainer !== undefined, false);
+  const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
+  const focusPreviousAsset = () =>
+    moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
 
   let isShortcutModalOpen = false;
 
@@ -425,7 +430,6 @@
   };
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map((selectedAsset) => selectedAsset.id));
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
@@ -497,7 +501,7 @@
           />
           {#if showAssetName && !isTimelineAsset(currentAsset)}
             <div
-              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
+              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
             >
               {currentAsset.originalFileName}
             </div>

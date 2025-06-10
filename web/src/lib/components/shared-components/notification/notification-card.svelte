@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     isComponentNotification,
@@ -8,6 +7,7 @@
     type ComponentNotification,
     type Notification,
   } from '$lib/components/shared-components/notification/notification';
+  import { IconButton } from '@immich/ui';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -88,12 +88,14 @@
         {:else if notification.type == NotificationType.Info}{$t('info')}{/if}
       </h2>
     </div>
-    <CircleIconButton
+    <IconButton
+      variant="ghost"
+      shape="round"
+      color="secondary"
       icon={mdiWindowClose}
-      title={$t('close')}
+      aria-label={$t('close')}
       class="dark:text-immich-dark-gray"
-      size="20"
-      padding="2"
+      size="medium"
       onclick={discard}
       aria-hidden={true}
       tabindex={-1}

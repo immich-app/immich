@@ -7,7 +7,7 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
-import { anyUuid, asUuid, searchAssetBuilder } from 'src/utils/database';
+import { anyUuid, asUuid, searchAssetBuilder, withDefaultVisibility } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
@@ -91,6 +91,10 @@ export interface SearchTagOptions {
   tagIds?: string[];
 }
 
+export interface SearchAlbumOptions {
+  albumIds?: string[];
+}
+
 export interface SearchOrderOptions {
   orderDirection?: 'asc' | 'desc';
 }
@@ -108,7 +112,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
-  SearchTagOptions;
+  SearchTagOptions &
+  SearchAlbumOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -185,12 +190,29 @@ export class SearchRepository {
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     const items = await searchAssetBuilder(this.db, options)
+      .selectAll('assets')
       .orderBy('assets.fileCreatedAt', orderDirection)
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();
 
     return paginationHelper(items, pagination.size);
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        takenAfter: DummyValue.DATE,
+        lensModel: DummyValue.STRING,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  searchStatistics(options: AssetSearchOptions) {
+    return searchAssetBuilder(this.db, options)
+      .select((qb) => qb.fn.countAll<number>().as('total'))
+      .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({
@@ -209,10 +231,12 @@ export class SearchRepository {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
     const lessThan = builder
+      .selectAll('assets')
       .where('assets.id', '<', uuid)
       .orderBy(sql`random()`)
       .limit(size);
     const greaterThan = builder
+      .selectAll('assets')
       .where('assets.id', '>', uuid)
       .orderBy(sql`random()`)
       .limit(size);
@@ -241,6 +265,7 @@ export class SearchRepository {
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
       const items = await searchAssetBuilder(trx, options)
+        .selectAll('assets')
         .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
         .limit(pagination.size + 1)
@@ -268,6 +293,7 @@ export class SearchRepository {
         .with('cte', (qb) =>
           qb
             .selectFrom('assets')
+            .$call(withDefaultVisibility)
             .select([
               'assets.id as assetId',
               'assets.duplicateId',
@@ -276,7 +302,6 @@ export class SearchRepository {
             .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
             .where('assets.ownerId', '=', anyUuid(userIds))
             .where('assets.deletedAt', 'is', null)
-            .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
             .where('assets.type', '=', type)
             .where('assets.id', '!=', asUuid(assetId))
             .where('assets.stackId', 'is', null)
@@ -472,7 +497,7 @@ export class SearchRepository {
       .distinctOn(field)
       .innerJoin('assets', 'assets.id', 'exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
-      .where('visibility', '!=', AssetVisibility.HIDDEN)
+      .where('visibility', '=', AssetVisibility.TIMELINE)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null);
   }

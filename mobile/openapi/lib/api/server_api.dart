@@ -90,6 +90,47 @@ class ServerApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /server/apk-links' operation and returns the [Response].
+  Future<Response> getApkLinksWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/server/apk-links';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<ServerApkLinksDto?> getApkLinks() async {
+    final response = await getApkLinksWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerApkLinksDto',) as ServerApkLinksDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /server/config' operation and returns the [Response].
   Future<Response> getServerConfigWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -413,6 +454,47 @@ class ServerApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerThemeDto',) as ServerThemeDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /server/version-check' operation and returns the [Response].
+  Future<Response> getVersionCheckWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/server/version-check';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<VersionCheckStateResponseDto?> getVersionCheck() async {
+    final response = await getVersionCheckWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'VersionCheckStateResponseDto',) as VersionCheckStateResponseDto;
     
     }
     return null;

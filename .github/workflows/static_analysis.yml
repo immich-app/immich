@@ -58,12 +58,24 @@ jobs:
         run: dart pub get
         working-directory: ./mobile
 
+      - name: Install DCM
+        run: |
+          sudo apt-get update
+          wget -qO- https://dcm.dev/pgp-key.public | sudo gpg --dearmor -o /usr/share/keyrings/dcm.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list
+          sudo apt-get update
+          sudo apt-get install dcm
+
       - name: Generate translation file
-        run: make translation; dart format lib/generated/codegen_loader.g.dart
+        run: make translation
         working-directory: ./mobile
 
       - name: Run Build Runner
         run: make build
+        working-directory: ./mobile
+
+      - name: Generate platform API
+        run: make pigeon
         working-directory: ./mobile
 
       - name: Find file changes
@@ -96,6 +108,10 @@ jobs:
         run: dart run custom_lint
         working-directory: ./mobile
 
+      - name: Run DCM
+        run: dcm analyze lib
+        working-directory: ./mobile
+
   zizmor:
     name: zizmor
     runs-on: ubuntu-latest
@@ -118,7 +134,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3.28.17
+        uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
         with:
           sarif_file: results.sarif
           category: zizmor

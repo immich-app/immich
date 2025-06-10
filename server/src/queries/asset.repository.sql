@@ -130,7 +130,6 @@ select
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
-  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
 where
   "assets"."id" = any ($1::uuid[])
 
@@ -240,13 +239,10 @@ with
       "assets"
     where
       "assets"."deletedAt" is null
-      and (
-        "assets"."visibility" = $1
-        or "assets"."visibility" = $2
-      )
+      and "assets"."visibility" in ('archive', 'timeline')
   )
 select
-  "timeBucket",
+  "timeBucket"::date::text as "timeBucket",
   count(*) as "count"
 from
   "assets"
@@ -264,11 +260,18 @@ with
       "assets"."visibility",
       "assets"."isFavorite",
       assets.type = 'IMAGE' as "isImage",
-      assets."deletedAt" is null as "isTrashed",
+      assets."deletedAt" is not null as "isTrashed",
       "assets"."livePhotoVideoId",
-      "assets"."localDateTime",
+      extract(
+        epoch
+        from
+          (
+            assets."localDateTime" - assets."fileCreatedAt" at time zone 'UTC'
+          )
+      )::real / 3600 as "localOffsetHours",
       "assets"."ownerId",
       "assets"."status",
+      assets."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
       encode("assets"."thumbhash", 'base64') as "thumbhash",
       "exif"."city",
       "exif"."country",
@@ -300,21 +303,14 @@ with
         where
           "stacked"."stackId" = "assets"."stackId"
           and "stacked"."deletedAt" is null
-          and "stacked"."visibility" != $1
+          and "stacked"."visibility" = $1
         group by
           "stacked"."stackId"
       ) as "stacked_assets" on true
     where
       "assets"."deletedAt" is null
-      and (
-        "assets"."visibility" = $2
-        or "assets"."visibility" = $3
-      )
-      and date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
-      and (
-        "assets"."visibility" = $5
-        or "assets"."visibility" = $6
-      )
+      and "assets"."visibility" in ('archive', 'timeline')
+      and date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' = $2
       and not exists (
         select
         from
@@ -324,7 +320,7 @@ with
           and "asset_stack"."primaryAssetId" != "assets"."id"
       )
     order by
-      "assets"."localDateTime" desc
+      "assets"."fileCreatedAt" desc
   ),
   "agg" as (
     select
@@ -337,7 +333,8 @@ with
       coalesce(array_agg("isImage"), '{}') as "isImage",
       coalesce(array_agg("isTrashed"), '{}') as "isTrashed",
       coalesce(array_agg("livePhotoVideoId"), '{}') as "livePhotoVideoId",
-      coalesce(array_agg("localDateTime"), '{}') as "localDateTime",
+      coalesce(array_agg("fileCreatedAt"), '{}') as "fileCreatedAt",
+      coalesce(array_agg("localOffsetHours"), '{}') as "localOffsetHours",
       coalesce(array_agg("ownerId"), '{}') as "ownerId",
       coalesce(array_agg("projectionType"), '{}') as "projectionType",
       coalesce(array_agg("ratio"), '{}') as "ratio",
@@ -374,10 +371,10 @@ with
           "exif"."assetId" = "assets"."id"
       ) as "asset" on true
     where
-      "assets"."ownerId" = $1::uuid
+      "assets"."visibility" in ('archive', 'timeline')
+      and "assets"."ownerId" = $1::uuid
       and "assets"."duplicateId" is not null
       and "assets"."deletedAt" is null
-      and "assets"."visibility" != $2
       and "assets"."stackId" is null
     group by
       "assets"."duplicateId"
@@ -388,12 +385,12 @@ with
     from
       "duplicates"
     where
-      json_array_length("assets") = $3
+      json_array_length("assets") = $2
   ),
   "removed_unique" as (
     update "assets"
     set
-      "duplicateId" = $4
+      "duplicateId" = $3
     from
       "unique"
     where

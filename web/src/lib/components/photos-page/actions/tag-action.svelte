@@ -1,11 +1,12 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { tagAssets } from '$lib/utils/asset-utils';
-  import { mdiTagMultipleOutline, mdiTimerSand } from '@mdi/js';
+  import { shortcut } from '$lib/actions/shortcut';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+  import { IconButton } from '@immich/ui';
+  import { mdiTagMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
 
   interface Props {
     menuItem?: boolean;
@@ -16,36 +17,24 @@
   const text = $t('tag');
   const icon = mdiTagMultipleOutline;
 
-  let loading = $state(false);
-  let isOpen = $state(false);
-
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  const handleOpen = () => (isOpen = true);
-  const handleCancel = () => (isOpen = false);
-  const handleTag = async (tagIds: string[]) => {
+  const handleTagAssets = async () => {
     const assets = [...getOwnedAssets()];
-    loading = true;
-    const ids = await tagAssets({ tagIds, assetIds: assets.map((asset) => asset.id) });
-    if (ids) {
+    const success = await modalManager.show(AssetTagModal, { assetIds: assets.map(({ id }) => id) });
+
+    if (success) {
       clearSelect();
     }
-    loading = false;
   };
 </script>
 
+<svelte:document use:shortcut={{ shortcut: { key: 't' }, onShortcut: handleTagAssets }} />
+
 {#if menuItem}
-  <MenuOption {text} {icon} onClick={handleOpen} />
+  <MenuOption {text} {icon} onClick={handleTagAssets} />
 {/if}
 
 {#if !menuItem}
-  {#if loading}
-    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
-  {:else}
-    <CircleIconButton title={text} {icon} onclick={handleOpen} />
-  {/if}
-{/if}
-
-{#if isOpen}
-  <TagAssetForm onTag={(tagIds) => handleTag(tagIds)} onCancel={handleCancel} />
+  <IconButton shape="round" color="secondary" variant="ghost" aria-label={text} {icon} onclick={handleTagAssets} />
 {/if}

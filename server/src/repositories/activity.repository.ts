@@ -5,6 +5,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Activity, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { AssetVisibility } from 'src/enum';
 import { asUuid } from 'src/utils/database';
 
 export interface ActivitySearch {
@@ -66,18 +67,27 @@ export class ActivityRepository {
   }
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
-  async getStatistics({ albumId, assetId }: { albumId: string; assetId?: string }): Promise<number> {
-    const { count } = await this.db
+  async getStatistics({
+    albumId,
+    assetId,
+  }: {
+    albumId: string;
+    assetId?: string;
+  }): Promise<{ comments: number; likes: number }> {
+    const result = await this.db
       .selectFrom('activity')
-      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .select((eb) => [
+        eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', false).as('comments'),
+        eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', true).as('likes'),
+      ])
       .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
       .leftJoin('assets', 'assets.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .where('activity.albumId', '=', albumId)
-      .where('activity.isLiked', '=', false)
       .where('assets.deletedAt', 'is', null)
+      .where('assets.visibility', '!=', sql.lit(AssetVisibility.LOCKED))
       .executeTakeFirstOrThrow();
 
-    return count;
+    return result;
   }
 }

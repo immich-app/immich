@@ -1,4 +1,10 @@
-import { AssetMediaResponseDto, AssetVisibility, LoginResponseDto, SharedLinkType } from '@immich/sdk';
+import {
+  AssetMediaResponseDto,
+  AssetVisibility,
+  LoginResponseDto,
+  SharedLinkType,
+  TimeBucketAssetResponseDto,
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -19,7 +25,8 @@ describe('/timeline', () => {
   let user: LoginResponseDto;
   let timeBucketUser: LoginResponseDto;
 
-  let userAssets: AssetMediaResponseDto[];
+  let user1Assets: AssetMediaResponseDto[];
+  let user2Assets: AssetMediaResponseDto[];
 
   beforeAll(async () => {
     await utils.resetDatabase();
@@ -29,7 +36,7 @@ describe('/timeline', () => {
       utils.userSetup(admin.accessToken, createUserDto.create('time-bucket')),
     ]);
 
-    userAssets = await Promise.all([
+    user1Assets = await Promise.all([
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken, {
@@ -42,12 +49,15 @@ describe('/timeline', () => {
       utils.createAsset(user.accessToken),
     ]);
 
-    await Promise.all([
+    user2Assets = await Promise.all([
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-01-01').toISOString() }),
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-10').toISOString() }),
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-11').toISOString() }),
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-11').toISOString() }),
+      utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-12').toISOString() }),
     ]);
+
+    await utils.deleteAssets(timeBucketUser.accessToken, [user2Assets[4].id]);
   });
 
   describe('GET /timeline/buckets', () => {
@@ -65,8 +75,8 @@ describe('/timeline', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.arrayContaining([
-          { count: 3, timeBucket: '1970-02-01T00:00:00.000Z' },
-          { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
+          { count: 3, timeBucket: '1970-02-01' },
+          { count: 1, timeBucket: '1970-01-01' },
         ]),
       );
     });
@@ -74,7 +84,7 @@ describe('/timeline', () => {
     it('should not allow access for unrelated shared links', async () => {
       const sharedLink = await utils.createSharedLink(user.accessToken, {
         type: SharedLinkType.Individual,
-        assetIds: userAssets.map(({ id }) => id),
+        assetIds: user1Assets.map(({ id }) => id),
       });
 
       const { status, body } = await request(app).get('/timeline/buckets').query({ key: sharedLink.key });
@@ -157,7 +167,8 @@ describe('/timeline', () => {
         isImage: [],
         isTrashed: [],
         livePhotoVideoId: [],
-        localDateTime: [],
+        fileCreatedAt: [],
+        localOffsetHours: [],
         ownerId: [],
         projectionType: [],
         ratio: [],
@@ -194,13 +205,26 @@ describe('/timeline', () => {
         isImage: [],
         isTrashed: [],
         livePhotoVideoId: [],
-        localDateTime: [],
+        fileCreatedAt: [],
+        localOffsetHours: [],
         ownerId: [],
         projectionType: [],
         ratio: [],
         status: [],
         thumbhash: [],
       });
+    });
+
+    it('should return time bucket in trash', async () => {
+      const { status, body } = await request(app)
+        .get('/timeline/bucket')
+        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
+        .query({ timeBucket: '1970-02-01T00:00:00.000Z', isTrashed: true });
+
+      expect(status).toBe(200);
+
+      const timeBucket: TimeBucketAssetResponseDto = body;
+      expect(timeBucket.isTrashed).toEqual([true]);
     });
   });
 });
