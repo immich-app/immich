@@ -42,7 +42,7 @@ class ControlBoxButton extends StatelessWidget {
       ),
       onPressed: onPressed,
       onLongPress: onLongPressed,
-      minWidth: 75.0,
+      minWidth: minWidth,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
