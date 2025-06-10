@@ -33,6 +33,9 @@ class ControlBoxButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final minWidth =
+        context.isMobile ? MediaQuery.sizeOf(context).width / 4.5 : 75.0;
+
     return MaterialButton(
       padding: const EdgeInsets.all(10),
       shape: const RoundedRectangleBorder(
@@ -40,7 +43,7 @@ class ControlBoxButton extends StatelessWidget {
       ),
       onPressed: onPressed,
       onLongPress: onLongPressed,
-      minWidth: 75.0,
+      minWidth: minWidth,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,

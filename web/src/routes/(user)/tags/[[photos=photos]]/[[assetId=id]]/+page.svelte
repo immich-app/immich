@@ -14,7 +14,7 @@
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
@@ -32,9 +32,9 @@
 
   const assetInteraction = new AssetInteraction();
 
-  const assetStore = new AssetStore();
-  $effect(() => void assetStore.updateOptions({ deferInit: !tag, tagId: tag.id }));
-  onDestroy(() => assetStore.destroy());
+  const timelineManager = new TimelineManager();
+  $effect(() => void timelineManager.updateOptions({ deferInit: !tag, tagId: tag?.id }));
+  onDestroy(() => timelineManager.destroy());
 
   let tags = $derived<TagResponseDto[]>(data.tags);
   const tree = $derived(TreeNode.fromTags(tags));
@@ -157,7 +157,7 @@
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
     {#if tag.hasAssets}
-      <AssetGrid enableRouting={true} {assetStore} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
+      <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
         {#snippet empty()}
           <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
         {/snippet}
