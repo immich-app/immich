@@ -85,8 +85,8 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
   @override
   void dispose() {
-    super.dispose();
     _stopImageStream();
+    super.dispose();
   }
 
   @override
@@ -126,8 +126,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
           info.image.height.toDouble(),
         );
         _loading = false;
-        _imageInfo = _imageInfo;
-
         _loadingProgress = null;
         _lastException = null;
         _lastStack = null;
