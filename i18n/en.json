@@ -1487,6 +1487,7 @@
   "refreshing_metadata": "Refreshing metadata",
   "regenerating_thumbnails": "Regenerating thumbnails",
   "remove": "Remove",
+  "remove_album": "Remove album",
   "remove_assets_album_confirmation": "Are you sure you want to remove {count, plural, one {# asset} other {# assets}} from the album?",
   "remove_assets_shared_link_confirmation": "Are you sure you want to remove {count, plural, one {# asset} other {# assets}} from this shared link?",
   "remove_assets_title": "Remove assets?",
