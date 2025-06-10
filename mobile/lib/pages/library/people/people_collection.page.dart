@@ -100,8 +100,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
                           onTap: () {
                             context.pushRoute(
                               PersonResultRoute(
-                                personId: person.id,
-                                personName: person.name,
+                                person: person,
                               ),
                             );
                           },

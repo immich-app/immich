@@ -7,7 +7,7 @@ part of 'asset_people.provider.dart';
 // **************************************************************************
 
 String _$assetPeopleNotifierHash() =>
-    r'9835b180984a750c91e923e7b64dbda94f6d7574';
+    r'5f27bef36970aa292ee3588dcf73a35a53e027a0';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -30,11 +30,11 @@ class _SystemHash {
   }
 }
 
-abstract class _$AssetPeopleNotifier extends BuildlessAutoDisposeAsyncNotifier<
-    List<PersonWithFacesResponseDto>> {
+abstract class _$AssetPeopleNotifier
+    extends BuildlessAutoDisposeAsyncNotifier<List<Person>> {
   late final Asset asset;
 
-  FutureOr<List<PersonWithFacesResponseDto>> build(
+  FutureOr<List<Person>> build(
     Asset asset,
   );
 }
@@ -48,8 +48,7 @@ const assetPeopleNotifierProvider = AssetPeopleNotifierFamily();
 /// Maintains the list of people for an asset.
 ///
 /// Copied from [AssetPeopleNotifier].
-class AssetPeopleNotifierFamily
-    extends Family<AsyncValue<List<PersonWithFacesResponseDto>>> {
+class AssetPeopleNotifierFamily extends Family<AsyncValue<List<Person>>> {
   /// Maintains the list of people for an asset.
   ///
   /// Copied from [AssetPeopleNotifier].
@@ -94,7 +93,7 @@ class AssetPeopleNotifierFamily
 ///
 /// Copied from [AssetPeopleNotifier].
 class AssetPeopleNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    AssetPeopleNotifier, List<PersonWithFacesResponseDto>> {
+    AssetPeopleNotifier, List<Person>> {
   /// Maintains the list of people for an asset.
   ///
   /// Copied from [AssetPeopleNotifier].
@@ -127,7 +126,7 @@ class AssetPeopleNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
   final Asset asset;
 
   @override
-  FutureOr<List<PersonWithFacesResponseDto>> runNotifierBuild(
+  FutureOr<List<Person>> runNotifierBuild(
     covariant AssetPeopleNotifier notifier,
   ) {
     return notifier.build(
@@ -152,8 +151,8 @@ class AssetPeopleNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<AssetPeopleNotifier,
-      List<PersonWithFacesResponseDto>> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<AssetPeopleNotifier, List<Person>>
+      createElement() {
     return _AssetPeopleNotifierProviderElement(this);
   }
 
@@ -174,14 +173,14 @@ class AssetPeopleNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin AssetPeopleNotifierRef
-    on AutoDisposeAsyncNotifierProviderRef<List<PersonWithFacesResponseDto>> {
+    on AutoDisposeAsyncNotifierProviderRef<List<Person>> {
   /// The parameter `asset` of this provider.
   Asset get asset;
 }
 
 class _AssetPeopleNotifierProviderElement
     extends AutoDisposeAsyncNotifierProviderElement<AssetPeopleNotifier,
-        List<PersonWithFacesResponseDto>> with AssetPeopleNotifierRef {
+        List<Person>> with AssetPeopleNotifierRef {
   _AssetPeopleNotifierProviderElement(super.provider);
 
   @override

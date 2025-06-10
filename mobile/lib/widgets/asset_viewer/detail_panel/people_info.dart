@@ -84,11 +84,14 @@ class PeopleInfo extends ConsumerWidget {
                 padding: padding,
                 content: curatedPeople,
                 onTap: (content, index) {
+                  final person = people?.firstWhere((p) => content.id == p.id);
+                  if (person == null) {
+                    return;
+                  }
                   context
                       .pushRoute(
                         PersonResultRoute(
-                          personId: content.id,
-                          personName: content.label,
+                          person: person,
                         ),
                       )
                       .then((_) => peopleProvider.refresh());

@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/person.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -12,18 +13,16 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 
 @RoutePage()
 class PersonResultPage extends HookConsumerWidget {
-  final String personId;
-  final String personName;
+  final Person person;
 
   const PersonResultPage({
     super.key,
-    required this.personId,
-    required this.personName,
+    required this.person,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final name = useState(personName);
+    final name = useState(person.name);
 
     showEditNameDialog() {
       showDialog(
@@ -31,7 +30,7 @@ class PersonResultPage extends HookConsumerWidget {
         useRootNavigator: false,
         builder: (BuildContext context) {
           return PersonNameEditForm(
-            personId: personId,
+            personId: person.id,
             personName: name.value,
           );
         },
@@ -62,13 +61,22 @@ class PersonResultPage extends HookConsumerWidget {
                   onTap: showEditNameDialog,
                 ),
                 ListTile(
-                  leading: const Icon(Icons.visibility_off_outlined),
-                  title: const Text(
-                    'hide_person',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  leading: Icon(
+                    person.isHidden
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                  ),
+                  title: Text(
+                    person.isHidden ? 'show_person' : 'hide_person',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ).tr(),
                   onTap: () {
-                    ref.read(updatePersonIsHiddenProvider(personId, true));
+                    ref.read(
+                      updatePersonIsHiddenProvider(
+                        person.id,
+                        !person.isHidden,
+                      ),
+                    );
                   },
                 ),
               ],
@@ -125,7 +133,7 @@ class PersonResultPage extends HookConsumerWidget {
         ],
       ),
       body: MultiselectGrid(
-        renderListProvider: personAssetsProvider(personId),
+        renderListProvider: personAssetsProvider(person.id),
         topWidget: Padding(
           padding: const EdgeInsets.only(left: 8.0, top: 24),
           child: Row(
@@ -133,7 +141,7 @@ class PersonResultPage extends HookConsumerWidget {
               CircleAvatar(
                 radius: 36,
                 backgroundImage: NetworkImage(
-                  getFaceThumbnailUrl(personId),
+                  getFaceThumbnailUrl(person.id),
                   headers: ApiService.getRequestHeaders(),
                 ),
               ),
