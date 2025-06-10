@@ -248,6 +248,8 @@
     "storage_template_settings": "Storage Template",
     "storage_template_settings_description": "Manage the folder structure and file name of the upload asset",
     "storage_template_user_label": "<code>{label}</code> is the user's Storage Label",
+    "storage_template_include_external_assets": "Include external assets",
+    "storage_template_include_external_assets_description": "Apply storage template migration to assets from external libraries (imported from folders)",
     "system_settings": "System Settings",
     "tag_cleanup_job": "Tag cleanup",
     "template_email_available_tags": "You can use the following variables in your template: {tags}",

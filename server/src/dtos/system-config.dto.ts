@@ -504,6 +504,9 @@ class SystemConfigStorageTemplateDto {
   @IsNotEmpty()
   @IsString()
   template!: string;
+
+  @ValidateBoolean()
+  includeExternalAssets!: boolean;
 }
 
 export class SystemConfigTemplateStorageOptionDto {

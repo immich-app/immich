@@ -396,6 +396,198 @@ describe(StorageTemplateService.name, () => {
     );
   });
 
+  describe('external asset handling', () => {
+    it('should skip external assets by default (includeExternalAssets: false)', async () => {
+      const externalAsset = assetStub.storageAsset({ isExternal: true });
+      const config = structuredClone(defaults);
+      config.storageTemplate.includeExternalAssets = false;
+
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: config.storageTemplate });
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValue(externalAsset);
+      mocks.user.get.mockResolvedValue(userStub.user1);
+
+      await expect(sut.handleMigrationSingle({ id: externalAsset.id })).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledWith(externalAsset.id);
+      expect(mocks.user.get).toHaveBeenCalledWith(externalAsset.ownerId, {});
+      // moveAsset should return early for external assets, so no storage operations should occur
+      expect(mocks.storage.checkFileExists).not.toHaveBeenCalled();
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.storage.copyFile).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.move.create).not.toHaveBeenCalled();
+    });
+
+    it('should process external assets when includeExternalAssets is enabled', async () => {
+      const externalAsset = assetStub.storageAsset({ isExternal: true });
+      const config = structuredClone(defaults);
+      config.storageTemplate.includeExternalAssets = true;
+
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: config.storageTemplate });
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValue(externalAsset);
+      mocks.user.get.mockResolvedValue(userStub.user1);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: externalAsset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: externalAsset.originalPath,
+        newPath: `upload/library/${userStub.user1.id}/2023/2023-02-23/${externalAsset.originalFileName}`,
+      });
+
+      await expect(sut.handleMigrationSingle({ id: externalAsset.id })).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledWith(externalAsset.id);
+      expect(mocks.user.get).toHaveBeenCalledWith(externalAsset.ownerId, {});
+      // moveAsset should process external assets when includeExternalAssets is true
+      expect(mocks.storage.checkFileExists).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalled();
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: externalAsset.id,
+        originalPath: `upload/library/${userStub.user1.id}/2023/2023-02-23/${externalAsset.originalFileName}`,
+      });
+    });
+
+    it('should always process non-external assets regardless of includeExternalAssets setting', async () => {
+      const regularAsset = assetStub.storageAsset();
+      const config = structuredClone(defaults);
+      config.storageTemplate.includeExternalAssets = false; // Set to false to verify non-external assets are still processed
+
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: config.storageTemplate });
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValue(regularAsset);
+      mocks.user.get.mockResolvedValue(userStub.user1);
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: regularAsset.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: regularAsset.originalPath,
+        newPath: `upload/library/${userStub.user1.id}/2022/2022-06-19/${regularAsset.originalFileName}`,
+      });
+
+      await expect(sut.handleMigrationSingle({ id: regularAsset.id })).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledWith(regularAsset.id);
+      expect(mocks.user.get).toHaveBeenCalledWith(regularAsset.ownerId, {});
+      // Regular assets should always be processed
+      expect(mocks.storage.checkFileExists).toHaveBeenCalled();
+      expect(mocks.storage.rename).toHaveBeenCalled();
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: regularAsset.id,
+        originalPath: `upload/library/${userStub.user1.id}/2022/2022-06-19/${regularAsset.originalFileName}`,
+      });
+    });
+
+    it('should always skip Android motion paths regardless of includeExternalAssets setting', async () => {
+      const androidMotionAsset = assetStub.storageAsset({
+        originalPath: '/data/android/DCIM/Camera/PXL_20231120_120000000.MP4.microvideo',
+        isExternal: true, // Make it external to test that Android motion path check takes precedence
+      });
+      const config = structuredClone(defaults);
+      config.storageTemplate.includeExternalAssets = true; // Enable external assets, but Android motion should still be skipped
+
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: config.storageTemplate });
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValue(androidMotionAsset);
+      mocks.user.get.mockResolvedValue(userStub.user1);
+
+      await expect(sut.handleMigrationSingle({ id: androidMotionAsset.id })).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledWith(androidMotionAsset.id);
+      expect(mocks.user.get).toHaveBeenCalledWith(androidMotionAsset.ownerId, {});
+      // Android motion paths should always be skipped
+      expect(mocks.storage.checkFileExists).not.toHaveBeenCalled();
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.storage.copyFile).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.move.create).not.toHaveBeenCalled();
+    });
+
+    it('should handle external live photo video when includeExternalAssets is enabled', async () => {
+      const externalLivePhoto = assetStub.storageAsset({
+        isExternal: true,
+        livePhotoVideoId: 'motion-video-id',
+        originalFileName: 'IMG_123.HEIC',
+      });
+      const externalMotionVideo = assetStub.storageAsset({
+        id: 'motion-video-id',
+        isExternal: true,
+        originalFileName: 'IMG_123.MOV',
+        originalPath: '/external/library/IMG_123.MOV',
+      });
+      const config = structuredClone(defaults);
+      config.storageTemplate.includeExternalAssets = true;
+
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: config.storageTemplate });
+      mocks.assetJob.getForStorageTemplateJob
+        .mockResolvedValueOnce(externalLivePhoto)
+        .mockResolvedValueOnce(externalMotionVideo);
+      mocks.user.get.mockResolvedValue(userStub.user1);
+      mocks.move.create
+        .mockResolvedValueOnce({
+          id: '123',
+          entityId: externalLivePhoto.id,
+          pathType: AssetPathType.ORIGINAL,
+          oldPath: externalLivePhoto.originalPath,
+          newPath: `upload/library/${userStub.user1.id}/2022/2022-06-19/${externalLivePhoto.originalFileName}`,
+        })
+        .mockResolvedValueOnce({
+          id: '124',
+          entityId: externalMotionVideo.id,
+          pathType: AssetPathType.ORIGINAL,
+          oldPath: externalMotionVideo.originalPath,
+          newPath: `upload/library/${userStub.user1.id}/2022/2022-06-19/IMG_123_MOTION.MOV`,
+        });
+
+      await expect(sut.handleMigrationSingle({ id: externalLivePhoto.id })).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledTimes(2);
+      expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenNthCalledWith(1, externalLivePhoto.id);
+      expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenNthCalledWith(2, externalMotionVideo.id);
+      expect(mocks.user.get).toHaveBeenCalledWith(externalLivePhoto.ownerId, {});
+      // Both external live photo and motion video should be processed
+      expect(mocks.storage.rename).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: externalLivePhoto.id,
+        originalPath: `upload/library/${userStub.user1.id}/2022/2022-06-19/${externalLivePhoto.originalFileName}`,
+      });
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: externalMotionVideo.id,
+        originalPath: `upload/library/${userStub.user1.id}/2022/2022-06-19/IMG_123_MOTION.MOV`,
+      });
+    });
+
+    it('should skip external live photo video when includeExternalAssets is disabled', async () => {
+      const externalLivePhoto = assetStub.storageAsset({
+        isExternal: true,
+        livePhotoVideoId: 'motion-video-id',
+        originalFileName: 'IMG_123.HEIC',
+      });
+      const externalMotionVideo = assetStub.storageAsset({
+        id: 'motion-video-id',
+        isExternal: true,
+        originalFileName: 'IMG_123.MOV',
+      });
+      const config = structuredClone(defaults);
+      config.storageTemplate.includeExternalAssets = false;
+
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: config.storageTemplate });
+      mocks.assetJob.getForStorageTemplateJob
+        .mockResolvedValueOnce(externalLivePhoto)
+        .mockResolvedValueOnce(externalMotionVideo);
+      mocks.user.get.mockResolvedValue(userStub.user1);
+
+      await expect(sut.handleMigrationSingle({ id: externalLivePhoto.id })).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledTimes(2);
+      expect(mocks.user.get).toHaveBeenCalledWith(externalLivePhoto.ownerId, {});
+      // Both external assets should be skipped - no storage operations should occur
+      expect(mocks.storage.checkFileExists).not.toHaveBeenCalled();
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.storage.copyFile).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.move.create).not.toHaveBeenCalled();
+    });
+  });
+
   describe('handle template migration', () => {
     it('should handle no assets', async () => {
       mocks.assetJob.streamForStorageTemplateJob.mockReturnValue(makeStream([]));
