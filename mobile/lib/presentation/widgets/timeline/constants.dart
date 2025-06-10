@@ -5,3 +5,7 @@ const int kTimelineColumnCount = 3;
 
 const int kTimelineAssetLoadBatchSize = 256;
 const int kTimelineAssetLoadOppositeSize = 64;
+
+const Duration kTimelineScrubberFadeInDuration = Duration(milliseconds: 300);
+const Duration kTimelineScrubberFadeOutDuration = Duration(milliseconds: 800);
+const double kTimelineScrubberPadding = 20;
