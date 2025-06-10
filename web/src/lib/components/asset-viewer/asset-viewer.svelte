@@ -8,9 +8,9 @@
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
@@ -91,6 +91,8 @@
     slideshowState,
     slideshowTransition,
   } = slideshowStore;
+  const stackThumbnailSize = 60;
+  const stackSelectedThumbnailSize = 65;
 
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let shouldPlayMotionPhoto = $state(false);
@@ -559,6 +561,7 @@
     <div
       id="stack-slideshow"
       class="flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
+      style:max-height={stackSelectedThumbnailSize * 2 + 'px'}
     >
       <div class="relative w-full">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
@@ -577,7 +580,7 @@
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
               readonly
-              thumbnailSize={stackedAsset.id === asset.id ? 65 : 60}
+              thumbnailSize={stackedAsset.id === asset.id ? stackSelectedThumbnailSize : stackThumbnailSize}
               showStackedIcon={false}
               disableLinkMouseOver
             />
