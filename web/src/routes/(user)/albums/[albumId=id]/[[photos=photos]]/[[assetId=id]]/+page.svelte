@@ -561,7 +561,7 @@
         {/if}
       </AssetGrid>
 
-      {#if showActivityStatus}
+      {#if showActivityStatus && !activityManager.isLoading}
         <div class="absolute z-2 bottom-0 end-0 mb-6 me-6 justify-self-end">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
