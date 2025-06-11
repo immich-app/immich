@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
@@ -22,6 +23,15 @@ class TimelineService {
     required TimelineBucketSource bucketSource,
   })  : _assetSource = assetSource,
         _bucketSource = bucketSource;
+
+  factory TimelineService.localAlbum(
+      {required String albumId, required ITimelineRepository dbRepository}) {
+    return TimelineService(
+      assetSource: (index, count) =>
+          dbRepository.getLocalAlbumBucket(albumId, index: index, count: count),
+      bucketSource: () => dbRepository.watchLocalAlbumBuckets(albumId),
+    );
+  }
 
   final AsyncMutex _mutex = AsyncMutex();
   int _bufferOffset = 0;

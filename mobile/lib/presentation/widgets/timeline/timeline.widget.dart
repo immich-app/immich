@@ -6,14 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 class Timeline extends StatelessWidget {
   final bool showHeader;
@@ -34,14 +32,6 @@ class Timeline extends StatelessWidget {
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
                 showHeader: showHeader,
-              ),
-            ),
-            timelineServiceProvider.overrideWith(
-              (ref) => TimelineService(
-                assetSource:
-                    ref.watch(timelineRepositoryProvider).getLocalTimeBucket,
-                bucketSource:
-                    ref.watch(timelineRepositoryProvider).watchLocalTimeBuckets,
               ),
             ),
           ],
@@ -79,31 +69,33 @@ class _SliverTimelineState extends State<_SliverTimeline> {
           onData: (segments) {
             final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
 
-            return Scrubber(
+            return PrimaryScrollController(
               controller: _scrollController,
-              layoutSegments: segments,
-              timelineHeight: maxHeight,
-              topPadding: context.padding.top + 10,
-              bottomPadding: context.padding.bottom + 10,
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  _SliverSegmentedList(
-                    segments: segments,
-                    delegate: SliverChildBuilderDelegate(
-                      (ctx, index) {
-                        if (index >= childCount) return null;
-                        final segment = segments.findByIndex(index);
-                        return segment?.builder(ctx, index) ??
-                            const SizedBox.shrink();
-                      },
-                      childCount: childCount,
-                      addAutomaticKeepAlives: false,
-                      // We add repaint boundary around tiles, so skip the auto boundaries
-                      addRepaintBoundaries: false,
+              child: Scrubber(
+                layoutSegments: segments,
+                timelineHeight: maxHeight,
+                topPadding: context.padding.top + 10,
+                bottomPadding: context.padding.bottom + 10,
+                child: CustomScrollView(
+                  primary: true,
+                  slivers: [
+                    _SliverSegmentedList(
+                      segments: segments,
+                      delegate: SliverChildBuilderDelegate(
+                        (ctx, index) {
+                          if (index >= childCount) return null;
+                          final segment = segments.findByIndex(index);
+                          return segment?.builder(ctx, index) ??
+                              const SizedBox.shrink();
+                        },
+                        childCount: childCount,
+                        addAutomaticKeepAlives: false,
+                        // We add repaint boundary around tiles, so skip the auto boundaries
+                        addRepaintBoundaries: false,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
