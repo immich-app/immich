@@ -941,6 +941,22 @@ class LoginRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [MainTimelinePage]
+class MainTimelineRoute extends PageRouteInfo<void> {
+  const MainTimelineRoute({List<PageRouteInfo>? children})
+      : super(MainTimelineRoute.name, initialChildren: children);
+
+  static const String name = 'MainTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const MainTimelinePage();
+    },
+  );
+}
+
+/// generated route for
 /// [MapLocationPickerPage]
 class MapLocationPickerRoute extends PageRouteInfo<MapLocationPickerRouteArgs> {
   MapLocationPickerRoute({
