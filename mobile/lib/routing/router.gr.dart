@@ -873,18 +873,39 @@ class LocalMediaSummaryRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [LocalTimelinePage]
-class LocalTimelineRoute extends PageRouteInfo<void> {
-  const LocalTimelineRoute({List<PageRouteInfo>? children})
-      : super(LocalTimelineRoute.name, initialChildren: children);
+class LocalTimelineRoute extends PageRouteInfo<LocalTimelineRouteArgs> {
+  LocalTimelineRoute({
+    Key? key,
+    required String albumId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          LocalTimelineRoute.name,
+          args: LocalTimelineRouteArgs(key: key, albumId: albumId),
+          initialChildren: children,
+        );
 
   static const String name = 'LocalTimelineRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const LocalTimelinePage();
+      final args = data.argsAs<LocalTimelineRouteArgs>();
+      return LocalTimelinePage(key: args.key, albumId: args.albumId);
     },
   );
+}
+
+class LocalTimelineRouteArgs {
+  const LocalTimelineRouteArgs({this.key, required this.albumId});
+
+  final Key? key;
+
+  final String albumId;
+
+  @override
+  String toString() {
+    return 'LocalTimelineRouteArgs{key: $key, albumId: $albumId}';
+  }
 }
 
 /// generated route for

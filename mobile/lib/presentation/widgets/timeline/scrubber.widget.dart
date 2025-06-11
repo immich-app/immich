@@ -17,9 +17,6 @@ class Scrubber extends StatefulWidget {
   /// The segments of the timeline
   final List<Segment> layoutSegments;
 
-  /// The ScrollController for the BoxScrollView
-  final ScrollController controller;
-
   final double timelineHeight;
 
   final double topPadding;
@@ -29,7 +26,6 @@ class Scrubber extends StatefulWidget {
   Scrubber({
     super.key,
     Key? scrollThumbKey,
-    required this.controller,
     required this.layoutSegments,
     required this.timelineHeight,
     this.topPadding = 0,
@@ -105,10 +101,12 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   double get _scrubberHeight =>
       widget.timelineHeight - widget.topPadding - widget.bottomPadding;
 
+  late final ScrollController _scrollController;
+
   double get _currentOffset =>
-      widget.controller.offset *
+      _scrollController.offset *
       _scrubberHeight /
-      widget.controller.position.maxScrollExtent;
+      _scrollController.position.maxScrollExtent;
 
   @override
   void initState() {
@@ -127,6 +125,12 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
       parent: _thumbAnimationController,
       curve: Curves.fastEaseInToSlowEaseOut,
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scrollController = PrimaryScrollController.of(context);
   }
 
   @override
@@ -199,8 +203,8 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
     setState(() {
       _thumbTopOffset = newOffset.clamp(0, _scrubberHeight);
       final scrollPercentage = _thumbTopOffset / _scrubberHeight;
-      final maxScrollExtent = widget.controller.position.maxScrollExtent;
-      widget.controller.jumpTo(maxScrollExtent * scrollPercentage);
+      final maxScrollExtent = _scrollController.position.maxScrollExtent;
+      _scrollController.jumpTo(maxScrollExtent * scrollPercentage);
     });
   }
 
@@ -213,7 +217,7 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext ctx) {
     String? label;
-    if (widget.controller.hasClients) {
+    if (_scrollController.hasClients) {
       // Cache to avoid multiple calls to [_currentOffset]
       final scrollOffset = _currentOffset;
       label = _segments

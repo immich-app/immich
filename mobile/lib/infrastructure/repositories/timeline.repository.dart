@@ -15,7 +15,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository
   const DriftTimelineRepository(super._db) : _db = _db;
 
   @override
-  Stream<List<Bucket>> watchLocalTimeBuckets() {
+  Stream<List<Bucket>> watchLocalAlbumBuckets(String albumId) {
     final assetCountExp = _db.localAssetEntity.id.count();
     final monthYearExp = _db.localAssetEntity.createdAt
         // DateTimes are stored in UTC, so we need to convert them to local time inside the query before formatting
@@ -25,6 +25,13 @@ class DriftTimelineRepository extends DriftDatabaseRepository
 
     final query = _db.localAssetEntity.selectOnly()
       ..addColumns([assetCountExp, monthYearExp])
+      ..join([
+        innerJoin(
+          _db.localAlbumAssetEntity,
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+        ),
+      ])
+      ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
       ..groupBy([monthYearExp])
       ..orderBy([OrderingTerm.desc(monthYearExp)]);
 
@@ -36,8 +43,22 @@ class DriftTimelineRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<List<BaseAsset>> getLocalTimeBucket(int index, int count) {
+  Future<List<BaseAsset>> getLocalAlbumBucket(
+    String albumId, {
+    required int index,
+    required int count,
+  }) {
     final query = _db.localAssetEntity.select()
+      ..join(
+        [
+          innerJoin(
+            _db.localAlbumAssetEntity,
+            _db.localAlbumAssetEntity.assetId
+                    .equalsExp(_db.localAssetEntity.id) &
+                _db.localAlbumAssetEntity.albumId.equals(albumId),
+          ),
+        ],
+      )
       ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
       ..limit(count, offset: index);
     return query.map((row) => row.toDto()).get();
