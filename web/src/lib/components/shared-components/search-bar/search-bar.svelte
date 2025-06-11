@@ -10,11 +10,11 @@
   import { generateId } from '$lib/utils/generate-id';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import SearchHistoryBox from './search-history-box.svelte';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     value?: string;
@@ -93,7 +93,7 @@
     }
 
     const result = modalManager.open(SearchFilterModal, { searchQuery });
-    close = result.close;
+    close = () => result.close(undefined);
     closeDropdown();
 
     const searchResult = await result.onClose;
