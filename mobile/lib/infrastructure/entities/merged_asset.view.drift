@@ -1,0 +1,41 @@
+import 'remote_asset.entity.dart';
+import 'local_asset.entity.dart';
+
+CREATE VIEW IF NOT EXISTS merged_asset_view
+AS SELECT
+	rae.id as remote_id,
+	lae.id as local_id,
+	rae.name,
+	rae."type",
+	rae.created_at,
+	rae.updated_at,
+	rae.width,
+	rae.height,
+	rae.duration_in_seconds,
+	rae.is_favorite,
+	rae.thumb_hash,
+	rae.checksum
+FROM
+	remote_asset_entity rae
+LEFT JOIN
+	local_asset_entity lae  ON rae.checksum  = lae.checksum
+UNION ALL
+SELECT
+	NULL as remote_id,
+	lae.id as local_id,
+	lae.name,
+	lae."type",
+	lae.created_at,
+	lae.updated_at,
+	lae.width,
+	lae.height,
+	lae.duration_in_seconds,
+	lae.is_favorite,
+	NULL as thumb_hash,
+	lae.checksum
+FROM
+	local_asset_entity lae
+LEFT JOIN
+	remote_asset_entity rae ON rae.checksum = lae.checksum
+WHERE
+	rae.id IS NULL;

@@ -32,14 +32,8 @@ class ImThumbHashProvider extends ImageProvider<ImThumbHashProvider> {
     ImThumbHashProvider key,
     ImageDecoderCallback decode,
   ) async {
-    final image = await compute<String, Image>(
-      (hash) => thumbHashToRGBA(base64Decode(hash)),
-      key.thumbHash,
-    );
-    return decode(
-      await compute(
-          (img) => ImmutableBuffer.fromUint8List(rgbaToBmp(img)), image),
-    );
+    final image = thumbHashToRGBA(base64Decode(key.thumbHash));
+    return decode(await ImmutableBuffer.fromUint8List(rgbaToBmp(image)));
   }
 
   @override

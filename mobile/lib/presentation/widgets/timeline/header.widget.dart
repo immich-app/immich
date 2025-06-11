@@ -15,7 +15,7 @@ class TimelineHeader extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final formatter = DateFormat.yMMMM(context.locale.toLanguageTag());
+    final formatter = DateFormat.yMMMMd(context.locale.toLanguageTag());
     final formattedDate = formatter.format((bucket as TimeBucket).date);
 
     return Container(

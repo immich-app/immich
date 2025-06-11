@@ -24,12 +24,24 @@ class TimelineService {
   })  : _assetSource = assetSource,
         _bucketSource = bucketSource;
 
-  factory TimelineService.localAlbum(
-      {required String albumId, required ITimelineRepository dbRepository}) {
+  factory TimelineService.main({
+    required ITimelineRepository repository,
+  }) {
     return TimelineService(
       assetSource: (index, count) =>
-          dbRepository.getLocalAlbumBucket(albumId, index: index, count: count),
-      bucketSource: () => dbRepository.watchLocalAlbumBuckets(albumId),
+          repository.getMainBucketAssets(index: index, count: count),
+      bucketSource: () => repository.watchMainBucket(),
+    );
+  }
+
+  factory TimelineService.localAlbum({
+    required String albumId,
+    required ITimelineRepository repository,
+  }) {
+    return TimelineService(
+      assetSource: (index, count) =>
+          repository.getLocalBucketAssets(albumId, index: index, count: count),
+      bucketSource: () => repository.watchLocalBucket(albumId),
     );
   }
 
