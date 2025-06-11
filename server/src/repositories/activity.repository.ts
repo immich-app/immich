@@ -36,12 +36,13 @@ export class ActivityRepository {
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('user').as('user'))
-      .leftJoin('assets', (join) => join.onRef('assets.id', '=', 'activity.assetId').on('assets.deletedAt', 'is', null))
+      .leftJoin('assets', 'assets.id', 'activity.assetId')
       .$if(!!userId, (qb) => qb.where('activity.userId', '=', userId!))
       .$if(assetId === null, (qb) => qb.where('assetId', 'is', null))
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
       .$if(isLiked !== undefined, (qb) => qb.where('activity.isLiked', '=', isLiked!))
+      .where('assets.deletedAt', 'is', null)
       .orderBy('activity.createdAt', 'asc')
       .execute();
   }
