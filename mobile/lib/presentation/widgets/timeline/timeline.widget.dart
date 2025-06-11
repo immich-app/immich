@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
@@ -27,18 +28,21 @@ class Timeline extends StatelessWidget {
           overrides: [
             timelineArgsProvider.overrideWith(
               (ref) => TimelineStateArgs(
-                constraints: constraints,
-                showHeader: showHeader,
+                maxWidth: constraints.maxWidth,
+                maxHeight: constraints.maxHeight,
                 columnCount: ref.watch(
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
-                assetProvider:
-                    ref.watch(timelineRepositoryProvider).getLocalTimeBucket,
+                showHeader: showHeader,
               ),
             ),
-            timelineBucketProvider.overrideWith(
-              (ref) =>
-                  ref.watch(timelineRepositoryProvider).watchLocalTimeBuckets(),
+            timelineServiceProvider.overrideWith(
+              (ref) => TimelineService(
+                assetSource:
+                    ref.watch(timelineRepositoryProvider).getLocalTimeBucket,
+                bucketSource:
+                    ref.watch(timelineRepositoryProvider).watchLocalTimeBuckets,
+              ),
             ),
           ],
           child: const _SliverTimeline(),
@@ -68,11 +72,9 @@ class _SliverTimelineState extends State<_SliverTimeline> {
   Widget build(BuildContext _) {
     return Consumer(
       builder: (context, ref, child) {
-        final asyncSegments =
-            ref.watch(timelineStateProvider.select((s) => s.segments));
-        final timelineHeight = ref.watch(
-          timelineArgsProvider.select((args) => args.constraints.maxHeight),
-        );
+        final asyncSegments = ref.watch(timelineSegmentProvider);
+        final maxHeight =
+            ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
         return asyncSegments.widgetWhen(
           onData: (segments) {
             final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
@@ -80,7 +82,7 @@ class _SliverTimelineState extends State<_SliverTimeline> {
             return Scrubber(
               controller: _scrollController,
               layoutSegments: segments,
-              timelineHeight: timelineHeight,
+              timelineHeight: maxHeight,
               topPadding: context.padding.top + 10,
               bottomPadding: context.padding.bottom + 10,
               child: CustomScrollView(

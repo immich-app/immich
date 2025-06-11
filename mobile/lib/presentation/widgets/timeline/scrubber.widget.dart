@@ -305,7 +305,7 @@ class _Thumb extends StatelessWidget {
       animation: _thumbAnimation,
       child: Container(
         decoration: BoxDecoration(
-          color: context.colorScheme.surface.withAlpha(220),
+          color: context.colorScheme.surface.withAlpha(230),
           border: Border(
             bottom: BorderSide(
               color: context.colorScheme.primary,

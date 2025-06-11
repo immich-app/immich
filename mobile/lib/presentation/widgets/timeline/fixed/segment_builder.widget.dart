@@ -9,6 +9,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/fixed/segment.model.
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 class FixedSegmentBuilder extends SegmentBuilder {
   final double tileHeight;
@@ -102,7 +103,7 @@ class FixedSegmentBuilder extends SegmentBuilder {
         builder: (ctx, ref, _) {
           final isScrubbing =
               ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
-          final timelineNotifier = ref.read(timelineStateProvider.notifier);
+          final timelineService = ref.read(timelineServiceProvider);
 
           // Timeline is being scrubbed, show placeholders
           if (isScrubbing) {
@@ -110,14 +111,14 @@ class FixedSegmentBuilder extends SegmentBuilder {
           }
 
           // Bucket is already loaded, show the assets
-          if (timelineNotifier.hasRange(assetIndex, count)) {
-            final assets = timelineNotifier.getAssets(assetIndex, count);
+          if (timelineService.hasRange(assetIndex, count)) {
+            final assets = timelineService.getAssets(assetIndex, count);
             return buildAssetRow(ctx, assets);
           }
 
           // Bucket is not loaded, show placeholders and load the bucket
           return FutureBuilder(
-            future: timelineNotifier.loadAssets(assetIndex, count),
+            future: timelineService.loadAssets(assetIndex, count),
             builder: (ctxx, snap) {
               if (snap.connectionState != ConnectionState.done) {
                 return buildPlaceholder(ctx, count, Size.square(tileHeight));
