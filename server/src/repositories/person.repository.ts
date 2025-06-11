@@ -484,6 +484,15 @@ export class PersonRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getAssetPersonByFaceId(id: string) {
+    return this.db
+      .selectFrom('asset_faces')
+      .select(['asset_faces.assetId', 'asset_faces.personId'])
+      .where('asset_faces.id', '=', id)
+      .executeTakeFirst();
+  }
+
   @GenerateSql()
   async getLatestFaceDate(): Promise<string | undefined> {
     const result = (await this.db

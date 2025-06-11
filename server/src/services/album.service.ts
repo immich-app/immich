@@ -178,9 +178,13 @@ export class AlbumService extends BaseService {
         (userId) => userId !== auth.user.id,
       );
 
-      for (const recipientId of allUsersExceptUs) {
-        await this.eventRepository.emit('album.update', { id, recipientId });
-      }
+      await this.eventRepository.emit('album.update', {
+        id,
+        userId: auth.user.id,
+        assetId: dto.ids,
+        recipientId: allUsersExceptUs,
+        status: 'added',
+      });
     }
 
     return results;
@@ -200,7 +204,16 @@ export class AlbumService extends BaseService {
     if (removedIds.length > 0 && album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
       await this.albumRepository.updateThumbnails();
     }
-
+    const allUsersExceptUs = [...album.albumUsers.map(({ user }) => user.id), album.owner.id].filter(
+      (userId) => userId !== auth.user.id,
+    );
+    await this.eventRepository.emit('album.update', {
+      id,
+      userId: auth.user.id,
+      assetId: dto.ids,
+      recipientId: allUsersExceptUs,
+      status: 'removed',
+    });
     return results;
   }
 

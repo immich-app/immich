@@ -48,10 +48,15 @@ type EventMap = {
   'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  'album.update': [{ id: string; recipientId: string }];
+  'album.update': [
+    { id: string; recipientId: string[]; assetId: string[]; userId: string; status: 'added' | 'removed' },
+  ];
   'album.invite': [{ id: string; userId: string }];
 
   // asset events
+  'asset.person': [
+    { assetId: string; userId: string; personId: string | undefined; status: 'created' | 'removed' | 'removed_soft' },
+  ];
   'asset.tag': [{ assetId: string }];
   'asset.untag': [{ assetId: string }];
   'asset.hide': [{ assetId: string; userId: string }];
@@ -97,6 +102,8 @@ export type ArgsOf<T extends EmitEvent> = EventMap[T];
 export interface ClientEventMap {
   on_upload_success: [AssetResponseDto];
   on_user_delete: [string];
+  on_album_update: [{ albumId: string; assetId: string[]; status: 'added' | 'removed' }];
+  on_asset_person: [{ assetId: string; personId: string | undefined; status: 'created' | 'removed' | 'removed_soft' }];
   on_asset_delete: [string];
   on_asset_trash: [string[]];
   on_asset_update: [AssetResponseDto];
