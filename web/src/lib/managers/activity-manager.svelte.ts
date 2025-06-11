@@ -34,6 +34,10 @@ class ActivityManager {
 
   isLoading = $state(false);
 
+  get assetId() {
+    return this.#assetId;
+  }
+
   get activities() {
     return this.#activities;
   }
@@ -55,6 +59,10 @@ class ActivityManager {
   }
 
   async init(albumId: string, assetId?: string) {
+    if (assetId && assetId === this.#assetId) {
+      return;
+    }
+
     this.#albumId = albumId;
     this.#assetId = assetId;
     try {
