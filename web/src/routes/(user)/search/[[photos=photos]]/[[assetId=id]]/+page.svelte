@@ -23,10 +23,10 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
-  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
@@ -81,7 +81,7 @@
     });
   });
 
-  let assetStore = new AssetStore();
+  let timelineManager = new TimelineManager();
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -131,7 +131,7 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
     onAssetDelete(assetIds);
   };

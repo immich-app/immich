@@ -1,21 +1,23 @@
+import { AssetOrder } from '@immich/sdk';
+
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
-import { AssetOrder } from '@immich/sdk';
-import type { AssetBucket } from './asset-bucket.svelte';
-import { IntersectingAsset } from './intersecting-asset.svelte';
-import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
 
-export class AssetDateGroup {
-  readonly bucket: AssetBucket;
+import type { MonthGroup } from './month-group.svelte';
+import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import { ViewerAsset } from './viewer-asset.svelte';
+
+export class DayGroup {
+  readonly monthGroup: MonthGroup;
   readonly index: number;
   readonly groupTitle: string;
   readonly day: number;
-  intersectingAssets: IntersectingAsset[] = $state([]);
+  viewerAssets: ViewerAsset[] = $state([]);
 
   height = $state(0);
   width = $state(0);
-  intersecting = $derived.by(() => this.intersectingAssets.some((asset) => asset.intersecting));
+  intersecting = $derived.by(() => this.viewerAssets.some((viewAsset) => viewAsset.intersecting));
 
   #top: number = $state(0);
   #left: number = $state(0);
@@ -23,9 +25,9 @@ export class AssetDateGroup {
   #col = $state(0);
   #deferredLayout = false;
 
-  constructor(bucket: AssetBucket, index: number, day: number, groupTitle: string) {
+  constructor(monthGroup: MonthGroup, index: number, day: number, groupTitle: string) {
     this.index = index;
-    this.bucket = bucket;
+    this.monthGroup = monthGroup;
     this.day = day;
     this.groupTitle = groupTitle;
   }
@@ -72,35 +74,35 @@ export class AssetDateGroup {
 
   sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
     const sortFn = plainDateTimeCompare.bind(undefined, sortOrder === AssetOrder.Asc);
-    this.intersectingAssets.sort((a, b) => sortFn(a.asset.fileCreatedAt, b.asset.fileCreatedAt));
+    this.viewerAssets.sort((a, b) => sortFn(a.asset.fileCreatedAt, b.asset.fileCreatedAt));
   }
 
   getFirstAsset() {
-    return this.intersectingAssets[0]?.asset;
+    return this.viewerAssets[0]?.asset;
   }
 
   getRandomAsset() {
-    const random = Math.floor(Math.random() * this.intersectingAssets.length);
-    return this.intersectingAssets[random];
+    const random = Math.floor(Math.random() * this.viewerAssets.length);
+    return this.viewerAssets[random];
   }
 
   *assetsIterator(options: { startAsset?: TimelineAsset; direction?: Direction } = {}) {
     const isEarlier = (options?.direction ?? 'earlier') === 'earlier';
     let assetIndex = options?.startAsset
-      ? this.intersectingAssets.findIndex((intersectingAsset) => intersectingAsset.asset.id === options.startAsset!.id)
+      ? this.viewerAssets.findIndex((viewerAsset) => viewerAsset.asset.id === options.startAsset!.id)
       : isEarlier
         ? 0
-        : this.intersectingAssets.length - 1;
+        : this.viewerAssets.length - 1;
 
-    while (assetIndex >= 0 && assetIndex < this.intersectingAssets.length) {
-      const intersectingAsset = this.intersectingAssets[assetIndex];
-      yield intersectingAsset.asset;
+    while (assetIndex >= 0 && assetIndex < this.viewerAssets.length) {
+      const viewerAsset = this.viewerAssets[assetIndex];
+      yield viewerAsset.asset;
       assetIndex += isEarlier ? 1 : -1;
     }
   }
 
   getAssets() {
-    return this.intersectingAssets.map((intersectingasset) => intersectingasset.asset);
+    return this.viewerAssets.map((viewerAsset) => viewerAsset.asset);
   }
 
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
@@ -117,12 +119,12 @@ export class AssetDateGroup {
     const moveAssets: MoveAsset[] = [];
     let changedGeometry = false;
     for (const assetId of unprocessedIds) {
-      const index = this.intersectingAssets.findIndex((ia) => ia.id == assetId);
+      const index = this.viewerAssets.findIndex((viewAsset) => viewAsset.id == assetId);
       if (index === -1) {
         continue;
       }
 
-      const asset = this.intersectingAssets[index].asset!;
+      const asset = this.viewerAssets[index].asset!;
       const oldTime = { ...asset.localDateTime };
       let { remove } = operation(asset);
       const newTime = asset.localDateTime;
@@ -133,8 +135,8 @@ export class AssetDateGroup {
       }
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);
-      if (remove || this.bucket.store.isExcluded(asset)) {
-        this.intersectingAssets.splice(index, 1);
+      if (remove || this.monthGroup.timelineManager.isExcluded(asset)) {
+        this.viewerAssets.splice(index, 1);
         changedGeometry = true;
       }
     }
@@ -142,21 +144,21 @@ export class AssetDateGroup {
   }
 
   layout(options: CommonLayoutOptions, noDefer: boolean) {
-    if (!noDefer && !this.bucket.intersecting) {
+    if (!noDefer && !this.monthGroup.intersecting) {
       this.#deferredLayout = true;
       return;
     }
-    const assets = this.intersectingAssets.map((intersetingAsset) => intersetingAsset.asset!);
+    const assets = this.viewerAssets.map((viewerAsset) => viewerAsset.asset!);
     const geometry = getJustifiedLayoutFromAssets(assets, options);
     this.width = geometry.containerWidth;
     this.height = assets.length === 0 ? 0 : geometry.containerHeight;
-    for (let i = 0; i < this.intersectingAssets.length; i++) {
+    for (let i = 0; i < this.viewerAssets.length; i++) {
       const position = getPosition(geometry, i);
-      this.intersectingAssets[i].position = position;
+      this.viewerAssets[i].position = position;
     }
   }
 
-  get absoluteDateGroupTop() {
-    return this.bucket.top + this.#top;
+  get absoluteDayGroupTop() {
+    return this.monthGroup.top + this.#top;
   }
 }

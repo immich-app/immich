@@ -247,7 +247,7 @@
     <div class="flex items-center justify-center p-2" bind:clientHeight={chatHeight}>
       <div class="flex p-2 gap-4 h-fit bg-gray-200 text-immich-dark-gray rounded-3xl w-full">
         <div>
-          <UserAvatar {user} size="md" showTitle={false} />
+          <UserAvatar {user} size="md" noTitle />
         </div>
         <form class="flex w-full max-h-56 gap-1" {onsubmit}>
           <div class="flex w-full items-center gap-4">

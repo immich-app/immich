@@ -36,13 +36,14 @@
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
@@ -87,7 +88,6 @@
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
   interface Props {
     data: PageData;
@@ -174,15 +174,15 @@
   const handleStartSlideshow = async () => {
     const asset =
       $slideshowNavigation === SlideshowNavigation.Shuffle
-        ? await assetStore.getRandomAsset()
-        : assetStore.buckets[0]?.dateGroups[0]?.intersectingAssets[0]?.asset;
+        ? await timelineManager.getRandomAsset()
+        : timelineManager.months[0]?.dayGroups[0]?.viewerAssets[0]?.asset;
     if (asset) {
       handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
     }
   };
 
   const handleEscape = async () => {
-    assetStore.suspendTransitions = true;
+    timelineManager.suspendTransitions = true;
     if (viewMode === AlbumPageViewMode.SELECT_THUMBNAIL) {
       viewMode = AlbumPageViewMode.VIEW;
       return;
@@ -234,7 +234,7 @@
   };
 
   const setModeToView = async () => {
-    assetStore.suspendTransitions = true;
+    timelineManager.suspendTransitions = true;
     viewMode = AlbumPageViewMode.VIEW;
     await navigate(
       { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: oldAt?.at } },
@@ -309,17 +309,17 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
   };
 
   const handleRemoveAssets = async (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     await refreshAlbum();
   };
 
   const handleUndoRemoveAssets = async (assets: TimelineAsset[]) => {
-    assetStore.addAssets(assets);
+    timelineManager.addAssets(assets);
     await refreshAlbum();
   };
 
@@ -374,13 +374,13 @@
     }
   });
 
-  let assetStore = new AssetStore();
+  let timelineManager = new TimelineManager();
 
   $effect(() => {
     if (viewMode === AlbumPageViewMode.VIEW) {
-      void assetStore.updateOptions({ albumId, order: albumOrder });
+      void timelineManager.updateOptions({ albumId, order: albumOrder });
     } else if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
-      void assetStore.updateOptions({
+      void timelineManager.updateOptions({
         visibility: AssetVisibility.Timeline,
         withPartners: true,
         timelineAlbumId: albumId,
@@ -395,7 +395,7 @@
 
   onDestroy(() => {
     activityManager.reset();
-    assetStore.destroy();
+    timelineManager.destroy();
   });
 
   let isOwned = $derived($user.id == album.ownerId);
@@ -470,7 +470,7 @@
       <AssetGrid
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
-        {assetStore}
+        {timelineManager}
         assetInteraction={currentAssetIntersection}
         {isShared}
         {isSelectionMode}
@@ -590,7 +590,7 @@
         clearSelect={() => assetInteraction.clearMultiselect()}
       >
         <CreateSharedLink />
-        <SelectAllAssets {assetStore} {assetInteraction} />
+        <SelectAllAssets {timelineManager} {assetInteraction} />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
@@ -599,7 +599,7 @@
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
             onFavorite={(ids, isFavorite) =>
-              assetStore.updateAssetOperation(ids, (asset) => {
+              timelineManager.updateAssetOperation(ids, (asset) => {
                 asset.isFavorite = isFavorite;
                 return { remove: false };
               })}
@@ -647,7 +647,7 @@
                 color="secondary"
                 aria-label={$t('add_photos')}
                 onclick={async () => {
-                  assetStore.suspendTransitions = true;
+                  timelineManager.suspendTransitions = true;
                   viewMode = AlbumPageViewMode.SELECT_ASSETS;
                   oldAt = { at: $gridScrollTarget?.at };
                   await navigate(
