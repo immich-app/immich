@@ -81,14 +81,15 @@ export class ActivityRepository {
         eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', true).as('likes'),
       ])
       .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
-      .leftJoin('assets', (join) =>
-        join
-          .onRef('assets.id', '=', 'activity.assetId')
-          .on('assets.deletedAt', 'is', null)
-          .on('assets.visibility', '!=', sql.lit(AssetVisibility.LOCKED)),
-      )
+      .leftJoin('assets', 'assets.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .where('activity.albumId', '=', albumId)
+      .where(({ or, and, eb }) =>
+        or([
+          and([eb('assets.deletedAt', 'is', null), eb('assets.visibility', '!=', sql.lit(AssetVisibility.LOCKED))]),
+          eb('assets.id', 'is', null),
+        ]),
+      )
       .executeTakeFirstOrThrow();
 
     return result;
