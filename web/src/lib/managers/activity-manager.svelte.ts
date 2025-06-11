@@ -65,6 +65,7 @@ class ActivityManager {
   }
 
   #invalidateCache(albumId: string, assetId?: string) {
+    this.#cache.delete(this.#getCacheKey(albumId));
     this.#cache.delete(this.#getCacheKey(albumId, assetId));
   }
 
