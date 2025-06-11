@@ -40,7 +40,21 @@ export class ActivityRepository {
       .$if(!!userId, (qb) => qb.where('activity.userId', '=', userId!))
       .$if(assetId === null, (qb) => qb.where('assetId', 'is', null))
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
-      .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
+      .$if(!!albumId, (qb) =>
+        qb
+          .where('activity.albumId', '=', albumId!)
+          .where((eb) =>
+            eb.or([
+              eb('activity.assetId', 'is', null),
+              eb.exists(
+                eb
+                  .selectFrom('albums_assets_assets')
+                  .whereRef('albums_assets_assets.assetsId', '=', 'activity.assetId')
+                  .where('albums_assets_assets.albumsId', '=', albumId!),
+              ),
+            ]),
+          ),
+      )
       .$if(isLiked !== undefined, (qb) => qb.where('activity.isLiked', '=', isLiked!))
       .orderBy('activity.createdAt', 'asc')
       .execute();
