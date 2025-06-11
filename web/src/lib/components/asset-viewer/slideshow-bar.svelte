@@ -104,7 +104,7 @@
     if (document.fullscreenElement) {
       await document.exitFullscreen();
     }
-    await modalManager.show(SlideshowSettingsModal, {});
+    await modalManager.show(SlideshowSettingsModal);
   };
 </script>
 

@@ -6,15 +6,21 @@ type OnCloseData<T> = T extends { onClose: (data?: infer R) => void }
   : T extends { onClose: (data: infer R) => void }
     ? R
     : never;
-type ExtendsEmptyObject<T> = keyof T extends never ? Record<string, never> : T;
+type ExtendsEmptyObject<T> = keyof T extends never ? never : T;
 type StripValueIfOptional<T> = T extends undefined ? undefined : T;
 
+// if the modal does not expect any props, makes the props param optional but also allows passing `{}` and `undefined`
+type OptionalParamIfEmpty<T> = ExtendsEmptyObject<T> extends never ? [] | [Record<string, never> | undefined] : [T];
+
 class ModalManager {
-  show<T extends object>(Component: Component<T>, props: ExtendsEmptyObject<Omit<T, 'onClose'>>) {
-    return this.open(Component, props).onClose;
+  show<T extends object>(Component: Component<T>, ...props: OptionalParamIfEmpty<Omit<T, 'onClose'>>) {
+    return this.open(Component, ...props).onClose;
   }
 
-  open<T extends object, K = OnCloseData<T>>(Component: Component<T>, props: ExtendsEmptyObject<Omit<T, 'onClose'>>) {
+  open<T extends object, K = OnCloseData<T>>(
+    Component: Component<T>,
+    ...props: OptionalParamIfEmpty<Omit<T, 'onClose'>>
+  ) {
     let modal: object = {};
     let onClose: (...args: [StripValueIfOptional<K>]) => Promise<void>;
 
@@ -27,7 +33,7 @@ class ModalManager {
       modal = mount(Component, {
         target: document.body,
         props: {
-          ...(props as T),
+          ...((props?.[0] ?? {}) as T),
           onClose,
         },
       });
