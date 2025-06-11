@@ -109,6 +109,7 @@ export interface ClientEventMap {
   on_new_release: [ReleaseNotification];
   on_notification: [NotificationDto];
   on_session_delete: [string];
+  shutdown_worker: [ImmichWorker];
 }
 
 export type EventItem<T extends EmitEvent> = {

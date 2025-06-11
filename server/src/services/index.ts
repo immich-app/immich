@@ -13,6 +13,7 @@ import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
+import { MaintenanceService } from 'src/services/maintenance.service';
 import { MapService } from 'src/services/map.service';
 import { MediaService } from 'src/services/media.service';
 import { MemoryService } from 'src/services/memory.service';
@@ -56,6 +57,7 @@ export const services = [
   DuplicateService,
   JobService,
   LibraryService,
+  MaintenanceService,
   MapService,
   MediaService,
   MemoryService,

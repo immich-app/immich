@@ -389,6 +389,7 @@ export enum ImmichEnvironment {
 export enum ImmichWorker {
   API = 'api',
   MICROSERVICES = 'microservices',
+  MAINTENANCE = 'maintenance',
 }
 
 export enum ImmichTelemetry {

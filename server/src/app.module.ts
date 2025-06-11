@@ -8,6 +8,8 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
+import { MaintenanceController } from 'src/controllers/maintenance.controller';
+import { ServerController } from 'src/controllers/server.controller';
 import { ImmichWorker } from 'src/enum';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
@@ -94,6 +96,13 @@ export class ApiModule extends BaseModule {}
   providers: [...common, { provide: IWorker, useValue: ImmichWorker.MICROSERVICES }, SchedulerRegistry],
 })
 export class MicroservicesModule extends BaseModule {}
+
+@Module({
+  imports: [...imports],
+  controllers: [MaintenanceController, ServerController],
+  providers: [...common, { provide: IWorker, useValue: ImmichWorker.MAINTENANCE }, SchedulerRegistry],
+})
+export class MaintenanceModule extends BaseModule {}
 
 @Module({
   imports: [...imports],
