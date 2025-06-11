@@ -11,8 +11,8 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/image/cache/thumbnail_image_cache_manager.dart';
 import 'package:logging/logging.dart';
 
-class ImLocalThumbnailProvider extends ImageProvider<ImLocalThumbnailProvider> {
-  final Logger _log = Logger("ImLocalThumbnailProvider");
+class ImLocalThumbProvider extends ImageProvider<ImLocalThumbProvider> {
+  final Logger _log = Logger("ImLocalThumbProvider");
   final IAssetMediaRepository _assetMediaRepository =
       const AssetMediaRepository();
   final CacheManager? cacheManager;
@@ -21,17 +21,15 @@ class ImLocalThumbnailProvider extends ImageProvider<ImLocalThumbnailProvider> {
   final double height;
   final double width;
 
-  ImLocalThumbnailProvider({
+  ImLocalThumbProvider({
     required this.asset,
     this.height = kTimelineFixedTileExtend,
     this.width = kTimelineFixedTileExtend,
     this.cacheManager,
   });
 
-  /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
-  /// that describes the precise image to load.
   @override
-  Future<ImLocalThumbnailProvider> obtainKey(
+  Future<ImLocalThumbProvider> obtainKey(
     ImageConfiguration configuration,
   ) {
     return SynchronousFuture(this);
@@ -39,7 +37,7 @@ class ImLocalThumbnailProvider extends ImageProvider<ImLocalThumbnailProvider> {
 
   @override
   ImageStreamCompleter loadImage(
-    ImLocalThumbnailProvider key,
+    ImLocalThumbProvider key,
     ImageDecoderCallback decode,
   ) {
     final cache = cacheManager ?? ThumbnailImageCacheManager();
@@ -52,9 +50,8 @@ class ImLocalThumbnailProvider extends ImageProvider<ImLocalThumbnailProvider> {
     );
   }
 
-  // Streams in each stage of the image as we ask for it
   Stream<Codec> _codec(
-    ImLocalThumbnailProvider key,
+    ImLocalThumbProvider key,
     CacheManager cache,
     ImageDecoderCallback decode,
   ) async* {
@@ -92,7 +89,7 @@ class ImLocalThumbnailProvider extends ImageProvider<ImLocalThumbnailProvider> {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is ImLocalThumbnailProvider) {
+    if (other is ImLocalThumbProvider) {
       return asset.id == other.asset.id &&
           asset.updatedAt == other.asset.updatedAt;
     }
@@ -100,5 +97,5 @@ class ImLocalThumbnailProvider extends ImageProvider<ImLocalThumbnailProvider> {
   }
 
   @override
-  int get hashCode => Object.hash(asset.id, asset.updatedAt);
+  int get hashCode => asset.id.hashCode ^ asset.updatedAt.hashCode;
 }
