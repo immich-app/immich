@@ -75,8 +75,8 @@ from
   inner join "users" on "users"."id" = "activity"."userId"
   and "users"."deletedAt" is null
   left join "assets" on "assets"."id" = "activity"."assetId"
+  and "assets"."deletedAt" is null
+  and "assets"."visibility" != 'locked'
 where
   "activity"."assetId" = $3
   and "activity"."albumId" = $4
-  and "assets"."deletedAt" is null
-  and "assets"."visibility" != 'locked'
