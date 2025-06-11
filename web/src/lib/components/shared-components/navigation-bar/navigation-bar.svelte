@@ -155,7 +155,7 @@
             title={`${$user.name} (${$user.email})`}
           >
             {#key $user}
-              <UserAvatar user={$user} size="md" showTitle={false} interactive />
+              <UserAvatar user={$user} size="md" noTitle interactive />
             {/key}
           </button>
 
