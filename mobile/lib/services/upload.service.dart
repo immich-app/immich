@@ -108,7 +108,7 @@ class UploadService {
 
     return UploadTask(
       taskId: id,
-      displayName: filename,
+      displayName: originalFileName ?? filename,
       httpRequestMethod: 'POST',
       url: url,
       headers: headers,

@@ -156,7 +156,21 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   }
 
   void _configureFileDownloaderNotifications() {
-    FileDownloader().configureNotification(
+    FileDownloader().configureNotificationForGroup(
+      downloadGroupImage,
+      running: TaskNotification(
+        'downloading_media'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      complete: TaskNotification(
+        'download_finished'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      progressBar: true,
+    );
+
+    FileDownloader().configureNotificationForGroup(
+      downloadGroupVideo,
       running: TaskNotification(
         'downloading_media'.tr(),
         '${'file_name'.tr()}: {filename}',

@@ -197,7 +197,7 @@ class ExpBackupPage extends HookConsumerWidget {
                       const RemainderCard(),
                       const Divider(),
                       buildControlButtons(),
-                      const CurrentUploadingAssetInfoBox(),
+                      // const CurrentUploadingAssetInfoBox(),
                     ]
                   : [
                       const BackupAlbumSelectionCard(),

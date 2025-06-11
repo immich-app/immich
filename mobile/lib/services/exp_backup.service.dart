@@ -26,6 +26,7 @@ class ExpBackupService {
   final IBackupRepository _backupRepository;
   final IStorageRepository _storageRepository;
   final UploadService _uploadService;
+  bool shouldCancel = false;
 
   Future<int> getTotalCount() {
     return _backupRepository.getTotalCount();
@@ -40,6 +41,8 @@ class ExpBackupService {
   }
 
   Future<void> backup() async {
+    shouldCancel = false;
+
     final candidates = await _backupRepository.getCandidates();
     if (candidates.isEmpty) {
       return;
@@ -47,6 +50,10 @@ class ExpBackupService {
 
     const batchSize = 5;
     for (int i = 0; i < candidates.length; i += batchSize) {
+      if (shouldCancel) {
+        break;
+      }
+
       final batch = candidates.skip(i).take(batchSize).toList();
 
       List<UploadTask> tasks = [];
@@ -57,7 +64,7 @@ class ExpBackupService {
         }
       }
 
-      if (tasks.isNotEmpty) {
+      if (tasks.isNotEmpty && !shouldCancel) {
         _uploadService.enqueueTasks(tasks);
       }
     }
@@ -82,6 +89,7 @@ class ExpBackupService {
   }
 
   Future<void> cancel() async {
+    shouldCancel = true;
     await _uploadService.cancel();
   }
 }
