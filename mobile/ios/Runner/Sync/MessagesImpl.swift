@@ -27,7 +27,7 @@ extension PHAsset {
       updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
       width: Int64(pixelWidth),
       height: Int64(pixelHeight),
-      durationInSeconds: Int64(duration),
+      durationInSeconds: Int64(duration)
     )
   }
 }

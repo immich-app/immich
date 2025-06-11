@@ -18,25 +18,13 @@
 
   interface Props {
     user: User;
-    color?: UserAvatarColor | undefined;
     size?: Size;
-    rounded?: boolean;
     interactive?: boolean;
-    showTitle?: boolean;
-    showProfileImage?: boolean;
+    noTitle?: boolean;
     label?: string | undefined;
   }
 
-  let {
-    user,
-    color = undefined,
-    size = 'full',
-    rounded = true,
-    interactive = false,
-    showTitle = true,
-    showProfileImage = true,
-    label = undefined,
-  }: Props = $props();
+  let { user, size = 'full', interactive = false, noTitle = false, label = undefined }: Props = $props();
 
   let img: HTMLImageElement | undefined = $state();
   let showFallback = $state(true);
@@ -79,7 +67,7 @@
     }
   });
 
-  let colorClass = $derived(colorClasses[color || user.avatarColor]);
+  let colorClass = $derived(colorClasses[user.avatarColor]);
   let sizeClass = $derived(sizeClasses[size]);
   let title = $derived(label ?? `${user.name} (${user.email})`);
   let interactiveClass = $derived(
@@ -90,11 +78,10 @@
 </script>
 
 <figure
-  class="{sizeClass} {colorClass} {interactiveClass} overflow-hidden shadow-md"
-  class:rounded-full={rounded}
-  title={showTitle ? title : undefined}
+  class="{sizeClass} {colorClass} {interactiveClass} overflow-hidden shadow-md rounded-full"
+  title={noTitle ? undefined : title}
 >
-  {#if showProfileImage && user.profileImagePath}
+  {#if user.profileImagePath}
     <img
       bind:this={img}
       src={getProfileImageUrl(user)}

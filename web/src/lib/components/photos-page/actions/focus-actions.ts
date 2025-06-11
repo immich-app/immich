@@ -1,4 +1,4 @@
-import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { moveFocus } from '$lib/utils/focus-util';
 import { InvocationTracker } from '$lib/utils/invocationTracker';
@@ -31,7 +31,7 @@ export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean
 
 export const setFocusTo = async (
   scrollToAsset: (asset: TimelineAsset) => boolean,
-  store: AssetStore,
+  store: TimelineManager,
   direction: 'earlier' | 'later',
   interval: 'day' | 'month' | 'year' | 'asset',
 ) => {

@@ -3599,6 +3599,72 @@
         ]
       }
     },
+    "/memories/statistics": {
+      "get": {
+        "operationId": "memoriesStatistics",
+        "parameters": [
+          {
+            "name": "for",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isSaved",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemoryType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Memories"
+        ]
+      }
+    },
     "/memories/{id}": {
       "delete": {
         "operationId": "deleteMemory",
@@ -10827,6 +10893,17 @@
         ],
         "type": "object"
       },
+      "MemoryStatisticsResponseDto": {
+        "properties": {
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total"
+        ],
+        "type": "object"
+      },
       "MemoryType": {
         "enum": [
           "on_this_day"
@@ -10866,6 +10943,13 @@
       },
       "MetadataSearchDto": {
         "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "checksum": {
             "type": "string"
           },
@@ -11785,6 +11869,13 @@
       },
       "RandomSearchDto": {
         "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "city": {
             "nullable": true,
             "type": "string"
@@ -12833,6 +12924,13 @@
       },
       "SmartSearchDto": {
         "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "city": {
             "nullable": true,
             "type": "string"
@@ -13029,6 +13127,13 @@
       },
       "StatisticsSearchDto": {
         "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "city": {
             "nullable": true,
             "type": "string"

@@ -82,6 +82,10 @@ export class MemoryService extends BaseService {
     return memories.map((memory) => mapMemory(memory, auth));
   }
 
+  statistics(auth: AuthDto, dto: MemorySearchDto) {
+    return this.memoryRepository.statistics(auth.user.id, dto);
+  }
+
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {
     await this.requireAccess({ auth, permission: Permission.MEMORY_READ, ids: [id] });
     const memory = await this.findOrFail(id);

@@ -81,6 +81,18 @@ class SyncStreamService {
         return _syncStreamRepository.deletePartnerAssetsV1(data.cast());
       case SyncEntityType.partnerAssetExifV1:
         return _syncStreamRepository.updatePartnerAssetsExifV1(data.cast());
+      case SyncEntityType.albumV1:
+        return _syncStreamRepository.updateAlbumsV1(data.cast());
+      case SyncEntityType.albumDeleteV1:
+        return _syncStreamRepository.deleteAlbumsV1(data.cast());
+      // case SyncEntityType.albumAssetV1:
+      //   return _syncStreamRepository.updateAlbumAssetsV1(data.cast());
+      // case SyncEntityType.albumAssetDeleteV1:
+      //   return _syncStreamRepository.deleteAlbumAssetsV1(data.cast());
+      case SyncEntityType.albumUserV1:
+        return _syncStreamRepository.updateAlbumUsersV1(data.cast());
+      case SyncEntityType.albumUserDeleteV1:
+        return _syncStreamRepository.deleteAlbumUsersV1(data.cast());
       default:
         _logger.warning("Unknown sync data type: $type");
     }

@@ -3,7 +3,7 @@ import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
 
 export type AssetApiGetTimeBucketsRequest = Parameters<typeof import('@immich/sdk').getTimeBuckets>[0];
 
-export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
+export type TimelineManagerOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
   deferInit?: boolean;
 };
@@ -74,15 +74,15 @@ export interface UpdateStackAssets {
 
 export type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets | UpdateStackAssets;
 
-export type LiteBucket = {
-  bucketHeight: number;
+export type ScrubberMonth = {
+  height: number;
   assetCount: number;
   year: number;
   month: number;
-  bucketDateFormattted: string;
+  title: string;
 };
 
-export type AssetStoreLayoutOptions = {
+export type TimelineManagerLayoutOptions = {
   rowHeight?: number;
   headerHeight?: number;
   gap?: number;

@@ -6,7 +6,7 @@ part of 'immich_logo_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$immichLogoHash() => r'6f23d217c44279537b7edee1ca80ebf47f69a4d0';
+String _$immichLogoHash() => r'6de7fcca1ef9acef6ab7398eb0c664080747e0ea';
 
 /// See also [immichLogo].
 @ProviderFor(immichLogo)
