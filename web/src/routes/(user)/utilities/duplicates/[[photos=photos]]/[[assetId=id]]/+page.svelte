@@ -200,7 +200,7 @@
           icon={mdiInformationOutline}
           aria-label={$t('deduplication_info')}
           size="small"
-          onclick={() => modalManager.show(DuplicatesInformationModal, {})}
+          onclick={() => modalManager.show(DuplicatesInformationModal)}
         />
       </div>
 
