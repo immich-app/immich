@@ -53,11 +53,6 @@ List<_Segment> _buildSegments({
     final scrollPercentage =
         layoutSegment.startOffset / layoutSegments.last.endOffset;
     final startOffset = scrollPercentage * timelineHeight;
-    if (startOffset < previousOffset + kTimelineScrubberPadding) {
-      // Skip segments that are too close to the previous one
-      continue;
-    }
-    previousOffset = startOffset;
 
     final date = (layoutSegment.bucket as TimeBucket).date;
     final label = formatter.format(date);
@@ -75,6 +70,16 @@ List<_Segment> _buildSegments({
       previousSegment = segment;
       continue;
     }
+
+    // These segments are too close to the previous segment, so we don't show a dot or label
+    // but we still add the segment to the list to fetch the scroll label
+    if (startOffset < previousOffset + kTimelineScrubberPadding) {
+      segments.add(segment.copyWith(hasDot: false, hasLabel: false));
+      previousSegment = segment;
+      continue;
+    }
+
+    previousOffset = startOffset;
 
     if (previousSegment?.date.year == date.year) {
       segment = segment.copyWith(hasDot: true);
@@ -221,10 +226,11 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
       // Cache to avoid multiple calls to [_currentOffset]
       final scrollOffset = _currentOffset;
       label = _segments
-          .lastWhereOrNull(
-            (segment) => segment.startOffset <= scrollOffset,
-          )
-          ?.scrollLabel;
+              .lastWhereOrNull(
+                (segment) => segment.startOffset <= scrollOffset,
+              )
+              ?.scrollLabel ??
+          _segments.firstOrNull?.scrollLabel;
     }
 
     return NotificationListener<ScrollNotification>(
