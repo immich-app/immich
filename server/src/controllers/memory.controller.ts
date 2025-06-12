@@ -2,7 +2,13 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, 
 import { ApiTags } from '@nestjs/swagger';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto } from 'src/dtos/memory.dto';
+import {
+  MemoryCreateDto,
+  MemoryResponseDto,
+  MemorySearchDto,
+  MemoryStatisticsResponseDto,
+  MemoryUpdateDto,
+} from 'src/dtos/memory.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { MemoryService } from 'src/services/memory.service';
@@ -23,6 +29,12 @@ export class MemoryController {
   @Authenticated({ permission: Permission.MEMORY_CREATE })
   createMemory(@Auth() auth: AuthDto, @Body() dto: MemoryCreateDto): Promise<MemoryResponseDto> {
     return this.service.create(auth, dto);
+  }
+
+  @Get('statistics')
+  @Authenticated({ permission: Permission.MEMORY_READ })
+  memoriesStatistics(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemoryStatisticsResponseDto> {
+    return this.service.statistics(auth, dto);
   }
 
   @Get(':id')

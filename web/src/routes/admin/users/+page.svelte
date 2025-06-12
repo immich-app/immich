@@ -58,7 +58,7 @@
   };
 
   const handleCreate = async () => {
-    await modalManager.show(UserCreateModal, {});
+    await modalManager.show(UserCreateModal);
     await refresh();
   };
 

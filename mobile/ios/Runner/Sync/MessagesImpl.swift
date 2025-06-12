@@ -25,6 +25,8 @@ extension PHAsset {
       type: Int64(mediaType.rawValue),
       createdAt: creationDate.map { Int64($0.timeIntervalSince1970) },
       updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
+      width: Int64(pixelWidth),
+      height: Int64(pixelHeight),
       durationInSeconds: Int64(duration)
     )
   }
@@ -156,8 +158,6 @@ class NativeSyncApiImpl: NativeSyncApi {
             id: asset.localIdentifier,
             name: "",
             type: 0,
-            createdAt: nil,
-            updatedAt: nil,
             durationInSeconds: 0
           )
           if (updatedAssets.contains(AssetWrapper(with: predicate))) {

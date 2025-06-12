@@ -95,6 +95,9 @@ class BaseSearchDto {
   @ValidateUUID({ each: true, optional: true })
   tagIds?: string[];
 
+  @ValidateUUID({ each: true, optional: true })
+  albumIds?: string[];
+
   @Optional()
   @IsInt()
   @Max(5)

@@ -28,14 +28,36 @@ export class MemoryRepository implements IBulkAsset {
       .execute();
   }
 
+  searchBuilder(ownerId: string, dto: MemorySearchDto) {
+    return this.db
+      .selectFrom('memories')
+      .$if(dto.isSaved !== undefined, (qb) => qb.where('isSaved', '=', dto.isSaved!))
+      .$if(dto.type !== undefined, (qb) => qb.where('type', '=', dto.type!))
+      .$if(dto.for !== undefined, (qb) =>
+        qb
+          .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', dto.for!)]))
+          .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
+      )
+      .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
+      .where('ownerId', '=', ownerId);
+  }
+
+  @GenerateSql(
+    { params: [DummyValue.UUID, {}] },
+    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+  )
+  statistics(ownerId: string, dto: MemorySearchDto) {
+    return this.searchBuilder(ownerId, dto)
+      .select((qb) => qb.fn.countAll<number>().as('total'))
+      .executeTakeFirstOrThrow();
+  }
+
   @GenerateSql(
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
   )
   search(ownerId: string, dto: MemorySearchDto) {
-    return this.db
-      .selectFrom('memories')
-      .selectAll('memories')
+    return this.searchBuilder(ownerId, dto)
       .select((eb) =>
         jsonArrayFrom(
           eb
@@ -48,15 +70,7 @@ export class MemoryRepository implements IBulkAsset {
             .where('assets.deletedAt', 'is', null),
         ).as('assets'),
       )
-      .$if(dto.isSaved !== undefined, (qb) => qb.where('isSaved', '=', dto.isSaved!))
-      .$if(dto.type !== undefined, (qb) => qb.where('type', '=', dto.type!))
-      .$if(dto.for !== undefined, (qb) =>
-        qb
-          .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', dto.for!)]))
-          .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
-      )
-      .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
-      .where('ownerId', '=', ownerId)
+      .selectAll('memories')
       .orderBy('memoryAt', 'desc')
       .execute();
   }
