@@ -505,10 +505,7 @@
   {/if}
   <!-- Scroll Position Indicator Line -->
   {#if !usingMobileDevice && !isDragging}
-    <div
-      class="absolute end-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
-      style:top="{scrollY + PADDING_TOP - 2}px"
-    >
+    <div class="absolute end-0 h-[2px] w-10 bg-primary" style:top="{scrollY + PADDING_TOP - 2}px">
       {#if timelineManager.scrolling && scrollHoverLabel && !isHover}
         <p
           transition:fade={{ duration: 200 }}
