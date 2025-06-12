@@ -346,6 +346,15 @@
         "operationId": "searchUsersAdmin",
         "parameters": [
           {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "withDeleted",
             "required": false,
             "in": "query",
@@ -679,6 +688,72 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      }
+    },
+    "/admin/users/{id}/statistics": {
+      "get": {
+        "operationId": "getUserStatisticsAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetStatsResponseDto"
                 }
               }
             },
@@ -1782,14 +1857,6 @@
         "operationId": "getAssetStatistics",
         "parameters": [
           {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -1803,6 +1870,14 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
             }
           }
         ],
@@ -2272,6 +2347,199 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LogoutResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/pin-code": {
+      "delete": {
+        "operationId": "resetPinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeResetDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      },
+      "post": {
+        "operationId": "setupPinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeSetupDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      },
+      "put": {
+        "operationId": "changePinCode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCodeChangeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/session/lock": {
+      "post": {
+        "operationId": "lockAuthSession",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/session/unlock": {
+      "post": {
+        "operationId": "unlockAuthSession",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionUnlockDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/status": {
+      "get": {
+        "operationId": "getAuthStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthStatusResponseDto"
                 }
               }
             },
@@ -3309,6 +3577,72 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MemoryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Memories"
+        ]
+      }
+    },
+    "/memories/statistics": {
+      "get": {
+        "operationId": "memoriesStatistics",
+        "parameters": [
+          {
+            "name": "for",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isSaved",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemoryType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryStatisticsResponseDto"
                 }
               }
             },
@@ -4890,6 +5224,48 @@
         ]
       }
     },
+    "/search/statistics": {
+      "post": {
+        "operationId": "searchAssetStatistics",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatisticsSearchDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/suggestions": {
       "get": {
         "operationId": "getSearchSuggestions",
@@ -4985,6 +5361,38 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ServerAboutResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/apk-links": {
+      "get": {
+        "operationId": "getApkLinks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerApkLinksDto"
                 }
               }
             },
@@ -5295,6 +5703,38 @@
         ]
       }
     },
+    "/server/version-check": {
+      "get": {
+        "operationId": "getVersionCheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionCheckStateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
     "/server/version-history": {
       "get": {
         "operationId": "getVersionHistory",
@@ -5375,11 +5815,86 @@
         "tags": [
           "Sessions"
         ]
+      },
+      "post": {
+        "operationId": "createSession",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
       }
     },
     "/sessions/{id}": {
       "delete": {
         "operationId": "deleteSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
+      }
+    },
+    "/sessions/{id}/lock": {
+      "post": {
+        "operationId": "lockSession",
         "parameters": [
           {
             "name": "id",
@@ -6503,6 +7018,38 @@
         ]
       }
     },
+    "/system-metadata/version-check-state": {
+      "get": {
+        "operationId": "getVersionCheckState",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionCheckStateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
+        ]
+      }
+    },
     "/tags": {
       "get": {
         "operationId": "getAllTags",
@@ -6904,23 +7451,17 @@
             "name": "albumId",
             "required": false,
             "in": "query",
+            "description": "Filter assets belonging to a specific album",
             "schema": {
               "format": "uuid",
               "type": "string"
             }
           },
           {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
+            "description": "Filter by favorite status (true for favorites only, false for non-favorites only)",
             "schema": {
               "type": "boolean"
             }
@@ -6929,6 +7470,7 @@
             "name": "isTrashed",
             "required": false,
             "in": "query",
+            "description": "Filter by trash status (true for trashed assets only, false for non-trashed only)",
             "schema": {
               "type": "boolean"
             }
@@ -6945,6 +7487,7 @@
             "name": "order",
             "required": false,
             "in": "query",
+            "description": "Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrder"
             }
@@ -6953,23 +7496,17 @@
             "name": "personId",
             "required": false,
             "in": "query",
+            "description": "Filter assets containing a specific person (face recognition)",
             "schema": {
               "format": "uuid",
               "type": "string"
             }
           },
           {
-            "name": "size",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/TimeBucketSize"
-            }
-          },
-          {
             "name": "tagId",
             "required": false,
             "in": "query",
+            "description": "Filter assets with a specific tag",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -6979,7 +7516,9 @@
             "name": "timeBucket",
             "required": true,
             "in": "query",
+            "description": "Time bucket identifier in YYYY-MM-DD format (e.g., \"2024-01-01\" for January 2024)",
             "schema": {
+              "example": "2024-01-01",
               "type": "string"
             }
           },
@@ -6987,15 +7526,26 @@
             "name": "userId",
             "required": false,
             "in": "query",
+            "description": "Filter assets by specific user ID",
             "schema": {
               "format": "uuid",
               "type": "string"
             }
           },
           {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "description": "Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            }
+          },
+          {
             "name": "withPartners",
             "required": false,
             "in": "query",
+            "description": "Include assets shared by partners",
             "schema": {
               "type": "boolean"
             }
@@ -7004,6 +7554,7 @@
             "name": "withStacked",
             "required": false,
             "in": "query",
+            "description": "Include stacked assets in the response. When true, only primary assets from stacks are returned.",
             "schema": {
               "type": "boolean"
             }
@@ -7014,10 +7565,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/TimeBucketAssetResponseDto"
                 }
               }
             },
@@ -7048,23 +7596,17 @@
             "name": "albumId",
             "required": false,
             "in": "query",
+            "description": "Filter assets belonging to a specific album",
             "schema": {
               "format": "uuid",
               "type": "string"
             }
           },
           {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
+            "description": "Filter by favorite status (true for favorites only, false for non-favorites only)",
             "schema": {
               "type": "boolean"
             }
@@ -7073,6 +7615,7 @@
             "name": "isTrashed",
             "required": false,
             "in": "query",
+            "description": "Filter by trash status (true for trashed assets only, false for non-trashed only)",
             "schema": {
               "type": "boolean"
             }
@@ -7089,6 +7632,7 @@
             "name": "order",
             "required": false,
             "in": "query",
+            "description": "Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrder"
             }
@@ -7097,23 +7641,17 @@
             "name": "personId",
             "required": false,
             "in": "query",
+            "description": "Filter assets containing a specific person (face recognition)",
             "schema": {
               "format": "uuid",
               "type": "string"
             }
           },
           {
-            "name": "size",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/TimeBucketSize"
-            }
-          },
-          {
             "name": "tagId",
             "required": false,
             "in": "query",
+            "description": "Filter assets with a specific tag",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -7123,15 +7661,26 @@
             "name": "userId",
             "required": false,
             "in": "query",
+            "description": "Filter assets by specific user ID",
             "schema": {
               "format": "uuid",
               "type": "string"
             }
           },
           {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "description": "Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            }
+          },
+          {
             "name": "withPartners",
             "required": false,
             "in": "query",
+            "description": "Include assets shared by partners",
             "schema": {
               "type": "boolean"
             }
@@ -7140,6 +7689,7 @@
             "name": "withStacked",
             "required": false,
             "in": "query",
+            "description": "Include stacked assets in the response. When true, only primary assets from stacks are returned.",
             "schema": {
               "type": "boolean"
             }
@@ -7151,7 +7701,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/TimeBucketResponseDto"
+                    "$ref": "#/components/schemas/TimeBucketsResponseDto"
                   },
                   "type": "array"
                 }
@@ -7484,6 +8034,101 @@
         ]
       }
     },
+    "/users/me/onboarding": {
+      "delete": {
+        "operationId": "deleteUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "operationId": "getUserOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "setUserOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/users/me/preferences": {
       "get": {
         "operationId": "getMyPreferences",
@@ -7790,7 +8435,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.132.3",
+    "version": "1.134.0",
     "contact": {}
   },
   "tags": [],
@@ -7888,11 +8533,15 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "minItems": 1,
+            "type": "array"
           }
         },
-        "required": [
-          "name"
-        ],
         "type": "object"
       },
       "ActivityCreateDto": {
@@ -7963,10 +8612,14 @@
         "properties": {
           "comments": {
             "type": "integer"
+          },
+          "likes": {
+            "type": "integer"
           }
         },
         "required": [
-          "comments"
+          "comments",
+          "likes"
         ],
         "type": "object"
       },
@@ -8172,6 +8825,34 @@
         ],
         "type": "string"
       },
+      "AlbumsResponse": {
+        "properties": {
+          "defaultAssetOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrder"
+              }
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "defaultAssetOrder"
+        ],
+        "type": "object"
+      },
+      "AlbumsUpdate": {
+        "properties": {
+          "defaultAssetOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrder"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
       "AllJobStatusResponseDto": {
         "properties": {
           "backgroundTask": {
@@ -8262,6 +8943,9 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "description": {
+            "type": "string"
+          },
           "duplicateId": {
             "nullable": true,
             "type": "string"
@@ -8272,9 +8956,6 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "isArchived": {
-            "type": "boolean"
           },
           "isFavorite": {
             "type": "boolean"
@@ -8289,6 +8970,13 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -8713,13 +9401,7 @@
             "format": "date-time",
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isFavorite": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "livePhotoVideoId": {
@@ -8729,6 +9411,13 @@
           "sidecarData": {
             "format": "binary",
             "type": "string"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -8838,10 +9527,14 @@
             "$ref": "#/components/schemas/ExifResponseDto"
           },
           "fileCreatedAt": {
+            "description": "The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.",
+            "example": "2024-01-15T19:30:00.000Z",
             "format": "date-time",
             "type": "string"
           },
           "fileModifiedAt": {
+            "description": "The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.",
+            "example": "2024-01-16T10:15:00.000Z",
             "format": "date-time",
             "type": "string"
           },
@@ -8874,6 +9567,8 @@
             "type": "string"
           },
           "localDateTime": {
+            "description": "The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.",
+            "example": "2024-01-15T14:30:00.000Z",
             "format": "date-time",
             "type": "string"
           },
@@ -8935,8 +9630,17 @@
             "type": "array"
           },
           "updatedAt": {
+            "description": "The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.",
+            "example": "2024-01-16T12:45:30.000Z",
             "format": "date-time",
             "type": "string"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -8958,7 +9662,8 @@
           "ownerId",
           "thumbhash",
           "type",
-          "updatedAt"
+          "updatedAt",
+          "visibility"
         ],
         "type": "object"
       },
@@ -9009,6 +9714,15 @@
         ],
         "type": "string"
       },
+      "AssetVisibility": {
+        "enum": [
+          "archive",
+          "timeline",
+          "hidden",
+          "locked"
+        ],
+        "type": "string"
+      },
       "AudioCodec": {
         "enum": [
           "mp3",
@@ -9017,6 +9731,31 @@
           "pcm_s16le"
         ],
         "type": "string"
+      },
+      "AuthStatusResponseDto": {
+        "properties": {
+          "expiresAt": {
+            "type": "string"
+          },
+          "isElevated": {
+            "type": "boolean"
+          },
+          "password": {
+            "type": "boolean"
+          },
+          "pinCode": {
+            "type": "boolean"
+          },
+          "pinExpiresAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "isElevated",
+          "password",
+          "pinCode"
+        ],
+        "type": "object"
       },
       "AvatarUpdate": {
         "properties": {
@@ -9091,6 +9830,26 @@
           "icq"
         ],
         "type": "string"
+      },
+      "CastResponse": {
+        "properties": {
+          "gCastEnabled": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gCastEnabled"
+        ],
+        "type": "object"
+      },
+      "CastUpdate": {
+        "properties": {
+          "gCastEnabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "ChangePasswordDto": {
         "properties": {
@@ -9892,6 +10651,9 @@
           "isAdmin": {
             "type": "boolean"
           },
+          "isOnboarded": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -9911,6 +10673,7 @@
         "required": [
           "accessToken",
           "isAdmin",
+          "isOnboarded",
           "name",
           "profileImagePath",
           "shouldChangePassword",
@@ -10130,6 +10893,17 @@
         ],
         "type": "object"
       },
+      "MemoryStatisticsResponseDto": {
+        "properties": {
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total"
+        ],
+        "type": "object"
+      },
       "MemoryType": {
         "enum": [
           "on_this_day"
@@ -10169,6 +10943,13 @@
       },
       "MetadataSearchDto": {
         "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "checksum": {
             "type": "string"
           },
@@ -10204,9 +10985,6 @@
             "format": "uuid",
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -10220,9 +10998,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "lensModel": {
@@ -10324,9 +11099,12 @@
             "format": "date-time",
             "type": "string"
           },
-          "withArchived": {
-            "default": false,
-            "type": "boolean"
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           },
           "withDeleted": {
             "type": "boolean"
@@ -10558,6 +11336,28 @@
         ],
         "type": "object"
       },
+      "OnboardingDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "OnboardingResponseDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
+        ],
+        "type": "object"
+      },
       "PartnerDirection": {
         "enum": [
           "shared-by",
@@ -10686,6 +11486,7 @@
           },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
+            "format": "uuid",
             "type": "string"
           },
           "id": {
@@ -10769,9 +11570,11 @@
           "person.statistics",
           "person.merge",
           "person.reassign",
+          "session.create",
           "session.read",
           "session.update",
           "session.delete",
+          "session.lock",
           "sharedLink.create",
           "sharedLink.read",
           "sharedLink.update",
@@ -10889,6 +11692,7 @@
           },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
+            "format": "uuid",
             "type": "string"
           },
           "isFavorite": {
@@ -10951,6 +11755,49 @@
           "isHidden",
           "name",
           "thumbnailPath"
+        ],
+        "type": "object"
+      },
+      "PinCodeChangeDto": {
+        "properties": {
+          "newPinCode": {
+            "example": "123456",
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "newPinCode"
+        ],
+        "type": "object"
+      },
+      "PinCodeResetDto": {
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PinCodeSetupDto": {
+        "properties": {
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pinCode"
         ],
         "type": "object"
       },
@@ -11022,6 +11869,13 @@
       },
       "RandomSearchDto": {
         "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "city": {
             "nullable": true,
             "type": "string"
@@ -11041,9 +11895,6 @@
           "deviceId": {
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -11057,9 +11908,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "lensModel": {
@@ -11137,9 +11985,12 @@
             "format": "date-time",
             "type": "string"
           },
-          "withArchived": {
-            "default": false,
-            "type": "boolean"
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           },
           "withDeleted": {
             "type": "boolean"
@@ -11351,6 +12202,17 @@
         ],
         "type": "object"
       },
+      "SearchStatisticsResponseDto": {
+        "properties": {
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total"
+        ],
+        "type": "object"
+      },
       "SearchSuggestionType": {
         "enum": [
           "country",
@@ -11431,6 +12293,29 @@
           "licensed",
           "version",
           "versionUrl"
+        ],
+        "type": "object"
+      },
+      "ServerApkLinksDto": {
+        "properties": {
+          "arm64v8a": {
+            "type": "string"
+          },
+          "armeabiv7a": {
+            "type": "string"
+          },
+          "universal": {
+            "type": "string"
+          },
+          "x86_64": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "arm64v8a",
+          "armeabiv7a",
+          "universal",
+          "x86_64"
         ],
         "type": "object"
       },
@@ -11731,6 +12616,60 @@
         ],
         "type": "object"
       },
+      "SessionCreateDto": {
+        "properties": {
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "duration": {
+            "description": "session duration, in seconds",
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "SessionCreateResponseDto": {
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "current",
+          "deviceOS",
+          "deviceType",
+          "id",
+          "token",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "SessionResponseDto": {
         "properties": {
           "createdAt": {
@@ -11743,6 +12682,9 @@
             "type": "string"
           },
           "deviceType": {
+            "type": "string"
+          },
+          "expiresAt": {
             "type": "string"
           },
           "id": {
@@ -11760,6 +12702,18 @@
           "id",
           "updatedAt"
         ],
+        "type": "object"
+      },
+      "SessionUnlockDto": {
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "SharedLinkCreateDto": {
@@ -11974,6 +12928,13 @@
       },
       "SmartSearchDto": {
         "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "city": {
             "nullable": true,
             "type": "string"
@@ -11993,9 +12954,6 @@
           "deviceId": {
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -12009,9 +12967,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
             "type": "boolean"
           },
           "language": {
@@ -12099,9 +13054,12 @@
             "format": "date-time",
             "type": "string"
           },
-          "withArchived": {
-            "default": false,
-            "type": "boolean"
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           },
           "withDeleted": {
             "type": "boolean"
@@ -12171,6 +13129,132 @@
         },
         "type": "object"
       },
+      "StatisticsSearchDto": {
+        "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "isEncoded": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isMotion": {
+            "type": "boolean"
+          },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "lensModel": {
+            "nullable": true,
+            "type": "string"
+          },
+          "libraryId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "make": {
+            "type": "string"
+          },
+          "model": {
+            "nullable": true,
+            "type": "string"
+          },
+          "personIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
+          },
+          "tagIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "takenAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "takenBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
+          },
+          "updatedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
       "SyncAckDeleteDto": {
         "properties": {
           "types": {
@@ -12212,6 +13296,105 @@
         },
         "required": [
           "acks"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumDeleteV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumUserDeleteV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumUserV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "role",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumV1": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isActivityEnabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrder"
+              }
+            ]
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "thumbnailAssetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "description",
+          "id",
+          "isActivityEnabled",
+          "name",
+          "order",
+          "ownerId",
+          "thumbnailAssetId",
+          "updatedAt"
         ],
         "type": "object"
       },
@@ -12385,12 +13568,12 @@
           "isFavorite": {
             "type": "boolean"
           },
-          "isVisible": {
-            "type": "boolean"
-          },
           "localDateTime": {
             "format": "date-time",
             "nullable": true,
+            "type": "string"
+          },
+          "originalFileName": {
             "type": "string"
           },
           "ownerId": {
@@ -12401,13 +13584,18 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "IMAGE",
-              "VIDEO",
-              "AUDIO",
-              "OTHER"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "required": [
@@ -12417,11 +13605,12 @@
           "fileModifiedAt",
           "id",
           "isFavorite",
-          "isVisible",
           "localDateTime",
+          "originalFileName",
           "ownerId",
           "thumbhash",
-          "type"
+          "type",
+          "visibility"
         ],
         "type": "object"
       },
@@ -12436,7 +13625,11 @@
           "AssetExifV1",
           "PartnerAssetV1",
           "PartnerAssetDeleteV1",
-          "PartnerAssetExifV1"
+          "PartnerAssetExifV1",
+          "AlbumV1",
+          "AlbumDeleteV1",
+          "AlbumUserV1",
+          "AlbumUserDeleteV1"
         ],
         "type": "string"
       },
@@ -12481,7 +13674,9 @@
           "AssetsV1",
           "AssetExifsV1",
           "PartnerAssetsV1",
-          "PartnerAssetExifsV1"
+          "PartnerAssetExifsV1",
+          "AlbumsV1",
+          "AlbumUsersV1"
         ],
         "type": "string"
       },
@@ -13565,12 +14760,162 @@
         ],
         "type": "object"
       },
-      "TimeBucketResponseDto": {
+      "TimeBucketAssetResponseDto": {
+        "properties": {
+          "city": {
+            "description": "Array of city names extracted from EXIF GPS data",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "country": {
+            "description": "Array of country names extracted from EXIF GPS data",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "duration": {
+            "description": "Array of video durations in HH:MM:SS format (null for images)",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "fileCreatedAt": {
+            "description": "Array of file creation timestamps in UTC (ISO 8601 format, without timezone)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Array of asset IDs in the time bucket",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isFavorite": {
+            "description": "Array indicating whether each asset is favorited",
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
+          "isImage": {
+            "description": "Array indicating whether each asset is an image (false for videos)",
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
+          "isTrashed": {
+            "description": "Array indicating whether each asset is in the trash",
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
+          "livePhotoVideoId": {
+            "description": "Array of live photo video asset IDs (null for non-live photos)",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "localOffsetHours": {
+            "description": "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "ownerId": {
+            "description": "Array of owner IDs for each asset",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "projectionType": {
+            "description": "Array of projection types for 360° content (e.g., \"EQUIRECTANGULAR\", \"CUBEFACE\", \"CYLINDRICAL\")",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ratio": {
+            "description": "Array of aspect ratios (width/height) for each asset",
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "stack": {
+            "description": "Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets)",
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "nullable": true,
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "thumbhash": {
+            "description": "Array of BlurHash strings for generating asset previews (base64 encoded)",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "visibility": {
+            "description": "Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)",
+            "items": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "city",
+          "country",
+          "duration",
+          "fileCreatedAt",
+          "id",
+          "isFavorite",
+          "isImage",
+          "isTrashed",
+          "livePhotoVideoId",
+          "localOffsetHours",
+          "ownerId",
+          "projectionType",
+          "ratio",
+          "thumbhash",
+          "visibility"
+        ],
+        "type": "object"
+      },
+      "TimeBucketsResponseDto": {
         "properties": {
           "count": {
+            "description": "Number of assets in this time bucket",
+            "example": 42,
             "type": "integer"
           },
           "timeBucket": {
+            "description": "Time bucket identifier in YYYY-MM-DD format representing the start of the time period",
+            "example": "2024-01-01",
             "type": "string"
           }
         },
@@ -13579,13 +14924,6 @@
           "timeBucket"
         ],
         "type": "object"
-      },
-      "TimeBucketSize": {
-        "enum": [
-          "DAY",
-          "MONTH"
-        ],
-        "type": "string"
       },
       "ToneMapping": {
         "enum": [
@@ -13675,9 +15013,6 @@
           "description": {
             "type": "string"
           },
-          "isArchived": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -13696,6 +15031,13 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
           }
         },
         "type": "object"
@@ -13792,6 +15134,9 @@
           "email": {
             "format": "email",
             "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
           },
           "name": {
             "type": "string"
@@ -13943,10 +15288,18 @@
             "format": "email",
             "type": "string"
           },
+          "isAdmin": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
           "password": {
+            "type": "string"
+          },
+          "pinCode": {
+            "example": "123456",
+            "nullable": true,
             "type": "string"
           },
           "quotaSizeInBytes": {
@@ -14002,6 +15355,12 @@
       },
       "UserPreferencesResponseDto": {
         "properties": {
+          "albums": {
+            "$ref": "#/components/schemas/AlbumsResponse"
+          },
+          "cast": {
+            "$ref": "#/components/schemas/CastResponse"
+          },
           "download": {
             "$ref": "#/components/schemas/DownloadResponse"
           },
@@ -14031,6 +15390,8 @@
           }
         },
         "required": [
+          "albums",
+          "cast",
           "download",
           "emailNotifications",
           "folders",
@@ -14045,8 +15406,14 @@
       },
       "UserPreferencesUpdateDto": {
         "properties": {
+          "albums": {
+            "$ref": "#/components/schemas/AlbumsUpdate"
+          },
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "cast": {
+            "$ref": "#/components/schemas/CastUpdate"
           },
           "download": {
             "$ref": "#/components/schemas/DownloadUpdate"
@@ -14205,6 +15572,23 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "VersionCheckStateResponseDto": {
+        "properties": {
+          "checkedAt": {
+            "nullable": true,
+            "type": "string"
+          },
+          "releaseVersion": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "checkedAt",
+          "releaseVersion"
+        ],
         "type": "object"
       },
       "VideoCodec": {

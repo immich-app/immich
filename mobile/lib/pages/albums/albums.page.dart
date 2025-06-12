@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
@@ -229,11 +230,11 @@ class AlbumsPage extends HookConsumerWidget {
                             ),
                             subtitle: sorted[index].ownerId != null
                                 ? Text(
-                                    '${(sorted[index].assetCount == 1 ? 'album_thumbnail_card_item'.tr(
-                                        args: ['${sorted[index].assetCount}'],
-                                      ) : 'album_thumbnail_card_items'.tr(
-                                        args: ['${sorted[index].assetCount}'],
-                                      ))} • ${sorted[index].ownerId != userId ? 'album_thumbnail_shared_by'.tr(args: [sorted[index].ownerName!]) : 'owned'.tr()}',
+                                    '${t('items_count', {
+                                          'count': sorted[index].assetCount,
+                                        })} • ${sorted[index].ownerId != userId ? t('shared_by_user', {
+                                            'user': sorted[index].ownerName!,
+                                          }) : 'owned'.tr()}',
                                     overflow: TextOverflow.ellipsis,
                                     style:
                                         context.textTheme.bodyMedium?.copyWith(
@@ -267,6 +268,7 @@ class AlbumsPage extends HookConsumerWidget {
           ],
         ),
       ),
+      resizeToAvoidBottomInset: false,
     );
   }
 }

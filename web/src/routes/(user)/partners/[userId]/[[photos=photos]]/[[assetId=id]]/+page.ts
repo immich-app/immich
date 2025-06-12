@@ -4,8 +4,8 @@ import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import { getUser } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params }) => {
-  await authenticate();
+export const load = (async ({ params, url }) => {
+  await authenticate(url);
 
   const partner = await getUser({ id: params.userId });
   const asset = await getAssetInfoFromParam(params);

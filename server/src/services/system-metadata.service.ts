@@ -3,6 +3,7 @@ import {
   AdminOnboardingResponseDto,
   AdminOnboardingUpdateDto,
   ReverseGeocodingStateResponseDto,
+  VersionCheckStateResponseDto,
 } from 'src/dtos/system-metadata.dto';
 import {SystemMetadataKey} from 'src/enum';
 import {BaseService} from 'src/services/base.service';
@@ -23,5 +24,10 @@ export class SystemMetadataService extends BaseService {
   async getReverseGeocodingState(): Promise<ReverseGeocodingStateResponseDto> {
     const value = await this.systemMetadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
     return {lastUpdate: null, lastImportFileName: null, ...value};
+  }
+
+  async getVersionCheckState(): Promise<VersionCheckStateResponseDto> {
+    const value = await this.systemMetadataRepository.get(SystemMetadataKey.VERSION_CHECK_STATE);
+    return { checkedAt: null, releaseVersion: null, ...value };
   }
 }

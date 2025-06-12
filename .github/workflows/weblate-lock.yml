@@ -15,11 +15,11 @@ jobs:
       should_run: ${{ steps.found_paths.outputs.i18n == 'true' && github.head_ref != 'chore/translations'}}
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - id: found_paths
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         with:
           filters: |
             i18n:
@@ -38,7 +38,7 @@ jobs:
             exit 1
           fi
       - name: Find Pull Request
-        uses: juliangruber/find-pull-request-action@48b6133aa6c826f267ebd33aa2d29470f9d9e7d0 # v1
+        uses: juliangruber/find-pull-request-action@48b6133aa6c826f267ebd33aa2d29470f9d9e7d0 # v1.9.0
         id: find-pr
         with:
           branch: chore/translations
@@ -52,10 +52,6 @@ jobs:
     permissions: {}
     if: always()
     steps:
-      - name: Any jobs failed?
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
-      - name: All jobs passed or skipped
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        # zizmor: ignore[template-injection]
-        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
+      - uses: immich-app/devtools/actions/success-check@6b81b1572e466f7f48ba3c823159ce3f4a4d66a6 # success-check-action-0.0.3
+        with:
+          needs: ${{ toJSON(needs) }}

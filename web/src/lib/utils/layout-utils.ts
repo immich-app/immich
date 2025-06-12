@@ -1,7 +1,10 @@
-import { getAssetRatio } from '$lib/utils/asset-utils';
 // import { TUNABLES } from '$lib/utils/tunables';
 // note: it's important that this is not imported in more than one file due to https://github.com/sveltejs/kit/issues/7805
 // import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
+
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { getAssetRatio } from '$lib/utils/asset-utils';
+import { isTimelineAsset } from '$lib/utils/timeline-util';
 import type { AssetResponseDto } from '@immich/sdk';
 import createJustifiedLayout from 'justified-layout';
 
@@ -26,7 +29,7 @@ export type CommonLayoutOptions = {
 };
 
 export function getJustifiedLayoutFromAssets(
-  assets: AssetResponseDto[],
+  assets: (TimelineAsset | AssetResponseDto)[],
   options: CommonLayoutOptions,
 ): CommonJustifiedLayout {
   // if (useWasm) {
@@ -87,7 +90,7 @@ class Adapter {
   }
 }
 
-export function justifiedLayout(assets: AssetResponseDto[], options: CommonLayoutOptions) {
+export function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], options: CommonLayoutOptions) {
   const adapter = {
     targetRowHeight: options.rowHeight,
     containerWidth: options.rowWidth,
@@ -96,7 +99,7 @@ export function justifiedLayout(assets: AssetResponseDto[], options: CommonLayou
   };
 
   const result = createJustifiedLayout(
-    assets.map((g) => getAssetRatio(g)),
+    assets.map((asset) => (isTimelineAsset(asset) ? asset.ratio : getAssetRatio(asset))),
     adapter,
   );
   return new Adapter(result);

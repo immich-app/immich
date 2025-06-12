@@ -28,7 +28,6 @@ export class SystemMetadataRepository {
     return metadata.value as SystemMetadata[T];
   }
 
-  @GenerateSql({ params: ['metadata_key', { foo: 'bar' }] })
   async set<T extends keyof SystemMetadata>(key: T, value: SystemMetadata[T]): Promise<void> {
     await this.db
       .insertInto('system_metadata')

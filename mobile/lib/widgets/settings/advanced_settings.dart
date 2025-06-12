@@ -10,7 +10,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custome_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
@@ -41,7 +41,7 @@ class AdvancedSettings extends HookConsumerWidget {
     useValueChanged(
       levelId.value,
       (_, __) =>
-          LogService.I.setlogLevel(Level.LEVELS[levelId.value].toLogLevel()),
+          LogService.I.setLogLevel(Level.LEVELS[levelId.value].toLogLevel()),
     );
 
     Future<bool> checkAndroidVersion() async {
@@ -85,7 +85,8 @@ class AdvancedSettings extends HookConsumerWidget {
         },
       ),
       SettingsSliderListTile(
-        text: "advanced_settings_log_level_title".tr(args: [logLevel]),
+        text: "advanced_settings_log_level_title"
+            .tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,
         maxValue: 8,
         minValue: 1,
@@ -103,7 +104,7 @@ class AdvancedSettings extends HookConsumerWidget {
         valueNotifier: allowSelfSignedSSLCert,
         title: "advanced_settings_self_signed_ssl_title".tr(),
         subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
-        onChanged: (_) => HttpOverrides.global = HttpSSLCertOverride(),
+        onChanged: HttpSSLOptions.applyFromSettings,
       ),
       const CustomeProxyHeaderSettings(),
       SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),

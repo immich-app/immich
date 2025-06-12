@@ -25,11 +25,11 @@ When you're all done, you should have the following:
 - `./docker/immich-app/postgres`
 - `./docker/immich-app/library`
 
-Download [`docker-compose.yml`](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) and [`example.env`](https://github.com/immich-app/immich/releases/latest/download/example.env) to your computer. Upload the files to the `./docker/immich-app` directory.
+Download [`docker-compose.yml`](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) and [`example.env`](https://github.com/immich-app/immich/releases/latest/download/example.env) to your computer. Upload the files to the `./docker/immich-app` directory, and rename `example.env` to `.env`.
 
 ## Step 2 - Populate the .env file with custom values
 
-Follow [Step 2 in Docker Compose](./docker-compose#step-2---populate-the-env-file-with-custom-values) for instructions on customizing the `.env` file, and then return back to this guide to continue.
+Follow [Step 2 in Docker Compose](/docs/install/docker-compose#step-2---populate-the-env-file-with-custom-values) for instructions on customizing the `.env` file, and then return back to this guide to continue.
 
 ## Step 3 - Create a new project in Container Manager
 

@@ -15,8 +15,10 @@ class UserAdminUpdateDto {
   UserAdminUpdateDto({
     this.avatarColor,
     this.email,
+    this.isAdmin,
     this.name,
     this.password,
+    this.pinCode,
     this.quotaSizeInBytes,
     this.shouldChangePassword,
     this.storageLabel,
@@ -38,6 +40,14 @@ class UserAdminUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  bool? isAdmin;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   String? name;
 
   ///
@@ -47,6 +57,8 @@ class UserAdminUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? password;
+
+  String? pinCode;
 
   /// Minimum value: 0
   int? quotaSizeInBytes;
@@ -65,8 +77,10 @@ class UserAdminUpdateDto {
   bool operator ==(Object other) => identical(this, other) || other is UserAdminUpdateDto &&
     other.avatarColor == avatarColor &&
     other.email == email &&
+    other.isAdmin == isAdmin &&
     other.name == name &&
     other.password == password &&
+    other.pinCode == pinCode &&
     other.quotaSizeInBytes == quotaSizeInBytes &&
     other.shouldChangePassword == shouldChangePassword &&
     other.storageLabel == storageLabel;
@@ -76,14 +90,16 @@ class UserAdminUpdateDto {
     // ignore: unnecessary_parenthesis
     (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
+    (isAdmin == null ? 0 : isAdmin!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
+    (pinCode == null ? 0 : pinCode!.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UserAdminUpdateDto[avatarColor=$avatarColor, email=$email, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UserAdminUpdateDto[avatarColor=$avatarColor, email=$email, isAdmin=$isAdmin, name=$name, password=$password, pinCode=$pinCode, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -97,6 +113,11 @@ class UserAdminUpdateDto {
     } else {
     //  json[r'email'] = null;
     }
+    if (this.isAdmin != null) {
+      json[r'isAdmin'] = this.isAdmin;
+    } else {
+    //  json[r'isAdmin'] = null;
+    }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -106,6 +127,11 @@ class UserAdminUpdateDto {
       json[r'password'] = this.password;
     } else {
     //  json[r'password'] = null;
+    }
+    if (this.pinCode != null) {
+      json[r'pinCode'] = this.pinCode;
+    } else {
+    //  json[r'pinCode'] = null;
     }
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
@@ -136,8 +162,10 @@ class UserAdminUpdateDto {
       return UserAdminUpdateDto(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
+        isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
+        pinCode: mapValueOfType<String>(json, r'pinCode'),
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),

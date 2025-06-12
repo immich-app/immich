@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "1.132.3",
+  "version": "1.134.0",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -25,21 +25,21 @@
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@playwright/test": "^1.44.1",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^22.14.1",
-    "@types/oidc-provider": "^8.5.1",
-    "@types/pg": "^8.11.0",
+    "@types/node": "^22.15.29",
+    "@types/oidc-provider": "^9.0.0",
+    "@types/pg": "^8.15.1",
     "@types/pngjs": "^6.0.4",
     "@types/supertest": "^6.0.2",
     "@vitest/coverage-v8": "^3.0.0",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-unicorn": "^57.0.0",
+    "eslint-plugin-unicorn": "^59.0.0",
     "exiftool-vendored": "^28.3.1",
     "globals": "^16.0.0",
     "jose": "^5.6.3",
     "luxon": "^3.4.4",
-    "oidc-provider": "^8.5.1",
+    "oidc-provider": "^9.0.0",
     "pg": "^8.11.3",
     "pngjs": "^7.0.0",
     "prettier": "^3.2.5",
@@ -52,6 +52,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.14.0"
+    "node": "22.16.0"
   }
 }

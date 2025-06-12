@@ -5,8 +5,8 @@ import { Place } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AssetOrder, AssetType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
+import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true, nullable: true })
@@ -23,13 +23,6 @@ class BaseSearchDto {
   type?: AssetType;
 
   @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  @ApiProperty({ default: false })
-  withArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
   isEncoded?: boolean;
 
   @ValidateBoolean({ optional: true })
@@ -41,14 +34,8 @@ class BaseSearchDto {
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @ValidateBoolean({ optional: true })
-  isVisible?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  withDeleted?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  withExif?: boolean;
+  @ValidateAssetVisibility({ optional: true })
+  visibility?: AssetVisibility;
 
   @ValidateDate({ optional: true })
   createdBefore?: Date;
@@ -99,13 +86,6 @@ class BaseSearchDto {
   @Optional({ nullable: true, emptyToNull: true })
   lensModel?: string | null;
 
-  @IsInt()
-  @Min(1)
-  @Max(1000)
-  @Type(() => Number)
-  @Optional()
-  size?: number;
-
   @ValidateBoolean({ optional: true })
   isNotInAlbum?: boolean;
 
@@ -115,6 +95,9 @@ class BaseSearchDto {
   @ValidateUUID({ each: true, optional: true })
   tagIds?: string[];
 
+  @ValidateUUID({ each: true, optional: true })
+  albumIds?: string[];
+
   @Optional()
   @IsInt()
   @Max(5)
@@ -122,7 +105,22 @@ class BaseSearchDto {
   rating?: number;
 }
 
-export class RandomSearchDto extends BaseSearchDto {
+class BaseSearchWithResultsDto extends BaseSearchDto {
+  @ValidateBoolean({ optional: true })
+  withDeleted?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  withExif?: boolean;
+
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  @Type(() => Number)
+  @Optional()
+  size?: number;
+}
+
+export class RandomSearchDto extends BaseSearchWithResultsDto {
   @ValidateBoolean({ optional: true })
   withStacked?: boolean;
 
@@ -186,7 +184,14 @@ export class MetadataSearchDto extends RandomSearchDto {
   page?: number;
 }
 
-export class SmartSearchDto extends BaseSearchDto {
+export class StatisticsSearchDto extends BaseSearchDto {
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  description?: string;
+}
+
+export class SmartSearchDto extends BaseSearchWithResultsDto {
   @IsString()
   @IsNotEmpty()
   query!: string;
@@ -304,6 +309,11 @@ class SearchAssetResponseDto {
 export class SearchResponseDto {
   albums!: SearchAlbumResponseDto;
   assets!: SearchAssetResponseDto;
+}
+
+export class SearchStatisticsResponseDto {
+  @ApiProperty({ type: 'integer' })
+  total!: number;
 }
 
 class SearchExploreItem {

@@ -1,31 +1,36 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { TreeNode } from '$lib/utils/tree-utils';
+  import { IconButton } from '@immich/ui';
   import { mdiArrowUpLeft, mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    pathSegments?: string[];
+    node: TreeNode;
     getLink: (path: string) => string;
     title: string;
     icon: string;
   }
 
-  let { pathSegments = [], getLink, title, icon }: Props = $props();
+  const { node, getLink, title, icon }: Props = $props();
 
-  let isRoot = $derived(pathSegments.length === 0);
+  const rootLink = getLink('');
+  const isRoot = $derived(node.parent === null);
+  const parentLink = $derived(getLink(node.parent ? node.parent.path : ''));
+  const parents = $derived(node.parents);
 </script>
 
 <nav class="flex items-center py-2">
-  {#if !isRoot}
+  {#if parentLink}
     <div>
-      <CircleIconButton
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
         icon={mdiArrowUpLeft}
-        title={$t('to_parent')}
-        href={getLink(pathSegments.slice(0, -1).join('/'))}
+        aria-label={$t('to_parent')}
+        href={parentLink}
         class="me-2"
-        padding="2"
-        onclick={() => {}}
       />
     </div>
   {/if}
@@ -35,34 +40,34 @@
   >
     <ol class="flex gap-2 items-center">
       <li>
-        <CircleIconButton
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
           {icon}
-          href={getLink('')}
-          {title}
-          size="1.25em"
-          padding="2"
+          href={rootLink}
+          aria-label={title}
+          size="medium"
           aria-current={isRoot ? 'page' : undefined}
-          onclick={() => {}}
         />
       </li>
-      {#each pathSegments as segment, index (index)}
-        {@const isLastSegment = index === pathSegments.length - 1}
+      {#each parents as parent (parent)}
         <li
           class="flex gap-2 items-center font-mono text-sm text-nowrap text-immich-primary dark:text-immich-dark-primary"
         >
           <Icon path={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size={16} ariaHidden />
-          {#if isLastSegment}
-            <p class="cursor-default whitespace-pre-wrap">{segment}</p>
-          {:else}
-            <a
-              class="underline hover:font-semibold whitespace-pre-wrap"
-              href={getLink(pathSegments.slice(0, index + 1).join('/'))}
-            >
-              {segment}
-            </a>
-          {/if}
+          <a class="underline hover:font-semibold whitespace-pre-wrap" href={getLink(parent.path)}>
+            {parent.value}
+          </a>
         </li>
       {/each}
+
+      <li
+        class="flex gap-2 items-center font-mono text-sm text-nowrap text-immich-primary dark:text-immich-dark-primary"
+      >
+        <Icon path={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size={16} ariaHidden />
+        <p class="cursor-default whitespace-pre-wrap">{node.value}</p>
+      </li>
     </ol>
   </div>
 </nav>

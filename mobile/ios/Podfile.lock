@@ -1,6 +1,9 @@
 PODS:
   - background_downloader (0.0.1):
     - Flutter
+  - bonsoir_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - connectivity_plus (0.0.1):
     - Flutter
   - device_info_plus (0.0.1):
@@ -44,6 +47,8 @@ PODS:
     - Flutter
   - flutter_native_splash (2.4.3):
     - Flutter
+  - flutter_secure_storage (6.0.0):
+    - Flutter
   - flutter_udid (0.0.1):
     - Flutter
     - SAMKeychain
@@ -59,10 +64,13 @@ PODS:
     - Flutter
   - isar_flutter_libs (1.0.0):
     - Flutter
-  - MapLibre (6.5.0)
+  - local_auth_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - MapLibre (6.14.0)
   - maplibre_gl (0.0.1):
     - Flutter
-    - MapLibre (= 6.5.0)
+    - MapLibre (= 6.14.0)
   - native_video_player (1.0.0):
     - Flutter
   - network_info_plus (0.0.1):
@@ -124,12 +132,14 @@ PODS:
 
 DEPENDENCIES:
   - background_downloader (from `.symlinks/plugins/background_downloader/ios`)
+  - bonsoir_darwin (from `.symlinks/plugins/bonsoir_darwin/darwin`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
+  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - flutter_udid (from `.symlinks/plugins/flutter_udid/ios`)
   - flutter_web_auth_2 (from `.symlinks/plugins/flutter_web_auth_2/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
@@ -137,6 +147,7 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - isar_flutter_libs (from `.symlinks/plugins/isar_flutter_libs/ios`)
+  - local_auth_darwin (from `.symlinks/plugins/local_auth_darwin/darwin`)
   - maplibre_gl (from `.symlinks/plugins/maplibre_gl/ios`)
   - native_video_player (from `.symlinks/plugins/native_video_player/ios`)
   - network_info_plus (from `.symlinks/plugins/network_info_plus/ios`)
@@ -166,6 +177,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   background_downloader:
     :path: ".symlinks/plugins/background_downloader/ios"
+  bonsoir_darwin:
+    :path: ".symlinks/plugins/bonsoir_darwin/darwin"
   connectivity_plus:
     :path: ".symlinks/plugins/connectivity_plus/ios"
   device_info_plus:
@@ -178,6 +191,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
   flutter_native_splash:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
+  flutter_secure_storage:
+    :path: ".symlinks/plugins/flutter_secure_storage/ios"
   flutter_udid:
     :path: ".symlinks/plugins/flutter_udid/ios"
   flutter_web_auth_2:
@@ -192,6 +207,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
   isar_flutter_libs:
     :path: ".symlinks/plugins/isar_flutter_libs/ios"
+  local_auth_darwin:
+    :path: ".symlinks/plugins/local_auth_darwin/darwin"
   maplibre_gl:
     :path: ".symlinks/plugins/maplibre_gl/ios"
   native_video_player:
@@ -225,6 +242,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   background_downloader: 50e91d979067b82081aba359d7d916b3ba5fadad
+  bonsoir_darwin: 29c7ccf356646118844721f36e1de4b61f6cbd0e
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
@@ -233,6 +251,7 @@ SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_local_notifications: ad39620c743ea4c15127860f4b5641649a988100
   flutter_native_splash: c32d145d68aeda5502d5f543ee38c192065986cf
+  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   flutter_udid: f7c3884e6ec2951efe4f9de082257fc77c4d15e9
   flutter_web_auth_2: 5c8d9dcd7848b5a9efb086d24e7a9adcae979c80
   fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
@@ -240,8 +259,9 @@ SPEC CHECKSUMS:
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   isar_flutter_libs: bc909e72c3d756c2759f14c8776c13b5b0556e26
-  MapLibre: 0ebfa9329d313cec8bf0a5ba5a336a1dc903785e
-  maplibre_gl: eab61cca6e1cfa9187249bacd3f08b51e8cd8ae9
+  local_auth_darwin: 553ce4f9b16d3fdfeafce9cf042e7c9f77c1c391
+  MapLibre: 69e572367f4ef6287e18246cfafc39c80cdcabcd
+  maplibre_gl: 3c924e44725147b03dda33430ad216005b40555f
   native_video_player: b65c58951ede2f93d103a25366bdebca95081265
   network_info_plus: cf61925ab5205dce05a4f0895989afdb6aade5fc
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499

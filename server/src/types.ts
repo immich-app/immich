@@ -1,7 +1,9 @@
 import { SystemConfig } from 'src/config';
+import { VECTOR_EXTENSIONS } from 'src/constants';
 import {
+  AssetOrder,
   AssetType,
-  DatabaseExtension,
+  DatabaseSslMode,
   ExifOrientation,
   ImageFormat,
   JobName,
@@ -92,7 +94,7 @@ export interface VideoStreamInfo {
 export interface AudioStreamInfo {
   index: number;
   codecName?: string;
-  frameCount: number;
+  bitrate: number;
 }
 
 export interface VideoFormat {
@@ -364,13 +366,9 @@ export type JobItem =
   | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
 
   // Version check
-  | { name: JobName.VERSION_CHECK; data: IBaseJob }
+  | { name: JobName.VERSION_CHECK; data: IBaseJob };
 
-  // Memories
-  | { name: JobName.MEMORIES_CLEANUP; data?: IBaseJob }
-  | { name: JobName.MEMORIES_CREATE; data?: IBaseJob };
-
-export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
+export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
 export type DatabaseConnectionURL = {
   connectionType: 'url';
@@ -384,11 +382,13 @@ export type DatabaseConnectionParts = {
   username: string;
   password: string;
   database: string;
+  ssl?: DatabaseSslMode;
 };
 
 export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;
 
 export interface ExtensionVersion {
+  name: VectorExtension;
   availableVersion: string | null;
   installedVersion: string | null;
 }
@@ -472,6 +472,9 @@ export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
 };
 
 export interface UserPreferences {
+  albums: {
+    defaultAssetOrder: AssetOrder;
+  };
   folders: {
     enabled: boolean;
     sidebarWeb: boolean;
@@ -507,9 +510,13 @@ export interface UserPreferences {
     showSupportBadge: boolean;
     hideBuyButtonUntil: string;
   };
+  cast: {
+    gCastEnabled: boolean;
+  };
 }
 
 export interface UserMetadata extends Record<UserMetadataKey, Record<string, any>> {
   [UserMetadataKey.PREFERENCES]: DeepPartial<UserPreferences>;
   [UserMetadataKey.LICENSE]: { licenseKey: string; activationKey: string; activatedAt: string };
+  [UserMetadataKey.ONBOARDING]: { isOnboarded: boolean };
 }

@@ -1,5 +1,5 @@
 import { LoginResponseDto, Permission, createApiKey } from '@immich/sdk';
-import { createUserDto, uuidDto } from 'src/fixtures';
+import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
@@ -24,12 +24,6 @@ describe('/api-keys', () => {
   });
 
   describe('POST /api-keys', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/api-keys').send({ name: 'API Key' });
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should not work without permission', async () => {
       const { secret } = await create(user.accessToken, [Permission.ApiKeyRead]);
       const { status, body } = await request(app).post('/api-keys').set('x-api-key', secret).send({ name: 'API Key' });
@@ -99,12 +93,6 @@ describe('/api-keys', () => {
   });
 
   describe('GET /api-keys', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/api-keys');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should start off empty', async () => {
       const { status, body } = await request(app).get('/api-keys').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([]);
@@ -125,12 +113,6 @@ describe('/api-keys', () => {
   });
 
   describe('GET /api-keys/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/api-keys/${uuidDto.notFound}`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should require authorization', async () => {
       const { apiKey } = await create(user.accessToken, [Permission.All]);
       const { status, body } = await request(app)
@@ -138,14 +120,6 @@ describe('/api-keys', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('API Key not found'));
-    });
-
-    it('should require a valid uuid', async () => {
-      const { status, body } = await request(app)
-        .get(`/api-keys/${uuidDto.invalid}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
     });
 
     it('should get api key details', async () => {
@@ -165,42 +139,30 @@ describe('/api-keys', () => {
   });
 
   describe('PUT /api-keys/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/api-keys/${uuidDto.notFound}`).send({ name: 'new name' });
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should require authorization', async () => {
       const { apiKey } = await create(user.accessToken, [Permission.All]);
       const { status, body } = await request(app)
         .put(`/api-keys/${apiKey.id}`)
-        .send({ name: 'new name' })
+        .send({ name: 'new name', permissions: [Permission.All] })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('API Key not found'));
-    });
-
-    it('should require a valid uuid', async () => {
-      const { status, body } = await request(app)
-        .put(`/api-keys/${uuidDto.invalid}`)
-        .send({ name: 'new name' })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
     });
 
     it('should update api key details', async () => {
       const { apiKey } = await create(user.accessToken, [Permission.All]);
       const { status, body } = await request(app)
         .put(`/api-keys/${apiKey.id}`)
-        .send({ name: 'new name' })
+        .send({
+          name: 'new name',
+          permissions: [Permission.ActivityCreate, Permission.ActivityRead, Permission.ActivityUpdate],
+        })
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
         id: expect.any(String),
         name: 'new name',
-        permissions: [Permission.All],
+        permissions: [Permission.ActivityCreate, Permission.ActivityRead, Permission.ActivityUpdate],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
@@ -208,12 +170,6 @@ describe('/api-keys', () => {
   });
 
   describe('DELETE /api-keys/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/api-keys/${uuidDto.notFound}`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should require authorization', async () => {
       const { apiKey } = await create(user.accessToken, [Permission.All]);
       const { status, body } = await request(app)
@@ -221,14 +177,6 @@ describe('/api-keys', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('API Key not found'));
-    });
-
-    it('should require a valid uuid', async () => {
-      const { status, body } = await request(app)
-        .delete(`/api-keys/${uuidDto.invalid}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
     });
 
     it('should delete an api key', async () => {

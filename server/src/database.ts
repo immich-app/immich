@@ -5,6 +5,7 @@ import {
   AlbumUserRole,
   AssetFileType,
   AssetType,
+  AssetVisibility,
   MemoryType,
   Permission,
   SharedLinkType,
@@ -108,7 +109,7 @@ export type Asset = {
   fileCreatedAt: Date;
   fileModifiedAt: Date;
   isExternal: boolean;
-  isVisible: boolean;
+  visibility: AssetVisibility;
   libraryId: string | null;
   livePhotoVideoId: string | null;
   localDateTime: Date;
@@ -199,6 +200,7 @@ export type Album = Selectable<Albums> & {
 
 export type AuthSession = {
   id: string;
+  hasElevatedPermission: boolean;
 };
 
 export type Partner = {
@@ -230,8 +232,10 @@ export type Session = {
   id: string;
   createdAt: Date;
   updatedAt: Date;
+  expiresAt: Date | null;
   deviceOS: string;
   deviceType: string;
+  pinExpiresAt: Date | null;
 };
 
 export type Exif = Omit<Selectable<DatabaseExif>, 'updatedAt' | 'updateId'>;
@@ -285,7 +289,7 @@ export const columns = {
     'assets.fileCreatedAt',
     'assets.fileModifiedAt',
     'assets.isExternal',
-    'assets.isVisible',
+    'assets.visibility',
     'assets.libraryId',
     'assets.livePhotoVideoId',
     'assets.localDateTime',
@@ -305,7 +309,7 @@ export const columns = {
     'users.quotaSizeInBytes',
   ],
   authApiKey: ['api_keys.id', 'api_keys.permissions'],
-  authSession: ['sessions.id', 'sessions.updatedAt'],
+  authSession: ['sessions.id', 'sessions.updatedAt', 'sessions.pinExpiresAt'],
   authSharedLink: [
     'shared_links.id',
     'shared_links.userId',
@@ -337,6 +341,7 @@ export const columns = {
   syncAsset: [
     'id',
     'ownerId',
+    'originalFileName',
     'thumbhash',
     'checksum',
     'fileCreatedAt',
@@ -345,7 +350,7 @@ export const columns = {
     'type',
     'deletedAt',
     'isFavorite',
-    'isVisible',
+    'visibility',
     'updateId',
   ],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],

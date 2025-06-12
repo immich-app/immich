@@ -5,12 +5,13 @@ import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetType } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import {
   anyUuid,
   asUuid,
   toJson,
+  withDefaultVisibility,
   withExif,
   withExifInner,
   withFaces,
@@ -28,16 +29,7 @@ export class AssetJobRepository {
       .selectFrom('assets')
       .where('assets.id', '=', asUuid(id))
       .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
-      .select((eb) => [
-        'id',
-        'type',
-        'ownerId',
-        'duplicateId',
-        'stackId',
-        'isVisible',
-        'smart_search.embedding',
-        withFiles(eb, AssetFileType.PREVIEW),
-      ])
+      .select(['id', 'type', 'ownerId', 'duplicateId', 'stackId', 'visibility', 'smart_search.embedding'])
       .limit(1)
       .executeTakeFirst();
   }
@@ -70,7 +62,7 @@ export class AssetJobRepository {
       .select(['assets.id', 'assets.thumbhash'])
       .select(withFiles)
       .where('assets.deletedAt', 'is', null)
-      .where('assets.isVisible', '=', true)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .$if(!force, (qb) =>
         qb
           // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
@@ -102,7 +94,7 @@ export class AssetJobRepository {
       .selectFrom('assets')
       .select([
         'assets.id',
-        'assets.isVisible',
+        'assets.visibility',
         'assets.originalFileName',
         'assets.originalPath',
         'assets.ownerId',
@@ -138,7 +130,7 @@ export class AssetJobRepository {
   private assetsWithPreviews() {
     return this.db
       .selectFrom('assets')
-      .where('assets.isVisible', '=', true)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .where('assets.deletedAt', 'is', null)
       .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
       .where('job_status.previewAt', 'is not', null);
@@ -146,10 +138,17 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [], stream: true })
   streamForSearchDuplicates(force?: boolean) {
-    return this.assetsWithPreviews()
-      .where((eb) => eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))))
-      .$if(!force, (qb) => qb.where('job_status.duplicatesDetectedAt', 'is', null))
+    return this.db
+      .selectFrom('assets')
       .select(['assets.id'])
+      .where('assets.deletedAt', 'is', null)
+      .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
+      .$call(withDefaultVisibility)
+      .$if(!force, (qb) =>
+        qb
+          .innerJoin('asset_job_status as job_status', 'job_status.assetId', 'assets.id')
+          .where('job_status.duplicatesDetectedAt', 'is', null),
+      )
       .stream();
   }
 
@@ -169,7 +168,7 @@ export class AssetJobRepository {
   getForClipEncoding(id: string) {
     return this.db
       .selectFrom('assets')
-      .select(['assets.id', 'assets.isVisible'])
+      .select(['assets.id', 'assets.visibility'])
       .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
       .where('assets.id', '=', id)
       .executeTakeFirst();
@@ -179,7 +178,7 @@ export class AssetJobRepository {
   getForDetectFacesJob(id: string) {
     return this.db
       .selectFrom('assets')
-      .select(['assets.id', 'assets.isVisible'])
+      .select(['assets.id', 'assets.visibility'])
       .$call(withExifInner)
       .select((eb) => withFaces(eb, true))
       .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
@@ -209,7 +208,7 @@ export class AssetJobRepository {
       .selectFrom('assets')
       .select([
         'assets.id',
-        'assets.isVisible',
+        'assets.visibility',
         'assets.libraryId',
         'assets.ownerId',
         'assets.livePhotoVideoId',
@@ -228,7 +227,7 @@ export class AssetJobRepository {
             .select(['asset_stack.id', 'asset_stack.primaryAssetId'])
             .select((eb) => eb.fn<Asset[]>('array_agg', [eb.table('stacked')]).as('assets'))
             .where('stacked.deletedAt', 'is not', null)
-            .where('stacked.isArchived', '=', false)
+            .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
             .whereRef('stacked.stackId', '=', 'asset_stack.id')
             .groupBy('asset_stack.id')
             .as('stacked_assets'),
@@ -248,7 +247,7 @@ export class AssetJobRepository {
       .$if(!force, (qb) =>
         qb
           .where((eb) => eb.or([eb('assets.encodedVideoPath', 'is', null), eb('assets.encodedVideoPath', '=', '')]))
-          .where('assets.isVisible', '=', true),
+          .where('assets.visibility', '!=', AssetVisibility.HIDDEN),
       )
       .where('assets.deletedAt', 'is', null)
       .stream();
@@ -275,7 +274,7 @@ export class AssetJobRepository {
           .where((eb) =>
             eb.or([eb('asset_job_status.metadataExtractedAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
           )
-          .where('assets.isVisible', '=', true),
+          .where('assets.visibility', '!=', AssetVisibility.HIDDEN),
       )
       .where('assets.deletedAt', 'is', null)
       .stream();
@@ -331,7 +330,7 @@ export class AssetJobRepository {
       .$if(!force, (qb) =>
         qb.where((eb) => eb.or([eb('assets.sidecarPath', '=', ''), eb('assets.sidecarPath', 'is', null)])),
       )
-      .where('assets.isVisible', '=', true)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .stream();
   }
 

@@ -26,7 +26,7 @@
   let oauthLoading = $state(true);
 
   const onSuccess = async (user: LoginResponseDto) => {
-    await goto(AppRoute.PHOTOS, { invalidateAll: true });
+    await goto(data.continueUrl, { invalidateAll: true });
     eventManager.emit('auth.login', user);
   };
 
@@ -42,6 +42,12 @@
     if (oauth.isCallback(globalThis.location)) {
       try {
         const user = await oauth.login(globalThis.location);
+
+        if (!user.isOnboarded) {
+          await onOnboarding();
+          return;
+        }
+
         await onSuccess(user);
         return;
       } catch (error) {
@@ -52,7 +58,10 @@
     }
 
     try {
-      if ($featureFlags.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(globalThis.location)) {
+      if (
+        ($featureFlags.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(globalThis.location)) ||
+        oauth.isAutoLaunchEnabled(globalThis.location)
+      ) {
         await goto(`${AppRoute.AUTH_LOGIN}?autoLaunch=0`, { replaceState: true });
         await oauth.authorize(globalThis.location);
         return;
@@ -75,10 +84,19 @@
         return;
       }
 
+      // change the user password before we onboard them
       if (!user.isAdmin && user.shouldChangePassword) {
         await onFirstLogin();
         return;
       }
+
+      // We want to onboard after the first login since their password will change
+      // and handleLogin will be called again (relogin). We then do onboarding on that next call.
+      if (!user.isOnboarded) {
+        await onOnboarding();
+        return;
+      }
+
       await onSuccess(user);
       return;
     } catch (error) {

@@ -6,17 +6,19 @@ import {
   ParseUUIDPipe,
   applyDecorators,
 } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
   IsDate,
+  IsEnum,
   IsHexColor,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   Validate,
   ValidateBy,
   ValidateIf,
@@ -29,6 +31,7 @@ import {
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
+import { AssetVisibility } from 'src/enum';
 import { isIP, isIPRange } from 'validator';
 
 @Injectable()
@@ -68,7 +71,29 @@ export class UUIDParamDto {
   id!: string;
 }
 
-export interface OptionalOptions extends ValidationOptions {
+type PinCodeOptions = { optional?: boolean } & OptionalOptions;
+export const PinCode = (options?: PinCodeOptions & ApiPropertyOptions) => {
+  const { optional, nullable, emptyToNull, ...apiPropertyOptions } = {
+    optional: false,
+    nullable: false,
+    emptyToNull: false,
+    ...options,
+  };
+  const decorators = [
+    IsString(),
+    IsNotEmpty(),
+    Matches(/^\d{6}$/, { message: ({ property }) => `${property} must be a 6-digit numeric string` }),
+    ApiProperty({ example: '123456', ...apiPropertyOptions }),
+  ];
+
+  if (optional) {
+    decorators.push(Optional({ nullable, emptyToNull }));
+  }
+
+  return applyDecorators(...decorators);
+};
+
+export interface OptionalOptions {
   nullable?: boolean;
   /** convert empty strings to null */
   emptyToNull?: boolean;
@@ -108,22 +133,32 @@ export const ValidateHexColor = () => {
 };
 
 type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
-export const ValidateUUID = (options?: UUIDOptions) => {
-  const { optional, each, nullable } = { optional: false, each: false, nullable: false, ...options };
+export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
+  const { optional, each, nullable, ...apiPropertyOptions } = {
+    optional: false,
+    each: false,
+    nullable: false,
+    ...options,
+  };
   return applyDecorators(
     IsUUID('4', { each }),
-    ApiProperty({ format: 'uuid' }),
+    ApiProperty({ format: 'uuid', ...apiPropertyOptions }),
     optional ? Optional({ nullable }) : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
 };
 
 type DateOptions = { optional?: boolean; nullable?: boolean; format?: 'date' | 'date-time' };
-export const ValidateDate = (options?: DateOptions) => {
-  const { optional, nullable, format } = { optional: false, nullable: false, format: 'date-time', ...options };
+export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
+  const { optional, nullable, format, ...apiPropertyOptions } = {
+    optional: false,
+    nullable: false,
+    format: 'date-time',
+    ...options,
+  };
 
   const decorators = [
-    ApiProperty({ format }),
+    ApiProperty({ format, ...apiPropertyOptions }),
     IsDate(),
     optional ? Optional({ nullable: true }) : IsNotEmpty(),
     Transform(({ key, value }) => {
@@ -146,11 +181,25 @@ export const ValidateDate = (options?: DateOptions) => {
   return applyDecorators(...decorators);
 };
 
-type BooleanOptions = { optional?: boolean };
-export const ValidateBoolean = (options?: BooleanOptions) => {
-  const { optional } = { optional: false, ...options };
+type AssetVisibilityOptions = { optional?: boolean };
+export const ValidateAssetVisibility = (options?: AssetVisibilityOptions & ApiPropertyOptions) => {
+  const { optional, ...apiPropertyOptions } = { optional: false, ...options };
   const decorators = [
-    // ApiProperty(),
+    IsEnum(AssetVisibility),
+    ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility, ...apiPropertyOptions }),
+  ];
+
+  if (optional) {
+    decorators.push(Optional());
+  }
+  return applyDecorators(...decorators);
+};
+
+type BooleanOptions = { optional?: boolean };
+export const ValidateBoolean = (options?: BooleanOptions & ApiPropertyOptions) => {
+  const { optional, ...apiPropertyOptions } = { optional: false, ...options };
+  const decorators = [
+    ApiProperty(apiPropertyOptions),
     IsBoolean(),
     Transform(({ value }) => {
       if (value == 'true') {

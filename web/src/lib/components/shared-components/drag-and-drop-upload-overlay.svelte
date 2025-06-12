@@ -4,12 +4,13 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
-  import { isAlbumsRoute } from '$lib/utils/navigation';
+  import { isAlbumsRoute, isLockedFolderRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import ImmichLogo from './immich-logo.svelte';
 
   let albumId = $derived(isAlbumsRoute(page.route?.id) ? page.params.albumId : undefined);
+  let isInLockedFolder = $derived(isLockedFolderRoute(page.route.id));
 
   let dragStartTarget: EventTarget | null = $state(null);
 
@@ -126,7 +127,7 @@
     if (authManager.key) {
       dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
     } else {
-      await fileUploadHandler(filesArray, albumId);
+      await fileUploadHandler({ files: filesArray, albumId, isLockedAssets: isInLockedFolder });
     }
   };
 
@@ -161,7 +162,7 @@
 {#if dragStartTarget}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
-    class="fixed inset-0 z-[1000] flex h-full w-full flex-col items-center justify-center bg-gray-100/90 text-immich-dark-gray dark:bg-immich-dark-bg/90 dark:text-immich-gray"
+    class="fixed inset-0 flex h-full w-full flex-col items-center justify-center bg-gray-100/90 text-immich-dark-gray dark:bg-immich-dark-bg/90 dark:text-immich-gray"
     transition:fade={{ duration: 250 }}
     ondragover={onDragOver}
   >

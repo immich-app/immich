@@ -19,6 +19,7 @@ import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class AlbumService extends BaseService {
@@ -93,6 +94,10 @@ export class AlbumService extends BaseService {
       if (!exists) {
         throw new BadRequestException('User not found');
       }
+
+      if (userId == auth.user.id) {
+        throw new BadRequestException('Cannot share album with owner');
+      }
     }
 
     const allowedAssetIdsSet = await this.checkAccess({
@@ -102,12 +107,15 @@ export class AlbumService extends BaseService {
     });
     const assetIds = [...allowedAssetIdsSet].map((id) => id);
 
+    const userMetadata = await this.userRepository.getMetadata(auth.user.id);
+
     const album = await this.albumRepository.create(
       {
         ownerId: auth.user.id,
         albumName: dto.albumName,
         description: dto.description,
         albumThumbnailAssetId: assetIds[0] || null,
+        order: getPreferences(userMetadata).albums.defaultAssetOrder,
       },
       assetIds,
       albumUsers,

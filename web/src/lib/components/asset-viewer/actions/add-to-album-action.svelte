@@ -6,6 +6,7 @@
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AssetAction } from '$lib/constants';
   import { addAssetsToAlbum, addAssetsToNewAlbum } from '$lib/utils/asset-utils';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -24,18 +25,18 @@
     showSelectionModal = false;
     const album = await addAssetsToNewAlbum(albumName, [asset.id]);
     if (album) {
-      onAction({ type: AssetAction.ADD_TO_ALBUM, asset, album });
+      onAction({ type: AssetAction.ADD_TO_ALBUM, asset: toTimelineAsset(asset), album });
     }
   };
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
     showSelectionModal = false;
     await addAssetsToAlbum(album.id, [asset.id]);
-    onAction({ type: AssetAction.ADD_TO_ALBUM, asset, album });
+    onAction({ type: AssetAction.ADD_TO_ALBUM, asset: toTimelineAsset(asset), album });
   };
 </script>
 
-<svelte:window
+<svelte:document
   use:shortcut={{ shortcut: { key: 'l', shift: shared }, onShortcut: () => (showSelectionModal = true) }}
 />
 

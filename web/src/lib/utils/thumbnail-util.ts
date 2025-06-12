@@ -1,8 +1,8 @@
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 import { t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
-import { fromLocalDateTime } from './timeline-util';
 
 /**
  * Calculate thumbnail size based on number of assets and viewport width
@@ -39,24 +39,23 @@ export function getThumbnailSize(assetCount: number, viewWidth: number): number 
 }
 
 export const getAltText = derived(t, ($t) => {
-  return (asset: AssetResponseDto) => {
-    if (asset.exifInfo?.description) {
-      return asset.exifInfo.description;
-    }
+  return (asset: TimelineAsset) => {
+    const date = fromTimelinePlainDateTime(asset.localDateTime).toJSDate().toLocaleString(get(locale), {
+      dateStyle: 'long',
+      timeZone: 'UTC',
+    });
+    const hasPlace = asset.city && asset.country;
 
-    const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' }, { locale: get(locale) });
-    const hasPlace = !!asset.exifInfo?.city && !!asset.exifInfo?.country;
-    const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
-    const peopleCount = names.length;
-    const isVideo = asset.type === AssetTypeEnum.Video;
+    const peopleCount = asset.people?.length ?? 0;
+    const isVideo = asset.isVideo;
 
     const values = {
       date,
-      city: asset.exifInfo?.city,
-      country: asset.exifInfo?.country,
-      person1: names[0],
-      person2: names[1],
-      person3: names[2],
+      city: asset.city,
+      country: asset.country,
+      person1: asset.people?.[0],
+      person2: asset.people?.[1],
+      person3: asset.people?.[2],
       isVideo,
       additionalCount: peopleCount > 3 ? peopleCount - 2 : 0,
     };

@@ -5,7 +5,7 @@
   import { t } from 'svelte-i18n';
   import { fly, slide } from 'svelte/transition';
   import { getByteUnitString } from '../../utils/byte-units';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { IconButton } from '@immich/ui';
 
   const abort = (downloadKey: string, download: DownloadProgress) => {
     download.abort?.abort();
@@ -16,7 +16,7 @@
 {#if downloadManager.isDownloading}
   <div
     transition:fly={{ x: -100, duration: 350 }}
-    class="fixed bottom-10 start-2 z-[10000] max-h-[270px] w-[315px] rounded-2xl border bg-immich-bg p-4 text-sm shadow-sm"
+    class="fixed bottom-10 start-2 max-h-[270px] w-[315px] rounded-2xl border p-4 text-sm shadow-sm bg-light"
   >
     <p class="mb-2 text-xs text-gray-500">{$t('downloading').toUpperCase()}</p>
     <div class="my-2 mb-2 flex max-h-[200px] flex-col overflow-y-auto text-sm">
@@ -42,10 +42,13 @@
             </div>
           </div>
           <div class="absolute end-2">
-            <CircleIconButton
-              title={$t('close')}
+            <IconButton
+              variant="ghost"
+              shape="round"
+              color="secondary"
+              aria-label={$t('close')}
               onclick={() => abort(downloadKey, download)}
-              size="20"
+              size="large"
               icon={mdiClose}
               class="dark:text-immich-dark-gray"
             />

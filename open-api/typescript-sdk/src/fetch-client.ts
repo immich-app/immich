@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.132.3
+ * 1.134.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -38,6 +38,7 @@ export type ActivityCreateDto = {
 };
 export type ActivityStatisticsResponseDto = {
     comments: number;
+    likes: number;
 };
 export type NotificationCreateDto = {
     data?: object;
@@ -108,6 +109,7 @@ export type UserAdminResponseDto = {
 export type UserAdminCreateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email: string;
+    isAdmin?: boolean;
     name: string;
     notify?: boolean;
     password: string;
@@ -121,11 +123,19 @@ export type UserAdminDeleteDto = {
 export type UserAdminUpdateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email?: string;
+    isAdmin?: boolean;
     name?: string;
     password?: string;
+    pinCode?: string | null;
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
+};
+export type AlbumsResponse = {
+    defaultAssetOrder: AssetOrder;
+};
+export type CastResponse = {
+    gCastEnabled: boolean;
 };
 export type DownloadResponse = {
     archiveSize: number;
@@ -163,6 +173,8 @@ export type TagsResponse = {
     sidebarWeb: boolean;
 };
 export type UserPreferencesResponseDto = {
+    albums: AlbumsResponse;
+    cast: CastResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     folders: FoldersResponse;
@@ -173,8 +185,14 @@ export type UserPreferencesResponseDto = {
     sharedLinks: SharedLinksResponse;
     tags: TagsResponse;
 };
+export type AlbumsUpdate = {
+    defaultAssetOrder?: AssetOrder;
+};
 export type AvatarUpdate = {
     color?: UserAvatarColor;
+};
+export type CastUpdate = {
+    gCastEnabled?: boolean;
 };
 export type DownloadUpdate = {
     archiveSize?: number;
@@ -212,7 +230,9 @@ export type TagsUpdate = {
     sidebarWeb?: boolean;
 };
 export type UserPreferencesUpdateDto = {
+    albums?: AlbumsUpdate;
     avatar?: AvatarUpdate;
+    cast?: CastUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     folders?: FoldersUpdate;
@@ -222,6 +242,11 @@ export type UserPreferencesUpdateDto = {
     ratings?: RatingsUpdate;
     sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
+};
+export type AssetStatsResponseDto = {
+    images: number;
+    total: number;
+    videos: number;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
@@ -297,7 +322,9 @@ export type AssetResponseDto = {
     duplicateId?: string | null;
     duration: string;
     exifInfo?: ExifResponseDto;
+    /** The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken. */
     fileCreatedAt: string;
+    /** The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken. */
     fileModifiedAt: string;
     hasMetadata: boolean;
     id: string;
@@ -308,6 +335,7 @@ export type AssetResponseDto = {
     /** This property was deprecated in v1.106.0 */
     libraryId?: string | null;
     livePhotoVideoId?: string | null;
+    /** The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months. */
     localDateTime: string;
     originalFileName: string;
     originalMimeType?: string;
@@ -322,7 +350,9 @@ export type AssetResponseDto = {
     thumbhash: string | null;
     "type": AssetTypeEnum;
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
+    /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
     updatedAt: string;
+    visibility: AssetVisibility;
 };
 export type AlbumResponseDto = {
     albumName: string;
@@ -400,7 +430,8 @@ export type ApiKeyCreateResponseDto = {
     secret: string;
 };
 export type ApiKeyUpdateDto = {
-    name: string;
+    name?: string;
+    permissions?: Permission[];
 };
 export type AssetBulkDeleteDto = {
     force?: boolean;
@@ -413,11 +444,10 @@ export type AssetMediaCreateDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
-    isArchived?: boolean;
     isFavorite?: boolean;
-    isVisible?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
+    visibility?: AssetVisibility;
 };
 export type AssetMediaResponseDto = {
     id: string;
@@ -425,13 +455,14 @@ export type AssetMediaResponseDto = {
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
+    description?: string;
     duplicateId?: string | null;
     ids: string[];
-    isArchived?: boolean;
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
     rating?: number;
+    visibility?: AssetVisibility;
 };
 export type AssetBulkUploadCheckItem = {
     /** base64 or hex encoded sha1 hash */
@@ -462,20 +493,15 @@ export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
 };
-export type AssetStatsResponseDto = {
-    images: number;
-    total: number;
-    videos: number;
-};
 export type UpdateAssetDto = {
     dateTimeOriginal?: string;
     description?: string;
-    isArchived?: boolean;
     isFavorite?: boolean;
     latitude?: number;
     livePhotoVideoId?: string | null;
     longitude?: number;
     rating?: number;
+    visibility?: AssetVisibility;
 };
 export type AssetMediaReplaceDto = {
     assetData: Blob;
@@ -501,6 +527,7 @@ export type LoginCredentialDto = {
 export type LoginResponseDto = {
     accessToken: string;
     isAdmin: boolean;
+    isOnboarded: boolean;
     name: string;
     profileImagePath: string;
     shouldChangePassword: boolean;
@@ -510,6 +537,29 @@ export type LoginResponseDto = {
 export type LogoutResponseDto = {
     redirectUri: string;
     successful: boolean;
+};
+export type PinCodeResetDto = {
+    password?: string;
+    pinCode?: string;
+};
+export type PinCodeSetupDto = {
+    pinCode: string;
+};
+export type PinCodeChangeDto = {
+    newPinCode: string;
+    password?: string;
+    pinCode?: string;
+};
+export type SessionUnlockDto = {
+    password?: string;
+    pinCode?: string;
+};
+export type AuthStatusResponseDto = {
+    expiresAt?: string;
+    isElevated: boolean;
+    password: boolean;
+    pinCode: boolean;
+    pinExpiresAt?: string;
 };
 export type ValidateAccessTokenResponseDto = {
     authStatus: boolean;
@@ -694,6 +744,9 @@ export type MemoryCreateDto = {
     seenAt?: string;
     "type": MemoryType;
 };
+export type MemoryStatisticsResponseDto = {
+    total: number;
+};
 export type MemoryUpdateDto = {
     isSaved?: boolean;
     memoryAt?: string;
@@ -805,6 +858,7 @@ export type SearchExploreResponseDto = {
     items: SearchExploreItem[];
 };
 export type MetadataSearchDto = {
+    albumIds?: string[];
     checksum?: string;
     city?: string | null;
     country?: string | null;
@@ -815,13 +869,11 @@ export type MetadataSearchDto = {
     deviceId?: string;
     encodedVideoPath?: string;
     id?: string;
-    isArchived?: boolean;
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isVisible?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
@@ -844,7 +896,7 @@ export type MetadataSearchDto = {
     "type"?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
-    withArchived?: boolean;
+    visibility?: AssetVisibility;
     withDeleted?: boolean;
     withExif?: boolean;
     withPeople?: boolean;
@@ -883,18 +935,17 @@ export type PlacesResponseDto = {
     name: string;
 };
 export type RandomSearchDto = {
+    albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
-    isArchived?: boolean;
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isVisible?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
@@ -911,25 +962,24 @@ export type RandomSearchDto = {
     "type"?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
-    withArchived?: boolean;
+    visibility?: AssetVisibility;
     withDeleted?: boolean;
     withExif?: boolean;
     withPeople?: boolean;
     withStacked?: boolean;
 };
 export type SmartSearchDto = {
+    albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
-    isArchived?: boolean;
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isVisible?: boolean;
     language?: string;
     lensModel?: string | null;
     libraryId?: string | null;
@@ -949,9 +999,42 @@ export type SmartSearchDto = {
     "type"?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
-    withArchived?: boolean;
+    visibility?: AssetVisibility;
     withDeleted?: boolean;
     withExif?: boolean;
+};
+export type StatisticsSearchDto = {
+    albumIds?: string[];
+    city?: string | null;
+    country?: string | null;
+    createdAfter?: string;
+    createdBefore?: string;
+    description?: string;
+    deviceId?: string;
+    isEncoded?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isNotInAlbum?: boolean;
+    isOffline?: boolean;
+    lensModel?: string | null;
+    libraryId?: string | null;
+    make?: string;
+    model?: string | null;
+    personIds?: string[];
+    rating?: number;
+    state?: string | null;
+    tagIds?: string[];
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    "type"?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    visibility?: AssetVisibility;
+};
+export type SearchStatisticsResponseDto = {
+    total: number;
 };
 export type ServerAboutResponseDto = {
     build?: string;
@@ -975,6 +1058,12 @@ export type ServerAboutResponseDto = {
     thirdPartySupportUrl?: string;
     version: string;
     versionUrl: string;
+};
+export type ServerApkLinksDto = {
+    arm64v8a: string;
+    armeabiv7a: string;
+    universal: string;
+    x86_64: string;
 };
 export type ServerConfigDto = {
     externalDomain: string;
@@ -1057,6 +1146,10 @@ export type ServerVersionResponseDto = {
     minor: number;
     patch: number;
 };
+export type VersionCheckStateResponseDto = {
+    checkedAt: string | null;
+    releaseVersion: string | null;
+};
 export type ServerVersionHistoryResponseDto = {
     createdAt: string;
     id: string;
@@ -1067,7 +1160,24 @@ export type SessionResponseDto = {
     current: boolean;
     deviceOS: string;
     deviceType: string;
+    expiresAt?: string;
     id: string;
+    updatedAt: string;
+};
+export type SessionCreateDto = {
+    deviceOS?: string;
+    deviceType?: string;
+    /** session duration, in seconds */
+    duration?: number;
+};
+export type SessionCreateResponseDto = {
+    createdAt: string;
+    current: boolean;
+    deviceOS: string;
+    deviceType: string;
+    expiresAt?: string;
+    id: string;
+    token: string;
     updatedAt: string;
 };
 export type SharedLinkResponseDto = {
@@ -1384,8 +1494,44 @@ export type TagBulkAssetsResponseDto = {
 export type TagUpdateDto = {
     color?: string | null;
 };
-export type TimeBucketResponseDto = {
+export type TimeBucketAssetResponseDto = {
+    /** Array of city names extracted from EXIF GPS data */
+    city: (string | null)[];
+    /** Array of country names extracted from EXIF GPS data */
+    country: (string | null)[];
+    /** Array of video durations in HH:MM:SS format (null for images) */
+    duration: (string | null)[];
+    /** Array of file creation timestamps in UTC (ISO 8601 format, without timezone) */
+    fileCreatedAt: string[];
+    /** Array of asset IDs in the time bucket */
+    id: string[];
+    /** Array indicating whether each asset is favorited */
+    isFavorite: boolean[];
+    /** Array indicating whether each asset is an image (false for videos) */
+    isImage: boolean[];
+    /** Array indicating whether each asset is in the trash */
+    isTrashed: boolean[];
+    /** Array of live photo video asset IDs (null for non-live photos) */
+    livePhotoVideoId: (string | null)[];
+    /** Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective. */
+    localOffsetHours: number[];
+    /** Array of owner IDs for each asset */
+    ownerId: string[];
+    /** Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL") */
+    projectionType: (string | null)[];
+    /** Array of aspect ratios (width/height) for each asset */
+    ratio: number[];
+    /** Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets) */
+    stack?: (string[] | null)[];
+    /** Array of BlurHash strings for generating asset previews (base64 encoded) */
+    thumbhash: (string | null)[];
+    /** Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED) */
+    visibility: AssetVisibility[];
+};
+export type TimeBucketsResponseDto = {
+    /** Number of assets in this time bucket */
     count: number;
+    /** Time bucket identifier in YYYY-MM-DD format representing the start of the time period */
     timeBucket: string;
 };
 export type TrashResponseDto = {
@@ -1396,6 +1542,12 @@ export type UserUpdateMeDto = {
     email?: string;
     name?: string;
     password?: string;
+};
+export type OnboardingResponseDto = {
+    isOnboarded: boolean;
+};
+export type OnboardingDto = {
+    isOnboarded: boolean;
 };
 export type CreateProfileImageDto = {
     file: Blob;
@@ -1496,13 +1648,15 @@ export function sendTestEmailAdmin({ systemConfigSmtpDto }: {
         body: systemConfigSmtpDto
     })));
 }
-export function searchUsersAdmin({ withDeleted }: {
+export function searchUsersAdmin({ id, withDeleted }: {
+    id?: string;
     withDeleted?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserAdminResponseDto[];
     }>(`/admin/users${QS.query(QS.explode({
+        id,
         withDeleted
     }))}`, {
         ...opts
@@ -1588,6 +1742,23 @@ export function restoreUserAdmin({ id }: {
     }>(`/admin/users/${encodeURIComponent(id)}/restore`, {
         ...opts,
         method: "POST"
+    }));
+}
+export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }: {
+    id: string;
+    isFavorite?: boolean;
+    isTrashed?: boolean;
+    visibility?: AssetVisibility;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetStatsResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/statistics${QS.query(QS.explode({
+        isFavorite,
+        isTrashed,
+        visibility
+    }))}`, {
+        ...opts
     }));
 }
 export function getAllAlbums({ assetId, shared }: {
@@ -1877,18 +2048,18 @@ export function getRandom({ count }: {
         ...opts
     }));
 }
-export function getAssetStatistics({ isArchived, isFavorite, isTrashed }: {
-    isArchived?: boolean;
+export function getAssetStatistics({ isFavorite, isTrashed, visibility }: {
     isFavorite?: boolean;
     isTrashed?: boolean;
+    visibility?: AssetVisibility;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetStatsResponseDto;
     }>(`/assets/statistics${QS.query(QS.explode({
-        isArchived,
         isFavorite,
-        isTrashed
+        isTrashed,
+        visibility
     }))}`, {
         ...opts
     }));
@@ -2022,6 +2193,56 @@ export function logout(opts?: Oazapfts.RequestOpts) {
     }>("/auth/logout", {
         ...opts,
         method: "POST"
+    }));
+}
+export function resetPinCode({ pinCodeResetDto }: {
+    pinCodeResetDto: PinCodeResetDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: pinCodeResetDto
+    })));
+}
+export function setupPinCode({ pinCodeSetupDto }: {
+    pinCodeSetupDto: PinCodeSetupDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: pinCodeSetupDto
+    })));
+}
+export function changePinCode({ pinCodeChangeDto }: {
+    pinCodeChangeDto: PinCodeChangeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/pin-code", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: pinCodeChangeDto
+    })));
+}
+export function lockAuthSession(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/session/lock", {
+        ...opts,
+        method: "POST"
+    }));
+}
+export function unlockAuthSession({ sessionUnlockDto }: {
+    sessionUnlockDto: SessionUnlockDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/session/unlock", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: sessionUnlockDto
+    })));
+}
+export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AuthStatusResponseDto;
+    }>("/auth/status", {
+        ...opts
     }));
 }
 export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
@@ -2292,6 +2513,24 @@ export function createMemory({ memoryCreateDto }: {
         method: "POST",
         body: memoryCreateDto
     })));
+}
+export function memoriesStatistics({ $for, isSaved, isTrashed, $type }: {
+    $for?: string;
+    isSaved?: boolean;
+    isTrashed?: boolean;
+    $type?: MemoryType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryStatisticsResponseDto;
+    }>(`/memories/statistics${QS.query(QS.explode({
+        "for": $for,
+        isSaved,
+        isTrashed,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
 }
 export function deleteMemory({ id }: {
     id: string;
@@ -2702,6 +2941,18 @@ export function searchSmart({ smartSearchDto }: {
         body: smartSearchDto
     })));
 }
+export function searchAssetStatistics({ statisticsSearchDto }: {
+    statisticsSearchDto: StatisticsSearchDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SearchStatisticsResponseDto;
+    }>("/search/statistics", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: statisticsSearchDto
+    })));
+}
 export function getSearchSuggestions({ country, includeNull, make, model, state, $type }: {
     country?: string;
     includeNull?: boolean;
@@ -2729,6 +2980,14 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerAboutResponseDto;
     }>("/server/about", {
+        ...opts
+    }));
+}
+export function getApkLinks(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerApkLinksDto;
+    }>("/server/apk-links", {
         ...opts
     }));
 }
@@ -2824,6 +3083,14 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VersionCheckStateResponseDto;
+    }>("/server/version-check", {
+        ...opts
+    }));
+}
 export function getVersionHistory(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2846,12 +3113,32 @@ export function getSessions(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function createSession({ sessionCreateDto }: {
+    sessionCreateDto: SessionCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SessionCreateResponseDto;
+    }>("/sessions", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: sessionCreateDto
+    })));
+}
 export function deleteSession({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/sessions/${encodeURIComponent(id)}`, {
         ...opts,
         method: "DELETE"
+    }));
+}
+export function lockSession({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/sessions/${encodeURIComponent(id)}/lock`, {
+        ...opts,
+        method: "POST"
     }));
 }
 export function getAllSharedLinks({ albumId }: {
@@ -3141,6 +3428,14 @@ export function getReverseGeocodingState(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function getVersionCheckState(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VersionCheckStateResponseDto;
+    }>("/system-metadata/version-check-state", {
+        ...opts
+    }));
+}
 export function getAllTags(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3242,70 +3537,66 @@ export function tagAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, tagId, timeBucket, userId, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
-    isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
     personId?: string;
-    size: TimeBucketSize;
     tagId?: string;
     timeBucket: string;
     userId?: string;
+    visibility?: AssetVisibility;
     withPartners?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AssetResponseDto[];
+        data: TimeBucketAssetResponseDto;
     }>(`/timeline/bucket${QS.query(QS.explode({
         albumId,
-        isArchived,
         isFavorite,
         isTrashed,
         key,
         order,
         personId,
-        size,
         tagId,
         timeBucket,
         userId,
+        visibility,
         withPartners,
         withStacked
     }))}`, {
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, tagId, userId, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, tagId, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
-    isArchived?: boolean;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
     personId?: string;
-    size: TimeBucketSize;
     tagId?: string;
     userId?: string;
+    visibility?: AssetVisibility;
     withPartners?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: TimeBucketResponseDto[];
+        data: TimeBucketsResponseDto[];
     }>(`/timeline/buckets${QS.query(QS.explode({
         albumId,
-        isArchived,
         isFavorite,
         isTrashed,
         key,
         order,
         personId,
-        size,
         tagId,
         userId,
+        visibility,
         withPartners,
         withStacked
     }))}`, {
@@ -3394,6 +3685,32 @@ export function setUserLicense({ licenseKeyDto }: {
         ...opts,
         method: "PUT",
         body: licenseKeyDto
+    })));
+}
+export function deleteUserOnboarding(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/users/me/onboarding", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getUserOnboarding(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: OnboardingResponseDto;
+    }>("/users/me/onboarding", {
+        ...opts
+    }));
+}
+export function setUserOnboarding({ onboardingDto }: {
+    onboardingDto: OnboardingDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: OnboardingResponseDto;
+    }>("/users/me/onboarding", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: onboardingDto
     })));
 }
 export function getMyPreferences(opts?: Oazapfts.RequestOpts) {
@@ -3511,6 +3828,16 @@ export enum UserStatus {
     Removing = "removing",
     Deleted = "deleted"
 }
+export enum AssetOrder {
+    Asc = "asc",
+    Desc = "desc"
+}
+export enum AssetVisibility {
+    Archive = "archive",
+    Timeline = "timeline",
+    Hidden = "hidden",
+    Locked = "locked"
+}
 export enum AlbumUserRole {
     Editor = "editor",
     Viewer = "viewer"
@@ -3525,10 +3852,6 @@ export enum AssetTypeEnum {
     Video = "VIDEO",
     Audio = "AUDIO",
     Other = "OTHER"
-}
-export enum AssetOrder {
-    Asc = "asc",
-    Desc = "desc"
 }
 export enum Error {
     Duplicate = "duplicate",
@@ -3595,9 +3918,11 @@ export enum Permission {
     PersonStatistics = "person.statistics",
     PersonMerge = "person.merge",
     PersonReassign = "person.reassign",
+    SessionCreate = "session.create",
     SessionRead = "session.read",
     SessionUpdate = "session.update",
     SessionDelete = "session.delete",
+    SessionLock = "session.lock",
     SharedLinkCreate = "sharedLink.create",
     SharedLinkRead = "sharedLink.read",
     SharedLinkUpdate = "sharedLink.update",
@@ -3709,7 +4034,11 @@ export enum SyncEntityType {
     AssetExifV1 = "AssetExifV1",
     PartnerAssetV1 = "PartnerAssetV1",
     PartnerAssetDeleteV1 = "PartnerAssetDeleteV1",
-    PartnerAssetExifV1 = "PartnerAssetExifV1"
+    PartnerAssetExifV1 = "PartnerAssetExifV1",
+    AlbumV1 = "AlbumV1",
+    AlbumDeleteV1 = "AlbumDeleteV1",
+    AlbumUserV1 = "AlbumUserV1",
+    AlbumUserDeleteV1 = "AlbumUserDeleteV1"
 }
 export enum SyncRequestType {
     UsersV1 = "UsersV1",
@@ -3717,7 +4046,9 @@ export enum SyncRequestType {
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
     PartnerAssetsV1 = "PartnerAssetsV1",
-    PartnerAssetExifsV1 = "PartnerAssetExifsV1"
+    PartnerAssetExifsV1 = "PartnerAssetExifsV1",
+    AlbumsV1 = "AlbumsV1",
+    AlbumUsersV1 = "AlbumUsersV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",
@@ -3781,8 +4112,4 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
-}
-export enum TimeBucketSize {
-    Day = "DAY",
-    Month = "MONTH"
 }

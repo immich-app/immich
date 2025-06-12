@@ -12,7 +12,8 @@ import {
 } from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AssetStatus, AssetType } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 import { AudioStreamInfo, VideoStreamInfo } from 'src/types';
 
@@ -22,6 +23,13 @@ export class SanitizedAssetResponseDto {
   type!: AssetType;
   thumbhash!: string | null;
   originalMimeType?: string;
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description:
+      'The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer\'s local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months.',
+    example: '2024-01-15T14:30:00.000Z',
+  })
   localDateTime!: Date;
   duration!: string;
   livePhotoVideoId?: string | null;
@@ -37,13 +45,36 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   libraryId?: string | null;
   originalPath!: string;
   originalFileName!: string;
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description:
+      'The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.',
+    example: '2024-01-15T19:30:00.000Z',
+  })
   fileCreatedAt!: Date;
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description:
+      'The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.',
+    example: '2024-01-16T10:15:00.000Z',
+  })
   fileModifiedAt!: Date;
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description:
+      'The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.',
+    example: '2024-01-16T12:45:30.000Z',
+  })
   updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
+  @ApiProperty({ enum: AssetVisibility, enumName: 'AssetVisibility' })
+  visibility!: AssetVisibility;
   exifInfo?: ExifResponseDto;
   tags?: TagResponseDto[];
   people?: PersonWithFacesResponseDto[];
@@ -78,11 +109,10 @@ export type MapAsset = {
   fileCreatedAt: Date;
   fileModifiedAt: Date;
   files?: AssetFile[];
-  isArchived: boolean;
   isExternal: boolean;
   isFavorite: boolean;
   isOffline: boolean;
-  isVisible: boolean;
+  visibility: AssetVisibility;
   libraryId: string | null;
   livePhotoVideoId: string | null;
   localDateTime: Date;
@@ -144,15 +174,6 @@ const mapStack = (entity: { stack?: Stack | null }) => {
   };
 };
 
-// if an asset is jsonified in the DB before being returned, its buffer fields will be hex-encoded strings
-export const hexOrBufferToBase64 = (encoded: string | Buffer) => {
-  if (typeof encoded === 'string') {
-    return Buffer.from(encoded.slice(2), 'hex').toString('base64');
-  }
-
-  return encoded.toString('base64');
-};
-
 export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
 
@@ -187,15 +208,16 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
-    isArchived: entity.isArchived,
+    isArchived: entity.visibility === AssetVisibility.ARCHIVE,
     isTrashed: !!entity.deletedAt,
+    visibility: entity.visibility,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
-    checksum: hexOrBufferToBase64(entity.checksum),
+    checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
     hasMetadata: true,

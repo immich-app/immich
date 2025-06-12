@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -47,5 +48,36 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
       currentPage++;
     }
     return result;
+  }
+
+  @override
+  Future<void> updateVisibility(
+    List<String> ids,
+    AssetVisibilityEnum visibility,
+  ) async {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(ids: ids, visibility: _mapVisibility(visibility)),
+    );
+  }
+
+  _mapVisibility(AssetVisibilityEnum visibility) {
+    switch (visibility) {
+      case AssetVisibilityEnum.timeline:
+        return AssetVisibility.timeline;
+      case AssetVisibilityEnum.hidden:
+        return AssetVisibility.hidden;
+      case AssetVisibilityEnum.locked:
+        return AssetVisibility.locked;
+      case AssetVisibilityEnum.archive:
+        return AssetVisibility.archive;
+    }
+  }
+
+  @override
+  Future<String?> getAssetMIMEType(String assetId) async {
+    final response = await checkNull(_api.getAssetInfo(assetId));
+
+    // we need to get the MIME of the thumbnail once that gets added to the API
+    return response.originalMimeType;
   }
 }

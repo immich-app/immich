@@ -215,7 +215,7 @@ export class MediaRepository {
           index: stream.index,
           codecType: stream.codec_type,
           codecName: stream.codec_name,
-          frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
+          bitrate: this.parseInt(stream.bit_rate),
         })),
     };
   }

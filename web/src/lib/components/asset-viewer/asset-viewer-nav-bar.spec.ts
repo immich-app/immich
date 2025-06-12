@@ -1,5 +1,6 @@
-import { resetSavedUser, user as userStore } from '$lib/stores/user.store';
+import { preferences as preferencesStore, resetSavedUser, user as userStore } from '$lib/stores/user.store';
 import { assetFactory } from '@test-data/factories/asset-factory';
+import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 import '@testing-library/jest-dom';
 import { render } from '@testing-library/svelte';
@@ -13,6 +14,7 @@ describe('AssetViewerNavBar component', () => {
     showDownloadButton: false,
     showMotionPlayButton: false,
     showShareButton: false,
+    preAction: () => {},
     onZoomImage: () => {},
     onCopyImage: () => {},
     onAction: () => {},
@@ -41,6 +43,9 @@ describe('AssetViewerNavBar component', () => {
   });
 
   it('shows back button', () => {
+    const prefs = preferencesFactory.build({ cast: { gCastEnabled: false } });
+    preferencesStore.set(prefs);
+
     const asset = assetFactory.build({ isTrashed: false });
     const { getByTitle } = render(AssetViewerNavBar, { asset, ...additionalProps });
     expect(getByTitle('go_back')).toBeInTheDocument();
@@ -52,6 +57,10 @@ describe('AssetViewerNavBar component', () => {
       const user = userAdminFactory.build({ id: ownerId });
       const asset = assetFactory.build({ ownerId, isTrashed: false });
       userStore.set(user);
+
+      const prefs = preferencesFactory.build({ cast: { gCastEnabled: false } });
+      preferencesStore.set(prefs);
+
       const { getByTitle } = render(AssetViewerNavBar, { asset, ...additionalProps });
       expect(getByTitle('delete')).toBeInTheDocument();
     });

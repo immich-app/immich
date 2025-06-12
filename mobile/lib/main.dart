@@ -18,8 +18,8 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
+import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
@@ -27,7 +27,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/download.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -42,7 +42,7 @@ void main() async {
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
   await migrateDatabaseIfNeeded(db);
-  HttpOverrides.global = HttpSSLCertOverride();
+  HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
@@ -88,18 +88,6 @@ Future<void> initApp() async {
   };
 
   initializeTimeZones();
-
-  FileDownloader().configureNotification(
-    running: TaskNotification(
-      'downloading_media'.tr(),
-      'file: {filename}',
-    ),
-    complete: TaskNotification(
-      'download_finished'.tr(),
-      'file: {filename}',
-    ),
-    progressBar: true,
-  );
 
   await FileDownloader().trackTasksInGroup(
     downloadGroupLivePhoto,
@@ -167,10 +155,27 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     await ref.read(localNotificationService).setup();
   }
 
+  void _configureFileDownloaderNotifications() {
+    FileDownloader().configureNotification(
+      running: TaskNotification(
+        'downloading_media'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      complete: TaskNotification(
+        'download_finished'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      progressBar: true,
+    );
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     Intl.defaultLocale = context.locale.toLanguageTag();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _configureFileDownloaderNotifications();
+    });
   }
 
   @override
@@ -200,34 +205,30 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       overrides: [
         localeProvider.overrideWithValue(context.locale),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
+        title: 'Immich',
+        debugShowCheckedModeBanner: true,
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        debugShowCheckedModeBanner: true,
-        home: MaterialApp.router(
-          title: 'Immich',
-          debugShowCheckedModeBanner: false,
-          themeMode: ref.watch(immichThemeModeProvider),
-          darkTheme: getThemeData(
-            colorScheme: immichTheme.dark,
-            locale: context.locale,
-          ),
-          theme: getThemeData(
-            colorScheme: immichTheme.light,
-            locale: context.locale,
-          ),
-          routeInformationParser: router.defaultRouteParser(),
-          routerDelegate: router.delegate(
-            navigatorObservers: () => [TabNavigationObserver(ref: ref)],
-          ),
+        themeMode: ref.watch(immichThemeModeProvider),
+        darkTheme: getThemeData(
+          colorScheme: immichTheme.dark,
+          locale: context.locale,
+        ),
+        theme: getThemeData(
+          colorScheme: immichTheme.light,
+          locale: context.locale,
+        ),
+        routeInformationParser: router.defaultRouteParser(),
+        routerDelegate: router.delegate(
+          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
         ),
       ),
     );
   }
 }
 
-// ignore: prefer-single-widget-per-file
 class MainWidget extends StatelessWidget {
   const MainWidget({super.key});
 

@@ -5,9 +5,9 @@ import { randomUUID } from 'node:crypto';
 import { DB, Exif } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetStatus, AssetType } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { anyUuid, asUuid, searchAssetBuilder, vectorIndexQuery } from 'src/utils/database';
+import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
+import { probes } from 'src/repositories/database.repository';
+import { anyUuid, asUuid, searchAssetBuilder, withDefaultVisibility } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
@@ -26,17 +26,16 @@ export interface SearchUserIdOptions {
 export type SearchIdOptions = SearchAssetIdOptions & SearchUserIdOptions;
 
 export interface SearchStatusOptions {
-  isArchived?: boolean;
   isEncoded?: boolean;
   isFavorite?: boolean;
   isMotion?: boolean;
   isOffline?: boolean;
-  isVisible?: boolean;
   isNotInAlbum?: boolean;
   type?: AssetType;
   status?: AssetStatus;
   withArchived?: boolean;
   withDeleted?: boolean;
+  visibility?: AssetVisibility;
 }
 
 export interface SearchOneToOneRelationOptions {
@@ -92,6 +91,10 @@ export interface SearchTagOptions {
   tagIds?: string[];
 }
 
+export interface SearchAlbumOptions {
+  albumIds?: string[];
+}
+
 export interface SearchOrderOptions {
   orderDirection?: 'asc' | 'desc';
 }
@@ -109,7 +112,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
-  SearchTagOptions;
+  SearchTagOptions &
+  SearchAlbumOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -169,10 +173,7 @@ export interface GetCameraMakesOptions {
 
 @Injectable()
 export class SearchRepository {
-  constructor(
-    @InjectKysely() private db: Kysely<DB>,
-    private configRepository: ConfigRepository,
-  ) {}
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({
     params: [
@@ -189,12 +190,29 @@ export class SearchRepository {
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     const items = await searchAssetBuilder(this.db, options)
+      .selectAll('assets')
       .orderBy('assets.fileCreatedAt', orderDirection)
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();
 
     return paginationHelper(items, pagination.size);
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        takenAfter: DummyValue.DATE,
+        lensModel: DummyValue.STRING,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  searchStatistics(options: AssetSearchOptions) {
+    return searchAssetBuilder(this.db, options)
+      .select((qb) => qb.fn.countAll<number>().as('total'))
+      .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({
@@ -213,10 +231,12 @@ export class SearchRepository {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
     const lessThan = builder
+      .selectAll('assets')
       .where('assets.id', '<', uuid)
       .orderBy(sql`random()`)
       .limit(size);
     const greaterThan = builder
+      .selectAll('assets')
       .where('assets.id', '>', uuid)
       .orderBy(sql`random()`)
       .limit(size);
@@ -237,19 +257,22 @@ export class SearchRepository {
       },
     ],
   })
-  async searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions) {
+  searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions) {
     if (!isValidInteger(pagination.size, { min: 1, max: 1000 })) {
       throw new Error(`Invalid value for 'size': ${pagination.size}`);
     }
 
-    const items = await searchAssetBuilder(this.db, options)
-      .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
-      .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
-      .limit(pagination.size + 1)
-      .offset((pagination.page - 1) * pagination.size)
-      .execute();
-
-    return paginationHelper(items, pagination.size);
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
+      const items = await searchAssetBuilder(trx, options)
+        .selectAll('assets')
+        .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
+        .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
+        .limit(pagination.size + 1)
+        .offset((pagination.page - 1) * pagination.size)
+        .execute();
+      return paginationHelper(items, pagination.size);
+    });
   }
 
   @GenerateSql({
@@ -264,29 +287,32 @@ export class SearchRepository {
     ],
   })
   searchDuplicates({ assetId, embedding, maxDistance, type, userIds }: AssetDuplicateSearch) {
-    return this.db
-      .with('cte', (qb) =>
-        qb
-          .selectFrom('assets')
-          .select([
-            'assets.id as assetId',
-            'assets.duplicateId',
-            sql<number>`smart_search.embedding <=> ${embedding}`.as('distance'),
-          ])
-          .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
-          .where('assets.ownerId', '=', anyUuid(userIds))
-          .where('assets.deletedAt', 'is', null)
-          .where('assets.isVisible', '=', true)
-          .where('assets.type', '=', type)
-          .where('assets.id', '!=', asUuid(assetId))
-          .where('assets.stackId', 'is', null)
-          .orderBy(sql`smart_search.embedding <=> ${embedding}`)
-          .limit(64),
-      )
-      .selectFrom('cte')
-      .selectAll()
-      .where('cte.distance', '<=', maxDistance as number)
-      .execute();
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
+      return await trx
+        .with('cte', (qb) =>
+          qb
+            .selectFrom('assets')
+            .$call(withDefaultVisibility)
+            .select([
+              'assets.id as assetId',
+              'assets.duplicateId',
+              sql<number>`smart_search.embedding <=> ${embedding}`.as('distance'),
+            ])
+            .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
+            .where('assets.ownerId', '=', anyUuid(userIds))
+            .where('assets.deletedAt', 'is', null)
+            .where('assets.type', '=', type)
+            .where('assets.id', '!=', asUuid(assetId))
+            .where('assets.stackId', 'is', null)
+            .orderBy('distance')
+            .limit(64),
+        )
+        .selectFrom('cte')
+        .selectAll()
+        .where('cte.distance', '<=', maxDistance as number)
+        .execute();
+    });
   }
 
   @GenerateSql({
@@ -304,31 +330,36 @@ export class SearchRepository {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
 
-    return this.db
-      .with('cte', (qb) =>
-        qb
-          .selectFrom('asset_faces')
-          .select([
-            'asset_faces.id',
-            'asset_faces.personId',
-            sql<number>`face_search.embedding <=> ${embedding}`.as('distance'),
-          ])
-          .innerJoin('assets', 'assets.id', 'asset_faces.assetId')
-          .innerJoin('face_search', 'face_search.faceId', 'asset_faces.id')
-          .leftJoin('person', 'person.id', 'asset_faces.personId')
-          .where('assets.ownerId', '=', anyUuid(userIds))
-          .where('assets.deletedAt', 'is', null)
-          .$if(!!hasPerson, (qb) => qb.where('asset_faces.personId', 'is not', null))
-          .$if(!!minBirthDate, (qb) =>
-            qb.where((eb) => eb.or([eb('person.birthDate', 'is', null), eb('person.birthDate', '<=', minBirthDate!)])),
-          )
-          .orderBy(sql`face_search.embedding <=> ${embedding}`)
-          .limit(numResults),
-      )
-      .selectFrom('cte')
-      .selectAll()
-      .where('cte.distance', '<=', maxDistance)
-      .execute();
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.FACE])}`.execute(trx);
+      return await trx
+        .with('cte', (qb) =>
+          qb
+            .selectFrom('asset_faces')
+            .select([
+              'asset_faces.id',
+              'asset_faces.personId',
+              sql<number>`face_search.embedding <=> ${embedding}`.as('distance'),
+            ])
+            .innerJoin('assets', 'assets.id', 'asset_faces.assetId')
+            .innerJoin('face_search', 'face_search.faceId', 'asset_faces.id')
+            .leftJoin('person', 'person.id', 'asset_faces.personId')
+            .where('assets.ownerId', '=', anyUuid(userIds))
+            .where('assets.deletedAt', 'is', null)
+            .$if(!!hasPerson, (qb) => qb.where('asset_faces.personId', 'is not', null))
+            .$if(!!minBirthDate, (qb) =>
+              qb.where((eb) =>
+                eb.or([eb('person.birthDate', 'is', null), eb('person.birthDate', '<=', minBirthDate!)]),
+              ),
+            )
+            .orderBy('distance')
+            .limit(numResults),
+        )
+        .selectFrom('cte')
+        .selectAll()
+        .where('cte.distance', '<=', maxDistance)
+        .execute();
+    });
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
@@ -367,8 +398,7 @@ export class SearchRepository {
           .select(['city', 'assetId'])
           .innerJoin('assets', 'assets.id', 'exif.assetId')
           .where('assets.ownerId', '=', anyUuid(userIds))
-          .where('assets.isVisible', '=', true)
-          .where('assets.isArchived', '=', false)
+          .where('assets.visibility', '=', AssetVisibility.TIMELINE)
           .where('assets.type', '=', AssetType.IMAGE)
           .where('assets.deletedAt', 'is', null)
           .orderBy('city')
@@ -384,8 +414,7 @@ export class SearchRepository {
                 .select(['city', 'assetId'])
                 .innerJoin('assets', 'assets.id', 'exif.assetId')
                 .where('assets.ownerId', '=', anyUuid(userIds))
-                .where('assets.isVisible', '=', true)
-                .where('assets.isArchived', '=', false)
+                .where('assets.visibility', '=', AssetVisibility.TIMELINE)
                 .where('assets.type', '=', AssetType.IMAGE)
                 .where('assets.deletedAt', 'is', null)
                 .whereRef('exif.city', '>', 'cte.city')
@@ -417,56 +446,6 @@ export class SearchRepository {
       .values({ assetId, embedding })
       .onConflict((oc) => oc.column('assetId').doUpdateSet((eb) => ({ embedding: eb.ref('excluded.embedding') })))
       .execute();
-  }
-
-  async getDimensionSize(): Promise<number> {
-    const { rows } = await sql<{ dimsize: number }>`
-      select atttypmod as dimsize
-      from pg_attribute f
-        join pg_class c ON c.oid = f.attrelid
-      where c.relkind = 'r'::char
-        and f.attnum > 0
-        and c.relname = 'smart_search'
-        and f.attname = 'embedding'
-    `.execute(this.db);
-
-    const dimSize = rows[0]['dimsize'];
-    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
-      throw new Error(`Could not retrieve CLIP dimension size`);
-    }
-    return dimSize;
-  }
-
-  async setDimensionSize(dimSize: number): Promise<void> {
-    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
-      throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
-    }
-
-    // this is done in two transactions to handle concurrent writes
-    await this.db.transaction().execute(async (trx) => {
-      await sql`delete from ${sql.table('smart_search')}`.execute(trx);
-      await trx.schema.alterTable('smart_search').dropConstraint('dim_size_constraint').ifExists().execute();
-      await sql`alter table ${sql.table('smart_search')} add constraint dim_size_constraint check (array_length(embedding::real[], 1) = ${sql.lit(dimSize)})`.execute(
-        trx,
-      );
-    });
-
-    const vectorExtension = this.configRepository.getEnv().database.vectorExtension;
-    await this.db.transaction().execute(async (trx) => {
-      await sql`drop index if exists clip_index`.execute(trx);
-      await trx.schema
-        .alterTable('smart_search')
-        .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
-        .execute();
-      await sql.raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: 'clip_index' })).execute(trx);
-      await trx.schema.alterTable('smart_search').dropConstraint('dim_size_constraint').ifExists().execute();
-    });
-
-    await sql`vacuum analyze ${sql.table('smart_search')}`.execute(this.db);
-  }
-
-  async deleteAllSearchEmbeddings(): Promise<void> {
-    await sql`truncate ${sql.table('smart_search')}`.execute(this.db);
   }
 
   async getCountries(userIds: string[]): Promise<string[]> {
@@ -518,7 +497,7 @@ export class SearchRepository {
       .distinctOn(field)
       .innerJoin('assets', 'assets.id', 'exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
-      .where('isVisible', '=', true)
+      .where('visibility', '=', AssetVisibility.TIMELINE)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null);
   }

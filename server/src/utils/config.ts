@@ -116,7 +116,14 @@ const buildConfig = async (repos: RepoDeps) => {
   const config = instanceToPlain(instance) as SystemConfig;
 
   if (config.server.externalDomain.length > 0) {
-    config.server.externalDomain = new URL(config.server.externalDomain).origin;
+    const domain = new URL(config.server.externalDomain);
+
+    let externalDomain = domain.origin;
+    if (domain.password && domain.username) {
+      externalDomain = `${domain.protocol}//${domain.username}:${domain.password}@${domain.host}`;
+    }
+
+    config.server.externalDomain = externalDomain;
   }
 
   if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {

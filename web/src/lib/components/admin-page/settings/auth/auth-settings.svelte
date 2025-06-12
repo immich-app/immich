@@ -1,12 +1,13 @@
 <script lang="ts">
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AuthDisableLoginConfirmModal from '$lib/modals/AuthDisableLoginConfirmModal.svelte';
   import { OAuthTokenEndpointAuthMethod, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -24,8 +25,6 @@
 
   let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 
-  let isConfirmOpen = $state(false);
-
   const handleToggleOverride = () => {
     // click runs before bind
     const previouslyEnabled = config.oauth.mobileOverrideEnabled;
@@ -34,45 +33,18 @@
     }
   };
 
-  const handleSave = (skipConfirm: boolean) => {
+  const handleSave = async (skipConfirm: boolean) => {
     const allMethodsDisabled = !config.oauth.enabled && !config.passwordLogin.enabled;
     if (allMethodsDisabled && !skipConfirm) {
-      isConfirmOpen = true;
-      return;
+      const isConfirmed = await modalManager.show(AuthDisableLoginConfirmModal);
+      if (!isConfirmed) {
+        return;
+      }
     }
 
-    isConfirmOpen = false;
     onSave({ passwordLogin: config.passwordLogin, oauth: config.oauth });
   };
 </script>
-
-{#if isConfirmOpen}
-  <ConfirmDialog
-    title={$t('admin.disable_login')}
-    onCancel={() => (isConfirmOpen = false)}
-    onConfirm={() => handleSave(true)}
-  >
-    {#snippet promptSnippet()}
-      <div class="flex flex-col gap-4">
-        <p>{$t('admin.authentication_settings_disable_all')}</p>
-        <p>
-          <FormatMessage key="admin.authentication_settings_reenable">
-            {#snippet children({ message })}
-              <a
-                href="https://immich.app/docs/administration/server-commands"
-                rel="noreferrer"
-                target="_blank"
-                class="underline"
-              >
-                {message}
-              </a>
-            {/snippet}
-          </FormatMessage>
-        </p>
-      </div>
-    {/snippet}
-  </ConfirmDialog>
-{/if}
 
 <div>
   <div in:fade={{ duration: 500 }}>

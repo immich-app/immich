@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
-import { UserAvatarColor } from 'src/enum';
+import { AssetOrder, UserAvatarColor } from 'src/enum';
 import { UserPreferences } from 'src/types';
 import { Optional, ValidateBoolean } from 'src/validation';
 
@@ -20,6 +20,12 @@ class MemoriesUpdate {
 class RatingsUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
+}
+
+class AlbumsUpdate {
+  @IsEnum(AssetOrder)
+  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  defaultAssetOrder?: AssetOrder;
 }
 
 class FoldersUpdate {
@@ -85,7 +91,17 @@ class PurchaseUpdate {
   hideBuyButtonUntil?: string;
 }
 
+class CastUpdate {
+  @ValidateBoolean({ optional: true })
+  gCastEnabled?: boolean;
+}
+
 export class UserPreferencesUpdateDto {
+  @Optional()
+  @ValidateNested()
+  @Type(() => AlbumsUpdate)
+  albums?: AlbumsUpdate;
+
   @Optional()
   @ValidateNested()
   @Type(() => FoldersUpdate)
@@ -135,6 +151,17 @@ export class UserPreferencesUpdateDto {
   @ValidateNested()
   @Type(() => PurchaseUpdate)
   purchase?: PurchaseUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => CastUpdate)
+  cast?: CastUpdate;
+}
+
+class AlbumsResponse {
+  @IsEnum(AssetOrder)
+  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  defaultAssetOrder: AssetOrder = AssetOrder.DESC;
 }
 
 class RatingsResponse {
@@ -183,7 +210,12 @@ class PurchaseResponse {
   hideBuyButtonUntil!: string;
 }
 
+class CastResponse {
+  gCastEnabled: boolean = false;
+}
+
 export class UserPreferencesResponseDto implements UserPreferences {
+  albums!: AlbumsResponse;
   folders!: FoldersResponse;
   memories!: MemoriesResponse;
   people!: PeopleResponse;
@@ -193,6 +225,7 @@ export class UserPreferencesResponseDto implements UserPreferences {
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;
   purchase!: PurchaseResponse;
+  cast!: CastResponse;
 }
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {
