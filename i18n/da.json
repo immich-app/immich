@@ -194,7 +194,7 @@
     "oauth_enable_description": "Log ind med OAuth",
     "oauth_mobile_redirect_uri": "Mobilomdiregerings-URL",
     "oauth_mobile_redirect_uri_override": "Tilsidesættelse af mobil omdiregerings-URL",
-    "oauth_mobile_redirect_uri_override_description": "Aktiver, når OAuth-udbyderen ikke tillader en mobil URI, som '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Aktiver, når OAuth-udbyderen ikke tillader en mobil URI, som ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Administrer OAuth login-indstillinger",
     "oauth_settings_more_details": "Læs flere detaljer om funktionen i <link>dokumentationen</link>.",

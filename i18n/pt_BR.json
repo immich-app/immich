@@ -194,7 +194,7 @@
     "oauth_enable_description": "Faça login com OAuth",
     "oauth_mobile_redirect_uri": "URI de redirecionamento móvel",
     "oauth_mobile_redirect_uri_override": "Substituição de URI de redirecionamento móvel",
-    "oauth_mobile_redirect_uri_override_description": "Ative quando o provedor do OAuth não suportar uma URI de aplicativo, por exemplo '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Ative quando o provedor do OAuth não suportar uma URI de aplicativo, por exemplo ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Gerenciar configurações de login do OAuth",
     "oauth_settings_more_details": "Para mais detalhes sobre este recurso, consulte a <link>documentação</link>.",

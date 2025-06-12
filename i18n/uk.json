@@ -193,7 +193,7 @@
     "oauth_enable_description": "Увійти за допомогою OAuth",
     "oauth_mobile_redirect_uri": "URI мобільного перенаправлення",
     "oauth_mobile_redirect_uri_override": "Перевизначення URI мобільного перенаправлення",
-    "oauth_mobile_redirect_uri_override_description": "Увімкнути, якщо OAuth-провайдер не підтримує мобільний URI, як '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Увімкнути, якщо OAuth-провайдер не підтримує мобільний URI, як ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Керування налаштуваннями входу через OAuth",
     "oauth_settings_more_details": "Для отримання додаткової інформації про цю функцію, зверніться до <link>документації</link>.",

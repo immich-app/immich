@@ -194,7 +194,7 @@
     "oauth_enable_description": "Log masuk dengan OAuth",
     "oauth_mobile_redirect_uri": "URI pengalihan ponsel",
     "oauth_mobile_redirect_uri_override": "Penimpaan URI penerusan ponsel",
-    "oauth_mobile_redirect_uri_override_description": "Aktifkan ketika provider OAuth tidak mengizinkan tautan mobile, seperti '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Aktifkan ketika provider OAuth tidak mengizinkan tautan mobile, seperti ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Kelola pengaturan log masuk OAuth",
     "oauth_settings_more_details": "Untuk detail lanjut tentang fitur ini, lihat <link>docs</link>.",

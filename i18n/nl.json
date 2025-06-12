@@ -194,7 +194,7 @@
     "oauth_enable_description": "Inloggen met OAuth",
     "oauth_mobile_redirect_uri": "Omleidings-URI voor mobiel",
     "oauth_mobile_redirect_uri_override": "Omleidings-URI voor mobiele app overschrijven",
-    "oauth_mobile_redirect_uri_override_description": "Inschakelen wanneer de OAuth-provider geen mobiele URI toestaat, zoals '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Inschakelen wanneer de OAuth-provider geen mobiele URI toestaat, zoals ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Beheer OAuth inloginstellingen",
     "oauth_settings_more_details": "Raadpleeg de <link>documentatie</link> voor meer informatie over deze functie.",

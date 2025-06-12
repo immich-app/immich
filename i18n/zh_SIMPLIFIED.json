@@ -194,7 +194,7 @@
     "oauth_enable_description": "使用 OAuth 登录",
     "oauth_mobile_redirect_uri": "移动端重定向 URI",
     "oauth_mobile_redirect_uri_override": "移动端重定向 URI 覆盖",
-    "oauth_mobile_redirect_uri_override_description": "当 OAuth 提供商不允许使用移动 URI 时启用，如“'{callback}'”",
+    "oauth_mobile_redirect_uri_override_description": "当 OAuth 提供商不允许使用移动 URI 时启用，如“''{callback}''”",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "管理 OAuth 登录设置",
     "oauth_settings_more_details": "关于此功能的更多详细信息，请查看<link>相关文档</link>。",

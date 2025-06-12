@@ -180,7 +180,7 @@
     "oauth_enable_description": "Prisijungti su OAuth",
     "oauth_mobile_redirect_uri": "Mobiliojo peradresavimo URI",
     "oauth_mobile_redirect_uri_override": "Mobiliojo peradresavimo URI pakeitimas",
-    "oauth_mobile_redirect_uri_override_description": "Įjunkite, kai OAuth teikėjas nepalaiko mobiliojo URI, tokio kaip '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Įjunkite, kai OAuth teikėjas nepalaiko mobiliojo URI, tokio kaip ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Tvarkyti OAuth prisijungimo nustatymus",
     "oauth_settings_more_details": "Detaliau apie šią funkciją galite paskaityti <link>dokumentacijoje</link>.",

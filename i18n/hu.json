@@ -193,7 +193,7 @@
     "oauth_enable_description": "Bejelentkezés OAuth használatával",
     "oauth_mobile_redirect_uri": "Mobil átirányítási URI",
     "oauth_mobile_redirect_uri_override": "Mobil átirányítási URI felülírás",
-    "oauth_mobile_redirect_uri_override_description": "Engedélyezd, ha az OAuth szolgáltató tiltja a mobil URI-t, mint például '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Engedélyezd, ha az OAuth szolgáltató tiltja a mobil URI-t, mint például ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "OAuth bejelentkezési beállítások kezelése",
     "oauth_settings_more_details": "Erről a funkcióról további információt a <link>dokumentációban</link> találsz.",

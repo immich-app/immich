@@ -194,7 +194,7 @@
     "oauth_enable_description": "התחבר עם OAuth",
     "oauth_mobile_redirect_uri": "URI להפניה מחדש בנייד",
     "oauth_mobile_redirect_uri_override": "עקיפת URI להפניה מחדש בנייד",
-    "oauth_mobile_redirect_uri_override_description": "אפשר כאשר ספק OAuth לא מאפשר כתובת URI לנייד, כמו '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "אפשר כאשר ספק OAuth לא מאפשר כתובת URI לנייד, כמו ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "ניהול הגדרות התחברות עם OAuth",
     "oauth_settings_more_details": "למידע נוסף אודות תכונה זו, בדוק את ה<link>תיעוד</link>.",

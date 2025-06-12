@@ -194,7 +194,7 @@
     "oauth_enable_description": "Anmeldung mit OAuth",
     "oauth_mobile_redirect_uri": "Mobile Umleitungs-URI",
     "oauth_mobile_redirect_uri_override": "Mobile Umleitungs-URI überschreiben",
-    "oauth_mobile_redirect_uri_override_description": "Einschalten, wenn der OAuth-Anbieter keine mobile URI wie '{callback}' erlaubt",
+    "oauth_mobile_redirect_uri_override_description": "Einschalten, wenn der OAuth-Anbieter keine mobile URI wie ''{callback}'' erlaubt",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "OAuth-Anmeldeeinstellungen verwalten",
     "oauth_settings_more_details": "Weitere Informationen zu dieser Funktion findest du in der <link>Dokumentation</link>.",

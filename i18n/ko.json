@@ -193,7 +193,7 @@
     "oauth_enable_description": "OAuth 로그인",
     "oauth_mobile_redirect_uri": "모바일 리다이렉트 URI",
     "oauth_mobile_redirect_uri_override": "모바일 리다이렉트 URI 재정의",
-    "oauth_mobile_redirect_uri_override_description": "OAuth 공급자가 '{callback}'과 같은 모바일 URI를 제공하지 않는 경우 활성화하세요.",
+    "oauth_mobile_redirect_uri_override_description": "OAuth 공급자가 ''{callback}''과 같은 모바일 URI를 제공하지 않는 경우 활성화하세요.",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "OAuth 로그인 설정 관리",
     "oauth_settings_more_details": "이 기능에 대한 자세한 내용은 <link>문서</link>를 참조하세요.",

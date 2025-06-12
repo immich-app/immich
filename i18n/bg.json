@@ -194,7 +194,7 @@
     "oauth_enable_description": "Влизане с OAuth",
     "oauth_mobile_redirect_uri": "URI за мобилно пренасочване",
     "oauth_mobile_redirect_uri_override": "URI пренасочване за мобилни устройства",
-    "oauth_mobile_redirect_uri_override_description": "Разреши когато доставчика за OAuth удостоверяване не позволява за мобилни URI идентификатори, като '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Разреши когато доставчика за OAuth удостоверяване не позволява за мобилни URI идентификатори, като ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Управление на настройките за вход с OAuth",
     "oauth_settings_more_details": "За повече информация за функционалността, се потърсете в <link>docs</link>.",

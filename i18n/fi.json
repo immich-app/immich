@@ -193,7 +193,7 @@
     "oauth_enable_description": "Kirjaudu käyttäen OAuthia",
     "oauth_mobile_redirect_uri": "Mobiilin uudellenohjaus-URI",
     "oauth_mobile_redirect_uri_override": "Ohita mobiilin uudelleenohjaus-URI",
-    "oauth_mobile_redirect_uri_override_description": "Ota käyttöön kun OAuth tarjoaja ei salli mobiili URI:a, kuten '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Ota käyttöön kun OAuth tarjoaja ei salli mobiili URI:a, kuten ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Hallitse OAuth-kirjautumisen asetuksia",
     "oauth_settings_more_details": "Saadaksesi lisätietoja tästä toiminnosta, katso <link>dokumentaatio</link>.",

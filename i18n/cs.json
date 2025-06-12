@@ -194,7 +194,7 @@
     "oauth_enable_description": "Přihlásit pomocí OAuth",
     "oauth_mobile_redirect_uri": "Mobilní přesměrování URI",
     "oauth_mobile_redirect_uri_override": "Přepsat mobilní přesměrování URI",
-    "oauth_mobile_redirect_uri_override_description": "Povolit, pokud poskytovatel OAuth nepovoluje mobilní URI, například '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Povolit, pokud poskytovatel OAuth nepovoluje mobilní URI, například ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Správa nastavení OAuth přihlášení",
     "oauth_settings_more_details": "Další podrobnosti o této funkci naleznete v <link>dokumentaci</link>.",
