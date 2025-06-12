@@ -1,19 +1,16 @@
-import { Controller, Get, Header, Param, Query, Res, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Header, Next, Param, Query, Res, UnauthorizedException } from '@nestjs/common';
 import {FileResponse} from 'src/middleware/auth.guard';
 import {PartParamDto, PlaylistParamDto} from 'src/dtos/video.dto';
-import {Response} from 'express';
+import { NextFunction, Response } from 'express';
 import {TranscodingService} from 'src/services/transcofing.service';
 import {LoggingRepository} from 'src/repositories/logging.repository';
-import {RouteKey} from 'src/enum';
+import {CacheControl, RouteKey} from 'src/enum';
 import {ApiTags} from '@nestjs/swagger';
 import {JsonWebTokenError, JwtPayload, verify} from 'jsonwebtoken';
 import {SystemMetadataRepository} from 'src/repositories/system-metadata.repository';
-import {promisify} from 'node:util';
 import sanitize from 'sanitize-filename';
 import fs from 'node:fs';
-
-type SendFile = Parameters<Response['sendFile']>;
-type SendFileOptions = SendFile[1];
+import {sendFile} from 'src/utils/file';
 
 @ApiTags('Transcoder')
 @Controller(RouteKey.PLAYBACK)
@@ -49,6 +46,7 @@ export class TranscodingController {
   async getVideoPart(
     @Param() { secret, name }: PartParamDto,
     @Res() res: Response,
+    @Next() next: NextFunction
   ) {
     let data;
     try {
@@ -58,15 +56,21 @@ export class TranscodingController {
     }
 
     const arr = name.split('.');
-    const _sendFile = (path: string, options: SendFileOptions) =>
-      promisify<string, SendFileOptions>(res.sendFile).bind(res)(path, options);
 
-    res.set('Cache-Control', 'private, max-age=86400, no-transform');
-    res.header('Content-Type', 'video/mp4');
     if (arr.length == 1) {
-      await _sendFile(`/tmp/video/${sanitize(data['id'])}/${sanitize(arr[0])}.mp4`, { root: '/' });
+      // It's necessary to provide promisified result into sendFile
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await sendFile(res, next, async () => {
+        return {
+          path: `/tmp/video/${sanitize(data['id'])}/${sanitize(arr[0])}.mp4`,
+          cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+          contentType: 'video/mp4'
+        };
+      }, this.logger);
       return;
     }
+    
+    // Make full segment by joining parts
     for (const name of arr) {
       await new Promise<void>((resolve) => {
         const buf = fs.createReadStream(`/tmp/video/${sanitize(data['id'])}/${sanitize(name)}.mp4`);
