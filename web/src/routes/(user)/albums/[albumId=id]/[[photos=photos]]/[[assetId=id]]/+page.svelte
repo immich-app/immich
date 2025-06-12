@@ -159,14 +159,6 @@
     }
   };
 
-  const updateComments = async () => {
-    try {
-      await activityManager.refreshActivities(album.id);
-    } catch (error) {
-      handleError(error, $t('errors.cant_get_number_of_comments'));
-    }
-  };
-
   const handleOpenAndCloseActivityTab = () => {
     isShowActivity = !isShowActivity;
   };
@@ -388,9 +380,14 @@
     }
   });
 
+  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
+
   $effect(() => {
-    activityManager.reset();
-    activityManager.init(album.id);
+    if ($showAssetViewer || !isShared) {
+      return;
+    }
+
+    handlePromiseError(activityManager.init(album.id));
   });
 
   onDestroy(() => {
@@ -409,12 +406,6 @@
   );
 
   let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
-  $effect(() => {
-    if (album.albumUsers.length > 0) {
-      handlePromiseError(updateComments());
-    }
-  });
-  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
   const isSelectionMode = $derived(
     viewMode === AlbumPageViewMode.SELECT_ASSETS ? true : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
   );
@@ -570,7 +561,7 @@
         {/if}
       </AssetGrid>
 
-      {#if showActivityStatus}
+      {#if showActivityStatus && !activityManager.isLoading}
         <div class="absolute z-2 bottom-0 end-0 mb-6 me-6 justify-self-end">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
