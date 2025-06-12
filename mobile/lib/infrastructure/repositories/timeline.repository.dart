@@ -123,19 +123,19 @@ class DriftTimelineRepository extends DriftDatabaseRepository
     required int index,
     required int count,
   }) {
-    final query = _db.localAssetEntity.select()
-      ..join(
-        [
-          innerJoin(
-            _db.localAlbumAssetEntity,
-            _db.localAlbumAssetEntity.assetId
-                    .equalsExp(_db.localAssetEntity.id) &
-                _db.localAlbumAssetEntity.albumId.equals(albumId),
-          ),
-        ],
-      )
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+    final query = _db.localAssetEntity.select().join(
+      [
+        innerJoin(
+          _db.localAlbumAssetEntity,
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+        ),
+      ],
+    )
+      ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
+      ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
       ..limit(count, offset: index);
-    return query.map((row) => row.toDto()).get();
+    return query
+        .map((row) => row.readTable(_db.localAssetEntity).toDto())
+        .get();
   }
 }
