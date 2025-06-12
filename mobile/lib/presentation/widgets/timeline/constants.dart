@@ -5,4 +5,3 @@ const int kTimelineColumnCount = 3;
 
 const Duration kTimelineScrubberFadeInDuration = Duration(milliseconds: 300);
 const Duration kTimelineScrubberFadeOutDuration = Duration(milliseconds: 800);
-const double kTimelineScrubberPadding = 20;
