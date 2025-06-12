@@ -530,6 +530,19 @@ export class AssetRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, 5] })
+  getLargeAssets(ownerId: string, take: number) {
+    return this.db
+      .selectFrom('assets')
+      .selectAll('assets')
+      .$call(withExif)
+      .where('ownerId', '=', ownerId)
+      .where('deletedAt', 'is', null)
+      .orderBy('exif.fileSizeInByte', 'desc')
+      .limit(take)
+      .execute();
+  }
+
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     return this.db

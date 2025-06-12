@@ -230,6 +230,21 @@ where
 limit
   $3
 
+-- AssetRepository.getLargeAssets
+select
+  "assets".*,
+  to_json("exif") as "exifInfo"
+from
+  "assets"
+  left join "exif" on "assets"."id" = "exif"."assetId"
+where
+  "ownerId" = $1
+  and "deletedAt" is null
+order by
+  "exif"."fileSizeInByte" desc
+limit
+  $2
+
 -- AssetRepository.getTimeBuckets
 with
   "assets" as (
