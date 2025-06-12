@@ -449,8 +449,23 @@ export type AssetMediaCreateDto = {
     sidecarData?: Blob;
     visibility?: AssetVisibility;
 };
+export type SyncAssetV1 = {
+    checksum: string;
+    deletedAt: string | null;
+    fileCreatedAt: string | null;
+    fileModifiedAt: string | null;
+    id: string;
+    isFavorite: boolean;
+    localDateTime: string | null;
+    originalFileName: string;
+    ownerId: string;
+    thumbhash: string | null;
+    "type": AssetTypeEnum;
+    visibility: AssetVisibility;
+};
 export type AssetMediaResponseDto = {
     id: string;
+    payload?: SyncAssetV1;
     status: AssetMediaStatus;
 };
 export type AssetBulkUpdateDto = {
