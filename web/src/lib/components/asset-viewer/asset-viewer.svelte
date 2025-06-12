@@ -300,8 +300,10 @@
 
   const handleStopSlideshow = async () => {
     try {
+      // eslint-disable-next-line tscompat/tscompat
       if (document.fullscreenElement) {
         document.body.style.cursor = '';
+        // eslint-disable-next-line tscompat/tscompat
         await document.exitFullscreen();
       }
     } catch (error) {

@@ -1,4 +1,6 @@
 import js from '@eslint/js';
+import tslintPluginCompat from '@koddsson/eslint-plugin-tscompat';
+import eslintPluginCompat from 'eslint-plugin-compat';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
@@ -14,6 +16,37 @@ export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
+  {
+    plugins: {
+      tscompat: tslintPluginCompat,
+    },
+    rules: {
+      'tscompat/tscompat': [
+        'error',
+        { browserslist: ['> 0.2% and last 4 major versions', '> 0.5%', 'not dead', 'edge >= 135', 'not edge < 135'] },
+      ],
+    },
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: __dirname,
+      },
+    },
+    ignores: ['**/service-worker/**'],
+  },
+  {
+    plugins: {
+      compat: eslintPluginCompat,
+    },
+    settings: {
+      polyfills: [],
+      lintAllEsApis: true,
+    },
+    rules: {
+      'compat/compat': 'error',
+    },
+  },
   {
     ignores: [
       '**/.DS_Store',
