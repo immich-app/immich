@@ -10,13 +10,13 @@ import 'package:immich_mobile/providers/image/cache/image_loader.dart';
 import 'package:immich_mobile/providers/image/cache/thumbnail_image_cache_manager.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
-class ImRemoteThumbProvider extends ImageProvider<ImRemoteThumbProvider> {
+class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
   final String assetId;
   final double height;
   final double width;
   final CacheManager? cacheManager;
 
-  ImRemoteThumbProvider({
+  RemoteThumbProvider({
     required this.assetId,
     this.height = kTimelineFixedTileExtend,
     this.width = kTimelineFixedTileExtend,
@@ -24,7 +24,7 @@ class ImRemoteThumbProvider extends ImageProvider<ImRemoteThumbProvider> {
   });
 
   @override
-  Future<ImRemoteThumbProvider> obtainKey(
+  Future<RemoteThumbProvider> obtainKey(
     ImageConfiguration configuration,
   ) {
     return SynchronousFuture(this);
@@ -32,7 +32,7 @@ class ImRemoteThumbProvider extends ImageProvider<ImRemoteThumbProvider> {
 
   @override
   ImageStreamCompleter loadImage(
-    ImRemoteThumbProvider key,
+    RemoteThumbProvider key,
     ImageDecoderCallback decode,
   ) {
     final cache = cacheManager ?? ThumbnailImageCacheManager();
@@ -43,7 +43,7 @@ class ImRemoteThumbProvider extends ImageProvider<ImRemoteThumbProvider> {
   }
 
   Stream<Codec> _codec(
-    ImRemoteThumbProvider key,
+    RemoteThumbProvider key,
     CacheManager cache,
     ImageDecoderCallback decode,
   ) async* {
@@ -61,7 +61,7 @@ class ImRemoteThumbProvider extends ImageProvider<ImRemoteThumbProvider> {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is ImRemoteThumbProvider) {
+    if (other is RemoteThumbProvider) {
       return assetId == other.assetId;
     }
 

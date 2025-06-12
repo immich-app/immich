@@ -9,6 +9,12 @@ enum AssetType {
   audio,
 }
 
+enum AssetState {
+  local,
+  remote,
+  merged,
+}
+
 sealed class BaseAsset {
   final String name;
   final String? checksum;
@@ -31,6 +37,8 @@ sealed class BaseAsset {
     this.durationInSeconds,
     this.isFavorite = false,
   });
+
+  AssetState get storage;
 
   @override
   String toString() {

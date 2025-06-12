@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/segment_builder.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
@@ -96,7 +96,7 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>(
         headerExtent: args.showHeader ? 80 : 0,
         headerBuilder: (_, bucket, height) =>
             TimelineHeader(bucket: bucket, height: height),
-        tileBuilder: (asset, size) => ImThumbnail(asset: asset, size: size),
+        tileBuilder: (asset, size) => ThumbnailTile(asset: asset, size: size),
       ).build();
     });
   },
