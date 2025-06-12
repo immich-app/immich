@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
+import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
@@ -18,6 +19,14 @@ export class DuplicateService extends BaseService {
       duplicateId,
       assets: assets.map((asset) => mapAsset(asset, { auth })),
     }));
+  }
+
+  async delete(auth: AuthDto, id: string): Promise<void> {
+    await this.duplicateRepository.delete(auth.user.id, id);
+  }
+
+  async deleteAll(auth: AuthDto, dto: BulkIdsDto) {
+    await this.duplicateRepository.deleteAll(auth.user.id, dto.ids);
   }
 
   @OnJob({ name: JobName.QUEUE_DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })

@@ -2284,12 +2284,29 @@ export function getDownloadInfo({ key, downloadInfoDto }: {
         body: downloadInfoDto
     })));
 }
+export function deleteDuplicates({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
 export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: DuplicateResponseDto[];
     }>("/duplicates", {
         ...opts
+    }));
+}
+export function deleteDuplicate({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/duplicates/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
     }));
 }
 export function getFaces({ id }: {

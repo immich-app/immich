@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Kysely, NotNull, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
-import { DummyValue, GenerateSql } from 'src/decorators';
+import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
@@ -76,6 +76,31 @@ export class DuplicateRepository {
         )
         .execute()
     );
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async delete(userId: string, id: string): Promise<void> {
+    await this.db
+      .updateTable('assets')
+      .set({ duplicateId: null })
+      .where('ownerId', '=', userId)
+      .where('duplicateId', '=', id)
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  @Chunked({ paramIndex: 1 })
+  async deleteAll(userId: string, ids: string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.db
+      .updateTable('assets')
+      .set({ duplicateId: null })
+      .where('ownerId', '=', userId)
+      .where('duplicateId', 'in', ids)
+      .execute();
   }
 
   @GenerateSql({
