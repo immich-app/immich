@@ -94,6 +94,7 @@ class NativeSyncApiImpl: NativeSyncApi {
       collections.enumerateObjects { (album, _, _) in
         let options = PHFetchOptions()
         options.sortDescriptors = [NSSortDescriptor(key: "modificationDate", ascending: false)]
+        options.includeHiddenAssets = false
         let assets = PHAsset.fetchAssets(in: album, options: options)
         let isCloud = album.assetCollectionSubtype == .albumCloudShared || album.assetCollectionSubtype == .albumMyPhotoStream
         
@@ -149,7 +150,9 @@ class NativeSyncApiImpl: NativeSyncApi {
         
         if (updated.isEmpty) { continue }
         
-        let result = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: nil)
+        let options = PHFetchOptions()
+        options.includeHiddenAssets = false
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: options)
         for i in 0..<result.count {
           let asset = result.object(at: i)
           
@@ -187,6 +190,7 @@ class NativeSyncApiImpl: NativeSyncApi {
       collections.enumerateObjects { (album, _, _) in
         let options = PHFetchOptions()
         options.predicate = NSPredicate(format: "localIdentifier IN %@", assets.map(\.id))
+        options.includeHiddenAssets = false
         let result = PHAsset.fetchAssets(in: album, options: options)
         result.enumerateObjects { (asset, _, _) in
           albumAssets[asset.localIdentifier, default: []].append(album.localIdentifier)
@@ -203,7 +207,9 @@ class NativeSyncApiImpl: NativeSyncApi {
     }
     
     var ids: [String] = []
-    let assets = PHAsset.fetchAssets(in: album, options: nil)
+    let options = PHFetchOptions()
+    options.includeHiddenAssets = false
+    let assets = PHAsset.fetchAssets(in: album, options: options)
     assets.enumerateObjects { (asset, _, _) in
       ids.append(asset.localIdentifier)
     }
@@ -219,6 +225,7 @@ class NativeSyncApiImpl: NativeSyncApi {
     let date = NSDate(timeIntervalSince1970: TimeInterval(timestamp))
     let options = PHFetchOptions()
     options.predicate = NSPredicate(format: "creationDate > %@ OR modificationDate > %@", date, date)
+    options.includeHiddenAssets = false
     let assets = PHAsset.fetchAssets(in: album, options: options)
     return Int64(assets.count)
   }
@@ -230,6 +237,7 @@ class NativeSyncApiImpl: NativeSyncApi {
     }
     
     let options = PHFetchOptions()
+    options.includeHiddenAssets = false
     if(updatedTimeCond != nil) {
       let date = NSDate(timeIntervalSince1970: TimeInterval(updatedTimeCond!))
       options.predicate = NSPredicate(format: "creationDate > %@ OR modificationDate > %@", date, date)
