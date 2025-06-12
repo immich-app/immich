@@ -9401,6 +9401,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "filename": {
+            "type": "string"
+          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -9450,6 +9453,9 @@
           },
           "fileModifiedAt": {
             "format": "date-time",
+            "type": "string"
+          },
+          "filename": {
             "type": "string"
           }
         },

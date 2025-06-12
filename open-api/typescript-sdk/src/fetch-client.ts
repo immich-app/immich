@@ -444,6 +444,7 @@ export type AssetMediaCreateDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
+    filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
@@ -510,6 +511,7 @@ export type AssetMediaReplaceDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
+    filename?: string;
 };
 export type SignUpDto = {
     email: string;
