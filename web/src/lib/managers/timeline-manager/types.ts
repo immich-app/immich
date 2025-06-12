@@ -1,5 +1,5 @@
 import type { TimelinePlainDate, TimelinePlainDateTime } from '$lib/utils/timeline-util';
-import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
+import type { AssetStackResponseDto, AssetVisibility, TagResponseDto } from '@immich/sdk';
 
 export type AssetApiGetTimeBucketsRequest = Parameters<typeof import('@immich/sdk').getTimeBuckets>[0];
 
@@ -31,6 +31,7 @@ export type TimelineAsset = {
   city: string | null;
   country: string | null;
   people: string[] | null;
+  tags: TagResponseDto[] | null;
 };
 
 export type AssetOperation = (asset: TimelineAsset) => { remove: boolean };

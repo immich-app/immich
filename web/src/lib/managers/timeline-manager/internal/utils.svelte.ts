@@ -1,3 +1,5 @@
+import type { TagResponseDto } from '@immich/sdk';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function updateObject(target: any, source: any): boolean {
   if (!target) {
@@ -25,4 +27,14 @@ export function updateObject(target: any, source: any): boolean {
 }
 export function isMismatched<T>(option: T | undefined, value: T): boolean {
   return option === undefined ? false : option !== value;
+}
+
+export function isMismatchedTag(target: string | undefined, tags: TagResponseDto[] | null): boolean {
+  if (target === undefined) {
+    return false;
+  }
+  if (tags === null) {
+    return true;
+  }
+  return !tags.find((candidate) => candidate.value === target);
 }

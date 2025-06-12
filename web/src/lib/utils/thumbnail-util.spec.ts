@@ -1,6 +1,7 @@
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { getAltText } from '$lib/utils/thumbnail-util';
 import { AssetVisibility } from '@immich/sdk';
+import { timelineAssetFactory } from '@test-data/factories/asset-factory';
 import { init, register, waitLocale } from 'svelte-i18n';
 
 interface Person {
@@ -57,7 +58,7 @@ describe('getAltText', () => {
       expected: string;
     }) => {
       const testDate = new Date('2024-01-01T12:00:00.000Z');
-      const asset: TimelineAsset = {
+      const asset: TimelineAsset = timelineAssetFactory.build({
         id: 'test-id',
         ownerId: 'test-owner',
         ratio: 1,
@@ -93,7 +94,7 @@ describe('getAltText', () => {
         city: city ?? null,
         country: country ?? null,
         people: people?.map((person: Person) => person.name) ?? [],
-      };
+      });
 
       getAltText.subscribe((fn) => {
         expect(fn(asset)).toEqual(expected);

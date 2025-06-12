@@ -24,7 +24,7 @@ import {
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { DayGroup } from './day-group.svelte';
-import { isMismatched, updateObject } from './internal/utils.svelte';
+import { isMismatched, isMismatchedTag, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
 import type {
   AssetDescriptor,
@@ -411,8 +411,10 @@ export class TimelineManager {
 
   addAssets(assets: TimelineAsset[]) {
     const assetsToUpdate = assets.filter((asset) => !this.isExcluded(asset));
-    const notUpdated = this.updateAssets(assetsToUpdate);
-    addAssetsToMonthGroups(this, [...notUpdated], { order: this.#options.order ?? AssetOrder.Desc });
+    if (assetsToUpdate.length > 0) {
+      const notUpdated = this.updateAssets(assetsToUpdate);
+      addAssetsToMonthGroups(this, [...notUpdated], { order: this.#options.order ?? AssetOrder.Desc });
+    }
   }
 
   async findMonthGroupForAsset(id: string) {
@@ -533,7 +535,8 @@ export class TimelineManager {
     return (
       isMismatched(this.#options.visibility, asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
-      isMismatched(this.#options.isTrashed, asset.isTrashed)
+      isMismatched(this.#options.isTrashed, asset.isTrashed) ||
+      isMismatchedTag(this.#options.tagId, asset.tags)
     );
   }
 }

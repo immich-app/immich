@@ -187,6 +187,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     city: city || null,
     country: country || null,
     people,
+    tags: assetResponse.tags || null,
   };
 };
 

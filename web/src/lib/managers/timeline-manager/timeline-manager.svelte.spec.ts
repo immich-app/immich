@@ -4,6 +4,7 @@ import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
+import { tagFactory } from '@test-data/factories/tag-factory';
 import { TimelineManager } from './timeline-manager.svelte';
 import type { TimelineAsset } from './types';
 
@@ -294,6 +295,22 @@ describe('TimelineManager', () => {
       await timelineManager.updateOptions({ isTrashed: true });
       timelineManager.addAssets([asset, trashedAsset]);
       expect(await getAssets(timelineManager)).toEqual([trashedAsset]);
+    });
+
+    it('ignores assets that do not have matching tagId', async () => {
+      const updateAssetsSpy = vi.spyOn(timelineManager, 'updateAssets');
+
+      await timelineManager.updateOptions({ deferInit: false, tagId: 'tag-1' });
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          tags: [tagFactory.build({ id: 'tag-2', parentId: 'tag-1' })],
+        }),
+      );
+
+      timelineManager.addAssets([asset]);
+
+      expect(updateAssetsSpy).not.toHaveBeenCalled();
+      expect(timelineManager.assetCount).toEqual(0);
     });
   });
 
