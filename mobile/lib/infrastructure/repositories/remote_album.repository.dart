@@ -150,6 +150,7 @@ extension on RemoteAlbumEntityData {
       description: description,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      thumbnailAssetId: thumbnailAssetId,
       isActivityEnabled: isActivityEnabled,
       order: order,
       assetCount: assetCount,

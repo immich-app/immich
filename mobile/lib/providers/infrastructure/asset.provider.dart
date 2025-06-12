@@ -21,10 +21,7 @@ final assetApiRepositoryProvider = Provider<IAssetApiRepository>(
   (ref) => AssetApiRepository(ref.watch(apiServiceProvider)),
 );
 
-final assetServiceProvider = Provider<AssetService>(
-  (ref) => AssetService(
-    localAssetRepository: ref.watch(localAssetRepositoryProvider),
-    remoteAssetRepository: ref.watch(remoteAssetRepositoryProvider),
-    assetApiRepository: ref.watch(assetApiRepositoryProvider),
-  ),
+final assetServiceProvider = Provider.autoDispose<AssetService>(
+  (ref) =>
+      throw UnimplementedError('Will be overridden through a ProviderScope'),
 );
