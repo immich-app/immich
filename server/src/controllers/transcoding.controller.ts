@@ -1,4 +1,4 @@
-import {Controller, Get, Param, Query, Res} from '@nestjs/common';
+import { Controller, Get, Param, Query, Res, UnauthorizedException } from '@nestjs/common';
 import {FileResponse} from 'src/middleware/auth.guard';
 import {PartParamDto, PlaylistParamDto} from 'src/dtos/video.dto';
 import {Response} from 'express';
@@ -11,6 +11,7 @@ import {SystemMetadataRepository} from 'src/repositories/system-metadata.reposit
 import {promisify} from 'node:util';
 import sanitize from 'sanitize-filename';
 import fs from 'node:fs';
+import { rethrow } from '@nestjs/core/helpers/rethrow';
 
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
@@ -35,13 +36,7 @@ export class TranscodingController {
     try {
       data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string };
     } catch (error: any) {
-      if (error instanceof JsonWebTokenError) {
-        res.status(401);
-        res.end();
-      } else {
-        throw error;
-      }
-      return;
+      throw (error instanceof JsonWebTokenError ? new UnauthorizedException() : error);
     }
     if (name == 'master.m3u8') {
       res.contentType('application/vnd.apple.mpegurl');
@@ -60,7 +55,12 @@ export class TranscodingController {
     @Param() { secret, name }: PartParamDto,
     @Res() res: Response,
   ) {
-    const data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string };
+    let data;
+    try {
+      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string };
+    } catch (error: any) {
+      throw (error instanceof JsonWebTokenError ? new UnauthorizedException() : error);
+    }
 
     const arr = name.split('.');
     const _sendFile = (path: string, options: SendFileOptions) =>

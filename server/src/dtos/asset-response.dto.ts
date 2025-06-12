@@ -14,6 +14,7 @@ import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetStatus, AssetType } from 'src/enum';
 import { mimeTypes } from 'src/utils/mime-types';
+import { AudioStreamInfo, VideoStreamInfo } from 'src/types';
 
 export class SanitizedAssetResponseDto {
   id!: string;
@@ -54,6 +55,9 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
 
   @PropertyLifecycle({ deprecatedAt: 'v1.113.0' })
   resized?: boolean;
+
+  videoStreams?: VideoStreamInfo[];
+  audioStreams?: AudioStreamInfo[];
 }
 
 export type MapAsset = {
