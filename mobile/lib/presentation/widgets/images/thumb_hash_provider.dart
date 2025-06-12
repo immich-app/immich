@@ -5,21 +5,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:thumbhash/thumbhash.dart';
 
-class ImThumbHashProvider extends ImageProvider<ImThumbHashProvider> {
+class ThumbHashProvider extends ImageProvider<ThumbHashProvider> {
   final String thumbHash;
 
-  ImThumbHashProvider({
+  ThumbHashProvider({
     required this.thumbHash,
   });
 
   @override
-  Future<ImThumbHashProvider> obtainKey(ImageConfiguration configuration) {
+  Future<ThumbHashProvider> obtainKey(ImageConfiguration configuration) {
     return SynchronousFuture(this);
   }
 
   @override
   ImageStreamCompleter loadImage(
-    ImThumbHashProvider key,
+    ThumbHashProvider key,
     ImageDecoderCallback decode,
   ) {
     return MultiFrameImageStreamCompleter(
@@ -29,7 +29,7 @@ class ImThumbHashProvider extends ImageProvider<ImThumbHashProvider> {
   }
 
   Future<Codec> _loadCodec(
-    ImThumbHashProvider key,
+    ThumbHashProvider key,
     ImageDecoderCallback decode,
   ) async {
     final image = thumbHashToRGBA(base64Decode(key.thumbHash));
@@ -39,7 +39,7 @@ class ImThumbHashProvider extends ImageProvider<ImThumbHashProvider> {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is ImThumbHashProvider) {
+    if (other is ThumbHashProvider) {
       return thumbHash == other.thumbHash;
     }
     return false;

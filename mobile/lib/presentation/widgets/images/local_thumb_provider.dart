@@ -10,7 +10,7 @@ import 'package:immich_mobile/infrastructure/repositories/asset_media.repository
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/image/cache/thumbnail_image_cache_manager.dart';
 
-class ImLocalThumbProvider extends ImageProvider<ImLocalThumbProvider> {
+class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   final IAssetMediaRepository _assetMediaRepository =
       const AssetMediaRepository();
   final CacheManager? cacheManager;
@@ -19,7 +19,7 @@ class ImLocalThumbProvider extends ImageProvider<ImLocalThumbProvider> {
   final double height;
   final double width;
 
-  ImLocalThumbProvider({
+  LocalThumbProvider({
     required this.asset,
     this.height = kTimelineFixedTileExtend,
     this.width = kTimelineFixedTileExtend,
@@ -27,7 +27,7 @@ class ImLocalThumbProvider extends ImageProvider<ImLocalThumbProvider> {
   });
 
   @override
-  Future<ImLocalThumbProvider> obtainKey(
+  Future<LocalThumbProvider> obtainKey(
     ImageConfiguration configuration,
   ) {
     return SynchronousFuture(this);
@@ -35,7 +35,7 @@ class ImLocalThumbProvider extends ImageProvider<ImLocalThumbProvider> {
 
   @override
   ImageStreamCompleter loadImage(
-    ImLocalThumbProvider key,
+    LocalThumbProvider key,
     ImageDecoderCallback decode,
   ) {
     final cache = cacheManager ?? ThumbnailImageCacheManager();
@@ -49,7 +49,7 @@ class ImLocalThumbProvider extends ImageProvider<ImLocalThumbProvider> {
   }
 
   Stream<Codec> _codec(
-    ImLocalThumbProvider key,
+    LocalThumbProvider key,
     CacheManager cache,
     ImageDecoderCallback decode,
   ) async* {
@@ -85,7 +85,7 @@ class ImLocalThumbProvider extends ImageProvider<ImLocalThumbProvider> {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is ImLocalThumbProvider) {
+    if (other is LocalThumbProvider) {
       return asset.id == other.asset.id &&
           asset.updatedAt == other.asset.updatedAt;
     }

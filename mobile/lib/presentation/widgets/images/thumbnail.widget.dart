@@ -8,8 +8,8 @@ import 'package:immich_mobile/widgets/common/fade_in_placeholder_image.dart';
 import 'package:logging/logging.dart';
 import 'package:octo_image/octo_image.dart';
 
-class ImThumbnail extends StatelessWidget {
-  const ImThumbnail({
+class Thumbnail extends StatelessWidget {
+  const Thumbnail({
     required this.asset,
     this.size = const Size.square(256),
     this.fit = BoxFit.cover,
@@ -25,7 +25,7 @@ class ImThumbnail extends StatelessWidget {
     Size size = const Size.square(256),
   }) {
     if (asset is LocalAsset) {
-      return ImLocalThumbProvider(
+      return LocalThumbProvider(
         asset: asset,
         height: size.height,
         width: size.width,
@@ -33,7 +33,7 @@ class ImThumbnail extends StatelessWidget {
     }
 
     if (asset is Asset) {
-      return ImRemoteThumbProvider(
+      return RemoteThumbProvider(
         assetId: asset.id,
         height: size.height,
         width: size.width,
@@ -77,7 +77,7 @@ OctoPlaceholderBuilder _blurHashPlaceholderBuilder(
       ? const ThumbnailPlaceholder()
       : FadeInPlaceholderImage(
           placeholder: const ThumbnailPlaceholder(),
-          image: ImThumbHashProvider(thumbHash: thumbHash),
+          image: ThumbHashProvider(thumbHash: thumbHash),
           fit: fit ?? BoxFit.cover,
         );
 }
