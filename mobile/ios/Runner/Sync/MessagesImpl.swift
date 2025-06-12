@@ -36,6 +36,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let defaults: UserDefaults
   private let changeTokenKey = "immich:changeToken"
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
+  private let recoveredAlbumSubType = 1000000219
   
   private let hashBufferSize = 2 * 1024 * 1024
   
@@ -91,7 +92,15 @@ class NativeSyncApiImpl: NativeSyncApi {
     
     albumTypes.forEach { type in
       let collections = PHAssetCollection.fetchAssetCollections(with: type, subtype: .any, options: nil)
-      collections.enumerateObjects { (album, _, _) in
+      for i in 0..<collections.count {
+        let album = collections.object(at: i)
+        print("Album name: \(album.localizedTitle ?? "Unknown"), type: \(album.assetCollectionType), Subtype: \(album.assetCollectionSubtype)")
+      
+        // Ignore recovered album
+        if(album.assetCollectionSubtype.rawValue == self.recoveredAlbumSubType) {
+          continue;
+        }
+        
         let options = PHFetchOptions()
         options.sortDescriptors = [NSSortDescriptor(key: "modificationDate", ascending: false)]
         options.includeHiddenAssets = false
