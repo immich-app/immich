@@ -24,6 +24,14 @@ class ThumbnailTile extends StatelessWidget {
             child: Thumbnail(asset: asset, fit: fit, size: size),
           ),
         ),
+        if (asset.isVideo)
+          const Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: EdgeInsets.only(right: 10.0, top: 6.0),
+              child: _VideoIndicator(),
+            ),
+          ),
         Align(
           alignment: Alignment.bottomRight,
           child: Padding(
@@ -41,6 +49,15 @@ class ThumbnailTile extends StatelessWidget {
           ),
       ],
     );
+  }
+}
+
+class _VideoIndicator extends StatelessWidget {
+  const _VideoIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _TileOverlayIcon(Icons.play_circle_filled_rounded);
   }
 }
 
