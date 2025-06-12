@@ -206,10 +206,10 @@ export class TranscodingService extends BaseService {
       const videoStream = stats.videoStreams[0],
         audioStream = stats.audioStreams[0];
 
-      const options = BaseConfig.create(liveFfmpeg, this.videoInterfaces).getCommand(TranscodeTarget.ALL, videoStream, audioStream);
       for (const option of options.inputOptions) {
         args.push(...option.split(' '))
       }
+      const options = BaseConfig.create(liveFfmpeg, this.videoInterfaces).getCommand(TranscodeTarget.ALL, videoStream, audioStream);
       for (const option of options.outputOptions) {
         args.push(...option.split(' '))
       }
