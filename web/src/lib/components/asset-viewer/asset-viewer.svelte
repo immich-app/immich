@@ -560,10 +560,9 @@
     {@const stackedAssets = stack.assets}
     <div
       id="stack-slideshow"
-      class="flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
-      style:max-height={stackSelectedThumbnailSize * 2 + 'px'}
+      class="flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto overflow-y-hidden horizontal-scrollbar"
     >
-      <div class="relative w-full">
+      <div class="relative flex flex-row no-wrap">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
             class={['inline-block px-1 relative transition-all pb-2']}
