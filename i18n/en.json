@@ -34,6 +34,7 @@
   "added_to_favorites_count": "Added {count, number} to favorites",
   "admin": {
     "add_exclusion_pattern_description": "Add exclusion patterns. Globbing using *, **, and ? is supported. To ignore all files in any directory named \"Raw\", use \"**/Raw/**\". To ignore all files ending in \".tif\", use \"**/*.tif\". To ignore an absolute path, use \"/path/to/ignore/**\".",
+    "admin_user": "Admin User",
     "asset_offline_description": "This external library asset is no longer found on disk and has been moved to trash. If the file was moved within the library, check your timeline for the new corresponding asset. To restore this asset, please ensure that the file path below can be accessed by Immich and scan the library.",
     "authentication_settings": "Authentication Settings",
     "authentication_settings_description": "Manage password, OAuth, and other authentication settings",
