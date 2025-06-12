@@ -99,4 +99,5 @@ export default typescriptEslint.config(
       },
     },
   },
+  oxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
 );
