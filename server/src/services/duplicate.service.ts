@@ -13,7 +13,7 @@ import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 @Injectable()
 export class DuplicateService extends BaseService {
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
-    const duplicates = await this.assetRepository.getDuplicates(auth.user.id);
+    const duplicates = await this.duplicateRepository.getAll(auth.user.id);
     return duplicates.map(({ duplicateId, assets }) => ({
       duplicateId,
       assets: assets.map((asset) => mapAsset(asset, { auth })),
@@ -74,7 +74,7 @@ export class DuplicateService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const duplicateAssets = await this.searchRepository.searchDuplicates({
+    const duplicateAssets = await this.duplicateRepository.search({
       assetId: asset.id,
       embedding: asset.embedding,
       maxDistance: machineLearning.duplicateDetection.maxDistance,
@@ -117,7 +117,11 @@ export class DuplicateService extends BaseService {
       .map((duplicate) => duplicate.assetId);
     assetIdsToUpdate.push(asset.id);
 
-    await this.assetRepository.updateDuplicates({ targetDuplicateId, assetIds: assetIdsToUpdate, duplicateIds });
+    await this.duplicateRepository.merge({
+      targetId: targetDuplicateId,
+      assetIds: assetIdsToUpdate,
+      sourceIds: duplicateIds,
+    });
     return assetIdsToUpdate;
   }
 }
