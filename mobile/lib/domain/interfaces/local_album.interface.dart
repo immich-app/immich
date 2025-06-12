@@ -1,6 +1,6 @@
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/local_album.model.dart';
+import 'package:immich_mobile/domain/models/album/base_album.model.dart';
 
 abstract interface class ILocalAlbumRepository implements IDatabaseRepository {
   Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}});

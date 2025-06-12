@@ -3,7 +3,7 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart'
     as i1;
-import 'package:immich_mobile/domain/models/local_album.model.dart' as i2;
+import 'package:immich_mobile/domain/models/album/base_album.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart'
     as i3;
 import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;

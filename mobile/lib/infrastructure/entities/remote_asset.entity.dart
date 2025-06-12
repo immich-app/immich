@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
@@ -33,4 +34,19 @@ class RemoteAssetEntity extends Table
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
+  Asset toDto() => Asset(
+        id: id,
+        name: name,
+        checksum: checksum,
+        type: type,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        thumbHash: thumbHash,
+        visibility: visibility,
+        isFavorite: isFavorite,
+        durationInSeconds: durationInSeconds,
+  );
 }

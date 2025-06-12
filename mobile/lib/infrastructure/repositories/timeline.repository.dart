@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 class DriftTimelineRepository extends DriftDatabaseRepository
@@ -137,5 +138,55 @@ class DriftTimelineRepository extends DriftDatabaseRepository
     return query
         .map((row) => row.readTable(_db.localAssetEntity).toDto())
         .get();
+  }
+
+  @override
+  Stream<List<Bucket>> watchRemoteBucket(String albumId) {
+    final assetCountExp = _db.remoteAssetEntity.id.count();
+    final monthYearExp = _db.remoteAssetEntity.createdAt
+        // DateTimes are stored in UTC, so we need to convert them to local time inside the query before formatting
+        // to create the correct time bucket
+        .modify(const DateTimeModifier.localTime())
+        .date;
+
+    final query = _db.remoteAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, monthYearExp])
+      ..join([
+        innerJoin(
+          _db.remoteAlbumAssetEntity,
+          _db.remoteAlbumAssetEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+        ),
+      ])
+      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
+      ..groupBy([monthYearExp])
+      ..orderBy([OrderingTerm.desc(monthYearExp)]);
+
+    return query.map((row) {
+      final timeline = DateFormat("y-M-d").parse(row.read(monthYearExp)!);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  @override
+  Future<List<BaseAsset>> getRemoteBucketAssets(
+    String albumId, {
+    required int index,
+    required int count,
+  }) {
+    final query = _db.remoteAssetEntity.select()
+      ..join(
+        [
+          innerJoin(
+            _db.remoteAlbumAssetEntity,
+            _db.remoteAlbumAssetEntity.assetId
+                    .equalsExp(_db.remoteAssetEntity.id) &
+                _db.remoteAlbumAssetEntity.albumId.equals(albumId),
+          ),
+        ],
+      )
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..limit(count, offset: index);
+    return query.map((row) => row.toDto()).get();
   }
 }

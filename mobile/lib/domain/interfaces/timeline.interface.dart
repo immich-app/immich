@@ -17,4 +17,12 @@ abstract interface class ITimelineRepository implements IDatabaseRepository {
     required int index,
     required int count,
   });
+
+  Stream<List<Bucket>> watchRemoteBucket(String albumId);
+
+  Future<List<BaseAsset>> getRemoteBucketAssets(
+    String albumId, {
+    required int index,
+    required int count,
+  });
 }

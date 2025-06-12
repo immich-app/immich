@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/local_album.model.dart';
+import 'package:immich_mobile/domain/models/album/base_album.model.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 class LocalAlbumEntity extends Table with DriftDefaultsMixin {

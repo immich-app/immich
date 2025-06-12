@@ -143,6 +143,38 @@ class AlbumOptionsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LocalAlbumPage]
+class LocalAlbumRoute extends PageRouteInfo<void> {
+  const LocalAlbumRoute({List<PageRouteInfo>? children})
+      : super(LocalAlbumRoute.name, initialChildren: children);
+
+  static const String name = 'LocalAlbumRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LocalAlbumPage();
+    },
+  );
+}
+
+/// generated route for
+/// [RemoteAlbumPage]
+class RemoteAlbumRoute extends PageRouteInfo<void> {
+  const RemoteAlbumRoute({List<PageRouteInfo>? children})
+      : super(RemoteAlbumRoute.name, initialChildren: children);
+
+  static const String name = 'RemoteAlbumRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const RemoteAlbumPage();
+    },
+  );
+}
+
+/// generated route for
 /// [AlbumPreviewPage]
 class AlbumPreviewRoute extends PageRouteInfo<AlbumPreviewRouteArgs> {
   AlbumPreviewRoute({

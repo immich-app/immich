@@ -1,0 +1,3 @@
+abstract interface class IRemoteAssetRepository {
+
+}

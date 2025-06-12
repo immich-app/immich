@@ -75,7 +75,7 @@ class LocalMediaSummaryPage extends StatelessWidget {
       body: Consumer(
         builder: (ctx, ref, __) {
           final db = ref.watch(driftProvider);
-          final albumsFuture = ref.watch(localAlbumRepository).getAll();
+          final albumsFuture = ref.watch(localAlbumRepositoryProvider).getAll();
 
           return CustomScrollView(
             slivers: [

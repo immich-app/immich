@@ -95,6 +95,16 @@ final _features = [
     icon: Icons.timeline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const MainTimelineRoute()),
   ),
+  _Feature(
+    name: 'Local Album',
+    icon: Icons.photo_album_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const LocalAlbumRoute()),
+  ),
+  _Feature(
+    name: 'Remote Album',
+    icon: Icons.photo_album_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const RemoteAlbumRoute()),
+  ),
 ];
 
 @RoutePage()

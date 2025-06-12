@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/local_album.model.dart';
+import 'package:immich_mobile/domain/models/album/base_album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';

@@ -45,6 +45,17 @@ class TimelineService {
     );
   }
 
+  factory TimelineService.remoteAlbum({
+    required String albumId,
+    required ITimelineRepository repository,
+  }) {
+    return TimelineService(
+      assetSource: (index, count) =>
+          repository.getRemoteBucketAssets(albumId, index: index, count: count),
+      bucketSource: () => repository.watchRemoteBucket(albumId),
+    );
+  }
+
   final AsyncMutex _mutex = AsyncMutex();
   int _bufferOffset = 0;
   List<BaseAsset> _buffer = [];

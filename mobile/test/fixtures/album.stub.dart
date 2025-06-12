@@ -1,4 +1,4 @@
-import 'package:immich_mobile/domain/models/local_album.model.dart';
+import 'package:immich_mobile/domain/models/album/base_album.model.dart' hide Album;
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 
