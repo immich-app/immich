@@ -109,6 +109,7 @@ export type UserAdminResponseDto = {
 export type UserAdminCreateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email: string;
+    isAdmin?: boolean;
     name: string;
     notify?: boolean;
     password: string;
@@ -122,6 +123,7 @@ export type UserAdminDeleteDto = {
 export type UserAdminUpdateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email?: string;
+    isAdmin?: boolean;
     name?: string;
     password?: string;
     pinCode?: string | null;

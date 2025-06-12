@@ -15131,6 +15131,9 @@
             "format": "email",
             "type": "string"
           },
+          "isAdmin": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -15280,6 +15283,9 @@
           "email": {
             "format": "email",
             "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
           },
           "name": {
             "type": "string"
