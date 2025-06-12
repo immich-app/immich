@@ -38,6 +38,8 @@ sealed class BaseAsset {
     this.isFavorite = false,
   });
 
+  bool get isImage => type == AssetType.image;
+  bool get isVideo => type == AssetType.video;
   AssetState get storage;
 
   @override
