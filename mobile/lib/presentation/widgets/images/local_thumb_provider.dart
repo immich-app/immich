@@ -9,10 +9,8 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/image/cache/thumbnail_image_cache_manager.dart';
-import 'package:logging/logging.dart';
 
 class ImLocalThumbProvider extends ImageProvider<ImLocalThumbProvider> {
-  final Logger _log = Logger("ImLocalThumbProvider");
   final IAssetMediaRepository _assetMediaRepository =
       const AssetMediaRepository();
   final CacheManager? cacheManager;
@@ -65,9 +63,7 @@ class ImLocalThumbProvider extends ImageProvider<ImLocalThumbProvider> {
         final codec = await decode(buffer);
         yield codec;
         return;
-      } catch (error) {
-        _log.severe('Found thumbnail in cache, but loading it failed', error);
-      }
+      } catch (_) {}
     }
 
     final thumbnailBytes = await _assetMediaRepository.getThumbnail(
