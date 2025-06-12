@@ -164,7 +164,7 @@ export class ServerFeaturesDto {
   sidecar!: boolean;
   search!: boolean;
   email!: boolean;
-  streaming!: string;
+  streaming!: boolean;
 }
 
 export interface ReleaseNotification {
