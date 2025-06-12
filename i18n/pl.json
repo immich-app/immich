@@ -194,7 +194,7 @@
     "oauth_enable_description": "Loguj się za pomocą OAuth",
     "oauth_mobile_redirect_uri": "Mobilny adres zwrotny",
     "oauth_mobile_redirect_uri_override": "Zapasowy URI przekierowania mobilnego",
-    "oauth_mobile_redirect_uri_override_description": "Włącz, gdy dostawca OAuth nie pozwala na mobilne identyfikatory URI typu '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Włącz, gdy dostawca OAuth nie pozwala na mobilne identyfikatory URI typu ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Zarządzaj ustawieniami logowania OAuth",
     "oauth_settings_more_details": "Więcej informacji o tej funkcji znajdziesz w <link>dokumentacji</link>.",

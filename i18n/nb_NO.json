@@ -193,7 +193,7 @@
     "oauth_enable_description": "Logg inn med OAuth",
     "oauth_mobile_redirect_uri": "Mobil omdirigerings-URI",
     "oauth_mobile_redirect_uri_override": "Mobil omdirigerings-URI overstyring",
-    "oauth_mobile_redirect_uri_override_description": "Aktiver når OAuth-leverandøren ikke tillater en mobil URI, som '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Aktiver når OAuth-leverandøren ikke tillater en mobil URI, som ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Administrer innstillinger for OAuth-innlogging",
     "oauth_settings_more_details": "For mer informasjon om denne funksjonen, se <link>dokumentasjonen</link>.",

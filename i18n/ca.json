@@ -194,7 +194,7 @@
     "oauth_enable_description": "Iniciar sessió amb OAuth",
     "oauth_mobile_redirect_uri": "URI de redirecció mòbil",
     "oauth_mobile_redirect_uri_override": "Sobreescriu l'URI de redirecció mòbil",
-    "oauth_mobile_redirect_uri_override_description": "Habilita quan el proveïdor d'OAuth no permet una URI mòbil, com ara '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Habilita quan el proveïdor d'OAuth no permet una URI mòbil, com ara ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Gestiona la configuració de l'inici de sessió OAuth",
     "oauth_settings_more_details": "Per a més detalls sobre aquesta funcionalitat, consulteu la <link>documentació</link>.",

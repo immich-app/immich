@@ -194,7 +194,7 @@
     "oauth_enable_description": "Prijava z OAuth",
     "oauth_mobile_redirect_uri": "Mobilni preusmeritveni URI",
     "oauth_mobile_redirect_uri_override": "Preglasitev URI preusmeritve za mobilne naprave",
-    "oauth_mobile_redirect_uri_override_description": "Omogoči, ko ponudnik OAuth ne dovoli mobilnega URI-ja, kot je '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Omogoči, ko ponudnik OAuth ne dovoli mobilnega URI-ja, kot je ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Upravljanje nastavitev prijave OAuth",
     "oauth_settings_more_details": "Za več podrobnosti o tej funkciji glejte <link>dokumentacijo</link>.",

@@ -194,7 +194,7 @@
     "oauth_enable_description": "用 OAuth 登入",
     "oauth_mobile_redirect_uri": "移動端重定向 URI",
     "oauth_mobile_redirect_uri_override": "移動端重定向 URI 覆蓋",
-    "oauth_mobile_redirect_uri_override_description": "當 OAuth 提供者不允許使用行動 URI（如「'{callback}'」）時啟用",
+    "oauth_mobile_redirect_uri_override_description": "當 OAuth 提供者不允許使用行動 URI（如「''{callback}''」）時啟用",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "管理 OAuth 登入設定",
     "oauth_settings_more_details": "欲瞭解此功能，請參閱<link>說明書</link>。",

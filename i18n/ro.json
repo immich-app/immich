@@ -190,7 +190,7 @@
     "oauth_enable_description": "Autentifică-te cu OAuth",
     "oauth_mobile_redirect_uri": "URI de redirecționare mobilă",
     "oauth_mobile_redirect_uri_override": "Înlocuire URI de redirecționare mobilă",
-    "oauth_mobile_redirect_uri_override_description": "Activați atunci când furnizorul OAuth nu permite un URI mobil, precum '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Activați atunci când furnizorul OAuth nu permite un URI mobil, precum ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Gestionați setările de conectare OAuth",
     "oauth_settings_more_details": "Pentru mai multe detalii despre aceastǎ funcționalitate, verificǎ <link>documentația</link>.",

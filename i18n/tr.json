@@ -191,7 +191,7 @@
     "oauth_enable_description": "OAuth ile giriş yap",
     "oauth_mobile_redirect_uri": "Mobil yönlendirme URL'si",
     "oauth_mobile_redirect_uri_override": "Mobilde zorla kullanılacak Yönlendirme Adresi",
-    "oauth_mobile_redirect_uri_override_description": "Mobil URI'ye izin vermeyen OAuth sağlayıcısı olduğunda etkinleştir, örneğin '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Mobil URI'ye izin vermeyen OAuth sağlayıcısı olduğunda etkinleştir, örneğin ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "OAuth giriş ayarlarını yönet",
     "oauth_settings_more_details": "Bu özellik hakkında daha fazla bilgi için bu sayfayı ziyaret edin <link>Dökümanlar</link>.",

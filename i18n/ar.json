@@ -185,7 +185,7 @@
     "oauth_enable_description": "تسجيل الدخول باستخدام OAuth",
     "oauth_mobile_redirect_uri": "عنوان URI لإعادة التوجيه على الهاتف",
     "oauth_mobile_redirect_uri_override": "تجاوز عنوان URI لإعادة التوجيه على الهاتف",
-    "oauth_mobile_redirect_uri_override_description": "قم بتفعيله عندما لا يسمح موفر OAuth بمعرف URI للجوال، مثل '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "قم بتفعيله عندما لا يسمح موفر OAuth بمعرف URI للجوال، مثل ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "إدارة إعدادات تسجيل الدخول OAuth",
     "oauth_settings_more_details": "لمزيد من التفاصيل حول هذه الميزة، يرجى الرجوع إلى <link>الوثائق</link>.",

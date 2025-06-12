@@ -183,7 +183,7 @@
     "oauth_enable_description": "OAuth తో లాగిన్ అవ్వండి",
     "oauth_mobile_redirect_uri": "మొబైల్ దారిమార్పు URI",
     "oauth_mobile_redirect_uri_override": "మొబైల్ దారిమార్పు URI ఓవర్‌రైడ్",
-    "oauth_mobile_redirect_uri_override_description": "OAuth ప్రొవైడర్ '{callback}'వంటి మొబైల్ URIని అనుమతించనప్పుడు ప్రారంభించండి",
+    "oauth_mobile_redirect_uri_override_description": "OAuth ప్రొవైడర్ ''{callback}''వంటి మొబైల్ URIని అనుమతించనప్పుడు ప్రారంభించండి",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "OAuth లాగిన్ సెట్టింగ్‌లను నిర్వహించండి",
     "oauth_settings_more_details": "ఈ ఫీచర్ గురించి మరిన్ని వివరాల కోసం, <link>డాక్స్</link> చూడండి.",

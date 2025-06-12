@@ -194,7 +194,7 @@
     "oauth_enable_description": "Sisene OAuth abil",
     "oauth_mobile_redirect_uri": "Mobiilne ümbersuunamise URI",
     "oauth_mobile_redirect_uri_override": "Mobiilse ümbersuunamise URI ülekirjutamine",
-    "oauth_mobile_redirect_uri_override_description": "Lülita sisse, kui OAuth pakkuja ei luba mobiilset URI-d, näiteks '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Lülita sisse, kui OAuth pakkuja ei luba mobiilset URI-d, näiteks ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Halda OAuth sisselogimise seadeid",
     "oauth_settings_more_details": "Selle funktsiooni kohta rohkem teada saamiseks loe <link>dokumentatsiooni</link>.",

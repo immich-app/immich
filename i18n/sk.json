@@ -192,7 +192,7 @@
     "oauth_enable_description": "Prihlásiť sa pomocou OAuth",
     "oauth_mobile_redirect_uri": "URI mobilného presmerovania",
     "oauth_mobile_redirect_uri_override": "Prepísanie URI mobilného presmerovania",
-    "oauth_mobile_redirect_uri_override_description": "Povoľte, keď poskytovateľ protokolu OAuth nepovoľuje identifikátor URI pre mobilné zariadenia, napríklad '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Povoľte, keď poskytovateľ protokolu OAuth nepovoľuje identifikátor URI pre mobilné zariadenia, napríklad ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Spravovať nastavenia prihlásenia OAuth",
     "oauth_settings_more_details": "Pre viac informácii o tejto funkcii, prejdite na <link>docs</link>.",

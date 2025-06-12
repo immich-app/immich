@@ -192,7 +192,7 @@
     "oauth_enable_description": "Prijavite se pomoću OAuth-a",
     "oauth_mobile_redirect_uri": "URI za preusmeravanje mobilnih uređaja",
     "oauth_mobile_redirect_uri_override": "Zamena URI-ja mobilnog preusmeravanja",
-    "oauth_mobile_redirect_uri_override_description": "Omogući kada OAuth dobavljač (provider) ne dozvoljava mobilni URI, kao što je '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Omogući kada OAuth dobavljač (provider) ne dozvoljava mobilni URI, kao što je ''{callback}''",
     "oauth_settings": "OAutorizacija",
     "oauth_settings_description": "Upravljajte podešavanjima za prijavu sa OAutorizacijom",
     "oauth_settings_more_details": "Za više detalja o ovoj funkciji pogledajte <link>dokumente</link>.",

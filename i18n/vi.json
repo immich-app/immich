@@ -193,7 +193,7 @@
     "oauth_enable_description": "Đăng nhập với OAuth",
     "oauth_mobile_redirect_uri": "URI chuyển hướng trên thiết bị di động",
     "oauth_mobile_redirect_uri_override": "Ghi đè URI chuyển hướng cho thiết bị di động",
-    "oauth_mobile_redirect_uri_override_description": "Bật khi nhà cung cấp OAuth không cho phép URI di động, như '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Bật khi nhà cung cấp OAuth không cho phép URI di động, như ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Quản lý cài đặt đăng nhập OAuth",
     "oauth_settings_more_details": "Để biết thêm chi tiết về tính năng này, hãy tham khảo <link>tài liệu</link>.",

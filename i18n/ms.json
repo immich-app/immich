@@ -189,7 +189,7 @@
     "oauth_enable_description": "Log masuk dengan OAuth",
     "oauth_mobile_redirect_uri": "URI ubah hala mudah alih",
     "oauth_mobile_redirect_uri_override": "Penggantian URI ubah hala mudah alih",
-    "oauth_mobile_redirect_uri_override_description": "Aktifkan apabila pembekal OAuth tidak membenarkan URI mudah alih, seperti '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Aktifkan apabila pembekal OAuth tidak membenarkan URI mudah alih, seperti ''{callback}''",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Urus tetapan-tetapan log masuk OAuth",
     "oauth_settings_more_details": "Untuk maklumat lanjut tentang ciri ini, rujuk ke <link>dokumen</link>.",

@@ -194,7 +194,7 @@
     "oauth_enable_description": "OAuthでログイン",
     "oauth_mobile_redirect_uri": "モバイル用リダイレクトURI",
     "oauth_mobile_redirect_uri_override": "モバイル用リダイレクトURI（上書き）",
-    "oauth_mobile_redirect_uri_override_description": "'{callback}'など、モバイルURIがOAuthプロバイダーによって許可されていない場合に有効にしてください",
+    "oauth_mobile_redirect_uri_override_description": "''{callback}''など、モバイルURIがOAuthプロバイダーによって許可されていない場合に有効にしてください",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "OAuthログイン設定を管理します",
     "oauth_settings_more_details": "この機能の詳細については、<link>ドキュメント</link>を参照してください。",
