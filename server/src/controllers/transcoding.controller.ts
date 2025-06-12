@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Res, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Header, Param, Query, Res, UnauthorizedException } from '@nestjs/common';
 import {FileResponse} from 'src/middleware/auth.guard';
 import {PartParamDto, PlaylistParamDto} from 'src/dtos/video.dto';
 import {Response} from 'express';
@@ -11,7 +11,6 @@ import {SystemMetadataRepository} from 'src/repositories/system-metadata.reposit
 import {promisify} from 'node:util';
 import sanitize from 'sanitize-filename';
 import fs from 'node:fs';
-import { rethrow } from '@nestjs/core/helpers/rethrow';
 
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
@@ -26,10 +25,10 @@ export class TranscodingController {
   ) {}
 
   @Get(':secret/:name.m3u8')
+  @Header('Content-Type', 'application/vnd.apple.mpegurl')
   @FileResponse()
   async getPlaylist(
     @Param() { secret, name }: PlaylistParamDto,
-    @Res() res: Response,
     @Query('start') start?: number,
   ) {
     let data;
@@ -39,14 +38,10 @@ export class TranscodingController {
       throw (error instanceof JsonWebTokenError ? new UnauthorizedException() : error);
     }
     if (name == 'master.m3u8') {
-      res.contentType('application/vnd.apple.mpegurl');
-      res.write(await this.service.getMasterPlaylist(data.id));
-      res.end();
+      return await this.service.getMasterPlaylist(data.id);
     }
 
-    res.contentType('application/vnd.apple.mpegurl');
-    res.write(await this.service.getPlaylist(data.id, sanitize(name), start !== 0));
-    res.end();
+    return await this.service.getPlaylist(data.id, sanitize(name), start !== 0)
   }
 
   @Get(':secret/:quality/:name.mp4')
