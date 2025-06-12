@@ -60,6 +60,22 @@ where
       "unique"."duplicateId" = "duplicates"."duplicateId"
   )
 
+-- DuplicateRepository.delete
+update "assets"
+set
+  "duplicateId" = $1
+where
+  "ownerId" = $2
+  and "duplicateId" = $3
+
+-- DuplicateRepository.deleteAll
+update "assets"
+set
+  "duplicateId" = $1
+where
+  "ownerId" = $2
+  and "duplicateId" in ($3)
+
 -- DuplicateRepository.search
 begin
 set

@@ -2698,6 +2698,39 @@
       }
     },
     "/duplicates": {
+      "delete": {
+        "operationId": "deleteDuplicates",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ]
+      },
       "get": {
         "operationId": "getAssetDuplicates",
         "parameters": [],
@@ -2713,6 +2746,41 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ]
+      }
+    },
+    "/duplicates/{id}": {
+      "delete": {
+        "operationId": "deleteDuplicate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": ""
           }
         },
