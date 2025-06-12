@@ -46,10 +46,19 @@ class ImThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final thumbHash = asset is Asset ? (asset as Asset).thumbHash : null;
+    final provider = imageProvider(asset: asset, size: size);
 
     return OctoImage.fromSet(
-      image: ImThumbnail.imageProvider(asset: asset, size: size),
-      octoSet: _blurHashOrPlaceholder(thumbHash, fit: fit),
+      image: provider,
+      octoSet: OctoSet(
+        placeholderBuilder: _blurHashPlaceholderBuilder(thumbHash, fit: fit),
+        errorBuilder: _blurHashErrorBuilder(
+          thumbHash,
+          provider: provider,
+          fit: fit,
+          asset: asset,
+        ),
+      ),
       fadeOutDuration: const Duration(milliseconds: 100),
       fadeInDuration: Duration.zero,
       width: size.width,
@@ -58,13 +67,6 @@ class ImThumbnail extends StatelessWidget {
       placeholderFadeInDuration: Duration.zero,
     );
   }
-}
-
-OctoSet _blurHashOrPlaceholder(String? blurhash, {BoxFit? fit}) {
-  return OctoSet(
-    placeholderBuilder: _blurHashPlaceholderBuilder(blurhash, fit: fit),
-    errorBuilder: _blurHashErrorBuilder(blurhash, fit: fit),
-  );
 }
 
 OctoPlaceholderBuilder _blurHashPlaceholderBuilder(
@@ -80,9 +82,16 @@ OctoPlaceholderBuilder _blurHashPlaceholderBuilder(
         );
 }
 
-OctoErrorBuilder _blurHashErrorBuilder(String? blurhash, {BoxFit? fit}) =>
+OctoErrorBuilder _blurHashErrorBuilder(
+  String? blurhash, {
+  BaseAsset? asset,
+  ImageProvider? provider,
+  BoxFit? fit,
+}) =>
     (context, e, s) {
-      Logger("ImThumbnail").warning("Error loading thumbnail: $e", e, s);
+      Logger("ImThumbnail")
+          .warning("Error loading thumbnail for ${asset?.name}", e, s);
+      provider?.evict();
       return Stack(
         alignment: Alignment.center,
         children: [

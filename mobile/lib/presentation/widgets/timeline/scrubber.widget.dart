@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
@@ -75,18 +77,16 @@ List<_Segment> _buildSegments({
     // but we still add the segment to the list to fetch the scroll label
     if (startOffset < previousOffset + kTimelineScrubberPadding) {
       segments.add(segment.copyWith(hasDot: false, hasLabel: false));
-      previousSegment = segment;
       continue;
     }
 
     previousOffset = startOffset;
-
     if (previousSegment?.date.year == date.year) {
       segment = segment.copyWith(hasDot: true);
     } else {
       segment = segment.copyWith(hasDot: true, hasLabel: true);
-      previousSegment = segment;
     }
+    previousSegment = segment;
     segments.add(segment);
   }
 
@@ -95,13 +95,14 @@ List<_Segment> _buildSegments({
 
 class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   double _thumbTopOffset = 0.0;
-  bool _isScrolling = false;
   bool _isDragging = false;
+  bool _showSegments = false;
   List<_Segment> _segments = [];
 
   late AnimationController _thumbAnimationController;
   Timer? _thumbAnimationTimer;
   late Animation<double> _thumbAnimation;
+  Timer? _segmentAnimationTimer;
 
   double get _scrubberHeight =>
       widget.timelineHeight - widget.topPadding - widget.bottomPadding;
@@ -116,7 +117,6 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _isScrolling = false;
     _isDragging = false;
     _segments = _buildSegments(
       layoutSegments: widget.layoutSegments,
@@ -155,6 +155,7 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   void dispose() {
     _thumbAnimationController.dispose();
     _thumbAnimationTimer?.cancel();
+    _segmentAnimationTimer?.cancel();
     super.dispose();
   }
 
@@ -163,8 +164,22 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
     _thumbAnimationTimer = Timer(kTimelineScrubberFadeOutDuration, () {
       _thumbAnimationController.reverse();
       _thumbAnimationTimer = null;
-      _isScrolling = false;
-      _isDragging = false;
+    });
+  }
+
+  void _resetSegments() {
+    // Do not reset segments if they are already being animated out or if they are not shown
+    if (!_showSegments || _segmentAnimationTimer != null) {
+      return;
+    }
+
+    _segmentAnimationTimer = Timer(kTimelineScrubberFadeOutDuration, () {
+      _segmentAnimationTimer = null;
+      if (mounted) {
+        setState(() {
+          _showSegments = false;
+        });
+      }
     });
   }
 
@@ -175,29 +190,30 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
     }
 
     setState(() {
-      _isScrolling = true;
       if (notification is ScrollUpdateNotification) {
         _thumbTopOffset = _currentOffset;
         if (_thumbAnimationController.status != AnimationStatus.forward) {
           _thumbAnimationController.forward();
         }
-
-        _resetThumbTimer();
       }
+      _resetThumbTimer();
+      _resetSegments();
     });
 
     return false;
   }
 
-  void _onDragStart(DragStartDetails _) {
+  void _onDragStart(WidgetRef ref) {
+    ref.read(timelineStateProvider.notifier).setScrubbing(true);
     setState(() {
       _isDragging = true;
-      _isScrolling = false;
+      _showSegments = true;
 
       if (_thumbAnimationController.status != AnimationStatus.forward) {
         _thumbAnimationController.forward();
       }
       _thumbAnimationTimer?.cancel();
+      _segmentAnimationTimer?.cancel();
     });
   }
 
@@ -213,10 +229,11 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
     });
   }
 
-  void _onDragEnd(DragEndDetails _) {
-    setState(() {
-      _resetThumbTimer();
-    });
+  void _onDragEnd(WidgetRef ref) {
+    ref.read(timelineStateProvider.notifier).setScrubbing(false);
+    _isDragging = false;
+    _resetThumbTimer();
+    _resetSegments();
   }
 
   @override
@@ -239,15 +256,14 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
         children: [
           RepaintBoundary(child: widget.child),
           // Gradient background
-          if (_isScrolling || _isDragging)
-            Positioned.directional(
-              textDirection: Directionality.of(ctx),
-              top: 0,
-              end: -1,
-              bottom: 0,
-              child: IgnorePointer(
-                child: FadeTransition(
-                  opacity: _thumbAnimation,
+          PositionedDirectional(
+            top: 0,
+            end: -1,
+            bottom: 0,
+            child: IgnorePointer(
+              child: RepaintBoundary(
+                child: _AnimatedVisibility(
+                  visible: _showSegments,
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -264,27 +280,28 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
                 ),
               ),
             ),
+          ),
           // Scroll Segments
-          if (_isScrolling || _isDragging)
-            for (final segment in _segments)
-              Positioned.directional(
-                textDirection: Directionality.of(ctx),
-                top: widget.topPadding + segment.startOffset,
-                end: 5,
-                child: FadeTransition(
-                  opacity: _thumbAnimation,
-                  child: _SegmentWidget(segment),
-                ),
+          for (final segment in _segments)
+            PositionedDirectional(
+              top: widget.topPadding + segment.startOffset,
+              end: 5,
+              child: _AnimatedVisibility(
+                visible: _showSegments,
+                child: _SegmentWidget(segment),
               ),
+            ),
           // Scroll Thumb
-          Positioned.directional(
-            textDirection: Directionality.of(ctx),
+          PositionedDirectional(
             top: _thumbTopOffset + widget.topPadding,
             end: 0,
-            child: GestureDetector(
-              onVerticalDragStart: _onDragStart,
-              onVerticalDragUpdate: _onDragUpdate,
-              onVerticalDragEnd: _onDragEnd,
+            child: Consumer(
+              builder: (_, ref, child) => GestureDetector(
+                onVerticalDragStart: (_) => _onDragStart(ref),
+                onVerticalDragUpdate: _onDragUpdate,
+                onVerticalDragEnd: (_) => _onDragEnd(ref),
+                child: child,
+              ),
               child: _Thumb(
                 label: label,
                 thumbAnimation: _thumbAnimation,
@@ -293,6 +310,26 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AnimatedVisibility extends StatelessWidget {
+  final bool visible;
+  final Widget child;
+
+  const _AnimatedVisibility({
+    required this.visible,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: kTimelineScrubberFadeInDuration,
+      transitionBuilder: (child, animation) =>
+          _SlideFadeTransition(animation: animation, child: child),
+      child: visible ? child : const SizedBox.shrink(),
     );
   }
 }
@@ -311,34 +348,36 @@ class _Thumb extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = _label ?? ' ' * 18;
 
-    return _SlideFadeTransition(
-      animation: _thumbAnimation,
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.colorScheme.surface.withAlpha(230),
-          border: Border(
-            bottom: BorderSide(
-              color: context.colorScheme.primary,
-              width: 4.0,
+    return RepaintBoundary(
+      child: _SlideFadeTransition(
+        animation: _thumbAnimation,
+        child: Container(
+          decoration: BoxDecoration(
+            color: context.colorScheme.surface.withAlpha(230),
+            border: Border(
+              bottom: BorderSide(
+                color: context.colorScheme.primary,
+                width: 4.0,
+              ),
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(8.0),
+              topLeft: Radius.circular(8.0),
             ),
           ),
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(8.0),
-            topLeft: Radius.circular(8.0),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: 6.0,
-            left: 8.0,
-            right: 8.0,
-            bottom: 8.0,
-          ),
-          child: Text(
-            label,
-            style: context.textTheme.displayLarge?.copyWith(
-              color: context.colorScheme.onSurface,
-              fontWeight: FontWeight.w500,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 6.0,
+              left: 8.0,
+              right: 8.0,
+              bottom: 8.0,
+            ),
+            child: Text(
+              label,
+              style: context.textTheme.displayLarge?.copyWith(
+                color: context.colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),
@@ -409,7 +448,7 @@ class _SegmentWidget extends StatelessWidget {
       TextDirection.rtl => (dot, label),
     };
 
-    return Row(spacing: 10, children: [first, second]);
+    return IgnorePointer(child: Row(spacing: 10, children: [first, second]));
   }
 }
 
@@ -468,6 +507,6 @@ class _Segment {
 
   @override
   String toString() {
-    return 'Segment(date: $date, startOffset: $startOffset)';
+    return 'Segment(scrollLabel: $scrollLabel, hasDot: $hasDot, hasLabel: $hasLabel)';
   }
 }

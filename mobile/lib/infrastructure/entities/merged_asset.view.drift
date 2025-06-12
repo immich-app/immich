@@ -19,6 +19,8 @@ FROM
 	remote_asset_entity rae
 LEFT JOIN
 	local_asset_entity lae  ON rae.checksum  = lae.checksum
+WHERE
+	rae.visibility = 0
 UNION ALL
 SELECT
 	NULL as remote_id,
