@@ -124,7 +124,7 @@ const processedAlbumNames = new Set<string>();
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
   // Clear the album names cache at the start of each upload command
   processedAlbumNames.clear();
-  
+
   // Initialize hash cache
   const hashCache = new FileHashCache(baseOptions.configDirectory);
   await hashCache.load();
@@ -208,14 +208,14 @@ export const checkForDuplicates = async (
 
   if (progress) {
     multiBar = new MultiBar(
-      { 
+      {
         format: '{message} | {bar} | {percentage}% | ETA: {eta_formatted} | {value}/{total}',
         formatValue: (v: number, options, type) => {
           // Don't format percentage
           if (type === 'percentage') return v.toString();
           return byteSize(v).toString();
         },
-        etaBuffer: 100,  // Increase samples for ETA calculation
+        etaBuffer: 100, // Increase samples for ETA calculation
       },
       Presets.shades_classic,
     );
@@ -231,11 +231,11 @@ export const checkForDuplicates = async (
     console.log(`Received ${files.length} files (${byteSize(totalSize)}), hashing...`);
   }
 
-  const hashProgressBar = multiBar?.create(totalSize, 0, { 
-    message: 'Hashing files          '
+  const hashProgressBar = multiBar?.create(totalSize, 0, {
+    message: 'Hashing files          ',
   });
-  const checkProgressBar = multiBar?.create(totalSize, 0, { 
-    message: 'Checking for duplicates'
+  const checkProgressBar = multiBar?.create(totalSize, 0, {
+    message: 'Checking for duplicates',
   });
 
   const newFiles: string[] = [];
@@ -294,7 +294,7 @@ export const checkForDuplicates = async (
         if (!stats) {
           throw new Error(`Stats not found for ${filepath}`);
         }
-        
+
         const dto = { id: filepath, checksum: await hashCache.getHash(filepath, stats) };
 
         results.push(dto);
@@ -589,46 +589,15 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   }
 };
 
-const processAlbumName = (name: string, options: UploadOptionsDto): string => {
-  // Only process if formatAlbumNames is enabled
-  if (!options.formatAlbumNames) {
-    return name;
-  }
-
-  const originalName = name;
-  let processedName = name;
-
-  // Remove leading non-alphabetic characters (including numbers but preserving accented letters)
-  processedName = processedName.replace(/^[^\p{Letter}]+/u, '');
-
-  // Replace underscores and dashes with spaces, then handle multiple spaces
-  processedName = processedName
-    .replace(/[_\-]/g, ' ')     // Convert underscores and dashes to spaces
-    .replace(/\s+/g, ' ')       // Replace multiple spaces with single space
-    .trim();                    // Remove leading/trailing spaces
-
-  // Capitalize first letter
-  processedName = processedName.charAt(0).toUpperCase() + processedName.slice(1);
-
-  // Only show message once per unique original name
-  if (originalName !== processedName && !processedAlbumNames.has(originalName)) {
-    processedAlbumNames.add(originalName);
-    console.log(`Album name changed: "${originalName}" → "${processedName}"`);
-  }
-
-  return processedName;
-};
-
 // `filepath` valid format:
 // - Windows: `D:\\test\\Filename.txt` or `D:/test/Filename.txt`
 // - Unix: `/test/Filename.txt`
 export const getAlbumName = (filepath: string, options: UploadOptionsDto) => {
   if (options.albumName) {
-    return options.albumName;  // Don't process custom album names
+    return options.albumName;
   }
-  
-  const dirName = path.basename(path.dirname(filepath));
-  return processAlbumName(dirName, options);
+
+  return path.basename(path.dirname(filepath));
 };
 
 // `

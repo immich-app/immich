@@ -56,7 +56,7 @@ program
   .addOption(
     new Option('-A, --album-name <n>', 'Add all assets to specified album')
       .env('IMMICH_ALBUM_NAME')
-      .conflicts('album'),
+      .conflicts('album')
   )
   .addOption(
     new Option('-f, --format-album-names', 'Format album names (remove leading numbers, clean up spaces and dashes)')
