@@ -9,6 +9,7 @@ extension Album: @unchecked Sendable, AppEntity, Identifiable {
   
   struct AlbumQuery: EntityQuery {
     func entities(for identifiers: [Album.ID]) async throws -> [Album] {
+      // use cached albums to search
       var albums = try await AlbumCache.shared.getAlbums()
       albums.insert(NO_ALBUM, at: 0)
       
@@ -18,7 +19,7 @@ extension Album: @unchecked Sendable, AppEntity, Identifiable {
     }
           
     func suggestedEntities() async throws -> [Album] {
-      var albums = try await AlbumCache.shared.getAlbums()
+      var albums = try await AlbumCache.shared.getAlbums(refresh: true)
       albums.insert(NO_ALBUM, at: 0)
       
       return albums
@@ -78,7 +79,19 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     }
     
     // nil if album is NONE or nil
-    let albumId = configuration.album?.id != "NONE" ? configuration.album?.id : nil
+    var albumId = configuration.album?.id != "NONE" ? configuration.album?.id : nil
+    if albumId != nil {
+      // make sure the album exists on server, otherwise show error
+      guard let albums = try? await api.fetchAlbums() else {
+        entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
+        return Timeline(entries: entries, policy: .atEnd)
+      }
+      
+      if (!albums.contains {$0.id == albumId}) {
+        entries.append(ImageEntry(date: now, image: nil, error: .albumNotFound))
+        return Timeline(entries: entries, policy: .atEnd)
+      }
+    }
     
     entries.append(contentsOf: (try? await generateRandomEntries(api: api, now: now, count: 24, albumId: albumId)) ?? [])
     

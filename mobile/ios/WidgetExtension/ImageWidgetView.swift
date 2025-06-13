@@ -20,6 +20,9 @@ struct ImmichWidgetView : View {
       case .fetchFailed:
         return "Unable to connect to your Immich instance"
         
+      case .albumNotFound:
+        return "Album not found"
+        
       default:
         return "An unknown error occured"
     }
