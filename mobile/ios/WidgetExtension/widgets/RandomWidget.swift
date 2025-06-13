@@ -9,7 +9,7 @@ extension Album: @unchecked Sendable, AppEntity, Identifiable {
   struct AlbumQuery: EntityQuery {
     func entities(for identifiers: [Album.ID]) async throws -> [Album] {
       // use cached albums to search
-      var albums = try await AlbumCache.shared.getAlbums()
+      var albums = (try? await AlbumCache.shared.getAlbums()) ?? []
       albums.insert(NO_ALBUM, at: 0)
 
       return albums.filter {
@@ -18,7 +18,7 @@ extension Album: @unchecked Sendable, AppEntity, Identifiable {
     }
 
     func suggestedEntities() async throws -> [Album] {
-      var albums = try await AlbumCache.shared.getAlbums(refresh: true)
+      var albums = (try? await AlbumCache.shared.getAlbums(refresh: true)) ?? []
       albums.insert(NO_ALBUM, at: 0)
 
       return albums
@@ -96,7 +96,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     }
 
     // nil if album is NONE or nil
-    var albumId =
+    let albumId =
       configuration.album?.id != "NONE" ? configuration.album?.id : nil
     if albumId != nil {
       // make sure the album exists on server, otherwise show error
@@ -105,7 +105,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
         return Timeline(entries: entries, policy: .atEnd)
       }
 
-      if !albums.contains { $0.id == albumId } {
+      if !albums.contains(where: { $0.id == albumId }) {
         entries.append(ImageEntry(date: now, image: nil, error: .albumNotFound))
         return Timeline(entries: entries, policy: .atEnd)
       }
