@@ -12,10 +12,10 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
@@ -118,14 +118,18 @@
   };
 </script>
 
-<div class="overflow-y-hidden relative h-full" bind:offsetHeight={innerHeight}>
-  <div class="dark:bg-immich-dark-bg dark:text-immich-dark-fg w-full h-full">
-    <div
-      class="flex w-full h-fit dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white"
-      bind:clientHeight={activityHeight}
-    >
+<div class="overflow-y-hidden relative h-full border-l border-subtle bg-subtle" bind:offsetHeight={innerHeight}>
+  <div class="w-full h-full">
+    <div class="flex w-full h-fit dark:text-immich-dark-fg p-2 bg-subtle" bind:clientHeight={activityHeight}>
       <div class="flex place-items-center gap-2">
-        <CircleIconButton onclick={onClose} icon={mdiClose} title={$t('close')} />
+        <IconButton
+          shape="round"
+          variant="ghost"
+          color="secondary"
+          onclick={onClose}
+          icon={mdiClose}
+          aria-label={$t('close')}
+        />
 
         <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('activity')}</p>
       </div>
@@ -159,7 +163,7 @@
                     title={$t('comment_options')}
                     align="top-right"
                     direction="left"
-                    size="16"
+                    size="small"
                   >
                     <MenuOption
                       activeColor="bg-red-200"
@@ -212,7 +216,7 @@
                       title={$t('reaction_options')}
                       align="top-right"
                       direction="left"
-                      size="16"
+                      size="small"
                     >
                       <MenuOption
                         activeColor="bg-red-200"
@@ -243,7 +247,7 @@
     <div class="flex items-center justify-center p-2" bind:clientHeight={chatHeight}>
       <div class="flex p-2 gap-4 h-fit bg-gray-200 text-immich-dark-gray rounded-3xl w-full">
         <div>
-          <UserAvatar {user} size="md" showTitle={false} />
+          <UserAvatar {user} size="md" noTitle />
         </div>
         <form class="flex w-full max-h-56 gap-1" {onsubmit}>
           <div class="flex w-full items-center gap-4">
@@ -269,9 +273,11 @@
             </div>
           {:else if message}
             <div class="flex items-end w-fit ms-0">
-              <CircleIconButton
-                title={$t('send_message')}
-                size="15"
+              <IconButton
+                shape="round"
+                aria-label={$t('send_message')}
+                size="small"
+                variant="ghost"
                 icon={mdiSend}
                 class="dark:text-immich-dark-gray"
                 onclick={() => handleSendComment()}

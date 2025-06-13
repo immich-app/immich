@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
@@ -59,6 +60,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final isVisible = useState(Platform.isIOS && asset.isLocal);
 
     final log = Logger('NativeVideoViewerPage');
+
+    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
     Future<VideoSource?> createSource() async {
       if (!context.mounted) {
@@ -391,7 +394,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         // This remains under the video to avoid flickering
         // For motion videos, this is the image portion of the asset
         Center(key: ValueKey(asset.id), child: image),
-        if (aspectRatio.value != null)
+        if (aspectRatio.value != null && !isCasting)
           Visibility.maintain(
             key: ValueKey(asset),
             visible: isVisible.value,

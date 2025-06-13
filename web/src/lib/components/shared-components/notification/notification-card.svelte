@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     isComponentNotification,
@@ -8,6 +7,7 @@
     type ComponentNotification,
     type Notification,
   } from '$lib/components/shared-components/notification/notification';
+  import { Button, IconButton, type Color } from '@immich/ui';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -40,10 +40,10 @@
     [NotificationType.Warning]: '#D08613',
   };
 
-  const buttonStyle: Record<NotificationType, string> = {
-    [NotificationType.Info]: 'text-white bg-immich-primary hover:bg-immich-primary/75',
-    [NotificationType.Error]: 'text-white bg-immich-error hover:bg-immich-error/75',
-    [NotificationType.Warning]: 'text-white bg-immich-warning hover:bg-immich-warning/75',
+  const colors: Record<NotificationType, Color> = {
+    [NotificationType.Info]: 'primary',
+    [NotificationType.Error]: 'danger',
+    [NotificationType.Warning]: 'warning',
   };
 
   onMount(() => {
@@ -88,12 +88,14 @@
         {:else if notification.type == NotificationType.Info}{$t('info')}{/if}
       </h2>
     </div>
-    <CircleIconButton
+    <IconButton
+      variant="ghost"
+      shape="round"
+      color="secondary"
       icon={mdiWindowClose}
-      title={$t('close')}
+      aria-label={$t('close')}
       class="dark:text-immich-dark-gray"
-      size="20"
-      padding="2"
+      size="medium"
       onclick={discard}
       aria-hidden={true}
       tabindex={-1}
@@ -109,16 +111,16 @@
   </p>
 
   {#if notification.button}
-    <p class="ps-[28px] mt-2.5 text-sm">
-      <button
-        type="button"
-        class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
+    <p class="ps-[28px] mt-2.5 light text-light">
+      <Button
+        size="small"
+        color={colors[notification.type]}
         onclick={handleButtonClick}
         aria-hidden="true"
         tabindex={-1}
       >
         {notification.button.text}
-      </button>
+      </Button>
     </p>
   {/if}
 </div>

@@ -153,17 +153,12 @@ export function toJson<DB, TB extends keyof DB & string, T extends TB | Expressi
 }
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
-// TODO come up with a better query that only selects the fields we need
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
-  return qb.where((qb) =>
-    qb.or([
-      qb('assets.visibility', '=', AssetVisibility.TIMELINE),
-      qb('assets.visibility', '=', AssetVisibility.ARCHIVE),
-    ]),
-  );
+  return qb.where('assets.visibility', 'in', [sql.lit(AssetVisibility.ARCHIVE), sql.lit(AssetVisibility.TIMELINE)]);
 }
 
+// TODO come up with a better query that only selects the fields we need
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('exif', 'assets.id', 'exif.assetId')
@@ -233,6 +228,20 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds:
   );
 }
 
+export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, albumIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('albums_assets_assets')
+        .select('assetsId')
+        .where('albumsId', '=', anyUuid(albumIds!))
+        .groupBy('assetsId')
+        .having((eb) => eb.fn.count('albumsId').distinct(), '=', albumIds.length)
+        .as('has_album'),
+    (join) => join.onRef('has_album.assetsId', '=', 'assets.id'),
+  );
+}
+
 export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: string[]) {
   return qb.innerJoin(
     (eb) =>
@@ -296,8 +305,8 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('assets')
-    .selectAll('assets')
     .where('assets.visibility', '=', visibility)
+    .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
@@ -374,7 +383,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(options.isMotion !== undefined, (qb) =>
       qb.where('assets.livePhotoVideoId', options.isMotion ? 'is not' : 'is', null),
     )
-    .$if(!!options.isNotInAlbum, (qb) =>
+    .$if(!!options.isNotInAlbum && (!options.albumIds || options.albumIds.length === 0), (qb) =>
       qb.where((eb) =>
         eb.not(eb.exists((eb) => eb.selectFrom('albums_assets_assets').whereRef('assetsId', '=', 'assets.id'))),
       ),

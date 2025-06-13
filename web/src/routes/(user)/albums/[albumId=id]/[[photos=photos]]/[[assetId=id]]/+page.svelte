@@ -9,7 +9,6 @@
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -37,13 +36,14 @@
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
@@ -70,7 +70,7 @@
     updateAlbumInfo,
     type AlbumUserAddDto,
   } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, IconButton } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCogOutline,
@@ -159,14 +159,6 @@
     }
   };
 
-  const updateComments = async () => {
-    try {
-      await activityManager.refreshActivities(album.id);
-    } catch (error) {
-      handleError(error, $t('errors.cant_get_number_of_comments'));
-    }
-  };
-
   const handleOpenAndCloseActivityTab = () => {
     isShowActivity = !isShowActivity;
   };
@@ -174,15 +166,15 @@
   const handleStartSlideshow = async () => {
     const asset =
       $slideshowNavigation === SlideshowNavigation.Shuffle
-        ? await assetStore.getRandomAsset()
-        : assetStore.buckets[0]?.dateGroups[0]?.intersectingAssets[0]?.asset;
+        ? await timelineManager.getRandomAsset()
+        : timelineManager.months[0]?.dayGroups[0]?.viewerAssets[0]?.asset;
     if (asset) {
       handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
     }
   };
 
   const handleEscape = async () => {
-    assetStore.suspendTransitions = true;
+    timelineManager.suspendTransitions = true;
     if (viewMode === AlbumPageViewMode.SELECT_THUMBNAIL) {
       viewMode = AlbumPageViewMode.VIEW;
       return;
@@ -234,7 +226,7 @@
   };
 
   const setModeToView = async () => {
-    assetStore.suspendTransitions = true;
+    timelineManager.suspendTransitions = true;
     viewMode = AlbumPageViewMode.VIEW;
     await navigate(
       { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: oldAt?.at } },
@@ -309,12 +301,17 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
   };
 
   const handleRemoveAssets = async (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
+    await refreshAlbum();
+  };
+
+  const handleUndoRemoveAssets = async (assets: TimelineAsset[]) => {
+    timelineManager.addAssets(assets);
     await refreshAlbum();
   };
 
@@ -369,13 +366,13 @@
     }
   });
 
-  let assetStore = new AssetStore();
+  let timelineManager = new TimelineManager();
 
   $effect(() => {
     if (viewMode === AlbumPageViewMode.VIEW) {
-      void assetStore.updateOptions({ albumId, order: albumOrder });
+      void timelineManager.updateOptions({ albumId, order: albumOrder });
     } else if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
-      void assetStore.updateOptions({
+      void timelineManager.updateOptions({
         visibility: AssetVisibility.Timeline,
         withPartners: true,
         timelineAlbumId: albumId,
@@ -383,14 +380,19 @@
     }
   });
 
+  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
+
   $effect(() => {
-    activityManager.reset();
-    activityManager.init(album.id);
+    if ($showAssetViewer || !isShared) {
+      return;
+    }
+
+    handlePromiseError(activityManager.init(album.id));
   });
 
   onDestroy(() => {
     activityManager.reset();
-    assetStore.destroy();
+    timelineManager.destroy();
   });
 
   let isOwned = $derived($user.id == album.ownerId);
@@ -404,12 +406,6 @@
   );
 
   let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
-  $effect(() => {
-    if (album.albumUsers.length > 0) {
-      handlePromiseError(updateComments());
-    }
-  });
-  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
   const isSelectionMode = $derived(
     viewMode === AlbumPageViewMode.SELECT_ASSETS ? true : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
   );
@@ -465,7 +461,7 @@
       <AssetGrid
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
-        {assetStore}
+        {timelineManager}
         assetInteraction={currentAssetIntersection}
         {isShared}
         {isSelectionMode}
@@ -494,10 +490,11 @@
                 <div class="my-3 flex gap-x-1">
                   <!-- link -->
                   {#if album.hasSharedLink && isOwned}
-                    <CircleIconButton
-                      title={$t('create_link_to_share')}
-                      color="gray"
-                      size="20"
+                    <IconButton
+                      aria-label={$t('create_link_to_share')}
+                      color="secondary"
+                      size="medium"
+                      shape="round"
                       icon={mdiLink}
                       onclick={handleShareLink}
                     />
@@ -517,22 +514,24 @@
 
                   <!-- display ellipsis if there are readonly users too -->
                   {#if albumHasViewers}
-                    <CircleIconButton
-                      title={$t('view_all_users')}
-                      color="gray"
-                      size="20"
+                    <IconButton
+                      shape="round"
+                      aria-label={$t('view_all_users')}
+                      color="secondary"
+                      size="medium"
                       icon={mdiDotsVertical}
                       onclick={handleEditUsers}
                     />
                   {/if}
 
                   {#if isOwned}
-                    <CircleIconButton
-                      color="gray"
-                      size="20"
+                    <IconButton
+                      shape="round"
+                      color="secondary"
+                      size="medium"
                       icon={mdiPlus}
                       onclick={handleShare}
-                      title={$t('add_more_users')}
+                      aria-label={$t('add_more_users')}
                     />
                   {/if}
                 </div>
@@ -562,12 +561,13 @@
         {/if}
       </AssetGrid>
 
-      {#if showActivityStatus}
+      {#if showActivityStatus && !activityManager.isLoading}
         <div class="absolute z-2 bottom-0 end-0 mb-6 me-6 justify-self-end">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
             isLiked={activityManager.isLiked}
             numberOfComments={activityManager.commentCount}
+            numberOfLikes={undefined}
             onFavorite={handleFavorite}
             onOpenActivityTab={handleOpenAndCloseActivityTab}
           />
@@ -581,7 +581,7 @@
         clearSelect={() => assetInteraction.clearMultiselect()}
       >
         <CreateSharedLink />
-        <SelectAllAssets {assetStore} {assetInteraction} />
+        <SelectAllAssets {timelineManager} {assetInteraction} />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
@@ -590,7 +590,7 @@
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
             onFavorite={(ids, isFavorite) =>
-              assetStore.updateAssetOperation(ids, (asset) => {
+              timelineManager.updateAssetOperation(ids, (asset) => {
                 asset.isFavorite = isFavorite;
                 return { remove: false };
               })}
@@ -621,7 +621,7 @@
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
           {#if assetInteraction.isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
+            <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
           {/if}
         </ButtonContextMenu>
       </AssetSelectControlBar>
@@ -629,13 +629,16 @@
       {#if viewMode === AlbumPageViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
-            <CastButton whiteHover />
+            <CastButton />
 
             {#if isEditor}
-              <CircleIconButton
-                title={$t('add_photos')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label={$t('add_photos')}
                 onclick={async () => {
-                  assetStore.suspendTransitions = true;
+                  timelineManager.suspendTransitions = true;
                   viewMode = AlbumPageViewMode.SELECT_ASSETS;
                   oldAt = { at: $gridScrollTarget?.at };
                   await navigate(
@@ -648,7 +651,14 @@
             {/if}
 
             {#if isOwned}
-              <CircleIconButton title={$t('share')} onclick={handleShare} icon={mdiShareVariantOutline} />
+              <IconButton
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                aria-label={$t('share')}
+                onclick={handleShare}
+                icon={mdiShareVariantOutline}
+              />
             {/if}
 
             {#if $featureFlags.loaded && $featureFlags.map}
@@ -656,12 +666,31 @@
             {/if}
 
             {#if album.assetCount > 0}
-              <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />
-              <CircleIconButton title={$t('download')} onclick={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+              <IconButton
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                aria-label={$t('slideshow')}
+                onclick={handleStartSlideshow}
+                icon={mdiPresentationPlay}
+              />
+              <IconButton
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                aria-label={$t('download')}
+                onclick={handleDownloadAlbum}
+                icon={mdiFolderDownloadOutline}
+              />
             {/if}
 
             {#if isOwned}
-              <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')} offset={{ x: 175, y: 25 }}>
+              <ButtonContextMenu
+                icon={mdiDotsVertical}
+                title={$t('album_options')}
+                color="secondary"
+                offset={{ x: 175, y: 25 }}
+              >
                 {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}

@@ -135,6 +135,8 @@ struct PlatformAsset: Hashable {
   var type: Int64
   var createdAt: Int64? = nil
   var updatedAt: Int64? = nil
+  var width: Int64? = nil
+  var height: Int64? = nil
   var durationInSeconds: Int64
 
 
@@ -145,7 +147,9 @@ struct PlatformAsset: Hashable {
     let type = pigeonVar_list[2] as! Int64
     let createdAt: Int64? = nilOrValue(pigeonVar_list[3])
     let updatedAt: Int64? = nilOrValue(pigeonVar_list[4])
-    let durationInSeconds = pigeonVar_list[5] as! Int64
+    let width: Int64? = nilOrValue(pigeonVar_list[5])
+    let height: Int64? = nilOrValue(pigeonVar_list[6])
+    let durationInSeconds = pigeonVar_list[7] as! Int64
 
     return PlatformAsset(
       id: id,
@@ -153,6 +157,8 @@ struct PlatformAsset: Hashable {
       type: type,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      width: width,
+      height: height,
       durationInSeconds: durationInSeconds
     )
   }
@@ -163,6 +169,8 @@ struct PlatformAsset: Hashable {
       type,
       createdAt,
       updatedAt,
+      width,
+      height,
       durationInSeconds,
     ]
   }
@@ -307,6 +315,7 @@ protocol NativeSyncApi {
   func getAlbums() throws -> [PlatformAlbum]
   func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
+  func hashPaths(paths: [String]) throws -> [FlutterStandardTypedData?]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -441,6 +450,23 @@ class NativeSyncApiSetup {
       }
     } else {
       getAssetsForAlbumChannel.setMessageHandler(nil)
+    }
+    let hashPathsChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashPaths\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashPaths\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      hashPathsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pathsArg = args[0] as! [String]
+        do {
+          let result = try api.hashPaths(paths: pathsArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      hashPathsChannel.setMessageHandler(nil)
     }
   }
 }

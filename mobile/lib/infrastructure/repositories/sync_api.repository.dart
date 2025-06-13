@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -49,6 +50,9 @@ class SyncApiRepository implements ISyncApiRepository {
           SyncRequestType.partnerAssetsV1,
           SyncRequestType.assetExifsV1,
           SyncRequestType.partnerAssetExifsV1,
+          SyncRequestType.albumsV1,
+          // SyncRequestType.albumAssetsV1,
+          SyncRequestType.albumUsersV1,
         ],
       ).toJson(),
     );
@@ -64,8 +68,7 @@ class SyncApiRepository implements ISyncApiRepository {
     }
 
     try {
-      final response =
-          await client.send(request).timeout(const Duration(seconds: 20));
+      final response = await client.send(request);
 
       if (response.statusCode != 200) {
         final errorBody = await response.stream.bytesToString();
@@ -105,6 +108,7 @@ class SyncApiRepository implements ISyncApiRepository {
     stopwatch.stop();
     _logger
         .info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
+    DLog.log("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 
   List<SyncEvent> _parseLines(List<String> lines) {
@@ -128,8 +132,7 @@ class SyncApiRepository implements ISyncApiRepository {
   }
 }
 
-// ignore: avoid-dynamic
-const _kResponseMap = <SyncEntityType, Function(dynamic)>{
+const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,
@@ -140,4 +143,10 @@ const _kResponseMap = <SyncEntityType, Function(dynamic)>{
   SyncEntityType.partnerAssetV1: SyncAssetV1.fromJson,
   SyncEntityType.partnerAssetDeleteV1: SyncAssetDeleteV1.fromJson,
   SyncEntityType.partnerAssetExifV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumV1: SyncAlbumV1.fromJson,
+  SyncEntityType.albumDeleteV1: SyncAlbumDeleteV1.fromJson,
+  // SyncEntityType.albumAssetV1: SyncAlbumAssetV1.fromJson,
+  // SyncEntityType.albumAssetDeleteV1: SyncAlbumAssetDeleteV1.fromJson,
+  SyncEntityType.albumUserV1: SyncAlbumUserV1.fromJson,
+  SyncEntityType.albumUserDeleteV1: SyncAlbumUserDeleteV1.fromJson,
 };

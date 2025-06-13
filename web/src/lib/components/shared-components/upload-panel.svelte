@@ -3,11 +3,11 @@
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { uploadExecutionQueue } from '$lib/utils/file-uploader';
+  import { IconButton } from '@immich/ui';
   import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { quartInOut } from 'svelte/easing';
   import { fade, scale } from 'svelte/transition';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
 
@@ -68,38 +68,44 @@
             </p>
             <p class="immich-form-label text-xs">
               {$t('upload_status_uploaded')}
-              <span class="text-immich-success">{$stats.success.toLocaleString($locale)}</span>
+              <span class="text-success">{$stats.success.toLocaleString($locale)}</span>
               -
               {$t('upload_status_errors')}
-              <span class="text-immich-error">{$stats.errors.toLocaleString($locale)}</span>
+              <span class="text-danger">{$stats.errors.toLocaleString($locale)}</span>
               -
               {$t('upload_status_duplicates')}
-              <span class="text-immich-warning">{$stats.duplicates.toLocaleString($locale)}</span>
+              <span class="text-warning">{$stats.duplicates.toLocaleString($locale)}</span>
             </p>
           </div>
           <div class="flex flex-col items-end">
             <div class="flex flex-row">
-              <CircleIconButton
-                title={$t('toggle_settings')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
                 icon={mdiCog}
-                size="14"
-                padding="1"
+                size="small"
                 onclick={() => (showOptions = !showOptions)}
+                aria-label={$t('toggle_settings')}
               />
-              <CircleIconButton
-                title={$t('minimize')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label={$t('minimize')}
                 icon={mdiWindowMinimize}
-                size="14"
-                padding="1"
+                size="small"
                 onclick={() => (showDetail = false)}
               />
             </div>
             {#if $isDismissible}
-              <CircleIconButton
-                title={$t('dismiss_all_errors')}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label={$t('dismiss_all_errors')}
                 icon={mdiCancel}
-                size="14"
-                padding="1"
+                size="small"
                 onclick={() => uploadAssetsStore.dismissErrors()}
               />
             {/if}
@@ -136,7 +142,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
+          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-primary p-5 text-xs text-gray-200"
         >
           {$remainingUploads.toLocaleString($locale)}
         </button>
@@ -145,7 +151,7 @@
             type="button"
             in:scale={{ duration: 250, easing: quartInOut }}
             onclick={() => (showDetail = true)}
-            class="absolute -end-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
+            class="absolute -end-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-danger p-5 text-xs text-gray-200"
           >
             {$stats.errors.toLocaleString($locale)}
           </button>
@@ -154,7 +160,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-gray-200 p-5 text-sm text-immich-primary shadow-lg dark:bg-gray-600 dark:text-immich-gray"
+          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-subtle p-5 text-sm text-primary shadow-lg"
         >
           <div class="animate-pulse">
             <Icon path={mdiCloudUploadOutline} size="30" />

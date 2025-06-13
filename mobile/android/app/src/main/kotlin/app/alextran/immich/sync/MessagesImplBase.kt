@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
+import android.util.Log
 import java.io.File
+import java.io.FileInputStream
+import java.security.MessageDigest
 
 sealed class AssetResult {
   data class ValidAsset(val asset: PlatformAsset, val albumId: String) : AssetResult()
@@ -16,6 +19,8 @@ open class NativeSyncApiImplBase(context: Context) {
   private val ctx: Context = context.applicationContext
 
   companion object {
+    private const val TAG = "NativeSyncApiImplBase"
+
     const val MEDIA_SELECTION =
       "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?)"
     val MEDIA_SELECTION_ARGS = arrayOf(
@@ -32,8 +37,12 @@ open class NativeSyncApiImplBase(context: Context) {
       MediaStore.MediaColumns.DATE_MODIFIED,
       MediaStore.Files.FileColumns.MEDIA_TYPE,
       MediaStore.MediaColumns.BUCKET_ID,
+      MediaStore.MediaColumns.WIDTH,
+      MediaStore.MediaColumns.HEIGHT,
       MediaStore.MediaColumns.DURATION
     )
+
+    const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
   }
 
   protected fun getCursor(
@@ -61,6 +70,8 @@ open class NativeSyncApiImplBase(context: Context) {
         val dateModifiedColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED)
         val mediaTypeColumn = c.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE)
         val bucketIdColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.BUCKET_ID)
+        val widthColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH)
+        val heightColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT)
         val durationColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION)
 
         while (c.moveToNext()) {
@@ -79,12 +90,23 @@ open class NativeSyncApiImplBase(context: Context) {
             ?: c.getLong(dateAddedColumn)
           // Date modified is seconds since epoch
           val modifiedAt = c.getLong(dateModifiedColumn)
+          val width = c.getInt(widthColumn).toLong()
+          val height = c.getInt(heightColumn).toLong()
           // Duration is milliseconds
           val duration = if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0
           else c.getLong(durationColumn) / 1000
           val bucketId = c.getString(bucketIdColumn)
 
-          val asset = PlatformAsset(id, name, mediaType.toLong(), createdAt, modifiedAt, duration)
+          val asset = PlatformAsset(
+            id,
+            name,
+            mediaType.toLong(),
+            createdAt,
+            modifiedAt,
+            width,
+            height,
+            duration
+          )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }
       }
@@ -173,5 +195,25 @@ open class NativeSyncApiImplBase(context: Context) {
     return getAssets(getCursor(MediaStore.VOLUME_EXTERNAL, selection, selectionArgs.toTypedArray()))
       .mapNotNull { result -> (result as? AssetResult.ValidAsset)?.asset }
       .toList()
+  }
+
+  fun hashPaths(paths: List<String>): List<ByteArray?> {
+    val buffer = ByteArray(HASH_BUFFER_SIZE)
+    val digest = MessageDigest.getInstance("SHA-1")
+
+    return paths.map { path ->
+      try {
+        FileInputStream(path).use { file ->
+          var bytesRead: Int
+          while (file.read(buffer).also { bytesRead = it } > 0) {
+            digest.update(buffer, 0, bytesRead)
+          }
+        }
+        digest.digest()
+      } catch (e: Exception) {
+        Log.w(TAG, "Failed to hash file $path: $e")
+        null
+      }
+    }
   }
 }

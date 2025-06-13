@@ -5,7 +5,6 @@ import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import {
   anyUuid,
@@ -29,13 +28,13 @@ import { globToSqlPattern } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
 
-export interface AssetStatsOptions {
+interface AssetStatsOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
   visibility?: AssetVisibility;
 }
 
-export interface LivePhotoSearchOptions {
+interface LivePhotoSearchOptions {
   ownerId: string;
   libraryId?: string | null;
   livePhotoCID: string;
@@ -43,16 +42,12 @@ export interface LivePhotoSearchOptions {
   type: AssetType;
 }
 
-export enum WithProperty {
-  SIDECAR = 'sidecar',
-}
-
 export enum TimeBucketSize {
   DAY = 'DAY',
   MONTH = 'MONTH',
 }
 
-export interface AssetBuilderOptions {
+interface AssetBuilderOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
   isDuplicate?: boolean;
@@ -81,43 +76,31 @@ export interface MonthDay {
   month: number;
 }
 
-export interface AssetExploreFieldOptions {
+interface AssetExploreFieldOptions {
   maxFields: number;
   minAssetsPerField: number;
 }
 
-export interface AssetFullSyncOptions {
+interface AssetFullSyncOptions {
   ownerId: string;
   lastId?: string;
   updatedUntil: Date;
   limit: number;
 }
 
-export interface AssetDeltaSyncOptions {
+interface AssetDeltaSyncOptions {
   userIds: string[];
   updatedAfter: Date;
   limit: number;
 }
 
-export interface AssetUpdateDuplicateOptions {
-  targetDuplicateId: string | null;
-  assetIds: string[];
-  duplicateIds: string[];
-}
-
-export interface UpsertFileOptions {
-  assetId: string;
-  type: AssetFileType;
-  path: string;
-}
-
-export interface AssetGetByChecksumOptions {
+interface AssetGetByChecksumOptions {
   ownerId: string;
   checksum: Buffer;
   libraryId?: string;
 }
 
-export interface GetByIdsRelations {
+interface GetByIdsRelations {
   exifInfo?: boolean;
   faces?: { person?: boolean; withDeleted?: boolean };
   files?: boolean;
@@ -126,16 +109,6 @@ export interface GetByIdsRelations {
   smartSearch?: boolean;
   stack?: { assets?: boolean };
   tags?: boolean;
-}
-
-export interface DuplicateGroup {
-  duplicateId: string;
-  assets: MapAsset[];
-}
-
-export interface DayOfYearAssets {
-  yearsAgo: number;
-  assets: MapAsset[];
 }
 
 @Injectable()
@@ -314,7 +287,6 @@ export class AssetRepository {
       .select(withFacesAndPeople)
       .select(withTags)
       .$call(withExif)
-      .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
       .where('assets.id', '=', anyUuid(ids))
       .execute();
   }
@@ -433,19 +405,6 @@ export class AssetRepository {
     await this.db.updateTable('assets').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
 
-  @GenerateSql({
-    params: [{ targetDuplicateId: DummyValue.UUID, duplicateIds: [DummyValue.UUID], assetIds: [DummyValue.UUID] }],
-  })
-  async updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void> {
-    await this.db
-      .updateTable('assets')
-      .set({ duplicateId: options.targetDuplicateId })
-      .where((eb) =>
-        eb.or([eb('duplicateId', '=', anyUuid(options.duplicateIds)), eb('id', '=', anyUuid(options.assetIds))]),
-      )
-      .execute();
-  }
-
   async update(asset: Updateable<Assets> & { id: string }) {
     const value = omitBy(asset, isUndefined);
     delete value.id;
@@ -537,8 +496,8 @@ export class AssetRepository {
       .selectFrom('assets')
       .selectAll('assets')
       .$call(withExif)
+      .$call(withDefaultVisibility)
       .where('ownerId', '=', anyUuid(userIds))
-      .where('visibility', '!=', AssetVisibility.HIDDEN)
       .where('deletedAt', 'is', null)
       .orderBy((eb) => eb.fn('random'))
       .limit(take)
@@ -547,51 +506,44 @@ export class AssetRepository {
 
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
-    return (
-      this.db
-        .with('assets', (qb) =>
-          qb
-            .selectFrom('assets')
-            .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
-            .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
-            .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-            .$if(options.visibility === undefined, withDefaultVisibility)
-            .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
-            .$if(!!options.albumId, (qb) =>
-              qb
-                .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
-                .where('albums_assets_assets.albumsId', '=', asUuid(options.albumId!)),
-            )
-            .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-            .$if(!!options.withStacked, (qb) =>
-              qb
-                .leftJoin('asset_stack', (join) =>
-                  join
-                    .onRef('asset_stack.id', '=', 'assets.stackId')
-                    .onRef('asset_stack.primaryAssetId', '=', 'assets.id'),
-                )
-                .where((eb) => eb.or([eb('assets.stackId', 'is', null), eb(eb.table('asset_stack'), 'is not', null)])),
-            )
-            .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-            .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
-            .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
-            .$if(options.isDuplicate !== undefined, (qb) =>
-              qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
-            )
-            .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
-        )
-        .selectFrom('assets')
-        .select('timeBucket')
-        /*
-        TODO: the above line outputs in ISO format, which bloats the response.
-        The line below outputs in YYYY-MM-DD format, but needs a change in the web app to work.
-          .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
-        */
-        .select((eb) => eb.fn.countAll<number>().as('count'))
-        .groupBy('timeBucket')
-        .orderBy('timeBucket', options.order ?? 'desc')
-        .execute() as any as Promise<TimeBucketItem[]>
-    );
+    return this.db
+      .with('assets', (qb) =>
+        qb
+          .selectFrom('assets')
+          .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
+          .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
+          .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+          .$if(options.visibility === undefined, withDefaultVisibility)
+          .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
+          .$if(!!options.albumId, (qb) =>
+            qb
+              .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
+              .where('albums_assets_assets.albumsId', '=', asUuid(options.albumId!)),
+          )
+          .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+          .$if(!!options.withStacked, (qb) =>
+            qb
+              .leftJoin('asset_stack', (join) =>
+                join
+                  .onRef('asset_stack.id', '=', 'assets.stackId')
+                  .onRef('asset_stack.primaryAssetId', '=', 'assets.id'),
+              )
+              .where((eb) => eb.or([eb('assets.stackId', 'is', null), eb(eb.table('asset_stack'), 'is not', null)])),
+          )
+          .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
+          .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
+          .$if(options.isDuplicate !== undefined, (qb) =>
+            qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
+          )
+          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+      )
+      .selectFrom('assets')
+      .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .groupBy('timeBucket')
+      .orderBy('timeBucket', options.order ?? 'desc')
+      .execute() as any as Promise<TimeBucketItem[]>;
   }
 
   @GenerateSql({
@@ -611,9 +563,12 @@ export class AssetRepository {
             sql`assets.type = 'IMAGE'`.as('isImage'),
             sql`assets."deletedAt" is not null`.as('isTrashed'),
             'assets.livePhotoVideoId',
-            'assets.localDateTime',
+            sql`extract(epoch from (assets."localDateTime" - assets."fileCreatedAt" at time zone 'UTC'))::real / 3600`.as(
+              'localOffsetHours',
+            ),
             'assets.ownerId',
             'assets.status',
+            sql`assets."fileCreatedAt" at time zone 'utc'`.as('fileCreatedAt'),
             eb.fn('encode', ['assets.thumbhash', sql.lit('base64')]).as('thumbhash'),
             'exif.city',
             'exif.country',
@@ -648,8 +603,6 @@ export class AssetRepository {
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-          .$if(options.visibility == undefined, withDefaultVisibility)
-          .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
           .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb
@@ -670,7 +623,7 @@ export class AssetRepository {
                     .select(sql`array[stacked."stackId"::text, count('stacked')::text]`.as('stack'))
                     .whereRef('stacked.stackId', '=', 'assets.stackId')
                     .where('stacked.deletedAt', 'is', null)
-                    .where('stacked.visibility', '!=', AssetVisibility.ARCHIVE)
+                    .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
                     .groupBy('stacked.stackId')
                     .as('stacked_assets'),
                 (join) => join.onTrue(),
@@ -683,7 +636,7 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .orderBy('assets.localDateTime', options.order ?? 'desc'),
+          .orderBy('assets.fileCreatedAt', options.order ?? 'desc'),
       )
       .with('agg', (qb) =>
         qb
@@ -699,7 +652,8 @@ export class AssetRepository {
             // TODO: isTrashed is redundant as it will always be all true or false depending on the options
             eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),
             eb.fn.coalesce(eb.fn('array_agg', ['livePhotoVideoId']), sql.lit('{}')).as('livePhotoVideoId'),
-            eb.fn.coalesce(eb.fn('array_agg', ['localDateTime']), sql.lit('{}')).as('localDateTime'),
+            eb.fn.coalesce(eb.fn('array_agg', ['fileCreatedAt']), sql.lit('{}')).as('fileCreatedAt'),
+            eb.fn.coalesce(eb.fn('array_agg', ['localOffsetHours']), sql.lit('{}')).as('localOffsetHours'),
             eb.fn.coalesce(eb.fn('array_agg', ['ownerId']), sql.lit('{}')).as('ownerId'),
             eb.fn.coalesce(eb.fn('array_agg', ['projectionType']), sql.lit('{}')).as('projectionType'),
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
@@ -714,58 +668,6 @@ export class AssetRepository {
       .select(sql<string>`to_json(agg)::text`.as('assets'));
 
     return query.executeTakeFirstOrThrow();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getDuplicates(userId: string) {
-    return (
-      this.db
-        .with('duplicates', (qb) =>
-          qb
-            .selectFrom('assets')
-            .leftJoinLateral(
-              (qb) =>
-                qb
-                  .selectFrom('exif')
-                  .selectAll('assets')
-                  .select((eb) => eb.table('exif').as('exifInfo'))
-                  .whereRef('exif.assetId', '=', 'assets.id')
-                  .as('asset'),
-              (join) => join.onTrue(),
-            )
-            .select('assets.duplicateId')
-            .select((eb) =>
-              eb.fn.jsonAgg('asset').orderBy('assets.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
-            )
-            .where('assets.ownerId', '=', asUuid(userId))
-            .where('assets.duplicateId', 'is not', null)
-            .$narrowType<{ duplicateId: NotNull }>()
-            .where('assets.deletedAt', 'is', null)
-            .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
-            .where('assets.stackId', 'is', null)
-            .groupBy('assets.duplicateId'),
-        )
-        .with('unique', (qb) =>
-          qb
-            .selectFrom('duplicates')
-            .select('duplicateId')
-            .where((eb) => eb(eb.fn('json_array_length', ['assets']), '=', 1)),
-        )
-        .with('removed_unique', (qb) =>
-          qb
-            .updateTable('assets')
-            .set({ duplicateId: null })
-            .from('unique')
-            .whereRef('assets.duplicateId', '=', 'unique.duplicateId'),
-        )
-        .selectFrom('duplicates')
-        .selectAll()
-        // TODO: compare with filtering by json_array_length > 1
-        .where(({ not, exists }) =>
-          not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
-        )
-        .execute()
-    );
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })

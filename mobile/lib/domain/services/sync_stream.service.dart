@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-passing-async-when-sync-expected
-
 import 'dart:async';
 
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
@@ -59,11 +57,9 @@ class SyncStreamService {
 
   Future<void> _handleSyncData(
     SyncEntityType type,
-    // ignore: avoid-dynamic
-    Iterable<dynamic> data,
+    Iterable<Object> data,
   ) async {
     _logger.fine("Processing sync data for $type of length ${data.length}");
-    // ignore: prefer-switch-expression
     switch (type) {
       case SyncEntityType.userV1:
         return _syncStreamRepository.updateUsersV1(data.cast());
@@ -85,6 +81,18 @@ class SyncStreamService {
         return _syncStreamRepository.deletePartnerAssetsV1(data.cast());
       case SyncEntityType.partnerAssetExifV1:
         return _syncStreamRepository.updatePartnerAssetsExifV1(data.cast());
+      case SyncEntityType.albumV1:
+        return _syncStreamRepository.updateAlbumsV1(data.cast());
+      case SyncEntityType.albumDeleteV1:
+        return _syncStreamRepository.deleteAlbumsV1(data.cast());
+      // case SyncEntityType.albumAssetV1:
+      //   return _syncStreamRepository.updateAlbumAssetsV1(data.cast());
+      // case SyncEntityType.albumAssetDeleteV1:
+      //   return _syncStreamRepository.deleteAlbumAssetsV1(data.cast());
+      case SyncEntityType.albumUserV1:
+        return _syncStreamRepository.updateAlbumUsersV1(data.cast());
+      case SyncEntityType.albumUserDeleteV1:
+        return _syncStreamRepository.deleteAlbumUsersV1(data.cast());
       default:
         _logger.warning("Unknown sync data type: $type");
     }

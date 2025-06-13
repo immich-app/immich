@@ -1,8 +1,6 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
-
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { OnLink, OnUnlink } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
@@ -11,6 +9,7 @@
   import { mdiLinkOff, mdiMotionPlayOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
+  import { IconButton } from '@immich/ui';
 
   interface Props {
     onLink: OnLink;
@@ -77,8 +76,15 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
+    <IconButton
+      shape="round"
+      color="secondary"
+      variant="ghost"
+      aria-label={$t('loading')}
+      icon={mdiTimerSand}
+      onclick={() => {}}
+    />
   {:else}
-    <CircleIconButton title={text} {icon} onclick={onClick} />
+    <IconButton shape="round" color="secondary" variant="ghost" aria-label={text} {icon} onclick={onClick} />
   {/if}
 {/if}

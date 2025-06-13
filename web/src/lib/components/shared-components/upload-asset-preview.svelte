@@ -32,7 +32,7 @@
 
   const handleRetry = async (uploadAsset: UploadAsset) => {
     uploadAssetsStore.removeItem(uploadAsset.id);
-    await fileUploadHandler([uploadAsset.file], uploadAsset.albumId);
+    await fileUploadHandler({ files: [uploadAsset.file], albumId: uploadAsset.albumId });
   };
 
   const asLink = (asset: UploadAsset) => {
@@ -44,19 +44,19 @@
   <div class="flex items-center gap-2">
     <div class="flex items-center justify-center">
       {#if uploadAsset.state === UploadState.PENDING}
-        <Icon path={mdiCircleOutline} size="24" class="text-immich-primary" title={$t('pending')} />
+        <Icon path={mdiCircleOutline} size="24" class="text-primary" title={$t('pending')} />
       {:else if uploadAsset.state === UploadState.STARTED}
-        <Icon path={mdiLoading} size="24" spin class="text-immich-primary" title={$t('asset_skipped')} />
+        <Icon path={mdiLoading} size="24" spin class="text-primary" title={$t('asset_skipped')} />
       {:else if uploadAsset.state === UploadState.ERROR}
-        <Icon path={mdiAlertCircle} size="24" class="text-immich-error" title={$t('error')} />
+        <Icon path={mdiAlertCircle} size="24" class="text-danger" title={$t('error')} />
       {:else if uploadAsset.state === UploadState.DUPLICATED}
         {#if uploadAsset.isTrashed}
           <Icon path={mdiTrashCan} size="24" class="text-gray-500" title={$t('asset_skipped_in_trash')} />
         {:else}
-          <Icon path={mdiAlertCircle} size="24" class="text-immich-warning" title={$t('asset_skipped')} />
+          <Icon path={mdiAlertCircle} size="24" class="text-warning" title={$t('asset_skipped')} />
         {/if}
       {:else if uploadAsset.state === UploadState.DONE}
-        <Icon path={mdiCheckCircle} size="24" class="text-immich-success" title={$t('asset_uploaded')} />
+        <Icon path={mdiCheckCircle} size="24" class="text-success" title={$t('asset_uploaded')} />
       {/if}
     </div>
     <!-- <span>[{getByteUnitString(uploadAsset.file.size, $locale)}]</span> -->
@@ -105,7 +105,7 @@
 
   {#if uploadAsset.state === UploadState.ERROR}
     <div class="flex flex-row justify-between">
-      <p class="w-full rounded-md text-justify text-immich-error">
+      <p class="w-full rounded-md text-justify text-danger">
         {uploadAsset.error}
       </p>
     </div>

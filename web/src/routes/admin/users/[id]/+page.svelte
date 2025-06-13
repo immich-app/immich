@@ -101,7 +101,7 @@
       return 'bg-yellow-500';
     }
 
-    return 'bg-immich-primary dark:bg-immich-dark-primary';
+    return 'bg-primary';
   };
 
   const handleResetPassword = async () => {

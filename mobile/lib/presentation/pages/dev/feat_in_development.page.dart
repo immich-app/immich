@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-local-functions
-
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
@@ -25,6 +23,11 @@ final _features = [
     name: 'Sync Local Full',
     icon: Icons.photo_library_rounded,
     onTap: (_, ref) => ref.read(backgroundSyncProvider).syncLocal(full: true),
+  ),
+  _Feature(
+    name: 'Hash Local Assets',
+    icon: Icons.numbers_outlined,
+    onTap: (_, ref) => ref.read(backgroundSyncProvider).hashAssets(),
   ),
   _Feature(
     name: 'Sync Remote',
@@ -54,9 +57,38 @@ final _features = [
     },
   ),
   _Feature(
+    name: 'Clear Remote Data',
+    icon: Icons.delete_sweep_rounded,
+    onTap: (_, ref) async {
+      final db = ref.read(driftProvider);
+      await db.remoteExifEntity.deleteAll();
+      await db.remoteAssetEntity.deleteAll();
+      await db.remoteAlbumEntity.deleteAll();
+      await db.remoteAlbumAssetEntity.deleteAll();
+    },
+  ),
+  _Feature(
     name: 'Local Media Summary',
     icon: Icons.table_chart_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const LocalMediaSummaryRoute()),
+  ),
+  _Feature(
+    name: 'Remote Media Summary',
+    icon: Icons.summarize_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const RemoteMediaSummaryRoute()),
+  ),
+  _Feature(
+    name: 'Reset Sqlite',
+    icon: Icons.table_view_rounded,
+    onTap: (_, ref) async {
+      final drift = ref.read(driftProvider);
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      final migrator = drift.createMigrator();
+      for (final entity in drift.allSchemaEntities) {
+        await migrator.drop(entity);
+        await migrator.create(entity);
+      }
+    },
   ),
 ];
 
@@ -110,7 +142,6 @@ class _Feature {
   final Future<void> Function(BuildContext, WidgetRef _) onTap;
 }
 
-// ignore: prefer-single-widget-per-file
 class _DevLogs extends StatelessWidget {
   const _DevLogs();
 
@@ -138,7 +169,6 @@ class _DevLogs extends StatelessWidget {
         builder: (_, logMessages) {
           return ListView.separated(
             itemBuilder: (ctx, index) {
-              // ignore: avoid-unsafe-collection-methods
               final logMessage = logMessages.data![index];
               return ListTile(
                 title: Text(

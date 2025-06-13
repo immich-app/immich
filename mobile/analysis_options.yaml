@@ -56,6 +56,7 @@ custom_lint:
       allowed:
         # required / wanted
         - 'lib/infrastructure/repositories/album_media.repository.dart'
+        - 'lib/infrastructure/repositories/storage.repository.dart'
         - 'lib/repositories/{album,asset,file}_media.repository.dart'
         # acceptable exceptions for the time being
         - lib/entities/asset.entity.dart # to provide local AssetEntity for now
@@ -127,82 +128,169 @@ custom_lint:
         - test/**.dart
 
 dart_code_metrics:
-  extends:
-    - recommended
   rules:
-    # Common
-    - arguments-ordering:
-        last:
-          - child
-          - children
-    - avoid-accessing-other-classes-private-members
-    - avoid-assigning-to-static-field
-    - avoid-assignments-as-conditions
-    - avoid-async-call-in-sync-function
-    - avoid-collapsible-if
-    - avoid-collection-equality-checks
-    - avoid-complex-loop-conditions
-    - avoid-declaring-call-method
-    - avoid-extensions-on-records
-    - avoid-function-type-in-records
-    - avoid-future-ignore
-    - avoid-global-state
-    - avoid-inverted-boolean-checks
-    - avoid-late-final-reassignment
-    - avoid-local-functions:
-        exclude:
-          - test/**.dart
-    - avoid-negated-conditions
-    - avoid-nested-streams-and-futures
-    - avoid-referencing-subclasses
-    - avoid-unnecessary-continue
-    - avoid-unnecessary-nullable-return-type: false
-    - binary-expression-operand-order
-    - pattern-fields-ordering
-    - prefer-abstract-final-static-class
-    - prefer-commenting-future-delayed
-    - prefer-early-return
-    - prefer-first
-    - prefer-immediate-return
-    - prefer-last
-    - prefer-simpler-boolean-expressions
-    - prefer-switch-expression
-    - prefer-type-over-var
-    - use-existing-destructuring
-    - use-existing-variable
-    # Flutter
-    - avoid-border-all
-    - avoid-complex-arithmetic-expressions
-    - avoid-expanded-as-spacer
-    - avoid-if-with-many-branches
-    - avoid-inherited-widget-in-initstate
-    - avoid-late-context
-    - avoid-returning-widgets
-    - avoid-shrink-wrap-in-lists
-    - avoid-single-child-column-or-row
-    - avoid-stateless-widget-initialized-fields
-    - avoid-wrapping-in-padding
-    - prefer-align-over-container
-    - prefer-const-border-radius
-    - prefer-correct-callback-field-name: false
-    - prefer-correct-edge-insets-constructor
-    - prefer-define-hero-tag
-    - prefer-extracting-callbacks
-    - prefer-for-loop-in-children
-    - prefer-match-file-name: false
-    - prefer-sliver-prefix
-    - prefer-spacing
-    - prefer-text-rich
-    - prefer-transform-over-container
-    - prefer-using-list-view
-    - prefer-widget-private-members:
-        ignore-static: true
-    - use-closest-build-context
-    # riverpod
-    - avoid-calling-notifier-members-inside-build
-    - avoid-notifier-constructors
-    - avoid-ref-read-inside-build
-    - avoid-ref-watch-outside-build
-    - avoid-unnecessary-consumer-widgets
-    - dispose-provided-instances
-    - use-ref-read-synchronously
+    # All rules from "recommended" preset
+    # Show potential errors
+  #  - avoid-cascade-after-if-null
+  #  - avoid-collection-methods-with-unrelated-types
+  #  - avoid-duplicate-exports
+  #  - avoid-dynamic
+  #  - avoid-missing-enum-constant-in-map
+  #  - avoid-passing-async-when-sync-expected
+  #  - avoid-throw-in-catch-block
+    - avoid-unused-parameters
+  #  - avoid-unnecessary-type-assertions
+  #  - avoid-unnecessary-type-casts
+  #  - avoid-unrelated-type-assertions
+  #  - avoid-unrelated-type-casts
+  #  - no-empty-block
+  #  - no-equal-then-else
+  #  - prefer-correct-test-file-name
+  #  - prefer-match-file-name
+  #  - prefer-return-await
+  #  - avoid-self-assignment
+  #  - avoid-self-compare
+  #  - avoid-shadowing
+  #  - prefer-iterable-of
+  #  - no-equal-switch-case
+  #  - no-equal-conditions
+  #  - avoid-equal-expressions
+  #  - avoid-missed-calls
+  #  - avoid-unnecessary-negations
+  #  - avoid-unused-generics
+  #  - function-always-returns-null
+  #  - avoid-throw-objects-without-tostring
+  #  - avoid-unsafe-collection-methods
+  #  - prefer-wildcard-pattern
+  #  - no-equal-switch-expression-cases
+  #  - avoid-future-tostring
+  #  - avoid-unassigned-late-fields
+  #  - avoid-nested-futures
+  #  - avoid-generics-shadowing
+  #  - prefer-parentheses-with-if-null
+  #  - no-equal-nested-conditions
+  #  - avoid-shadowed-extension-methods
+  #  - avoid-unnecessary-conditionals
+  #  - avoid-double-slash-imports
+  #  - avoid-map-keys-contains
+  #  - prefer-correct-json-casts
+  #  - avoid-duplicate-mixins
+  #  - avoid-nullable-interpolation
+  #  - avoid-unused-instances
+  #  - prefer-correct-for-loop-increment
+  #  - prefer-public-exception-classes
+  #  - avoid-uncaught-future-errors
+  #  - always-remove-listener
+  #  - avoid-unnecessary-setstate
+  #  - check-for-equals-in-render-object-setters
+  #  - consistent-update-render-object
+  #  - use-setstate-synchronously
+  #  - avoid-incomplete-copy-with
+  #  - proper-super-calls
+  #  - dispose-fields
+  #  - avoid-empty-setstate
+  #  - avoid-state-constructors
+  #  - avoid-recursive-widget-calls
+  #  - avoid-missing-image-alt
+  #  - avoid-passing-self-as-argument
+  #  - avoid-unnecessary-if
+  #  - avoid-unconditional-break
+  #  - avoid-referencing-discarded-variables
+  #  - avoid-unnecessary-local-late
+  #  - avoid-wildcard-cases-with-enums
+  #  - match-getter-setter-field-names
+  #  - avoid-accessing-collections-by-constant-index
+  #  - prefer-unique-test-names
+  #  - avoid-duplicate-cascades
+  #  - prefer-specific-cases-first
+  #  - avoid-duplicate-switch-case-conditions
+  #  - prefer-explicit-function-type
+  #  - avoid-misused-test-matchers
+  #  - avoid-duplicate-test-assertions
+  #  - prefer-switch-with-enums
+  #  - prefer-any-or-every
+  #  - avoid-duplicate-map-keys
+  #  - avoid-nullable-tostring
+  #  - avoid-undisposed-instances
+  #  - avoid-duplicate-initializers
+  #  - avoid-unassigned-stream-subscriptions
+  #  - avoid-empty-test-groups
+  #  - avoid-not-encodable-in-to-json
+  #  - avoid-contradictory-expressions
+  #  - avoid-excessive-expressions
+  #  - prefer-private-extension-type-field
+  #  - avoid-renaming-representation-getters
+  #  - avoid-empty-spread
+  #  - avoid-unnecessary-gesture-detector
+  #  - avoid-missing-completer-stack-trace
+  #  - avoid-casting-to-extension-type
+  #  - prefer-overriding-parent-equality
+  #  - avoid-missing-controller
+  #  - avoid-unknown-pragma
+  #  - avoid-conditions-with-boolean-literals
+  #  - avoid-multi-assignment
+  #  - avoid-collection-equality-checks
+  #  - avoid-only-rethrow
+  #  - avoid-incorrect-image-opacity
+  #  - avoid-misused-set-literals
+  #  - dispose-class-fields
+  #  - avoid-suspicious-super-overrides
+  #  - avoid-assignments-as-conditions
+  #  - avoid-unused-assignment
+  #  - avoid-unnecessary-overrides
+  #  - avoid-implicitly-nullable-extension-types
+    # Enable with the next release
+    # - avoid-late-final-reassignment
+    # - avoid-duplicate-constant-values
+    # - function-always-returns-same-value
+    # - avoid-flexible-outside-flex
+    # - avoid-unnecessary-patterns
+    # - use-closest-build-context
+    # - avoid-commented-out-code
+    # - avoid-recursive-tostring
+    # - avoid-enum-values-by-index
+    # - avoid-constant-assert-conditions
+    # - avoid-inconsistent-digit-separators
+    # - pass-existing-future-to-future-builder
+    # - pass-existing-stream-to-stream-builder
+
+    # Code simplification
+  #  - avoid-redundant-async
+  #  - avoid-redundant-else
+  #  - avoid-unnecessary-nullable-return-type
+  #  - avoid-redundant-pragma-inline
+  #  - avoid-nested-records
+  #  - avoid-redundant-positional-field-name
+  #  - avoid-explicit-pattern-field-name
+  #  - prefer-simpler-patterns-null-check
+  #  - avoid-unnecessary-return
+  #  - avoid-duplicate-patterns
+  #  - avoid-keywords-in-wildcard-pattern
+  #  - avoid-unnecessary-futures
+  #  - avoid-unnecessary-reassignment
+  #  - avoid-unnecessary-call
+  #  - avoid-unnecessary-stateful-widgets
+  #  - prefer-dedicated-media-query-methods
+  #  - avoid-unnecessary-overrides-in-state
+  #  - move-variable-closer-to-its-usage
+  #  - avoid-nullable-parameters-with-default-values
+  #  - prefer-null-aware-spread
+  #  - avoid-inferrable-type-arguments
+  #  - avoid-unnecessary-super
+  #  - avoid-unnecessary-collections
+  #  - avoid-unnecessary-extends
+  #  - avoid-unnecessary-enum-arguments
+  #  - prefer-contains
+    # Enable with the next release
+    # - prefer-simpler-boolean-expressions
+    # - prefer-spacing
+    # - avoid-unnecessary-continue
+    # - avoid-unnecessary-compare-to
+
+    # Style
+  #  - prefer-trailing-comma
+  #  - unnecessary-trailing-comma
+  #  - prefer-declaring-const-constructor
+  #  - prefer-single-widget-per-file
+  #  - prefer-prefixed-global-constants
+  #  - prefer-correct-callback-field-name

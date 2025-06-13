@@ -117,7 +117,7 @@
           />
         {/if}
 
-        <ThemeButton padding="2" />
+        <ThemeButton />
 
         <div
           use:clickOutside={{
@@ -140,7 +140,7 @@
           {/if}
         </div>
 
-        <CastButton navBar />
+        <CastButton />
 
         <div
           use:clickOutside={{
@@ -155,7 +155,7 @@
             title={`${$user.name} (${$user.email})`}
           >
             {#key $user}
-              <UserAvatar user={$user} size="md" showTitle={false} interactive />
+              <UserAvatar user={$user} size="md" noTitle interactive />
             {/key}
           </button>
 

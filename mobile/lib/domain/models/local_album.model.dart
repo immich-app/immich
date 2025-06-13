@@ -1,6 +1,9 @@
 enum BackupSelection {
-  none,
+  // Used to sort albums based on the backupSelection
+  // selected -> none -> excluded
+  // Do not change the order of these values
   selected,
+  none,
   excluded,
 }
 
@@ -8,6 +11,7 @@ class LocalAlbum {
   final String id;
   final String name;
   final DateTime updatedAt;
+  final bool isIosSharedAlbum;
 
   final int assetCount;
   final BackupSelection backupSelection;
@@ -18,6 +22,7 @@ class LocalAlbum {
     required this.updatedAt,
     this.assetCount = 0,
     this.backupSelection = BackupSelection.none,
+    this.isIosSharedAlbum = false,
   });
 
   LocalAlbum copyWith({
@@ -26,6 +31,7 @@ class LocalAlbum {
     DateTime? updatedAt,
     int? assetCount,
     BackupSelection? backupSelection,
+    bool? isIosSharedAlbum,
   }) {
     return LocalAlbum(
       id: id ?? this.id,
@@ -33,6 +39,7 @@ class LocalAlbum {
       updatedAt: updatedAt ?? this.updatedAt,
       assetCount: assetCount ?? this.assetCount,
       backupSelection: backupSelection ?? this.backupSelection,
+      isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
     );
   }
 
@@ -45,7 +52,8 @@ class LocalAlbum {
         other.name == name &&
         other.updatedAt == updatedAt &&
         other.assetCount == assetCount &&
-        other.backupSelection == backupSelection;
+        other.backupSelection == backupSelection &&
+        other.isIosSharedAlbum == isIosSharedAlbum;
   }
 
   @override
@@ -54,7 +62,8 @@ class LocalAlbum {
         name.hashCode ^
         updatedAt.hashCode ^
         assetCount.hashCode ^
-        backupSelection.hashCode;
+        backupSelection.hashCode ^
+        isIosSharedAlbum.hashCode;
   }
 
   @override
@@ -65,6 +74,7 @@ name: $name,
 updatedAt: $updatedAt,
 assetCount: $assetCount,
 backupSelection: $backupSelection,
+isIosSharedAlbum: $isIosSharedAlbum
 }''';
   }
 }
