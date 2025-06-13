@@ -6,9 +6,8 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
+import 'package:immich_mobile/pages/library/people/circle_avatar_people.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 class PeoplePicker extends HookConsumerWidget {
@@ -20,10 +19,9 @@ class PeoplePicker extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formFocus = useFocusNode();
-    final imageSize = 60.0;
+    final imageSize = 60;
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
-    final headers = ApiService.getRequestHeaders();
     final selectedPeople = useState<Set<Person>>(filter ?? {});
 
     return Column(
@@ -81,19 +79,9 @@ class PeoplePicker extends HookConsumerWidget {
                               : context.colorScheme.onSurface,
                         ),
                       ),
-                      leading: SizedBox(
-                        height: imageSize,
-                        child: Material(
-                          shape: const CircleBorder(side: BorderSide.none),
-                          elevation: 3,
-                          child: CircleAvatar(
-                            maxRadius: imageSize / 2,
-                            backgroundImage: NetworkImage(
-                              getFaceThumbnailUrl(person.id),
-                              headers: headers,
-                            ),
-                          ),
-                        ),
+                      leading: CirclePeopleAvatar(
+                        personId: person.id,
+                        imageSize: imageSize,
                       ),
                       onTap: () {
                         if (selectedPeople.value.contains(person)) {
