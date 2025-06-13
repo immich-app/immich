@@ -20,6 +20,7 @@ export type AuthUser = {
   isAdmin: boolean;
   name: string;
   email: string;
+  profileImagePath: string | null;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
 };
@@ -305,6 +306,7 @@ export const columns = {
     'users.name',
     'users.email',
     'users.isAdmin',
+    'users.profileImagePath',
     'users.quotaUsageInBytes',
     'users.quotaSizeInBytes',
   ],
