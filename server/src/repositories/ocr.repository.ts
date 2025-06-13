@@ -1,22 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, sql } from 'kysely';
+import { Insertable, Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
+import { AssetOcr, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-
-export interface OcrInsertData {
-  assetId: string;
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  x3: number;
-  y3: number;
-  x4: number;
-  y4: number;
-  text: string;
-  confidence: number;
-}
 
 @Injectable()
 export class OcrRepository {
@@ -54,28 +40,26 @@ export class OcrRepository {
           x4: DummyValue.NUMBER,
           y4: DummyValue.NUMBER,
           text: DummyValue.STRING,
-          confidence: DummyValue.NUMBER,
+          boxScore: DummyValue.NUMBER,
+          textScore: DummyValue.NUMBER,
         },
       ],
     ],
   })
-  upsert(assetId: string, ocrDataList: OcrInsertData[]) {
-    if (ocrDataList.length === 0) {
-      return;
+  upsert(assetId: string, ocrDataList: Insertable<AssetOcr>[]) {
+    let query = this.db.with('deleted_ocr', (db) => db.deleteFrom('asset_ocr').where('assetId', '=', assetId));
+    if (ocrDataList.length > 0) {
+      const searchText = ocrDataList.map((item) => item.text.trim()).join(' ');
+      (query as any) = query
+        .with('inserted_ocr', (db) => db.insertInto('asset_ocr').values(ocrDataList))
+        .with('inserted_search', (db) =>
+          db
+            .insertInto('ocr_search')
+            .values({ assetId, text: searchText })
+            .onConflict((oc) => oc.column('assetId').doUpdateSet((eb) => ({ text: eb.ref('excluded.text') }))),
+        );
     }
 
-    const searchText = ocrDataList.map((item) => item.text.trim()).join(' ');
-
-    return this.db
-      .with('deleted_ocr', (db) => db.deleteFrom('asset_ocr').where('assetId', '=', assetId))
-      .with('inserted_ocr', (db) => db.insertInto('asset_ocr').values(ocrDataList))
-      .with('inserted_search', (db) =>
-        db
-          .insertInto('ocr_search')
-          .values({ assetId, text: searchText })
-          .onConflict((oc) => oc.column('assetId').doUpdateSet((eb) => ({ text: eb.ref('excluded.text') }))),
-      )
-      .selectNoFrom(sql`1`.as('dummy'))
-      .execute();
+    return query.selectNoFrom(sql`1`.as('dummy')).execute();
   }
 }

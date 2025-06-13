@@ -49,29 +49,22 @@ export class FacialRecognitionConfig extends ModelConfig {
 
 export class OcrConfig extends ModelConfig {
   @IsNumber()
-  @Min(0)
-  @Max(1)
+  @Min(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'double' })
-  minDetectionBoxScore!: number;
+  @ApiProperty({ type: 'integer' })
+  maxResolution!: number;
 
   @IsNumber()
-  @Min(0)
+  @Min(0.1)
   @Max(1)
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'double' })
   minDetectionScore!: number;
 
   @IsNumber()
-  @Min(0)
+  @Min(0.1)
   @Max(1)
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'double' })
   minRecognitionScore!: number;
-
-  @ValidateBoolean()
-  unwarpingEnabled!: boolean;
-
-  @ValidateBoolean()
-  orientationClassifyEnabled!: boolean;
 }

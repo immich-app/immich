@@ -31,7 +31,11 @@ export type ModelPayload = { imagePath: string } | { text: string };
 type ModelOptions = { modelName: string };
 
 export type FaceDetectionOptions = ModelOptions & { minScore: number };
-export type OcrOptions = ModelOptions & { minDetectionBoxScore: number, minDetectionScore: number, minRecognitionScore: number, unwarpingEnabled: boolean, orientationClassifyEnabled: boolean };
+export type OcrOptions = ModelOptions & {
+  minDetectionScore: number;
+  minRecognitionScore: number;
+  maxResolution: number;
+};
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
 export type ClipVisualResponse = { [ModelTask.SEARCH]: string } & VisualResponse;
@@ -40,20 +44,19 @@ export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: Mo
 export type ClipTextualResponse = { [ModelTask.SEARCH]: string };
 
 export type OCR = {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  x3: number;
-  y3: number;
-  x4: number;
-  y4: number;
-  text: string;
-  confidence: number;
+  text: string[];
+  box: number[];
+  boxScore: number[];
+  textScore: number[];
 };
 
-export type OcrRequest = { [ModelTask.OCR]: { [ModelType.OCR]: ModelOptions & { options: { minDetectionScore: number, minRecognitionScore: number } } } };
-export type OcrResponse = { [ModelTask.OCR]: OCR[] } & VisualResponse;
+export type OcrRequest = {
+  [ModelTask.OCR]: {
+    [ModelType.DETECTION]: ModelOptions & { options: { minScore: number; maxResolution: number } };
+    [ModelType.RECOGNITION]: ModelOptions & { options: { minScore: number } };
+  };
+};
+export type OcrResponse = { [ModelTask.OCR]: OCR } & VisualResponse;
 
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {
@@ -211,8 +214,17 @@ export class MachineLearningRepository {
     return formData;
   }
 
-  async ocr(urls: string[], imagePath: string, { modelName, minDetectionBoxScore, minDetectionScore, minRecognitionScore, unwarpingEnabled, orientationClassifyEnabled }: OcrOptions) {
-    const request = { [ModelTask.OCR]: { [ModelType.OCR]: { modelName, options: { minDetectionBoxScore, minDetectionScore, minRecognitionScore, unwarpingEnabled, orientationClassifyEnabled } } } };
+  async ocr(
+    urls: string[],
+    imagePath: string,
+    { modelName, minDetectionScore, minRecognitionScore, maxResolution }: OcrOptions,
+  ) {
+    const request = {
+      [ModelTask.OCR]: {
+        [ModelType.DETECTION]: { modelName, options: { minScore: minDetectionScore, maxResolution } },
+        [ModelType.RECOGNITION]: { modelName, options: { minScore: minRecognitionScore } },
+      },
+    };
     const response = await this.predict<OcrResponse>(urls, { imagePath }, request);
     return response[ModelTask.OCR];
   }
