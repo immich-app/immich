@@ -46,6 +46,10 @@ class AssetMediaBase {
   @IsString()
   duration?: string;
 
+  @Optional()
+  @IsString()
+  filename?: string;
+
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
   @ApiProperty({ type: 'string', format: 'binary' })

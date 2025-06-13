@@ -68,13 +68,13 @@
             </p>
             <p class="immich-form-label text-xs">
               {$t('upload_status_uploaded')}
-              <span class="text-immich-success">{$stats.success.toLocaleString($locale)}</span>
+              <span class="text-success">{$stats.success.toLocaleString($locale)}</span>
               -
               {$t('upload_status_errors')}
-              <span class="text-immich-error">{$stats.errors.toLocaleString($locale)}</span>
+              <span class="text-danger">{$stats.errors.toLocaleString($locale)}</span>
               -
               {$t('upload_status_duplicates')}
-              <span class="text-immich-warning">{$stats.duplicates.toLocaleString($locale)}</span>
+              <span class="text-warning">{$stats.duplicates.toLocaleString($locale)}</span>
             </p>
           </div>
           <div class="flex flex-col items-end">
@@ -142,7 +142,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
+          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-primary p-5 text-xs text-gray-200"
         >
           {$remainingUploads.toLocaleString($locale)}
         </button>
@@ -151,7 +151,7 @@
             type="button"
             in:scale={{ duration: 250, easing: quartInOut }}
             onclick={() => (showDetail = true)}
-            class="absolute -end-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
+            class="absolute -end-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-danger p-5 text-xs text-gray-200"
           >
             {$stats.errors.toLocaleString($locale)}
           </button>
@@ -160,7 +160,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-gray-200 p-5 text-sm text-immich-primary shadow-lg dark:bg-gray-600 dark:text-immich-gray"
+          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-subtle p-5 text-sm text-primary shadow-lg"
         >
           <div class="animate-pulse">
             <Icon path={mdiCloudUploadOutline} size="30" />
