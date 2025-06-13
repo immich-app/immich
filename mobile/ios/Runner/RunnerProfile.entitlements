@@ -8,7 +8,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.app.immich.share</string>
+		<string>group.bwees.immich</string>
 	</array>
 </dict>
 </plist>
