@@ -10,6 +10,14 @@ struct EmptyConfigurationIntent: WidgetConfigurationIntent {
 
 struct ImmichMemoryProvider: AppIntentTimelineProvider {
 
+  func getYearDifferenceSubtitle(assetYear: Int) -> String {
+    let currentYear = Calendar.current.component(.year, from: Date.now)
+    // construct a "X years ago" subtitle
+    let yearDifference = currentYear - assetYear
+
+    return "\(yearDifference) year\(yearDifference == 1 ? "" : "s") ago"
+  }
+
   func placeholder(in context: Context) -> ImageEntry {
     ImageEntry(date: Date(), image: nil)
   }
@@ -24,7 +32,27 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
       return ImageEntry(date: Date(), image: nil, error: .noLogin)
     }
 
-    // TODO: Revise to grab a memory instead of random
+    guard let memories = try? await api.fetchMemory(for: Date.now)
+    else {
+      return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
+    }
+
+    do {
+      for memory in memories {
+        for asset in memory.assets {
+          if asset.type == "IMAGE" {
+            return try await buildEntry(
+              api: api,
+              asset: asset,
+              hourOffset: 0,
+              subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
+            )
+          }
+        }
+      }
+    } catch {}
+
+    // fallback to random image
     guard
       let demoImage = try? await api.fetchSearchResults(
         with: SearchFilters(size: 1)
@@ -33,11 +61,17 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
 
-    guard let image = try? await api.fetchImage(asset: demoImage) else {
+    guard
+      let demoEntry = try? await buildEntry(
+        api: api,
+        asset: demoImage,
+        hourOffset: 0,
+      )
+    else {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
 
-    return ImageEntry(date: Date(), image: image)
+    return demoEntry
   }
 
   func timeline(
@@ -57,14 +91,8 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
     // This whole block can fail and we will fall back to random, then a failure screen
     do {
       let memories = try await api.fetchMemory(for: Date.now)
-      let currentYear = Calendar.current.component(.year, from: Date.now)
 
       for memory in memories {
-        // construct a "X years ago" subtitle
-        let yearDifference = currentYear - memory.data.year
-        let subtitle =
-          "\(yearDifference) year\(yearDifference == 1 ? "" : "s") ago"
-
         for asset in memory.assets {
           if asset.type == "IMAGE" {
             entries.append(
@@ -72,7 +100,7 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
                 api: api,
                 asset: asset,
                 hourOffset: entries.count,
-                subtitle: subtitle
+                subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
               )
             )
           }

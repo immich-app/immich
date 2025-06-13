@@ -195,9 +195,7 @@ actor AlbumCache {
     // Sometimes iOS caches this object and keeps it around
     // even after nuking the timeline
 
-    if api == nil {
       api = try? await ImmichAPI()
-    }
 
     guard api != nil else {
       throw WidgetError.noLogin
