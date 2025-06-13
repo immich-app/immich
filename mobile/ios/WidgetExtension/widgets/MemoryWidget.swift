@@ -14,7 +14,10 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
     ImageEntry(date: Date(), image: nil)
   }
 
-  func snapshot(for configuration: EmptyConfigurationIntent, in context: Context) async
+  func snapshot(
+    for configuration: EmptyConfigurationIntent,
+    in context: Context
+  ) async
     -> ImageEntry
   {
     guard let api = try? await ImmichAPI() else {
@@ -22,7 +25,10 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
     }
 
     // TODO: Revise to grab a memory instead of random
-    guard let demoImage = try? await api.fetchSearchResults(with: SearchFilters(size: 1)).first
+    guard
+      let demoImage = try? await api.fetchSearchResults(
+        with: SearchFilters(size: 1)
+      ).first
     else {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
@@ -34,7 +40,10 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
     return ImageEntry(date: Date(), image: image)
   }
 
-  func timeline(for configuration: EmptyConfigurationIntent, in context: Context) async -> Timeline<
+  func timeline(
+    for configuration: EmptyConfigurationIntent,
+    in context: Context
+  ) async -> Timeline<
     ImageEntry
   > {
     var entries: [ImageEntry] = []
@@ -53,13 +62,19 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
       for memory in memories {
         // construct a "X years ago" subtitle
         let yearDifference = currentYear - memory.data.year
-        let subtitle = "\(yearDifference) year\(yearDifference == 1 ? "" : "s") ago"
+        let subtitle =
+          "\(yearDifference) year\(yearDifference == 1 ? "" : "s") ago"
 
         for asset in memory.assets {
           if asset.type == "IMAGE" {
             entries.append(
               try await buildEntry(
-                api: api, asset: asset, hourOffset: entries.count, subtitle: subtitle))
+                api: api,
+                asset: asset,
+                hourOffset: entries.count,
+                subtitle: subtitle
+              )
+            )
           }
         }
       }
@@ -70,7 +85,12 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
     // If we didnt add any memory images, default to 12 hours of random photos
     if entries.count == 0 {
       entries.append(
-        contentsOf: (try? await generateRandomEntries(api: api, now: now, count: 12)) ?? [])
+        contentsOf: (try? await generateRandomEntries(
+          api: api,
+          now: now,
+          count: 12
+        )) ?? []
+      )
     }
 
     // If we fail to fetch images, we still want to add an entry with a nil image and an error
@@ -87,7 +107,9 @@ struct ImmichMemoryWidget: Widget {
 
   var body: some WidgetConfiguration {
     AppIntentConfiguration(
-      kind: kind, intent: EmptyConfigurationIntent.self, provider: ImmichMemoryProvider()
+      kind: kind,
+      intent: EmptyConfigurationIntent.self,
+      provider: ImmichMemoryProvider()
     ) { entry in
       ImmichWidgetView(entry: entry)
         .containerBackground(.black, for: .widget)
