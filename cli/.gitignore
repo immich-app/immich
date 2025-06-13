@@ -13,3 +13,5 @@ oclif.manifest.json
 /coverage/
 .reverse-geocoding-dump/
 upload/
+local-build.sh
+*.code-workspace
