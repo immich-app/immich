@@ -82,7 +82,7 @@ class UserEntity extends Table with DriftDefaultsMixin {
   TextColumn get name => text()();
   BoolColumn get isAdmin => boolean()();
   TextColumn get email => text()();
-  TextColumn get profileImagePath => text().nullable()();
+  TextColumn get profileImagePath => text()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   // Quota
   IntColumn get quotaSizeInBytes => integer().nullable()();
