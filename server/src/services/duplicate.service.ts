@@ -78,6 +78,11 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
+    if (asset.visibility === AssetVisibility.LOCKED) {
+      this.logger.debug(`Asset ${id} is locked, skipping`);
+      return JobStatus.SKIPPED;
+    }
+
     if (!asset.embedding) {
       this.logger.debug(`Asset ${id} is missing embedding`);
       return JobStatus.FAILED;
