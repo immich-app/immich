@@ -46,11 +46,16 @@ export async function up(db: Kysely<any>): Promise<void> {
   REFERENCING NEW TABLE AS "inserted_rows"
   FOR EACH STATEMENT
   EXECUTE FUNCTION album_asset_after_insert();`.execute(db);
+  await sql`CREATE OR REPLACE TRIGGER "album_assets_updated_at"
+  BEFORE UPDATE ON "albums_assets_assets"
+  FOR EACH ROW
+  EXECUTE FUNCTION updated_at();`.execute(db);
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
   await sql`DROP TRIGGER "album_assets_delete_audit" ON "albums_assets_assets";`.execute(db);
   await sql`DROP TRIGGER "album_asset_after_insert" ON "albums_assets_assets";`.execute(db);
+  await sql`DROP TRIGGER "album_assets_updated_at" ON "albums_assets_assets";`.execute(db);
   await sql`DROP INDEX "IDX_album_assets_assets_update_id";`.execute(db);
   await sql`DROP INDEX "IDX_album_assets_assets_audit_album_id";`.execute(db);
   await sql`DROP INDEX "IDX_album_assets_assets_audit_asset_id";`.execute(db);

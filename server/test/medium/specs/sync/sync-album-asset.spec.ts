@@ -39,7 +39,7 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
           assetId: asset.id,
         }),
         type: SyncEntityType.AlbumAssetV1,
-      }
+      },
     ]);
   });
 
@@ -63,7 +63,7 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
           assetId: asset.id,
         }),
         type: SyncEntityType.AlbumAssetV1,
-      }
+      },
     ]);
 
     await albumRepo.removeAssetIds(album.id, [asset.id]);

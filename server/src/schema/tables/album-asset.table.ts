@@ -2,8 +2,14 @@ import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { album_asset_after_insert, album_assets_delete_audit } from 'src/schema/functions';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { AfterDeleteTrigger, AfterInsertTrigger, CreateDateColumn, ForeignKeyColumn, Table } from 'src/sql-tools';
-import { UpdateDateColumn } from 'src/sql-tools';
+import {
+  AfterDeleteTrigger,
+  AfterInsertTrigger,
+  CreateDateColumn,
+  ForeignKeyColumn,
+  Table,
+  UpdateDateColumn,
+} from 'src/sql-tools';
 
 @Table({ name: 'albums_assets_assets', primaryConstraintName: 'PK_c67bc36fa845fb7b18e0e398180' })
 @UpdatedAtTrigger('album_assets_updated_at')
