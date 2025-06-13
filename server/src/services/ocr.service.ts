@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
+import { OCR } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { isOcrEnabled } from 'src/utils/misc';
@@ -57,27 +58,34 @@ export class OcrService extends BaseService {
       machineLearning.ocr,
     );
 
-    if (ocrResults.length > 0) {
-      const ocrDataList = ocrResults.map((result) => ({
-        assetId: id,
-        x1: result.x1,
-        y1: result.y1,
-        x2: result.x2,
-        y2: result.y2,
-        x3: result.x3,
-        y3: result.y3,
-        x4: result.x4,
-        y4: result.y4,
-        text: result.text,
-        confidence: result.confidence,
-      }));
-
-      await this.ocrRepository.upsert(id, ocrDataList);
-    }
+    await this.ocrRepository.upsert(id, this.parseOcrResults(id, ocrResults));
 
     await this.assetRepository.upsertJobStatus({ assetId: id, ocrAt: new Date() });
 
-    this.logger.debug(`Processed ${ocrResults.length} OCR result(s) for ${id}`);
+    this.logger.debug(`Processed ${ocrResults.text.length} OCR result(s) for ${id}`);
     return JobStatus.SUCCESS;
+  }
+
+  parseOcrResults(id: string, ocrResults: OCR) {
+    const ocrDataList = [];
+    for (let i = 0; i < ocrResults.text.length; i++) {
+      const boxOffset = i * 8;
+      const row = {
+        assetId: id,
+        text: ocrResults.text[i],
+        boxScore: ocrResults.boxScore[i],
+        textScore: ocrResults.textScore[i],
+        x1: ocrResults.box[boxOffset],
+        y1: ocrResults.box[boxOffset + 1],
+        x2: ocrResults.box[boxOffset + 2],
+        y2: ocrResults.box[boxOffset + 3],
+        x3: ocrResults.box[boxOffset + 4],
+        y3: ocrResults.box[boxOffset + 5],
+        x4: ocrResults.box[boxOffset + 6],
+        y4: ocrResults.box[boxOffset + 7],
+      };
+      ocrDataList.push(row);
+    }
+    return ocrDataList;
   }
 }

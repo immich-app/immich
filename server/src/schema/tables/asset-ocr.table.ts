@@ -6,12 +6,11 @@ export class AssetOcrTable {
   @PrimaryGeneratedColumn()
   id!: string;
 
-  @ForeignKeyColumn(() => AssetTable, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    index: true,
-  })
+  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   assetId!: string;
+
+  @Column({ type: 'text' })
+  text!: string;
 
   @Column({ type: 'integer' })
   x1!: number;
@@ -37,9 +36,9 @@ export class AssetOcrTable {
   @Column({ type: 'integer' })
   y4!: number;
 
-  @Column({ type: 'text' })
-  text!: string;
+  @Column({ type: 'real' })
+  boxScore!: number;
 
   @Column({ type: 'real' })
-  confidence!: number;
+  textScore!: number;
 }

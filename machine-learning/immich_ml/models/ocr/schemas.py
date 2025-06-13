@@ -9,7 +9,7 @@ from typing_extensions import TypedDict
 class TextDetectionOutput(TypedDict):
     resized: npt.NDArray[np.float32]
     boxes: npt.NDArray[np.float32]
-    scores: Iterable[float]
+    scores: npt.NDArray[np.float32]
 
 
 class TextRecognitionOutput(TypedDict):

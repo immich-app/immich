@@ -188,6 +188,7 @@ export interface Assets {
 export interface AssetOcr {
   id: Generated<string>;
   assetId: string;
+  text: string;
   x1: number;
   y1: number;
   x2: number;
@@ -195,8 +196,8 @@ export interface AssetOcr {
   x3: number;
   y3: number;
   x4: number;
-  text: string;
-  confidence: number;
+  boxScore: number;
+  textScore: number;
 }
 
 export interface AssetStack {
