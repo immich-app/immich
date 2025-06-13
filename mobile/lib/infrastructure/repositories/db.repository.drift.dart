@@ -17,12 +17,6 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
     as i7;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart'
     as i8;
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart'
-    as i9;
-import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart'
-    as i10;
-import 'package:immich_mobile/infrastructure/entities/album_user.entity.drift.dart'
-    as i11;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -42,12 +36,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
       i7.$RemoteAssetEntityTable(this);
   late final i8.$RemoteExifEntityTable remoteExifEntity =
       i8.$RemoteExifEntityTable(this);
-  late final i9.$RemoteAlbumEntityTable remoteAlbumEntity =
-      i9.$RemoteAlbumEntityTable(this);
-  late final i10.$RemoteAlbumAssetEntityTable remoteAlbumAssetEntity =
-      i10.$RemoteAlbumAssetEntityTable(this);
-  late final i11.$AlbumUserEntityTable albumUserEntity =
-      i11.$AlbumUserEntityTable(this);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -61,9 +49,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
         localAlbumAssetEntity,
         remoteAssetEntity,
         remoteExifEntity,
-        remoteAlbumEntity,
-        remoteAlbumAssetEntity,
-        albumUserEntity,
         i5.idxLocalAssetChecksum,
         i7.uQRemoteAssetOwnerChecksum
       ];
@@ -123,50 +108,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
               i0.TableUpdate('remote_exif_entity', kind: i0.UpdateKind.delete),
             ],
           ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('user_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('remote_album_entity', kind: i0.UpdateKind.delete),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('remote_asset_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('remote_album_entity', kind: i0.UpdateKind.update),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('remote_asset_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('remote_album_asset_entity',
-                  kind: i0.UpdateKind.delete),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('remote_album_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('remote_album_asset_entity',
-                  kind: i0.UpdateKind.delete),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('remote_album_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('album_user_entity', kind: i0.UpdateKind.delete),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('user_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('album_user_entity', kind: i0.UpdateKind.delete),
-            ],
-          ),
         ],
       );
   @override
@@ -193,11 +134,4 @@ class $DriftManager {
       i7.$$RemoteAssetEntityTableTableManager(_db, _db.remoteAssetEntity);
   i8.$$RemoteExifEntityTableTableManager get remoteExifEntity =>
       i8.$$RemoteExifEntityTableTableManager(_db, _db.remoteExifEntity);
-  i9.$$RemoteAlbumEntityTableTableManager get remoteAlbumEntity =>
-      i9.$$RemoteAlbumEntityTableTableManager(_db, _db.remoteAlbumEntity);
-  i10.$$RemoteAlbumAssetEntityTableTableManager get remoteAlbumAssetEntity =>
-      i10.$$RemoteAlbumAssetEntityTableTableManager(
-          _db, _db.remoteAlbumAssetEntity);
-  i11.$$AlbumUserEntityTableTableManager get albumUserEntity =>
-      i11.$$AlbumUserEntityTableTableManager(_db, _db.albumUserEntity);
 }

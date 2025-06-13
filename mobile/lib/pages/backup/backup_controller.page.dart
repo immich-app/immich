@@ -344,6 +344,11 @@ class BackupControllerPage extends HookConsumerWidget {
                       buildBackupButton(),
                     ]
                   : [
+                      const SizedBox(height: 8),
+                      ExpUploadOptionToggle(
+                        onToggle: () =>
+                            context.replaceRoute(const ExpBackupRoute()),
+                      ),
                       buildFolderSelectionTile(),
                       if (!didGetBackupInfo.value) buildLoadingIndicator(),
                     ],

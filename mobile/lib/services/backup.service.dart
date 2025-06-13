@@ -263,7 +263,6 @@ class BackupService {
     }
 
     List<BackupCandidate> candidates = assets.toList();
-    print("Found ${candidates.length} assets to upload");
     List<UploadTask> uploadTasks = [];
     for (final candidate in candidates) {
       final Asset asset = candidate.asset;

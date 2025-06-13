@@ -6,5 +6,7 @@ import 'package:photo_manager/photo_manager.dart';
 
 abstract interface class IStorageRepository {
   Future<File?> getFileForAsset(LocalAsset asset);
+  Future<File?> getMotionFileForAsset(LocalAsset asset);
+
   Future<AssetEntity?> getAssetEntityForAsset(LocalAsset asset);
 }

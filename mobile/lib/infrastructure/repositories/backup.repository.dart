@@ -1,15 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/interfaces/backup.interface.dart';
-import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:platform/platform.dart';
+import "package:immich_mobile/utils/database.utils.dart";
 
 final backupRepositoryProvider = Provider<IBackupRepository>(
   (ref) => DriftBackupRepository(ref.watch(driftProvider)),
@@ -174,61 +171,33 @@ class DriftBackupRepository extends DriftDatabaseRepository
   @override
   Future<List<LocalAsset>> getCandidates() async {
     final excludedAssetIds = await _getExcludedAssetIds();
+    final selectedAlbums = await getBackupAlbums(BackupSelection.selected);
+    final selectedAlbumIds = selectedAlbums.map((album) => album.id).toList();
 
-    final query = _db.localAlbumAssetEntity.select(distinct: true).join(
-      [
-        innerJoin(
-          _db.localAlbumEntity,
-          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
-        ),
-        innerJoin(
-          _db.localAssetEntity,
-          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
-        ),
-        leftOuterJoin(
-          _db.remoteAssetEntity,
-          _db.localAssetEntity.checksum
-              .equalsExp(_db.remoteAssetEntity.checksum),
-        ),
-      ],
-    )..where(
-        _db.localAlbumEntity.backupSelection
-                .equals(BackupSelection.selected.index) &
-            _db.remoteAssetEntity.checksum.isNull() &
+    final query = _db.localAssetEntity.select()
+      ..where(
+        (lae) =>
+            existsQuery(
+              _db.localAlbumAssetEntity.selectOnly()
+                ..addColumns([_db.localAlbumAssetEntity.assetId])
+                ..where(
+                  _db.localAlbumAssetEntity.albumId.isIn(selectedAlbumIds) &
+                      _db.localAlbumAssetEntity.assetId.equalsExp(lae.id),
+                ),
+            ) &
+            notExistsQuery(
+              _db.remoteAssetEntity.selectOnly()
+                ..addColumns([_db.remoteAssetEntity.checksum])
+                ..where(
+                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) &
+                      lae.checksum.isNotNull(),
+                ),
+            ) &
             (excludedAssetIds.isEmpty
                 ? const Constant(true)
-                : _db.localAlbumAssetEntity.assetId.isNotIn(excludedAssetIds)),
+                : lae.id.isNotIn(excludedAssetIds)),
       );
 
-    return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto())
-        .get();
-  }
-}
-
-extension on LocalAlbumEntityData {
-  LocalAlbum toDto({int assetCount = 0}) {
-    return LocalAlbum(
-      id: id,
-      name: name,
-      updatedAt: updatedAt,
-      assetCount: assetCount,
-      backupSelection: backupSelection,
-    );
-  }
-}
-
-extension on LocalAssetEntityData {
-  LocalAsset toDto() {
-    return LocalAsset(
-      id: id,
-      name: name,
-      checksum: checksum,
-      type: type,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      durationInSeconds: durationInSeconds,
-      isFavorite: isFavorite,
-    );
+    return query.map((localAsset) => localAsset.toDto()).get();
   }
 }

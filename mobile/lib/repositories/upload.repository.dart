@@ -1,5 +1,4 @@
 import 'package:background_downloader/background_downloader.dart';
-import 'package:flutter_cache_manager/file.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/interfaces/upload.interface.dart';
 import 'package:immich_mobile/utils/upload.dart';
@@ -21,6 +20,11 @@ class UploadRepository implements IUploadRepository {
     FileDownloader().addTaskQueue(taskQueue);
     FileDownloader().registerCallbacks(
       group: kUploadGroup,
+      taskStatusCallback: (update) => onUploadStatus?.call(update),
+      taskProgressCallback: (update) => onTaskProgress?.call(update),
+    );
+    FileDownloader().registerCallbacks(
+      group: kUploadLivePhotoGroup,
       taskStatusCallback: (update) => onUploadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
