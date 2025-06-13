@@ -16,7 +16,7 @@
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
-  import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+  import { getJustifiedLayoutFromAssets, getPageLayout, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
   import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
@@ -27,7 +27,7 @@
   import Portal from '../portal/portal.svelte';
 
   interface Props {
-    assets: (TimelineAsset | AssetResponseDto)[];
+    assets: TimelineAsset[] | AssetResponseDto[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
@@ -62,7 +62,7 @@
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
 
-  let geometry: CommonJustifiedLayout | undefined = $state();
+  let geometry: CommonJustifiedLayout | null = $state(null);
 
   $effect(() => {
     const _assets = assets;
@@ -73,54 +73,26 @@
 
     geometry = getJustifiedLayoutFromAssets(_assets, {
       spacing: 2,
-      heightTolerance: 0.15,
+      heightTolerance: 0.3,
       rowHeight,
       rowWidth,
     });
-  });
-
-  let assetLayouts = $derived.by(() => {
-    const assetLayout = [];
-    let containerHeight = 0;
-    let containerWidth = 0;
-    if (geometry) {
-      containerHeight = geometry.containerHeight;
-      containerWidth = geometry.containerWidth;
-      for (const [index, asset] of assets.entries()) {
-        const top = geometry.getTop(index);
-        const left = geometry.getLeft(index);
-        const width = geometry.getWidth(index);
-        const height = geometry.getHeight(index);
-
-        const layoutTopWithOffset = top + pageHeaderOffset;
-        const layoutBottom = layoutTopWithOffset + height;
-
-        const display = layoutTopWithOffset < slidingWindow.bottom && layoutBottom > slidingWindow.top;
-
-        const layout = {
-          asset,
-          top,
-          left,
-          width,
-          height,
-          display,
-        };
-
-        assetLayout.push(layout);
-      }
-    }
-
-    return {
-      assetLayout,
-      containerHeight,
-      containerWidth,
-    };
   });
 
   let currentViewAssetIndex = 0;
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
   let slidingWindow = $state({ top: 0, bottom: 0 });
+
+  const assetLayouts = $derived(
+    getPageLayout({
+      assets,
+      geometry,
+      pageHeaderOffset,
+      slidingBottom: slidingWindow.bottom,
+      slidingTop: slidingWindow.top,
+    }),
+  );
 
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
@@ -256,7 +228,7 @@
     isShowDeleteConfirmation = false;
     await deleteAssets(
       !(isTrashEnabled && !force),
-      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
+      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id)) as TimelineAsset[]),
       assetInteraction.selectedAssets,
       onReload,
     );
@@ -269,7 +241,7 @@
       assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
     if (ids) {
-      assets = assets.filter((asset) => !ids.includes(asset.id));
+      assets = assets.filter((asset) => !ids.includes(asset.id)) as TimelineAsset[];
       deselectAllAssets();
     }
   };
