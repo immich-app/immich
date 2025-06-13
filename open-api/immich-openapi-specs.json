@@ -14344,8 +14344,10 @@
             "type": "string"
           },
           "defaultStorageQuota": {
+            "format": "int64",
             "minimum": 0,
-            "type": "number"
+            "nullable": true,
+            "type": "integer"
           },
           "enabled": {
             "type": "boolean"
