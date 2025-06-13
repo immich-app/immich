@@ -1,9 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/domain/utils/background_sync.dart';
@@ -176,31 +176,24 @@ class ExpBackupNotifier extends StateNotifier<ExpBackupState> {
           ),
         ) {
     {
-      _uploadService.onUploadStatus = _uploadStatusCallback;
-      _uploadService.onTaskProgress = _taskProgressCallback;
+      _uploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
+      _uploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
     }
   }
 
   final ExpBackupService _backupService;
   final UploadService _uploadService;
   final BackgroundSyncManager _backgroundSyncManager;
+  StreamSubscription<TaskStatusUpdate>? _statusSubscription;
+  StreamSubscription<TaskProgressUpdate>? _progressSubscription;
 
-  void _updateUploadStatus(TaskStatusUpdate task, TaskStatus status) async {
-    if (status == TaskStatus.canceled) {
-      return;
-    }
-  }
-
-  void _uploadStatusCallback(TaskStatusUpdate update) {
-    _updateUploadStatus(update, update.status);
-
+  void _handleTaskStatusUpdate(TaskStatusUpdate update) {
     switch (update.status) {
       case TaskStatus.complete:
         state = state.copyWith(
           backupCount: state.backupCount + 1,
           remainderCount: state.remainderCount - 1,
         );
-
         break;
 
       default:
@@ -208,30 +201,10 @@ class ExpBackupNotifier extends StateNotifier<ExpBackupState> {
     }
   }
 
-  void _taskProgressCallback(TaskProgressUpdate update) {
-    final uploadStatus = ExpUploadStatus(
-      taskId: update.task.taskId,
-      filename: update.task.displayName,
-      progress: update.progress,
-    );
-
-    state = state.copyWith(
-      uploadItems: {
-        for (final entry in state.uploadItems.entries)
-          if (entry.key == update.task.taskId)
-            entry.key: uploadStatus
-          else
-            entry.key: entry.value,
-        if (!state.uploadItems.containsKey(update.task.taskId))
-          update.task.taskId: uploadStatus,
-      },
-    );
-
-    print(update.task.taskId);
-  }
+  void _handleTaskProgressUpdate(TaskProgressUpdate update) {}
 
   Future<void> getBackupStatus() async {
-    await _backgroundSyncManager.syncRemote();
+    // await _backgroundSyncManager.syncRemote();
 
     final [totalCount, backupCount, remainderCount] = await Future.wait([
       _backupService.getTotalCount(),
@@ -246,11 +219,18 @@ class ExpBackupNotifier extends StateNotifier<ExpBackupState> {
     );
   }
 
-  Future<void> backup() async {
-    await _backupService.backup();
+  Future<void> backup() {
+    return _backupService.backup();
   }
 
-  Future<void> cancel() async {
-    await _backupService.cancel();
+  Future<void> cancel() {
+    return _backupService.cancel();
+  }
+
+  @override
+  void dispose() {
+    _statusSubscription?.cancel();
+    _progressSubscription?.cancel();
+    super.dispose();
   }
 }

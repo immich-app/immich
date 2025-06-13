@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
@@ -9,7 +10,6 @@ import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/upload.dart';
 import 'package:path/path.dart';
-// import 'package:logging/logging.dart';
 
 final uploadServiceProvider = Provider(
   (ref) => UploadService(
@@ -19,9 +19,17 @@ final uploadServiceProvider = Provider(
 
 class UploadService {
   final IUploadRepository _uploadRepository;
-  // final Logger _log = Logger("UploadService");
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
+
+  final StreamController<TaskStatusUpdate> _taskStatusController =
+      StreamController<TaskStatusUpdate>.broadcast();
+  final StreamController<TaskProgressUpdate> _taskProgressController =
+      StreamController<TaskProgressUpdate>.broadcast();
+
+  Stream<TaskStatusUpdate> get taskStatusStream => _taskStatusController.stream;
+  Stream<TaskProgressUpdate> get taskProgressStream =>
+      _taskProgressController.stream;
 
   UploadService(
     this._uploadRepository,
@@ -32,10 +40,21 @@ class UploadService {
 
   void _onTaskProgressCallback(TaskProgressUpdate update) {
     onTaskProgress?.call(update);
+    if (!_taskProgressController.isClosed) {
+      _taskProgressController.add(update);
+    }
   }
 
   void _onUploadCallback(TaskStatusUpdate update) {
     onUploadStatus?.call(update);
+    if (!_taskStatusController.isClosed) {
+      _taskStatusController.add(update);
+    }
+  }
+
+  void dispose() {
+    _taskStatusController.close();
+    _taskProgressController.close();
   }
 
   Future<bool> cancelUpload(String id) {
@@ -53,11 +72,6 @@ class UploadService {
 
   Future<List<TaskRecord>> getRecords() async {
     final all = await _uploadRepository.getRecords();
-    print('all record: all: ${all.length} records found');
-    final enqueue = await _uploadRepository.getRecords(TaskStatus.enqueued);
-    print(
-      'all record: enqueue: ${enqueue.length} records found',
-    );
     return all;
   }
 
@@ -70,12 +84,16 @@ class UploadService {
     Map<String, String>? fields,
     String? originalFileName,
     String? deviceAssetId,
+    String? metadata,
+    String group = kUploadGroup,
   }) async {
     return _buildTask(
       deviceAssetId ?? hash(file.path).toString(),
       file,
       fields: fields,
       originalFileName: originalFileName,
+      metadata: metadata,
+      group: group,
     );
   }
 
@@ -84,6 +102,8 @@ class UploadService {
     File file, {
     Map<String, String>? fields,
     String? originalFileName,
+    String? metadata,
+    String group = kUploadGroup,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -117,7 +137,8 @@ class UploadService {
       baseDirectory: baseDirectory,
       directory: directory,
       fileField: 'assetData',
-      group: kUploadGroup,
+      metaData: metadata ?? '',
+      group: group,
       updates: Updates.statusAndProgress,
     );
   }

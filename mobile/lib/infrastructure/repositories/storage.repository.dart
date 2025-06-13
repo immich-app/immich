@@ -30,6 +30,27 @@ class StorageRepository implements IStorageRepository {
   }
 
   @override
+  Future<File?> getMotionFileForAsset(LocalAsset asset) async {
+    File? file;
+    try {
+      final entity = await AssetEntity.fromId(asset.id);
+      file = await entity?.originFileWithSubtype;
+      if (file == null) {
+        _log.warning(
+          "Cannot get motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
+        );
+      }
+    } catch (error, stackTrace) {
+      _log.warning(
+        "Error getting motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
+        error,
+        stackTrace,
+      );
+    }
+    return file;
+  }
+
+  @override
   Future<AssetEntity?> getAssetEntityForAsset(LocalAsset asset) async {
     AssetEntity? entity;
     try {

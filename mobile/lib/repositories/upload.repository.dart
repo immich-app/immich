@@ -24,6 +24,11 @@ class UploadRepository implements IUploadRepository {
       taskStatusCallback: (update) => onUploadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
+    FileDownloader().registerCallbacks(
+      group: kUploadLivePhotoGroup,
+      taskStatusCallback: (update) => onUploadStatus?.call(update),
+      taskProgressCallback: (update) => onTaskProgress?.call(update),
+    );
   }
 
   @override
