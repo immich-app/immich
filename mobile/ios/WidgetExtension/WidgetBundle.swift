@@ -1,11 +1,10 @@
-
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
 @main
-struct ImmichWidgetBundle: WidgetBundle {  
-    var body: some Widget {
-      ImmichRandomWidget()
-      ImmichMemoryWidget()
-    }
+struct ImmichWidgetBundle: WidgetBundle {
+  var body: some Widget {
+    ImmichRandomWidget()
+    ImmichMemoryWidget()
+  }
 }
