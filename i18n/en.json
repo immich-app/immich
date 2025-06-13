@@ -204,7 +204,7 @@
     "oauth_storage_quota_claim": "Storage quota claim",
     "oauth_storage_quota_claim_description": "Automatically set the user's storage quota to the value of this claim.",
     "oauth_storage_quota_default": "Default storage quota (GiB)",
-    "oauth_storage_quota_default_description": "Quota in GiB to be used when no claim is provided (Enter 0 for unlimited quota).",
+    "oauth_storage_quota_default_description": "Quota in GiB to be used when no claim is provided.",
     "oauth_timeout": "Request Timeout",
     "oauth_timeout_description": "Timeout for requests in milliseconds",
     "password_enable_description": "Login with email and password",

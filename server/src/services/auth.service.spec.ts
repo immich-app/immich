@@ -704,7 +704,7 @@ describe(AuthService.name, () => {
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ quotaSizeInBytes: 1_073_741_824 }));
     });
 
-    it('should not set quota for 0 quota', async () => {
+    it('should set quota for 0 quota', async () => {
       const user = factory.userAdmin({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
@@ -726,7 +726,7 @@ describe(AuthService.name, () => {
         email: user.email,
         name: ' ',
         oauthId: user.oauthId,
-        quotaSizeInBytes: null,
+        quotaSizeInBytes: 0,
         storageLabel: null,
       });
     });
