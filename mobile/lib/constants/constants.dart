@@ -24,4 +24,4 @@ const int kTimelineAssetLoadOppositeSize = 64;
 // Widget keys
 const String kWidgetAuthToken = "widget_auth_token";
 const String kWidgetServerEndpoint = "widget_server_url";
-const String appShareGroupId = "group.bwees.immich";
+const String appShareGroupId = "group.app.immich.share";

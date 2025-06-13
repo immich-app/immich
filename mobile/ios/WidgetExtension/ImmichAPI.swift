@@ -49,7 +49,7 @@ class ImmichAPI {
   
   init() async throws {
     // fetch the credentials from the UserDefaults store that dart placed here
-    guard let defaults = UserDefaults(suiteName: "group.bwees.immich"),
+    guard let defaults = UserDefaults(suiteName: "group.app.immich.share"),
           let serverURL = defaults.string(forKey: "widget_server_url"),
           let sessionKey = defaults.string(forKey: "widget_auth_token")
     else {
