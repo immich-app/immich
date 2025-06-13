@@ -8,11 +8,13 @@ func buildEntry(api: ImmichAPI, asset: SearchResult, hourOffset: Int, subtitle: 
   return ImageEntry(date: entryDate, image: image, subtitle: subtitle)
 }
 
-func generateRandomEntries(api: ImmichAPI, now: Date, count: Int) async throws -> [ImageEntry] {
+func generateRandomEntries(api: ImmichAPI, now: Date, count: Int, albumId: String? = nil) async throws -> [ImageEntry] {
   
   var entries: [ImageEntry] = []
   
-  let randomAssets = try await api.fetchSearchResults(with: SearchFilters(size: count))
+  let albumIds = albumId != nil ? [albumId!] : []
+  
+  let randomAssets = try await api.fetchSearchResults(with: SearchFilters(size: count, albumIds: albumIds))
   for (hourOffset, asset) in randomAssets.enumerated() {
     entries.append(try await buildEntry(api: api, asset: asset, hourOffset: hourOffset))
   }
