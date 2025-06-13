@@ -30,6 +30,7 @@ class SyncRequestType {
   static const partnerAssetsV1 = SyncRequestType._(r'PartnerAssetsV1');
   static const partnerAssetExifsV1 = SyncRequestType._(r'PartnerAssetExifsV1');
   static const albumsV1 = SyncRequestType._(r'AlbumsV1');
+  static const albumAssetsV1 = SyncRequestType._(r'AlbumAssetsV1');
   static const albumUsersV1 = SyncRequestType._(r'AlbumUsersV1');
 
   /// List of all possible values in this [enum][SyncRequestType].
@@ -41,6 +42,7 @@ class SyncRequestType {
     partnerAssetsV1,
     partnerAssetExifsV1,
     albumsV1,
+    albumAssetsV1,
     albumUsersV1,
   ];
 
@@ -87,6 +89,7 @@ class SyncRequestTypeTypeTransformer {
         case r'PartnerAssetsV1': return SyncRequestType.partnerAssetsV1;
         case r'PartnerAssetExifsV1': return SyncRequestType.partnerAssetExifsV1;
         case r'AlbumsV1': return SyncRequestType.albumsV1;
+        case r'AlbumAssetsV1': return SyncRequestType.albumAssetsV1;
         case r'AlbumUsersV1': return SyncRequestType.albumUsersV1;
         default:
           if (!allowNull) {
