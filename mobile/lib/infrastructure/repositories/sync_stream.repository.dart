@@ -233,7 +233,9 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   }
 
   @override
-  Future<void> deleteAlbumAssetsV1(Iterable<SyncAlbumAssetDeleteV1> data) async {
+  Future<void> deleteAlbumAssetsV1(
+    Iterable<SyncAlbumAssetDeleteV1> data,
+  ) async {
     try {
       await _db.batch((batch) {
         for (final albumAsset in data) {
