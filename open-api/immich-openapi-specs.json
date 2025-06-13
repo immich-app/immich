@@ -13369,6 +13369,36 @@
         ],
         "type": "object"
       },
+      "SyncAlbumAssetDeleteV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumAssetV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
+        ],
+        "type": "object"
+      },
       "SyncAlbumDeleteV1": {
         "properties": {
           "albumId": {
