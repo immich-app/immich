@@ -68,5 +68,10 @@ struct ImmichWidgetView: View {
   },
   timeline: {
     let date = Date()
-    ImageEntry(date: date, image: UIImage(named: "ImmichLogo"), subtitle: "1 year ago")
-  })
+    ImageEntry(
+      date: date,
+      image: UIImage(named: "ImmichLogo"),
+      subtitle: "1 year ago"
+    )
+  }
+)

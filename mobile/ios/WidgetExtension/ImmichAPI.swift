@@ -59,11 +59,16 @@ class ImmichAPI {
       throw WidgetError.noLogin
     }
 
-    serverConfig = ServerConfig(serverEndpoint: serverURL, sessionKey: sessionKey)
+    serverConfig = ServerConfig(
+      serverEndpoint: serverURL,
+      sessionKey: sessionKey
+    )
   }
 
   private func buildRequestURL(
-    serverConfig: ServerConfig, endpoint: String, params: [URLQueryItem] = []
+    serverConfig: ServerConfig,
+    endpoint: String,
+    params: [URLQueryItem] = []
   ) -> URL? {
     guard let baseURL = URL(string: serverConfig.serverEndpoint) else {
       fatalError("Invalid base URL")
@@ -71,10 +76,14 @@ class ImmichAPI {
 
     // Combine the base URL and API path
     let fullPath = baseURL.appendingPathComponent(
-      endpoint.trimmingCharacters(in: CharacterSet(charactersIn: "/")))
+      endpoint.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    )
 
     // Add the session key as a query parameter
-    var components = URLComponents(url: fullPath, resolvingAgainstBaseURL: false)
+    var components = URLComponents(
+      url: fullPath,
+      resolvingAgainstBaseURL: false
+    )
     components?.queryItems = [
       URLQueryItem(name: "sessionKey", value: serverConfig.sessionKey)
     ]
@@ -83,9 +92,15 @@ class ImmichAPI {
     return components?.url
   }
 
-  func fetchSearchResults(with filters: SearchFilters) async throws -> [SearchResult] {
+  func fetchSearchResults(with filters: SearchFilters) async throws
+    -> [SearchResult]
+  {
     // get URL
-    guard let searchURL = buildRequestURL(serverConfig: serverConfig, endpoint: "/search/random")
+    guard
+      let searchURL = buildRequestURL(
+        serverConfig: serverConfig,
+        endpoint: "/search/random"
+      )
     else {
       throw URLError(.badURL)
     }
@@ -107,7 +122,10 @@ class ImmichAPI {
     let memoryParams = [URLQueryItem(name: "for", value: date.ISO8601Format())]
     guard
       let searchURL = buildRequestURL(
-        serverConfig: serverConfig, endpoint: "/memories", params: memoryParams)
+        serverConfig: serverConfig,
+        endpoint: "/memories",
+        params: memoryParams
+      )
     else {
       throw URLError(.badURL)
     }
@@ -127,7 +145,10 @@ class ImmichAPI {
 
     guard
       let fetchURL = buildRequestURL(
-        serverConfig: serverConfig, endpoint: assetEndpoint, params: thumbnailParams)
+        serverConfig: serverConfig,
+        endpoint: assetEndpoint,
+        params: thumbnailParams
+      )
     else {
       throw URLError(.badURL)
     }
@@ -143,7 +164,12 @@ class ImmichAPI {
 
   func fetchAlbums() async throws -> [Album] {
     // get URL
-    guard let searchURL = buildRequestURL(serverConfig: serverConfig, endpoint: "/albums") else {
+    guard
+      let searchURL = buildRequestURL(
+        serverConfig: serverConfig,
+        endpoint: "/albums"
+      )
+    else {
       throw URLError(.badURL)
     }
 

@@ -26,7 +26,9 @@ extension Album: @unchecked Sendable, AppEntity, Identifiable {
   }
 
   static var defaultQuery = AlbumQuery()
-  static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Album")
+  static var typeDisplayRepresentation = TypeDisplayRepresentation(
+    name: "Album"
+  )
 
   var displayRepresentation: DisplayRepresentation {
     DisplayRepresentation(title: "\(albumName)")
@@ -37,7 +39,9 @@ let NO_ALBUM = Album(id: "NONE", albumName: "None")
 
 struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
   static var title: LocalizedStringResource { "Select Album" }
-  static var description: IntentDescription { "Choose an album to show images from" }
+  static var description: IntentDescription {
+    "Choose an album to show images from"
+  }
 
   // An example configurable parameter.
   @Parameter(title: "Album", default: NO_ALBUM)
@@ -51,14 +55,20 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     ImageEntry(date: Date(), image: nil)
   }
 
-  func snapshot(for configuration: RandomConfigurationAppIntent, in context: Context) async
+  func snapshot(
+    for configuration: RandomConfigurationAppIntent,
+    in context: Context
+  ) async
     -> ImageEntry
   {
     guard let api = try? await ImmichAPI() else {
       return ImageEntry(date: Date(), image: nil, error: .noLogin)
     }
 
-    guard let demoImage = try? await api.fetchSearchResults(with: SearchFilters(size: 1)).first
+    guard
+      let demoImage = try? await api.fetchSearchResults(
+        with: SearchFilters(size: 1)
+      ).first
     else {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
@@ -70,7 +80,10 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     return ImageEntry(date: Date(), image: image)
   }
 
-  func timeline(for configuration: RandomConfigurationAppIntent, in context: Context) async
+  func timeline(
+    for configuration: RandomConfigurationAppIntent,
+    in context: Context
+  ) async
     -> Timeline<ImageEntry>
   {
     var entries: [ImageEntry] = []
@@ -83,7 +96,8 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     }
 
     // nil if album is NONE or nil
-    var albumId = configuration.album?.id != "NONE" ? configuration.album?.id : nil
+    var albumId =
+      configuration.album?.id != "NONE" ? configuration.album?.id : nil
     if albumId != nil {
       // make sure the album exists on server, otherwise show error
       guard let albums = try? await api.fetchAlbums() else {
@@ -98,8 +112,14 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     }
 
     entries.append(
-      contentsOf: (try? await generateRandomEntries(api: api, now: now, count: 24, albumId: albumId))
-        ?? [])
+      contentsOf: (try? await generateRandomEntries(
+        api: api,
+        now: now,
+        count: 24,
+        albumId: albumId
+      ))
+        ?? []
+    )
 
     // If we fail to fetch images, we still want to add an entry with a nil image and an error
     if entries.count == 0 {
@@ -115,7 +135,9 @@ struct ImmichRandomWidget: Widget {
 
   var body: some WidgetConfiguration {
     AppIntentConfiguration(
-      kind: kind, intent: RandomConfigurationAppIntent.self, provider: ImmichRandomProvider()
+      kind: kind,
+      intent: RandomConfigurationAppIntent.self,
+      provider: ImmichRandomProvider()
     ) { entry in
       ImmichWidgetView(entry: entry)
         .containerBackground(.black, for: .widget)
