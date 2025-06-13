@@ -31,7 +31,10 @@ export type CommonLayoutOptions = {
   heightTolerance: number;
 };
 
-export function getJustifiedLayoutFromAssets(assets: AssetResponseDto[] | TimelineAsset[], options: CommonLayoutOptions) {
+export function getJustifiedLayoutFromAssets(
+  assets: AssetResponseDto[] | TimelineAsset[],
+  options: CommonLayoutOptions,
+) {
   if (useWasm) {
     return isTimelineAssets(assets) ? wasmLayoutFromTimeline(assets, options) : wasmLayoutFromDto(assets, options);
   }
