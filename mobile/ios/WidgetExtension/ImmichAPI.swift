@@ -7,6 +7,7 @@ enum WidgetError: Error {
   case noLogin
   case fetchFailed
   case unknown
+  case albumNotFound
 }
 
 struct SearchResult: Codable {
@@ -155,8 +156,9 @@ actor AlbumCache {
 
   private var api: ImmichAPI? = nil
   private var albums: [Album]? = nil
+  
 
-  func getAlbums() async throws -> [Album] {
+  func getAlbums(refresh: Bool = false) async throws -> [Album] {
     // Check the API before we try to show cached albums
     // Sometimes iOS caches this object and keeps it around
     // even after nuking the timeline
@@ -169,7 +171,7 @@ actor AlbumCache {
       throw WidgetError.noLogin
     }
 
-    if let albums {
+    if let albums, !refresh {
       return albums
     }
     
