@@ -77,9 +77,10 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
       return Timeline(entries: entries, policy: .atEnd)
     }
     
-    print(configuration.album)
+    // nil if album is NONE or nil
+    let albumId = configuration.album?.id != "NONE" ? configuration.album?.id : nil
     
-    entries.append(contentsOf: (try? await generateRandomEntries(api: api, now: now, count: 24)) ?? [])
+    entries.append(contentsOf: (try? await generateRandomEntries(api: api, now: now, count: 24, albumId: albumId)) ?? [])
     
     // If we fail to fetch images, we still want to add an entry with a nil image and an error
     if (entries.count == 0) {

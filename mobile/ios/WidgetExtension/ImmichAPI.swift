@@ -17,6 +17,7 @@ struct SearchResult: Codable {
 struct SearchFilters: Codable {
   var type: String = "IMAGE"
   let size: Int
+  var albumIds: [String] = []
 }
 
 struct MemoryResult: Codable {
@@ -88,6 +89,7 @@ class ImmichAPI {
     var request = URLRequest(url: searchURL)
     request.httpMethod = "POST"
     request.httpBody = try JSONEncoder().encode(filters);
+    print(String(data: request.httpBody!, encoding: .utf8))
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     
     
