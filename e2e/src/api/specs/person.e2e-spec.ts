@@ -11,41 +11,48 @@ describe('/people', () => {
   let hiddenPerson: PersonResponseDto;
   let multipleAssetsPerson: PersonResponseDto;
 
-  let p_named_alice: PersonResponseDto;
-  let p_named_bob: PersonResponseDto;
-  let p_named_charlie: PersonResponseDto;
-  let p_null_name: PersonResponseDto;
+  let nameAlicePerson: PersonResponseDto;
+  let nameBobPerson: PersonResponseDto;
+  let nameCharliePerson: PersonResponseDto;
+  let nameNullPerson: PersonResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
 
-    [visiblePerson, hiddenPerson, multipleAssetsPerson, p_named_charlie, p_named_bob, p_named_alice, p_null_name] =
-      await Promise.all([
-        utils.createPerson(admin.accessToken, {
-          name: 'visible_person',
-        }),
-        utils.createPerson(admin.accessToken, {
-          name: 'hidden_person',
-          isHidden: true,
-        }),
-        utils.createPerson(admin.accessToken, {
-          name: 'multiple_assets_person',
-        }),
-        // --- Setup for the specific sorting test ---
-        utils.createPerson(admin.accessToken, {
-          name: 'Charlie',
-        }),
-        utils.createPerson(admin.accessToken, {
-          name: 'Bob',
-        }),
-        utils.createPerson(admin.accessToken, {
-          name: 'Alice',
-        }),
-        utils.createPerson(admin.accessToken, {
-          name: '',
-        }),
-      ]);
+    [
+      visiblePerson,
+      hiddenPerson,
+      multipleAssetsPerson,
+      nameCharliePerson,
+      nameBobPerson,
+      nameAlicePerson,
+      nameNullPerson,
+    ] = await Promise.all([
+      utils.createPerson(admin.accessToken, {
+        name: 'visible_person',
+      }),
+      utils.createPerson(admin.accessToken, {
+        name: 'hidden_person',
+        isHidden: true,
+      }),
+      utils.createPerson(admin.accessToken, {
+        name: 'multiple_assets_person',
+      }),
+      // --- Setup for the specific sorting test ---
+      utils.createPerson(admin.accessToken, {
+        name: 'Charlie',
+      }),
+      utils.createPerson(admin.accessToken, {
+        name: 'Bob',
+      }),
+      utils.createPerson(admin.accessToken, {
+        name: 'Alice',
+      }),
+      utils.createPerson(admin.accessToken, {
+        name: '',
+      }),
+    ]);
 
     const asset1 = await utils.createAsset(admin.accessToken);
     const asset2 = await utils.createAsset(admin.accessToken);
@@ -59,13 +66,13 @@ describe('/people', () => {
       utils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
       utils.createFace({ assetId: asset3.id, personId: multipleAssetsPerson.id }),
       // Named persons
-      utils.createFace({ assetId: asset1.id, personId: p_named_charlie.id }), // 1 asset
-      utils.createFace({ assetId: asset1.id, personId: p_named_bob.id }),
-      utils.createFace({ assetId: asset2.id, personId: p_named_bob.id }), // 2 assets
-      utils.createFace({ assetId: asset1.id, personId: p_named_alice.id }), // 1 asset
+      utils.createFace({ assetId: asset1.id, personId: nameCharliePerson.id }), // 1 asset
+      utils.createFace({ assetId: asset1.id, personId: nameBobPerson.id }),
+      utils.createFace({ assetId: asset2.id, personId: nameBobPerson.id }), // 2 assets
+      utils.createFace({ assetId: asset1.id, personId: nameAlicePerson.id }), // 1 asset
       // Null-named person
-      utils.createFace({ assetId: asset1.id, personId: p_null_name.id }),
-      utils.createFace({ assetId: asset2.id, personId: p_null_name.id }), // 2 assets
+      utils.createFace({ assetId: asset1.id, personId: nameNullPerson.id }),
+      utils.createFace({ assetId: asset2.id, personId: nameNullPerson.id }), // 2 assets
     ]);
   });
 
@@ -105,9 +112,9 @@ describe('/people', () => {
 
       expect(people.map((p) => p.id)).toEqual([
         multipleAssetsPerson.id, // name: 'multiple_assets_person', count: 3
-        p_named_bob.id, // name: 'Bob', count: 2
-        p_named_alice.id, // name: 'Alice', count: 1
-        p_named_charlie.id, // name: 'Charlie', count: 1
+        nameBobPerson.id, // name: 'Bob', count: 2
+        nameAlicePerson.id, // name: 'Alice', count: 1
+        nameCharliePerson.id, // name: 'Charlie', count: 1
         visiblePerson.id, // name: 'visible_person', count: 1
       ]);
 
