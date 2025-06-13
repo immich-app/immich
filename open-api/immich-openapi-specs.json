@@ -13698,6 +13698,8 @@
           "PartnerAssetExifV1",
           "AlbumV1",
           "AlbumDeleteV1",
+          "AlbumAssetV1",
+          "AlbumAssetDeleteV1",
           "AlbumUserV1",
           "AlbumUserDeleteV1"
         ],
@@ -13746,6 +13748,7 @@
           "PartnerAssetsV1",
           "PartnerAssetExifsV1",
           "AlbumsV1",
+          "AlbumAssetsV1",
           "AlbumUsersV1"
         ],
         "type": "string"
