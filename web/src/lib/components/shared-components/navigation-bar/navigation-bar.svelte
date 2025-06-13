@@ -153,7 +153,6 @@
             class="flex ps-2"
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
             title={`${$user.name} (${$user.email})`}
-            aria-label={$t('logged_in_as', { values: { user: $user.name } })}
           >
             {#key $user}
               <UserAvatar user={$user} size="md" showTitle={false} interactive />

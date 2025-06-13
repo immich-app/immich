@@ -13,7 +13,6 @@
 
   import type { AssetBucket } from '$lib/managers/timeline-manager/asset-bucket.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
-  import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
 
   let { isUploading } = uploadAssetsStore;
@@ -144,21 +143,9 @@
           onkeydown={() => handleSelectGroup(dateGroup.groupTitle, assetsSnapshot(dateGroup.getAssets()))}
         >
           {#if assetInteraction.selectedGroup.has(dateGroup.groupTitle)}
-            <Icon
-              path={mdiCheckCircle}
-              size="24"
-              color="#4250af"
-              role="button"
-              ariaLabel={$t('unselect_all_in', { values: { group: dateGroup.groupTitle } })}
-            />
+            <Icon path={mdiCheckCircle} size="24" color="#4250af" />
           {:else}
-            <Icon
-              path={mdiCircleOutline}
-              size="24"
-              color="#757575"
-              role="button"
-              ariaLabel={$t('select_all_in', { values: { group: dateGroup.groupTitle } })}
-            />
+            <Icon path={mdiCircleOutline} size="24" color="#757575" />
           {/if}
         </div>
       {/if}
