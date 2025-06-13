@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -14,22 +15,36 @@ class DriftTimelineRepository extends DriftDatabaseRepository
 
   const DriftTimelineRepository(super._db) : _db = _db;
 
+  List<Bucket> _generateBuckets(int count) {
+    final numBuckets = (count / kTimelineNoneSegmentSize).floor();
+    final buckets = List.generate(
+      numBuckets,
+      (_) => const Bucket(assetCount: kTimelineNoneSegmentSize),
+    );
+    if (count % kTimelineNoneSegmentSize != 0) {
+      buckets.add(Bucket(assetCount: count % kTimelineNoneSegmentSize));
+    }
+    return buckets;
+  }
+
   @override
-  Stream<List<Bucket>> watchMainBucket() {
+  Stream<List<Bucket>> watchMainBucket({
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
+    if (groupBy == GroupAssetsBy.none) {
+      return _db.mergedAssetView.count().map(_generateBuckets).watchSingle();
+    }
+
     final assetCountExp = _db.mergedAssetView.name.count();
-    final monthYearExp = _db.mergedAssetView.createdAt
-        // DateTimes are stored in UTC, so we need to convert them to local time inside the query before formatting
-        // to create the correct time bucket
-        .modify(const DateTimeModifier.localTime())
-        .date;
+    final dateExp = _db.mergedAssetView.createdAt.dateFmt(groupBy);
 
     final query = _db.mergedAssetView.selectOnly()
-      ..addColumns([assetCountExp, monthYearExp])
-      ..groupBy([monthYearExp])
-      ..orderBy([OrderingTerm.desc(monthYearExp)]);
+      ..addColumns([assetCountExp, dateExp])
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
-      final timeline = DateFormat("y-M-d").parse(row.read(monthYearExp)!);
+      final timeline = row.read(dateExp)!.dateFmt(groupBy);
       final assetCount = row.read(assetCountExp)!;
       return TimeBucket(date: timeline, assetCount: assetCount);
     }).watch();
@@ -43,63 +58,57 @@ class DriftTimelineRepository extends DriftDatabaseRepository
     final query = _db.mergedAssetView.select()
       ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
       ..limit(count, offset: index);
-    return query.map((row) {
-      final name = row.name;
-      final width = row.width;
-      final height = row.height;
-      final isFavorite = row.isFavorite;
-      final localId = row.localId;
-      final remoteId = row.remoteId;
-      final thumbHash = row.thumbHash;
-      final checksum = row.checksum;
-      final type = row.type;
-      final createdAt = row.createdAt;
-      final updatedAt = row.updatedAt;
-
-      if (remoteId != null) {
-        return Asset(
-          id: remoteId,
-          localId: localId,
-          name: name,
-          checksum: checksum,
-          type: type,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          thumbHash: thumbHash,
-          width: width,
-          height: height,
-          isFavorite: isFavorite,
-          durationInSeconds: row.durationInSeconds,
-        );
-      }
-
-      return LocalAsset(
-        id: localId!,
-        remoteId: remoteId,
-        name: name,
-        checksum: checksum,
-        type: type,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-        width: width,
-        height: height,
-        isFavorite: isFavorite,
-        durationInSeconds: row.durationInSeconds,
-      );
-    }).get();
+    return query
+        .map(
+          (row) => row.remoteId != null
+              ? Asset(
+                  id: row.remoteId!,
+                  localId: row.localId,
+                  name: row.name,
+                  checksum: row.checksum,
+                  type: row.type,
+                  createdAt: row.createdAt,
+                  updatedAt: row.updatedAt,
+                  thumbHash: row.thumbHash,
+                  width: row.width,
+                  height: row.height,
+                  isFavorite: row.isFavorite,
+                  durationInSeconds: row.durationInSeconds,
+                )
+              : LocalAsset(
+                  id: row.localId!,
+                  remoteId: row.remoteId,
+                  name: row.name,
+                  checksum: row.checksum,
+                  type: row.type,
+                  createdAt: row.createdAt,
+                  updatedAt: row.updatedAt,
+                  width: row.width,
+                  height: row.height,
+                  isFavorite: row.isFavorite,
+                  durationInSeconds: row.durationInSeconds,
+                ),
+        )
+        .get();
   }
 
   @override
-  Stream<List<Bucket>> watchLocalBucket(String albumId) {
+  Stream<List<Bucket>> watchLocalBucket(
+    String albumId, {
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
+    if (groupBy == GroupAssetsBy.none) {
+      return _db.localAlbumAssetEntity
+          .count(where: (row) => row.albumId.equals(albumId))
+          .map(_generateBuckets)
+          .watchSingle();
+    }
+
     final assetCountExp = _db.localAssetEntity.id.count();
-    final monthYearExp = _db.localAssetEntity.createdAt
-        // DateTimes are stored in UTC, so we need to convert them to local time inside the query before formatting
-        // to create the correct time bucket
-        .modify(const DateTimeModifier.localTime())
-        .date;
+    final dateExp = _db.localAssetEntity.createdAt.dateFmt(groupBy);
 
     final query = _db.localAssetEntity.selectOnly()
-      ..addColumns([assetCountExp, monthYearExp])
+      ..addColumns([assetCountExp, dateExp])
       ..join([
         innerJoin(
           _db.localAlbumAssetEntity,
@@ -107,11 +116,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository
         ),
       ])
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
-      ..groupBy([monthYearExp])
-      ..orderBy([OrderingTerm.desc(monthYearExp)]);
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
-      final timeline = DateFormat("y-M-d").parse(row.read(monthYearExp)!);
+      final timeline = row.read(dateExp)!.dateFmt(groupBy);
       final assetCount = row.read(assetCountExp)!;
       return TimeBucket(date: timeline, assetCount: assetCount);
     }).watch();
@@ -137,5 +146,37 @@ class DriftTimelineRepository extends DriftDatabaseRepository
     return query
         .map((row) => row.readTable(_db.localAssetEntity).toDto())
         .get();
+  }
+}
+
+extension on Expression<DateTime> {
+  Expression<String> dateFmt(GroupAssetsBy groupBy) {
+    // DateTimes are stored in UTC, so we need to convert them to local time inside the query before formatting
+    // to create the correct time bucket
+    final localTimeExp = modify(const DateTimeModifier.localTime());
+    return switch (groupBy) {
+      GroupAssetsBy.day => localTimeExp.date,
+      GroupAssetsBy.month => localTimeExp.strftime("%Y-%m"),
+      GroupAssetsBy.none => throw ArgumentError(
+          "GroupAssetsBy.none is not supported for date formatting",
+        ),
+    };
+  }
+}
+
+extension on String {
+  DateTime dateFmt(GroupAssetsBy groupBy) {
+    final format = switch (groupBy) {
+      GroupAssetsBy.day => "y-M-d",
+      GroupAssetsBy.month => "y-M",
+      GroupAssetsBy.none => throw ArgumentError(
+          "GroupAssetsBy.none is not supported for date formatting",
+        ),
+    };
+    try {
+      return DateFormat(format).parse(this);
+    } catch (e) {
+      throw FormatException("Invalid date format: $this", e);
+    }
   }
 }

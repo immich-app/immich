@@ -94,7 +94,6 @@ class NativeSyncApiImpl: NativeSyncApi {
       let collections = PHAssetCollection.fetchAssetCollections(with: type, subtype: .any, options: nil)
       for i in 0..<collections.count {
         let album = collections.object(at: i)
-        print("Album name: \(album.localizedTitle ?? "Unknown"), type: \(album.assetCollectionType), Subtype: \(album.assetCollectionSubtype)")
       
         // Ignore recovered album
         if(album.assetCollectionSubtype.rawValue == self.recoveredAlbumSubType) {

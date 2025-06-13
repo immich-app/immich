@@ -12,11 +12,10 @@ import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 class Timeline extends StatelessWidget {
-  final bool showHeader;
-
-  const Timeline({super.key, this.showHeader = true});
+  const Timeline({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +24,12 @@ class Timeline extends StatelessWidget {
         builder: (_, constraints) => ProviderScope(
           overrides: [
             timelineArgsProvider.overrideWith(
-              (ref) => TimelineStateArgs(
+              (ref) => TimelineArgs(
                 maxWidth: constraints.maxWidth,
                 maxHeight: constraints.maxHeight,
                 columnCount: ref.watch(
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
-                showHeader: showHeader,
               ),
             ),
           ],

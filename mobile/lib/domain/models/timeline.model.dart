@@ -1,3 +1,16 @@
+enum GroupAssetsBy {
+  day,
+  month,
+  none;
+}
+
+enum HeaderType {
+  none,
+  month,
+  day,
+  monthAndDay;
+}
+
 class Bucket {
   final int assetCount;
 

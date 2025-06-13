@@ -3,8 +3,8 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 
 class ThumbnailTile extends StatelessWidget {
-  const ThumbnailTile({
-    required this.asset,
+  const ThumbnailTile(
+    this.asset, {
     this.size = const Size.square(256),
     this.fit = BoxFit.cover,
     super.key,

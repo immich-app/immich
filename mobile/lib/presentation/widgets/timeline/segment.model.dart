@@ -2,11 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 
-typedef SegmentWidgetBuilder = Widget Function(
-  BuildContext context,
-  int index,
-);
-
 // Segments are the time groups buckets in the timeline view.
 // Each segment contains a header and a list of asset rows.
 abstract class Segment {
@@ -18,28 +13,32 @@ abstract class Segment {
   final double startOffset;
   // The offset of the last row from beginning of the timeline.
   final double endOffset;
-
+  // The spacing between the header and the first row of the segment.
   final double spacing;
   final double headerExtent;
-
-  final int assetIndex;
-  final double assetOffset;
-
-  final SegmentWidgetBuilder builder;
-
+  // the start index of the asset of this segment from the beginning of the timeline.
+  final int firstAssetIndex;
   final Bucket bucket;
+
+  // The index of the row after the header
+  final int gridIndex;
+  // The offset of the row after the header
+  final double gridOffset;
+  // The type of the header
+  final HeaderType header;
 
   const Segment({
     required this.firstIndex,
     required this.lastIndex,
     required this.startOffset,
     required this.endOffset,
+    required this.firstAssetIndex,
     required this.bucket,
     required this.headerExtent,
     required this.spacing,
-    required this.builder,
-  })  : assetIndex = firstIndex + 1,
-        assetOffset = startOffset + headerExtent + spacing;
+    required this.header,
+  })  : gridIndex = firstIndex + 1,
+        gridOffset = startOffset + headerExtent + spacing;
 
   bool containsIndex(int index) => firstIndex <= index && index <= lastIndex;
 
@@ -49,6 +48,8 @@ abstract class Segment {
   int getMinChildIndexForScrollOffset(double scrollOffset);
   int getMaxChildIndexForScrollOffset(double scrollOffset);
   double indexToLayoutOffset(int index);
+
+  Widget builder(BuildContext context, int index);
 
   @override
   bool operator ==(Object other) {
@@ -60,9 +61,11 @@ abstract class Segment {
         other.startOffset == startOffset &&
         other.endOffset == endOffset &&
         other.spacing == spacing &&
+        other.firstAssetIndex == firstAssetIndex &&
         other.headerExtent == headerExtent &&
-        other.assetIndex == assetIndex &&
-        other.assetOffset == assetOffset;
+        other.gridIndex == gridIndex &&
+        other.gridOffset == gridOffset &&
+        other.header == header;
   }
 
   @override
@@ -73,8 +76,10 @@ abstract class Segment {
       endOffset.hashCode ^
       spacing.hashCode ^
       headerExtent.hashCode ^
-      assetIndex.hashCode ^
-      assetOffset.hashCode;
+      firstAssetIndex.hashCode ^
+      gridIndex.hashCode ^
+      gridOffset.hashCode ^
+      header.hashCode;
 
   @override
   String toString() {

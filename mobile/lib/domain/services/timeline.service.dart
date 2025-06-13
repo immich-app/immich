@@ -4,7 +4,9 @@ import 'package:collection/collection.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 
 typedef TimelineAssetSource = Future<List<BaseAsset>> Function(
@@ -13,6 +15,34 @@ typedef TimelineAssetSource = Future<List<BaseAsset>> Function(
 );
 
 typedef TimelineBucketSource = Stream<List<Bucket>> Function();
+
+class TimelineFactory {
+  final ITimelineRepository _timelineRepository;
+  final SettingsService _settingsService;
+
+  const TimelineFactory({
+    required ITimelineRepository timelineRepository,
+    required SettingsService settingsService,
+  })  : _timelineRepository = timelineRepository,
+        _settingsService = settingsService;
+
+  GroupAssetsBy get groupBy =>
+      GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
+
+  TimelineService main() => TimelineService(
+        assetSource: (index, count) =>
+            _timelineRepository.getMainBucketAssets(index: index, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchMainBucket(groupBy: groupBy),
+      );
+
+  TimelineService localAlbum({required String albumId}) => TimelineService(
+        assetSource: (index, count) => _timelineRepository
+            .getLocalBucketAssets(albumId, index: index, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchLocalBucket(albumId, groupBy: groupBy),
+      );
+}
 
 class TimelineService {
   final TimelineAssetSource _assetSource;
@@ -23,27 +53,6 @@ class TimelineService {
     required TimelineBucketSource bucketSource,
   })  : _assetSource = assetSource,
         _bucketSource = bucketSource;
-
-  factory TimelineService.main({
-    required ITimelineRepository repository,
-  }) {
-    return TimelineService(
-      assetSource: (index, count) =>
-          repository.getMainBucketAssets(index: index, count: count),
-      bucketSource: () => repository.watchMainBucket(),
-    );
-  }
-
-  factory TimelineService.localAlbum({
-    required String albumId,
-    required ITimelineRepository repository,
-  }) {
-    return TimelineService(
-      assetSource: (index, count) =>
-          repository.getLocalBucketAssets(albumId, index: index, count: count),
-      bucketSource: () => repository.watchLocalBucket(albumId),
-    );
-  }
 
   final AsyncMutex _mutex = AsyncMutex();
   int _bufferOffset = 0;

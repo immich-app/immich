@@ -18,8 +18,8 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
 
   RemoteThumbProvider({
     required this.assetId,
-    this.height = kTimelineFixedTileExtend,
-    this.width = kTimelineFixedTileExtend,
+    this.height = kTimelineFixedTileExtent,
+    this.width = kTimelineFixedTileExtent,
     this.cacheManager,
   });
 

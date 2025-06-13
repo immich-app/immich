@@ -21,8 +21,8 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
 
   LocalThumbProvider({
     required this.asset,
-    this.height = kTimelineFixedTileExtend,
-    this.width = kTimelineFixedTileExtend,
+    this.height = kTimelineFixedTileExtent,
+    this.width = kTimelineFixedTileExtent,
     this.cacheManager,
   });
 
