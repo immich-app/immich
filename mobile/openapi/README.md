@@ -122,6 +122,8 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**getRandom**](doc//DeprecatedApi.md#getrandom) | **GET** /assets/random | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
+*DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | 
+*DuplicatesApi* | [**deleteDuplicates**](doc//DuplicatesApi.md#deleteduplicates) | **DELETE** /duplicates | 
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | 
 *FacesApi* | [**createFace**](doc//FacesApi.md#createface) | **POST** /faces | 
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | 
@@ -144,6 +146,7 @@ Class | Method | HTTP request | Description
 *MemoriesApi* | [**createMemory**](doc//MemoriesApi.md#creatememory) | **POST** /memories | 
 *MemoriesApi* | [**deleteMemory**](doc//MemoriesApi.md#deletememory) | **DELETE** /memories/{id} | 
 *MemoriesApi* | [**getMemory**](doc//MemoriesApi.md#getmemory) | **GET** /memories/{id} | 
+*MemoriesApi* | [**memoriesStatistics**](doc//MemoriesApi.md#memoriesstatistics) | **GET** /memories/statistics | 
 *MemoriesApi* | [**removeMemoryAssets**](doc//MemoriesApi.md#removememoryassets) | **DELETE** /memories/{id}/assets | 
 *MemoriesApi* | [**searchMemories**](doc//MemoriesApi.md#searchmemories) | **GET** /memories | 
 *MemoriesApi* | [**updateMemory**](doc//MemoriesApi.md#updatememory) | **PUT** /memories/{id} | 
@@ -375,6 +378,7 @@ Class | Method | HTTP request | Description
  - [MemoriesUpdate](doc//MemoriesUpdate.md)
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
  - [MemoryResponseDto](doc//MemoryResponseDto.md)
+ - [MemoryStatisticsResponseDto](doc//MemoryStatisticsResponseDto.md)
  - [MemoryType](doc//MemoryType.md)
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)

@@ -207,7 +207,7 @@
   };
 
   const onCreateNewLibraryClicked = async () => {
-    const result = await modalManager.show(LibraryUserPickerModal, {});
+    const result = await modalManager.show(LibraryUserPickerModal);
     if (result) {
       await handleCreate(result);
     }

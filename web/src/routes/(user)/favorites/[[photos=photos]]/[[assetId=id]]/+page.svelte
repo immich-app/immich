@@ -17,8 +17,8 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
@@ -31,9 +31,9 @@
 
   let { data }: Props = $props();
 
-  const assetStore = new AssetStore();
-  void assetStore.updateOptions({ isFavorite: true, withStacked: true });
-  onDestroy(() => assetStore.destroy());
+  const timelineManager = new TimelineManager();
+  void timelineManager.updateOptions({ isFavorite: true, withStacked: true });
+  onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -45,7 +45,7 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
   };
 </script>
@@ -54,7 +54,7 @@
   <AssetGrid
     enableRouting={true}
     withStacked={true}
-    {assetStore}
+    {timelineManager}
     {assetInteraction}
     removeAction={AssetAction.UNFAVORITE}
     onEscape={handleEscape}
@@ -71,9 +71,9 @@
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
-    <FavoriteAction removeFavorite onFavorite={(assetIds) => assetStore.removeAssets(assetIds)} />
+    <FavoriteAction removeFavorite onFavorite={(assetIds) => timelineManager.removeAssets(assetIds)} />
     <CreateSharedLink />
-    <SelectAllAssets {assetStore} {assetInteraction} />
+    <SelectAllAssets {timelineManager} {assetInteraction} />
     <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
@@ -86,7 +86,7 @@
       <ArchiveAction
         menuItem
         unarchive={assetInteraction.isAllArchived}
-        onArchive={(assetIds) => assetStore.removeAssets(assetIds)}
+        onArchive={(assetIds) => timelineManager.removeAssets(assetIds)}
       />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
@@ -94,8 +94,8 @@
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <DeleteAssets
         menuItem
-        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
-        onUndoDelete={(assets) => assetStore.addAssets(assets)}
+        onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
+        onUndoDelete={(assets) => timelineManager.addAssets(assets)}
       />
     </ButtonContextMenu>
   </AssetSelectControlBar>
