@@ -3,6 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { JobCommand, type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import {
     mdiAlertCircle,
     mdiAllInclusive,
@@ -17,7 +18,6 @@
   import { t } from 'svelte-i18n';
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     title: string;
@@ -71,7 +71,7 @@
         </span>
         <div class="flex gap-2">
           {#if jobCounts.failed > 0}
-            <Badge color="primary">
+            <Badge>
               <div class="flex flex-row gap-1">
                 <span class="text-sm">
                   {$t('admin.jobs_failed', { values: { jobCount: jobCounts.failed.toLocaleString($locale) } })}
@@ -88,7 +88,7 @@
             </Badge>
           {/if}
           {#if jobCounts.delayed > 0}
-            <Badge color="secondary">
+            <Badge>
               <span class="text-sm">
                 {$t('admin.jobs_delayed', { values: { jobCount: jobCounts.delayed.toLocaleString($locale) } })}
               </span>

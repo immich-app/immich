@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-dynamic
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -146,32 +144,21 @@ void main() {
       expectLater(
         stream,
         emitsInAnyOrder([
+          emits(const StoreDto<Object>(StoreKey.version, _kTestVersion)),
           emits(
-            const StoreUpdateEvent<dynamic>(StoreKey.version, _kTestVersion),
+            StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
           ),
           emits(
-            StoreUpdateEvent<dynamic>(
-              StoreKey.backupFailedSince,
-              _kTestBackupFailed,
-            ),
+            const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
           ),
           emits(
-            const StoreUpdateEvent<dynamic>(
-              StoreKey.accessToken,
-              _kTestAccessToken,
-            ),
-          ),
-          emits(
-            const StoreUpdateEvent<dynamic>(
+            const StoreDto<Object>(
               StoreKey.colorfulInterface,
               _kTestColorfulInterface,
             ),
           ),
           emits(
-            const StoreUpdateEvent<dynamic>(
-              StoreKey.version,
-              _kTestVersion + 10,
-            ),
+            const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
           ),
         ]),
       );

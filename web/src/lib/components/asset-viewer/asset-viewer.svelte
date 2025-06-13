@@ -138,16 +138,6 @@
     }
   };
 
-  const updateComments = async () => {
-    if (album) {
-      try {
-        await activityManager.refreshActivities(album.id, asset.id);
-      } catch (error) {
-        handleError(error, $t('errors.unable_to_get_comments_number'));
-      }
-    }
-  };
-
   const onAssetUpdate = ({ asset: assetUpdate }: { event: 'upload' | 'update'; asset: AssetResponseDto }) => {
     if (assetUpdate.id === asset.id) {
       asset = assetUpdate;
@@ -179,10 +169,6 @@
 
     if (!sharedLink) {
       await handleGetAllAlbums();
-    }
-
-    if (album) {
-      activityManager.init(album.id, asset.id);
     }
   });
 
@@ -338,7 +324,10 @@
         await handleGetAllAlbums();
         break;
       }
-
+      case AssetAction.SET_STACK_PRIMARY_ASSET: {
+        stack = action.stack;
+        break;
+      }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
@@ -367,8 +356,8 @@
     }
   });
   $effect(() => {
-    if (isShared && asset.id) {
-      handlePromiseError(updateComments());
+    if (album && isShared && asset.id) {
+      handlePromiseError(activityManager.init(album.id, asset.id));
     }
   });
   $effect(() => {
@@ -507,7 +496,7 @@
             onVideoStarted={handleVideoStarted}
           />
         {/if}
-        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0)}
+        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
           <div class="absolute bottom-0 end-0 mb-20 me-8">
             <ActivityStatus
               disabled={!album?.isActivityEnabled}

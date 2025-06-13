@@ -46,7 +46,7 @@
       {#each tags as tag (tag.id)}
         <div class="flex group transition-all">
           <a
-            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-immich-primary dark:bg-immich-dark-primary rounded-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-primary rounded-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
             href={encodeURI(`${AppRoute.TAGS}/?path=${tag.value}`)}
           >
             <p class="text-sm">
@@ -67,7 +67,7 @@
       <button
         type="button"
         class="rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 flex place-items-center place-content-center gap-1 px-2 py-1"
-        title="Add tag"
+        title={$t('add_tag')}
         onclick={handleAddTag}
       >
         <span class="text-sm px-1 flex place-items-center place-content-center gap-1"

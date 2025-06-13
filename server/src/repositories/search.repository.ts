@@ -7,7 +7,7 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
-import { anyUuid, asUuid, searchAssetBuilder, withDefaultVisibility } from 'src/utils/database';
+import { anyUuid, searchAssetBuilder } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
@@ -91,6 +91,10 @@ export interface SearchTagOptions {
   tagIds?: string[];
 }
 
+export interface SearchAlbumOptions {
+  albumIds?: string[];
+}
+
 export interface SearchOrderOptions {
   orderDirection?: 'asc' | 'desc';
 }
@@ -108,7 +112,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
-  SearchTagOptions;
+  SearchTagOptions &
+  SearchAlbumOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -128,14 +133,6 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   numResults: number;
   maxDistance: number;
   minBirthDate?: Date | null;
-}
-
-export interface AssetDuplicateSearch {
-  assetId: string;
-  embedding: string;
-  maxDistance: number;
-  type: AssetType;
-  userIds: string[];
 }
 
 export interface FaceSearchResult {
@@ -267,46 +264,6 @@ export class SearchRepository {
         .offset((pagination.page - 1) * pagination.size)
         .execute();
       return paginationHelper(items, pagination.size);
-    });
-  }
-
-  @GenerateSql({
-    params: [
-      {
-        assetId: DummyValue.UUID,
-        embedding: DummyValue.VECTOR,
-        maxDistance: 0.6,
-        type: AssetType.IMAGE,
-        userIds: [DummyValue.UUID],
-      },
-    ],
-  })
-  searchDuplicates({ assetId, embedding, maxDistance, type, userIds }: AssetDuplicateSearch) {
-    return this.db.transaction().execute(async (trx) => {
-      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
-      return await trx
-        .with('cte', (qb) =>
-          qb
-            .selectFrom('assets')
-            .$call(withDefaultVisibility)
-            .select([
-              'assets.id as assetId',
-              'assets.duplicateId',
-              sql<number>`smart_search.embedding <=> ${embedding}`.as('distance'),
-            ])
-            .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
-            .where('assets.ownerId', '=', anyUuid(userIds))
-            .where('assets.deletedAt', 'is', null)
-            .where('assets.type', '=', type)
-            .where('assets.id', '!=', asUuid(assetId))
-            .where('assets.stackId', 'is', null)
-            .orderBy('distance')
-            .limit(64),
-        )
-        .selectFrom('cte')
-        .selectAll()
-        .where('cte.distance', '<=', maxDistance as number)
-        .execute();
     });
   }
 

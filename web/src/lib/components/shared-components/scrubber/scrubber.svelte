@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
-  import type { LiteBucket } from '$lib/managers/timeline-manager/types';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { ScrubberMonth } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getTabbable } from '$lib/utils/focus-util';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
@@ -14,10 +14,10 @@
     timelineTopOffset?: number;
     timelineBottomOffset?: number;
     height?: number;
-    assetStore: AssetStore;
+    timelineManager: TimelineManager;
     scrubOverallPercent?: number;
-    scrubBucketPercent?: number;
-    scrubBucket?: { year: number; month: number };
+    scrubberMonthPercent?: number;
+    scrubberMonth?: { year: number; month: number };
     leadout?: boolean;
     scrubberWidth?: number;
     onScrub?: ScrubberListener;
@@ -30,10 +30,10 @@
     timelineTopOffset = 0,
     timelineBottomOffset = 0,
     height = 0,
-    assetStore,
+    timelineManager,
     scrubOverallPercent = 0,
-    scrubBucketPercent = 0,
-    scrubBucket = undefined,
+    scrubberMonthPercent = 0,
+    scrubberMonth = undefined,
     leadout = false,
     onScrub = undefined,
     onScrubKeyDown = undefined,
@@ -69,7 +69,7 @@
       return '100vw';
     }
     if (usingMobileDevice) {
-      if (assetStore.scrolling) {
+      if (timelineManager.scrolling) {
         return MOBILE_WIDTH + 'px';
       }
       return '0px';
@@ -80,24 +80,24 @@
     scrubberWidth = usingMobileDevice ? MOBILE_WIDTH : DESKTOP_WIDTH;
   });
 
-  const toScrollFromBucketPercentage = (
-    scrubBucket: { year: number; month: number } | undefined,
-    scrubBucketPercent: number,
+  const toScrollFromMonthGroupPercentage = (
+    scrubberMonth: { year: number; month: number } | undefined,
+    scrubberMonthPercent: number,
     scrubOverallPercent: number,
   ) => {
-    if (scrubBucket) {
+    if (scrubberMonth) {
       let offset = relativeTopOffset;
       let match = false;
       for (const segment of segments) {
-        if (segment.month === scrubBucket.month && segment.year === scrubBucket.year) {
-          offset += scrubBucketPercent * segment.height;
+        if (segment.month === scrubberMonth.month && segment.year === scrubberMonth.year) {
+          offset += scrubberMonthPercent * segment.height;
           match = true;
           break;
         }
         offset += segment.height;
       }
       if (!match) {
-        offset += scrubBucketPercent * relativeBottomOffset;
+        offset += scrubberMonthPercent * relativeBottomOffset;
       }
       return offset;
     } else if (leadout) {
@@ -111,8 +111,8 @@
       return scrubOverallPercent * (height - (PADDING_TOP + PADDING_BOTTOM));
     }
   };
-  let scrollY = $derived(toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent));
-  let timelineFullHeight = $derived(assetStore.scrubberTimelineHeight + timelineTopOffset + timelineBottomOffset);
+  let scrollY = $derived(toScrollFromMonthGroupPercentage(scrubberMonth, scrubberMonthPercent, scrubOverallPercent));
+  let timelineFullHeight = $derived(timelineManager.scrubberTimelineHeight + timelineTopOffset + timelineBottomOffset);
   let relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
   let relativeBottomOffset = $derived(toScrollY(timelineBottomOffset / timelineFullHeight));
 
@@ -126,7 +126,7 @@
     hasDot: boolean;
   };
 
-  const calculateSegments = (buckets: LiteBucket[]) => {
+  const calculateSegments = (months: ScrubberMonth[]) => {
     let height = 0;
     let dotHeight = 0;
 
@@ -134,16 +134,16 @@
     let previousLabeledSegment: Segment | undefined;
 
     let top = 0;
-    for (const [i, bucket] of buckets.entries()) {
-      const scrollBarPercentage = bucket.bucketHeight / timelineFullHeight;
+    for (const [i, scrubMonth] of months.entries()) {
+      const scrollBarPercentage = scrubMonth.height / timelineFullHeight;
 
       const segment = {
         top,
-        count: bucket.assetCount,
+        count: scrubMonth.assetCount,
         height: toScrollY(scrollBarPercentage),
-        dateFormatted: bucket.bucketDateFormattted,
-        year: bucket.year,
-        month: bucket.month,
+        dateFormatted: scrubMonth.title,
+        year: scrubMonth.year,
+        month: scrubMonth.month,
         hasLabel: false,
         hasDot: false,
       };
@@ -172,7 +172,7 @@
     return segments;
   };
   let activeSegment: HTMLElement | undefined = $state();
-  const segments = $derived(calculateSegments(assetStore.scrubberBuckets));
+  const segments = $derived(calculateSegments(timelineManager.scrubberMonths));
   const hoverLabel = $derived.by(() => {
     if (isHoverOnPaddingTop) {
       return segments.at(0)?.dateFormatted;
@@ -182,11 +182,11 @@
     }
     return activeSegment?.dataset.label;
   });
-  const bucketDate = $derived.by(() => {
-    if (!activeSegment?.dataset.timeSegmentBucketDate) {
+  const segmentDate = $derived.by(() => {
+    if (!activeSegment?.dataset.segmentYearMonth) {
       return undefined;
     }
-    const [year, month] = activeSegment.dataset.timeSegmentBucketDate.split('-').map(Number);
+    const [year, month] = activeSegment.dataset.segmentYearMonth.split('-').map(Number);
     return { year, month };
   });
   const scrollSegment = $derived.by(() => {
@@ -241,17 +241,17 @@
       const boundingClientRect = bestElement.boundingClientRect;
       const sy = boundingClientRect.y;
       const relativeY = y - sy;
-      const bucketPercentY = relativeY / boundingClientRect.height;
+      const monthGroupPercentY = relativeY / boundingClientRect.height;
       return {
         isOnPaddingTop: false,
         isOnPaddingBottom: false,
         segment,
-        bucketPercentY,
+        monthGroupPercentY,
       };
     }
 
     // check if padding
-    const bar = findElementBestY(elements, 0, 'immich-scrubbable-scrollbar');
+    const bar = findElementBestY(elements, 0, 'scrubber');
     let isOnPaddingTop = false;
     let isOnPaddingBottom = false;
 
@@ -269,7 +269,7 @@
       isOnPaddingTop,
       isOnPaddingBottom,
       segment: undefined,
-      bucketPercentY: 0,
+      monthGroupPercentY: 0,
     };
   };
 
@@ -288,19 +288,19 @@
     const upper = rect?.height - (PADDING_TOP + PADDING_BOTTOM);
     hoverY = clamp(clientY - rect?.top - PADDING_TOP, lower, upper);
     const x = rect!.left + rect!.width / 2;
-    const { segment, bucketPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
+    const { segment, monthGroupPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
     activeSegment = segment;
     isHoverOnPaddingTop = isOnPaddingTop;
     isHoverOnPaddingBottom = isOnPaddingBottom;
 
     const scrollPercent = toTimelineY(hoverY);
     if (wasDragging === false && isDragging) {
-      void startScrub?.(bucketDate!, scrollPercent, bucketPercentY);
-      void onScrub?.(bucketDate!, scrollPercent, bucketPercentY);
+      void startScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
+      void onScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
     }
 
     if (wasDragging && !isDragging) {
-      void stopScrub?.(bucketDate!, scrollPercent, bucketPercentY);
+      void stopScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
       return;
     }
 
@@ -308,7 +308,7 @@
       return;
     }
 
-    void onScrub?.(bucketDate!, scrollPercent, bucketPercentY);
+    void onScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
   };
   const getTouch = (event: TouchEvent) => {
     if (event.touches.length === 1) {
@@ -324,7 +324,7 @@
     }
     const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
     const isHoverScrollbar =
-      findElementBestY(elements, 0, 'immich-scrubbable-scrollbar', 'time-label', 'lead-in', 'lead-out') !== undefined;
+      findElementBestY(elements, 0, 'scrubber', 'time-label', 'lead-in', 'lead-out') !== undefined;
 
     isHover = isHoverScrollbar;
 
@@ -451,7 +451,7 @@
   aria-valuenow={scrollY + PADDING_TOP}
   aria-valuemax={toScrollY(1)}
   aria-valuemin={toScrollY(0)}
-  data-id="immich-scrubbable-scrollbar"
+  data-id="scrubber"
   class="absolute end-0 z-1 select-none hover:cursor-row-resize"
   style:padding-top={PADDING_TOP + 'px'}
   style:padding-bottom={PADDING_BOTTOM + 'px'}
@@ -477,7 +477,7 @@
       {hoverLabel}
     </div>
   {/if}
-  {#if usingMobileDevice && ((assetStore.scrolling && scrollHoverLabel) || isHover || isDragging)}
+  {#if usingMobileDevice && ((timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging)}
     <div
       id="time-label"
       class="rounded-s-full w-[32px] ps-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
@@ -490,7 +490,7 @@
     >
       <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -end-[2px]" />
       <Icon path={mdiPlay} size="20" class="rotate-90 relative top-px -end-[2px]" />
-      {#if (assetStore.scrolling && scrollHoverLabel) || isHover || isDragging}
+      {#if (timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging}
         <p
           transition:fade={{ duration: 200 }}
           style:bottom={50 / 2 - 30 / 2 + 'px'}
@@ -505,11 +505,8 @@
   {/if}
   <!-- Scroll Position Indicator Line -->
   {#if !usingMobileDevice && !isDragging}
-    <div
-      class="absolute end-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
-      style:top="{scrollY + PADDING_TOP - 2}px"
-    >
-      {#if assetStore.scrolling && scrollHoverLabel && !isHover}
+    <div class="absolute end-0 h-[2px] w-10 bg-primary" style:top="{scrollY + PADDING_TOP - 2}px">
+      {#if timelineManager.scrolling && scrollHoverLabel && !isHover}
         <p
           transition:fade={{ duration: 200 }}
           class="truncate pointer-events-none absolute end-0 bottom-0 min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-subtle/90 z-1 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:text-immich-dark-fg"
@@ -523,7 +520,7 @@
     class="relative"
     style:height={relativeTopOffset + 'px'}
     data-id="lead-in"
-    data-time-segment-bucket-date={segments.at(0)?.year + '-' + segments.at(0)?.month}
+    data-segment-year-month={segments.at(0)?.year + '-' + segments.at(0)?.month}
     data-label={segments.at(0)?.dateFormatted}
   >
     {#if relativeTopOffset > 6}
@@ -535,7 +532,7 @@
     <div
       class="relative"
       data-id="time-segment"
-      data-time-segment-bucket-date={segment.year + '-' + segment.month}
+      data-segment-year-month={segment.year + '-' + segment.month}
       data-label={segment.dateFormatted}
       style:height={segment.height + 'px'}
     >

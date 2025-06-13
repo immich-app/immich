@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-local-functions
-
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
@@ -63,8 +61,10 @@ final _features = [
     icon: Icons.delete_sweep_rounded,
     onTap: (_, ref) async {
       final db = ref.read(driftProvider);
-      await db.remoteAssetEntity.deleteAll();
       await db.remoteExifEntity.deleteAll();
+      await db.remoteAssetEntity.deleteAll();
+      await db.remoteAlbumEntity.deleteAll();
+      await db.remoteAlbumAssetEntity.deleteAll();
     },
   ),
   _Feature(
@@ -142,7 +142,6 @@ class _Feature {
   final Future<void> Function(BuildContext, WidgetRef _) onTap;
 }
 
-// ignore: prefer-single-widget-per-file
 class _DevLogs extends StatelessWidget {
   const _DevLogs();
 
@@ -170,7 +169,6 @@ class _DevLogs extends StatelessWidget {
         builder: (_, logMessages) {
           return ListView.separated(
             itemBuilder: (ctx, index) {
-              // ignore: avoid-unsafe-collection-methods
               final logMessage = logMessages.data![index];
               return ListTile(
                 title: Text(

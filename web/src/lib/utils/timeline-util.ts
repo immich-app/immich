@@ -23,9 +23,9 @@ export type TimelinePlainDateTime = TimelinePlainDate & {
 };
 
 export type ScrubberListener = (
-  bucketDate: { year: number; month: number },
+  scrubberMonth: { year: number; month: number },
   overallScrollPercent: number,
-  bucketScrollPercent: number,
+  scrubberMonthScrollPercent: number,
 ) => void | Promise<void>;
 
 // used for AssetResponseDto.dateTimeOriginal, amongst others
@@ -99,7 +99,7 @@ export const fromTimelinePlainYearMonth = (timelineYearMonth: TimelinePlainYearM
 export const toISOYearMonthUTC = (timelineYearMonth: TimelinePlainYearMonth): string =>
   (fromTimelinePlainYearMonth(timelineYearMonth).setZone('UTC', { keepLocalTime: true }) as DateTime<true>).toISO();
 
-export function formatBucketTitle(_date: DateTime): string {
+export function formatMonthGroupTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
   }
@@ -216,3 +216,13 @@ export const plainDateTimeCompare = (ascending: boolean, a: TimelinePlainDateTim
   }
   return aDateTime.millisecond - bDateTime.millisecond;
 };
+
+export function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  const result = new Set<T>();
+  for (const value of setA) {
+    if (!setB.has(value)) {
+      result.add(value);
+    }
+  }
+  return result;
+}
