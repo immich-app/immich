@@ -90,6 +90,11 @@ final _features = [
       }
     },
   ),
+  _Feature(
+    name: 'Main Timeline',
+    icon: Icons.timeline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const MainTimelineRoute()),
+  ),
 ];
 
 @RoutePage()

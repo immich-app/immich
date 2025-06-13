@@ -31,7 +31,7 @@ final syncStreamRepositoryProvider = Provider(
 
 final localSyncServiceProvider = Provider(
   (ref) => LocalSyncService(
-    localAlbumRepository: ref.watch(localAlbumRepository),
+    localAlbumRepository: ref.watch(localAlbumRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
     storeService: ref.watch(storeServiceProvider),
   ),
@@ -39,8 +39,8 @@ final localSyncServiceProvider = Provider(
 
 final hashServiceProvider = Provider(
   (ref) => HashService(
-    localAlbumRepository: ref.watch(localAlbumRepository),
-    localAssetRepository: ref.watch(localAssetRepository),
+    localAlbumRepository: ref.watch(localAlbumRepositoryProvider),
+    localAssetRepository: ref.watch(localAssetRepositoryProvider),
     storageRepository: ref.watch(storageRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
   ),

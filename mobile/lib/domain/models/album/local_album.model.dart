@@ -1,3 +1,5 @@
+part of 'base_album.model.dart';
+
 enum BackupSelection {
   // Used to sort albums based on the backupSelection
   // selected -> none -> excluded
@@ -7,20 +9,16 @@ enum BackupSelection {
   excluded,
 }
 
-class LocalAlbum {
-  final String id;
-  final String name;
-  final DateTime updatedAt;
+class LocalAlbum extends BaseAlbum {
   final bool isIosSharedAlbum;
 
-  final int assetCount;
   final BackupSelection backupSelection;
 
   const LocalAlbum({
-    required this.id,
-    required this.name,
-    required this.updatedAt,
-    this.assetCount = 0,
+    required super.id,
+    required super.name,
+    required super.updatedAt,
+    super.assetCount = 0,
     this.backupSelection = BackupSelection.none,
     this.isIosSharedAlbum = false,
   });

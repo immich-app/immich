@@ -1,3 +1,5 @@
+part of 'base_album.model.dart';
+
 enum AssetOrder {
   // do not change this order!
   asc,
@@ -5,25 +7,23 @@ enum AssetOrder {
 }
 
 // Model for an album stored in the server
-class Album {
-  final String id;
-  final String name;
+class Album extends BaseAlbum {
   final String description;
   final DateTime createdAt;
-  final DateTime updatedAt;
   final String? thumbnailAssetId;
   final bool isActivityEnabled;
   final AssetOrder order;
 
   const Album({
-    required this.id,
-    required this.name,
+    required super.id,
+    required super.name,
     required this.description,
     required this.createdAt,
-    required this.updatedAt,
+    required super.updatedAt,
     this.thumbnailAssetId,
     required this.isActivityEnabled,
     required this.order,
+    super.assetCount = 0,
   });
 
   @override
@@ -37,6 +37,7 @@ class Album {
    isActivityEnabled: $isActivityEnabled,
    order: $order,
    thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
+   assetCount: $assetCount
  }''';
   }
 
@@ -51,7 +52,8 @@ class Album {
         updatedAt == other.updatedAt &&
         thumbnailAssetId == other.thumbnailAssetId &&
         isActivityEnabled == other.isActivityEnabled &&
-        order == other.order;
+        order == other.order &&
+        assetCount == other.assetCount;
   }
 
   @override
@@ -63,6 +65,7 @@ class Album {
         updatedAt.hashCode ^
         thumbnailAssetId.hashCode ^
         isActivityEnabled.hashCode ^
-        order.hashCode;
+        order.hashCode ^
+        assetCount.hashCode;
   }
 }

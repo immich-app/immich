@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
-import 'package:immich_mobile/domain/models/local_album.model.dart';
+import 'package:immich_mobile/domain/models/album/base_album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 import '../../test_utils/medium_factory.dart';

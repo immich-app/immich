@@ -15,3 +15,7 @@ const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 // Secure storage keys
 const String kSecuredPinCode = "secured_pin_code";
+
+// Timeline constants
+const int kTimelineAssetLoadBatchSize = 256;
+const int kTimelineAssetLoadOppositeSize = 64;
