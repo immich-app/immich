@@ -1,7 +1,6 @@
 import SwiftUI
 import WidgetKit
 
-
 struct ImageEntry: TimelineEntry {
   let date: Date
   let image: UIImage?
@@ -9,27 +8,27 @@ struct ImageEntry: TimelineEntry {
   var error: WidgetError? = nil
 }
 
-struct ImmichWidgetView : View {
+struct ImmichWidgetView: View {
   var entry: ImageEntry
-  
+
   func getErrorText(_ error: WidgetError?) -> String {
-    switch (error) {
-      case .noLogin:
-        return "Login to Immich"
-      
-      case .fetchFailed:
-        return "Unable to connect to your Immich instance"
-        
-      case .albumNotFound:
-        return "Album not found"
-        
-      default:
-        return "An unknown error occured"
+    switch error {
+    case .noLogin:
+      return "Login to Immich"
+
+    case .fetchFailed:
+      return "Unable to connect to your Immich instance"
+
+    case .albumNotFound:
+      return "Album not found"
+
+    default:
+      return "An unknown error occured"
     }
   }
-  
+
   var body: some View {
-    if (entry.image == nil) {
+    if entry.image == nil {
       VStack {
         Image("LaunchImage")
         Text(getErrorText(entry.error))
@@ -37,7 +36,7 @@ struct ImmichWidgetView : View {
           .multilineTextAlignment(.center)
           .foregroundStyle(.secondary)
       }
-        .padding(16)
+      .padding(16)
     } else {
       ZStack(alignment: .leading) {
         Color.clear.overlay(
@@ -45,8 +44,8 @@ struct ImmichWidgetView : View {
             .resizable()
             .scaledToFill()
         )
-        VStack() {
-            Spacer()
+        VStack {
+          Spacer()
           if let subtitle = entry.subtitle {
             Text(subtitle)
               .foregroundColor(.white)
@@ -62,10 +61,12 @@ struct ImmichWidgetView : View {
   }
 }
 
-
-#Preview(as: .systemMedium, widget: {
-  ImmichRandomWidget()
-}, timeline: {
-  let date = Date()
-  ImageEntry(date: date, image: UIImage(named: "ImmichLogo"), subtitle: "1 year ago")
-})
+#Preview(
+  as: .systemMedium,
+  widget: {
+    ImmichRandomWidget()
+  },
+  timeline: {
+    let date = Date()
+    ImageEntry(date: date, image: UIImage(named: "ImmichLogo"), subtitle: "1 year ago")
+  })
