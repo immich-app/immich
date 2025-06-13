@@ -58,6 +58,7 @@
     "thumbhash": "^0.1.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.0.0-beta.6",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.18.0",
     "@faker-js/faker": "^9.3.0",

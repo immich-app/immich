@@ -26,7 +26,7 @@
     try {
       loadingPreview = true;
       const { html } = await getNotificationTemplateAdmin({ name, templateDto: { template } });
-      await modalManager.show(EmailTemplatePreviewModal, { html });
+      modalManager.show(EmailTemplatePreviewModal, { html });
     } catch (error) {
       handleError(error, 'Could not load template.');
     } finally {
