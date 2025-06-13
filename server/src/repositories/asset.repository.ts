@@ -198,6 +198,7 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER] })
+  @Chunked()
   async updateDateTimeOriginal(
     ids: string[],
     delta: number,
