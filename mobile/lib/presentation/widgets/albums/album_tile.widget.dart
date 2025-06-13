@@ -19,8 +19,9 @@ class AlbumTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20.0),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.transparent,
@@ -34,10 +35,15 @@ class AlbumTile extends StatelessWidget {
                 vertical: 8.0,
                 horizontal: 16.0,
               ),
-              child: Thumbnail(
-                asset: thumbnailAsset,
-                fit: BoxFit.cover,
-                size: const Size(96, 96),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(15.0),
+                ),
+                child: Thumbnail(
+                  asset: thumbnailAsset,
+                  fit: BoxFit.cover,
+                  size: const Size(96, 96),
+                ),
               ),
             ),
             Expanded(
@@ -46,7 +52,13 @@ class AlbumTile extends StatelessWidget {
                 children: [
                   SizedBox(
                     width: context.width * 0.6,
-                    child: Text(name),
+                    child: Text(
+                      name,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   Text(description),
                 ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/presentation/widgets/albums/album.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -130,6 +131,15 @@ class LocalMediaSummaryPage extends StatelessWidget {
                   );
                 },
               ),
+              SliverList.builder(
+                itemBuilder: (ctx, idx) {
+                  return ListTile(
+                    title: const Text("Click to Local Album Page"),
+                    onTap: () => context.pushRoute(const LocalAlbumRoute()),
+                  );
+                },
+                itemCount: 1,
+              ),
             ],
           );
         },
@@ -174,6 +184,30 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                   return _Summary(name: stat.name, countFuture: countFuture);
                 },
                 itemCount: _remoteStats.length,
+              ),
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Divider(),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15),
+                      child: Text(
+                        "Album summary",
+                        style: ctx.textTheme.titleMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SliverList.builder(
+                itemBuilder: (ctx, idx) {
+                  return ListTile(
+                    title: const Text("Click to Remote Album Page"),
+                    onTap: () => context.pushRoute(const RemoteAlbumRoute()),
+                  );
+                },
+                itemCount: 1,
               ),
             ],
           );
