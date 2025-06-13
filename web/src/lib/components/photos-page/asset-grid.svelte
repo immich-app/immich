@@ -703,7 +703,7 @@
     }
 
     isShortcutModalOpen = true;
-    await modalManager.show(ShortcutsModal, {});
+    await modalManager.show(ShortcutsModal);
     isShortcutModalOpen = false;
   };
 

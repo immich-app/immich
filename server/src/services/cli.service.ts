@@ -37,6 +37,24 @@ export class CliService extends BaseService {
     await this.updateConfig(config);
   }
 
+  async grantAdminAccess(email: string): Promise<void> {
+    const user = await this.userRepository.getByEmail(email);
+    if (!user) {
+      throw new Error('User does not exist');
+    }
+
+    await this.userRepository.update(user.id, { isAdmin: true });
+  }
+
+  async revokeAdminAccess(email: string): Promise<void> {
+    const user = await this.userRepository.getByEmail(email);
+    if (!user) {
+      throw new Error('User does not exist');
+    }
+
+    await this.userRepository.update(user.id, { isAdmin: false });
+  }
+
   async disableOAuthLogin(): Promise<void> {
     const config = await this.getConfig({ withCache: false });
     config.oauth.enabled = false;

@@ -1,4 +1,4 @@
-import type { TimelinePlainDate } from '$lib/utils/timeline-util';
+import { setDifference, type TimelinePlainDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
 
 import { GroupInsertionCache } from '../group-insertion-cache.svelte';
@@ -76,7 +76,7 @@ export function runAssetOperation(
       if (moveAssets.length > 0) {
         combinedMoveAssets.push(moveAssets);
       }
-      idsToProcess = idsToProcess.difference(processedIds);
+      idsToProcess = setDifference(idsToProcess, processedIds);
       for (const id of processedIds) {
         idsProcessed.add(id);
       }

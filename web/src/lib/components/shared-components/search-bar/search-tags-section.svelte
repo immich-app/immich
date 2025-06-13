@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
-  import { getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { t } from 'svelte-i18n';
-  import { onMount } from 'svelte';
-  import { SvelteSet } from 'svelte/reactivity';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiClose } from '@mdi/js';
+  import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import { preferences } from '$lib/stores/user.store';
+  import { getAllTags, type TagResponseDto } from '@immich/sdk';
+  import { mdiClose } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     selectedTags: SvelteSet<string>;
@@ -57,7 +57,7 @@
         {#if tag}
           <div class="flex group transition-all">
             <span
-              class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-immich-primary dark:bg-immich-dark-primary roudned-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+              class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-primary roudned-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
             >
               <p class="text-sm">
                 {tag.value}

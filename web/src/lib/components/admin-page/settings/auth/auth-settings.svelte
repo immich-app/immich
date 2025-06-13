@@ -36,7 +36,7 @@
   const handleSave = async (skipConfirm: boolean) => {
     const allMethodsDisabled = !config.oauth.enabled && !config.passwordLogin.enabled;
     if (allMethodsDisabled && !skipConfirm) {
-      const isConfirmed = await modalManager.show(AuthDisableLoginConfirmModal, {});
+      const isConfirmed = await modalManager.show(AuthDisableLoginConfirmModal);
       if (!isConfirmed) {
         return;
       }

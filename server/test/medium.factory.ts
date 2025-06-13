@@ -390,6 +390,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.crypto || getRepositoryMock('crypto'),
     repositories.database || getRepositoryMock('database'),
     repositories.downloadRepository,
+    repositories.duplicateRepository,
     repositories.email || getRepositoryMock('email'),
     repositories.event,
     repositories.job || getRepositoryMock('job'),

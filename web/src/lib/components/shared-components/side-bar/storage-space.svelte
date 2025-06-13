@@ -1,12 +1,12 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { requestServerInfo } from '$lib/utils/auth';
+  import { getByteUnitString } from '$lib/utils/byte-units';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { getByteUnitString } from '$lib/utils/byte-units';
   import LoadingSpinner from '../loading-spinner.svelte';
-  import { userInteraction } from '$lib/stores/user.svelte';
 
   let usageClasses = $state('');
 
@@ -28,7 +28,7 @@
       return 'bg-yellow-500';
     }
 
-    return 'bg-immich-primary dark:bg-immich-dark-primary';
+    return 'bg-primary';
   };
 
   $effect(() => {

@@ -9,6 +9,7 @@ import {
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
   getTimes,
+  setDifference,
   type TimelinePlainDateTime,
   type TimelinePlainYearMonth,
 } from '$lib/utils/timeline-util';
@@ -132,7 +133,7 @@ export class MonthGroup {
         if (moveAssets.length > 0) {
           combinedMoveAssets.push(moveAssets);
         }
-        idsToProcess = idsToProcess.difference(processedIds);
+        idsToProcess = setDifference(idsToProcess, processedIds);
         for (const id of processedIds) {
           idsProcessed.add(id);
         }

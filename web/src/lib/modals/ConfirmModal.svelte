@@ -10,7 +10,7 @@
     confirmColor?: Color;
     disabled?: boolean;
     size?: 'small' | 'medium';
-    onClose: (confirmed?: boolean) => void;
+    onClose: (confirmed: boolean) => void;
     promptSnippet?: Snippet;
   }
 
