@@ -80,13 +80,13 @@ class UserEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get id => text()();
   TextColumn get name => text()();
-  BoolColumn get isAdmin => boolean().withDefault(const Constant(false))();
+  BoolColumn get isAdmin => boolean()();
   TextColumn get email => text()();
   TextColumn get profileImagePath => text().nullable()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   // Quota
   IntColumn get quotaSizeInBytes => integer().nullable()();
-  IntColumn get quotaUsageInBytes => integer().withDefault(const Constant(0))();
+  IntColumn get quotaUsageInBytes => integer()();
 
   @override
   Set<Column> get primaryKey => {id};

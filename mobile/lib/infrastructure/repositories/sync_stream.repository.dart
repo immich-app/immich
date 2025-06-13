@@ -49,6 +49,10 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
           final companion = UserEntityCompanion(
             name: Value(user.name),
             email: Value(user.email),
+            isAdmin: Value(user.isAdmin),
+            profileImagePath: Value(user.profileImagePath),
+            quotaSizeInBytes: Value(user.quotaSizeInBytes),
+            quotaUsageInBytes: Value(user.quotaUsageInBytes),
           );
 
           batch.insert(

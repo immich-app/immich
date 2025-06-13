@@ -39,6 +39,12 @@ export class SyncUserV1 {
   name!: string;
   email!: string;
   deletedAt!: Date | null;
+  isAdmin!: boolean;
+  profileImagePath!: string | null;
+  @ApiProperty({ type: 'integer' })
+  quotaSizeInBytes!: number | null;
+  @ApiProperty({ type: 'integer' })
+  quotaUsageInBytes!: number;
 }
 
 export class SyncUserDeleteV1 {

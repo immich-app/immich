@@ -13788,15 +13788,33 @@
           "id": {
             "type": "string"
           },
+          "isAdmin": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
+          },
+          "profileImagePath": {
+            "nullable": true,
+            "type": "string"
+          },
+          "quotaSizeInBytes": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "quotaUsageInBytes": {
+            "type": "integer"
           }
         },
         "required": [
           "deletedAt",
           "email",
           "id",
-          "name"
+          "isAdmin",
+          "name",
+          "profileImagePath",
+          "quotaSizeInBytes",
+          "quotaUsageInBytes"
         ],
         "type": "object"
       },
