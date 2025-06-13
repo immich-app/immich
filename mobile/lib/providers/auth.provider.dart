@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
+import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -24,6 +25,7 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.watch(apiServiceProvider),
     ref.watch(userServiceProvider),
     ref.watch(secureStorageServiceProvider),
+    ref.watch(widgetServiceProvider),
   );
 });
 
@@ -32,6 +34,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final ApiService _apiService;
   final UserService _userService;
   final SecureStorageService _secureStorageService;
+  final WidgetService _widgetService;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
@@ -41,6 +44,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._apiService,
     this._userService,
     this._secureStorageService,
+    this._widgetService,
   ) : super(
           AuthState(
             deviceId: "",
@@ -78,22 +82,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _secureStorageService.delete(kSecuredPinCode);
 
-      HomeWidget.setAppGroupId(appShareGroupId);
-      HomeWidget.saveWidgetData(kWidgetAuthToken, "");
-      HomeWidget.saveWidgetData(kWidgetServerEndpoint, "");
-
+      _widgetService.clearWidgetData();
       // wait 3 seconds to ensure the widget is updated, dont block
       Future.delayed(const Duration(seconds: 3), () {
-        HomeWidget.updateWidget(
-          name: 'com.immich.widget.random',
-          androidName: 'com.immich.widget.random',
-          iOSName: 'com.immich.widget.random',
-        );
-        HomeWidget.updateWidget(
-          name: 'com.immich.widget.memory',
-          androidName: 'com.immich.widget.memory',
-          iOSName: 'com.immich.widget.memory',
-        );
+        _widgetService.updateWidget('com.immich.widget.random');
+        _widgetService.updateWidget('com.immich.widget.memory');
       });
 
       await _authService.logout();
@@ -132,25 +125,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     await _apiService.setAccessToken(accessToken);
 
-    HomeWidget.setAppGroupId(appShareGroupId);
-    HomeWidget.saveWidgetData(kWidgetAuthToken, accessToken);
-    HomeWidget.saveWidgetData(
-      kWidgetServerEndpoint,
+    _widgetService.setAppGroupId(appShareGroupId);
+    _widgetService.writeCredentials(
       Store.get(StoreKey.serverEndpoint),
+      accessToken,
     );
 
     // wait 3 seconds to ensure the widget is updated, dont block
     Future.delayed(const Duration(seconds: 3), () {
-      HomeWidget.updateWidget(
-        name: 'com.immich.widget.random',
-        androidName: 'com.immich.widget.random',
-        iOSName: 'com.immich.widget.random',
-      );
-      HomeWidget.updateWidget(
-        name: 'com.immich.widget.memory',
-        androidName: 'com.immich.widget.memory',
-        iOSName: 'com.immich.widget.memory',
-      );
+      _widgetService.updateWidget('com.immich.widget.random');
+      _widgetService.updateWidget('com.immich.widget.memory');
     });
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
