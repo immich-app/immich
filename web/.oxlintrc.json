@@ -200,7 +200,8 @@
     "@typescript-eslint/prefer-as-const": "error",
     "@typescript-eslint/prefer-namespace-keyword": "error",
     "@typescript-eslint/triple-slash-reference": "error",
-    "curly": "warn"
+    "curly": "warn",
+    "eslint/no-undef": "error"
   },
   "globals": {
     "NodeJS": "writeable"
@@ -225,11 +226,9 @@
   ],
   "overrides": [
     {
-      "files": [
-        "*.svelte",
-        "**/*.svelte"
-      ],
+      "files": ["*.svelte", "**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
       "rules": {
+        "eslint/no-undef": "off",
         "no-inner-declarations": "off",
         "no-self-assign": "off"
       }

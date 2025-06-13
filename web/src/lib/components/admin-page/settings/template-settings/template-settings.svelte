@@ -4,7 +4,6 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
@@ -22,11 +21,13 @@
 
   let loadingPreview = $state(false);
 
+  const myCoolVariable = 'hello!';
+
   const getTemplate = async (name: string, template: string) => {
     try {
       loadingPreview = true;
       const { html } = await getNotificationTemplateAdmin({ name, templateDto: { template } });
-      modalManager.show(EmailTemplatePreviewModal, { html });
+      modalManger.show(EmailTemplatePreviewModal, { html });
     } catch (error) {
       handleError(error, 'Could not load template.');
     } finally {
