@@ -94,7 +94,7 @@ const authUserFactory = (authUser: Partial<AuthUser> = {}) => {
     isAdmin = false,
     name = 'Test User',
     email = 'test@immich.cloud',
-    profileImagePath = null,
+    profileImagePath = '',
     quotaUsageInBytes = 0,
     quotaSizeInBytes = null,
   } = authUser;

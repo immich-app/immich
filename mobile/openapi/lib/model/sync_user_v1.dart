@@ -33,7 +33,7 @@ class SyncUserV1 {
 
   String name;
 
-  String? profileImagePath;
+  String profileImagePath;
 
   int? quotaSizeInBytes;
 
@@ -58,7 +58,7 @@ class SyncUserV1 {
     (id.hashCode) +
     (isAdmin.hashCode) +
     (name.hashCode) +
-    (profileImagePath == null ? 0 : profileImagePath!.hashCode) +
+    (profileImagePath.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (quotaUsageInBytes.hashCode);
 
@@ -76,11 +76,7 @@ class SyncUserV1 {
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
       json[r'name'] = this.name;
-    if (this.profileImagePath != null) {
       json[r'profileImagePath'] = this.profileImagePath;
-    } else {
-    //  json[r'profileImagePath'] = null;
-    }
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
@@ -104,7 +100,7 @@ class SyncUserV1 {
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         name: mapValueOfType<String>(json, r'name')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes')!,
       );

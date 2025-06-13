@@ -13795,7 +13795,6 @@
             "type": "string"
           },
           "profileImagePath": {
-            "nullable": true,
             "type": "string"
           },
           "quotaSizeInBytes": {

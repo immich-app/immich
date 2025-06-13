@@ -20,7 +20,7 @@ export type AuthUser = {
   isAdmin: boolean;
   name: string;
   email: string;
-  profileImagePath: string | null;
+  profileImagePath: string;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
 };
