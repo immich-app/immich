@@ -20,3 +20,8 @@ const String kSecuredPinCode = "secured_pin_code";
 const int kTimelineNoneSegmentSize = 120;
 const int kTimelineAssetLoadBatchSize = 256;
 const int kTimelineAssetLoadOppositeSize = 64;
+
+// Widget keys
+const String kWidgetAuthToken = "widget_auth_token";
+const String kWidgetServerEndpoint = "widget_server_url";
+const String appShareGroupId = "group.bwees.immich";

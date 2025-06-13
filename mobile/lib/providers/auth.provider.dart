@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_udid/flutter_udid.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -76,6 +77,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     try {
       await _secureStorageService.delete(kSecuredPinCode);
+
+      HomeWidget.setAppGroupId(appShareGroupId);
+      HomeWidget.saveWidgetData(kWidgetAuthToken, "");
+      HomeWidget.saveWidgetData(kWidgetServerEndpoint, "");
+
+      // wait 3 seconds to ensure the widget is updated, dont block
+      Future.delayed(const Duration(seconds: 3), () {
+        HomeWidget.updateWidget(
+          name: 'com.immich.widget.random',
+          androidName: 'com.immich.widget.random',
+          iOSName: 'com.immich.widget.random',
+        );
+        HomeWidget.updateWidget(
+          name: 'com.immich.widget.memory',
+          androidName: 'com.immich.widget.memory',
+          iOSName: 'com.immich.widget.memory',
+        );
+      });
+
       await _authService.logout();
     } finally {
       await _cleanUp();
@@ -111,6 +131,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String accessToken,
   }) async {
     await _apiService.setAccessToken(accessToken);
+
+    HomeWidget.setAppGroupId(appShareGroupId);
+    HomeWidget.saveWidgetData(kWidgetAuthToken, accessToken);
+    HomeWidget.saveWidgetData(
+      kWidgetServerEndpoint,
+      Store.get(StoreKey.serverEndpoint),
+    );
+
+    // wait 3 seconds to ensure the widget is updated, dont block
+    Future.delayed(const Duration(seconds: 3), () {
+      HomeWidget.updateWidget(
+        name: 'com.immich.widget.random',
+        androidName: 'com.immich.widget.random',
+        iOSName: 'com.immich.widget.random',
+      );
+      HomeWidget.updateWidget(
+        name: 'com.immich.widget.memory',
+        androidName: 'com.immich.widget.memory',
+        iOSName: 'com.immich.widget.memory',
+      );
+    });
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
     String deviceId =
