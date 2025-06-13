@@ -6,6 +6,7 @@ import AppIntents
 struct EmptyConfigurationIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource = "Empty Configuration"
     static var description = IntentDescription("Does nothing.")
+  // TODO: make no configuration
 }
 
 struct ImmichMemoryProvider: AppIntentTimelineProvider {
@@ -15,49 +16,54 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
   }
   
   func snapshot(for configuration: EmptyConfigurationIntent, in context: Context) async -> ImageEntry {
-    guard let serverConfig = getServerConfig() else {
+    guard let api = try? await ImmichAPI() else {
       return ImageEntry(date: Date(), image: nil, error: .noLogin)
     }
     
-    do {
-      let demoImage = try await fetchSearchResults(serverConfig: serverConfig, searchRequest: SearchRequest(size: 1)).first
-      let image = try await fetchImage(serverConfig: serverConfig, asset: demoImage!)
-      
-      return ImageEntry(date: Date(), image: image)
-    } catch {
+    // TODO: Revise to grab a memory instead of random
+    guard let demoImage = try? await api.fetchSearchResults(with: SearchFilters(size: 1)).first else {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
+  
+    guard let image = try? await api.fetchImage(asset: demoImage) else {
+      return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
+    }
+    
+    return ImageEntry(date: Date(), image: image)
   }
   
   func timeline(for configuration: EmptyConfigurationIntent, in context: Context) async -> Timeline<ImageEntry> {
     var entries: [ImageEntry] = []
     let now = Date()
     
-    guard let serverConfig = getServerConfig() else {
-      // If we don't have a server config, return an entry with an error
+    guard let api = try? await ImmichAPI() else {
       entries.append(ImageEntry(date: now, image: nil, error: .noLogin))
       return Timeline(entries: entries, policy: .atEnd)
     }
-        
+      
+    // This whole block can fail and we will fall back to random, then a failure screen
     do {
-      let memories = try await fetchMemory(serverConfig: serverConfig, for: Date.now)
+      let memories = try await api.fetchMemory(for: Date.now)
       let currentYear = Calendar.current.component(.year, from: Date.now)
 
       for memory in memories {
-        let subtitle = "\(currentYear - memory.data.year) year\(currentYear - memory.data.year == 1 ? "" : "s") ago"
-                
+        // construct a "X years ago" subtitle
+        let yearDifference = currentYear - memory.data.year
+        let subtitle = "\(yearDifference) year\(yearDifference == 1 ? "" : "s") ago"
+        
         for asset in memory.assets {
-          // only want image assets
           if (asset.type == "IMAGE") {
-            entries.append(try await buildEntry(serverConfig: serverConfig, asset: asset, hourOffset: entries.count, subtitle: subtitle))
+            entries.append(try await buildEntry(api: api, asset: asset, hourOffset: entries.count, subtitle: subtitle))
           }
         }
       }
-    } catch {}
+    } catch {
+      print("Failed to fetch from server: \(error)")
+    }
     
     // If we didnt add any memory images, default to 12 hours of random photos
     if (entries.count == 0) {
-      entries.append(contentsOf: (try? await generateRandomEntries(serverConfig: serverConfig, now: now, count: 12)) ?? [])
+      entries.append(contentsOf: (try? await generateRandomEntries(api: api, now: now, count: 12)) ?? [])
     }
     
     // If we fail to fetch images, we still want to add an entry with a nil image and an error
