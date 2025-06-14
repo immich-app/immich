@@ -34,6 +34,7 @@
   "added_to_favorites_count": "{count, number} zu Favoriten hinzugefügt",
   "admin": {
     "add_exclusion_pattern_description": "Ausschlussmuster hinzufügen. Platzhalter, wie *, **, und ? werden unterstützt. Um alle Dateien in einem Verzeichnis namens „Raw\" zu ignorieren, „**/Raw/**“ verwenden. Um alle Dateien zu ignorieren, die auf „.tif“ enden, „**/*.tif“ verwenden. Um einen absoluten Pfad zu ignorieren, „/pfad/zum/ignorieren/**“ verwenden.",
+    "admin_user": "Administrator",
     "asset_offline_description": "Diese Datei einer externen Bibliothek befindet sich nicht mehr auf der Festplatte und wurde in den Papierkorb verschoben. Falls die Datei innerhalb der Bibliothek verschoben wurde, überprüfe deine Zeitleiste auf die neue entsprechende Datei. Um diese Datei wiederherzustellen, stelle bitte sicher, dass Immich auf den unten stehenden Dateipfad zugreifen kann und scanne die Bibliothek.",
     "authentication_settings": "Authentifizierungseinstellungen",
     "authentication_settings_description": "Passwort-, OAuth- und sonstige Authentifizierungseinstellungen verwalten",
