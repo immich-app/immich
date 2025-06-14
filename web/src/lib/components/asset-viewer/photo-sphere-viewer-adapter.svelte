@@ -7,9 +7,9 @@
     type AdapterConstructor,
     type PluginConstructor,
   } from '@photo-sphere-viewer/core';
-  import { SettingsPlugin } from '@photo-sphere-viewer/settings-plugin';
-  import { ResolutionPlugin } from '@photo-sphere-viewer/resolution-plugin';
   import '@photo-sphere-viewer/core/index.css';
+  import { ResolutionPlugin } from '@photo-sphere-viewer/resolution-plugin';
+  import { SettingsPlugin } from '@photo-sphere-viewer/settings-plugin';
   import '@photo-sphere-viewer/settings-plugin/index.css';
   import { onDestroy, onMount } from 'svelte';
 
@@ -68,18 +68,20 @@
       fisheye: false,
     });
     const resolutionPlugin = viewer.getPlugin(ResolutionPlugin) as ResolutionPlugin;
+    const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
+      // zoomLevel range: [0, 100]
+      if (Math.round(zoomLevel) >= 75) {
+        // Replace the preview with the original
+        void resolutionPlugin.setResolution('original');
+        viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
+      }
+    };
 
     if (originalPanorama && !$alwaysLoadOriginalFile) {
-      const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
-        // zoomLevel range: [0, 100]
-        if (Math.round(zoomLevel) >= 75) {
-          // Replace the preview with the original
-          void resolutionPlugin.setResolution('original');
-          viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
-        }
-      };
-      viewer.addEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
+      viewer.addEventListener(events.ZoomUpdatedEvent.type, zoomHandler, { passive: true });
     }
+
+    return () => viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
   });
 
   onDestroy(() => {

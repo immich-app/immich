@@ -4,8 +4,8 @@
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
@@ -192,8 +192,8 @@
     if (loader?.complete) {
       onload();
     }
-    loader?.addEventListener('load', onload);
-    loader?.addEventListener('error', onerror);
+    loader?.addEventListener('load', onload, { passive: true });
+    loader?.addEventListener('error', onerror, { passive: true });
     return () => {
       loader?.removeEventListener('load', onload);
       loader?.removeEventListener('error', onerror);
