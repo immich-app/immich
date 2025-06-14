@@ -16,7 +16,7 @@
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
-  import { getJustifiedLayoutFromAssets, getPageLayout, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+  import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
   import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
@@ -62,63 +62,39 @@
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
 
-  let geometry: CommonJustifiedLayout | null = $state(null);
-
-  $effect(() => {
-    const _assets = assets;
-    updateSlidingWindow();
-
-    const rowWidth = Math.floor(viewport.width);
-    const rowHeight = rowWidth < 850 ? 100 : 235;
-
-    geometry = getJustifiedLayoutFromAssets(_assets, {
+  const geometry = $derived(
+    getJustifiedLayoutFromAssets(assets, {
       spacing: 2,
       heightTolerance: 0.3,
-      rowHeight,
-      rowWidth,
-    });
-  });
+      rowHeight: Math.floor(viewport.width) < 850 ? 100 : 235,
+      rowWidth: Math.floor(viewport.width),
+    }),
+  );
 
   let currentViewAssetIndex = 0;
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
-  let slidingWindow = $state({ top: 0, bottom: 0 });
-
-  const assetLayouts = $derived(
-    getPageLayout({
-      assets,
-      geometry,
-      pageHeaderOffset,
-      slidingBottom: slidingWindow.bottom,
-      slidingTop: slidingWindow.top,
-    }),
-  );
+  let slidingTop = $state(0);
+  let slidingBottom = $state(0);
 
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
     const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
-    const bottom = top + v.height;
-    const w = {
-      top,
-      bottom,
-    };
-    slidingWindow = w;
+    slidingTop = top;
+    slidingBottom = top + v.height;
   };
+  $effect(updateSlidingWindow);
   const debouncedOnIntersected = debounce(() => onIntersected?.(), 750, { maxWait: 100, leading: true });
 
   let lastIntersectedHeight = 0;
   $effect(() => {
     // notify we got to (near) the end of scroll
     const scrollPercentage =
-      ((slidingWindow.bottom - viewport.height) / (viewport.height - (document.scrollingElement?.clientHeight || 0))) *
-      100;
+      (slidingBottom - viewport.height) / (viewport.height - (document.scrollingElement?.clientHeight || 0));
 
-    if (scrollPercentage > 90) {
-      const intersectedHeight = geometry?.containerHeight || 0;
-      if (lastIntersectedHeight !== intersectedHeight) {
-        debouncedOnIntersected();
-        lastIntersectedHeight = intersectedHeight;
-      }
+    if (scrollPercentage > 0.9 && lastIntersectedHeight !== geometry.containerHeight) {
+      debouncedOnIntersected();
+      lastIntersectedHeight = geometry.containerHeight;
     }
   });
   const viewAssetHandler = async (asset: TimelineAsset) => {
@@ -426,7 +402,7 @@
   onkeyup={onKeyUp}
   onselectstart={onSelectStart}
   use:shortcuts={shortcutList}
-  onscroll={() => updateSlidingWindow()}
+  onscroll={updateSlidingWindow}
 />
 
 {#if isShowDeleteConfirmation}
@@ -440,13 +416,12 @@
 {#if assets.length > 0}
   <div
     style:position="relative"
-    style:height={assetLayouts.containerHeight + 'px'}
-    style:width={assetLayouts.containerWidth - 1 + 'px'}
+    style:height={geometry.containerHeight + 'px'}
+    style:width={geometry.containerWidth + 'px'}
   >
-    {#each assetLayouts.assetLayout as layout, layoutIndex (layout.asset.id + '-' + layoutIndex)}
-      {@const currentAsset = layout.asset}
-
-      {#if layout.display}
+    {#each assets as asset, i (asset.id + i)}
+      {#if geometry.getTop(i) + pageHeaderOffset < slidingBottom && geometry.getTop(i) + pageHeaderOffset + geometry.getHeight(i) > slidingTop}
+        {@const layout = geometry.getPosition(i)}
         <div
           class="absolute"
           style:overflow="clip"
@@ -456,25 +431,25 @@
             readonly={disableAssetSelect}
             onClick={() => {
               if (assetInteraction.selectionActive) {
-                handleSelectAssets(toTimelineAsset(currentAsset));
+                handleSelectAssets(toTimelineAsset(asset));
                 return;
               }
-              void viewAssetHandler(toTimelineAsset(currentAsset));
+              void viewAssetHandler(toTimelineAsset(asset));
             }}
-            onSelect={() => handleSelectAssets(toTimelineAsset(currentAsset))}
-            onMouseEvent={() => assetMouseEventHandler(toTimelineAsset(currentAsset))}
+            onSelect={() => handleSelectAssets(toTimelineAsset(asset))}
+            onMouseEvent={() => assetMouseEventHandler(toTimelineAsset(asset))}
             {showArchiveIcon}
-            asset={toTimelineAsset(currentAsset)}
-            selected={assetInteraction.hasSelectedAsset(currentAsset.id)}
-            selectionCandidate={assetInteraction.hasSelectionCandidate(currentAsset.id)}
+            asset={toTimelineAsset(asset)}
+            selected={assetInteraction.hasSelectedAsset(asset.id)}
+            selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />
-          {#if showAssetName && !isTimelineAsset(currentAsset)}
+          {#if showAssetName && !isTimelineAsset(asset)}
             <div
               class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
             >
-              {currentAsset.originalFileName}
+              {asset.originalFileName}
             </div>
           {/if}
         </div>
