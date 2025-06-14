@@ -7,22 +7,38 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
+  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
+  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
+  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { preferences } from '$lib/stores/user.store';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
-  import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
+  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
+  import { deleteTag, getAllTags, type TagResponseDto, updateTag, upsertTags } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
-  import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiDotsVertical, mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
   interface Props {
     data: PageData;
@@ -93,6 +109,19 @@
       tags = await getAllTags();
       isNewOpen = false;
     }
+  };
+
+  const handleSetVisibility = (assetIds: string[]) => {
+    timelineManager.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+  };
+
+  const handleRemoveAssets = (assetIds: string[]) => {
+    timelineManager.removeAssets(assetIds);
+  };
+
+  const handleUndoRemoveAssets = (assets: TimelineAsset[]) => {
+    timelineManager.addAssets(assets);
   };
 
   const handleDelete = async () => {
@@ -166,6 +195,48 @@
       <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
     {/if}
   </section>
+
+  {#if assetInteraction.selectionActive}
+    <AssetSelectControlBar
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => assetInteraction.clearMultiselect()}
+    >
+      <CreateSharedLink />
+      <SelectAllAssets {timelineManager} {assetInteraction} />
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')} offset={{ x: -25, y: 50 }} direction="left">
+        <AddToAlbum />
+        <AddToAlbum shared />
+      </ButtonContextMenu>
+      {#if assetInteraction.isAllUserOwned}
+        <FavoriteAction
+          removeFavorite={assetInteraction.isAllFavorite}
+          onFavorite={(ids, isFavorite) =>
+            timelineManager.updateAssetOperation(ids, (asset) => {
+              asset.isFavorite = isFavorite;
+              return { remove: false };
+            })}
+        ></FavoriteAction>
+      {/if}
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: -25, y: 50 }} direction="left">
+        <DownloadAction menuItem filename="{tag.value}.zip" />
+        {#if assetInteraction.isAllUserOwned}
+          <ChangeDate menuItem />
+          <ChangeDescription menuItem />
+          <ChangeLocation menuItem />
+          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+          <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+        {/if}
+
+        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
+
+        {#if assetInteraction.isAllUserOwned}
+          <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
+        {/if}
+      </ButtonContextMenu>
+    </AssetSelectControlBar>
+  {/if}
 </UserPageLayout>
 
 {#if isNewOpen}
