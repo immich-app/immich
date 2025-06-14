@@ -357,15 +357,15 @@
   };
   /* eslint-enable tscompat/tscompat */
   onMount(() => {
-    document.addEventListener('touchmove', onTouchMove, true);
+    document.addEventListener('touchmove', onTouchMove, { capture: true, passive: true });
     return () => {
-      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchmove', onTouchMove, true);
     };
   });
 
   onMount(() => {
-    document.addEventListener('touchstart', onTouchStart, true);
-    document.addEventListener('touchend', onTouchEnd, true);
+    document.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
+    document.addEventListener('touchend', onTouchEnd, { capture: true, passive: true });
     return () => {
       document.addEventListener('touchstart', onTouchStart, true);
       document.addEventListener('touchend', onTouchEnd, true);
