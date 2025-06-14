@@ -12481,6 +12481,9 @@
           "smartSearch": {
             "type": "boolean"
           },
+          "streaming": {
+            "type": "string"
+          },
           "trash": {
             "type": "boolean"
           }
@@ -12499,6 +12502,7 @@
           "search",
           "sidecar",
           "smartSearch",
+          "streaming",
           "trash"
         ],
         "type": "object"
