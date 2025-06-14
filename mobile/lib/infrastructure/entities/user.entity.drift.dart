@@ -10,12 +10,12 @@ typedef $$UserEntityTableCreateCompanionBuilder = i1.UserEntityCompanion
     Function({
   required String id,
   required String name,
-  i0.Value<bool> isAdmin,
+  required bool isAdmin,
   required String email,
-  i0.Value<String?> profileImagePath,
+  required String profileImagePath,
   i0.Value<DateTime> updatedAt,
   i0.Value<int?> quotaSizeInBytes,
-  i0.Value<int> quotaUsageInBytes,
+  required int quotaUsageInBytes,
 });
 typedef $$UserEntityTableUpdateCompanionBuilder = i1.UserEntityCompanion
     Function({
@@ -23,7 +23,7 @@ typedef $$UserEntityTableUpdateCompanionBuilder = i1.UserEntityCompanion
   i0.Value<String> name,
   i0.Value<bool> isAdmin,
   i0.Value<String> email,
-  i0.Value<String?> profileImagePath,
+  i0.Value<String> profileImagePath,
   i0.Value<DateTime> updatedAt,
   i0.Value<int?> quotaSizeInBytes,
   i0.Value<int> quotaUsageInBytes,
@@ -170,7 +170,7 @@ class $$UserEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String> name = const i0.Value.absent(),
             i0.Value<bool> isAdmin = const i0.Value.absent(),
             i0.Value<String> email = const i0.Value.absent(),
-            i0.Value<String?> profileImagePath = const i0.Value.absent(),
+            i0.Value<String> profileImagePath = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<int?> quotaSizeInBytes = const i0.Value.absent(),
             i0.Value<int> quotaUsageInBytes = const i0.Value.absent(),
@@ -188,12 +188,12 @@ class $$UserEntityTableTableManager extends i0.RootTableManager<
           createCompanionCallback: ({
             required String id,
             required String name,
-            i0.Value<bool> isAdmin = const i0.Value.absent(),
+            required bool isAdmin,
             required String email,
-            i0.Value<String?> profileImagePath = const i0.Value.absent(),
+            required String profileImagePath,
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<int?> quotaSizeInBytes = const i0.Value.absent(),
-            i0.Value<int> quotaUsageInBytes = const i0.Value.absent(),
+            required int quotaUsageInBytes,
           }) =>
               i1.UserEntityCompanion.insert(
             id: id,
@@ -252,10 +252,9 @@ class $UserEntityTable extends i2.UserEntity
   late final i0.GeneratedColumn<bool> isAdmin = i0.GeneratedColumn<bool>(
       'is_admin', aliasedName, false,
       type: i0.DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          i0.GeneratedColumn.constraintIsAlways('CHECK ("is_admin" IN (0, 1))'),
-      defaultValue: const i3.Constant(false));
+      requiredDuringInsert: true,
+      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_admin" IN (0, 1))'));
   static const i0.VerificationMeta _emailMeta =
       const i0.VerificationMeta('email');
   @override
@@ -266,8 +265,8 @@ class $UserEntityTable extends i2.UserEntity
       const i0.VerificationMeta('profileImagePath');
   @override
   late final i0.GeneratedColumn<String> profileImagePath =
-      i0.GeneratedColumn<String>('profile_image_path', aliasedName, true,
-          type: i0.DriftSqlType.string, requiredDuringInsert: false);
+      i0.GeneratedColumn<String>('profile_image_path', aliasedName, false,
+          type: i0.DriftSqlType.string, requiredDuringInsert: true);
   static const i0.VerificationMeta _updatedAtMeta =
       const i0.VerificationMeta('updatedAt');
   @override
@@ -287,9 +286,7 @@ class $UserEntityTable extends i2.UserEntity
   @override
   late final i0.GeneratedColumn<int> quotaUsageInBytes =
       i0.GeneratedColumn<int>('quota_usage_in_bytes', aliasedName, false,
-          type: i0.DriftSqlType.int,
-          requiredDuringInsert: false,
-          defaultValue: const i3.Constant(0));
+          type: i0.DriftSqlType.int, requiredDuringInsert: true);
   @override
   List<i0.GeneratedColumn> get $columns => [
         id,
@@ -326,6 +323,8 @@ class $UserEntityTable extends i2.UserEntity
     if (data.containsKey('is_admin')) {
       context.handle(_isAdminMeta,
           isAdmin.isAcceptableOrUnknown(data['is_admin']!, _isAdminMeta));
+    } else if (isInserting) {
+      context.missing(_isAdminMeta);
     }
     if (data.containsKey('email')) {
       context.handle(
@@ -338,6 +337,8 @@ class $UserEntityTable extends i2.UserEntity
           _profileImagePathMeta,
           profileImagePath.isAcceptableOrUnknown(
               data['profile_image_path']!, _profileImagePathMeta));
+    } else if (isInserting) {
+      context.missing(_profileImagePathMeta);
     }
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
@@ -354,6 +355,8 @@ class $UserEntityTable extends i2.UserEntity
           _quotaUsageInBytesMeta,
           quotaUsageInBytes.isAcceptableOrUnknown(
               data['quota_usage_in_bytes']!, _quotaUsageInBytesMeta));
+    } else if (isInserting) {
+      context.missing(_quotaUsageInBytesMeta);
     }
     return context;
   }
@@ -373,7 +376,8 @@ class $UserEntityTable extends i2.UserEntity
       email: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}email'])!,
       profileImagePath: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.string, data['${effectivePrefix}profile_image_path']),
+          i0.DriftSqlType.string,
+          data['${effectivePrefix}profile_image_path'])!,
       updatedAt: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       quotaSizeInBytes: attachedDatabase.typeMapping.read(
@@ -400,7 +404,7 @@ class UserEntityData extends i0.DataClass
   final String name;
   final bool isAdmin;
   final String email;
-  final String? profileImagePath;
+  final String profileImagePath;
   final DateTime updatedAt;
   final int? quotaSizeInBytes;
   final int quotaUsageInBytes;
@@ -409,7 +413,7 @@ class UserEntityData extends i0.DataClass
       required this.name,
       required this.isAdmin,
       required this.email,
-      this.profileImagePath,
+      required this.profileImagePath,
       required this.updatedAt,
       this.quotaSizeInBytes,
       required this.quotaUsageInBytes});
@@ -420,9 +424,7 @@ class UserEntityData extends i0.DataClass
     map['name'] = i0.Variable<String>(name);
     map['is_admin'] = i0.Variable<bool>(isAdmin);
     map['email'] = i0.Variable<String>(email);
-    if (!nullToAbsent || profileImagePath != null) {
-      map['profile_image_path'] = i0.Variable<String>(profileImagePath);
-    }
+    map['profile_image_path'] = i0.Variable<String>(profileImagePath);
     map['updated_at'] = i0.Variable<DateTime>(updatedAt);
     if (!nullToAbsent || quotaSizeInBytes != null) {
       map['quota_size_in_bytes'] = i0.Variable<int>(quotaSizeInBytes);
@@ -439,7 +441,7 @@ class UserEntityData extends i0.DataClass
       name: serializer.fromJson<String>(json['name']),
       isAdmin: serializer.fromJson<bool>(json['isAdmin']),
       email: serializer.fromJson<String>(json['email']),
-      profileImagePath: serializer.fromJson<String?>(json['profileImagePath']),
+      profileImagePath: serializer.fromJson<String>(json['profileImagePath']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       quotaSizeInBytes: serializer.fromJson<int?>(json['quotaSizeInBytes']),
       quotaUsageInBytes: serializer.fromJson<int>(json['quotaUsageInBytes']),
@@ -453,7 +455,7 @@ class UserEntityData extends i0.DataClass
       'name': serializer.toJson<String>(name),
       'isAdmin': serializer.toJson<bool>(isAdmin),
       'email': serializer.toJson<String>(email),
-      'profileImagePath': serializer.toJson<String?>(profileImagePath),
+      'profileImagePath': serializer.toJson<String>(profileImagePath),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'quotaSizeInBytes': serializer.toJson<int?>(quotaSizeInBytes),
       'quotaUsageInBytes': serializer.toJson<int>(quotaUsageInBytes),
@@ -465,7 +467,7 @@ class UserEntityData extends i0.DataClass
           String? name,
           bool? isAdmin,
           String? email,
-          i0.Value<String?> profileImagePath = const i0.Value.absent(),
+          String? profileImagePath,
           DateTime? updatedAt,
           i0.Value<int?> quotaSizeInBytes = const i0.Value.absent(),
           int? quotaUsageInBytes}) =>
@@ -474,9 +476,7 @@ class UserEntityData extends i0.DataClass
         name: name ?? this.name,
         isAdmin: isAdmin ?? this.isAdmin,
         email: email ?? this.email,
-        profileImagePath: profileImagePath.present
-            ? profileImagePath.value
-            : this.profileImagePath,
+        profileImagePath: profileImagePath ?? this.profileImagePath,
         updatedAt: updatedAt ?? this.updatedAt,
         quotaSizeInBytes: quotaSizeInBytes.present
             ? quotaSizeInBytes.value
@@ -539,7 +539,7 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
   final i0.Value<String> name;
   final i0.Value<bool> isAdmin;
   final i0.Value<String> email;
-  final i0.Value<String?> profileImagePath;
+  final i0.Value<String> profileImagePath;
   final i0.Value<DateTime> updatedAt;
   final i0.Value<int?> quotaSizeInBytes;
   final i0.Value<int> quotaUsageInBytes;
@@ -556,15 +556,18 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
   UserEntityCompanion.insert({
     required String id,
     required String name,
-    this.isAdmin = const i0.Value.absent(),
+    required bool isAdmin,
     required String email,
-    this.profileImagePath = const i0.Value.absent(),
+    required String profileImagePath,
     this.updatedAt = const i0.Value.absent(),
     this.quotaSizeInBytes = const i0.Value.absent(),
-    this.quotaUsageInBytes = const i0.Value.absent(),
+    required int quotaUsageInBytes,
   })  : id = i0.Value(id),
         name = i0.Value(name),
-        email = i0.Value(email);
+        isAdmin = i0.Value(isAdmin),
+        email = i0.Value(email),
+        profileImagePath = i0.Value(profileImagePath),
+        quotaUsageInBytes = i0.Value(quotaUsageInBytes);
   static i0.Insertable<i1.UserEntityData> custom({
     i0.Expression<String>? id,
     i0.Expression<String>? name,
@@ -592,7 +595,7 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
       i0.Value<String>? name,
       i0.Value<bool>? isAdmin,
       i0.Value<String>? email,
-      i0.Value<String?>? profileImagePath,
+      i0.Value<String>? profileImagePath,
       i0.Value<DateTime>? updatedAt,
       i0.Value<int?>? quotaSizeInBytes,
       i0.Value<int>? quotaUsageInBytes}) {

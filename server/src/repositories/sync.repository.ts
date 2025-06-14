@@ -48,7 +48,17 @@ export class SyncRepository {
   getUserUpserts(ack?: SyncAck) {
     return this.db
       .selectFrom('users')
-      .select(['id', 'name', 'email', 'deletedAt', 'updateId'])
+      .select([
+        'id',
+        'name',
+        'email',
+        'deletedAt',
+        'updateId',
+        'isAdmin',
+        'profileImagePath',
+        'quotaSizeInBytes',
+        'quotaUsageInBytes',
+      ])
       .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }
