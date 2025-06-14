@@ -26,6 +26,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
 const facesAssetDir = `${testAssetDir}/metadata/faces`;
+const metaAssetFilepath = `${testAssetDir}/metadata/tags/picasa.jpg`;
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -54,6 +55,7 @@ describe('/asset', () => {
   let user2Assets: AssetMediaResponseDto[];
   let locationAsset: AssetMediaResponseDto;
   let ratingAsset: AssetMediaResponseDto;
+  let metaAsset: AssetMediaResponseDto;
 
   const setupTests = async () => {
     await utils.resetDatabase();
@@ -89,6 +91,16 @@ describe('/asset', () => {
     });
 
     await utils.waitForWebsocketEvent({ event: 'assetUpload', id: ratingAsset.id });
+
+    // metadata asset
+    metaAsset = await utils.createAsset(admin.accessToken, {
+      assetData: {
+        filename: 'picasa.jpg',
+        bytes: await readFile(metaAssetFilepath),
+      },
+    });
+
+    await utils.waitForWebsocketEvent({ event: 'assetUpload', id: metaAsset.id });
 
     user1Assets = await Promise.all([
       utils.createAsset(user1.accessToken),
@@ -648,6 +660,29 @@ describe('/asset', () => {
           },
         ],
       });
+    });
+
+    it('should be able to clear description', async () => {
+      // check original embedded description
+      let response = await utils.getAssetInfo(admin.accessToken, metaAsset.id);
+      expect(response.id).toEqual(metaAsset.id);
+      expect(response.exifInfo?.description).toEqual('Image-Description');
+
+      // clear description
+      const { status, body } = await request(app)
+        .put(`/assets/${metaAsset.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ description: '' });
+
+      expect(status).toBe(200);
+
+      await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: metaAsset.id });
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+
+      // check if description is empty
+      response = await utils.getAssetInfo(admin.accessToken, metaAsset.id);
+      expect(response.id).toEqual(metaAsset.id);
+      expect(response.exifInfo?.description).toEqual('');
     });
   });
 
