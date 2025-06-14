@@ -669,7 +669,7 @@ describe('/asset', () => {
       expect(response.exifInfo?.description).toEqual('Image-Description');
 
       // clear description
-      const { status, body } = await request(app)
+      const { status } = await request(app)
         .put(`/assets/${metaAsset.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ description: '' });
