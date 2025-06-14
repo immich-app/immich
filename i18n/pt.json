@@ -34,6 +34,7 @@
   "added_to_favorites_count": "{count, plural, one {{count, number} adicionado aos favoritos} other {{count, number} adicionados aos favoritos}}",
   "admin": {
     "add_exclusion_pattern_description": "Adicione padrões de exclusão. Utilizar *, ** ou ? são suportados. Para ignorar todos os ficheiros em qualquer diretório chamado \"Raw\", use \"**/Raw/**'. Para ignorar todos os ficheiros que finalizam em \".tif\", use \"**/*.tif\". Para ignorar um caminho absoluto, use \"/caminho/para/ignorar/**\".",
+    "admin_user": "Utilizador Administrador",
     "asset_offline_description": "Este ficheiro proveniente de uma biblioteca externa deixou de estar disponível no disco e foi movido para a reciclagem. Se o ficheiro foi movido no interior da biblioteca, procure na linha de tempo pelo novo ficheiro correspondente. Para restaurar este ficheiro, certifique-se que o caminho do ficheiro abaixo pode ser acedido pelo Immich e analise a biblioteca.",
     "authentication_settings": "Definições de Autenticação",
     "authentication_settings_description": "Gerir palavras-passe, OAuth, e outras definições de autenticação",
