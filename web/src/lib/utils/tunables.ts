@@ -19,7 +19,7 @@ const storage = browser
     };
 export const TUNABLES = {
   LAYOUT: {
-    WASM: getBoolean(storage.getItem('LAYOUT.WASM'), false),
+    WASM: getBoolean(storage.getItem('LAYOUT.WASM'), true),
   },
   TIMELINE: {
     INTERSECTION_EXPAND_TOP: getNumber(storage.getItem('TIMELINE_INTERSECTION_EXPAND_TOP'), 500),

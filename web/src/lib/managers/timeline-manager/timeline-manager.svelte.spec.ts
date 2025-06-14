@@ -2,8 +2,10 @@ import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { getMonthGroupByDate } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
+import { initSync } from '@immich/justified-layout-wasm';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
+import { readFile } from 'node:fs/promises';
 import { TimelineManager } from './timeline-manager.svelte';
 import type { TimelineAsset } from './types';
 
@@ -23,6 +25,12 @@ function deriveLocalDateTimeFromFileCreatedAt(arg: TimelineAsset): TimelineAsset
 }
 
 describe('TimelineManager', () => {
+  beforeAll(async () => {
+    // needed for Node.js
+    const file = await readFile('node_modules/@immich/justified-layout-wasm/pkg/justified-layout-wasm_bg.wasm');
+    initSync({ module: file });
+  });
+
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -80,15 +88,15 @@ describe('TimelineManager', () => {
 
       expect(plainMonths).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ year: 2024, month: 3, height: 185.5 }),
-          expect.objectContaining({ year: 2024, month: 2, height: 12_016 }),
+          expect.objectContaining({ year: 2024, month: 3, height: 353.5 }),
+          expect.objectContaining({ year: 2024, month: 2, height: 7786.452_636_718_75 }),
           expect.objectContaining({ year: 2024, month: 1, height: 286 }),
         ]),
       );
     });
 
     it('calculates timeline height', () => {
-      expect(timelineManager.timelineHeight).toBe(12_487.5);
+      expect(timelineManager.timelineHeight).toBe(8425.952_636_718_75);
     });
   });
 
