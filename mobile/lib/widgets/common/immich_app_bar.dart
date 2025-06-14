@@ -1,13 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -26,6 +27,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final storeService = ref.watch(storeServiceProvider);
     final BackUpState backupState = ref.watch(backupProvider);
     final bool isEnableAutoBackup =
         backupState.backgroundBackup || backupState.autoBackup;
@@ -117,9 +119,13 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     buildBackupIndicator() {
       final indicatorIcon = getBackupBadgeIcon();
       final badgeBackground = context.colorScheme.surfaceContainer;
+      final useExperimentalFeature =
+          storeService.get(StoreKey.newUpload, false);
 
       return InkWell(
-        onTap: () => context.pushRoute(const BackupControllerRoute()),
+        onTap: () => useExperimentalFeature
+            ? context.pushRoute(const ExpBackupRoute())
+            : context.pushRoute(const BackupControllerRoute()),
         borderRadius: BorderRadius.circular(12),
         child: Badge(
           label: Container(
@@ -185,11 +191,11 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               child: action,
             ),
           ),
-        if (kDebugMode || kProfileMode)
-          IconButton(
-            icon: const Icon(Icons.science_rounded),
-            onPressed: () => context.pushRoute(const FeatInDevRoute()),
-          ),
+        // if (kDebugMode || kProfileMode)
+        IconButton(
+          icon: const Icon(Icons.science_rounded),
+          onPressed: () => context.pushRoute(const FeatInDevRoute()),
+        ),
         if (isCasting)
           Padding(
             padding: const EdgeInsets.only(right: 12),
