@@ -367,8 +367,8 @@
     document.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
     document.addEventListener('touchend', onTouchEnd, { capture: true, passive: true });
     return () => {
-      document.addEventListener('touchstart', onTouchStart, true);
-      document.addEventListener('touchend', onTouchEnd, true);
+      document.removeEventListener('touchstart', onTouchStart, true);
+      document.removeEventListener('touchend', onTouchEnd, true);
     };
   });
 
