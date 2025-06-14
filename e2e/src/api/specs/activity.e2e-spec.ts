@@ -7,6 +7,7 @@ import {
   ReactionType,
   createActivity as create,
   createAlbum,
+  removeAssetFromAlbum,
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -341,6 +342,37 @@ describe('/activities', () => {
         .set('Authorization', `Bearer ${nonOwner.accessToken}`);
 
       expect(status).toBe(204);
+    });
+
+    it('should return empty list when asset is removed', async () => {
+      const album3 = await createAlbum(
+        {
+          createAlbumDto: {
+            albumName: 'Album 3',
+            assetIds: [asset.id],
+          },
+        },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+
+      await createActivity({ albumId: album3.id, assetId: asset.id, type: ReactionType.Like });
+
+      await removeAssetFromAlbum(
+        {
+          id: album3.id,
+          bulkIdsDto: {
+            ids: [asset.id],
+          },
+        },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+
+      const { status, body } = await request(app)
+        .get('/activities')
+        .query({ albumId: album.id })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body).toEqual([]);
     });
   });
 });
