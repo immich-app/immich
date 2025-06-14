@@ -13,19 +13,28 @@ import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/search/search_page_state.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/calculate_distance.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+
+enum FilterType {
+  name,
+  distance,
+}
 
 @RoutePage()
 class PlacesCollectionPage extends HookConsumerWidget {
   const PlacesCollectionPage({super.key, this.currentLocation});
   final LatLng? currentLocation;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final places = ref.watch(getAllPlacesProvider);
     final formFocus = useFocusNode();
     final ValueNotifier<String?> search = useState(null);
+    final filterType = useState(FilterType.name);
+    final isAscending = useState(true); // Add state for sort order
 
     return Scaffold(
       appBar: AppBar(
@@ -52,12 +61,11 @@ class PlacesCollectionPage extends HookConsumerWidget {
       body: ListView(
         shrinkWrap: true,
         children: [
-          if (search.value == null)
+          if (search.value == null) ...[
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: SizedBox(
                 height: 200,
-                width: context.width,
                 child: MapThumbnail(
                   onTap: (_, __) => context
                       .pushRoute(MapRoute(initialLocation: currentLocation)),
@@ -73,6 +81,63 @@ class PlacesCollectionPage extends HookConsumerWidget {
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Row(
+                spacing: 8.0,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (currentLocation != null) ...[
+                    Text('sort_places_by'.tr()),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: DropdownButton(
+                          value: filterType.value,
+                          items: [
+                            DropdownMenuItem(
+                              value: FilterType.name,
+                              child: Text('name'.tr()),
+                            ),
+                            DropdownMenuItem(
+                              value: FilterType.distance,
+                              child: Text('distance'.tr()),
+                            ),
+                          ],
+                          onChanged: (e) {
+                            filterType.value = e!;
+                          },
+                          isExpanded: false,
+                          underline: const SizedBox(),
+                          style: const TextStyle(
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  IconButton(
+                    icon: const Icon(
+                      Icons.swap_vert,
+                    ),
+                    onPressed: () {
+                      isAscending.value = !isAscending.value;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
           places.when(
             data: (places) {
               if (search.value != null) {
@@ -81,6 +146,41 @@ class PlacesCollectionPage extends HookConsumerWidget {
                       .toLowerCase()
                       .contains(search.value!.toLowerCase());
                 }).toList();
+              } else {
+                // Sort based on the selected filter type
+                places = List.from(places);
+
+                if (filterType.value == FilterType.distance &&
+                    currentLocation != null) {
+                  // Sort places by distance
+                  places.sort((a, b) {
+                    final double distanceA = calculateDistance(
+                      currentLocation!.latitude,
+                      currentLocation!.longitude,
+                      a.latitude,
+                      a.longitude,
+                    );
+                    final double distanceB = calculateDistance(
+                      currentLocation!.latitude,
+                      currentLocation!.longitude,
+                      b.latitude,
+                      b.longitude,
+                    );
+
+                    return isAscending.value
+                        ? distanceA.compareTo(distanceB)
+                        : distanceB.compareTo(distanceA);
+                  });
+                } else {
+                  // Sort places by name
+                  places.sort(
+                    (a, b) => isAscending.value
+                        ? a.label.toLowerCase().compareTo(b.label.toLowerCase())
+                        : b.label
+                            .toLowerCase()
+                            .compareTo(a.label.toLowerCase()),
+                  );
+                }
               }
               return ListView.builder(
                 shrinkWrap: true,
