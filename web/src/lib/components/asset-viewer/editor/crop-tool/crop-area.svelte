@@ -53,12 +53,10 @@
 
     img.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash });
 
-    img.addEventListener('load', () => onImageLoad(true));
-    img.addEventListener('error', (error) => {
-      handleError(error, $t('error_loading_image'));
-    });
+    img.addEventListener('load', () => onImageLoad(true), { passive: true });
+    img.addEventListener('error', (error) => handleError(error, $t('error_loading_image')), { passive: true });
 
-    globalThis.addEventListener('mousemove', handleMouseMove);
+    globalThis.addEventListener('mousemove', handleMouseMove, { passive: true });
   });
 
   onDestroy(() => {
