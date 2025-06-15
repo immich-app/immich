@@ -352,6 +352,7 @@ export const columns = {
     'isFavorite',
     'visibility',
     'updateId',
+    'duration',
   ],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [

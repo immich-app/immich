@@ -86,7 +86,8 @@ select
   "deletedAt",
   "isFavorite",
   "visibility",
-  "updateId"
+  "updateId",
+  "duration"
 from
   "assets"
 where
@@ -109,7 +110,8 @@ select
   "deletedAt",
   "isFavorite",
   "visibility",
-  "updateId"
+  "updateId",
+  "duration"
 from
   "assets"
 where
