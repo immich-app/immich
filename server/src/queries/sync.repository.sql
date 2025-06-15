@@ -20,7 +20,11 @@ select
   "name",
   "email",
   "deletedAt",
-  "updateId"
+  "updateId",
+  "isAdmin",
+  "profileImagePath",
+  "quotaSizeInBytes",
+  "quotaUsageInBytes"
 from
   "users"
 where

@@ -25,6 +25,7 @@ select
           "users"."name",
           "users"."email",
           "users"."isAdmin",
+          "users"."profileImagePath",
           "users"."quotaUsageInBytes",
           "users"."quotaSizeInBytes"
         from
