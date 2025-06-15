@@ -16,7 +16,7 @@ class AssetMediaRepository implements IAssetMediaRepository {
       AssetEntity(
         id: id,
         // The below fields are not used in thumbnailDataWithSize but are required
-        // to create an AssetEntity instance. It is faster to create an dummy AssetEntity
+        // to create an AssetEntity instance. It is faster to create a dummy AssetEntity
         // instance than to fetch the asset from the device first.
         typeInt: AssetType.image.index,
         width: size.width.toInt(),
