@@ -26,17 +26,14 @@ class ActivityManager {
 
   constructor() {
     this.#subscribe = createSubscriber((update) => {
-      debugger;
-      console.log('update', update);
       const unsubscribe = websocketEvents.on('on_activity_change', ({ albumId, assetId }) => {
         if (this.#albumId === albumId || this.#assetId === assetId) {
           handlePromiseError(this.refreshActivities(this.#albumId!, this.#assetId));
+          update();
         }
       });
 
-      // stop listening when all the effects are destroyed
       return () => {
-        debugger;
         unsubscribe();
       };
     });
@@ -68,7 +65,7 @@ class ActivityManager {
   }
 
   async addActivity(dto: ActivityCreateDto) {
-    if (this.#albumId === undefined) {
+    if (!this.#albumId) {
       return;
     }
 
@@ -77,9 +74,7 @@ class ActivityManager {
 
     if (activity.type === ReactionType.Comment) {
       this.#commentCount++;
-    }
-
-    if (activity.type === ReactionType.Like) {
+    } else if (activity.type === ReactionType.Like) {
       this.#likeCount++;
     }
 
@@ -94,15 +89,15 @@ class ActivityManager {
 
     if (activity.type === ReactionType.Comment) {
       this.#commentCount--;
-    }
-
-    if (activity.type === ReactionType.Like) {
+    } else if (activity.type === ReactionType.Like) {
       this.#likeCount--;
     }
 
-    this.#activities = index
-      ? this.#activities.splice(index, 1)
-      : this.#activities.filter(({ id }) => id !== activity.id);
+    if (index !== undefined) {
+      this.#activities.splice(index, 1);
+    } else {
+      this.#activities = this.#activities.filter(({ id }) => id !== activity.id);
+    }
 
     await deleteActivity({ id: activity.id });
     handlePromiseError(this.refreshActivities(this.#albumId, this.#assetId));
@@ -116,12 +111,17 @@ class ActivityManager {
     if (this.#isLiked) {
       await this.deleteActivity(this.#isLiked);
       this.#isLiked = null;
-    } else {
-      this.#isLiked = (await this.addActivity({
-        albumId: this.#albumId,
-        assetId: this.#assetId,
-        type: ReactionType.Like,
-      }))!;
+      return;
+    }
+
+    const newLike = await this.addActivity({
+      albumId: this.#albumId,
+      assetId: this.#assetId,
+      type: ReactionType.Like,
+    });
+
+    if (newLike) {
+      this.#isLiked = newLike;
     }
   }
 
@@ -152,6 +152,3 @@ class ActivityManager {
 }
 
 export const activityManager = new ActivityManager();
-function on(arg0: any, arg1: string, update: () => void) {
-  throw new Error('Function not implemented.');
-}

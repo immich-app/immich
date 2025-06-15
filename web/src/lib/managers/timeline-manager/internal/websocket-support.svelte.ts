@@ -18,32 +18,38 @@ export type AssetFilter = (
 
 // Filter functions
 const checkVisibilityProperty: AssetFilter = (asset, timelineManager) => {
+  if (timelineManager.options.visibility === undefined) {
+    return true;
+  }
+
   const timelineAsset = toTimelineAsset(asset);
-  return (
-    timelineManager.options.visibility === undefined || timelineManager.options.visibility === timelineAsset.visibility
-  );
+  return timelineManager.options.visibility === timelineAsset.visibility;
 };
 
 const checkFavoriteProperty: AssetFilter = (asset, timelineManager) => {
+  if (timelineManager.options.isFavorite === undefined) {
+    return true;
+  }
+
   const timelineAsset = toTimelineAsset(asset);
-  return (
-    timelineManager.options.isFavorite === undefined || timelineManager.options.isFavorite === timelineAsset.isFavorite
-  );
+  return timelineManager.options.isFavorite === timelineAsset.isFavorite;
 };
 
 const checkTrashedProperty: AssetFilter = (asset, timelineManager) => {
+  if (timelineManager.options.isTrashed === undefined) {
+    return true;
+  }
+
   const timelineAsset = toTimelineAsset(asset);
-  return (
-    timelineManager.options.isTrashed === undefined || timelineManager.options.isTrashed === timelineAsset.isTrashed
-  );
+  return timelineManager.options.isTrashed === timelineAsset.isTrashed;
 };
 
 const checkTagProperty: AssetFilter = (asset, timelineManager) => {
   if (!timelineManager.options.tagId) {
     return true;
   }
-  const hasMatchingTag = asset.tags?.some((tag: { id: string }) => tag.id === timelineManager.options.tagId);
-  return !!hasMatchingTag;
+
+  return asset.tags?.some((tag: { id: string }) => tag.id === timelineManager.options.tagId) ?? false;
 };
 
 const checkAlbumProperty: AssetFilter = async (asset, timelineManager) => {
@@ -58,10 +64,8 @@ const checkPersonProperty: AssetFilter = (asset, timelineManager) => {
   if (!timelineManager.options.personId) {
     return true;
   }
-  const hasMatchingPerson = asset.people?.some(
-    (person: { id: string }) => person.id === timelineManager.options.personId,
-  );
-  return !!hasMatchingPerson;
+
+  return asset.people?.some((person: { id: string }) => person.id === timelineManager.options.personId) ?? false;
 };
 
 export class WebsocketSupport {
@@ -115,7 +119,7 @@ export class WebsocketSupport {
         this.#pendingUpdates.trashed.push(...ids);
         this.#scheduleProcessing();
       }),
-      // this event is called when an person is added or removed from an asset
+      // this event is called when a person is added or removed from an asset
       websocketEvents.on('on_asset_person', (data) => {
         this.#pendingUpdates.personed.push(data);
         this.#scheduleProcessing();
@@ -125,13 +129,9 @@ export class WebsocketSupport {
         this.#pendingUpdates.updated.push(...ids);
         this.#scheduleProcessing();
       }),
-      // this event is called when an asseted is added or removed from an album
+      // this event is called when an asset is added or removed from an album
       websocketEvents.on('on_album_update', (data) => {
         this.#pendingUpdates.album.push(data);
-        this.#scheduleProcessing();
-      }),
-      websocketEvents.on('on_asset_trash', (ids) => {
-        this.#pendingUpdates.trashed.push(...ids);
         this.#scheduleProcessing();
       }),
       websocketEvents.on('on_asset_delete', (ids) => {
@@ -171,11 +171,11 @@ export class WebsocketSupport {
 
     this.#processTimeoutId = setTimeout(() => {
       this.#processTimeoutId = undefined;
-      void this.#processPendingChanges();
+      void this.#applyPendingChanges();
     }, PROCESS_DELAY_MS);
   }
 
-  async #processPendingChanges() {
+  async #applyPendingChanges() {
     if (this.#isProcessing || this.#pendingCount() === 0) {
       return;
     }
@@ -183,7 +183,7 @@ export class WebsocketSupport {
     this.#isProcessing = true;
 
     try {
-      await this.#process();
+      await this.#processAllPendingUpdates();
     } finally {
       this.#isProcessing = false;
 
@@ -193,22 +193,22 @@ export class WebsocketSupport {
     }
   }
 
-  async #process() {
+  async #processAllPendingUpdates() {
     const pendingUpdates = this.#pendingUpdates;
     this.#pendingUpdates = this.#init();
 
-    await this.#handleGeneric(
+    await this.#filterAndUpdateAssets(
       [...pendingUpdates.updated, ...pendingUpdates.trashed, ...pendingUpdates.restored],
       [checkVisibilityProperty, checkFavoriteProperty, checkTrashedProperty, checkTagProperty, checkAlbumProperty],
     );
 
-    await this.#handleUpdatedAssetsPerson(pendingUpdates.personed);
-    await this.#handleUpdatedAssetsAlbum(pendingUpdates.album);
+    await this.#handlePersonUpdates(pendingUpdates.personed);
+    await this.#handleAlbumUpdates(pendingUpdates.album);
 
     this.#timelineManager.removeAssets(pendingUpdates.deleted);
   }
 
-  async #handleGeneric(assetIds: string[], filters: AssetFilter[]) {
+  async #filterAndUpdateAssets(assetIds: string[], filters: AssetFilter[]) {
     if (assetIds.length === 0) {
       return;
     }
@@ -239,32 +239,34 @@ export class WebsocketSupport {
     return true;
   }
 
-  async #handleUpdatedAssetsPerson(
+  async #handlePersonUpdates(
     data: { assetId: string; personId: string | undefined; status: 'created' | 'removed' | 'removed_soft' }[],
   ) {
+    if (data.length === 0) {
+      return;
+    }
+
     const assetsToRemove: string[] = [];
     const personAssetsToAdd: string[] = [];
+    const targetPersonId = this.#timelineManager.options.personId;
 
-    if (this.#timelineManager.options.personId === undefined) {
-      // If no person filter, we just add all assets with a person change
+    if (targetPersonId === undefined) {
+      // If no person filter, add all assets with person changes
       personAssetsToAdd.push(...data.map((d) => d.assetId));
     } else {
       for (const { assetId, personId, status } of data) {
-        if (status === 'created' && personId === this.#timelineManager.options.personId) {
+        if (status === 'created' && personId === targetPersonId) {
           personAssetsToAdd.push(assetId);
-        } else if (
-          (status === 'removed' || status === 'removed_soft') &&
-          personId === this.#timelineManager.options.personId
-        ) {
+        } else if ((status === 'removed' || status === 'removed_soft') && personId === targetPersonId) {
           assetsToRemove.push(assetId);
         }
       }
     }
 
     this.#timelineManager.removeAssets(assetsToRemove);
-    // At this point, personAssetsToAdd contains assets that now have the target person,
-    // but we need to check if they still match other filters.
-    await this.#handleGeneric(personAssetsToAdd, [
+
+    // Filter and add assets that now have the target person
+    await this.#filterAndUpdateAssets(personAssetsToAdd, [
       checkVisibilityProperty,
       checkFavoriteProperty,
       checkTrashedProperty,
@@ -273,18 +275,24 @@ export class WebsocketSupport {
     ]);
   }
 
-  async #handleUpdatedAssetsAlbum(data: { albumId: string; assetId: string[]; status: 'added' | 'removed' }[]) {
+  async #handleAlbumUpdates(data: { albumId: string; assetId: string[]; status: 'added' | 'removed' }[]) {
+    if (data.length === 0) {
+      return;
+    }
+
     const assetsToAdd: string[] = [];
     const assetsToRemove: string[] = [];
+    const targetAlbumId = this.#timelineManager.options.albumId;
 
-    if (this.#timelineManager.options.albumId === undefined) {
-      // If no album filter, we just add all assets with an album change
+    if (targetAlbumId === undefined) {
+      // If no album filter, add all assets with album changes
       assetsToAdd.push(...data.flatMap((d) => d.assetId));
     } else {
       for (const { albumId, assetId, status } of data) {
-        if (albumId !== this.#timelineManager.options.albumId) {
+        if (albumId !== targetAlbumId) {
           continue;
         }
+
         if (status === 'added') {
           assetsToAdd.push(...assetId);
         } else if (status === 'removed') {
@@ -294,9 +302,9 @@ export class WebsocketSupport {
     }
 
     this.#timelineManager.removeAssets(assetsToRemove);
-    // At this point, assetsToAdd contains assets that now have the target person,
-    // but we need to check if they still match other filters.
-    await this.#handleGeneric(assetsToAdd, [
+
+    // Filter and add assets that are now in the target album
+    await this.#filterAndUpdateAssets(assetsToAdd, [
       checkVisibilityProperty,
       checkFavoriteProperty,
       checkTrashedProperty,
