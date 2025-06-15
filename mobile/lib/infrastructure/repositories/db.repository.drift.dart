@@ -17,15 +17,6 @@ import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.d
     as i7;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart'
     as i8;
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart'
-    as i9;
-import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart'
-    as i10;
-import 'package:immich_mobile/infrastructure/entities/album_user.entity.drift.dart'
-    as i11;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
-    as i12;
-import 'package:drift/internal/modular.dart' as i13;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -129,50 +120,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
               i0.TableUpdate('remote_exif_entity', kind: i0.UpdateKind.delete),
             ],
           ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('user_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('remote_album_entity', kind: i0.UpdateKind.delete),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('remote_asset_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('remote_album_entity', kind: i0.UpdateKind.update),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('remote_asset_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('remote_album_asset_entity',
-                  kind: i0.UpdateKind.delete),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('remote_album_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('remote_album_asset_entity',
-                  kind: i0.UpdateKind.delete),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('remote_album_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('album_user_entity', kind: i0.UpdateKind.delete),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('user_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
-              i0.TableUpdate('album_user_entity', kind: i0.UpdateKind.delete),
-            ],
-          ),
         ],
       );
   @override
@@ -199,11 +146,4 @@ class $DriftManager {
       .$$LocalAlbumAssetEntityTableTableManager(_db, _db.localAlbumAssetEntity);
   i8.$$RemoteExifEntityTableTableManager get remoteExifEntity =>
       i8.$$RemoteExifEntityTableTableManager(_db, _db.remoteExifEntity);
-  i9.$$RemoteAlbumEntityTableTableManager get remoteAlbumEntity =>
-      i9.$$RemoteAlbumEntityTableTableManager(_db, _db.remoteAlbumEntity);
-  i10.$$RemoteAlbumAssetEntityTableTableManager get remoteAlbumAssetEntity =>
-      i10.$$RemoteAlbumAssetEntityTableTableManager(
-          _db, _db.remoteAlbumAssetEntity);
-  i11.$$AlbumUserEntityTableTableManager get albumUserEntity =>
-      i11.$$AlbumUserEntityTableTableManager(_db, _db.albumUserEntity);
 }

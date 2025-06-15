@@ -206,6 +206,78 @@ class MemoriesApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /memories/statistics' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [DateTime] for_:
+  ///
+  /// * [bool] isSaved:
+  ///
+  /// * [bool] isTrashed:
+  ///
+  /// * [MemoryType] type:
+  Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemoryType? type, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/memories/statistics';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (for_ != null) {
+      queryParams.addAll(_queryParams('', 'for', for_));
+    }
+    if (isSaved != null) {
+      queryParams.addAll(_queryParams('', 'isSaved', isSaved));
+    }
+    if (isTrashed != null) {
+      queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [DateTime] for_:
+  ///
+  /// * [bool] isSaved:
+  ///
+  /// * [bool] isTrashed:
+  ///
+  /// * [MemoryType] type:
+  Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemoryType? type, }) async {
+    final response = await memoriesStatisticsWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, type: type, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemoryStatisticsResponseDto',) as MemoryStatisticsResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'DELETE /memories/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///

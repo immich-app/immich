@@ -18,25 +18,13 @@
 
   interface Props {
     user: User;
-    color?: UserAvatarColor | undefined;
     size?: Size;
-    rounded?: boolean;
     interactive?: boolean;
-    showTitle?: boolean;
-    showProfileImage?: boolean;
+    noTitle?: boolean;
     label?: string | undefined;
   }
 
-  let {
-    user,
-    color = undefined,
-    size = 'full',
-    rounded = true,
-    interactive = false,
-    showTitle = true,
-    showProfileImage = true,
-    label = undefined,
-  }: Props = $props();
+  let { user, size = 'full', interactive = false, noTitle = false, label = undefined }: Props = $props();
 
   let img: HTMLImageElement | undefined = $state();
   let showFallback = $state(true);
@@ -51,16 +39,16 @@
   };
 
   const colorClasses: Record<UserAvatarColor, string> = {
-    primary: 'bg-immich-primary dark:bg-immich-dark-primary text-immich-dark-fg dark:text-immich-fg',
-    pink: 'bg-pink-400 text-immich-bg',
-    red: 'bg-red-500 text-immich-bg',
-    yellow: 'bg-yellow-500 text-immich-bg',
-    blue: 'bg-blue-500 text-immich-bg',
-    green: 'bg-green-600 text-immich-bg',
-    purple: 'bg-purple-600 text-immich-bg',
-    orange: 'bg-orange-600 text-immich-bg',
-    gray: 'bg-gray-600 text-immich-bg',
-    amber: 'bg-amber-600 text-immich-bg',
+    primary: 'bg-primary text-light dark:text-light',
+    pink: 'bg-pink-400 text-light dark:text-dark',
+    red: 'bg-red-500 text-light dark:text-dark',
+    yellow: 'bg-yellow-500 text-light dark:text-dark',
+    blue: 'bg-blue-500 text-light dark:text-dark',
+    green: 'bg-green-600 text-light dark:text-dark',
+    purple: 'bg-purple-600 text-light dark:text-dark',
+    orange: 'bg-orange-600 text-light dark:text-dark',
+    gray: 'bg-gray-600 text-light dark:text-dark',
+    amber: 'bg-amber-600 text-light dark:text-dark',
   };
 
   const sizeClasses: Record<Size, string> = {
@@ -79,7 +67,7 @@
     }
   });
 
-  let colorClass = $derived(colorClasses[color || user.avatarColor]);
+  let colorClass = $derived(colorClasses[user.avatarColor]);
   let sizeClass = $derived(sizeClasses[size]);
   let title = $derived(label ?? `${user.name} (${user.email})`);
   let interactiveClass = $derived(
@@ -90,11 +78,10 @@
 </script>
 
 <figure
-  class="{sizeClass} {colorClass} {interactiveClass} overflow-hidden shadow-md"
-  class:rounded-full={rounded}
-  title={showTitle ? title : undefined}
+  class="{sizeClass} {colorClass} {interactiveClass} overflow-hidden shadow-md rounded-full"
+  title={noTitle ? undefined : title}
 >
-  {#if showProfileImage && user.profileImagePath}
+  {#if user.profileImagePath}
     <img
       bind:this={img}
       src={getProfileImageUrl(user)}

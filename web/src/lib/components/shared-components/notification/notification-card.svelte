@@ -7,7 +7,7 @@
     type ComponentNotification,
     type Notification,
   } from '$lib/components/shared-components/notification/notification';
-  import { IconButton } from '@immich/ui';
+  import { Button, IconButton, type Color } from '@immich/ui';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -40,10 +40,10 @@
     [NotificationType.Warning]: '#D08613',
   };
 
-  const buttonStyle: Record<NotificationType, string> = {
-    [NotificationType.Info]: 'text-white bg-immich-primary hover:bg-immich-primary/75',
-    [NotificationType.Error]: 'text-white bg-immich-error hover:bg-immich-error/75',
-    [NotificationType.Warning]: 'text-white bg-immich-warning hover:bg-immich-warning/75',
+  const colors: Record<NotificationType, Color> = {
+    [NotificationType.Info]: 'primary',
+    [NotificationType.Error]: 'danger',
+    [NotificationType.Warning]: 'warning',
   };
 
   onMount(() => {
@@ -111,16 +111,16 @@
   </p>
 
   {#if notification.button}
-    <p class="ps-[28px] mt-2.5 text-sm">
-      <button
-        type="button"
-        class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
+    <p class="ps-[28px] mt-2.5 light text-light">
+      <Button
+        size="small"
+        color={colors[notification.type]}
         onclick={handleButtonClick}
         aria-hidden="true"
         tabindex={-1}
       >
         {notification.button.text}
-      </button>
+      </Button>
     </p>
   {/if}
 </div>

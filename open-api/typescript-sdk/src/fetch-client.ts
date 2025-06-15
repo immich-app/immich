@@ -109,6 +109,7 @@ export type UserAdminResponseDto = {
 export type UserAdminCreateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email: string;
+    isAdmin?: boolean;
     name: string;
     notify?: boolean;
     password: string;
@@ -122,6 +123,7 @@ export type UserAdminDeleteDto = {
 export type UserAdminUpdateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email?: string;
+    isAdmin?: boolean;
     name?: string;
     password?: string;
     pinCode?: string | null;
@@ -442,6 +444,7 @@ export type AssetMediaCreateDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
+    filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
@@ -508,6 +511,7 @@ export type AssetMediaReplaceDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
+    filename?: string;
 };
 export type SignUpDto = {
     email: string;
@@ -741,6 +745,9 @@ export type MemoryCreateDto = {
     memoryAt: string;
     seenAt?: string;
     "type": MemoryType;
+};
+export type MemoryStatisticsResponseDto = {
+    total: number;
 };
 export type MemoryUpdateDto = {
     isSaved?: boolean;
@@ -1385,7 +1392,7 @@ export type SystemConfigOAuthDto = {
     buttonText: string;
     clientId: string;
     clientSecret: string;
-    defaultStorageQuota: number;
+    defaultStorageQuota: number | null;
     enabled: boolean;
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
@@ -2279,12 +2286,29 @@ export function getDownloadInfo({ key, downloadInfoDto }: {
         body: downloadInfoDto
     })));
 }
+export function deleteDuplicates({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
 export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: DuplicateResponseDto[];
     }>("/duplicates", {
         ...opts
+    }));
+}
+export function deleteDuplicate({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/duplicates/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
     }));
 }
 export function getFaces({ id }: {
@@ -2508,6 +2532,24 @@ export function createMemory({ memoryCreateDto }: {
         method: "POST",
         body: memoryCreateDto
     })));
+}
+export function memoriesStatistics({ $for, isSaved, isTrashed, $type }: {
+    $for?: string;
+    isSaved?: boolean;
+    isTrashed?: boolean;
+    $type?: MemoryType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryStatisticsResponseDto;
+    }>(`/memories/statistics${QS.query(QS.explode({
+        "for": $for,
+        isSaved,
+        isTrashed,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
 }
 export function deleteMemory({ id }: {
     id: string;
