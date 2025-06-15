@@ -128,6 +128,11 @@ export class NotificationService extends BaseService {
     }
   }
 
+  @OnEvent({ name: 'asset.person' })
+  onAssetPerson({ assetId, userId, personId, status }: ArgOf<'asset.person'>) {
+    this.eventRepository.clientSend('on_asset_person', userId, { assetId, personId, status });
+  }
+
   @OnEvent({ name: 'asset.hide' })
   onAssetHide({ assetId, userId }: ArgOf<'asset.hide'>) {
     this.eventRepository.clientSend('on_asset_hidden', userId, assetId);
@@ -198,12 +203,18 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'album.update' })
-  async onAlbumUpdate({ id, recipientId }: ArgOf<'album.update'>) {
-    await this.jobRepository.removeJob(JobName.NOTIFY_ALBUM_UPDATE, `${id}/${recipientId}`);
-    await this.jobRepository.queue({
-      name: JobName.NOTIFY_ALBUM_UPDATE,
-      data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
-    });
+  async onAlbumUpdate({ id, recipientId, userId, assetId, status }: ArgOf<'album.update'>) {
+    if (status === 'added') {
+      for (const recipient of recipientId) {
+        await this.jobRepository.removeJob(JobName.NOTIFY_ALBUM_UPDATE, `${id}/${recipientId}`);
+        await this.jobRepository.queue({
+          name: JobName.NOTIFY_ALBUM_UPDATE,
+          data: { id, recipientId: recipient, delay: NotificationService.albumUpdateEmailDelayMs },
+        });
+      }
+    }
+
+    this.eventRepository.clientSend('on_album_update', userId, { albumId: id, assetId, status });
   }
 
   @OnEvent({ name: 'album.invite' })
