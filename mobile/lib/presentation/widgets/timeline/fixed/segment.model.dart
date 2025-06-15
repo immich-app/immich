@@ -127,7 +127,10 @@ class FixedSegment extends Segment {
         children: List.generate(
           assets.length,
           (i) => RepaintBoundary(
-            child: ThumbnailTile(assets[i], size: Size.square(tileHeight)),
+            child: ThumbnailTile(
+              assets[i],
+              size: Size.square(tileHeight < 512 ? 512 : tileHeight),
+            ),
           ),
         ),
       );

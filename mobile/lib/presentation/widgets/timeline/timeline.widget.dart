@@ -76,6 +76,7 @@ class _SliverTimelineState extends State<_SliverTimeline> {
                 bottomPadding: context.padding.bottom + 10,
                 child: CustomScrollView(
                   primary: true,
+                  cacheExtent: maxHeight * 2,
                   slivers: [
                     _SliverSegmentedList(
                       segments: segments,

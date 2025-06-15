@@ -98,7 +98,7 @@ class _VideoIndicator extends StatelessWidget {
             ],
           ),
         ),
-        const _TileOverlayIcon(Icons.play_circle_filled_rounded),
+        const _TileOverlayIcon(Icons.play_circle_outline_rounded),
       ],
     );
   }
@@ -114,11 +114,12 @@ class _TileOverlayIcon extends StatelessWidget {
     return Icon(
       icon,
       color: Colors.white,
-      size: 18,
+      size: 16,
       shadows: [
         Shadow(
           blurRadius: 5.0,
           color: Colors.black.withValues(alpha: 0.6),
+          offset: const Offset(0.0, 0.0),
         ),
       ],
     );
