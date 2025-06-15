@@ -1,5 +1,5 @@
 abstract interface class IWidgetRepository {
-  void saveWidgetData(String key, String value);
-  void updateWidget(String name);
-  void setAppGroupId(String appGroupId);
+  Future<void> saveData(String key, String value);
+  Future<void> refresh(String name);
+  Future<void> setAppGroupId(String appGroupId);
 }

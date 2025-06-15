@@ -14,21 +14,29 @@ class WidgetService {
 
   WidgetService(this._repository);
 
-  void writeCredentials(String serverURL, String sessionKey) {
-    _repository.saveWidgetData(kWidgetServerEndpoint, serverURL);
-    _repository.saveWidgetData(kWidgetAuthToken, sessionKey);
+  Future<void> writeCredentials(String serverURL, String sessionKey) async {
+    await _repository.saveData(kWidgetServerEndpoint, serverURL);
+    await _repository.saveData(kWidgetAuthToken, sessionKey);
+
+    // wait 3 seconds to ensure the widget is updated, dont block
+    Future.delayed(const Duration(seconds: 3), refreshWidgets);
   }
 
-  void clearWidgetData() {
-    _repository.saveWidgetData(kWidgetServerEndpoint, "");
-    _repository.saveWidgetData(kWidgetAuthToken, "");
+  Future<void> clearCredentials() async {
+    await _repository.saveData(kWidgetServerEndpoint, "");
+    await _repository.saveData(kWidgetAuthToken, "");
+
+    // wait 3 seconds to ensure the widget is updated, dont block
+    Future.delayed(const Duration(seconds: 3), refreshWidgets);
   }
 
-  void updateWidget(String name) {
-    _repository.updateWidget(name);
+  Future<void> refreshWidgets() async {
+    for (final name in kWidgetNames) {
+      await _repository.refresh(name);
+    }
   }
 
-  void setAppGroupId(String appGroupId) {
-    _repository.setAppGroupId(appGroupId);
+  Future<void> setAppGroupId(String appGroupId) async {
+    await _repository.setAppGroupId(appGroupId);
   }
 }
