@@ -7,8 +7,12 @@ export LD_PRELOAD="$lib_path"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib/jellyfin-ffmpeg/lib"
 
 read_file_and_export() {
-	if [ -n "${!1}" ]; then
-		content="$(cat "${!1}")"
+	fname="${!1}"
+	if [[ -z $fname ]] && [[ -e "$CREDENTIALS_DIRECTORY/$2" ]]; then
+		fname="${CREDENTIALS_DIRECTORY}/$2"
+	fi
+	if [[ -n $fname ]]; then
+		content="$(< "$fname")"
 		export "$2"="${content}"
 		unset "$1"
 	fi
