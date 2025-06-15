@@ -4,7 +4,6 @@ import { AlbumUser } from 'src/database';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
 import { NotificationService } from 'src/services/notification.service';
-import { INotifyAlbumUpdateJob } from 'src/types';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -154,7 +153,7 @@ describe(NotificationService.name, () => {
 
   describe('onAlbumUpdateEvent', () => {
     it('should queue notify album update event', async () => {
-      await sut.onAlbumUpdate({ id: 'album', recipientId: '42' });
+      await sut.onAlbumUpdate({ id: 'album', recipientId: ['42'], userId: '', assetId: [], status: 'added' });
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_ALBUM_UPDATE,
         data: { id: 'album', recipientId: '42', delay: 300_000 },
@@ -499,7 +498,13 @@ describe(NotificationService.name, () => {
     });
 
     it('should add new recipients for new images if job is already queued', async () => {
-      await sut.onAlbumUpdate({ id: '1', recipientId: '2' } as INotifyAlbumUpdateJob);
+      await sut.onAlbumUpdate({
+        id: '1',
+        recipientId: ['2'],
+        userId: '',
+        assetId: [],
+        status: 'added',
+      });
       expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NOTIFY_ALBUM_UPDATE, '1/2');
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_ALBUM_UPDATE,

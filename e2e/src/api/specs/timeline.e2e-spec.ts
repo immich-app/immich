@@ -219,7 +219,7 @@ describe('/timeline', () => {
       const { status, body } = await request(app)
         .get('/timeline/bucket')
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ timeBucket: '1970-02-01T00:00:00.000Z', isTrashed: true });
+        .query({ timeBucket: '1970-02-01', isTrashed: true });
 
       expect(status).toBe(200);
 

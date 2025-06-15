@@ -279,6 +279,15 @@ where
   "asset_faces"."personId" = $1
   and "asset_faces"."deletedAt" is null
 
+-- PersonRepository.getAssetPersonByFaceId
+select
+  "asset_faces"."assetId",
+  "asset_faces"."personId"
+from
+  "asset_faces"
+where
+  "asset_faces"."id" = $1
+
 -- PersonRepository.getLatestFaceDate
 select
   max("asset_job_status"."facesRecognizedAt")::text as "latestDate"

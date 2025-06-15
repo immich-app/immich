@@ -93,9 +93,26 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
+    const metadataUpdated = await this.updateMetadata({
+      id,
+      description,
+      dateTimeOriginal,
+      latitude,
+      longitude,
+      rating,
+    });
 
-    const asset = await this.assetRepository.update({ id, ...rest });
+    const updatedAsset = await this.assetRepository.update({ id, ...rest });
+
+    // If update returned undefined (no changes), fetch the asset
+    // Match the relations that update() returns when it does update
+    const asset = updatedAsset ?? (await this.assetRepository.getById(id, { exifInfo: true, faces: { person: true } }));
+
+    if (!metadataUpdated && updatedAsset) {
+      // updateMetadata will send an event, but assetRepository.update() won't.
+      // to prevent doubles, only send an event if asset was updated
+      await this.eventRepository.emit('asset.update', { assetIds: [id], userId: auth.user.id });
+    }
 
     if (previousMotion && asset) {
       await onAfterUnlink(repos, {
@@ -113,34 +130,26 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, description, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
-    if (
-      description !== undefined ||
-      dateTimeOriginal !== undefined ||
-      latitude !== undefined ||
-      longitude !== undefined
-    ) {
-      await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
-      await this.jobRepository.queueAll(
-        ids.map((id) => ({
-          name: JobName.SIDECAR_WRITE,
-          data: { id, description, dateTimeOriginal, latitude, longitude },
-        })),
-      );
-    }
+    const metadataUpdated = await this.updateAllMetadata(ids, {
+      description,
+      dateTimeOriginal,
+      latitude,
+      longitude,
+      rating,
+    });
 
-    if (
-      options.visibility !== undefined ||
-      options.isFavorite !== undefined ||
-      options.duplicateId !== undefined ||
-      options.rating !== undefined
-    ) {
-      await this.assetRepository.updateAll(ids, options);
+    if (rest.visibility !== undefined || rest.isFavorite !== undefined || rest.duplicateId !== undefined) {
+      await this.assetRepository.updateAll(ids, rest);
 
-      if (options.visibility === AssetVisibility.LOCKED) {
+      if (rest.visibility === AssetVisibility.LOCKED) {
         await this.albumRepository.removeAssetsFromAll(ids);
+      }
+      if (!metadataUpdated) {
+        // If no metadata was updated, we still need to emit an event for the bulk update
+        await this.eventRepository.emit('asset.update', { assetIds: ids, userId: auth.user.id });
       }
     }
   }
@@ -290,6 +299,26 @@ export class AssetService extends BaseService {
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });
+      return true;
     }
+    return false;
+  }
+
+  private async updateAllMetadata(
+    ids: string[],
+    dto: Pick<AssetBulkUpdateDto, 'description' | 'dateTimeOriginal' | 'latitude' | 'longitude' | 'rating'>,
+  ) {
+    const { description, dateTimeOriginal, latitude, longitude, rating } = dto;
+    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
+    if (Object.keys(writes).length > 0) {
+      await this.assetRepository.updateAllExif(ids, writes);
+      const jobs: JobItem[] = ids.map((id) => ({
+        name: JobName.SIDECAR_WRITE,
+        data: { id, ...writes },
+      }));
+      await this.jobRepository.queueAll(jobs);
+      return true;
+    }
+    return false;
   }
 }
