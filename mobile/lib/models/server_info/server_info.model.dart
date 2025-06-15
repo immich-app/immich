@@ -13,16 +13,15 @@ class ServerInfo {
   final bool isNewReleaseAvailable;
   final String versionMismatchErrorMessage;
 
-  ServerInfo({
-    required this.serverVersion,
-    required this.latestVersion,
-    required this.serverFeatures,
-    required this.serverConfig,
-    required this.serverDiskInfo,
-    required this.isVersionMismatch,
-    required this.isNewReleaseAvailable,
-    required this.versionMismatchErrorMessage,
-  });
+  ServerInfo(
+      {required this.serverVersion,
+      required this.latestVersion,
+      required this.serverFeatures,
+      required this.serverConfig,
+      required this.serverDiskInfo,
+      required this.isVersionMismatch,
+      required this.isNewReleaseAvailable,
+      required this.versionMismatchErrorMessage});
 
   ServerInfo copyWith({
     ServerVersion? serverVersion,
