@@ -41,8 +41,8 @@ class ActivityManager {
     this.#subscribe = createSubscriber((update) => {
       const unsubscribe = websocketEvents.on('on_activity_change', ({ albumId, assetId }) => {
         if (this.#albumId === albumId || this.#assetId === assetId) {
-          this.#invalidateCache(this.#albumId, this.#assetId);
-          handlePromiseError(this.refreshActivities(this.#albumId!, this.#assetId));
+          this.#invalidateCache(albumId, this.#assetId);
+          handlePromiseError(this.refreshActivities(albumId, this.#assetId));
           update();
         }
       });

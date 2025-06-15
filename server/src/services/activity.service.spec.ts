@@ -80,7 +80,11 @@ describe(ActivityService.name, () => {
 
       mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
       mocks.activity.create.mockResolvedValue(activity);
-      mocks.album.getById.mockResolvedValue({ ...albumStub.empty, owner: factory.user({ id: userId }), albumUsers: [] });
+      mocks.album.getById.mockResolvedValue({
+        ...albumStub.empty,
+        owner: factory.user({ id: userId }),
+        albumUsers: [],
+      });
 
       await sut.create(factory.auth({ user: { id: userId } }), {
         albumId,
@@ -117,7 +121,11 @@ describe(ActivityService.name, () => {
       mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
       mocks.activity.create.mockResolvedValue(activity);
       mocks.activity.search.mockResolvedValue([]);
-      mocks.album.getById.mockResolvedValue({ ...albumStub.empty, owner: factory.user({ id: userId }), albumUsers: [] });
+      mocks.album.getById.mockResolvedValue({
+        ...albumStub.empty,
+        owner: factory.user({ id: userId }),
+        albumUsers: [],
+      });
 
       await sut.create(factory.auth({ user: { id: userId } }), { albumId, assetId, type: ReactionType.LIKE });
 

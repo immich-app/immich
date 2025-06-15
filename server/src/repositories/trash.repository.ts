@@ -11,7 +11,6 @@ export class TrashRepository {
     return this.db.selectFrom('assets').select(['id']).where('status', '=', AssetStatus.DELETED).stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
   getTrashedIds(userId: string): AsyncIterableIterator<{ id: string }> {
     return this.db
       .selectFrom('assets')
