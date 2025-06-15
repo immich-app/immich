@@ -421,4 +421,4 @@ export enum ToggleVisibility {
   SHOW_ALL = 'show-all',
 }
 
-export const assetViewerFadeDuration: number = 150; // milliseconds
+export const assetViewerFadeDuration: number = 150;
