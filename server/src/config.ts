@@ -109,6 +109,7 @@ export interface SystemConfig {
     enabled: boolean;
     hashVerificationEnabled: boolean;
     template: string;
+    includeExternalAssets: boolean;
   };
   image: {
     thumbnail: ImageOptions;
@@ -273,6 +274,7 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: false,
     hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+    includeExternalAssets: false,
   },
   image: {
     thumbnail: {
