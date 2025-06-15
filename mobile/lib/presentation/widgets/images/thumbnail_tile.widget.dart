@@ -7,12 +7,14 @@ class ThumbnailTile extends StatelessWidget {
     this.asset, {
     this.size = const Size.square(256),
     this.fit = BoxFit.cover,
+    this.showStorageIndicator = true,
     super.key,
   });
 
   final BaseAsset asset;
   final Size size;
   final BoxFit fit;
+  final bool showStorageIndicator;
 
   @override
   Widget build(BuildContext context) {
@@ -25,20 +27,21 @@ class ThumbnailTile extends StatelessWidget {
           ),
         ),
         if (asset.isVideo)
-          const Align(
+          Align(
             alignment: Alignment.topRight,
             child: Padding(
-              padding: EdgeInsets.only(right: 10.0, top: 6.0),
-              child: _VideoIndicator(),
+              padding: const EdgeInsets.only(right: 10.0, top: 6.0),
+              child: _VideoIndicator(asset.durationInSeconds ?? 0),
             ),
           ),
-        Align(
-          alignment: Alignment.bottomRight,
-          child: Padding(
-            padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
-            child: _StorageIndicator(storage: asset.storage),
+        if (showStorageIndicator)
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
+              child: _StorageIndicator(storage: asset.storage),
+            ),
           ),
-        ),
         if (asset.isFavorite)
           const Align(
             alignment: Alignment.bottomLeft,
@@ -53,11 +56,44 @@ class ThumbnailTile extends StatelessWidget {
 }
 
 class _VideoIndicator extends StatelessWidget {
-  const _VideoIndicator();
+  final int durationInSeconds;
+  const _VideoIndicator(this.durationInSeconds);
+
+  String _formatDuration(int durationInSec) {
+    final int hours = durationInSec ~/ 3600;
+    final int minutes = (durationInSec % 3600) ~/ 60;
+    final int seconds = durationInSec % 60;
+
+    final String minutesPadded = minutes.toString().padLeft(2, '0');
+    final String secondsPadded = seconds.toString().padLeft(2, '0');
+
+    if (hours > 0) {
+      return "$hours:$minutesPadded:$secondsPadded"; // H:MM:SS
+    } else {
+      return "$minutesPadded:$secondsPadded"; // MM:SS
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const _TileOverlayIcon(Icons.play_circle_filled_rounded);
+    return Row(
+      spacing: 2,
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
+      // CrossAxisAlignment.end looks more centered vertically than CrossAxisAlignment.center
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          _formatDuration(durationInSeconds),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const _TileOverlayIcon(Icons.play_circle_filled_rounded),
+      ],
+    );
   }
 }
 
