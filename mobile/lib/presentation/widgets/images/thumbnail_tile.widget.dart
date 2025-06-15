@@ -20,12 +20,7 @@ class ThumbnailTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: const BoxDecoration(color: Colors.black12),
-            child: Thumbnail(asset: asset, fit: fit, size: size),
-          ),
-        ),
+        Positioned.fill(child: Thumbnail(asset: asset, fit: fit, size: size)),
         if (asset.isVideo)
           Align(
             alignment: Alignment.topRight,
@@ -39,7 +34,13 @@ class ThumbnailTile extends StatelessWidget {
             alignment: Alignment.bottomRight,
             child: Padding(
               padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
-              child: _StorageIndicator(storage: asset.storage),
+              child: _TileOverlayIcon(
+                switch (asset.storage) {
+                  AssetState.local => Icons.cloud_off_outlined,
+                  AssetState.remote => Icons.cloud_outlined,
+                  AssetState.merged => Icons.cloud_done_outlined,
+                },
+              ),
             ),
           ),
         if (asset.isFavorite)
@@ -47,7 +48,7 @@ class ThumbnailTile extends StatelessWidget {
             alignment: Alignment.bottomLeft,
             child: Padding(
               padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
-              child: _FavoriteIndicator(),
+              child: _TileOverlayIcon(Icons.favorite_rounded),
             ),
           ),
       ],
@@ -99,32 +100,6 @@ class _VideoIndicator extends StatelessWidget {
         ),
         const _TileOverlayIcon(Icons.play_circle_filled_rounded),
       ],
-    );
-  }
-}
-
-class _FavoriteIndicator extends StatelessWidget {
-  const _FavoriteIndicator();
-
-  @override
-  Widget build(BuildContext context) {
-    return const _TileOverlayIcon(Icons.favorite_rounded);
-  }
-}
-
-class _StorageIndicator extends StatelessWidget {
-  final AssetState storage;
-
-  const _StorageIndicator({required this.storage});
-
-  @override
-  Widget build(BuildContext context) {
-    return _TileOverlayIcon(
-      switch (storage) {
-        AssetState.local => Icons.cloud_off_outlined,
-        AssetState.remote => Icons.cloud_outlined,
-        AssetState.merged => Icons.cloud_done_outlined,
-      },
     );
   }
 }
