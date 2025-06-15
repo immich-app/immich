@@ -139,16 +139,6 @@
     }
   };
 
-  const updateComments = async () => {
-    if (album) {
-      try {
-        await activityManager.refreshActivities(album.id, asset.id);
-      } catch (error) {
-        handleError(error, $t('errors.unable_to_get_comments_number'));
-      }
-    }
-  };
-
   const onAssetUpdate = async (assetId: string) => {
     if (assetId === asset.id) {
       asset = await getAssetInfo({ id: assetId, key: authManager.key });
@@ -184,10 +174,6 @@
 
     if (!sharedLink) {
       await handleGetAllAlbums();
-    }
-
-    if (album) {
-      activityManager.init(album.id, asset.id);
     }
   });
 
@@ -319,8 +305,10 @@
 
   const handleStopSlideshow = async () => {
     try {
+      // eslint-disable-next-line tscompat/tscompat
       if (document.fullscreenElement) {
         document.body.style.cursor = '';
+        // eslint-disable-next-line tscompat/tscompat
         await document.exitFullscreen();
       }
     } catch (error) {
@@ -375,8 +363,8 @@
     }
   });
   $effect(() => {
-    if (isShared && asset.id) {
-      handlePromiseError(updateComments());
+    if (album && isShared && asset.id) {
+      handlePromiseError(activityManager.init(album.id, asset.id));
     }
   });
   $effect(() => {
@@ -515,7 +503,7 @@
             onVideoStarted={handleVideoStarted}
           />
         {/if}
-        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0)}
+        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
           <div class="absolute bottom-0 end-0 mb-20 me-8">
             <ActivityStatus
               disabled={!album?.isActivityEnabled}

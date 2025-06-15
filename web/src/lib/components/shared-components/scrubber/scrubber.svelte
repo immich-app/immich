@@ -310,6 +310,7 @@
 
     void onScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
   };
+  /* eslint-disable tscompat/tscompat */
   const getTouch = (event: TouchEvent) => {
     if (event.touches.length === 1) {
       return event.touches[0];
@@ -354,6 +355,7 @@
       isHover = false;
     }
   };
+  /* eslint-enable tscompat/tscompat */
   onMount(() => {
     document.addEventListener('touchmove', onTouchMove, true);
     return () => {
@@ -505,10 +507,7 @@
   {/if}
   <!-- Scroll Position Indicator Line -->
   {#if !usingMobileDevice && !isDragging}
-    <div
-      class="absolute end-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
-      style:top="{scrollY + PADDING_TOP - 2}px"
-    >
+    <div class="absolute end-0 h-[2px] w-10 bg-primary" style:top="{scrollY + PADDING_TOP - 2}px">
       {#if timelineManager.scrolling && scrollHoverLabel && !isHover}
         <p
           transition:fade={{ duration: 200 }}

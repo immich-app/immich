@@ -1,6 +1,5 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -117,15 +116,15 @@
   <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
-      <button
-        type="button"
-        class="px-4 py-3 flex place-items-center gap-2 rounded-s-full dark:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/90 bg-immich-primary/25 hover:bg-immich-primary/50"
-        onclick={onSelectAll}><Icon path={mdiCheck} size="20" />{$t('select_keep_all')}</button
+      <Button class="rounded-s-full" size="small" color="primary" leadingIcon={mdiCheck} onclick={onSelectAll}
+        >{$t('select_keep_all')}</Button
       >
-      <button
-        type="button"
-        class="px-4 py-3 flex place-items-center gap-2 rounded-e-full dark:bg-immich-dark-primary/50 hover:dark:bg-immich-dark-primary/70 bg-immich-primary hover:bg-immich-primary/80 text-white"
-        onclick={onSelectNone}><Icon path={mdiTrashCanOutline} size="20" />{$t('select_trash_all')}</button
+      <Button
+        class="rounded-e-full"
+        size="small"
+        color="secondary"
+        leadingIcon={mdiTrashCanOutline}
+        onclick={onSelectNone}>{$t('select_trash_all')}</Button
       >
     </div>
 
@@ -134,32 +133,33 @@
       {#if trashCount === 0}
         <Button
           size="small"
+          leadingIcon={mdiCheck}
           color="primary"
           class="flex place-items-center rounded-s-full gap-2"
           onclick={handleResolve}
         >
-          <Icon path={mdiCheck} size="20" />{$t('keep_all')}
+          {$t('keep_all')}
         </Button>
       {:else}
         <Button
           size="small"
           color="danger"
-          class="flex place-items-center rounded-s-full gap-2 py-3"
+          leadingIcon={mdiTrashCanOutline}
+          class="rounded-s-full"
           onclick={handleResolve}
         >
-          <Icon path={mdiTrashCanOutline} size="20" />{trashCount === assets.length
-            ? $t('trash_all')
-            : $t('trash_count', { values: { count: trashCount } })}
+          {trashCount === assets.length ? $t('trash_all') : $t('trash_count', { values: { count: trashCount } })}
         </Button>
       {/if}
       <Button
         size="small"
         color="primary"
-        class="flex place-items-center rounded-e-full  gap-2"
+        leadingIcon={mdiImageMultipleOutline}
+        class="rounded-e-full"
         onclick={handleStack}
         disabled={selectedAssetIds.size !== 1}
       >
-        <Icon path={mdiImageMultipleOutline} size="20" />{$t('stack')}
+        {$t('stack')}
       </Button>
     </div>
   </div>

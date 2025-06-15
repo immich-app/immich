@@ -5,7 +5,6 @@ import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import {
   anyUuid,
@@ -29,13 +28,13 @@ import { globToSqlPattern } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
 
-export interface AssetStatsOptions {
+interface AssetStatsOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
   visibility?: AssetVisibility;
 }
 
-export interface LivePhotoSearchOptions {
+interface LivePhotoSearchOptions {
   ownerId: string;
   libraryId?: string | null;
   livePhotoCID: string;
@@ -43,16 +42,12 @@ export interface LivePhotoSearchOptions {
   type: AssetType;
 }
 
-export enum WithProperty {
-  SIDECAR = 'sidecar',
-}
-
 export enum TimeBucketSize {
   DAY = 'DAY',
   MONTH = 'MONTH',
 }
 
-export interface AssetBuilderOptions {
+interface AssetBuilderOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
   isDuplicate?: boolean;
@@ -81,43 +76,31 @@ export interface MonthDay {
   month: number;
 }
 
-export interface AssetExploreFieldOptions {
+interface AssetExploreFieldOptions {
   maxFields: number;
   minAssetsPerField: number;
 }
 
-export interface AssetFullSyncOptions {
+interface AssetFullSyncOptions {
   ownerId: string;
   lastId?: string;
   updatedUntil: Date;
   limit: number;
 }
 
-export interface AssetDeltaSyncOptions {
+interface AssetDeltaSyncOptions {
   userIds: string[];
   updatedAfter: Date;
   limit: number;
 }
 
-export interface AssetUpdateDuplicateOptions {
-  targetDuplicateId: string | null;
-  assetIds: string[];
-  duplicateIds: string[];
-}
-
-export interface UpsertFileOptions {
-  assetId: string;
-  type: AssetFileType;
-  path: string;
-}
-
-export interface AssetGetByChecksumOptions {
+interface AssetGetByChecksumOptions {
   ownerId: string;
   checksum: Buffer;
   libraryId?: string;
 }
 
-export interface GetByIdsRelations {
+interface GetByIdsRelations {
   exifInfo?: boolean;
   faces?: { person?: boolean; withDeleted?: boolean };
   files?: boolean;
@@ -126,16 +109,6 @@ export interface GetByIdsRelations {
   smartSearch?: boolean;
   stack?: { assets?: boolean };
   tags?: boolean;
-}
-
-export interface DuplicateGroup {
-  duplicateId: string;
-  assets: MapAsset[];
-}
-
-export interface DayOfYearAssets {
-  yearsAgo: number;
-  assets: MapAsset[];
 }
 
 @Injectable()
@@ -418,19 +391,6 @@ export class AssetRepository {
     await this.db.updateTable('assets').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
 
-  @GenerateSql({
-    params: [{ targetDuplicateId: DummyValue.UUID, duplicateIds: [DummyValue.UUID], assetIds: [DummyValue.UUID] }],
-  })
-  async updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void> {
-    await this.db
-      .updateTable('assets')
-      .set({ duplicateId: options.targetDuplicateId })
-      .where((eb) =>
-        eb.or([eb('duplicateId', '=', anyUuid(options.duplicateIds)), eb('id', '=', anyUuid(options.assetIds))]),
-      )
-      .execute();
-  }
-
   async update(asset: Updateable<Assets> & { id: string }) {
     const value = omitBy(asset, isUndefined);
     delete value.id;
@@ -692,58 +652,6 @@ export class AssetRepository {
       .select(sql<string>`to_json(agg)::text`.as('assets'));
 
     return query.executeTakeFirstOrThrow();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getDuplicates(userId: string) {
-    return (
-      this.db
-        .with('duplicates', (qb) =>
-          qb
-            .selectFrom('assets')
-            .$call(withDefaultVisibility)
-            .leftJoinLateral(
-              (qb) =>
-                qb
-                  .selectFrom('exif')
-                  .selectAll('assets')
-                  .select((eb) => eb.table('exif').as('exifInfo'))
-                  .whereRef('exif.assetId', '=', 'assets.id')
-                  .as('asset'),
-              (join) => join.onTrue(),
-            )
-            .select('assets.duplicateId')
-            .select((eb) =>
-              eb.fn.jsonAgg('asset').orderBy('assets.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
-            )
-            .where('assets.ownerId', '=', asUuid(userId))
-            .where('assets.duplicateId', 'is not', null)
-            .$narrowType<{ duplicateId: NotNull }>()
-            .where('assets.deletedAt', 'is', null)
-            .where('assets.stackId', 'is', null)
-            .groupBy('assets.duplicateId'),
-        )
-        .with('unique', (qb) =>
-          qb
-            .selectFrom('duplicates')
-            .select('duplicateId')
-            .where((eb) => eb(eb.fn('json_array_length', ['assets']), '=', 1)),
-        )
-        .with('removed_unique', (qb) =>
-          qb
-            .updateTable('assets')
-            .set({ duplicateId: null })
-            .from('unique')
-            .whereRef('assets.duplicateId', '=', 'unique.duplicateId'),
-        )
-        .selectFrom('duplicates')
-        .selectAll()
-        // TODO: compare with filtering by json_array_length > 1
-        .where(({ not, exists }) =>
-          not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
-        )
-        .execute()
-    );
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })

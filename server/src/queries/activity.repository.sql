@@ -23,9 +23,9 @@ from
       ) as "dummy"
   ) as "user" on true
   left join "assets" on "assets"."id" = "activity"."assetId"
-  and "assets"."deletedAt" is null
 where
   "activity"."albumId" = $1
+  and "assets"."deletedAt" is null
 order by
   "activity"."createdAt" asc
 
@@ -78,5 +78,10 @@ from
 where
   "activity"."assetId" = $3
   and "activity"."albumId" = $4
-  and "assets"."deletedAt" is null
-  and "assets"."visibility" != 'locked'
+  and (
+    (
+      "assets"."deletedAt" is null
+      and "assets"."visibility" != 'locked'
+    )
+    or "assets"."id" is null
+  )

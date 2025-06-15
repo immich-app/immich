@@ -77,7 +77,7 @@
       </div>
 
       {#if forceDelete}
-        <p class="text-immich-error">{$t('admin.force_delete_user_warning')}</p>
+        <p class="text-danger">{$t('admin.force_delete_user_warning')}</p>
 
         <p class="immich-form-label text-sm" id="confirm-user-desc">
           {$t('admin.confirm_email_below', { values: { email: user.email } })}

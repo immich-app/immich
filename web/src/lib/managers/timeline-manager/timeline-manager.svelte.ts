@@ -474,7 +474,11 @@ export class TimelineManager {
       },
       { order: this.#options.order ?? AssetOrder.Desc },
     );
-    return unprocessedIds.values().map((id) => lookup.get(id)!);
+    const result: TimelineAsset[] = [];
+    for (const id of unprocessedIds.values()) {
+      result.push(lookup.get(id)!);
+    }
+    return result;
   }
 
   removeAssets(ids: string[]) {

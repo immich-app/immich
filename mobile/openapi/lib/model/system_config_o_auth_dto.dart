@@ -43,7 +43,7 @@ class SystemConfigOAuthDto {
   String clientSecret;
 
   /// Minimum value: 0
-  num defaultStorageQuota;
+  int? defaultStorageQuota;
 
   bool enabled;
 
@@ -96,7 +96,7 @@ class SystemConfigOAuthDto {
     (buttonText.hashCode) +
     (clientId.hashCode) +
     (clientSecret.hashCode) +
-    (defaultStorageQuota.hashCode) +
+    (defaultStorageQuota == null ? 0 : defaultStorageQuota!.hashCode) +
     (enabled.hashCode) +
     (issuerUrl.hashCode) +
     (mobileOverrideEnabled.hashCode) +
@@ -119,7 +119,11 @@ class SystemConfigOAuthDto {
       json[r'buttonText'] = this.buttonText;
       json[r'clientId'] = this.clientId;
       json[r'clientSecret'] = this.clientSecret;
+    if (this.defaultStorageQuota != null) {
       json[r'defaultStorageQuota'] = this.defaultStorageQuota;
+    } else {
+    //  json[r'defaultStorageQuota'] = null;
+    }
       json[r'enabled'] = this.enabled;
       json[r'issuerUrl'] = this.issuerUrl;
       json[r'mobileOverrideEnabled'] = this.mobileOverrideEnabled;
@@ -148,7 +152,7 @@ class SystemConfigOAuthDto {
         buttonText: mapValueOfType<String>(json, r'buttonText')!,
         clientId: mapValueOfType<String>(json, r'clientId')!,
         clientSecret: mapValueOfType<String>(json, r'clientSecret')!,
-        defaultStorageQuota: num.parse('${json[r'defaultStorageQuota']}'),
+        defaultStorageQuota: mapValueOfType<int>(json, r'defaultStorageQuota'),
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,
         mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
