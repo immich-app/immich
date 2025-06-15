@@ -287,38 +287,6 @@ class AllMotionPhotosRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [AllPeoplePage]
-class AllPeopleRoute extends PageRouteInfo<void> {
-  const AllPeopleRoute({List<PageRouteInfo>? children})
-      : super(AllPeopleRoute.name, initialChildren: children);
-
-  static const String name = 'AllPeopleRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AllPeoplePage();
-    },
-  );
-}
-
-/// generated route for
-/// [AllPlacesPage]
-class AllPlacesRoute extends PageRouteInfo<void> {
-  const AllPlacesRoute({List<PageRouteInfo>? children})
-      : super(AllPlacesRoute.name, initialChildren: children);
-
-  static const String name = 'AllPlacesRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AllPlacesPage();
-    },
-  );
-}
-
-/// generated route for
 /// [AllVideosPage]
 class AllVideosRoute extends PageRouteInfo<void> {
   const AllVideosRoute({List<PageRouteInfo>? children})
@@ -1193,16 +1161,11 @@ class PermissionOnboardingRoute extends PageRouteInfo<void> {
 class PersonResultRoute extends PageRouteInfo<PersonResultRouteArgs> {
   PersonResultRoute({
     Key? key,
-    required String personId,
-    required String personName,
+    required Person person,
     List<PageRouteInfo>? children,
   }) : super(
           PersonResultRoute.name,
-          args: PersonResultRouteArgs(
-            key: key,
-            personId: personId,
-            personName: personName,
-          ),
+          args: PersonResultRouteArgs(key: key, person: person),
           initialChildren: children,
         );
 
@@ -1212,31 +1175,21 @@ class PersonResultRoute extends PageRouteInfo<PersonResultRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<PersonResultRouteArgs>();
-      return PersonResultPage(
-        key: args.key,
-        personId: args.personId,
-        personName: args.personName,
-      );
+      return PersonResultPage(key: args.key, person: args.person);
     },
   );
 }
 
 class PersonResultRouteArgs {
-  const PersonResultRouteArgs({
-    this.key,
-    required this.personId,
-    required this.personName,
-  });
+  const PersonResultRouteArgs({this.key, required this.person});
 
   final Key? key;
 
-  final String personId;
-
-  final String personName;
+  final Person person;
 
   @override
   String toString() {
-    return 'PersonResultRouteArgs{key: $key, personId: $personId, personName: $personName}';
+    return 'PersonResultRouteArgs{key: $key, person: $person}';
   }
 }
 

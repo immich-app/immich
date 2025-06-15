@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
+import 'package:immich_mobile/domain/models/person.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -54,8 +55,6 @@ import 'package:immich_mobile/pages/onboarding/permission_onboarding.page.dart';
 import 'package:immich_mobile/pages/photos/memory.page.dart';
 import 'package:immich_mobile/pages/photos/photos.page.dart';
 import 'package:immich_mobile/pages/search/all_motion_videos.page.dart';
-import 'package:immich_mobile/pages/search/all_people.page.dart';
-import 'package:immich_mobile/pages/search/all_places.page.dart';
 import 'package:immich_mobile/pages/search/all_videos.page.dart';
 import 'package:immich_mobile/pages/search/map/map.page.dart';
 import 'package:immich_mobile/pages/search/map/map_location_picker.page.dart';
@@ -160,10 +159,6 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard, _backupPermissionGuard],
     ),
     AutoRoute(
-      page: AllPlacesRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-    ),
-    AutoRoute(
       page: CreateAlbumRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
@@ -243,7 +238,6 @@ class AppRouter extends RootStackRouter {
       page: PersonResultRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
-    AutoRoute(page: AllPeopleRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: MemoryRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: MapRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(

@@ -1,7 +1,7 @@
+import 'package:immich_mobile/domain/models/person.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'asset_people.provider.g.dart';
@@ -12,7 +12,7 @@ class AssetPeopleNotifier extends _$AssetPeopleNotifier {
   final log = Logger('AssetPeopleNotifier');
 
   @override
-  Future<List<PersonWithFacesResponseDto>> build(Asset asset) async {
+  Future<List<Person>> build(Asset asset) async {
     if (!asset.isRemote) {
       return [];
     }
@@ -40,7 +40,17 @@ class AssetPeopleNotifier extends _$AssetPeopleNotifier {
 
       return a.name.compareTo(b.name);
     });
-    return list;
+    return list
+        .map(
+          (e) => Person(
+            id: e.id,
+            name: e.name,
+            thumbnailPath: e.thumbnailPath,
+            isHidden: e.isHidden,
+            updatedAt: e.updatedAt,
+          ),
+        )
+        .toList();
   }
 
   Future<void> refresh() async {
