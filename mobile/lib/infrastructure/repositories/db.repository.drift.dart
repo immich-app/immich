@@ -17,6 +17,9 @@ import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.d
     as i7;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart'
     as i8;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i9;
+import 'package:drift/internal/modular.dart' as i10;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -36,14 +39,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
       i7.$LocalAlbumAssetEntityTable(this);
   late final i8.$RemoteExifEntityTable remoteExifEntity =
       i8.$RemoteExifEntityTable(this);
-  late final i9.$RemoteAlbumEntityTable remoteAlbumEntity =
-      i9.$RemoteAlbumEntityTable(this);
-  late final i10.$RemoteAlbumAssetEntityTable remoteAlbumAssetEntity =
-      i10.$RemoteAlbumAssetEntityTable(this);
-  late final i11.$AlbumUserEntityTable albumUserEntity =
-      i11.$AlbumUserEntityTable(this);
-  i12.MergedAssetDrift get mergedAssetDrift => i13.ReadDatabaseContainer(this)
-      .accessor<i12.MergedAssetDrift>(i12.MergedAssetDrift.new);
+  i9.MergedAssetDrift get mergedAssetDrift => i10.ReadDatabaseContainer(this)
+      .accessor<i9.MergedAssetDrift>(i9.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -59,10 +56,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
         partnerEntity,
         localAlbumEntity,
         localAlbumAssetEntity,
-        remoteExifEntity,
-        remoteAlbumEntity,
-        remoteAlbumAssetEntity,
-        albumUserEntity
+        remoteExifEntity
       ];
   @override
   i0.StreamQueryUpdateRules get streamUpdateRules =>
