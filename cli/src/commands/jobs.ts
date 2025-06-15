@@ -79,7 +79,7 @@ export async function startJob(jobName: JobName, baseOptions: BaseOptions, comma
     id: jobName,
     jobCommandDto: {
       command: JobCommand.Start,
-      force: force,
+      force,
     }
   }));
 
@@ -95,7 +95,7 @@ export async function startJob(jobName: JobName, baseOptions: BaseOptions, comma
   }
 
   if (commandOptions.jsonOutput) {
-    console.log(JSON.stringify(status, null, 2));
+    console.log(JSON.stringify(status, undefined, 2));
     return;
   }
 
@@ -130,7 +130,7 @@ export async function pauseJobExecutions(jobName: JobName, baseOptions: BaseOpti
   }
 
   if (commandOptions.jsonOutput) {
-    console.log(JSON.stringify(response.queueStatus, null, 2));
+    console.log(JSON.stringify(response.queueStatus, undefined, 2));
     return;
   }
 
@@ -161,7 +161,7 @@ export async function resumeJobExecutions(jobName: JobName, baseOptions: BaseOpt
   }
 
   if (commandOptions.jsonOutput) {
-    console.log(JSON.stringify(response.queueStatus, null, 2));
+    console.log(JSON.stringify(response.queueStatus, undefined, 2));
     return;
   }
 
@@ -191,7 +191,7 @@ async function getStatusOfSingleJob(jobName: JobName, commandOptions: CommonJobS
   const jobStatus = status[jobName];
 
   const outputPrefix = commandOptions.jsonOutput ? '' : `Status for requested job "${jobName}": `;
-  console.log(outputPrefix, JSON.stringify(jobStatus, null, 2));
+  console.log(outputPrefix, JSON.stringify(jobStatus, undefined, 2));
 }
 
 /**
@@ -203,7 +203,7 @@ async function getStatusOfAllJobs(commandOptions: CommonJobStatusOptions) {
   const status = await requestJobsStatus();
 
   if (commandOptions.jsonOutput) {
-    console.log(JSON.stringify(status, null, 2));
+    console.log(JSON.stringify(status, undefined, 2));
     return;
   }
 
