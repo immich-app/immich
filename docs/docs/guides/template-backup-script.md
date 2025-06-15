@@ -57,13 +57,13 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 # docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz
 
 ### Append to local Borg repository
-borg create "$BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+borg create --list --filter=AME "$BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
 borg prune --keep-weekly=4 --keep-monthly=3 "$BACKUP_PATH"/immich-borg
 borg compact "$BACKUP_PATH"/immich-borg
 
 
 ### Append to remote Borg repository
-borg create "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+borg create --list --filter=AME "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
 borg prune --keep-weekly=4 --keep-monthly=3 "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
 borg compact "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
 ```
@@ -88,3 +88,12 @@ cd /tmp/immich-mountpoint
 ```
 
 You can find available snapshots in separate sub-directories at `/tmp/immich-mountpoint`. Restore the files you need, and unmount the Borg repository using `borg umount /tmp/immich-mountpoint`
+
+:::info
+Borg's backups are differential, backing up only files that were added or modified since the last backup, ensuring speedy backups even on huge image libraries.
+For this to work, Borg keeps a file cache at `~/.cache/borg/`. Since this is in the user's home directory, care should be taken when running in a containerized environment where the home directories are not persistent by default and the file caches are lost between each backup run.
+
+If `borg create` always shows all files prefixed with "A" (added/new), check the file cache.
+
+When running Borg from a container, ensure `~/.cache/borg/` is mounted on a persistent volume.`
+:::
