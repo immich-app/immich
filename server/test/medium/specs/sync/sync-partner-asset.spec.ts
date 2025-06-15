@@ -42,6 +42,7 @@ describe.concurrent(SyncRequestType.PartnerAssetsV1, () => {
       fileModifiedAt: date,
       localDateTime: date,
       deletedAt: null,
+      duration: '0:10:00.00000',
     });
     await assetRepo.create(asset);
 
@@ -68,6 +69,7 @@ describe.concurrent(SyncRequestType.PartnerAssetsV1, () => {
             localDateTime: date,
             type: asset.type,
             visibility: asset.visibility,
+            duration: asset.duration,
           },
           type: SyncEntityType.PartnerAssetV1,
         },
