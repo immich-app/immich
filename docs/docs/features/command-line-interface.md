@@ -6,6 +6,7 @@ Immich has a command line interface (CLI) that allows you to perform certain act
 
 - Upload photos and videos to Immich
 - Check server version
+- Manage execution of background jobs
 
 More features are planned for the future.
 
@@ -70,6 +71,7 @@ Options:
 Commands:
   login|login-key <url> <key>         Login using an API key
   logout                              Remove stored credentials
+  jobs                                Manage background jobs
   server-info                         Display server information
   upload [options] [paths...]         Upload assets
   help [command]                      display help for command
@@ -79,6 +81,7 @@ Commands:
 
 ## Commands
 
+### Upload
 The upload command supports the following options:
 
 <details>
@@ -111,6 +114,31 @@ Options:
 </details>
 
 Note that the above options can read from environment variables as well.
+
+### Jobs
+The jobs command supports the following options:
+
+<details>
+<summary>Options</summary>
+
+```
+Usage: immich jobs [options] [command]
+
+Manage background jobs
+
+Options:
+  -h, --help                  display help for command
+
+Commands:
+  pause [options] <jobName>   Pause executions of all instances of the given job
+  resume [options] <jobName>  Resume executions of all instances of the given job
+  run [options] <jobName>     Start a specific job
+  status [options] [jobName]  Get the status of all jobs or the status of a specific job
+  help [command]              display help for command
+```
+
+</details>
+
 
 ## Quick Start
 
@@ -190,3 +218,58 @@ immich upload --dry-run . | tail -n +4 | jq .newFiles[]
 The API key can be obtained in the user setting panel on the web interface.
 
 ![Obtain Api Key](./img/obtain-api-key.webp)
+
+### Manage jobs via the CLI
+
+With the Immich CLI you can also manage background jobs on your server. 
+The immich jobs command allows you to pause, resume, run, or check the status of background jobs.
+
+Once you are authenticated, you can use the `jobs` command to interact with your Immich server.
+
+For example, you can run the following command to print out the status of all the background jobs Immich uses. 
+
+```bash
+immich jobs status
+```
+
+Additionally, you can also query the status of a specific job by providing its' name.
+For example, if you want to know the status of the thumbnail generation after having imported several 
+images, you can run this command:
+
+```bash
+immich jobs status thumbnailGeneration
+```
+
+You can also trigger execution of a specific job given its' name.
+
+```bash
+immich jobs run thumbnailGeneration
+```
+
+By default, this will run the thumbnail generation only on those assets that were not already processed.
+If you want to run the specified job on all assets your Immich instance handles, you can use the `--refresh` option.
+
+```bash
+immich jobs run thumbnailGeneration --refresh
+```
+
+Alternatively, you can run the same command with the `--all` flag. Similarly to the `--refresh` flag, the `--all` 
+may imply the deletion of the output of previous executions of that job, before running it from scratch on all assets.
+
+```bash
+immich jobs run thumbnailGeneration --all
+```
+
+If you want to stop executions of a specific job, you can run the command `pause`, followed by the job name. 
+For example, to prevent generation of new thumbnails, you could run this command:
+
+```bash
+immich jobs pause thumbnailGeneration
+```
+
+To resume executions of a paused job queue, you can use the `resume` command. 
+For example, to resume the generation of new thumbnails, you can run:
+
+```bash
+immich jobs resume thumbnailGeneration
+```

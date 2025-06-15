@@ -46,6 +46,17 @@ Visit the page, open the "Create job" modal from the top right, select "Create D
 A job will run and trigger a dump, you can verify this worked correctly by checking the logs or the `backups/` folder.
 This dumps will count towards the last `X` dumps that will be kept based on your settings.
 
+Alternatively, you can trigger a database dump using the [Immich CLI](/docs/features/command-line-interface.md).
+This can be done by running the following command in a terminal.
+
+```bash
+immich jobs run backupDatabase
+```
+
+Since this command is analogous to running the database dump via the Immich web interface, the resulting database dump 
+will be placed in the same `backups/` folder, and it will count towards the last `X` dumps that will be kept based 
+on your settings, just as if it was triggered via the web UI.
+
 #### Restoring
 
 We hope to make restoring simpler in future versions, for now you can find the database dumps in the `UPLOAD_LOCATION/backups` folder on your host.
