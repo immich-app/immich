@@ -14,30 +14,46 @@ class AssetMediaResponseDto {
   /// Returns a new [AssetMediaResponseDto] instance.
   AssetMediaResponseDto({
     required this.id,
+    this.payload,
     required this.status,
   });
 
   String id;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  SyncAssetV1? payload;
 
   AssetMediaStatus status;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetMediaResponseDto &&
     other.id == id &&
+    other.payload == payload &&
     other.status == status;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id.hashCode) +
+    (payload == null ? 0 : payload!.hashCode) +
     (status.hashCode);
 
   @override
-  String toString() => 'AssetMediaResponseDto[id=$id, status=$status]';
+  String toString() => 'AssetMediaResponseDto[id=$id, payload=$payload, status=$status]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'id'] = this.id;
+    if (this.payload != null) {
+      json[r'payload'] = this.payload;
+    } else {
+    //  json[r'payload'] = null;
+    }
       json[r'status'] = this.status;
     return json;
   }
@@ -52,6 +68,7 @@ class AssetMediaResponseDto {
 
       return AssetMediaResponseDto(
         id: mapValueOfType<String>(json, r'id')!,
+        payload: SyncAssetV1.fromJson(json[r'payload']),
         status: AssetMediaStatus.fromJson(json[r'status'])!,
       );
     }
