@@ -9,13 +9,20 @@ enum WidgetError: Error {
   case albumNotFound
 }
 
+enum AssetType: String, Codable {
+  case image = "IMAGE"
+  case video = "VIDEO"
+  case audio = "AUDIO"
+  case other = "OTHER"
+}
+
 struct SearchResult: Codable {
   let id: String
-  let type: String
+  let type: AssetType
 }
 
 struct SearchFilters: Codable {
-  var type: String = "IMAGE"
+  var type: AssetType = .image
   let size: Int
   var albumIds: [String] = []
 }

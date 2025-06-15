@@ -43,7 +43,6 @@ struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
     "Choose an album to show images from"
   }
 
-  // An example configurable parameter.
   @Parameter(title: "Album", default: NO_ALBUM)
   var album: Album?
 }
@@ -66,18 +65,22 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     }
 
     guard
-      let demoImage = try? await api.fetchSearchResults(
+      let randomImage = try? await api.fetchSearchResults(
         with: SearchFilters(size: 1)
       ).first
     else {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
 
-    guard let image = try? await api.fetchImage(asset: demoImage) else {
+    
+    guard
+      let entry = try? await buildEntry(api: api, asset: randomImage, hourOffset: 0) else {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
-
-    return ImageEntry(date: Date(), image: image)
+    
+    return
+      (try? await buildEntry(api: api, asset: randomImage, hourOffset: 0)) ??
+      ImageEntry(date: Date(), image: nil, error: .fetchFailed)
   }
 
   func timeline(
@@ -140,7 +143,7 @@ struct ImmichRandomWidget: Widget {
       provider: ImmichRandomProvider()
     ) { entry in
       ImmichWidgetView(entry: entry)
-        .containerBackground(.black, for: .widget)
+        .containerBackground(.regularMaterial, for: .widget)
     }
     // allow image to take up entire widget
     .contentMarginsDisabled()
