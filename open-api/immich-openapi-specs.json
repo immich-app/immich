@@ -13622,6 +13622,10 @@
             "nullable": true,
             "type": "string"
           },
+          "duration": {
+            "nullable": true,
+            "type": "string"
+          },
           "fileCreatedAt": {
             "format": "date-time",
             "nullable": true,
@@ -13671,6 +13675,7 @@
         "required": [
           "checksum",
           "deletedAt",
+          "duration",
           "fileCreatedAt",
           "fileModifiedAt",
           "id",
