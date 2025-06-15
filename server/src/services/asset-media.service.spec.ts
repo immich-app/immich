@@ -172,6 +172,7 @@ const assetEntity = Object.freeze({
   },
   livePhotoVideoId: null,
   sidecarPath: null,
+  checksum: Buffer.from('checksum', 'utf8'),
 } as MapAsset);
 
 const existingAsset = Object.freeze({
@@ -352,6 +353,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
         id: 'id_1',
         status: AssetMediaStatus.CREATED,
+        payload: expect.any(Object),
       });
 
       expect(mocks.asset.create).toHaveBeenCalled();
@@ -428,6 +430,7 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual({
         status: AssetMediaStatus.CREATED,
         id: 'live-photo-still-asset',
+        payload: expect.any(Object),
       });
 
       expect(mocks.asset.getById).toHaveBeenCalledWith('live-photo-motion-asset');
@@ -450,6 +453,7 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual({
         status: AssetMediaStatus.CREATED,
         id: 'live-photo-still-asset',
+        payload: expect.any(Object),
       });
 
       expect(mocks.asset.getById).toHaveBeenCalledWith('live-photo-motion-asset');
@@ -466,6 +470,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.uploadAsset(authStub.user1, createDto, fileStub.photo, fileStub.photoSidecar)).resolves.toEqual({
         status: AssetMediaStatus.CREATED,
         id: assetStub.image.id,
+        payload: expect.any(Object),
       });
 
       expect(mocks.storage.utimes).toHaveBeenCalledWith(

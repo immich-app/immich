@@ -569,6 +569,7 @@ export const assetStub = {
     files,
     faces: [] as AssetFace[],
     visibility: AssetVisibility.TIMELINE,
+    checksum: Buffer.from('livePhotoStillAsset', 'utf8'),
   } as MapAsset & { faces: AssetFace[] }),
 
   livePhotoWithOriginalFileName: Object.freeze({
