@@ -411,6 +411,9 @@ export class TimelineManager {
   }
 
   addAssets(assets: TimelineAsset[]) {
+    if (assets.length === 0) {
+      return;
+    }
     const assetsToUpdate = assets.filter((asset) => !this.isExcluded(asset));
     const notUpdated = this.updateAssets(assetsToUpdate);
     addAssetsToMonthGroups(this, [...notUpdated], { order: this.#options.order ?? AssetOrder.Desc });
@@ -475,6 +478,9 @@ export class TimelineManager {
   }
 
   removeAssets(ids: string[]) {
+    if (ids.length === 0) {
+      return [];
+    }
     const { unprocessedIds } = runAssetOperation(
       this,
       new Set(ids),
