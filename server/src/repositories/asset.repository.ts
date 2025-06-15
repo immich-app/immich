@@ -443,8 +443,6 @@ export class AssetRepository {
         .$call((qb) => qb.select(withFacesAndPeople))
         .executeTakeFirst();
     }
-
-    return this.getById(asset.id, { exifInfo: true, faces: { person: true } });
   }
 
   async remove(asset: { id: string }): Promise<void> {

@@ -12,6 +12,16 @@ export class TrashRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  getTrashedIds(userId: string): AsyncIterableIterator<{ id: string }> {
+    return this.db
+      .selectFrom('assets')
+      .select(['id'])
+      .where('ownerId', '=', userId)
+      .where('status', '=', AssetStatus.TRASHED)
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
   async restore(userId: string): Promise<number> {
     const { numUpdatedRows } = await this.db
       .updateTable('assets')
