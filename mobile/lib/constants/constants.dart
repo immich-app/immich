@@ -20,3 +20,9 @@ const String kSecuredPinCode = "secured_pin_code";
 const String kWidgetAuthToken = "widget_auth_token";
 const String kWidgetServerEndpoint = "widget_server_url";
 const String appShareGroupId = "group.app.immich.share";
+
+// list of widget names
+const List<String> kWidgetNames = [
+  'com.immich.widget.random',
+  'com.immich.widget.memory',
+];

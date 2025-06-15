@@ -80,13 +80,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     try {
       await _secureStorageService.delete(kSecuredPinCode);
-
-      _widgetService.clearWidgetData();
-      // wait 3 seconds to ensure the widget is updated, dont block
-      Future.delayed(const Duration(seconds: 3), () {
-        _widgetService.updateWidget('com.immich.widget.random');
-        _widgetService.updateWidget('com.immich.widget.memory');
-      });
+      await _widgetService.clearCredentials();
 
       await _authService.logout();
     } finally {
@@ -124,17 +118,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     await _apiService.setAccessToken(accessToken);
 
-    _widgetService.setAppGroupId(appShareGroupId);
-    _widgetService.writeCredentials(
+    await _widgetService.setAppGroupId(appShareGroupId);
+    await _widgetService.writeCredentials(
       Store.get(StoreKey.serverEndpoint),
       accessToken,
     );
-
-    // wait 3 seconds to ensure the widget is updated, dont block
-    Future.delayed(const Duration(seconds: 3), () {
-      _widgetService.updateWidget('com.immich.widget.random');
-      _widgetService.updateWidget('com.immich.widget.memory');
-    });
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
     String deviceId =
