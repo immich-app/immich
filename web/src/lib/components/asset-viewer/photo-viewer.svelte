@@ -3,9 +3,10 @@
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
+  import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
@@ -240,7 +241,7 @@
       use:swipe={() => ({})}
       onswipe={onSwipe}
       class="h-full w-full"
-      transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
+      transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
     >
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img

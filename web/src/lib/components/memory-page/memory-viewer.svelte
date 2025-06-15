@@ -23,12 +23,11 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AppRoute, assetViewerFadeDuration, QueryParameter } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
@@ -469,7 +468,7 @@
         >
           <div class="relative h-full w-full rounded-2xl bg-black">
             {#key current.asset.id}
-              <div transition:fade class="h-full w-full">
+              <div transition:fade={{ duration: assetViewerFadeDuration }} class="h-full w-full">
                 {#if current.asset.isVideo}
                   <video
                     bind:this={videoPlayer}

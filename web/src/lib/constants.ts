@@ -420,3 +420,5 @@ export enum ToggleVisibility {
   HIDE_UNNANEMD = 'hide-unnamed',
   SHOW_ALL = 'show-all',
 }
+
+export const assetViewerFadeDuration: number = 150; // milliseconds
