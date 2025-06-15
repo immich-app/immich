@@ -36,6 +36,21 @@ export const album_user_after_insert = registerFunction({
   synchronize: false,
 });
 
+export const album_asset_after_insert = registerFunction({
+  name: 'album_asset_after_insert',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      UPDATE albums SET "updatedAt" = clock_timestamp(), "updateId" = immich_uuid_v7(clock_timestamp())
+      WHERE "id" IN (SELECT DISTINCT "albumsId" FROM inserted_rows);
+      UPDATE assets SET "updatedAt" = clock_timestamp(), "updateId" = immich_uuid_v7(clock_timestamp())
+      WHERE "id" IN (SELECT DISTINCT "assetsId" FROM inserted_rows);
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
 export const updated_at = registerFunction({
   name: 'updated_at',
   returnType: 'TRIGGER',
@@ -155,6 +170,23 @@ export const album_users_delete_audit = registerFunction({
       IF pg_trigger_depth() = 1 THEN
         INSERT INTO album_users_audit ("albumId", "userId")
         SELECT "albumsId", "usersId"
+        FROM OLD;
+      END IF;
+
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const album_assets_delete_audit = registerFunction({
+  name: 'album_assets_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      IF pg_trigger_depth() = 1 THEN
+        INSERT INTO album_assets_assets_audit ("albumId", "assetId")
+        SELECT "albumsId", "assetsId"
         FROM OLD;
       END IF;
 

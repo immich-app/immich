@@ -13369,6 +13369,36 @@
         ],
         "type": "object"
       },
+      "SyncAlbumAssetDeleteV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumAssetV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
+        ],
+        "type": "object"
+      },
       "SyncAlbumDeleteV1": {
         "properties": {
           "albumId": {
@@ -13698,6 +13728,8 @@
           "PartnerAssetExifV1",
           "AlbumV1",
           "AlbumDeleteV1",
+          "AlbumAssetV1",
+          "AlbumAssetDeleteV1",
           "AlbumUserV1",
           "AlbumUserDeleteV1"
         ],
@@ -13746,6 +13778,7 @@
           "PartnerAssetsV1",
           "PartnerAssetExifsV1",
           "AlbumsV1",
+          "AlbumAssetsV1",
           "AlbumUsersV1"
         ],
         "type": "string"

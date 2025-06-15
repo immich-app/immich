@@ -92,6 +92,15 @@ export interface AlbumsAssetsAssets {
   albumsId: string;
   assetsId: string;
   createdAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp>;
+  updateId: Generated<string>;
+}
+
+export interface AlbumAssetsAssetsAudit {
+  id: Generated<string>;
+  albumId: string;
+  assetId: string;
+  deletedAt: Generated<Timestamp>;
 }
 
 export interface AlbumsSharedUsersUsers {
@@ -484,6 +493,7 @@ export interface DB {
   albums: Albums;
   albums_audit: AlbumsAudit;
   albums_assets_assets: AlbumsAssetsAssets;
+  album_assets_assets_audit: AlbumAssetsAssetsAudit;
   albums_shared_users_users: AlbumsSharedUsersUsers;
   album_users_audit: AlbumUsersAudit;
   api_keys: ApiKeys;
