@@ -82,6 +82,7 @@ Commands:
 ## Commands
 
 ### Upload
+
 The upload command supports the following options:
 
 <details>
@@ -116,6 +117,7 @@ Options:
 Note that the above options can read from environment variables as well.
 
 ### Jobs
+
 The jobs command supports the following options:
 
 <details>
@@ -138,7 +140,6 @@ Commands:
 ```
 
 </details>
-
 
 ## Quick Start
 
@@ -221,7 +222,7 @@ The API key can be obtained in the user setting panel on the web interface.
 
 ### Manage jobs via the CLI
 
-With the Immich CLI you can also manage background jobs on your server. 
+With the Immich CLI you can also manage background jobs on your server.
 The `jobs` command allows you to pause, resume, run, or check the status of background jobs.
 
 Once you are authenticated, you can use the `jobs` command to interact with your Immich server.
@@ -233,7 +234,7 @@ immich jobs status
 ```
 
 Additionally, you can also query the status of a specific job by providing its' name.
-For example, if you want to know the status of the thumbnail generation after having imported several 
+For example, if you want to know the status of the thumbnail generation after having imported several
 images, you can run this command:
 
 ```bash
@@ -253,21 +254,22 @@ If you want to run the specified job on all assets your Immich instance handles,
 immich jobs run thumbnailGeneration --refresh
 ```
 
-Alternatively, you can run the same command with the `--all` flag. 
-Depending on the job implementation, the `--all` flag may imply the deletion of the output of previous executions of 
+Alternatively, you can run the same command with the `--all` flag.
+Depending on the job implementation, the `--all` flag may imply the deletion of the output of previous executions of
 that job, before running it from scratch on all assets.
 
 ```bash
 immich jobs run thumbnailGeneration --all
 ```
 
-If you want to stop executions of a specific job, you can run the command `pause`, followed by the job name. 
+If you want to stop executions of a specific job, you can run the command `pause`, followed by the job name.
 For example, to prevent generation of new thumbnails, you could run this command:
+
 ```bash
 immich jobs pause thumbnailGeneration
 ```
 
-Once executions of a specific job are paused, scheduled executions of that job will no longer occur until you 
+Once executions of a specific job are paused, scheduled executions of that job will no longer occur until you
 resume their execution. This can be done using the `resume` command.
 For example, to resume the generation of new thumbnails, you can run:
 
@@ -275,10 +277,9 @@ For example, to resume the generation of new thumbnails, you can run:
 immich jobs resume thumbnailGeneration
 ```
 
-We can also use the `run` command to ask the Immich server to create a database dump. 
+We can also use the `run` command to ask the Immich server to create a database dump.
 This can be done with the following command:
 
 ```bash
 immich jobs run backupDatabase
 ```
-
