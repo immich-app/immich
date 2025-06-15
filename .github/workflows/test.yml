@@ -217,7 +217,7 @@ jobs:
         run: npm ci
 
       - name: Run linter
-        run: npm run lint:p
+        run: npm run lint:ci
         if: ${{ !cancelled() }}
 
       - name: Run formatter
